@@ -34,13 +34,14 @@ stages:
       displayName: 'Install dependencies'
       
     - script: |
-        npx eas-cli build --platform android --profile preview --non-interactive --no-wait
+        mkdir -p $(System.DefaultWorkingDirectory)/dist
+        npx eas-cli build --platform android --profile preview --non-interactive --no-wait --output=$(System.DefaultWorkingDirectory)/dist/app-preview.apk
       displayName: 'Build Android APK (Internal Testing)'
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
     - script: |
-        npx eas-cli build --platform android --profile production --non-interactive --no-wait
+        npx eas-cli build --platform android --profile production --non-interactive --no-wait --output=$(System.DefaultWorkingDirectory)/dist/app-production.aab
       displayName: 'Build Android AAB (Production)'
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
