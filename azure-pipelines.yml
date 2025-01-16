@@ -11,7 +11,6 @@ pool:
 
 variables:
   NODE_VERSION: '18.x'
-  EXPO_TOKEN: '$(EXPO_ACCESS_TOKEN)'
   EXPO_CLI_VERSION: '6.3.10'
 
 stages:
@@ -37,13 +36,13 @@ stages:
         npx eas-cli build --platform android --profile preview --non-interactive
       displayName: 'Build Android APK (Internal Testing)'
       env:
-        EXPO_TOKEN: $(EXPO_TOKEN)
+        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
 
     - script: |
         npx eas-cli build --platform android --profile production --non-interactive
       displayName: 'Build Android AAB (Production)'
       env:
-        EXPO_TOKEN: $(EXPO_TOKEN)
+        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
 
     - script: |
         mkdir -p $(System.DefaultWorkingDirectory)/dist
@@ -52,8 +51,8 @@ stages:
 
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: '$(System.DefaultWorkingDirectory)/dist'
-        ArtifactName: 'build-info'
+        pathToPublish: '$(System.DefaultWorkingDirectory)/dist'
+        artifactName: 'build-info'
         publishLocation: 'Container'
       displayName: 'Publish Build Info'
       condition: succeededOrFailed()
