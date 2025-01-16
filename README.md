@@ -1,12 +1,11 @@
-# Calculator App
+# Hello World App
 
-A simple calculator application built with Expo that performs basic arithmetic operations.
+A simple Hello World application built with Expo and React Native.
 
 ## Features
 
-- Basic arithmetic operations (addition, subtraction, multiplication, division)
 - Clean and modern UI
-- Clear functionality
+- Centered "Hello, World!" display
 - Built with Expo and React Native
 
 ## Getting Started
@@ -21,17 +20,7 @@ A simple calculator application built with Expo that performs basic arithmetic o
    npx expo start
    ```
 
-## Usage
-
-The calculator supports basic arithmetic operations:
-- Addition (+)
-- Subtraction (-)
-- Multiplication (×)
-- Division (÷)
-- Clear (C)
-
 ## Technology Stack
 
 - Expo
 - React Native
-- React Navigation
