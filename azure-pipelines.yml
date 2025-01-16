@@ -1,0 +1,54 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - '**/*.md'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  NODE_VERSION: '18.x'
+  EXPO_TOKEN: '$(EXPO_ACCESS_TOKEN)'
+  EXPO_CLI_VERSION: '6.3.10'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildApp
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: $(NODE_VERSION)
+      displayName: 'Install Node.js'
+
+    - script: |
+        npm install -g eas-cli@latest
+        npm install -g expo-cli@$(EXPO_CLI_VERSION)
+      displayName: 'Install EAS CLI and Expo CLI'
+
+    - script: |
+        npm install
+      displayName: 'Install dependencies'
+      
+    - script: |
+        npx eas-cli build --platform android --profile preview --non-interactive --no-wait
+      displayName: 'Build Android APK (Internal Testing)'
+      env:
+        EXPO_TOKEN: $(EXPO_TOKEN)
+
+    - script: |
+        npx eas-cli build --platform android --profile production --non-interactive --no-wait
+      displayName: 'Build Android AAB (Production)'
+      env:
+        EXPO_TOKEN: $(EXPO_TOKEN)
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/dist'
+        ArtifactName: 'app-builds'
+        publishLocation: 'Container'
+      displayName: 'Publish Build Artifacts'
+      condition: succeededOrFailed()
