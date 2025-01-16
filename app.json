@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Calculator App",
-    "slug": "calculator-app",
+    "name": "Hello World App",
+    "slug": "hello-world-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,14 +17,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.switha.calculatorapp"
+      "bundleIdentifier": "com.switha.helloworldapp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.switha.calculatorapp",
+      "package": "com.switha.helloworldapp",
       "versionCode": 1,
       "permissions": []
     },
