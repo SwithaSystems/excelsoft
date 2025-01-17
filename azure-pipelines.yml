@@ -12,70 +12,47 @@ pool:
 variables:
   NODE_VERSION: '18.x'
   EXPO_CLI_VERSION: '6.3.10'
-  EAS_CLI_VERSION: '5.9.1'
-  ARTIFACT_NAME: 'expo-builds'
 
 stages:
 - stage: Build
   jobs:
   - job: BuildApp
-    timeoutInMinutes: 120  # Increased timeout for builds
     steps:
     - task: NodeTool@0
       inputs:
         versionSpec: $(NODE_VERSION)
       displayName: 'Install Node.js'
 
-    - task: Cache@2
-      inputs:
-        key: 'npm | "$(Agent.OS)" | package-lock.json'
-        restoreKeys: |
-          npm | "$(Agent.OS)"
-        path: |
-          $(npm_config_cache)
-          ~/.eas-cli
-      displayName: 'Cache npm and EAS packages'
-
     - script: |
-        npm install -g eas-cli@$(EAS_CLI_VERSION)
+        npm install -g eas-cli@latest
         npm install -g expo-cli@$(EXPO_CLI_VERSION)
       displayName: 'Install EAS CLI and Expo CLI'
 
     - script: |
-        npm ci
+        npm install
       displayName: 'Install dependencies'
       
     - script: |
-        set -e
-        echo "Starting Android Preview Build..."
-        npx eas-cli build --platform android --profile preview --non-interactive --json > preview-build.json
-        echo "Preview build completed successfully"
+        npx eas-cli build --platform android --profile preview --non-interactive
       displayName: 'Build Android APK (Internal Testing)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        CI: true
 
     - script: |
-        set -e
-        echo "Starting Android Production Build..."
-        npx eas-cli build --platform android --profile production --non-interactive --json > production-build.json
-        echo "Production build completed successfully"
+        npx eas-cli build --platform android --profile production --non-interactive
       displayName: 'Build Android AAB (Production)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        CI: true
 
     - script: |
-        mkdir -p $(Build.ArtifactStagingDirectory)/builds
-        echo "Build completed at $(date)" > $(Build.ArtifactStagingDirectory)/builds/build-info.txt
-        echo "Branch: $(Build.SourceBranch)" >> $(Build.ArtifactStagingDirectory)/builds/build-info.txt
-        echo "Commit: $(Build.SourceVersion)" >> $(Build.ArtifactStagingDirectory)/builds/build-info.txt
+        mkdir -p $(System.DefaultWorkingDirectory)/dist
+        echo "Build URLs can be found in the build logs above" > $(System.DefaultWorkingDirectory)/dist/build-info.txt
       displayName: 'Create Build Info'
 
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/builds'
-        artifactName: $(ARTIFACT_NAME)
+        pathToPublish: '$(System.DefaultWorkingDirectory)/dist'
+        artifactName: 'build-info'
         publishLocation: 'Container'
       displayName: 'Publish Build Info'
       condition: succeededOrFailed()
