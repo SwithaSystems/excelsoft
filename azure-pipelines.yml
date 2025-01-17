@@ -35,18 +35,33 @@ stages:
     - script: |
         npm install
       displayName: 'Install Dependencies'
+
+    - script: |
+        # Create credentials directory
+        mkdir -p android/keystore
+        # Decode and save keystore file
+        echo "$(EXPO_ANDROID_KEYSTORE_BASE64)" | base64 -d > android/keystore/release.keystore
+      displayName: 'Setup Android Credentials'
       
     - script: |
-        eas build --platform android --profile preview --non-interactive
+        eas build --platform android --profile preview --non-interactive --local
       displayName: 'Build Android APK (Internal Testing)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
+        ANDROID_KEYSTORE_PATH: android/keystore/release.keystore
+        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
+        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
+        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
 
     - script: |
-        eas build --platform android --profile production --non-interactive
+        eas build --platform android --profile production --non-interactive --local
       displayName: 'Build Android AAB (Production)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
+        ANDROID_KEYSTORE_PATH: android/keystore/release.keystore
+        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
+        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
+        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
 
     - script: |
         mkdir -p $(System.DefaultWorkingDirectory)/dist
