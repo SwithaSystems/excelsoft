@@ -10,7 +10,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: expo-variables
+  - group: ExpoConfig
   - name: NODE_VERSION
     value: '18.x'
   - name: EXPO_CLI_VERSION
