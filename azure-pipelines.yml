@@ -40,7 +40,7 @@ stages:
         # Create credentials directory
         mkdir -p android/keystore
         # Decode and save keystore file
-        echo "$(EXPO_ANDROID_KEYSTORE_BASE64)" | base64 -d > android/keystore/release.keystore
+        echo "$(EXPO_ANDROID_KEYSTORE_BASE64)" | base64 -d -w 0 > android/keystore/release.keystore
       displayName: 'Setup Android Credentials'
       
     - script: |
