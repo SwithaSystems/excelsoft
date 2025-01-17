@@ -10,6 +10,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
+  - group: expo-variables
   NODE_VERSION: '18.x'
   EXPO_CLI_VERSION: '6.3.10'
 
