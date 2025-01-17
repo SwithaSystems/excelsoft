@@ -20,6 +20,7 @@ stages:
 - stage: Build
   jobs:
   - job: BuildApp
+    displayName: 'Build Android Apps'
     steps:
     - task: NodeTool@0
       inputs:
@@ -33,16 +34,16 @@ stages:
 
     - script: |
         npm install
-      displayName: 'Install dependencies'
+      displayName: 'Install Dependencies'
       
     - script: |
-        npx eas-cli build --platform android --profile preview --non-interactive
+        eas build --platform android --profile preview --non-interactive
       displayName: 'Build Android APK (Internal Testing)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
 
     - script: |
-        npx eas-cli build --platform android --profile production --non-interactive
+        eas build --platform android --profile production --non-interactive
       displayName: 'Build Android AAB (Production)'
       env:
         EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
