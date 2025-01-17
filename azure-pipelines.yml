@@ -11,8 +11,10 @@ pool:
 
 variables:
   - group: expo-variables
-  NODE_VERSION: '18.x'
-  EXPO_CLI_VERSION: '6.3.10'
+  - name: NODE_VERSION
+    value: '18.x'
+  - name: EXPO_CLI_VERSION
+    value: '6.3.10'
 
 stages:
 - stage: Build
