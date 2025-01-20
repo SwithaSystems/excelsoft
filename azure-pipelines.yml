@@ -37,7 +37,7 @@ stages:
       displayName: 'Install Dependencies'
 
     - task: DownloadSecureFile@1
-      name: keystore.jks
+      name: keystorefile
       displayName: 'Download Keystore'
       inputs:
         secureFile: 'keystore.jks'
@@ -46,7 +46,7 @@ stages:
         # Create credentials directory
         mkdir -p credentials/android
         # Copy the keystore to the correct location
-        cp $(keystore.jks.secureFilePath) credentials/android/keystore.jks
+        cp $(keystorefile.secureFilePath) credentials/android/keystore.jks
       displayName: 'Setup Android Credentials'
       
     - script: |
