@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
-import App from '../App';
-
-export default App;
+import HomePage from './home/home';
 
 const styles = StyleSheet.create({
   container: {
@@ -57,3 +55,5 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+
+export default HomePage;

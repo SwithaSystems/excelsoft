@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Hello World App",
+    "name": "ExcelSoft App",
     "slug": "hello-world-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/brandlogo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {
@@ -21,17 +21,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/brandlogo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.switha.helloworldapp",
       "versionCode": 1,
-      "permissions": []
+      "permissions": [],
+      "newArchEnabled": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/brandlogo.png"
     },
     "plugins": [
       "expo-router"

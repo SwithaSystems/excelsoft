@@ -12,7 +12,7 @@ const path = require("path");
 const root = process.cwd();
 const appDir = path.join(root, "app");
 const containersDir = path.join(root, "containers");
-const layoutFilePath = path.join(appDir, "_layout.tsx");
+const layoutFilePath = path.join(appDir, "_layout.js");
 
 const folderName = process.argv[2];
 
@@ -117,16 +117,17 @@ const updateLayout = async (screenKey) => {
         if (stackInsertionPoint !== -1) {
           layoutContent = `${layoutContent.slice(0, stackInsertionPoint)}  ${stackScreenEntry}\n${layoutContent.slice(stackInsertionPoint)}`;
           await fs.promises.writeFile(layoutFilePath, layoutContent);
-          console.log(`📄 Updated _layout.tsx with route for '${screenKey}'.`);
+          console.log(`📄 Updated _layout.js with route for '${screenKey}'.`);
         }
       } else {
-        console.log(`ℹ️ Route for '${screenKey}' already exists in _layout.tsx.`);
+        console.log(`ℹ️ Route for '${screenKey}' already exists in _layout.js.`);
       }
     } else {
-      console.error("❌ _layout.tsx file not found.");
+      console.error("❌ _layout.js file not found.");
     }
   } catch (error) {
     console.error(`❌ Error updating layout: ${error.message}`);
+    
     throw error;
   }
 };

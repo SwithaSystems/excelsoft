@@ -1,3 +1,4 @@
+import containers from '../containers';
 import { Stack } from 'expo-router';
 
 export default function Layout() {
@@ -10,9 +11,10 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Calculator',
+          title: 'ExcelSoft',
         }}
       />
-    </Stack>
+      <Stack.Screen name={containers.homeScreen} options={{ headerShown: false }} />
+</Stack>
   );
 }
