@@ -8,7 +8,7 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "ANDROID_KEYSTORE_PATH": "./credentials/android/keystore.jks",
+
         "gradleCommand": ":app:assembleRelease",
         "credentialsSource": "local"
       }
