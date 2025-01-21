@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   ScrollView,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import homeStyles from "./Homestyles";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
@@ -67,7 +68,7 @@ const categories = [
   },
 ];
 const bannerImages = [
-  {imageUrl: require("../../assets/banner1.png")},
+  { imageUrl: require("../../assets/banner1.png") },
   { imageUrl: require("../../assets/banner2.png") },
   { imageUrl: require("../../assets/banner3.png") },
 ];
@@ -156,7 +157,16 @@ const featuredProducts = [
   },
 ];
 
-const HomePage = ({ navigation }: any) => {
+const HomePage = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearchSubmit = () => {
+    router.push({
+      pathname: "./search/search",
+    });
+  };
+
   const renderBanner = () => (
     <View style={styles.banner}>
       <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
@@ -170,6 +180,10 @@ const HomePage = ({ navigation }: any) => {
     </View>
   );
 
+  const handleProductDetail = () => {
+    router.push({ pathname: "./productDetailScreen/productDetailScreen" });
+  };
+
   const renderExclusiveOffers = () => (
     <View>
       <Text style={styles.sectionTitle}>Exclusive Offers</Text>
@@ -177,30 +191,43 @@ const HomePage = ({ navigation }: any) => {
         horizontal
         data={exclusiveOffers}
         renderItem={({ item }) => (
-          <View style={styles.offerCard}>
-            <Image
-              source={item.image}
-              style={styles.offerImage}
-              resizeMode="cover"
-            />
-            <View style={styles.offerDetails}>
-              <Text style={styles.offerTitle}>{item.title}</Text>
-              <View style={styles.ratingContainer}>
-                <Text>{item.rating} ★</Text>
-                <Text>({item.reviews})</Text>
-              </View>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "./productDetailScreen/productDetailScreen",
+                params: { productId: item.id },
+              })
+            }
+          >
+            <View style={styles.offerCard}>
+              <Image
+                source={item.image}
+                style={styles.offerImage}
+                resizeMode="cover"
+              />
+              <View style={styles.offerDetails}>
+                <Text style={styles.offerTitle}>{item.title}</Text>
+                <View style={styles.ratingContainer}>
+                  <Text>{item.rating} ★</Text>
+                  <Text>({item.reviews})</Text>
+                </View>
 
-              <View style={styles.saleContainer}>
-                <Text style={styles.saleText}>Sale</Text>
-                <Text style={{ color: colors.primary }}>{item.saleEndsAt}</Text>
-                <Text style={styles.discountText}>{item.discount}</Text>
-              </View>
-              <View style={styles.priceContainer}>
-                <Text style={styles.price}>${item.price}</Text>
-                <Text style={styles.originalPrice}>${item.originalPrice}</Text>
+                <View style={styles.saleContainer}>
+                  <Text style={styles.saleText}>Sale</Text>
+                  <Text style={{ color: colors.primary }}>
+                    {item.saleEndsAt}
+                  </Text>
+                  <Text style={styles.discountText}>{item.discount}</Text>
+                </View>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.price}>${item.price}</Text>
+                  <Text style={styles.originalPrice}>
+                    ${item.originalPrice}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -215,14 +242,23 @@ const HomePage = ({ navigation }: any) => {
         horizontal
         data={bestSellers}
         renderItem={({ item }) => (
-          <View style={styles.bestSellerCard}>
-            <Image source={item.image} style={styles.bestSellerImage} />
-            <Text style={styles.bestSellerTitle}>{item.title}</Text>
-            <View style={styles.ratingContainer}>
-              <Text>{item.rating} ★</Text>
-              <Text>({item.reviews})</Text>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "./productDetailScreen/productDetailScreen",
+                params: { productId: item.id },
+              })
+            }
+          >
+            <View style={styles.bestSellerCard}>
+              <Image source={item.image} style={styles.bestSellerImage} />
+              <Text style={styles.bestSellerTitle}>{item.title}</Text>
+              <View style={styles.ratingContainer}>
+                <Text>{item.rating} ★</Text>
+                <Text>({item.reviews})</Text>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -237,11 +273,20 @@ const HomePage = ({ navigation }: any) => {
         horizontal
         data={featuredProducts}
         renderItem={({ item }) => (
-          <View style={styles.featuredCard}>
-            <Image source={item.image} style={styles.featuredImage} />
-            <Text style={styles.featuredTitle}>{item.title}</Text>
-            <Text style={styles.featuredDescription}>{item.description}</Text>
-          </View>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "./productDetailScreen/productDetailScreen",
+                params: { productId: item.id },
+              })
+            }
+          >
+            <View style={styles.featuredCard}>
+              <Image source={item.image} style={styles.featuredImage} />
+              <Text style={styles.featuredTitle}>{item.title}</Text>
+              <Text style={styles.featuredDescription}>{item.description}</Text>
+            </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -251,7 +296,9 @@ const HomePage = ({ navigation }: any) => {
 
   return (
     <View style={homeStyles.container}>
-      <ScrollView>
+      <ScrollView
+        // style={homeStyles.scrollView}
+      >
         {/* Header */}
         <View
           style={{
@@ -276,9 +323,12 @@ const HomePage = ({ navigation }: any) => {
           <TextInput
             style={homeStyles.searchInput}
             placeholder="Search..."
+            onFocus={handleSearchSubmit}
             placeholderTextColor={colors.placeholderTextColor}
           />
-          <Ionicons name="search" size={20} color={colors.primary} />
+          <TouchableOpacity onPress={handleSearchSubmit}>
+            <Ionicons name="search" size={20} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* Categories */}
@@ -292,7 +342,10 @@ const HomePage = ({ navigation }: any) => {
               title={item.title}
               imageUrl={item.imageUrl}
               onPress={() =>
-                navigation.navigate("Category", { category: item })
+                router.push({
+                  pathname: "./category",
+                  // params: { category: item }
+                })
               }
             />
           )}
@@ -310,7 +363,9 @@ const HomePage = ({ navigation }: any) => {
               key={product.id}
               {...product}
               onPress={() =>
-                navigation.navigate("ProductDetails", { product: product })
+                router.push({
+                  pathname: "./productDetailScreen/productDetailScreen",
+                })
               }
             />
           ))}
@@ -327,7 +382,7 @@ const HomePage = ({ navigation }: any) => {
       </ScrollView>
 
       {/* Footer */}
-      <Footer navigation={navigation} activeTab="home" />
+      <Footer activeTab="home" />
     </View>
   );
 };
