@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   ScrollView,
@@ -7,113 +7,163 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  StyleSheet
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import homeStyles from './Homestyles';
-import Footer from '../../components/Footer';
-import ProductCard from '../../components/ProductCard';
-import CategoryItem from '../../components/CategoryItem';
+  StyleSheet,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import homeStyles from "./Homestyles";
+import Footer from "../../components/Footer";
+import ProductCard from "../../components/ProductCard";
+import CategoryItem from "../../components/CategoryItem";
 import colors from "../config/colors";
 
 const categories = [
-  { id: '1', title: 'Discount', imageUrl: require('../../assets/discount.png') },
-  { id: '2', title: 'All', imageUrl: require('../../assets/all.png') },
-  { id: '3', title: 'Groceries', imageUrl: require('../../assets/groceries.png') },
-  { id: '4', title: 'Baby & Kids', imageUrl: require('../../assets/baby.png') },
-  { id: '5', title: 'Fruits', imageUrl: require('../../assets/fruits.png') },
+  {
+    id: "1",
+    title: "Discount",
+    imageUrl: require("../../assets/discount.png"),
+  },
+  { id: "2", title: "All", imageUrl: require("../../assets/all.png") },
+  {
+    id: "3",
+    title: "Groceries",
+    imageUrl: require("../../assets/groceries.png"),
+  },
+  { id: "4", title: "Baby & Kids", imageUrl: require("../../assets/baby.png") },
+  { id: "5", title: "Fruits", imageUrl: require("../../assets/fruits.png") },
+  {
+    id: "6",
+    title: "Food-to-go",
+    imageUrl: require("../../assets/foodtogo.png"),
+  },
+  {
+    id: "7",
+    title: "Snacks & Treats",
+    imageUrl: require("../../assets/snacks&treats.png"),
+  },
+  {
+    id: "8",
+    title: "Meat &Fish",
+    imageUrl: require("../../assets/meat&fish.png"),
+  },
+  {
+    id: "9",
+    title: "Home & Furniture",
+    imageUrl: require("../../assets/home&furniture.png"),
+  },
+  {
+    id: "10",
+    title: "Drinks & Beverages",
+    imageUrl: require("../../assets/drinks&alco.png"),
+  },
+  {
+    id: "11",
+    title: "Beauty & Skin Care",
+    imageUrl: require("../../assets/all.png"),
+  },
+  {
+    id: "12",
+    title: "Gifts & Hampers",
+    imageUrl: require("../../assets/gifthampers.png"),
+  },
+];
+const bannerImages = [
+  {imageUrl: require("../../assets/banner1.png")},
+  { imageUrl: require("../../assets/banner2.png") },
+  { imageUrl: require("../../assets/banner3.png") },
 ];
 
 const recommendedProducts = [
   {
-    id: '1',
-    title: 'Greek Yogurt',
+    id: "1",
+    title: "Greek Yogurt",
     rating: 4.8,
     reviews: 180,
     price: 4.99,
-    imageUrl: require('../../assets/yogurt.jpg'),
+    imageUrl: require("../../assets/yogurt.jpg"),
   },
   {
-    id: '2',
-    title: 'Baby Stroller',
+    id: "2",
+    title: "Baby Stroller",
     rating: 4.9,
     reviews: 220,
     price: 120,
     originalPrice: 180,
-    imageUrl: require('../../assets/stroller.jpg'),
+    imageUrl: require("../../assets/stroller.jpg"),
   },
 ];
 
 const exclusiveOffers = [
   {
-    id: '1',
-    title: 'Baby Stroller',
+    id: "1",
+    title: "Baby Stroller",
     rating: 4.7,
     reviews: 120,
     price: 120,
     originalPrice: 180,
-    saleEndsAt: '02:48:26',
-    discount: '20%',
-    image: require('../../assets/stroller.jpg')
+    saleEndsAt: "02:48:26",
+    discount: "20%",
+    image: require("../../assets/stroller.jpg"),
   },
   {
-    id: '2',
-    title: 'Bananas',
+    id: "2",
+    title: "Bananas",
     rating: 4.5,
     reviews: 130,
     price: 8,
     originalPrice: 10,
-    saleEndsAt: '01:30:00',
-    discount: '15%',
-    image: require('../../assets/banana.png')
-  }
+    saleEndsAt: "01:30:00",
+    discount: "15%",
+    image: require("../../assets/banana.png"),
+  },
 ];
 
 const bestSellers = [
   {
-    id: '1',
-    title: 'Bananas',
+    id: "1",
+    title: "Bananas",
     rating: 4.9,
     reviews: 300,
-    image: require('../../assets/banana.png')
+    image: require("../../assets/banana.png"),
   },
   {
-    id: '2',
-    title: 'Chicken Breast',
+    id: "2",
+    title: "Chicken Breast",
     rating: 4.8,
     reviews: 250,
-    image: require('../../assets/chicken.png')
+    image: require("../../assets/chicken.png"),
   },
   {
-    id: '3',
-    title: 'Wheat',
+    id: "3",
+    title: "Wheat",
     rating: 4.7,
     reviews: 280,
-    image: require('../../assets/wheat.png')
-  }
+    image: require("../../assets/wheat.png"),
+  },
 ];
 
 const featuredProducts = [
   {
-    id: '1',
-    title: 'Brown Teddy Bear',
-    description: '3 Feet, Soft and Fluffy',
-    image: require('../../assets/teddy.png')
+    id: "1",
+    title: "Brown Teddy Bear",
+    description: "3 Feet, Soft and Fluffy",
+    image: require("../../assets/teddy.png"),
   },
   {
-    id: '2',
-    title: 'Anchovies',
-    description: 'Rich in omega-3',
-    image: require('../../assets/fish.png')
-  }
+    id: "2",
+    title: "Anchovies",
+    description: "Rich in omega-3",
+    image: require("../../assets/fish.png"),
+  },
 ];
 
-const HomePage = ({ navigation }:any) => {
+const HomePage = ({ navigation }: any) => {
   const renderBanner = () => (
     <View style={styles.banner}>
       <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
       <Text style={styles.bannerDiscount}>40-60% Discount</Text>
-      <Text style={styles.bannerText}>Lorem ipsum dolor sit amet, consectetur adipiscing elit</Text>
+      <Text style={styles.bannerText}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit
+      </Text>
       <TouchableOpacity style={styles.shopNowButton}>
         <Text style={styles.shopNowText}>Shop Now</Text>
       </TouchableOpacity>
@@ -128,17 +178,21 @@ const HomePage = ({ navigation }:any) => {
         data={exclusiveOffers}
         renderItem={({ item }) => (
           <View style={styles.offerCard}>
-            <Image source={item.image} style={styles.offerImage} resizeMode='cover' />
+            <Image
+              source={item.image}
+              style={styles.offerImage}
+              resizeMode="cover"
+            />
             <View style={styles.offerDetails}>
               <Text style={styles.offerTitle}>{item.title}</Text>
               <View style={styles.ratingContainer}>
                 <Text>{item.rating} ★</Text>
                 <Text>({item.reviews})</Text>
               </View>
-              
+
               <View style={styles.saleContainer}>
                 <Text style={styles.saleText}>Sale</Text>
-                <Text style={{color:colors.primary}}>{item.saleEndsAt}</Text>
+                <Text style={{ color: colors.primary }}>{item.saleEndsAt}</Text>
                 <Text style={styles.discountText}>{item.discount}</Text>
               </View>
               <View style={styles.priceContainer}>
@@ -148,7 +202,7 @@ const HomePage = ({ navigation }:any) => {
             </View>
           </View>
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
       />
     </View>
@@ -170,7 +224,7 @@ const HomePage = ({ navigation }:any) => {
             </View>
           </View>
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
       />
     </View>
@@ -189,7 +243,7 @@ const HomePage = ({ navigation }:any) => {
             <Text style={styles.featuredDescription}>{item.description}</Text>
           </View>
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
       />
     </View>
@@ -199,9 +253,19 @@ const HomePage = ({ navigation }:any) => {
     <View style={homeStyles.container}>
       <ScrollView>
         {/* Header */}
-        <View style={{ ...homeStyles.header, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}> 
-          <Image source={require('../../assets/brandlogo.png')} style={homeStyles.logo} />
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View
+          style={{
+            ...homeStyles.header,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Image
+            source={require("../../assets/brandlogo.png")}
+            style={homeStyles.logo}
+          />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ marginRight: 8 }}>Hello, User</Text>
             <Ionicons name="person-circle-outline" size={24} color="#000" />
           </View>
@@ -214,8 +278,7 @@ const HomePage = ({ navigation }:any) => {
             placeholder="Search..."
             placeholderTextColor={colors.placeholderTextColor}
           />
-          <Ionicons name="search" size={20} color = {colors.primary} />
-
+          <Ionicons name="search" size={20} color={colors.primary} />
         </View>
 
         {/* Categories */}
@@ -228,7 +291,9 @@ const HomePage = ({ navigation }:any) => {
             <CategoryItem
               title={item.title}
               imageUrl={item.imageUrl}
-              onPress={() => navigation.navigate('Category', { category: item })}
+              onPress={() =>
+                navigation.navigate("Category", { category: item })
+              }
             />
           )}
           style={homeStyles.categoriesContainer}
@@ -237,15 +302,15 @@ const HomePage = ({ navigation }:any) => {
         {/* Banner */}
         {renderBanner()}
 
-         {/* Recommended Products */}
-         <Text style={styles.sectionTitle}>Recommended for You</Text>
+        {/* Recommended Products */}
+        <Text style={styles.sectionTitle}>Recommended for You</Text>
         <View style={homeStyles.productGrid}>
           {recommendedProducts.map((product) => (
             <ProductCard
               key={product.id}
               {...product}
               onPress={() =>
-                navigation.navigate('ProductDetails', { product: product })
+                navigation.navigate("ProductDetails", { product: product })
               }
             />
           ))}
@@ -259,7 +324,6 @@ const HomePage = ({ navigation }:any) => {
 
         {/* Featured Products */}
         {renderFeaturedProducts()}
-
       </ScrollView>
 
       {/* Footer */}
@@ -270,43 +334,43 @@ const HomePage = ({ navigation }:any) => {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: '#2E2A5C',
+    backgroundColor: "#2E2A5C",
     borderRadius: 20,
     padding: 20,
     margin: 10,
-    alignItems: 'center',
+    alignItems: "center",
     height: 230,
     width: 408,
   },
   bannerTitle: {
-    color: 'white',
+    color: "white",
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 10,
   },
   bannerDiscount: {
-    color: 'white',
+    color: "white",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   bannerText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   shopNowButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 25,
   },
   shopNowText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   offerCard: {
     width: 200,
@@ -314,7 +378,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 10,
     padding: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -329,31 +393,31 @@ const styles = StyleSheet.create({
   },
   offerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 5,
   },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 5,
   },
   price: {
     fontSize: 16,
     marginRight: 5,
-    color:colors.primary
+    color: colors.primary,
   },
   originalPrice: {
     fontSize: 14,
-    textDecorationLine: 'line-through',
-    color: '#999',
+    textDecorationLine: "line-through",
+    color: "#999",
   },
   saleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 5,
   },
   saleText: {
@@ -370,22 +434,22 @@ const styles = StyleSheet.create({
   bestSellerCard: {
     width: 150,
     marginRight: 15,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 10,
   },
   bestSellerImage: {
-    width: '100%',
+    width: "100%",
     height: 120,
   },
   bestSellerTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 5,
   },
   featuredCard: {
     width: 180,
     marginRight: 15,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 10,
   },
@@ -395,17 +459,17 @@ const styles = StyleSheet.create({
   },
   featuredTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 5,
   },
   featuredDescription: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 3,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginVertical: 15,
     marginLeft: 15,
   },
