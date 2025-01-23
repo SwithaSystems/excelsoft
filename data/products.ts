@@ -1,0 +1,220 @@
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  image: any;
+  productColors: string[];
+  category: string;
+  rating: number;
+  noOfreviews: number;
+  reviews: {
+    id: string;
+    name: string;
+    review:string;
+    rating: number;
+    text: string;
+  }[];
+}
+
+const products: Product[] = [
+  {
+    id: '1',
+    name: 'Greek Yogurt',
+    description: 'Creamy and delicious Greek yogurt made with the finest ingredients. High in protein and perfect for a healthy breakfast or snack. Made with fresh milk and live cultures, our Greek yogurt offers a rich, smooth texture and tangy taste.',
+    price: 4.99,
+    originalPrice: 6.99,
+    image: require('../assets/yogurt.jpg'),
+    productColors: [],
+    category: 'Groceries',
+    rating: 4.8,
+    noOfreviews: 180,
+    reviews: [
+      {
+        id: '1',
+        name: 'Emily',
+        review:'A Perfect Yogurt',
+        rating: 5,
+        text: 'Best Greek yogurt I\'ve ever had! So creamy and delicious.'
+      },
+      {
+        id: '2',
+        name: 'Michael',
+        review:'Amazing',
+        rating: 4,
+        text: 'Great taste and perfect consistency. Love having it for breakfast.'
+      }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Baby Stroller',
+    description: 'Introducing our premium baby stroller, designed for the ultimate comfort, safety, and convenience for both parents and babies. Perfectly crafted with durable materials and an ergonomic design, our stroller ensures a smooth ride with its easy maneuverability and adjustable recline options.',
+    price: 120,
+    originalPrice: 180,
+    image: require('../assets/stroller.jpg'),
+    productColors: ['black', 'gray', 'yellow'],
+    category: 'Baby & Kids',
+    rating: 4.9,
+    noOfreviews: 220,
+    reviews: [
+      {
+        id: '1',
+        name: 'Shivam',
+        review:'A Perfect Stroller',
+        rating: 5,
+        text: 'Sturdy, comfortable, and easy to maneuver—this baby stroller is perfect for parents on the go. Its lightweight design and smooth ride make every outing a breeze!'
+      },
+      {
+        id: '2',
+        name: 'Karan',
+        review:'Gives Comfort to the babies',
+        rating: 5,
+        text: 'Amazing quality stroller! The adjustable features make it perfect for both my newborn and toddler.'
+      }
+    ]
+  },
+  {
+    id: '3',
+    name: 'Brown Teddy Bear',
+    description: '3 Feet, Soft and Fluffy teddy bear perfect for cuddling. Made with premium quality materials, this adorable teddy bear is super soft to touch and great for children of all ages. The perfect companion for your little one.',
+    price: 29.99,
+    originalPrice: 39.99,
+    image: require('../assets/teddy.png'),
+    productColors: ['brown', 'beige'],
+    category: 'Baby & Kids',
+    rating: 4.7,
+    noOfreviews: 150,
+    reviews: [
+      {
+        id: '1',
+        name: 'Sarah',
+        review:'so soft Teddy',
+        rating: 5,
+        text: 'My daughter absolutely loves this teddy bear! So soft and cuddly.'
+      },
+      {
+        id: '2',
+        name: 'John',
+        review:'A Perfect Teddy',
+        rating: 4,
+        text: 'Great quality and very durable. Perfect size for kids.'
+      }
+    ]
+  },
+  {
+    id: '4',
+    name: 'Bananas',
+    description: 'Fresh, ripe bananas perfect for snacking or baking. Our bananas are carefully selected to ensure the perfect ripeness and sweetness. Rich in potassium and other essential nutrients.',
+    price: 8,
+    originalPrice: 10,
+    image: require('../assets/banana.png'),
+    productColors: [],
+    category: 'Fruits',
+    rating: 4.9,
+    noOfreviews: 300,
+    reviews: [
+      {
+        id: '1',
+        name: 'Lisa',
+        review:'Tastes so yum',
+        rating: 5,
+        text: 'Always fresh and perfectly ripe. Great quality!'
+      },
+      {
+        id: '2',
+        name: 'David',
+        review:'A Perfect Bananas',
+        rating: 5,
+        text: 'These bananas are consistently good. Perfect for my morning smoothies.'
+      }
+    ]
+  },
+  {
+    id: '5',
+    name: 'Chicken Breast',
+    description: 'Premium quality, fresh chicken breast. Perfect for grilling, baking, or any chicken recipe. Our chicken is sourced from trusted farms and processed under strict quality control.',
+    price: 12.99,
+    originalPrice: 15.99,
+    image: require('../assets/chicken.png'),
+    productColors: [],
+    category: 'Meat & Fish',
+    rating: 4.8,
+    noOfreviews: 250,
+    reviews: [
+      {
+        id: '1',
+        name: 'Robert',
+        review:'Tastes so yum',
+        rating: 5,
+        text: 'Always fresh and great quality. Perfect portion sizes.'
+      },
+      {
+        id: '2',
+        name: 'Amanda',
+        review:'A Perfect Chicken',
+        rating: 4,
+        text: 'Good quality chicken breast, very tender after cooking.'
+      }
+    ]
+  },
+  {
+    id: '6',
+    name: 'Granola Bars',
+    description: 'Healthy and delicious granola bars made with natural ingredients. Perfect for on-the-go snacking. Packed with nuts, dried fruits, and whole grains for sustained energy.',
+    price: 8,
+    originalPrice: 10,
+    image: require('../assets/granola.png'),
+    productColors: [],
+    category: 'Snacks & Treats',
+    rating: 4.5,
+    noOfreviews: 130,
+    reviews: [
+      {
+        id: '1',
+        name: 'Rachel',
+        review:'Tastes so yum',
+        rating: 4,
+        text: 'Great healthy snack option. Love the variety of nuts and fruits.'
+      },
+      {
+        id: '2',
+        name: 'Tom',
+        review:'A Perfect Granola',
+        rating: 5,
+        text: 'Perfect for my kids\' lunchboxes. Not too sweet and very filling.'
+      }
+    ]
+  },
+  {
+    id: '7',
+    name: 'Anchovies',
+    description: 'Rich in omega-3 fatty acids, our premium anchovies are carefully selected and processed to maintain their fresh taste and nutritional value. Perfect for adding flavor to pizzas, salads, or pasta dishes.',
+    price: 5.99,
+    originalPrice: 7.99,
+    image: require('../assets/fish.png'),
+    productColors: [],
+    category: 'Meat & Fish',
+    rating: 4.7,
+    noOfreviews: 85,
+    reviews: [
+      {
+        id: '1',
+        name: 'Maria',
+        review:'Tastes so yum',
+        rating: 5,
+        text: 'Great quality anchovies. Perfect for my Mediterranean recipes!'
+      },
+      {
+        id: '2',
+        name: 'James',
+        review:'A Perfect Anchovies',
+        rating: 4,
+        text: 'Fresh taste and good packaging. Will buy again.'
+      }
+    ]
+  }
+];
+
+export default products;

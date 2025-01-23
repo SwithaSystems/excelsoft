@@ -7,7 +7,7 @@ const { width } = Dimensions.get('window');
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -19,21 +19,6 @@ export default StyleSheet.create({
   },
   welcomeText:{
 alignSelf:'flex-end'
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderColor:colors.primary,
-    borderWidth:0.5,
-    borderRadius: 25,
-    padding: 8,
-    marginHorizontal: 16,
-    marginVertical: 8,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
   },
   categoriesContainer: {
     paddingVertical: 16,
@@ -83,7 +68,6 @@ alignSelf:'flex-end'
     margin: 8,
     backgroundColor: '#fff',
     overflow: 'hidden',
-    elevation: 2,
   },
   productImage: {
     width: '100%',

@@ -1,0 +1,21 @@
+import React from 'react';
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import colors from '../app/config/colors';
+
+interface StarProps {
+    filled?: boolean;
+    size?: number;
+}
+
+const Star = ({ filled = true, size = 16 }: StarProps) => {
+    return (
+        <Ionicons 
+            name={filled ? "star" : "star-outline"} 
+            size={size} 
+            color={filled ? colors.yellow : colors.gray} 
+        />
+    );
+};
+
+export default Star;

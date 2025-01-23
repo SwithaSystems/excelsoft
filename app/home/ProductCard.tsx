@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Image, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import  HomeStyles  from '../app/home/Homestyles';
+import  HomeStyles  from '../home/Homestyles';
 
 interface ProductCardProps {
   title: string;
@@ -10,6 +10,8 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   imageUrl: string;
+  saleEndsAt?: string;
+  discount?: string;
   onPress: () => void;
 }
 
@@ -20,6 +22,8 @@ const ProductCard = ({
   price,
   originalPrice,
   imageUrl,
+  saleEndsAt,
+  discount,
   onPress,
 }: ProductCardProps) => {
   const isRemoteImage = typeof imageUrl === 'string';

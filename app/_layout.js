@@ -17,6 +17,8 @@ export default function Layout() {
       <Stack.Screen name={containers.homeScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.searchScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.productDetailScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.searchResultsScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.searchSuggesionsScreenScreen} options={{ headerShown: false }} />
 </Stack>
   );
 }
