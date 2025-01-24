@@ -48,17 +48,18 @@ const ProductCard = ({
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>{name}</Text>
         <View style={styles.ratingContainer}>
-          <Star filled size={16} />
           <Text style={styles.rating}>{rating}</Text>
+          <Star filled={true} size={16} />
           <Text style={styles.reviews}>({noOfreviews})</Text>
         </View>
         <View style={styles.priceContainer}>
           <Text style={styles.saleTag}>Sale</Text>
+          <Text style={styles.time}>02:48:26</Text>
+          <Text style={styles.discount}>{Math.round(((originalPrice - price) / originalPrice) * 100)}%</Text>
+
           <Text style={styles.price}>${price}</Text>
           <Text style={styles.originalPrice}>${originalPrice}</Text>
-          <Text style={styles.discount}>{Math.round(((originalPrice - price) / originalPrice) * 100)}% off</Text>
         </View>
-        <Text style={styles.saleEnds}>Sale ends</Text>
       </View>
     </TouchableOpacity>
   );
@@ -85,30 +86,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
-    alignSelf: 'center',
     color: colors.black,
-    paddingHorizontal: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 4,
-    justifyContent: 'center',
+    alignItems: 'center',
   },
   rating: {
-    marginLeft: 4,
     fontSize: 16,
     fontWeight: '500',
+    marginRight: 4,
   },
   reviews: {
-    marginLeft: 4,
+    margin: 4,
     fontSize: 16,
     color:colors.reviewsColor,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     flexWrap: 'wrap',
     padding: 4,
   },
@@ -126,25 +123,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.primary,
     marginRight: 6,
+    marginTop:6
   },
   originalPrice: {
     fontSize: 14,
-    color: colors.reviewsColor,
+    color: colors.primary,
     textDecorationLine: 'line-through',
     marginLeft: 6,
     marginRight: 6,
+    marginTop:6
+  },
+  time: {
+    fontSize: 14,
+    color: colors.primary,
+    marginLeft: 6,
+    backgroundColor: colors.secondary,
+    borderRadius:5
   },
   discount: {
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
+    backgroundColor: colors.secondary,
+    borderRadius:5
   },
-  saleEnds: {
-    fontSize: 12,
-    color:colors.reviewsColor,
-    textAlign: 'center',
-    marginTop: 4,
-  },
+  
 });
 
 export default ProductCard;
