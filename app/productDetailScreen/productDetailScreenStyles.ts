@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   originalPrice: {
     fontSize: 16,
-    color: colors.gray,
+    color: colors.lightgrey,
     textDecorationLine: 'line-through',
   },
   infoTitle: {
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: colors.mediumGray,
+    color: colors.black,
     lineHeight: 20,
     marginBottom: 24,
   },
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: colors.lightGray,
+    borderColor: colors.lightgrey,
   },
   selectedColorOption: {
     borderColor: colors.primary,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: colors.lightGray,
+    backgroundColor: colors.lightgrey,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   reviewText: {
     fontSize: 14,
-    color: colors.mediumGray,
+    color: colors.black,
     lineHeight: 20,
   },
   seeMoreButton: {

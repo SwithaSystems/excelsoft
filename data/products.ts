@@ -214,6 +214,69 @@ const products: Product[] = [
         text: 'Fresh taste and good packaging. Will buy again.'
       }
     ]
+  },
+  {
+    id: '8',
+    name: 'Baby Bicycle',
+    description: 'Safe and sturdy bicycle perfect for toddlers learning to ride',
+    price: 89.99,
+    originalPrice: 129.99,
+    image: require('../assets/baby-bicycle.png'),
+    productColors: ['red', 'blue', 'pink'],
+    category: 'toys',
+    rating: 4.5,
+    noOfreviews: 128,
+    reviews: [
+      {
+        id: '1',
+        name: 'John D.',
+        review: 'Great first bike',
+        rating: 5,
+        text: 'Perfect size for my 2-year-old. Very stable and safe.'
+      }
+    ]
+  },
+  {
+    id: '9',
+    name: 'Baby Crib',
+    description: 'Comfortable and secure crib with adjustable height settings',
+    price: 199.99,
+    originalPrice: 299.99,
+    image: require('../assets/baby-crib.png'),
+    productColors: ['white', 'natural', 'grey'],
+    category: 'furniture',
+    rating: 4.8,
+    noOfreviews: 256,
+    reviews: [
+      {
+        id: '1',
+        name: 'Sarah M.',
+        review: 'High quality crib',
+        rating: 5,
+        text: 'Sturdy construction and easy to assemble. My baby sleeps well in it.'
+      }
+    ]
+  },
+  {
+    id: '10',
+    name: 'Building Blocks',
+    description: 'Educational building blocks set for creative play',
+    price: 34.99,
+    originalPrice: 49.99,
+    image: require('../assets/building-blocks.png'),
+    productColors: ['multicolor'],
+    category: 'toys',
+    rating: 4.7,
+    noOfreviews: 189,
+    reviews: [
+      {
+        id: '1',
+        name: 'Mike R.',
+        review: 'Great learning toy',
+        rating: 5,
+        text: 'Perfect size for small hands and very durable.'
+      }
+    ]
   }
 ];
 

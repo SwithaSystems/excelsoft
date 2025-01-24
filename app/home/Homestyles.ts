@@ -66,7 +66,7 @@ alignSelf:'flex-end'
   productCard: {
     width: (width - 48) / 2,
     margin: 8,
-    backgroundColor: '#fff',
+    backgroundColor: colors.lightgrey,
     overflow: 'hidden',
   },
   productImage: {
