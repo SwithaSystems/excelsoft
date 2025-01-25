@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import BackArrow from '@/components/BackArrow';
 import SearchBar from '../components/searchBar';
 import colors from '../config/colors';
 import { Ionicons } from '@expo/vector-icons';
+import Header from '@/components/Header';
 
 const suggestions = [
   'baby toys',
@@ -52,10 +52,7 @@ const SearchSuggestionsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <BackArrow />
-        <Text style={styles.title}>Search Page</Text>
-      </View>
+      <Header headerText={"Search Page"}/>
 
       <View style={styles.searchContainer}>
         <SearchBar

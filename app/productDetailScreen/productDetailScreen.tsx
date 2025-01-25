@@ -4,11 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import styles from "./productDetailScreenStyles";
 import colors from "../config/colors";
-import BackArrow from "../../components/BackArrow";
-import Button from "../../components/Button";
+import Button from "../../components/commonComponents/Button";
 import Star from "../../components/Star";
 import products from "../../data/products";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -39,10 +40,7 @@ const ProductDetailScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View style={styles.header}>
-          <BackArrow />
-          <Text style={styles.headerTitle}>About the Product</Text>
-        </View>
+        <Header headerText={"About the Product"}/>
         <View style={styles.imageContainer}>
           <Image
             source={product.image}

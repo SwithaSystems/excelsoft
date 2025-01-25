@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, FlatList, SafeAreaView, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import BackArrow from '../../components/BackArrow';
 import Footer from '../../components/Footer';
 import ProductCard from '../components/ProductCard';
 import styles from './searchResultsScreenStyles';
 import products from '../../data/products';
 import colors from '../config/colors';
+import Header from '@/components/Header';
 
 const SearchResultsScreen = () => {
   const { query } = useLocalSearchParams();
@@ -45,10 +45,7 @@ const SearchResultsScreen = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <View style={styles.header}>
-        <BackArrow />
-        <Text style={styles.headerTitle}>Search Results</Text>
-      </View>
+      <Header headerText={"Search Results"}/>
       <Text style={styles.resultsCount}>
         {filteredProducts.length} search results for "{query}"
       </Text>

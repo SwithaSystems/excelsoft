@@ -18,6 +18,7 @@ import CategoryItem from "../../components/CategoryItem";
 import colors from "../config/colors";
 import products from "../../data/products";
 import SearchBar from "../components/searchBar";
+import Header from "@/components/Header";
 
 const categories = [
   {
@@ -303,15 +304,7 @@ const HomePage = () => {
         </View>
 
         {/* Search Bar */}
-        <View>
-          <SearchBar
-            placeholder="Search..."
-            onFocus={handleSearchSubmit}
-            onPress={handleSearchSubmit}
-            value={searchQuery}
-            onChangeText={(text:any) => setSearchQuery(text)}
-          />
-        </View>
+        <Header searchBarNeeded={true}/>
 
         {/* Categories */}
         <FlatList

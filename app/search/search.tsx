@@ -13,8 +13,8 @@ import colors from '../config/colors';
 import SearchHistoryItem from '../components/SearchHistoryItem';
 import TrendingSearchItem from '../components/TrendingSearchItem';
 import CategoryItem from '../components/CategoryItem';
-import BackArrow from '@/components/BackArrow';
 import SearchBar from '../components/searchBar';
+import Header from '@/components/Header';
 
 const recentSearches = [
   'Spaghetti',
@@ -89,10 +89,7 @@ const SearchScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <BackArrow />
-        <Text style={styles.title}>Search</Text>
-      </View>
+      <Header headerText={"Search"}/>
 
       {/* Search Input */}
       <View>

@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import colors from '../app/config/colors';
+import colors from '../../app/config/colors';
 
 const BackArrow = () => {
     const router = useRouter();
@@ -10,7 +10,9 @@ const BackArrow = () => {
     return (
         <TouchableOpacity 
             style={styles.container} 
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace({
+                pathname: "/",
+              })}
         >
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
