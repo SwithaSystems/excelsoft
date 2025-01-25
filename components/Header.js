@@ -17,7 +17,7 @@ function Header(props) {
     <>
       {props.headerText && (
         <View style={styles.header}>
-          <View style={{ position: "absolute", left: 16, top: 16 }}>
+          <View style={{ position: "absolute", left: 16, top: 16, zIndex: 1 }}>
             <BackArrow />
           </View>
           <Text style={styles.headerTitle}>{props.headerText}</Text>

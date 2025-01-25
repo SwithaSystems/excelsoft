@@ -27,7 +27,7 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
+, "app/welcome/welcomeScreen.jsx"  ],
   "exclude": [
     "node_modules",
     "babel.config.js",
