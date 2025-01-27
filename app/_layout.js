@@ -36,6 +36,15 @@ export default function Layout() {
   <Stack.Screen name={containers.orderSuccessfulScreenScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.deliveryTrackingScreenScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.offersScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.splashScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.welcomeScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.signUpScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.mailVerificationScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.resedMailScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.verifcationScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.passwordResetScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.verifyUserScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.forgotPasswordScreenScreen} options={{ headerShown: false }} />
 </Stack>
   );
 }
