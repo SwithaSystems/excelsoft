@@ -45,6 +45,22 @@ export default function Layout() {
   <Stack.Screen name={containers.passwordResetScreenScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.verifyUserScreenScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.forgotPasswordScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.userProfileScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.editProfileScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.editAccountInformationscreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.changePasswordScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.notificationsScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.customerSupportScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.myOrderScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.orderDetailsScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.savedItemScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.savedAddressScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.editAddressScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.allPaymentsScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.updateCardDetailsScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.addNewPaymentScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.feedBackScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.dashBoardScreenScreen} options={{ headerShown: false }} />
 </Stack>
   );
 }
