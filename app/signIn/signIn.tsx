@@ -11,13 +11,16 @@ import {
 import { globalStyles } from "../../assets/styles/globalStyles";
 import styles from './signInStyles';
 
+
 const signIn = () => {
+
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Partial<{email?: string, password?: string}> >({});
 
   const validateFields = () => {
-    const newErrors = {};
+    const newErrors = {} as {email?: string, password?: string};  
     if (!email) {
       newErrors.email = "Email or Phone number is required.";
     } else if (
@@ -45,7 +48,7 @@ const signIn = () => {
     }
   };
 
-  const handleBlur = () => {
+  const handleBlur = (fieldName:string) => {
     validateFields();
   };
   return (
