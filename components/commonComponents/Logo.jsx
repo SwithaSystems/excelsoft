@@ -5,8 +5,8 @@ import { View } from 'react-native';
 function Logo(props) {
     return (
         <>
-           <View style={styles.logoContainer}>
-        <View style={styles.logo}>
+           <View style={[ props?.logoContainer]}>
+        <View style={[styles.logo, props?.logoStyle]}>
           <Text style={styles.logoText}>LOGO</Text>
         </View>
       </View>
@@ -16,7 +16,7 @@ function Logo(props) {
 
 const styles = StyleSheet.create({
   logoContainer: {
-    marginBottom: 20,
+   // marginBottom: 20,
   },
   logo: {
     width: 80,
