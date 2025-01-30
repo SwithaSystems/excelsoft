@@ -47,11 +47,11 @@ stages:
         echo "ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)" >> .env
       displayName: 'Create environment file'
 
-    # Configure EAS
+    # Initialize EAS project
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        yes | eas configure
-      displayName: 'Configure EAS'
+        eas build:configure --platform android --non-interactive
+      displayName: 'Initialize EAS project'
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
@@ -66,7 +66,7 @@ stages:
     # Build AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        echo "y" | eas build --platform android --profile preview --non-interactive --no-wait
+        printf "y\n" | eas build --platform android --profile preview --non-interactive --no-wait
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
@@ -75,7 +75,7 @@ stages:
     # Build AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        echo "y" | eas build --platform android --profile preview --non-interactive --no-wait
+        printf "y\n" | eas build --platform android --profile preview --non-interactive --no-wait
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
@@ -84,7 +84,7 @@ stages:
     # Build APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        echo "y" | eas build --platform android --profile production --non-interactive --no-wait
+        printf "y\n" | eas build --platform android --profile production --non-interactive --no-wait
       displayName: 'Build Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
