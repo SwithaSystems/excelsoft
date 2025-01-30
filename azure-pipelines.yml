@@ -39,20 +39,25 @@ stages:
         chmod +x android/app/my-upload-key.keystore
       displayName: 'Copy keystore'
 
-    # Create environment files
+    # Create credentials.json
     - script: |
-        # Create .env file
+        echo '{
+          "android": {
+            "keystore": {
+              "keystorePath": "android/app/my-upload-key.keystore",
+              "keystorePassword": "$(ANDROID_KEYSTORE_PASSWORD)",
+              "keyAlias": "$(ANDROID_KEY_ALIAS)",
+              "keyPassword": "$(ANDROID_KEY_PASSWORD)"
+            }
+          }
+        }' > credentials.json
+      displayName: 'Create credentials.json'
+
+    # Create environment file
+    - script: |
         touch .env
         echo "EXPO_TOKEN=$(EXPO_TOKEN)" >> .env
-        echo "ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)" >> .env
-        echo "ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)" >> .env
-        echo "ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)" >> .env
-
-        # Create eas.env file
-        touch eas.env
-        echo "ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore" >> eas.env
-        echo "ANDROID_KEY_ALIAS=my-excelsoft-alias" >> eas.env
-      displayName: 'Create environment files'
+      displayName: 'Create environment file'
 
     # Verify Expo login
     - script: |
@@ -65,44 +70,26 @@ stages:
     # Build AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
-        export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
-        export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)
-        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait
+        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait --local-credentials
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
-        ANDROID_KEYSTORE_PASSWORD: $(ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_ALIAS: $(ANDROID_KEY_ALIAS)
-        ANDROID_KEY_PASSWORD: $(ANDROID_KEY_PASSWORD)
 
     # Build AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
-        export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
-        export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)
-        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait
+        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait --local-credentials
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
-        ANDROID_KEYSTORE_PASSWORD: $(ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_ALIAS: $(ANDROID_KEY_ALIAS)
-        ANDROID_KEY_PASSWORD: $(ANDROID_KEY_PASSWORD)
 
     # Build APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
-        export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
-        export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)
-        printf 'y\ny\n' | eas build --platform android --profile production --non-interactive --no-wait
+        printf 'y\ny\n' | eas build --platform android --profile production --non-interactive --no-wait --local-credentials
       displayName: 'Build Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
-        ANDROID_KEYSTORE_PASSWORD: $(ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_ALIAS: $(ANDROID_KEY_ALIAS)
-        ANDROID_KEY_PASSWORD: $(ANDROID_KEY_PASSWORD)
