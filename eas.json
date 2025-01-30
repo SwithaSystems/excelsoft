@@ -13,15 +13,14 @@
       "distribution": "internal",
       "android": {
         "buildType": "app-bundle",
-        "gradleCommand": ":app:bundleRelease",
-        "withoutCredentials": false
+        "withoutCredentials": false,
+        "autoIncrement": true
       }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
         "withoutCredentials": false
       }
     }
