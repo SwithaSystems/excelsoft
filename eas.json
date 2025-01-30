@@ -2,7 +2,8 @@
   "cli": {
     "version": ">= 5.9.1",
     "appVersionSource": "remote",
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": false,
+    "requireCommit": false
   },
   "build": {
     "development": {
@@ -13,16 +14,14 @@
       "distribution": "internal",
       "android": {
         "buildType": "app-bundle",
-        "withoutCredentials": false,
-        "autoIncrement": true,
-        "credentialsSource": "local"
+        "credentialsSource": "local",
+        "autoIncrement": true
       }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "apk",
-        "withoutCredentials": false,
         "credentialsSource": "local"
       }
     }

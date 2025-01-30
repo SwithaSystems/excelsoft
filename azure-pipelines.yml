@@ -70,7 +70,7 @@ stages:
     # Build AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait --local-credentials
+        yes | eas build --platform android --profile preview --non-interactive --no-wait
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
@@ -79,7 +79,7 @@ stages:
     # Build AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        printf 'y\ny\n' | eas build --platform android --profile preview --non-interactive --no-wait --local-credentials
+        yes | eas build --platform android --profile preview --non-interactive --no-wait
       displayName: 'Build Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
@@ -88,7 +88,7 @@ stages:
     # Build APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        printf 'y\ny\n' | eas build --platform android --profile production --non-interactive --no-wait --local-credentials
+        yes | eas build --platform android --profile production --non-interactive --no-wait
       displayName: 'Build Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
