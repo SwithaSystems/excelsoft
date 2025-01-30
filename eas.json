@@ -14,14 +14,20 @@
       "android": {
         "buildType": "app-bundle",
         "withoutCredentials": false,
-        "autoIncrement": true
+        "autoIncrement": true,
+        "credentialsSource": "local",
+        "keystorePath": "android/app/my-upload-key.keystore",
+        "keystoreAlias": "my-excelsoft-alias"
       }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "apk",
-        "withoutCredentials": false
+        "withoutCredentials": false,
+        "credentialsSource": "local",
+        "keystorePath": "android/app/my-upload-key.keystore",
+        "keystoreAlias": "my-excelsoft-alias"
       }
     }
   }
