@@ -39,15 +39,20 @@ stages:
         chmod +x android/app/my-upload-key.keystore
       displayName: 'Copy keystore'
 
-    # Create environment file with credentials
+    # Create environment files
     - script: |
+        # Create .env file
         touch .env
         echo "EXPO_TOKEN=$(EXPO_TOKEN)" >> .env
-        echo "ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore" >> .env
         echo "ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)" >> .env
         echo "ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)" >> .env
         echo "ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)" >> .env
-      displayName: 'Create environment file'
+
+        # Create eas.env file
+        touch eas.env
+        echo "ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore" >> eas.env
+        echo "ANDROID_KEY_ALIAS=my-excelsoft-alias" >> eas.env
+      displayName: 'Create environment files'
 
     # Verify Expo login
     - script: |
@@ -60,7 +65,6 @@ stages:
     # Build AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore
         export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
         export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
         export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)
@@ -76,7 +80,6 @@ stages:
     # Build AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore
         export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
         export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
         export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)
@@ -92,7 +95,6 @@ stages:
     # Build APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        export ANDROID_KEYSTORE_PATH=android/app/my-upload-key.keystore
         export ANDROID_KEYSTORE_PASSWORD=$(ANDROID_KEYSTORE_PASSWORD)
         export ANDROID_KEY_ALIAS=$(ANDROID_KEY_ALIAS)
         export ANDROID_KEY_PASSWORD=$(ANDROID_KEY_PASSWORD)

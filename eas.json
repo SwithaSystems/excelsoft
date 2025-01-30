@@ -15,9 +15,7 @@
         "buildType": "app-bundle",
         "withoutCredentials": false,
         "autoIncrement": true,
-        "credentialsSource": "local",
-        "keystorePath": "android/app/my-upload-key.keystore",
-        "keystoreAlias": "my-excelsoft-alias"
+        "credentialsSource": "local"
       }
     },
     "production": {
@@ -25,9 +23,7 @@
       "android": {
         "buildType": "apk",
         "withoutCredentials": false,
-        "credentialsSource": "local",
-        "keystorePath": "android/app/my-upload-key.keystore",
-        "keystoreAlias": "my-excelsoft-alias"
+        "credentialsSource": "local"
       }
     }
   }
