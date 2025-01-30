@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brandlogo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.switha.helloworldapp",
@@ -32,7 +32,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/brandlogo.png"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
@@ -45,7 +45,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "449d31e8-060f-4a3c-ac41-eaf4332bec85"
+        "projectId": "aea6cfd3-263e-485d-b179-a859b7197f9e"
       }
     },
     "owner": "sudhaswitha"
