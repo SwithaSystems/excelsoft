@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "ExcelSoft App",
-    "slug": "hello-world-app",
+    "slug": "excelsoft-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/brandlogo.png",
