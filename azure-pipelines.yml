@@ -75,12 +75,20 @@ stages:
     # Build and Download AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        # Start build and get build ID
-        BUILD_ID=$(yes | eas build --platform android --profile preview --non-interactive --json | jq -r '.id')
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract build ID using grep and cut instead of jq
+        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
         echo "Build ID: $BUILD_ID"
         
-        # Wait for build to complete and download
-        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+        # Wait for build to complete
+        yes | eas build:wait --id $BUILD_ID --non-interactive
+        
+        # Download the artifact
+        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
       displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
@@ -89,12 +97,20 @@ stages:
     # Build and Download AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        # Start build and get build ID
-        BUILD_ID=$(yes | eas build --platform android --profile preview --non-interactive --json | jq -r '.id')
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract build ID using grep and cut instead of jq
+        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
         echo "Build ID: $BUILD_ID"
         
-        # Wait for build to complete and download
-        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+        # Wait for build to complete
+        yes | eas build:wait --id $BUILD_ID --non-interactive
+        
+        # Download the artifact
+        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
       displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
@@ -103,12 +119,20 @@ stages:
     # Build and Download APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        # Start build and get build ID
-        BUILD_ID=$(yes | eas build --platform android --profile production --non-interactive --json | jq -r '.id')
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile production --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract build ID using grep and cut instead of jq
+        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
         echo "Build ID: $BUILD_ID"
         
-        # Wait for build to complete and download
-        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-production.apk --non-interactive
+        # Wait for build to complete
+        yes | eas build:wait --id $BUILD_ID --non-interactive
+        
+        # Download the artifact
+        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-production.apk --non-interactive
       displayName: 'Build and Download Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
