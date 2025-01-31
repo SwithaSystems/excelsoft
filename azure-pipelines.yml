@@ -80,15 +80,18 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract build ID using grep and cut instead of jq
-        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
-        echo "Build ID: $BUILD_ID"
+        # Extract artifact URL using grep and sed
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        echo "Artifact URL: $ARTIFACT_URL"
         
-        # Wait for build to complete
-        yes | eas build:wait --id $BUILD_ID --non-interactive
-        
-        # Download the artifact
-        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ]; then
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
       displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
@@ -102,15 +105,18 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract build ID using grep and cut instead of jq
-        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
-        echo "Build ID: $BUILD_ID"
+        # Extract artifact URL using grep and sed
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        echo "Artifact URL: $ARTIFACT_URL"
         
-        # Wait for build to complete
-        yes | eas build:wait --id $BUILD_ID --non-interactive
-        
-        # Download the artifact
-        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ]; then
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
       displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
@@ -124,15 +130,18 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile production --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract build ID using grep and cut instead of jq
-        BUILD_ID=$(echo "$BUILD_OUTPUT" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
-        echo "Build ID: $BUILD_ID"
+        # Extract artifact URL using grep and sed
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        echo "Artifact URL: $ARTIFACT_URL"
         
-        # Wait for build to complete
-        yes | eas build:wait --id $BUILD_ID --non-interactive
-        
-        # Download the artifact
-        yes | eas artifact:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-production.apk --non-interactive
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ]; then
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-production.apk "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-production.apk"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
       displayName: 'Build and Download Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
