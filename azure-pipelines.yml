@@ -72,7 +72,7 @@ stages:
         mkdir -p $(Build.ArtifactStagingDirectory)/android
       displayName: 'Create artifacts directory'
 
-    # Build and Download APK (Testing) for feature/ci-cd branch
+    # Build and Download AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
         
@@ -87,13 +87,13 @@ stages:
         # Download the artifact using curl
         if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
           echo "Downloading from: $ARTIFACT_URL"
-          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.apk "$ARTIFACT_URL"
-          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.apk"
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
         else
           echo "Error: Could not extract artifact URL"
           exit 1
         fi
-      displayName: 'Build and Download Android APK for Testing'
+      displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
