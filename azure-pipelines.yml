@@ -67,29 +67,57 @@ stages:
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
-    # Build AAB (Internal Testing) for feature/ci-cd branch
+    # Create artifacts directory
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/android
+      displayName: 'Create artifacts directory'
+
+    # Build and Download AAB (Internal Testing) for feature/ci-cd branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        yes | eas build --platform android --profile preview --non-interactive --no-wait
-      displayName: 'Build Android App Bundle for Internal Testing'
+        # Start build and get build ID
+        BUILD_ID=$(yes | eas build --platform android --profile preview --non-interactive --json | jq -r '.id')
+        echo "Build ID: $BUILD_ID"
+        
+        # Wait for build to complete and download
+        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+      displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
-    # Build AAB (Internal Testing) for develop branch
+    # Build and Download AAB (Internal Testing) for develop branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        yes | eas build --platform android --profile preview --non-interactive --no-wait
-      displayName: 'Build Android App Bundle for Internal Testing'
+        # Start build and get build ID
+        BUILD_ID=$(yes | eas build --platform android --profile preview --non-interactive --json | jq -r '.id')
+        echo "Build ID: $BUILD_ID"
+        
+        # Wait for build to complete and download
+        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-preview.aab --non-interactive
+      displayName: 'Build and Download Android App Bundle for Internal Testing'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
-    # Build APK (Production) for main branch
+    # Build and Download APK (Production) for main branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        yes | eas build --platform android --profile production --non-interactive --no-wait
-      displayName: 'Build Android APK for Production'
+        # Start build and get build ID
+        BUILD_ID=$(yes | eas build --platform android --profile production --non-interactive --json | jq -r '.id')
+        echo "Build ID: $BUILD_ID"
+        
+        # Wait for build to complete and download
+        yes | eas build:download --build-id $BUILD_ID --output $(Build.ArtifactStagingDirectory)/android/app-production.apk --non-interactive
+      displayName: 'Build and Download Android APK for Production'
       condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
+
+    # Publish build artifacts
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'app-builds'
+        publishLocation: 'Container'
+      displayName: 'Publish Build Artifacts'
