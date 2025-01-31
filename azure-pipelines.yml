@@ -80,12 +80,13 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract artifact URL using grep and sed
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
         echo "Artifact URL: $ARTIFACT_URL"
         
         # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ]; then
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
           curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
           echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
         else
@@ -105,12 +106,13 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract artifact URL using grep and sed
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
         echo "Artifact URL: $ARTIFACT_URL"
         
         # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ]; then
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
           curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
           echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
         else
@@ -130,12 +132,13 @@ stages:
         BUILD_OUTPUT=$(yes | eas build --platform android --profile production --non-interactive --json)
         echo "Build output: $BUILD_OUTPUT"
         
-        # Extract artifact URL using grep and sed
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"applicationArchiveUrl":"[^"]*"' | sed 's/"applicationArchiveUrl":"\(.*\)"/\1/')
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
         echo "Artifact URL: $ARTIFACT_URL"
         
         # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ]; then
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
           curl -L -o $(Build.ArtifactStagingDirectory)/android/app-production.apk "$ARTIFACT_URL"
           echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-production.apk"
         else
