@@ -7,8 +7,10 @@ import styles from './searchResultsScreenStyles';
 import products from '../../data/products';
 import colors from '../config/colors';
 import Header from '@/components/Header';
+import CategoryBadges from "./Components/CategoryBadges";
 
 const SearchResultsScreen = () => {
+  const [fromSearch, setFromSearch] = React.useState(false);
   const { query } = useLocalSearchParams();
   const router = useRouter();
 
@@ -43,12 +45,18 @@ const SearchResultsScreen = () => {
     );
   };
 
+  const renderCategoryBadges = ()=>{
+    return (
+      <CategoryBadges />
+    )
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <Header headerText={"Search Results"}/>
-      <Text style={styles.resultsCount}>
-        {filteredProducts.length} search results for "{query}"
-      </Text>
+      <Header headerText={fromSearch ? "Search Results" : "Category Name"}/>
+      {fromSearch ? <Text style={styles.resultsCount}>
+        `${filteredProducts.length} search results for ${query}`
+      </Text> : renderCategoryBadges()}
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
         <FlatList
           data={filteredProducts}

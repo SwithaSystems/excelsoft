@@ -205,7 +205,8 @@ const LayoutContent = () => {
             name={containers.dashBoardScreenScreen}
             options={{ headerShown: false }}
           />
-        </Stack>
+          <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
+</Stack>
       )}
     </>
   );

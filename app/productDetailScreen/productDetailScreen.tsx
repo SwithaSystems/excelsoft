@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
-import styles from "./productDetailScreenStyles";
-import colors from "../config/colors";
-import Button from "../../components/commonComponents/Button";
-import Star from "../../components/Star";
-import products from "../../data/products";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import Button from "../../components/commonComponents/Button";
+import ProductRating from "../../components/ProductRating";
+import products from "../../data/products";
+import colors from "../config/colors";
+import styles from "./productDetailScreenStyles";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -27,7 +26,7 @@ const ProductDetailScreen = () => {
     );
   }
 
-  const renderStars = (rating: number) => {
+  /* const renderStars = (rating: number) => {
     return (
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -35,12 +34,12 @@ const ProductDetailScreen = () => {
         ))}
       </View>
     );
-  };
+  }; */
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        <Header headerText={"About the Product"}/>
+        <Header headerText={"About the Product"} />
         <View style={styles.imageContainer}>
           <Image
             source={product.image}
@@ -100,37 +99,24 @@ const ProductDetailScreen = () => {
               onPress={() => {}}
               style={styles.button}
             />
-            <Button title="Buy Now" onPress={() => {}} style={styles.button} />
+            {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
           </View>
         </View>
 
         <View style={styles.reviewsSection}>
           <Text style={styles.reviewsTitle}>What do Customers say?</Text>
           {product.reviews.map((review) => (
-            <View key={review.id} style={styles.reviewItem}>
-              <View style={styles.reviewHeader}>
-                <Image
-                  source={require("../../assets/teddy.png")}
-                  style={styles.reviewerImage}
-                />
-                <View>
-                  <Text style={styles.reviewerName}>{review.name}</Text>
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text style={styles.reviewTextShort}>{review.review}</Text>
-
-                {renderStars(review.rating)}
-              </View>
-              <Text style={styles.reviewText}>{review.text}</Text>
-            </View>
+            <ProductRating key={review.id} review={review} />
           ))}
-          <TouchableOpacity style={styles.seeMoreButton}>
+          <TouchableOpacity
+            style={styles.seeMoreButton}
+            onPress={() =>
+              router.push({
+                pathname: "/reviewsScreen/reviewsScreen",
+                params: { productId: product.id },
+              })
+            }
+          >
             <Text style={styles.seeMoreText}>See More Reviews</Text>
           </TouchableOpacity>
         </View>

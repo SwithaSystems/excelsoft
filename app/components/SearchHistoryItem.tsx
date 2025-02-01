@@ -13,7 +13,7 @@ const SearchHistoryItem = ({ searchText, onRemove, onSelect }: SearchHistoryItem
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.leftContent} onPress={() => onSelect(searchText)}>
-        <Ionicons name="time-outline" size={20} color={colors.secondary} />
+        <Ionicons name="time-outline" size={24} color={colors.secondary} />
         <Text style={styles.searchText}>{searchText}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onRemove}>
@@ -28,18 +28,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 6,
     paddingHorizontal: 15,
   },
   leftContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   searchText: {
     fontSize: 16,
     color: colors.black,
-    marginLeft: 10,
+    //marginLeft: 10,
   },
 });
 

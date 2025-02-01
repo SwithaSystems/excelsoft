@@ -16,7 +16,7 @@ function Header(props) {
   return (
     <>
       {props.headerText && (
-        <View style={styles.header}>
+        <View style={[styles.header, props?.headerStyle]}>
           <View style={{ position: "absolute", left: 16, top: 16, zIndex: 1 }}>
             <BackArrow />
           </View>

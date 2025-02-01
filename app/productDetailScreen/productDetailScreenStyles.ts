@@ -89,12 +89,12 @@ const styles = StyleSheet.create({
   quantitySection: {
     marginBottom: 24,
     flexDirection: 'row',
-    justifyContent:'space-between'
+    justifyContent:'space-between',
+    alignItems:"center"
   },
   quantityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
   },
   quantityControl: {
     flexDirection: 'row',
@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    gap: 38,
-    paddingHorizontal: 16,
+   // gap: 38,
+    //paddingHorizontal: 16,
   },
   button: {
     flex: 1,
@@ -124,52 +124,20 @@ const styles = StyleSheet.create({
   reviewsSection: {
     marginTop: 24,
     paddingHorizontal: 16,
-  },
-  reviewsTitle: {
+  }, reviewsTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
-  },
-  reviewItem: {
-    marginBottom: 16,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  reviewerImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  reviewerName: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  reviewTextShort: {
-    fontSize: 14,
-    color: colors.black,
-    fontWeight:'bold',
-    lineHeight: 20,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: colors.black,
-    lineHeight: 20,
   },
   seeMoreButton: {
     alignItems: 'center',
-    padding: 16,
+    padding: 8,
+    borderTopWidth: 1,      
+    borderBottomWidth: 1,   
+    borderColor: colors.black, 
   },
   seeMoreText: {
-    color: colors.primary,
+    color: colors.black,
     fontSize: 16,
     fontWeight: '500',
   }

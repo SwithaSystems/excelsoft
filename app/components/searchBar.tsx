@@ -41,7 +41,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 8,
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginTop: 8,
+    marginBottom: 16
   },
   searchInput: {
     flex: 1,
