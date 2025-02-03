@@ -356,8 +356,6 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 10,
     alignItems: "center",
-    height: 230,
-    width: 408,
   },
   bannerTitle: {
     color: "white",
