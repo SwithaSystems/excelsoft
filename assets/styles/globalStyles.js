@@ -32,4 +32,7 @@ export const globalStyles = StyleSheet.create({
   mb_3: {
     marginBottom: 16,
   },
+  pt_0: {
+    paddingTop: 0,
+  },
 });

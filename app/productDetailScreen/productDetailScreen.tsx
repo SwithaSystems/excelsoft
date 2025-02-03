@@ -96,7 +96,12 @@ const ProductDetailScreen = () => {
           <View style={styles.buttonsContainer}>
             <Button
               title="Add To Cart"
-              onPress={() => {}}
+              onPress={() => {
+                router.push({
+                  pathname: "/cartScreen/cartScreen",
+                  params: { productId: product.id },
+                });
+              }}
               style={styles.button}
             />
             {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
