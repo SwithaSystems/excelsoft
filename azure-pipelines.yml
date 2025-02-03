@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
       - main
-      - develop
+      - development
       - feature/ci-cd
 
 pool:
@@ -98,7 +98,7 @@ stages:
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
-    # Build and Download AAB (Internal Testing) for develop branch
+    # Build and Download AAB (Internal Testing) for development branch
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
         
@@ -120,7 +120,7 @@ stages:
           exit 1
         fi
       displayName: 'Build and Download Android App Bundle for Internal Testing'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/development'))
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
 
