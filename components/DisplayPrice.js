@@ -1,17 +1,39 @@
+import colors from "@/app/config/colors";
 import React from "react";
-import { Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 function DisplayPrice(props) {
   return (
     <>
-      <Text style={props.priceStyle}>${props?.price.toFixed(2)}</Text>
-      {props?.price.toFixed(2) - props?.originalPrice.toFixed(2) != 0 && (
-        <Text style={props.strikeOffPriceStyle}>
-          {props.originalPrice.toFixed(2)}
+      <View style={props?.priceContainerStyle || styles.priceContainerStyle}>
+        <Text style={props?.priceStyle || styles.price}>
+          ${props?.price?.toFixed(2)}
         </Text>
-      )}
+        {props?.originalPrice &&
+          props?.price.toFixed(2) - props?.originalPrice.toFixed(2) != 0 && (
+            <Text style={props?.strikeOffPriceStyle || styles.originalPrice}>
+              ${props.originalPrice.toFixed(2)}
+            </Text>
+          )}
+      </View>
     </>
   );
 }
-
+const styles = StyleSheet.create({
+  priceContainerStyle: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  originalPrice: {
+    fontSize: 14,
+    color: colors.secondaryText,
+    textDecorationLine: "line-through",
+    marginLeft: 6,
+  },
+});
 export default DisplayPrice;

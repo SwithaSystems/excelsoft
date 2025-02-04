@@ -8,4 +8,5 @@ export default {
   reviewsColor: "#6E6F76",
   lightSkyBlue: "#E9F3F6",
   secondary: "#CEF1F9",
+  secondaryText: "#7E8A8C",
 };
