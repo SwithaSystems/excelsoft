@@ -51,30 +51,22 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     backgroundColor: "white",
-    padding: 20,
+    paddingHorizontal: 34,
+    paddingTop: 50,
+    paddingBottom: 16,
     borderRadius: 8,
     alignItems: "center",
+    maxWidth: "80%"
   },
   modalButtons: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  deleteButton: {
-    backgroundColor: "red",
-    padding: 10,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  saveForLaterButton: {
-    backgroundColor: "lightgray",
-    padding: 10,
-    borderRadius: 5,
+    marginTop: 16,
+    width: "70%"
   },
 
   savedItem: {
