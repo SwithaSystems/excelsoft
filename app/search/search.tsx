@@ -105,17 +105,12 @@ const SearchScreen = () => {
 
       {/* Search Input */}
       <View  style={{ paddingHorizontal: 16 }}>
-        <CustomTextInput
+        <SearchBar
           placeholder="Search..."
           value={searchQuery}
-          setValue={setSearchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
           onPress={handleSearch}
-          iconName='search'
-          iconType='Ionic'
-          containerStyle={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
         />
       </View>
 

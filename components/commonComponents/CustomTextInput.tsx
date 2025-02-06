@@ -22,7 +22,7 @@ interface Props {
 export const CustomTextInput = (props: Props) => {
     return (
 
-        <View style={[styles.textInput, props?.containerStyle, {alignItems: props.iconName ? "center" : undefined, justifyContent: props.iconName ? "space-between" : undefined,}]}>
+        <View style={[styles.textInput, props?.containerStyle,]}>
             <TextInput
                 placeholder={props.placeholder}
                 value={props.value}
