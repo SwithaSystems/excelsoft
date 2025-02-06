@@ -12,10 +12,12 @@ function OrderSummary(props) {
   };
   return (
     <>
-      <View style={styles.orderSummary}>
-        <Text style={props.sectionHeadingStyle || styles.summaryText}>
-          Order Details
-        </Text>
+      <View style={[styles.orderSummary, props?.containerStyle]}>
+        {!props?.hideHeading && (
+          <Text style={props.sectionHeadingStyle || styles.summaryText}>
+            Order Details
+          </Text>
+        )}
         <View style={styles.summaryItem}>
           <Text style={styles.summaryName}>Item Name</Text>
           <Text style={styles.summaryQuantity}>Total Items</Text>

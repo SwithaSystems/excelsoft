@@ -127,7 +127,7 @@ const ProductDetailScreen = () => {
         </View>
       </ScrollView>
 
-      <Footer activeTab="home" />
+      <Footer navigation={router} activeTab="home" />
     </View>
   );
 };

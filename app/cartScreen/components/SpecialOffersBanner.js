@@ -2,12 +2,11 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Or your preferred icon library
 import colors from "../../config/colors";
+import { router } from "expo-router";
 
 const SpecialOffersBanner = () => {
   return (
     <View style={styles.banner}>
-      {" "}
-      {/* Removed TouchableOpacity from here */}
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <Ionicons name="gift-outline" size={30} color="white" />
@@ -20,11 +19,11 @@ const SpecialOffersBanner = () => {
           <TouchableOpacity
             style={styles.checkButton}
             onPress={() => {
-              /* Your navigation logic here */
+              router.push({
+                pathname: "/offersScreen/offersScreen",
+              });
             }}
           >
-            {" "}
-            {/* Added TouchableOpacity here */}
             <Text style={styles.checkButtonText}>Check</Text>
           </TouchableOpacity>
         </View>

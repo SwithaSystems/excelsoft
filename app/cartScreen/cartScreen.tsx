@@ -22,6 +22,7 @@ import products from "@/data/products";
 import SavedLaterItem from "./components/SavedLaterItem";
 import ConfirmationModal from "../../components/commonComponents/ConfirmationModal";
 import { router } from "expo-router";
+import Footer from "@/components/Footer";
 
 const CartScreen = () => {
   const savedItems = [
@@ -89,8 +90,6 @@ const CartScreen = () => {
 
   const confirmDelete = () => {
     alert("delete item");
-    /* setCartItems(cartItems.filter((item) => item.id !== itemToDelete.id));
-    setItemToDelete(null); */
     setIsModalVisible(false);
   };
 
@@ -164,6 +163,7 @@ const CartScreen = () => {
           handleCancel={cancelDelete}
         />
       </ScrollView>
+      <Footer navigation={router} activeTab="cart" />
     </View>
   );
 };

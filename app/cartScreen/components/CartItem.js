@@ -4,6 +4,7 @@ import DisplayPrice from "../../../components/DisplayPrice";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import colors from "@/app/config/colors";
 import Button from "@/components/commonComponents/Button";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 function CartItem(props) {
   const item = props.cartItem;
@@ -14,44 +15,68 @@ function CartItem(props) {
           <View>
             <Image source={item.image} style={styles.itemImage} />
           </View>
-          <View style={styles.itemDetails}>
-            <DisplayPrice
-              price={item.price}
-              originalPrice={item.originalPrice}
-            />
-            <Text style={styles.itemName}>{item.name}</Text>
-            <View style={styles.quantityContainer}>
-              <View style={styles.quantityActionContainer}>
-                {item.quantity && item.quantity > 0 ? (
-                  <>
-                    <TouchableOpacity onPress={() => alert("-")}>
-                      <Text style={[styles.quantityActionBtn, styles.minusBtn]}>
-                        <Feather name="minus" size={14} color={"#646464"} />
-                      </Text>
-                    </TouchableOpacity>
-                    <Text style={styles.quantityText}>{item.quantity}</Text>
-                    <TouchableOpacity onPress={() => alert("+")}>
-                      <Text style={[styles.quantityActionBtn, styles.plusBtn]}>
-                        <Feather name="plus" size={14} color={"#646464"} />
-                      </Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <Button
-                    style={{ paddingVertical: 10 }}
-                    onPress={() => {}}
-                    title="Add"
+          {props?.hideActions ? (
+            <>
+              <View
+                style={[
+                  globalStyles.pl_3,
+                  { height: "100%", justifyContent: "center" },
+                ]}
+              >
+                <Text style={globalStyles.h6}>{item.name}</Text>
+                <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
+                <Text style={globalStyles.h6}>
+                  <DisplayPrice
+                    price={item.price}
+                    originalPrice={item.originalPrice}
                   />
-                )}
+                </Text>
               </View>
-              <TouchableOpacity onPress={() => props.handleDelete(item)}>
-                <Ionicons name="trash-outline" size={24} color="gray" />
+            </>
+          ) : (
+            <View style={styles.itemDetails}>
+              <DisplayPrice
+                price={item.price}
+                originalPrice={item.originalPrice}
+              />
+              <Text style={styles.itemName}>{item.name}</Text>
+              <View style={styles.quantityContainer}>
+                <View style={styles.quantityActionContainer}>
+                  {item.quantity && item.quantity > 0 ? (
+                    <>
+                      <TouchableOpacity onPress={() => alert("-")}>
+                        <Text
+                          style={[styles.quantityActionBtn, styles.minusBtn]}
+                        >
+                          <Feather name="minus" size={14} color={"#646464"} />
+                        </Text>
+                      </TouchableOpacity>
+                      <Text style={styles.quantityText}>{item.quantity}</Text>
+                      <TouchableOpacity onPress={() => alert("+")}>
+                        <Text
+                          style={[styles.quantityActionBtn, styles.plusBtn]}
+                        >
+                          <Feather name="plus" size={14} color={"#646464"} />
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <Button
+                      style={{ paddingVertical: 10 }}
+                      onPress={() => {}}
+                      title="Add"
+                    />
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => props.handleDelete(item)}>
+                  <Ionicons name="trash-outline" size={24} color="gray" />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={() => alert(JSON.stringify(item))}>
+                <Text style={styles.saveLaterBtn}>Save for Later</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => alert(JSON.stringify(item))}>
-              <Text style={styles.saveLaterBtn}>Save for Later</Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
       </View>
     </>

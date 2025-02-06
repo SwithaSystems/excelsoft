@@ -82,7 +82,7 @@ const pickUpModescreen = () => {
             title="Continue"
             onPress={() => {
               router.push({
-                pathname: "/pickUpModescreen/pickUpModescreen",
+                pathname: "/orderSummeryScreen/orderSummeryScreen",
               });
             }}
           />

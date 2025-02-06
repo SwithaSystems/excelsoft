@@ -20,6 +20,9 @@ import products from "../../data/products";
 import SearchBar from "../components/searchBar";
 import Header from "@/components/Header";
 import RecommendedProductsSlider from "../../components/RecommendedProductsSlider";
+import ExclusiveOffers from "../../components/ExclusiveOffers";
+import HeroBanner from "../../components/HeroBanner";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 const categories = [
   {
@@ -133,18 +136,7 @@ const HomePage = () => {
     });
   };
 
-  const renderBanner = () => (
-    <View style={styles.banner}>
-      <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
-      <Text style={styles.bannerDiscount}>40-60% Discount</Text>
-      <Text style={styles.bannerText}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit
-      </Text>
-      <TouchableOpacity style={styles.shopNowButton}>
-        <Text style={styles.shopNowText}>Shop Now</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const renderBanner = () => <HeroBanner />;
 
   const handleProductDetail = () => {
     router.push({ pathname: "./productDetailScreen/productDetailScreen" });
@@ -187,58 +179,7 @@ const HomePage = () => {
     </View>
   ); */
 
-  const renderExclusiveOffers = () => (
-    <View>
-      <Text style={styles.sectionTitle}>Exclusive Offers</Text>
-      <FlatList
-        horizontal
-        data={exclusiveOffers}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.exclusiveCard}
-            onPress={() =>
-              router.push({
-                pathname: "/productDetailScreen/productDetailScreen",
-                params: { productId: item.id },
-              })
-            }
-          >
-            <Image
-              source={item.imageUrl}
-              style={styles.exclusiveImage}
-              resizeMode="cover"
-            />
-            <View style={styles.exclusiveDetails}>
-              <Text style={styles.exclusiveTitle}>{item.title}</Text>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{item.rating}</Text>
-                <Text style={styles.starIcon}> ★ </Text>
-                <Text style={styles.reviewsText}>({item.reviews})</Text>
-              </View>
-              <View style={styles.saleContainer}>
-                <View style={styles.saleTag}>
-                  <Text style={styles.saleText}>Sale</Text>
-                </View>
-                <Text style={styles.saleTime}>02:48:26</Text>
-                <View style={styles.discountTag}>
-                  <Text style={styles.discountText}>{item.discount}</Text>
-                </View>
-              </View>
-              <View style={styles.priceContainer}>
-                <Text style={styles.salePrice}>${item.price}</Text>
-                <Text style={styles.originalPrice}>${item.originalPrice}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  );
-
-  const renderBestSellers = () => (
+  /* const renderBestSellers = () => (
     <View>
       <Text style={styles.sectionTitle}>Best Sellers</Text>
       <FlatList
@@ -267,7 +208,7 @@ const HomePage = () => {
         contentContainerStyle={styles.productsList}
       />
     </View>
-  );
+  ); */
 
   const renderFeaturedProducts = () => (
     <View>
@@ -315,10 +256,18 @@ const HomePage = () => {
             source={require("../../assets/brandlogo.png")}
             style={homeStyles.logo}
           />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: 8 }}>Hello, User</Text>
-            <Ionicons name="person-circle-outline" size={24} color="#000" />
-          </View>
+          <TouchableOpacity
+            onPress={() => {
+              router.push({
+                pathname: "/userProfileScreen/userProfileScreen",
+              });
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ marginRight: 8 }}>Hello, User</Text>
+              <Ionicons name="person-circle-outline" size={24} color="#000" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
@@ -346,7 +295,8 @@ const HomePage = () => {
         />
 
         {/* Banner */}
-        {renderBanner()}
+
+        <View style={{ margin: 10 }}>{renderBanner()}</View>
 
         {/* Recommended Products */}
         {
@@ -358,10 +308,17 @@ const HomePage = () => {
         }
 
         {/* Exclusive Offers */}
-        {renderExclusiveOffers()}
+        <View style={globalStyles.px_3}>
+          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+        </View>
 
         {/* Best Sellers */}
-        {renderBestSellers()}
+        {/* {renderBestSellers()} */}
+        <RecommendedProductsSlider
+          recommendedProducts={bestSellers}
+          sectionTitleStyle={styles.sectionTitle}
+          title="Best Sellers"
+        />
 
         {/* Featured Products */}
         {renderFeaturedProducts()}
@@ -374,45 +331,6 @@ const HomePage = () => {
 };
 
 const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: "#2E2A5C",
-    borderRadius: 20,
-    padding: 20,
-    margin: 10,
-    alignItems: "center",
-    height: 230,
-    width: 408,
-  },
-  bannerTitle: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  bannerDiscount: {
-    color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  bannerText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  shopNowButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 25,
-  },
-  shopNowText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
-  },
   recommendedCard: {
     width: 160,
     height: 180,
@@ -435,96 +353,7 @@ const styles = StyleSheet.create({
   recommendedDetails: {
     marginLeft: 16,
   },
-  exclusiveCard: {
-    width: 240,
-    height: 400,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  exclusiveImage: {
-    width: "100%",
-    height: 250,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  exclusiveDetails: {
-    padding: 16,
-  },
 
-  exclusiveTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: colors.black,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: colors.reviewsColor,
-    marginLeft: 16,
-  },
-  starIcon: {
-    color: colors.reviewsColor,
-    fontSize: 14,
-  },
-  reviewsText: {
-    fontSize: 14,
-    color: colors.reviewsColor,
-  },
-  saleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  saleTag: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  saleText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  saleTime: {
-    color: colors.primary,
-    fontSize: 14,
-    marginRight: 8,
-  },
-  discountTag: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  discountText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  priceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-    gap: 10,
-  },
-  salePrice: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  originalPrice: {
-    fontSize: 14,
-    textDecorationLine: "line-through",
-    color: colors.black,
-  },
   bestSellerCard: {
     width: 160,
     marginRight: 15,
@@ -569,8 +398,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 20,
     marginVertical: 10,
     marginLeft: 10,
   },
