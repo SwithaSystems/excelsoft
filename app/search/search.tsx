@@ -16,6 +16,7 @@ import CategoryItem from '../components/CategoryItem';
 import SearchBar from '../components/searchBar';
 import Header from '@/components/Header';
 import useDebounce from '../../utilities/customHooks/useDebounce';
+import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 
 
 const recentSearches = [
@@ -103,13 +104,18 @@ const SearchScreen = () => {
       <Header headerText={"Search"}/>
 
       {/* Search Input */}
-      <View>
-        <SearchBar
+      <View  style={{ paddingHorizontal: 16 }}>
+        <CustomTextInput
           placeholder="Search..."
           value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearch}
+          setValue={setSearchQuery}
           onPress={handleSearch}
+          iconName='search'
+          iconType='Ionic'
+          containerStyle={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
         />
       </View>
 
