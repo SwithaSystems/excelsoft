@@ -23,6 +23,10 @@ const userProfileScreen = () => {
     firstName: "Katleena",
     lastName: "Dennis",
   };
+
+  const handleLinkRedirection = (link: any) => {
+    router.push({ pathname: link });
+  };
   return (
     <View style={globalStyles.container}>
       <Header headerText="User Profile" />
@@ -40,9 +44,7 @@ const userProfileScreen = () => {
           <TouchableOpacity
             style={styles.editProfile}
             onPress={() => {
-              router.push({
-                pathname: "/editProfileScreen/editProfileScreen",
-              });
+              handleLinkRedirection("/editProfileScreen/editProfileScreen");
             }}
           >
             <Text style={styles.editText}>Edit Profile</Text>
@@ -53,17 +55,27 @@ const userProfileScreen = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
-                router.push({ pathname: "/myOrderScreen/myOrderScreen" });
+                handleLinkRedirection("/myOrderScreen/myOrderScreen");
               }}
             >
               <FontAwesome name="briefcase" size={32} color={colors.primary} />
               <Text style={styles.actionText}>Your Orders</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => {
+                handleLinkRedirection("savedItemScreen/savedItemScreen");
+              }}
+            >
               <FontAwesome name="heart" size={32} color={colors.primary} />
               <Text style={styles.actionText}>Saved Items</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => {
+                handleLinkRedirection("/savedAddressScreen/savedAddressScreen");
+              }}
+            >
               <FontAwesome name="map-marker" size={32} color={colors.primary} />
               <Text style={styles.actionText}>Saved Address</Text>
             </TouchableOpacity>
@@ -84,7 +96,7 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  router.push({ pathname: settingsMenu[eachSetting] });
+                  handleLinkRedirection(settingsMenu[eachSetting]);
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>

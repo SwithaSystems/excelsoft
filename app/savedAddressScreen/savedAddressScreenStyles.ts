@@ -1,15 +1,38 @@
 import { StyleSheet } from 'react-native';
+import colors from '../config/colors';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    marginBottom: 16,
   },
-  text: {
-    fontSize: 12,
-    color: 'black',
+  addressContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.black,
+    flexDirection: "row",
+    justifyContent:"space-between",
+    alignItems: "flex-start"
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  name: {
+    fontSize: 16,
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  addressList:{
+    paddingHorizontal: 26,
   }
 });
 

@@ -73,7 +73,9 @@ function CartItem(props) {
                 </TouchableOpacity>
               </View>
               <TouchableOpacity onPress={() => alert(JSON.stringify(item))}>
-                <Text style={styles.saveLaterBtn}>Save for Later</Text>
+                <Text style={styles.saveLaterBtn}>
+                  {props.footerBtnText || "Save for Later"}
+                </Text>
               </TouchableOpacity>
             </View>
           )}
