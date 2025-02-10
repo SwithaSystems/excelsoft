@@ -22,8 +22,6 @@ const ProductCard = ({
   price,
   originalPrice,
   imageUrl,
-  saleEndsAt,
-  discount,
   onPress,
 }: ProductCardProps) => {
   const isRemoteImage = typeof imageUrl === 'string';
