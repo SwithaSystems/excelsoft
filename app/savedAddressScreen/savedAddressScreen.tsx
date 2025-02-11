@@ -12,6 +12,8 @@ import {
 import styles from "./savedAddressScreenStyles";
 import Button from "@/components/commonComponents/Button";
 import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const savedAddressScreen = () => {
   const addressData = [
@@ -60,9 +62,7 @@ const savedAddressScreen = () => {
           <TouchableOpacity
             style={{ marginRight: 12 }}
             onPress={() => {
-              router.push({
-                pathname: "/editAddressScreen/editAddressScreen",
-              });
+              redirectToPage(containers.editAddressScreenScreen);
             }}
           >
             <Ionicons name="create-outline" size={24} color="black" />
@@ -102,9 +102,7 @@ const savedAddressScreen = () => {
           <Button
             title="Add New Address"
             onPress={() => {
-              router.push({
-                pathname: "/editAddressScreen/editAddressScreen",
-              });
+              redirectToPage(containers.editAddressScreenScreen);
             }}
           />
         </View>

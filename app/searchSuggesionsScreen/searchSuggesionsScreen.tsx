@@ -1,33 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import SearchBar from '../components/searchBar';
-import colors from '../config/colors';
-import { Ionicons } from '@expo/vector-icons';
-import Header from '@/components/Header';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import SearchBar from "../components/searchBar";
+import colors from "../config/colors";
+import { Ionicons } from "@expo/vector-icons";
+import Header from "@/components/Header";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const suggestions = [
-  'baby toys',
-  'baby wipes',
-  'baby gel',
-  'baby boy dresses',
-  'baby food',
-  'baby stroller',
-  'baby clothes',
-  'baby girl dresses',
-  'baby care',
-  'baby powder',
-  'baby oil',
-  'baby shampoo',
+  "baby toys",
+  "baby wipes",
+  "baby gel",
+  "baby boy dresses",
+  "baby food",
+  "baby stroller",
+  "baby clothes",
+  "baby girl dresses",
+  "baby care",
+  "baby powder",
+  "baby oil",
+  "baby shampoo",
 ];
 
 const SearchSuggestionsScreen = () => {
   const params = useLocalSearchParams();
-  const [searchQuery, setSearchQuery] = useState(params.query as string || '');
+  const [searchQuery, setSearchQuery] = useState(
+    (params.query as string) || ""
+  );
   const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions);
 
   useEffect(() => {
-    const filtered = suggestions.filter(suggestion =>
+    const filtered = suggestions.filter((suggestion) =>
       suggestion.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredSuggestions(filtered);
@@ -35,24 +39,20 @@ const SearchSuggestionsScreen = () => {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      router.push({
-        pathname: "/searchResultsScreen/searchResultsScreen",
-        params: { query: searchQuery }
+      redirectToPage(containers.searchResultsScreenScreen, {
+        query: searchQuery,
       });
     }
   };
 
   const handleSuggestionPress = (suggestion: string) => {
     setSearchQuery(suggestion);
-    router.push({
-      pathname: "/searchResultsScreen/searchResultsScreen",
-      params: { query: suggestion }
-    });
+    redirectToPage(containers.searchResultsScreenScreen, { query: suggestion });
   };
 
   return (
     <View style={styles.container}>
-      <Header headerText={"Search Page"}/>
+      <Header headerText={"Search Page"} />
 
       <View style={styles.searchContainer}>
         <SearchBar
@@ -66,10 +66,13 @@ const SearchSuggestionsScreen = () => {
 
       <View style={styles.suggestionsList}>
         {filteredSuggestions.map((suggestion, index) => (
-          <TouchableOpacity key={index} onPress={() => handleSuggestionPress(suggestion)}>
+          <TouchableOpacity
+            key={index}
+            onPress={() => handleSuggestionPress(suggestion)}
+          >
             <View style={styles.suggestionContainer}>
-           <Ionicons name="search" size={20} color={colors.primary} />
-            <Text style={styles.suggestion}>{suggestion}</Text>
+              <Ionicons name="search" size={20} color={colors.primary} />
+              <Text style={styles.suggestion}>{suggestion}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -85,16 +88,16 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     paddingTop: 50,
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 80,
-    alignSelf: 'center'
+    alignSelf: "center",
   },
   searchContainer: {
     marginRight: 16,
@@ -103,14 +106,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   suggestionContainer: {
-    flexDirection:'row', alignItems:'center', gap:12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.secondary,
   },
   suggestion: {
     padding: 16,
-   
-  }
+  },
 });
 
 export default SearchSuggestionsScreen;

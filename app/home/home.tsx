@@ -23,6 +23,8 @@ import RecommendedProductsSlider from "../../components/RecommendedProductsSlide
 import ExclusiveOffers from "../../components/ExclusiveOffers";
 import HeroBanner from "../../components/HeroBanner";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const categories = [
   {
@@ -130,17 +132,7 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const handleSearchSubmit = () => {
-    router.push({
-      pathname: "./search/search",
-    });
-  };
-
   const renderBanner = () => <HeroBanner />;
-
-  const handleProductDetail = () => {
-    router.push({ pathname: "./productDetailScreen/productDetailScreen" });
-  };
 
   /* const renderRecommendedProducts = () => (
     <View>
@@ -220,9 +212,8 @@ const HomePage = () => {
           <TouchableOpacity
             style={styles.featuredCard}
             onPress={() =>
-              router.push({
-                pathname: "/productDetailScreen/productDetailScreen",
-                params: { productId: item.id },
+              redirectToPage(containers.productDetailScreenScreen, {
+                productId: item.id,
               })
             }
           >
@@ -258,9 +249,7 @@ const HomePage = () => {
           />
           <TouchableOpacity
             onPress={() => {
-              router.push({
-                pathname: "/userProfileScreen/userProfileScreen",
-              });
+              redirectToPage(containers.userProfileScreenScreen);
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -284,9 +273,8 @@ const HomePage = () => {
               title={item.title}
               imageUrl={item.imageUrl}
               onPress={() =>
-                router.push({
-                  pathname: "./category",
-                  // params: { category: item }
+                redirectToPage(containers.searchResultsScreenScreen, {
+                  fromSearch: false,
                 })
               }
             />
@@ -325,7 +313,7 @@ const HomePage = () => {
       </ScrollView>
 
       {/* Footer */}
-      <Footer activeTab="home" />
+      <Footer navigation={router} activeTab="home" />
     </View>
   );
 };

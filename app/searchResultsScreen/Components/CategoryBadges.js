@@ -9,6 +9,8 @@ import {
 import { FontAwesome, Feather } from "@expo/vector-icons";
 import colors from "@/app/config/colors";
 import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const CategoryBadges = () => {
   const [activeFilter, setActiveFilter] = useState("All");
@@ -21,7 +23,7 @@ const CategoryBadges = () => {
     "Cribs",
     "Accessories",
     "Shoes",
-  ]; // Add more categories
+  ];
 
   return (
     <View style={styles.container}>
@@ -57,17 +59,14 @@ const CategoryBadges = () => {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => {
-              router.push({
-                pathname: "/filter/filter",
-                //params: { query: searchQuery }
-              });
+              redirectToPage(containers.filterScreen);
             }}
           >
             <Feather name="filter" size={26} color={colors.black} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.iconButton, { marginLeft: 24 }]}>
-            <Feather name="arrow-up" size={26} color={colors.black} />
+            <Feather name="" size={26} color={colors.black} />
           </TouchableOpacity>
         </View>
       </View>

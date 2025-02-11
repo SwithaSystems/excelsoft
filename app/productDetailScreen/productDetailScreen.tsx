@@ -9,6 +9,8 @@ import ProductRating from "../../components/ProductRating";
 import products from "../../data/products";
 import colors from "../config/colors";
 import styles from "./productDetailScreenStyles";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -97,10 +99,7 @@ const ProductDetailScreen = () => {
             <Button
               title="Add To Cart"
               onPress={() => {
-                router.push({
-                  pathname: "/cartScreen/cartScreen",
-                  params: { productId: product.id },
-                });
+                redirectToPage(containers.cartScreenScreen);
               }}
               style={styles.button}
             />
@@ -115,12 +114,7 @@ const ProductDetailScreen = () => {
           ))}
           <TouchableOpacity
             style={styles.seeMoreButton}
-            onPress={() =>
-              router.push({
-                pathname: "/reviewsScreen/reviewsScreen",
-                params: { productId: product.id },
-              })
-            }
+            onPress={() => redirectToPage(containers.reviewsScreenScreen)}
           >
             <Text style={styles.seeMoreText}>See More Reviews</Text>
           </TouchableOpacity>

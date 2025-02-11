@@ -11,6 +11,8 @@ import {
 import colors from "../app/config/colors";
 import DisplayPrice from "./DisplayPrice";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 function ExclusiveOffers(props) {
   const exclusiveOffers = props.exclusiveOffers || [];
@@ -25,9 +27,8 @@ function ExclusiveOffers(props) {
             <TouchableOpacity
               style={styles.exclusiveCard}
               onPress={() =>
-                router.push({
-                  pathname: "/productDetailScreen/productDetailScreen",
-                  params: { productId: item.id },
+                redirectToPage(containers.productDetailScreenScreen, {
+                  productId: item.id,
                 })
               }
             >

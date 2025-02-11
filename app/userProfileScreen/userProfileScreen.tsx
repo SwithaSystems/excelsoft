@@ -7,26 +7,24 @@ import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const userProfileScreen = () => {
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const settingsMenu = {
-    "Edit Account Information":
-      "/editAccountInformationscreen/editAccountInformationscreen",
-    "Change Password": "/changePasswordScreen/changePasswordScreen",
+    "Edit Account Information": containers.editAccountInformationscreenScreen,
+    "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": "",
-    "Customer Support": "/customerSupportScreen/customerSupportScreen",
-    Feedback: "/feedBackScreen/feedBackScreen",
+    "Customer Support": containers.customerSupportScreenScreen,
+    Feedback: containers.feedBackScreenScreen,
   };
   const user = {
     firstName: "Katleena",
     lastName: "Dennis",
   };
 
-  const handleLinkRedirection = (link: any) => {
-    router.push({ pathname: link });
-  };
   return (
     <View style={globalStyles.container}>
       <Header headerText="User Profile" />
@@ -44,7 +42,7 @@ const userProfileScreen = () => {
           <TouchableOpacity
             style={styles.editProfile}
             onPress={() => {
-              handleLinkRedirection("/editProfileScreen/editProfileScreen");
+              redirectToPage(containers.editProfileScreenScreen);
             }}
           >
             <Text style={styles.editText}>Edit Profile</Text>
@@ -55,7 +53,7 @@ const userProfileScreen = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
-                handleLinkRedirection("/myOrderScreen/myOrderScreen");
+                redirectToPage(containers.myOrderScreenScreen);
               }}
             >
               <FontAwesome name="briefcase" size={32} color={colors.primary} />
@@ -64,7 +62,7 @@ const userProfileScreen = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
-                handleLinkRedirection("savedItemScreen/savedItemScreen");
+                redirectToPage(containers.savedItemScreenScreen);
               }}
             >
               <FontAwesome name="heart" size={32} color={colors.primary} />
@@ -73,7 +71,7 @@ const userProfileScreen = () => {
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
-                handleLinkRedirection("/savedAddressScreen/savedAddressScreen");
+                redirectToPage(containers.savedAddressScreenScreen);
               }}
             >
               <FontAwesome name="map-marker" size={32} color={colors.primary} />
@@ -96,7 +94,7 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  handleLinkRedirection(settingsMenu[eachSetting]);
+                  redirectToPage(settingsMenu[eachSetting]);
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>

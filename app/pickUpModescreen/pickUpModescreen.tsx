@@ -13,6 +13,8 @@ import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/commonComponents/Button";
 import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const options = [
   {
@@ -81,9 +83,7 @@ const pickUpModescreen = () => {
           <Button
             title="Continue"
             onPress={() => {
-              router.push({
-                pathname: "/orderSummeryScreen/orderSummeryScreen",
-              });
+              redirectToPage(containers.orderSummeryScreenScreen);
             }}
           />
         </View>

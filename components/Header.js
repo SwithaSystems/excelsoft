@@ -4,14 +4,14 @@ import colors from "../app/config/colors";
 import BackArrow from "./commonComponents/BackArrow";
 import SearchBar from "@/app/components/searchBar";
 import { useRouter } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 function Header(props) {
   const router = useRouter();
 
   const handleSearchSubmit = () => {
-    router.push({
-      pathname: "./search/search",
-    });
+    redirectToPage(containers.searchScreen);
   };
   return (
     <>

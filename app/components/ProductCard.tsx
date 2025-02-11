@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import colors from '../../app/config/colors';
-import Star from '../../components/Star';
+import React from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
+import colors from "../../app/config/colors";
+import Star from "../../components/Star";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 interface ProductCardProps {
   id: string;
@@ -37,16 +39,17 @@ const ProductCard = ({
   const router = useRouter();
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.container}
-      onPress={() => router.push({
-        pathname: "/productDetailScreen/productDetailScreen",
-        params: { productId: id}
-      })}
+      onPress={() =>
+        redirectToPage(containers.productDetailScreenScreen, { productId: id })
+      }
     >
       <Image source={image} style={styles.image} />
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>{name}</Text>
+        <Text style={styles.title} numberOfLines={1}>
+          {name}
+        </Text>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>{rating}</Text>
           <Star filled={true} size={16} />
@@ -55,7 +58,9 @@ const ProductCard = ({
         <View style={styles.priceContainer}>
           <Text style={styles.saleTag}>Sale</Text>
           <Text style={styles.time}>02:48:26</Text>
-          <Text style={styles.discount}>{Math.round(((originalPrice - price) / originalPrice) * 100)}%</Text>
+          <Text style={styles.discount}>
+            {Math.round(((originalPrice - price) / originalPrice) * 100)}%
+          </Text>
 
           <Text style={styles.price}>${price}</Text>
           <Text style={styles.originalPrice}>${originalPrice}</Text>
@@ -67,16 +72,16 @@ const ProductCard = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor:colors.lightgrey,
+    backgroundColor: colors.lightgrey,
     borderRadius: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 203,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   content: {
     flex: 1,
@@ -84,29 +89,29 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
     color: colors.black,
   },
   ratingContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 4,
-    alignItems: 'center',
+    alignItems: "center",
   },
   rating: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginRight: 4,
   },
   reviews: {
     margin: 4,
     fontSize: 16,
-    color:colors.reviewsColor,
+    color: colors.reviewsColor,
   },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     padding: 4,
   },
   saleTag: {
@@ -120,34 +125,33 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.primary,
     marginRight: 6,
-    marginTop:6
+    marginTop: 6,
   },
   originalPrice: {
     fontSize: 14,
     color: colors.primary,
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,
-    marginTop:6
+    marginTop: 6,
   },
   time: {
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
     backgroundColor: colors.secondary,
-    borderRadius:5
+    borderRadius: 5,
   },
   discount: {
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
     backgroundColor: colors.secondary,
-    borderRadius:5
+    borderRadius: 5,
   },
-  
 });
 
 export default ProductCard;

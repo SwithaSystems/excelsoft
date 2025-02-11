@@ -23,6 +23,8 @@ import SavedLaterItem from "./components/SavedLaterItem";
 import ConfirmationModal from "../../components/commonComponents/ConfirmationModal";
 import { router } from "expo-router";
 import Footer from "@/components/Footer";
+import containers from "@/containers";
+import { redirectToPage } from "../../utilities/redirectionHelper";
 
 const CartScreen = () => {
   const savedItems = [
@@ -128,11 +130,7 @@ const CartScreen = () => {
           >
             <Button
               title="Place Order"
-              onPress={() =>
-                router.push({
-                  pathname: "/pickUpModescreen/pickUpModescreen",
-                })
-              }
+              onPress={() => redirectToPage(containers.pickUpModescreenScreen)}
             />
           </View>
           <SavedLaterItem

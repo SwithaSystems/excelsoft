@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import CategoryBadges from "./Components/CategoryBadges";
 
 const SearchResultsScreen = () => {
-  const [fromSearch, setFromSearch] = React.useState(true);
+  const { fromSearch } = useLocalSearchParams();
   const { query } = useLocalSearchParams();
   const router = useRouter();
 
@@ -57,8 +57,8 @@ const SearchResultsScreen = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <Header headerText={fromSearch ? "Search Results" : "Category Name"} />
-      {fromSearch ? (
+      <Header headerText={!fromSearch ? "Search Results" : "Category Name"} />
+      {!fromSearch ? (
         <Text style={styles.resultsCount}>
           {filteredProducts.length} search results for {query}
         </Text>

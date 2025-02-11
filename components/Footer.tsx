@@ -1,13 +1,15 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 const Footer = ({ navigation, activeTab }: any) => {
   return (
     <View style={styles.footer}>
       <TouchableOpacity
         style={styles.footerTab}
-        onPress={() => navigation.navigate("Home")}
+        onPress={() => redirectToPage(containers.homeScreen)}
       >
         <Ionicons
           name="home"
@@ -17,7 +19,7 @@ const Footer = ({ navigation, activeTab }: any) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.footerTab}
-        onPress={() => navigation.navigate("Cart")}
+        onPress={() => redirectToPage(containers.cartScreenScreen)}
       >
         <Ionicons
           name="cart"
@@ -27,7 +29,7 @@ const Footer = ({ navigation, activeTab }: any) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.footerTab}
-        onPress={() => navigation.navigate("Profile")}
+        onPress={() => redirectToPage(containers.userProfileScreenScreen)}
       >
         <Ionicons
           name="person"

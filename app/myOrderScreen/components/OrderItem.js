@@ -1,5 +1,7 @@
 import colors from "@/app/config/colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
@@ -10,9 +12,7 @@ function OrderItem(props) {
   return (
     <TouchableOpacity
       onPress={() => {
-        router.push({
-          pathname: "/orderDetailsScreen/orderDetailsScreen",
-        });
+        redirectToPage(containers.orderDetailsScreenScreen);
       }}
     >
       <View style={styles.orderContainer}>
@@ -39,9 +39,7 @@ function OrderItem(props) {
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
-            router.push({
-              pathname: "/deliveryTrackingScreen/deliveryTrackingScreen",
-            });
+            redirectToPage(containers.deliveryTrackingScreenScreen);
           }}
         >
           <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>

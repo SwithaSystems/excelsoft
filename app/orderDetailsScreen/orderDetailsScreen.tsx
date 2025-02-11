@@ -14,6 +14,8 @@ import { router } from "expo-router";
 import RecommendedProductsSlider from "@/components/RecommendedProductsSlider";
 import products from "@/data/products";
 import Footer from "@/components/Footer";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const orderDetailsScreen = () => {
   const recommendedProducts = products
@@ -128,10 +130,7 @@ const orderDetailsScreen = () => {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    router.push({
-                      pathname:
-                        "/deliveryTrackingScreen/deliveryTrackingScreen",
-                    });
+                    redirectToPage(containers.deliveryTrackingScreenScreen);
                   }}
                 >
                   <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Or your preferred icon library
 import colors from "../../config/colors";
 import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const SpecialOffersBanner = () => {
   return (
@@ -19,9 +21,7 @@ const SpecialOffersBanner = () => {
           <TouchableOpacity
             style={styles.checkButton}
             onPress={() => {
-              router.push({
-                pathname: "/offersScreen/offersScreen",
-              });
+              redirectToPage(containers.offersScreenScreen);
             }}
           >
             <Text style={styles.checkButtonText}>Check</Text>

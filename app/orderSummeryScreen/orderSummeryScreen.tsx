@@ -15,6 +15,8 @@ import { CheckBox } from "react-native-elements";
 import CartItem from "../cartScreen/components/CartItem";
 import OrderSummary from "@/components/OrderSummary";
 import Button from "@/components/commonComponents/Button";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const orderSummeryScreen = () => {
   const [address, setAddress] = useState("");
@@ -85,9 +87,7 @@ const orderSummeryScreen = () => {
                 a new slot.&nbsp;
                 <TouchableOpacity
                   onPress={() => {
-                    router.push({
-                      pathname: "/pickUpModescreen/pickUpModescreen",
-                    });
+                    redirectToPage(containers.pickUpModescreenScreen);
                   }}
                 >
                   <Text style={styles.changeSlotText}>Change the slot</Text>
@@ -141,9 +141,7 @@ const orderSummeryScreen = () => {
       <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
         <Button
           onPress={() => {
-            router.push({
-              pathname: "/orderSuccessfulScreen/orderSuccessfulScreen",
-            });
+            redirectToPage(containers.orderSuccessfulScreenScreen);
           }}
           title="Confirm and Checkout"
         />

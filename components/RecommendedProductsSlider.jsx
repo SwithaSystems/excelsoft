@@ -11,6 +11,8 @@ import colors from "../app/config/colors";
 import { router } from "expo-router";
 import DisplayPrice from "./DisplayPrice";
 import Button from "./commonComponents/Button";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 function RecommendedProductsSlider(props) {
   const recommendedProducts = props?.recommendedProducts;
@@ -24,9 +26,8 @@ function RecommendedProductsSlider(props) {
           <TouchableOpacity
             style={styles.recommendedCard}
             onPress={() =>
-              router.push({
-                pathname: "/productDetailScreen/productDetailScreen",
-                params: { productId: item.id },
+              redirectToPage(containers.productDetailScreenScreen, {
+                productId: item.id,
               })
             }
           >
