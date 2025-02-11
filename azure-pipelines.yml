@@ -2,25 +2,20 @@ trigger:
   branches:
     include:
       - main
-  paths:
-    exclude:
-      - '**/*.md'
+      - development
+      - feature/ci-cd
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: ExpoConfig
   - name: NODE_VERSION
     value: '18.x'
-  - name: EXPO_CLI_VERSION
-    value: '6.3.10'
 
 stages:
 - stage: Build
   jobs:
   - job: BuildApp
-    displayName: 'Build Android Apps'
     steps:
     - task: NodeTool@0
       inputs:
@@ -28,56 +23,137 @@ stages:
       displayName: 'Install Node.js'
 
     - script: |
-        npm install -g eas-cli@latest
-        npm install -g expo-cli@$(EXPO_CLI_VERSION)
-      displayName: 'Install EAS CLI and Expo CLI'
-
-    - script: |
+        npm install -g eas-cli
         npm install
-      displayName: 'Install Dependencies'
+      displayName: 'Install dependencies'
 
     - task: DownloadSecureFile@1
-      name: keystorefile
-      displayName: 'Download Keystore'
+      name: keystoreFile
       inputs:
-        secureFile: 'keystore.jks'
+        secureFile: 'my-upload-key.keystore'
+      displayName: 'Download Keystore file'
 
     - script: |
-        # Create credentials directory
-        mkdir -p credentials/android
-        # Copy the keystore to the correct location
-        cp $(keystorefile.secureFilePath) credentials/android/keystore.jks
-      displayName: 'Setup Android Credentials'
-      
+        mkdir -p android/app
+        cp $(keystoreFile.secureFilePath) android/app/my-upload-key.keystore
+        chmod +x android/app/my-upload-key.keystore
+      displayName: 'Copy keystore'
+
+    # Create credentials.json
     - script: |
-        eas build --platform android --profile preview --non-interactive --local
-      displayName: 'Build Android APK (Internal Testing)'
+        echo '{
+          "android": {
+            "keystore": {
+              "keystorePath": "android/app/my-upload-key.keystore",
+              "keystorePassword": "$(ANDROID_KEYSTORE_PASSWORD)",
+              "keyAlias": "$(ANDROID_KEY_ALIAS)",
+              "keyPassword": "$(ANDROID_KEY_PASSWORD)"
+            }
+          }
+        }' > credentials.json
+      displayName: 'Create credentials.json'
+
+    # Create environment file
+    - script: |
+        touch .env
+        echo "EXPO_TOKEN=$(EXPO_TOKEN)" >> .env
+      displayName: 'Create environment file'
+
+    # Verify Expo login
+    - script: |
+        export EXPO_TOKEN=$(EXPO_TOKEN)
+        npx eas whoami
+      displayName: 'Verify Expo login'
       env:
-        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        ANDROID_KEYSTORE_PATH: credentials/android/keystore.jks
-        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
-        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
+        EXPO_TOKEN: $(EXPO_TOKEN)
 
+    # Create artifacts directory
     - script: |
-        eas build --platform android --profile production --non-interactive --local
-      displayName: 'Build Android AAB (Production)'
+        mkdir -p $(Build.ArtifactStagingDirectory)/android
+      displayName: 'Create artifacts directory'
+
+    # Build and Download AAB (Internal Testing) for feature/ci-cd branch
+    - script: |
+        export EXPO_TOKEN=$(EXPO_TOKEN)
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
+        echo "Artifact URL: $ARTIFACT_URL"
+        
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
+      displayName: 'Build and Download Android App Bundle for Internal Testing'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
       env:
-        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        ANDROID_KEYSTORE_PATH: credentials/android/keystore.jks
-        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
-        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
+        EXPO_TOKEN: $(EXPO_TOKEN)
 
+    # Build and Download AAB (Internal Testing) for development branch
     - script: |
-        mkdir -p $(System.DefaultWorkingDirectory)/dist
-        echo "Build URLs can be found in the build logs above" > $(System.DefaultWorkingDirectory)/dist/build-info.txt
-      displayName: 'Create Build Info'
+        export EXPO_TOKEN=$(EXPO_TOKEN)
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
+        echo "Artifact URL: $ARTIFACT_URL"
+        
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
+      displayName: 'Build and Download Android App Bundle for Internal Testing'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/development'))
+      env:
+        EXPO_TOKEN: $(EXPO_TOKEN)
 
+    # Build and Download AAB (Production) for main branch
+    - script: |
+        export EXPO_TOKEN=$(EXPO_TOKEN)
+        
+        # Start build and capture output
+        BUILD_OUTPUT=$(yes | eas build --platform android --profile production --non-interactive --json)
+        echo "Build output: $BUILD_OUTPUT"
+        
+        # Extract artifact URL using jq
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
+        echo "Artifact URL: $ARTIFACT_URL"
+        
+        # Download the artifact using curl
+        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
+          echo "Downloading from: $ARTIFACT_URL"
+          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-production.aab "$ARTIFACT_URL"
+          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-production.aab"
+        else
+          echo "Error: Could not extract artifact URL"
+          exit 1
+        fi
+      displayName: 'Build and Download Android App Bundle for Production'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      env:
+        EXPO_TOKEN: $(EXPO_TOKEN)
+
+    # Publish build artifacts
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/dist'
-        artifactName: 'build-info'
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'app-builds'
         publishLocation: 'Container'
-      displayName: 'Publish Build Info'
-      condition: succeededOrFailed()
+      displayName: 'Publish Build Artifacts'
