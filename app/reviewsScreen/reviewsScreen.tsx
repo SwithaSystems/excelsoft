@@ -10,10 +10,13 @@ import ProductStars from "@/components/ProductStars";
 import NoContentFound from "../../components/NoContentFound";
 import ProductRating from "@/components/ProductRating";
 import Button from "@/components/commonComponents/Button";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const reviewsScreen = () => {
   const { productId } = useLocalSearchParams();
-  const product = products.find((p) => p.id === productId);
+  //const product = products.find((p) => p.id === productId);
+  const product = products[0];
   if (!product) {
     return <NoContentFound />;
   }
@@ -42,7 +45,7 @@ const reviewsScreen = () => {
       <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
-          onPress={() => {}}
+          onPress={() => redirectToPage(containers.feedBackScreenScreen)}
           style={styles.addReviewBtn}
         />
       </View>

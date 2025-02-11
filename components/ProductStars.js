@@ -1,13 +1,40 @@
 import React from "react";
 import Star from "./Star";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 function ProductStars(props) {
   return (
     <View style={[styles.starsContainer, props?.starsContainer]}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star size={props.size} key={star} filled={star <= props.rating} />
-      ))}
+      {[1, 2, 3, 4, 5].map((star, index) => {
+        return (
+          <>
+            {props.needAction ? (
+              <>
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    alert(index + 1);
+                  }}
+                >
+                  <Star
+                    size={props.size}
+                    key={star}
+                    filled={star <= props.rating}
+                  />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Star
+                  size={props.size}
+                  key={star}
+                  filled={star <= props.rating}
+                />
+              </>
+            )}
+          </>
+        );
+      })}
     </View>
   );
 }

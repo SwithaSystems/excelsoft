@@ -33,6 +33,8 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 8,
+    paddingTop: 0,
+    
   },
   row: {
     justifyContent: 'space-between',

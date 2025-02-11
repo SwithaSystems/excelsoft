@@ -114,7 +114,9 @@ const ProductDetailScreen = () => {
           ))}
           <TouchableOpacity
             style={styles.seeMoreButton}
-            onPress={() => redirectToPage(containers.reviewsScreenScreen)}
+            onPress={() =>
+              redirectToPage(containers.reviewsScreenScreen, productId)
+            }
           >
             <Text style={styles.seeMoreText}>See More Reviews</Text>
           </TouchableOpacity>

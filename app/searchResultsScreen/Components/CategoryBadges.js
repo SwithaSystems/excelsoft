@@ -5,15 +5,24 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Modal,
+  FlatList,
 } from "react-native";
-import { FontAwesome, Feather } from "@expo/vector-icons";
+import { FontAwesome, Feather, Ionicons } from "@expo/vector-icons";
 import colors from "@/app/config/colors";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
 const CategoryBadges = () => {
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("relevance");
   const [activeFilter, setActiveFilter] = useState("All");
+  const sortOptions = [
+    { label: "Relevance", value: "relevance" },
+    { label: "Low to High", value: "lowToHigh" },
+    { label: "High to Low", value: "highToLow" },
+  ];
   const categories = [
     "All",
     "Babies",
@@ -24,7 +33,24 @@ const CategoryBadges = () => {
     "Accessories",
     "Shoes",
   ];
-
+  const renderSortOption = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => {
+        setSelectedOption(item.value);
+        setIsDropdownVisible(false);
+        alert(item.value);
+      }}
+    >
+      <Text
+        style={[
+          styles.sortOptions,
+          selectedOption == item.value ? styles.activeSortOption : null,
+        ]}
+      >
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  );
   return (
     <View style={styles.container}>
       <View style={styles.filterWrapper}>
@@ -65,34 +91,60 @@ const CategoryBadges = () => {
             <Feather name="filter" size={26} color={colors.black} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.iconButton, { marginLeft: 24 }]}>
-            <Feather name="" size={26} color={colors.black} />
+          <TouchableOpacity
+            style={[styles.iconButton, { marginLeft: 24 }]}
+            onPress={() => setIsDropdownVisible(true)}
+          >
+            <Ionicons name="swap-vertical" size={26} color={colors.black} />
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+        visible={isDropdownVisible}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={() => setIsDropdownVisible(false)}
+        >
+          <View style={styles.dropdownContent}>
+            <FlatList
+              data={sortOptions}
+              renderItem={renderSortOption}
+              keyExtractor={(item) => item.value}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  sortOptions: {
+    padding: 16,
+    fontSize: 14,
+  },
+  activeSortOption: {
+    backgroundColor: colors.lightSkyBlue,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  dropdownContent: {
+    backgroundColor: colors.white,
+    borderRadius: 5,
+    width: "100%",
+  },
+
   container: {
     paddingHorizontal: 16,
     backgroundColor: colors.white,
-  },
-  backButton: {
-    position: "absolute",
-    left: 10,
-    top: 10,
-    backgroundColor: colors.lightSkyBlue,
-    padding: 10,
-    borderRadius: 50,
-  },
-  title: {
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-    marginBottom: 10,
+    paddingBottom: 16,
   },
   filterWrapper: {
     flexDirection: "row",
@@ -100,7 +152,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingRight: 20, // Ensures space before fixed icons
+    paddingRight: 20,
   },
   filterButton: {
     paddingVertical: 8,

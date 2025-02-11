@@ -22,22 +22,25 @@ const options = [
     label: "Store Pickup",
     description: "Pick up your order from our store",
     icon: "location",
+    redirectionScreen: containers.storePickUpScreenScreen,
   },
   {
     id: "curbside",
     label: "Curbside Pickup",
     description: "Pick up your order curbside, right from your car.",
     icon: "car-outline",
+    redirectionScreen: containers.curbsidePickupScreenScreen,
   },
   {
     id: "home",
     label: "Home Delivery",
     description: "Receive your order at your doorstep.",
     icon: "home-outline",
+    redirectionScreen: containers.homeDeliveryScreenScreen,
   },
 ];
 const pickUpModescreen = () => {
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState({});
 
   return (
     <View style={globalStyles.container}>
@@ -55,9 +58,9 @@ const pickUpModescreen = () => {
               key={option.id}
               style={[
                 styles.option,
-                selected === option.id && styles.selectedOption,
+                selected?.id == option.id && styles.selectedOption,
               ]}
-              onPress={() => setSelected(option.id)}
+              onPress={() => setSelected(option)}
             >
               <View style={styles.iconContainer}>
                 <Ionicons
@@ -74,7 +77,7 @@ const pickUpModescreen = () => {
                 </Text>
               </View>
               <View style={styles.radioCircle}>
-                {selected === option.id && (
+                {selected.id === option.id && (
                   <View style={styles.selectedRadio} />
                 )}
               </View>
@@ -83,7 +86,7 @@ const pickUpModescreen = () => {
           <Button
             title="Continue"
             onPress={() => {
-              redirectToPage(containers.orderSummeryScreenScreen);
+              redirectToPage(selected?.redirectionScreen);
             }}
           />
         </View>

@@ -4,49 +4,41 @@ import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 
-const Footer = ({ navigation, activeTab }: any) => {
+const footerOptions = [
+  { title: "Home", icon: "home", redirectTo: containers.homeScreen },
+  {
+    title: "Saved",
+    icon: "heart",
+    redirectTo: containers.savedItemScreenScreen,
+  },
+  { title: "Search", icon: "search", redirectTo: containers.searchScreen },
+  { title: "Cart", icon: "cart", redirectTo: containers.cartScreenScreen },
+];
+const Footer = ({ navigation, activeTab = "" }: any) => {
   return (
     <View style={styles.footer}>
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.homeScreen)}
-      >
-        <Ionicons
-          name="home"
-          size={24}
-          color={activeTab === "home" ? "#3B4FB8" : "#666"}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.cartScreenScreen)}
-      >
-        <Ionicons
-          name="cart"
-          size={24}
-          color={activeTab === "cart" ? "#3B4FB8" : "#666"}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.userProfileScreenScreen)}
-      >
-        <Ionicons
-          name="person"
-          size={24}
-          color={activeTab === "profile" ? "#3B4FB8" : "#666"}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => navigation.navigate("Menu")}
-      >
-        <Ionicons
-          name="menu"
-          size={24}
-          color={activeTab === "menu" ? "#3B4FB8" : "#666"}
-        />
-      </TouchableOpacity>
+      {footerOptions.map((eachFooterOption, index) => {
+        return (
+          <>
+            <TouchableOpacity
+              key={index}
+              style={styles.footerTab}
+              onPress={() => redirectToPage(eachFooterOption.redirectTo)}
+            >
+              <Ionicons
+                name={eachFooterOption.icon}
+                size={24}
+                color={
+                  activeTab.toLowerCase() ===
+                  eachFooterOption.title.toLocaleLowerCase()
+                    ? "#3B4FB8"
+                    : "#666"
+                }
+              />
+            </TouchableOpacity>
+          </>
+        );
+      })}
     </View>
   );
 };
