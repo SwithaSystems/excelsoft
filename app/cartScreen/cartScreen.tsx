@@ -85,7 +85,7 @@ const CartScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const handleDelete = (item) => {
+  const handleDelete = (item:any) => {
     setItemToDelete(item);
     setIsModalVisible(true);
   };

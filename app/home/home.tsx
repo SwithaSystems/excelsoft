@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   FlatList,
   Image,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -25,57 +26,8 @@ import HeroBanner from "../../components/HeroBanner";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-
-const categories = [
-  {
-    id: "1",
-    title: "Discount",
-    imageUrl: require("../../assets/discount.png"),
-  },
-  { id: "2", title: "All", imageUrl: require("../../assets/all.png") },
-  {
-    id: "3",
-    title: "Groceries",
-    imageUrl: require("../../assets/groceries.png"),
-  },
-  { id: "4", title: "Baby & Kids", imageUrl: require("../../assets/baby.png") },
-  { id: "5", title: "Fruits", imageUrl: require("../../assets/fruits.png") },
-  {
-    id: "6",
-    title: "Food-to-go",
-    imageUrl: require("../../assets/foodtogo.png"),
-  },
-  {
-    id: "7",
-    title: "Snacks & Treats",
-    imageUrl: require("../../assets/snacks&treats.png"),
-  },
-  {
-    id: "8",
-    title: "Meat &Fish",
-    imageUrl: require("../../assets/meat&fish.png"),
-  },
-  {
-    id: "9",
-    title: "Home & Furniture",
-    imageUrl: require("../../assets/home&furniture.png"),
-  },
-  {
-    id: "10",
-    title: "Drinks & Beverages",
-    imageUrl: require("../../assets/drinks&alco.png"),
-  },
-  {
-    id: "11",
-    title: "Beauty & Skin Care",
-    imageUrl: require("../../assets/all.png"),
-  },
-  {
-    id: "12",
-    title: "Gifts & Hampers",
-    imageUrl: require("../../assets/gifthampers.png"),
-  },
-];
+import { categoryService, Category } from "../../services/categoryService";
+import categoriesScreen from "../categoriesScree/categoriesScree";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -129,78 +81,12 @@ const featuredProducts = products
   }));
 
 const HomePage = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const renderBanner = () => <HeroBanner />;
-
-  /* const renderRecommendedProducts = () => (
-    <View>
-      <Text style={styles.sectionTitle}>Recommended for You</Text>
-      <FlatList
-        horizontal
-        data={recommendedProducts}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.recommendedCard}
-            onPress={() =>
-              router.push({
-                pathname: "/productDetailScreen/productDetailScreen",
-                params: { productId: item.id },
-              })
-            }
-          >
-            <Image
-              source={item.imageUrl}
-              style={styles.recommendedImage}
-              resizeMode="cover"
-            />
-            <View style={styles.recommendedDetails}>
-              <Text style={styles.recommendedTitle}>{item.title}</Text>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{item.rating} ★</Text>
-                <Text style={styles.reviewsText}>({item.reviews})</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  ); */
-
-  /* const renderBestSellers = () => (
-    <View>
-      <Text style={styles.sectionTitle}>Best Sellers</Text>
-      <FlatList
-        horizontal
-        data={bestSellers}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.bestSellerCard}
-            onPress={() =>
-              router.push({
-                pathname: "/productDetailScreen/productDetailScreen",
-                params: { productId: item.id },
-              })
-            }
-          >
-            <Image source={item.imageUrl} style={styles.bestSellerImage} />
-            <Text style={styles.bestSellerTitle}>{item.title}</Text>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>{item.rating} ★</Text>
-              <Text style={styles.reviewsText}>({item.reviews})</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  ); */
 
   const renderFeaturedProducts = () => (
     <View>
@@ -229,11 +115,25 @@ const HomePage = () => {
     </View>
   );
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryService.getAllCategories();
+        console.log(data);
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <View style={homeStyles.container}>
-      <ScrollView
-      // style={homeStyles.scrollView}
-      >
+      <ScrollView>
         {/* Header */}
         <View
           style={{
@@ -263,37 +163,39 @@ const HomePage = () => {
         <Header searchBarNeeded={true} />
 
         {/* Categories */}
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={categories}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <CategoryItem
-              title={item.title}
-              imageUrl={item.imageUrl}
-              onPress={() =>
-                redirectToPage(containers.searchResultsScreenScreen, {
-                  fromSearch: false,
-                })
-              }
+        <View style={styles.categoriesContainer}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : (
+            <FlatList
+              data={categories}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item: any) => item.id}
+              renderItem={({ item }) => (
+                <CategoryItem
+                  name={item.name}
+                  imageUrl={item.images?.[0] || ""}
+                  onPress={() =>redirectToPage(containers.categoriesScreeScreen, { fromSearch: true, category: item.name,categoryId: item.id })}
+                  // onPress={() =>
+                  //   router.push("/categoriesScree/categoriesScree")
+                  // }
+                />
+              )}
             />
           )}
-          style={homeStyles.categoriesContainer}
-        />
+        </View>
 
         {/* Banner */}
-
         <View style={{ margin: 10 }}>{renderBanner()}</View>
 
         {/* Recommended Products */}
-        {
-          <RecommendedProductsSlider
-            recommendedProducts={recommendedProducts}
-            sectionTitleStyle={styles.sectionTitle}
-            title="Recommended for You"
-          />
-        }
+        <RecommendedProductsSlider
+          recommendedProducts={recommendedProducts}
+          sectionTitleStyle={styles.sectionTitle}
+          title="Recommended for You"
+        />
 
         {/* Exclusive Offers */}
         <View style={globalStyles.px_3}>
@@ -301,7 +203,6 @@ const HomePage = () => {
         </View>
 
         {/* Best Sellers */}
-        {/* {renderBestSellers()} */}
         <RecommendedProductsSlider
           recommendedProducts={bestSellers}
           sectionTitleStyle={styles.sectionTitle}
@@ -389,6 +290,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 10,
     marginLeft: 10,
+  },
+  categoriesContainer: {
+    padding: 10,
   },
 });
 

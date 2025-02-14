@@ -1,35 +1,34 @@
 import axios from 'axios';
 import { Product } from '../data/products';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002';
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
-export const ProductsAPI = {
-  getAllProducts: async (): Promise<Product[]> => {
-    const response = await api.get('/products');
-    return response.data;
-  },
-
-  getProduct: async (id: string): Promise<Product> => {
-    const response = await api.get(`/products/${id}`);
-    return response.data;
-  },
-
-  searchProducts: async (query: string): Promise<Product[]> => {
-    const response = await api.get(`/products/search?q=${query}`);
-    return response.data;
-  },
-
-  getProductsByCategory: async (category: string): Promise<Product[]> => {
-    const response = await api.get(`/products/category/${category}`);
-    return response.data;
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout');
+      return Promise.reject(new Error('Request timeout. Please try again.'));
+    }
+    
+    if (error.message === 'Network Error') {
+      console.error('Network error - make sure your API is running and accessible');
+      return Promise.reject(new Error('Network error. Please check your connection.'));
+    }
+    
+    return Promise.reject(error);
   }
-};
+);
+
+
 
 export default api;
