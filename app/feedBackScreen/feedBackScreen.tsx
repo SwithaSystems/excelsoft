@@ -14,20 +14,21 @@ import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/components/ProductStars";
 import Button from "@/components/commonComponents/Button";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 
 const feedBackScreen = () => {
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [showReviewconfirmationModal, setShowReviewconfirmationModal] = useState(false);
+  const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
+    useState(false);
 
   const pickImage = async () => {
     // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access gallery is required!');
+    if (status !== "granted") {
+      alert("Permission to access gallery is required!");
       return;
     }
     // Open the image picker
@@ -44,12 +45,21 @@ const feedBackScreen = () => {
 
   return (
     <View style={globalStyles.container}>
-      <Header headerText="Feedback" />
+      <Header
+        headerText="Feedback"
+        secondaryBtnText="Discard"
+        secondaryBtnCallBack={() => {}}
+      />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
-            <ProductStars starsContainer={{justifyContent: "space-between"}} rating={rating} needAction={true} size={60}/>
+            <ProductStars
+              starsContainer={{ justifyContent: "space-between" }}
+              rating={rating}
+              needAction={true}
+              size={60}
+            />
           </View>
           <View style={styles.reviewInputContainer}>
             <TextInput
@@ -62,21 +72,40 @@ const feedBackScreen = () => {
           </View>
 
           <View style={styles.imagePickerContainer}>
-            <Text style={styles.ratingTitle}>Would you like to add some pictures?</Text>
-            <TouchableOpacity
-              style={styles.addImageButton}
-              onPress={pickImage}
-            >
+            <Text style={styles.ratingTitle}>
+              Would you like to add some pictures?
+            </Text>
+            <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
               <Ionicons name="add" size={30} color="gray" />
             </TouchableOpacity>
-            {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, marginTop: 10 }} />}
+            {image && (
+              <Image
+                source={{ uri: image }}
+                style={{ width: 200, height: 200, marginTop: 10 }}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
       <View style={globalStyles.p_3}>
-      <Button onPress={()=>{setShowReviewconfirmationModal(true)}} title="Add Your Review"/>
+        <Button
+          onPress={() => {
+            setShowReviewconfirmationModal(true);
+          }}
+          title="Add Your Review"
+        />
       </View>
-      {showReviewconfirmationModal && <ConfirmationModal isModalVisible={showReviewconfirmationModal} onClose={()=>{}} text={"Successfully Added!"} submitText={"OK"} handleSubmit={()=>{setShowReviewconfirmationModal(false)}}/>}
+      {showReviewconfirmationModal && (
+        <ConfirmationModal
+          isModalVisible={showReviewconfirmationModal}
+          onClose={() => {}}
+          text={"Successfully Added!"}
+          submitText={"OK"}
+          handleSubmit={() => {
+            setShowReviewconfirmationModal(false);
+          }}
+        />
+      )}
     </View>
   );
 };
