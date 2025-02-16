@@ -27,7 +27,7 @@ function ProductStars(props) {
               <>
                 <Star
                   size={props.size}
-                  key={star}
+                  key={index}
                   filled={star <= props.rating}
                 />
               </>

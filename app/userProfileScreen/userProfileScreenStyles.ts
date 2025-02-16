@@ -9,15 +9,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
     marginBottom: 16
   },
-  profileImage: {
-    width: 85,
-    height: 85,
-    borderRadius: 85,
-    alignSelf: "center",
-    borderColor: colors.primary,
-    borderWidth: 2,
-    marginBottom: 16
-  },
   userName: {
     fontSize: 16,
     textAlign: "center",

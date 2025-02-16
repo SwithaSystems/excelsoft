@@ -13,18 +13,33 @@ import Header from "@/components/Header";
 import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/components/ProductStars";
+import Button from "@/components/commonComponents/Button";
+import * as ImagePicker from 'expo-image-picker';
+import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 
 const feedBackScreen = () => {
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [images, setImages] = useState([]);
+  const [image, setImage] = useState<string | null>(null);
+  const [showReviewconfirmationModal, setShowReviewconfirmationModal] = useState(false);
 
-  const handleStarRatingPress = (newRating: any) => {
-    setRating(newRating);
-  };
-
-  const handleAddImagePress = () => {
-    console.log("Add image pressed");
+  const pickImage = async () => {
+    // Request permission to access media library
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission to access gallery is required!');
+      return;
+    }
+    // Open the image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
   };
 
   return (
@@ -34,21 +49,11 @@ const feedBackScreen = () => {
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
-            <ProductStars rating={rating} needAction={true} />
-            {/* <StarRating
-              maxStars={5}
-              rating={rating}
-              fullStarColor={"gold"} // Customize as needed
-              emptyStarColor={"gray"} // Customize as needed
-              halfStarColor={"gold"} // Customize as needed
-              starSize={30} // Adjust size as needed
-              starStyle={{ marginHorizontal: 5 }} // Adjust spacing as needed
-              selectedStar={(rating: any) => handleStarRatingPress(rating)}
-            /> */}
+            <ProductStars starsContainer={{justifyContent: "space-between"}} rating={rating} needAction={true} size={60}/>
           </View>
           <View style={styles.reviewInputContainer}>
             <TextInput
-              style={styles.reviewInput}
+              style={[styles.reviewInput, { height: 333 }]}
               placeholder="Add Your Review"
               multiline={true}
               value={reviewText}
@@ -57,27 +62,21 @@ const feedBackScreen = () => {
           </View>
 
           <View style={styles.imagePickerContainer}>
-            <Text>Would you like to add some pictures?</Text>
+            <Text style={styles.ratingTitle}>Would you like to add some pictures?</Text>
             <TouchableOpacity
               style={styles.addImageButton}
-              onPress={handleAddImagePress}
+              onPress={pickImage}
             >
               <Ionicons name="add" size={30} color="gray" />
             </TouchableOpacity>
-            {images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image.uri }}
-                style={styles.image}
-              />
-            ))}
+            {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, marginTop: 10 }} />}
           </View>
-
-          <TouchableOpacity style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Add Your Review</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
+      <View style={globalStyles.p_3}>
+      <Button onPress={()=>{setShowReviewconfirmationModal(true)}} title="Add Your Review"/>
+      </View>
+      {showReviewconfirmationModal && <ConfirmationModal isModalVisible={showReviewconfirmationModal} onClose={()=>{}} text={"Successfully Added!"} submitText={"OK"} handleSubmit={()=>{setShowReviewconfirmationModal(false)}}/>}
     </View>
   );
 };

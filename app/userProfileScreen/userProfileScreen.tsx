@@ -16,7 +16,7 @@ const userProfileScreen = () => {
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
-    "Notification Settings": "",
+    "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.feedBackScreenScreen,
   };
@@ -33,7 +33,7 @@ const userProfileScreen = () => {
           <Text style={styles.greeting}>Hello, {user.firstName}</Text>
           <Image
             source={require("../../assets/images/icon.png")}
-            style={styles.profileImage}
+            style={globalStyles.profileImage}
           />
           <Text style={styles.userName}>
             {user.firstName} {user.lastName}

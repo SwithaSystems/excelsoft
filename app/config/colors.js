@@ -9,4 +9,5 @@ export default {
   lightSkyBlue: "#E9F3F6",
   secondary: "#CEF1F9",
   secondaryText: "#7E8A8C",
+  switchTrackOff: "#D2D3D8",
 };
