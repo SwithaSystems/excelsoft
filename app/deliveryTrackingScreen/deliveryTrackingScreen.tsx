@@ -1,11 +1,35 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import styles from './deliveryTrackingScreenStyles';
+import { globalStyles } from "@/assets/styles/globalStyles";
+import Header from "@/components/Header";
+import React from "react";
+import { ScrollView, Text, View } from "react-native";
+import OrderTimeline from "./components/OrderTimeline";
+import styles from "./deliveryTrackingScreenStyles";
+import Footer from "@/components/Footer";
+import { router } from "expo-router";
 
 const deliveryTrackingScreen = () => {
+  const orderStatus = [
+    "Order Placed",
+    "Order Packed",
+    "Ready to Handover",
+    "Reached the Delivery Location",
+    "Order Delivered",
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>deliveryTrackingScreen Component</Text>
+    <View style={[globalStyles.container]}>
+      <Header headerText="Order Tracking" />
+      <ScrollView>
+        <View style={[globalStyles.sectionContent]}>
+          <Text style={styles.headingNote}>
+            Your Order packed Successfully!! Let’s see the Progress!
+          </Text>
+          <View style={styles.trackingContainer}>
+            <OrderTimeline statusList={orderStatus} />
+          </View>
+        </View>
+      </ScrollView>
+      <Footer navigation={router} />
     </View>
   );
 };

@@ -1,31 +1,39 @@
-import React from 'react';
-import { View, Text, FlatList, SafeAreaView, Dimensions } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import Footer from '../../components/Footer';
-import ProductCard from '../components/ProductCard';
-import styles from './searchResultsScreenStyles';
-import products from '../../data/products';
-import colors from '../config/colors';
-import Header from '@/components/Header';
+import React from "react";
+import { View, Text, FlatList, SafeAreaView, Dimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Footer from "../../components/Footer";
+import ProductCard from "../components/ProductCard";
+import styles from "./searchResultsScreenStyles";
+import products from "../../data/products";
+import colors from "../config/colors";
+import Header from "@/components/Header";
+import CategoryBadges from "./Components/CategoryBadges";
 
 const SearchResultsScreen = () => {
+  const { fromSearch } = useLocalSearchParams();
   const { query } = useLocalSearchParams();
   const router = useRouter();
 
   const filteredProducts = React.useMemo(() => {
     if (!query) return products;
     const searchQuery = query.toString().toLowerCase();
-    return products.filter(product => 
-      product.name.toLowerCase().includes(searchQuery) ||
-      product.description.toLowerCase().includes(searchQuery) ||
-      product.category.toLowerCase().includes(searchQuery)
+    return products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchQuery) ||
+        product.description.toLowerCase().includes(searchQuery) ||
+        product.category.toLowerCase().includes(searchQuery)
     );
   }, [query]);
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const isEven = index % 2 === 0;
     return (
-      <View style={[styles.productItem, isEven ? styles.leftItem : styles.rightItem]}>
+      <View
+        style={[
+          styles.productItem,
+          isEven ? styles.leftItem : styles.rightItem,
+        ]}
+      >
         <ProductCard
           id={item.id}
           name={item.name}
@@ -43,12 +51,20 @@ const SearchResultsScreen = () => {
     );
   };
 
+  const renderCategoryBadges = () => {
+    return <CategoryBadges />;
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <Header headerText={"Search Results"}/>
-      <Text style={styles.resultsCount}>
-        {filteredProducts.length} search results for "{query}"
-      </Text>
+      <Header headerText={!fromSearch ? "Search Results" : "Category Name"} />
+      {!fromSearch ? (
+        <Text style={styles.resultsCount}>
+          {filteredProducts.length} search results for {query}
+        </Text>
+      ) : (
+        renderCategoryBadges()
+      )}
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
         <FlatList
           data={filteredProducts}

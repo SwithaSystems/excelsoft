@@ -4,8 +4,10 @@ export default {
   placeholderTextColor: "#D0CBFD",
   black: "#040404",
   white: "#fff",
-  starColor: "#7E8A8C",
+  starColor: "#FBBC05",
   reviewsColor: "#6E6F76",
   lightSkyBlue: "#E9F3F6",
-  secondary:"#CEF1F9"
+  secondary: "#CEF1F9",
+  secondaryText: "#7E8A8C",
+  switchTrackOff: "#D2D3D8",
 };

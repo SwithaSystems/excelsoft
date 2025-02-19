@@ -19,6 +19,12 @@ import colors from "../config/colors";
 import products from "../../data/products";
 import SearchBar from "../components/searchBar";
 import Header from "@/components/Header";
+import RecommendedProductsSlider from "../../components/RecommendedProductsSlider";
+import ExclusiveOffers from "../../components/ExclusiveOffers";
+import HeroBanner from "../../components/HeroBanner";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const categories = [
   {
@@ -78,142 +84,83 @@ const bannerImages = [
 ];
 
 const recommendedProducts = products
-  .filter(p => ['Greek Yogurt', 'Baby Stroller', 'Granola Bars'].includes(p.name))
+  .filter((p) =>
+    ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
+  )
   .map((product) => ({
     id: product.id,
     title: product.name,
     rating: product.rating,
     reviews: product.noOfreviews,
-    imageUrl: product.image
+    imageUrl: product.image,
   }));
 
 const exclusiveOffers = products
-  .filter(p => ['Baby Stroller', 'Granola Bars'].includes(p.name))
+  .filter((p) => ["Baby Stroller", "Granola Bars"].includes(p.name))
   .map((product) => ({
     id: product.id,
     title: product.name,
-    rating: product.name === 'Baby Stroller' ? 4.7 : 4.5,
-    reviews: product.name === 'Baby Stroller' ? 120 : 130,
-    price: product.name === 'Baby Stroller' ? 120 : 8,
-    originalPrice: product.name === 'Baby Stroller' ? 180 : 10,
+    rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
+    reviews: product.name === "Baby Stroller" ? 120 : 130,
+    price: product.name === "Baby Stroller" ? 120 : 8,
+    originalPrice: product.name === "Baby Stroller" ? 180 : 10,
     imageUrl: product.image,
-    discount: product.name === 'Baby Stroller' ? '20%' : '15%',
-    saleEndsAt: '31-4-2024',
+    discount: product.name === "Baby Stroller" ? "20%" : "15%",
+    saleEndsAt: "31-4-2024",
   }));
 
 const bestSellers = products
-  .filter(p => ['Bananas', 'Chicken Breast'].includes(p.name))
+  .filter((p) => ["Bananas", "Chicken Breast"].includes(p.name))
   .map((product) => ({
     id: product.id,
     title: product.name,
     rating: product.rating,
     reviews: product.noOfreviews,
-    imageUrl: product.image
+    imageUrl: product.image,
   }));
 
 const featuredProducts = products
-  .filter(p => ['Brown Teddy Bear', 'Anchovies'].includes(p.name))
+  .filter((p) => ["Brown Teddy Bear", "Anchovies"].includes(p.name))
   .map((product) => ({
     id: product.id,
     title: product.name,
-    description: product.description.slice(0, 50) + '...',
-    imageUrl: product.image
+    description: product.description.slice(0, 50) + "...",
+    imageUrl: product.image,
   }));
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const handleSearchSubmit = () => {
-    router.push({
-      pathname: "./search/search",
-    });
-  };
+  const renderBanner = () => <HeroBanner />;
 
-  const renderBanner = () => (
-    <View style={styles.banner}>
-      <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
-      <Text style={styles.bannerDiscount}>40-60% Discount</Text>
-      <Text style={styles.bannerText}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit
-      </Text>
-      <TouchableOpacity style={styles.shopNowButton}>
-        <Text style={styles.shopNowText}>Shop Now</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const handleProductDetail = () => {
-    router.push({ pathname: "./productDetailScreen/productDetailScreen" });
-  };
-
-  const renderRecommendedProducts = () => (
+  /* const renderRecommendedProducts = () => (
     <View>
       <Text style={styles.sectionTitle}>Recommended for You</Text>
       <FlatList
         horizontal
         data={recommendedProducts}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.recommendedCard}
-            onPress={() => router.push({
-              pathname: "/productDetailScreen/productDetailScreen",
-              params: { productId: item.id }
-            })}
+            onPress={() =>
+              router.push({
+                pathname: "/productDetailScreen/productDetailScreen",
+                params: { productId: item.id },
+              })
+            }
           >
-            <Image source={item.imageUrl} style={styles.recommendedImage} resizeMode="cover" />
+            <Image
+              source={item.imageUrl}
+              style={styles.recommendedImage}
+              resizeMode="cover"
+            />
             <View style={styles.recommendedDetails}>
-            <Text style={styles.recommendedTitle}>{item.title}</Text>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>{item.rating} ★</Text>
-              <Text style={styles.reviewsText}>({item.reviews})</Text>
-            </View>
-            </View>
-            
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  );
-
-  const renderExclusiveOffers = () => (
-    <View>
-      <Text style={styles.sectionTitle}>Exclusive Offers</Text>
-      <FlatList
-        horizontal
-        data={exclusiveOffers}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={styles.exclusiveCard}
-            onPress={() => router.push({
-              pathname: "/productDetailScreen/productDetailScreen",
-              params: { productId: item.id }
-            })}
-          >
-            <Image source={item.imageUrl} style={styles.exclusiveImage} resizeMode="cover"/>
-            <View style={styles.exclusiveDetails}>
-              <Text style={styles.exclusiveTitle}>{item.title}</Text>
+              <Text style={styles.recommendedTitle}>{item.title}</Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{item.rating}</Text>
-                <Text style={styles.starIcon}> ★ </Text>
+                <Text style={styles.ratingText}>{item.rating} ★</Text>
                 <Text style={styles.reviewsText}>({item.reviews})</Text>
               </View>
-              <View style={styles.saleContainer}>
-                <View style={styles.saleTag}>
-                  <Text style={styles.saleText}>Sale</Text>
-                </View>
-                <Text style={styles.saleTime}>02:48:26</Text>
-                <View style={styles.discountTag}>
-                  <Text style={styles.discountText}>{item.discount}</Text>
-                </View>
-              </View>
-              <View style={styles.priceContainer}>
-                <Text style={styles.salePrice}>${item.price}</Text>
-                <Text style={styles.originalPrice}>${item.originalPrice}</Text>
-              </View>
             </View>
           </TouchableOpacity>
         )}
@@ -222,21 +169,23 @@ const HomePage = () => {
         contentContainerStyle={styles.productsList}
       />
     </View>
-  );
+  ); */
 
-  const renderBestSellers = () => (
+  /* const renderBestSellers = () => (
     <View>
       <Text style={styles.sectionTitle}>Best Sellers</Text>
       <FlatList
         horizontal
         data={bestSellers}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.bestSellerCard}
-            onPress={() => router.push({
-              pathname: "/productDetailScreen/productDetailScreen",
-              params: { productId: item.id }
-            })}
+            onPress={() =>
+              router.push({
+                pathname: "/productDetailScreen/productDetailScreen",
+                params: { productId: item.id },
+              })
+            }
           >
             <Image source={item.imageUrl} style={styles.bestSellerImage} />
             <Text style={styles.bestSellerTitle}>{item.title}</Text>
@@ -251,7 +200,7 @@ const HomePage = () => {
         contentContainerStyle={styles.productsList}
       />
     </View>
-  );
+  ); */
 
   const renderFeaturedProducts = () => (
     <View>
@@ -260,12 +209,13 @@ const HomePage = () => {
         horizontal
         data={featuredProducts}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.featuredCard}
-            onPress={() => router.push({
-              pathname: "/productDetailScreen/productDetailScreen",
-              params: { productId: item.id }
-            })}
+            onPress={() =>
+              redirectToPage(containers.productDetailScreenScreen, {
+                productId: item.id,
+              })
+            }
           >
             <Image source={item.imageUrl} style={styles.featuredImage} />
             <Text style={styles.featuredTitle}>{item.title}</Text>
@@ -282,7 +232,7 @@ const HomePage = () => {
   return (
     <View style={homeStyles.container}>
       <ScrollView
-        // style={homeStyles.scrollView}
+      // style={homeStyles.scrollView}
       >
         {/* Header */}
         <View
@@ -297,14 +247,20 @@ const HomePage = () => {
             source={require("../../assets/brandlogo.png")}
             style={homeStyles.logo}
           />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: 8 }}>Hello, User</Text>
-            <Ionicons name="person-circle-outline" size={24} color="#000" />
-          </View>
+          <TouchableOpacity
+            onPress={() => {
+              redirectToPage(containers.userProfileScreenScreen);
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ marginRight: 8 }}>Hello, User</Text>
+              <Ionicons name="person-circle-outline" size={24} color="#000" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
-        <Header searchBarNeeded={true}/>
+        <Header searchBarNeeded={true} />
 
         {/* Categories */}
         <FlatList
@@ -317,9 +273,8 @@ const HomePage = () => {
               title={item.title}
               imageUrl={item.imageUrl}
               onPress={() =>
-                router.push({
-                  pathname: "./category",
-                  // params: { category: item }
+                redirectToPage(containers.searchResultsScreenScreen, {
+                  fromSearch: false,
                 })
               }
             />
@@ -328,178 +283,65 @@ const HomePage = () => {
         />
 
         {/* Banner */}
-        {renderBanner()}
+
+        <View style={{ margin: 10 }}>{renderBanner()}</View>
 
         {/* Recommended Products */}
-        {renderRecommendedProducts()}
+        {
+          <RecommendedProductsSlider
+            recommendedProducts={recommendedProducts}
+            sectionTitleStyle={styles.sectionTitle}
+            title="Recommended for You"
+          />
+        }
 
         {/* Exclusive Offers */}
-        {renderExclusiveOffers()}
+        <View style={globalStyles.px_3}>
+          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+        </View>
 
         {/* Best Sellers */}
-        {renderBestSellers()}
+        {/* {renderBestSellers()} */}
+        <RecommendedProductsSlider
+          recommendedProducts={bestSellers}
+          sectionTitleStyle={styles.sectionTitle}
+          title="Best Sellers"
+        />
 
         {/* Featured Products */}
         {renderFeaturedProducts()}
       </ScrollView>
 
       {/* Footer */}
-      <Footer activeTab="home" />
+      <Footer navigation={router} activeTab="home" />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  banner: {
-    backgroundColor: "#2E2A5C",
-    borderRadius: 20,
-    padding: 20,
-    margin: 10,
-    alignItems: "center",
-  },
-  bannerTitle: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  bannerDiscount: {
-    color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  bannerText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  shopNowButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 25,
-  },
-  shopNowText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
-  },
   recommendedCard: {
     width: 160,
-    height:180,
+    height: 180,
     marginRight: 15,
     backgroundColor: colors.lightgrey,
-    borderRadius:10
+    borderRadius: 10,
   },
   recommendedImage: {
-    width: '100%',
+    width: "100%",
     height: 120,
     marginBottom: 8,
     borderTopLeftRadius: 10,
-    borderTopRightRadius: 10
+    borderTopRightRadius: 10,
   },
   recommendedTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   recommendedDetails: {
     marginLeft: 16,
   },
-  exclusiveCard: {
-    width: 240,
-    height: 400,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius:10,
-    overflow: 'hidden',
-  },
-  exclusiveImage: {
-    width: '100%',
-    height: 250,
-    borderTopLeftRadius:10,
-    borderTopRightRadius:10
-  },
-  exclusiveDetails: {
-    padding: 16,
-  },
-  
-  exclusiveTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: colors.black,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: colors.reviewsColor,
-    marginLeft:16,
-  },
-  starIcon: {
-    color: colors.reviewsColor,
-    fontSize: 14,
-  },
-  reviewsText: {
-    fontSize: 14,
-    color: colors.reviewsColor,
-  },
-  saleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
 
-  },
-  saleTag: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  saleText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  saleTime: {
-    color: colors.primary,
-    fontSize: 14,
-    marginRight: 8,
-  },
-  discountTag: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  discountText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap:10,
-  },
-  salePrice: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  originalPrice: {
-    fontSize: 14,
-    textDecorationLine: 'line-through',
-    color: colors.black,
-  },
   bestSellerCard: {
     width: 160,
     marginRight: 15,
@@ -507,17 +349,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   bestSellerImage: {
-    width: '100%',
+    width: "100%",
     height: 130,
     marginBottom: 8,
-    borderTopLeftRadius:10,
-    borderTopRightRadius:10
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   bestSellerTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
-    marginLeft:16
+    marginLeft: 16,
   },
   featuredCard: {
     width: 180,
@@ -526,26 +368,25 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   featuredImage: {
-    width: '100%',
+    width: "100%",
     height: 140,
     marginBottom: 8,
   },
   featuredTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    marginHorizontal:16,
+    fontWeight: "600",
+    marginHorizontal: 16,
   },
   featuredDescription: {
     fontSize: 12,
     color: colors.lightgrey,
-    marginHorizontal:16
+    marginHorizontal: 16,
   },
   productsList: {
     padding: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
     marginVertical: 10,
     marginLeft: 10,
   },

@@ -1,15 +1,21 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  cartItemContainerStyle:{
+    paddingHorizontal: 0
   },
-  text: {
-    fontSize: 12,
-    color: 'black',
+  barCodeNote:{
+    fontWeight: 500,
+    fontSize: 16,
+    marginBottom: 10
+  },
+  orderSummaryItem:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  orderSummaryItemText:{
+    fontSize: 16
   }
 });
 

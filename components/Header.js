@@ -1,26 +1,39 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import colors from "../app/config/colors";
 import BackArrow from "./commonComponents/BackArrow";
 import SearchBar from "@/app/components/searchBar";
 import { useRouter } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 function Header(props) {
-  const router = useRouter();
-
   const handleSearchSubmit = () => {
-    router.push({
-      pathname: "./search/search",
-    });
+    redirectToPage(containers.searchScreen);
   };
   return (
     <>
       {props.headerText && (
-        <View style={styles.header}>
+        <View style={[styles.header, props?.headerStyle]}>
           <View style={{ position: "absolute", left: 16, top: 16, zIndex: 1 }}>
             <BackArrow />
           </View>
           <Text style={styles.headerTitle}>{props.headerText}</Text>
+          {props.secondaryBtnText && (
+            <View
+              style={{ position: "absolute", right: 16, top: 16, zIndex: 1 }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  props?.secondaryBtnCallBack();
+                }}
+              >
+                <Text style={{ fontSize: 16, color: colors.primary }}>
+                  {props.secondaryBtnText}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
       {props?.searchBarNeeded && (

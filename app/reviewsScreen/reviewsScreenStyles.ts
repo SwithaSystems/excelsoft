@@ -1,15 +1,39 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  heading:{
+    fontSize: 18,
+    marginBottom: 16
   },
-  text: {
-    fontSize: 12,
-    color: 'black',
+  overAllRatingContainer:{
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems:"center"
+  },
+  rating:{
+    fontSize: 32,
+    lineHeight:0,
+    //fontWeight: 500
+  },
+  reviewsContainer:{},
+  reviewContainerHeading:{
+    //fontWeight: 500,
+    fontSize: 36,
+    marginBottom: 16,
+    lineHeight:36,
+  },
+  addReviewContainer:{
+    flexDirection: "row-reverse",
+    flexWrap:"nowrap",
+    paddingHorizontal: 16,
+    paddingBottom: 16
+  },
+  addReviewBtn: {
+    borderRadius: 50
+  },
+  starsContainer:{
+    marginBottom: 0
   }
 });
 

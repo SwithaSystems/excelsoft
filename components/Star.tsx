@@ -13,7 +13,7 @@ const Star = ({ filled = true, size = 16 }: StarProps) => {
         <Ionicons 
             name={filled ? "star" : "star-outline"} 
             size={size} 
-            color={filled ? colors.starColor : colors.white} 
+            color={filled ? colors.starColor : colors.black}
         />
     );
 };
