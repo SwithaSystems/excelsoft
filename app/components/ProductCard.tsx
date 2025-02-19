@@ -37,7 +37,7 @@ const ProductCard = ({
   image,
 }: ProductCardProps) => {
   const router = useRouter();
-
+  const isRemoteImage = typeof image === 'string';
   return (
     <TouchableOpacity
       style={styles.container}
@@ -45,7 +45,7 @@ const ProductCard = ({
         redirectToPage(containers.productDetailScreenScreen, { productId: id })
       }
     >
-      <Image source={image} style={styles.image} />
+      <Image source={isRemoteImage ? { uri: image } : image} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>
           {name}

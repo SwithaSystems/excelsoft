@@ -177,7 +177,19 @@ const HomePage = () => {
                 <CategoryItem
                   name={item.name}
                   imageUrl={item.images?.[0] || ""}
-                  onPress={() =>redirectToPage(containers.categoriesScreeScreen, { fromSearch: true, category: item.name,categoryId: item.id })}
+                 
+                  onPress={() =>
+                    item.id === 2
+                      ? redirectToPage(containers.categoriesScreeScreen, {
+                          category: item.name,
+                          categoryId: item.id,
+                        })
+                      : redirectToPage(containers.searchResultsScreenScreen, {
+                          fromSearch: true,
+                          category: item.name,
+                          categoryId: item.id,
+                        })
+                  }
                   // onPress={() =>
                   //   router.push("/categoriesScree/categoriesScree")
                   // }

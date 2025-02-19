@@ -3,23 +3,21 @@ import { StyleSheet,Dimensions } from 'react-native';
 
 
 const { width } = Dimensions.get('window');
-const itemWidth = (width ) / 2;
+const itemWidth = (width-32 ) / 2;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   categoryItem: {
-    width: "80%",
-    marginVertical: 8,
-    borderRadius: 10,
-    overflow: 'hidden',
+    width: itemWidth,
+    // padding: 8,
   },
   leftItem: {
     marginRight: 8,
   },
   listContainer: {
-    padding: 8,
-    paddingTop: 0,
+    padding: 16,
+    paddingTop: 8,
     
   },
   rightItem: {
@@ -29,8 +27,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   row: {
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start', 
+    marginHorizontal: -8,
+    
   },
 })
 

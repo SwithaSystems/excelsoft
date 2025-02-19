@@ -29,11 +29,13 @@ export const ProductsAPI = {
   },
 
   getProductByCategoryID: async (id: number): Promise<Product[]> => {
+    console.log(id);
     const response = await axios.get(`${API_BASE_URL}/products/category/${id}`);
+    console.log("AllProducts",response.data);
     return response.data;
   },
 
-  getProductBYID: async (id: string): Promise<Product> => {
+  getProductBYID: async (id: number): Promise<Product> => {
     const response = await axios.get(`${API_BASE_URL}/products/${id}`);
     return response.data;
   },
@@ -44,4 +46,12 @@ export const ProductsAPI = {
     );
     return response.data;
   },
+
+  getAllSubCategoriesProducts: async (categoryIds: number[]): Promise<Product[]> => { 
+    const response = await axios.post(`${API_BASE_URL}/products/subCategories`, {
+      categoryIds: categoryIds,
+    });
+    return response.data;
+  },
+  
 };

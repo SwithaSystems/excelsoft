@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,8 +13,9 @@ import colors from "@/app/config/colors";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { categoryService } from "@/services/categoryService";
 
-const CategoryBadges = () => {
+const CategoryBadges = (props) => {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("relevance");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -23,16 +24,35 @@ const CategoryBadges = () => {
     { label: "Low to High", value: "lowToHigh" },
     { label: "High to Low", value: "highToLow" },
   ];
-  const categories = [
-    "All",
-    "Babies",
-    "Kids",
-    "Toys",
-    "Clothing",
-    "Cribs",
-    "Accessories",
-    "Shoes",
-  ];
+  const [subCategoriesNames, setsubCategoriesNames] = useState([]);
+  // const categories = [
+  //   "All",
+  //   "Babies",
+  //   "Kids",
+  //   "Toys",
+  //   "Clothing",
+  //   "Cribs",
+  //   "Accessories",
+  //   "Shoes",
+  // ];
+
+  useEffect(() => {
+    const fetchSubCategories = async () => {
+      try {
+        const data = await categoryService.getAllSubCategories(
+          props.categoryId
+        );
+        console.log("all sub categories", data);
+        const setsubCategories = data.map((category) => category.name);
+        setsubCategoriesNames(setsubCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    console.log(subCategoriesNames);
+    fetchSubCategories();
+  }, []);
+
   const renderSortOption = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
@@ -59,13 +79,15 @@ const CategoryBadges = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
         >
-          {categories.map((category, index) => (
+          {["All",...subCategoriesNames].map((category, index) => (
             <TouchableOpacity
               key={category}
               style={[
                 styles.filterButton,
                 activeFilter === category && styles.activeFilterButton,
-                index === categories.length - 1 ? { marginRight: 0 } : {}, // Remove margin for last item
+                index === subCategoriesNames.length - 1
+                  ? { marginRight: 0 }
+                  : {}, // Remove margin for last item
               ]}
               onPress={() => setActiveFilter(category)}
             >
