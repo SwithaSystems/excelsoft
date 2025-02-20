@@ -8,7 +8,7 @@ export interface Category {
   parentCategory?: number;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3002';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const categoryService = {
   getAllCategories: async (parentCategory?: number): Promise<Category[]> => {

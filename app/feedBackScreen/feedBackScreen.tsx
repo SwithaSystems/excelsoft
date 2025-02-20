@@ -80,7 +80,7 @@ const feedBackScreen = () => {
       />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={styles.ratingContainer}>
+            <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
             <ProductStars
               starsContainer={{ justifyContent: "space-between" }}
