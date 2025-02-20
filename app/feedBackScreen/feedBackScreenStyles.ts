@@ -5,8 +5,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   ratingTitle: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18,
+    marginBottom: 16,
   },
   reviewInputContainer: {
     marginBottom: 20,
