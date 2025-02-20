@@ -5,7 +5,7 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 function ProductStars(props) {
   return (
     <View style={[styles.starsContainer, props?.starsContainer]}>
-      {[1, 2, 3, 4, 5].map((star, index) => {
+      {[1, 2, 3, 4, 5].map((star,index) => {
         return (
           <>
             {props.needAction ? (
@@ -13,12 +13,13 @@ function ProductStars(props) {
                 <TouchableOpacity
                   key={index}
                   onPress={() => {
-                    alert(index + 1);
+                    props.onChangeRating(star)
+                    // alert(index + 1);
                   }}
                 >
                   <Star
-                    size={props.size}
                     key={star}
+                    size={props.size}
                     filled={star <= props.rating}
                   />
                 </TouchableOpacity>

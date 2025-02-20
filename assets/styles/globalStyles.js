@@ -49,6 +49,9 @@ export const globalStyles = StyleSheet.create({
   pl_3: {
     paddingLeft: 16,
   },
+  p_3: {
+    padding: 16,
+  },
   mb_0: {
     marginBottom: 0,
   },
@@ -72,4 +75,87 @@ export const globalStyles = StyleSheet.create({
     color: colors.primary,
     textDecorationLine: "underline",
   },
+  // date time picker styling
+  webDateInput: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    padding: 8,
+    borderRadius: 8,
+    outline: "none",
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    padding: 8,
+    borderRadius: 8,
+    width: 50,
+    textAlign: "center",
+    marginHorizontal: 4,
+  },
+  picker_sm: {
+    height: 16,
+    width: 40,
+    fontSize: 8,
+    marginLeft: 12,
+    borderColor: colors.primary,
+  },
+  pickerValue_sm: {
+    fontSize: 8,
+  },
+  picker_50: {
+    height: 43,
+    width: "50%",
+    fontSize: 16,
+    borderColor: colors.primary,
+    borderRadius: 10,
+  },
+  pickerValue_50: {
+    fontSize: 16,
+    width: "100%",
+  },
+  pickUpInput: {
+    borderRadius: 10,
+    width: "50%",
+  },
+  userInputLabel: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  userInputContainer: { width: "100%", borderWidth: 0 },
+  userInputBox: {
+    borderWidth: 0,
+  },
+  profileInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    backgroundColor: colors.white,
+  },
+  profileImage: {
+    width: 85,
+    height: 85,
+    borderRadius: 85,
+    alignSelf: "center",
+    borderColor: colors.primary,
+    borderWidth: 2,
+    marginBottom: 16,
+  },
+  profilePictureContainer: {
+    alignItems: "center",
+    marginVertical: 24,
+    position: "relative",
+  },
+  userInputLabelIcon: {},
 });

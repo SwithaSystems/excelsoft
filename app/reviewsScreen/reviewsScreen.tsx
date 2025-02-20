@@ -46,7 +46,7 @@ const reviewsScreen = () => {
       <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
-          onPress={() => redirectToPage(containers.feedBackScreenScreen)}
+          onPress={() => redirectToPage(containers.feedBackScreenScreen,{productId:productId,reviewsArrayLength:reviewsArray.length})}
           style={styles.addReviewBtn}
         />
       </View>

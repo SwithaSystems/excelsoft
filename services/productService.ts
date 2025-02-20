@@ -53,5 +53,9 @@ export const ProductsAPI = {
     });
     return response.data;
   },
+
+addReview: async (productId: Number, review: any): Promise<void> => {
+  await axios.post(`${API_BASE_URL}/products/${productId}/reviews`, review);
+}
   
 };
