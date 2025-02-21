@@ -206,6 +206,7 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
 </Stack>
       )}
     </>

@@ -16,8 +16,11 @@ import ProductStars from "@/components/ProductStars";
 import Button from "@/components/commonComponents/Button";
 import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
+import { ProductsAPI } from "@/services/productService";
+import { useLocalSearchParams } from "expo-router";
 
 const feedBackScreen = () => {
+  const {productId,reviewsArrayLength} = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [image, setImage] = useState<string | null>(null);
@@ -43,6 +46,31 @@ const feedBackScreen = () => {
     }
   };
 
+  const handleAddReview = async () => {
+    console.log(reviewsArrayLength);
+    const review = {
+      id: (Number(reviewsArrayLength)+1).toString(),
+      rating: rating,
+      name:"User",
+      review: reviewText,
+      // image: image, 
+    };
+  
+    if (review.rating  && reviewText !== "") {
+      try {
+        await ProductsAPI.addReview(Number(productId), review); 
+        setShowReviewconfirmationModal(true);
+      } catch (error) {
+        console.error("Failed to add review:", error);
+        alert("Something went wrong. Please try again.");
+      }
+    } else {
+      alert("Please enter a rating and review.");
+    }
+  };
+  
+  
+
   return (
     <View style={globalStyles.container}>
       <Header
@@ -52,13 +80,14 @@ const feedBackScreen = () => {
       />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={styles.ratingContainer}>
+            <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
             <ProductStars
               starsContainer={{ justifyContent: "space-between" }}
               rating={rating}
               needAction={true}
               size={60}
+              onChangeRating={setRating}
             />
           </View>
           <View style={styles.reviewInputContainer}>
@@ -90,7 +119,7 @@ const feedBackScreen = () => {
       <View style={globalStyles.p_3}>
         <Button
           onPress={() => {
-            setShowReviewconfirmationModal(true);
+            handleAddReview();
           }}
           title="Add Your Review"
         />

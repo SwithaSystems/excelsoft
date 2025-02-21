@@ -14,6 +14,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { useNavigation } from "expo-router";
 import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 const Filter = () => {
   const navigation = useNavigation();
@@ -57,7 +58,7 @@ const Filter = () => {
     });
     navigation.canGoBack()
       ? navigation.goBack()
-      : navigation.navigate(containers.homeScreen);
+      : redirectToPage(containers.homeScreen);
   };
 
   return (

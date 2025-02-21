@@ -3,19 +3,19 @@ import { TouchableOpacity, Image, Text } from 'react-native';
 import  HomeStyles  from '../app/home/Homestyles';
 
 interface CategoryItemProps {
-  title: string;
+  name: string;
   imageUrl: string;
   onPress: () => void;
 }
 
-const CategoryItem = ({ title, imageUrl, onPress }: CategoryItemProps) => {
+const CategoryItem = ({ name, imageUrl, onPress }: CategoryItemProps) => {
   const isRemoteImage = typeof imageUrl === 'string';
   return (
     <TouchableOpacity style={HomeStyles.categoryItem} onPress={onPress}>
       <Image
        source={isRemoteImage ? { uri: imageUrl } : imageUrl} 
        style={HomeStyles.categoryImage} />
-      <Text style={HomeStyles.categoryText}>{title}</Text>
+      <Text style={HomeStyles.categoryText}>{name}</Text>
     </TouchableOpacity>
   );
 };

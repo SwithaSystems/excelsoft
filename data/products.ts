@@ -6,7 +6,7 @@ export interface Product {
   originalPrice: number;
   image: any;
   productColors: string[];
-  category: string;
+  categoryId: number[];
   rating: number;
   noOfreviews: number;
   reviews: {
@@ -27,7 +27,7 @@ const products: Product[] = [
     originalPrice: 6.99,
     image: require('../assets/yogurt.jpg'),
     productColors: [],
-    category: 'Groceries',
+    categoryId: [3,6],
     rating: 4.8,
     noOfreviews: 180,
     reviews: [
@@ -55,7 +55,7 @@ const products: Product[] = [
     originalPrice: 180,
     image: require('../assets/stroller.jpg'),
     productColors: ['black', 'gray', 'yellow'],
-    category: 'Baby & Kids',
+    categoryId: [4],
     rating: 4.9,
     noOfreviews: 220,
     reviews: [
@@ -83,7 +83,7 @@ const products: Product[] = [
     originalPrice: 39.99,
     image: require('../assets/teddy.png'),
     productColors: ['brown', 'beige'],
-    category: 'Baby & Kids',
+    categoryId:[4],
     rating: 4.7,
     noOfreviews: 150,
     reviews: [
@@ -111,7 +111,7 @@ const products: Product[] = [
     originalPrice: 10,
     image: require('../assets/banana.png'),
     productColors: [],
-    category: 'Fruits',
+    categoryId:[5],
     rating: 4.9,
     noOfreviews: 300,
     reviews: [
@@ -139,7 +139,7 @@ const products: Product[] = [
     originalPrice: 15.99,
     image: require('../assets/chicken.png'),
     productColors: [],
-    category: 'Meat & Fish',
+    categoryId:[8],
     rating: 4.8,
     noOfreviews: 250,
     reviews: [
@@ -167,7 +167,7 @@ const products: Product[] = [
     originalPrice: 10,
     image: require('../assets/granola.png'),
     productColors: [],
-    category: 'Snacks & Treats',
+    categoryId: [7],
     rating: 4.5,
     noOfreviews: 130,
     reviews: [
@@ -195,7 +195,7 @@ const products: Product[] = [
     originalPrice: 7.99,
     image: require('../assets/fish.png'),
     productColors: [],
-    category: 'Meat & Fish',
+    categoryId: [8],
     rating: 4.7,
     noOfreviews: 85,
     reviews: [
@@ -223,7 +223,7 @@ const products: Product[] = [
     originalPrice: 129.99,
     image: require('../assets/baby-bicycle.png'),
     productColors: ['red', 'blue', 'pink'],
-    category: 'toys',
+    categoryId: [4],
     rating: 4.5,
     noOfreviews: 128,
     reviews: [
@@ -244,7 +244,7 @@ const products: Product[] = [
     originalPrice: 299.99,
     image: require('../assets/baby-crib.png'),
     productColors: ['white', 'natural', 'grey'],
-    category: 'furniture',
+    categoryId: [9],
     rating: 4.8,
     noOfreviews: 256,
     reviews: [
@@ -265,7 +265,7 @@ const products: Product[] = [
     originalPrice: 49.99,
     image: require('../assets/building-blocks.png'),
     productColors: ['multicolor'],
-    category: 'toys',
+    categoryId: [4],
     rating: 4.7,
     noOfreviews: 189,
     reviews: [

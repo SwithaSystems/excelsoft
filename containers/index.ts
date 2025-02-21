@@ -48,5 +48,6 @@ export default {
   addNewPaymentScreenScreen: "addNewPaymentScreen/addNewPaymentScreen",
   feedBackScreenScreen: "feedBackScreen/feedBackScreen",
   dashBoardScreenScreen: "dashBoardScreen/dashBoardScreen",
-  filterScreen: 'filter/filter',
+  filterScreen: "filter/filter",
+  categoriesScreeScreen: "categoriesScree/categoriesScree",
 };
