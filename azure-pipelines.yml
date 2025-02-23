@@ -53,107 +53,56 @@ stages:
         }' > credentials.json
       displayName: 'Create credentials.json'
 
-    # Create environment file
-    - script: |
-        touch .env
-        echo "EXPO_TOKEN=$(EXPO_TOKEN)" >> .env
-      displayName: 'Create environment file'
-
-    # Verify Expo login
+    # Initialize EAS project
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
-        npx eas whoami
-      displayName: 'Verify Expo login'
-      env:
-        EXPO_TOKEN: $(EXPO_TOKEN)
-
-    # Create artifacts directory
-    - script: |
-        mkdir -p $(Build.ArtifactStagingDirectory)/android
-      displayName: 'Create artifacts directory'
-
-    # Build and Download AAB (Internal Testing) for feature/ci-cd branch
-    - script: |
-        export EXPO_TOKEN=$(EXPO_TOKEN)
+        echo "Initializing EAS project..."
+        yes | eas init --non-interactive || true
         
-        # Start build and capture output
-        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
-        echo "Build output: $BUILD_OUTPUT"
+        # Configure EAS project
+        echo "Configuring EAS project..."
+        eas update:configure
         
-        # Extract artifact URL using jq
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
-        echo "Artifact URL: $ARTIFACT_URL"
+        # Clean any existing build artifacts
+        echo "Cleaning build artifacts..."
+        rm -rf android/app/build
         
-        # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
-          echo "Downloading from: $ARTIFACT_URL"
-          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
-          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
+        # Start build with detailed logging
+        echo "Starting EAS build..."
+        eas build --platform android --profile production --non-interactive --no-wait || {
+          echo "Build failed. Checking logs..."
+          eas build:list --status errored --limit 1 --json
+          exit 1
+        }
+        
+        # Wait for build to complete and download artifact
+        echo "Waiting for build to complete..."
+        BUILD_ID=$(eas build:list --status in-progress --limit 1 --json | jq -r '.[0].id')
+        eas build:wait --id $BUILD_ID
+        
+        # Download the artifact
+        echo "Downloading build artifact..."
+        ARTIFACT_URL=$(eas build:list --id $BUILD_ID --json | jq -r '.[0].artifacts.buildUrl')
+        echo "##vso[task.setvariable variable=artifactUrl]$ARTIFACT_URL"
+        
+        if [ -n "$ARTIFACT_URL" ]; then
+          curl -L -o app-release.aab "$ARTIFACT_URL"
+          echo "Build artifact downloaded successfully"
         else
-          echo "Error: Could not extract artifact URL"
+          echo "Failed to get artifact URL"
           exit 1
         fi
-      displayName: 'Build and Download Android App Bundle for Internal Testing'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/feature/ci-cd'))
+      displayName: 'Build and Download Android App Bundle'
       env:
         EXPO_TOKEN: $(EXPO_TOKEN)
+        ANDROID_KEYSTORE_PASSWORD: $(ANDROID_KEYSTORE_PASSWORD)
+        ANDROID_KEY_ALIAS: $(ANDROID_KEY_ALIAS)
+        ANDROID_KEY_PASSWORD: $(ANDROID_KEY_PASSWORD)
 
-    # Build and Download AAB (Internal Testing) for development branch
-    - script: |
-        export EXPO_TOKEN=$(EXPO_TOKEN)
-        
-        # Start build and capture output
-        BUILD_OUTPUT=$(yes | eas build --platform android --profile preview --non-interactive --json)
-        echo "Build output: $BUILD_OUTPUT"
-        
-        # Extract artifact URL using jq
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
-        echo "Artifact URL: $ARTIFACT_URL"
-        
-        # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
-          echo "Downloading from: $ARTIFACT_URL"
-          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-preview.aab "$ARTIFACT_URL"
-          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-preview.aab"
-        else
-          echo "Error: Could not extract artifact URL"
-          exit 1
-        fi
-      displayName: 'Build and Download Android App Bundle for Internal Testing'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/development'))
-      env:
-        EXPO_TOKEN: $(EXPO_TOKEN)
-
-    # Build and Download AAB (Production) for main branch
-    - script: |
-        export EXPO_TOKEN=$(EXPO_TOKEN)
-        
-        # Start build and capture output
-        BUILD_OUTPUT=$(yes | eas build --platform android --profile production --non-interactive --json)
-        echo "Build output: $BUILD_OUTPUT"
-        
-        # Extract artifact URL using jq
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.applicationArchiveUrl')
-        echo "Artifact URL: $ARTIFACT_URL"
-        
-        # Download the artifact using curl
-        if [ ! -z "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "null" ]; then
-          echo "Downloading from: $ARTIFACT_URL"
-          curl -L -o $(Build.ArtifactStagingDirectory)/android/app-production.aab "$ARTIFACT_URL"
-          echo "Downloaded artifact to: $(Build.ArtifactStagingDirectory)/android/app-production.aab"
-        else
-          echo "Error: Could not extract artifact URL"
-          exit 1
-        fi
-      displayName: 'Build and Download Android App Bundle for Production'
-      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-      env:
-        EXPO_TOKEN: $(EXPO_TOKEN)
-
-    # Publish build artifacts
+    # Upload the build artifact
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: 'app-builds'
+        pathToPublish: 'app-release.aab'
+        artifactName: 'android-app-bundle'
         publishLocation: 'Container'
       displayName: 'Publish Build Artifacts'
