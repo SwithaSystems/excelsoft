@@ -57,6 +57,10 @@ stages:
     - script: |
         export EXPO_TOKEN=$(EXPO_TOKEN)
         
+        # Set working directory variable
+        WORK_DIR="$(Build.SourcesDirectory)"
+        echo "Working directory: $WORK_DIR"
+        
         # Clean any existing build artifacts
         echo "Cleaning build artifacts..."
         rm -rf android/app/build
@@ -88,7 +92,7 @@ stages:
         echo "Build output: $BUILD_OUTPUT"
         
         if [ $BUILD_EXIT_CODE -ne 0 ]; then
-          echo "Build failed with exit code $BUILD_EXIT_CODE"
+          echo "##vso[task.logissue type=error]Build failed with exit code $BUILD_EXIT_CODE"
           exit 1
         fi
         
@@ -96,11 +100,33 @@ stages:
         ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o 'https://[^"]*\.aab')
         
         if [ -n "$ARTIFACT_URL" ]; then
-          echo "Downloading from: $ARTIFACT_URL"
-          curl -L -o app-release.aab "$ARTIFACT_URL"
-          echo "Build artifact downloaded successfully"
+          echo "Found artifact URL: $ARTIFACT_URL"
+          
+          # Download to a specific location using absolute path
+          AAB_PATH="$WORK_DIR/app-release.aab"
+          echo "Downloading to: $AAB_PATH"
+          
+          curl -L -o "$AAB_PATH" "$ARTIFACT_URL"
+          CURL_EXIT_CODE=$?
+          
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "##vso[task.logissue type=error]Failed to download AAB file. Curl exit code: $CURL_EXIT_CODE"
+            exit 1
+          fi
+          
+          # Verify file exists and has size greater than 0
+          if [ -f "$AAB_PATH" ] && [ -s "$AAB_PATH" ]; then
+            echo "Build artifact downloaded successfully"
+            echo "File size: $(ls -lh "$AAB_PATH" | awk '{print $5}')"
+            
+            # Create a variable that publish task can use
+            echo "##vso[task.setvariable variable=AAB_PATH]$AAB_PATH"
+          else
+            echo "##vso[task.logissue type=error]AAB file is missing or empty after download"
+            exit 1
+          fi
         else
-          echo "Failed to get artifact URL"
+          echo "##vso[task.logissue type=error]Failed to get artifact URL from build output"
           echo "Full build output:"
           echo "$BUILD_OUTPUT"
           exit 1
@@ -115,7 +141,7 @@ stages:
     # Upload the build artifact
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: 'app-release.aab'
+        pathToPublish: '$(AAB_PATH)'
         artifactName: 'android-app-bundle'
         publishLocation: 'Container'
       displayName: 'Publish Build Artifacts'
