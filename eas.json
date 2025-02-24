@@ -8,33 +8,26 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "gradleCommand": "clean :app:assembleDebug",
-        "buildType": "apk"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "local",
-        "autoIncrement": true,
-        "gradleCommand": "clean :app:bundleRelease"
+        "autoIncrement": true
       }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle",
-        "credentialsSource": "local",
-        "gradleCommand": "clean :app:bundleRelease"
+        "credentialsSource": "local"
       }
     },
     "testing": {
       "android": {
-        "buildType": "apk",
-        "gradleCommand": "clean :app:assembleRelease"
+        "buildType": "apk"
       }
     }
   }
