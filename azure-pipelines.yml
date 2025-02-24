@@ -97,7 +97,7 @@ stages:
         fi
         
         # Extract and download the artifact
-        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o 'https://[^"]*\.aab')
+        ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"buildUrl": *"[^"]*"' | grep -o 'https://[^"]*')
         
         if [ -n "$ARTIFACT_URL" ]; then
           echo "Found artifact URL: $ARTIFACT_URL"
@@ -106,12 +106,21 @@ stages:
           AAB_PATH="$WORK_DIR/app-release.aab"
           echo "Downloading to: $AAB_PATH"
           
-          curl -L -o "$AAB_PATH" "$ARTIFACT_URL"
+          # Add authentication header for Expo download
+          curl -L -H "Authorization: Bearer $EXPO_TOKEN" -o "$AAB_PATH" "$ARTIFACT_URL"
           CURL_EXIT_CODE=$?
           
           if [ $CURL_EXIT_CODE -ne 0 ]; then
             echo "##vso[task.logissue type=error]Failed to download AAB file. Curl exit code: $CURL_EXIT_CODE"
-            exit 1
+            echo "Attempting download with wget as fallback..."
+            
+            wget --header="Authorization: Bearer $EXPO_TOKEN" -O "$AAB_PATH" "$ARTIFACT_URL"
+            WGET_EXIT_CODE=$?
+            
+            if [ $WGET_EXIT_CODE -ne 0 ]; then
+              echo "##vso[task.logissue type=error]Both curl and wget failed to download the AAB file"
+              exit 1
+            fi
           fi
           
           # Verify file exists and has size greater than 0
