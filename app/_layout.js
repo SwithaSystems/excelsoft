@@ -205,9 +205,39 @@ const LayoutContent = () => {
             name={containers.dashBoardScreenScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
-</Stack>
+          <Stack.Screen
+            name={containers.filterScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminDashboardScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminSeeAllOrdersScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminOrderDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminProductDashboardScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminProductUpdationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminStoreInformationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminOrderQRScanScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack>
       )}
     </>
   );

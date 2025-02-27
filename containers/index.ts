@@ -1,5 +1,4 @@
-export default {
-  homeScreen: "home/home",
+export default {homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -48,6 +47,4 @@ export default {
   addNewPaymentScreenScreen: "addNewPaymentScreen/addNewPaymentScreen",
   feedBackScreenScreen: "feedBackScreen/feedBackScreen",
   dashBoardScreenScreen: "dashBoardScreen/dashBoardScreen",
-  filterScreen: "filter/filter",
-  categoriesScreeScreen: "categoriesScree/categoriesScree",
-};
+  filterScreen: 'filter/filter', AdminDashboardScreen: 'AdminDashboard/AdminDashboard', AdminSeeAllOrdersScreen: 'AdminSeeAllOrders/AdminSeeAllOrders', AdminOrderDetailScreen: 'AdminOrderDetail/AdminOrderDetail', AdminProductDashboardScreen: 'AdminProductDashboard/AdminProductDashboard', AdminProductUpdationScreen: 'AdminProductUpdation/AdminProductUpdation', AdminStoreInformationScreen: 'AdminStoreInformation/AdminStoreInformation', AdminOrderQRScanScreen: 'AdminOrderQRScan/AdminOrderQRScan'};
