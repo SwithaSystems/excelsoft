@@ -18,6 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { ProductsAPI } from "@/services/productService";
 import { useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 
 const feedBackScreen = () => {
   const {productId,reviewsArrayLength} = useLocalSearchParams();
@@ -56,10 +57,14 @@ const feedBackScreen = () => {
       // image: image, 
     };
   
-    if (review.rating  && reviewText !== "") {
+    if (review.rating && reviewText !== "") {
       try {
         await ProductsAPI.addReview(Number(productId), review); 
         setShowReviewconfirmationModal(true);
+        // Navigate back after a short delay to allow the modal to be seen
+        setTimeout(() => {
+          router.back();
+        }, 1500);
       } catch (error) {
         console.error("Failed to add review:", error);
         alert("Something went wrong. Please try again.");

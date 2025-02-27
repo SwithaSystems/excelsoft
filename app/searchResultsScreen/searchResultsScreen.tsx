@@ -21,6 +21,8 @@ const SearchResultsScreen = () => {
   const router = useRouter();
   const [subCategoriesIds,setSubCategoriesIds] = useState<number[]>([]);
   const [products,setProducts] = useState<Product[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(Number(categoryId));
+  const [subCategories, setSubCategories] = useState<any[]>([]);
 
   // const filteredProducts = React.useMemo(() => {
   //   console.log("categoryId",categoryId);
@@ -48,24 +50,49 @@ useEffect(() => {
       try {
         const data = await categoryService.getAllSubCategories(Number(categoryId));
         console.log("all sub categories", data);
-          const SubCategories_Ids = data.map((category) => category.id);
-          setSubCategoriesIds(SubCategories_Ids);
+        setSubCategories(data);
+        const SubCategories_Ids = data.map((category) => category.id);
+        setSubCategoriesIds(SubCategories_Ids);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
-    console.log("allSubcategory ids after seting",subCategoriesIds);
     fetchSubCategories();
   }, [categoryId]);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const allProducts = await ProductsAPI.getProductByCategoryID(Number(categoryId));
-      setProducts(allProducts);
+      try {
+        if (selectedCategoryId === Number(categoryId)) {
+          // For "All" category, check if there are subcategories
+          if (subCategoriesIds.length > 0) {
+            // If there are subcategories, fetch products from all of them
+            const allSubCategoryProducts = await Promise.all(
+              subCategoriesIds.map(id => ProductsAPI.getProductByCategoryID(id))
+            );
+            const combinedProducts = allSubCategoryProducts.flat();
+            setProducts(combinedProducts);
+          } else {
+            // If no subcategories, fetch products from the main category
+            const mainCategoryProducts = await ProductsAPI.getProductByCategoryID(Number(categoryId));
+            setProducts(mainCategoryProducts);
+          }
+        } else {
+          // For specific subcategory, fetch products normally
+          const categoryProducts = await ProductsAPI.getProductByCategoryID(selectedCategoryId);
+          setProducts(categoryProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setProducts([]);
+      }
     };
-    console.log("AllProducts",products)
     fetchProducts();
-  }, [categoryId]);
+  }, [selectedCategoryId, categoryId, subCategoriesIds]);
+
+  const handleCategorySelect = (categoryId: number) => {
+    setSelectedCategoryId(categoryId);
+  };
 
 // const filteredProducts = ProductsAPI.getAllSubCategoriesProducts(subCategoriesIds);
 
@@ -97,7 +124,11 @@ useEffect(() => {
   };
 
   const renderCategoryBadges = (categoryId:number) => {
-    return <CategoryBadges categoryId={categoryId}/>;
+    return <CategoryBadges 
+      categoryId={categoryId}
+      subCategories={subCategories}
+      onCategorySelect={handleCategorySelect}
+    />;
   };
 
   return (
@@ -130,4 +161,3 @@ export default SearchResultsScreen;
 function usestate(): [any, any] {
   throw new Error("Function not implemented.");
 }
-

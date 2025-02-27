@@ -120,7 +120,8 @@ const HomePage = () => {
       try {
         const data = await categoryService.getAllCategories();
         console.log(data);
-        setCategories(data);
+        const sortedData = data.sort((a, b) => a.id - b.id);
+        setCategories(sortedData);
       } catch (error) {
         console.error("Error fetching categories:", error);
       } finally {

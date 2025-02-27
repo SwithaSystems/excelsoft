@@ -43,15 +43,22 @@ const CategoryBadges = (props) => {
           props.categoryId
         );
         console.log("all sub categories", data);
-        const setsubCategories = data.map((category) => category.name);
-        setsubCategoriesNames(setsubCategories);
+        if (data && data.length > 0) {
+          const setsubCategories = data.map((category) => category.name);
+          setsubCategoriesNames(setsubCategories);
+        } else {
+          // If no subcategories, only show "All"
+          setsubCategoriesNames([]);
+        }
+        setActiveFilter("All");
+        props.onCategorySelect && props.onCategorySelect(props.categoryId);
       } catch (error) {
         console.error("Error fetching categories:", error);
+        setsubCategoriesNames([]);
       }
     };
-    console.log(subCategoriesNames);
     fetchSubCategories();
-  }, []);
+  }, [props.categoryId]);
 
   const renderSortOption = ({ item }) => (
     <TouchableOpacity
@@ -89,7 +96,19 @@ const CategoryBadges = (props) => {
                   ? { marginRight: 0 }
                   : {}, // Remove margin for last item
               ]}
-              onPress={() => setActiveFilter(category)}
+              onPress={() => {
+                setActiveFilter(category);
+                if (category === "All") {
+                  props.onCategorySelect && props.onCategorySelect(props.categoryId);
+                } else {
+                  const selectedSubCategory = props.subCategories.find(
+                    (subCat) => subCat.name === category
+                  );
+                  if (selectedSubCategory) {
+                    props.onCategorySelect && props.onCategorySelect(selectedSubCategory.id);
+                  }
+                }
+              }}
             >
               <Text
                 style={[

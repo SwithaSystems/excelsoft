@@ -1,9 +1,17 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
 import colors from "../config/colors";
@@ -11,6 +19,9 @@ import styles from "./productDetailScreenStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { Product, ProductsAPI } from "@/services/productService";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../store/slices/cartSlice";
+const { width } = Dimensions.get("window");
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -18,24 +29,70 @@ const ProductDetailScreen = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const dispatch = useDispatch();
 
-  // Find the product based on the ID
+  const fetchProduct = async () => {
+    try {
+      const fetchedProduct = await ProductsAPI.getProductBYID(
+        Number(productId)
+      );
+      setProduct(fetchedProduct);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch product when component mounts
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const fetchedProduct = await ProductsAPI.getProductBYID(
-          Number(productId)
-        );
-        setProduct(fetchedProduct);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    if (!productId) return;
     fetchProduct();
   }, [productId]);
+
+  // Refresh product data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (productId) {
+        fetchProduct();
+      }
+    }, [productId])
+  );
+
+  useEffect(() => {
+    if (!product?.image?.length || !scrollViewRef.current) return;
+
+    let isCancelled = false;
+
+    const scrollNextImage = () => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex =
+          prevIndex + 1 === product.image.length ? 0 : prevIndex + 1;
+
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollTo({
+            x: nextIndex * width,
+            animated: true,
+          });
+        }
+
+        if (!isCancelled) {
+          setTimeout(scrollNextImage, 3000);
+        }
+
+        return nextIndex;
+      });
+    };
+
+    const timeoutId = setTimeout(scrollNextImage, 3000);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [product?.image]);
 
   if (loading) {
     return (
@@ -55,15 +112,29 @@ const ProductDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView style={{ flex: 1 }}>
         <Header headerText={"About the Product"} />
-        <View style={styles.imageContainer}>
-          <Image
-            source={product.image[0]}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
-        </View>
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+        >
+          {product.image.map((imageUrl: any, index: any) => (
+            <View
+              key={index}
+              style={{
+                width: width,
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 20,
+              }}
+            >
+              <Image source={imageUrl} style={styles.productImage} />
+            </View>
+          ))}
+        </ScrollView>
 
         <View style={styles.contentContainer}>
           <Text style={styles.productTitle}>{product.name}</Text>
@@ -78,7 +149,7 @@ const ProductDetailScreen = () => {
           <View style={styles.colorSection}>
             <Text style={styles.colorTitle}>Select Color</Text>
             <View style={styles.colorOptions}>
-              {product.productColors.map((color) => (
+              {product.productColors.map((color: any) => (
                 <TouchableOpacity
                   key={color}
                   onPress={() => setSelectedColor(color)}
@@ -114,8 +185,16 @@ const ProductDetailScreen = () => {
             <Button
               title="Add To Cart"
               onPress={() => {
-                redirectToPage(containers.cartScreenScreen);
-              }}
+                if(product){
+                  dispatch(addToCart({
+                    id: Number(product.id),
+                    name: product.name,
+                    price: product.price,
+                    quantity: quantity,
+                    image: product.image
+                  }));
+                };
+             }}
               style={styles.button}
             />
             {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
@@ -124,16 +203,17 @@ const ProductDetailScreen = () => {
 
         <View style={styles.reviewsSection}>
           <Text style={styles.reviewsTitle}>What do Customers say?</Text>
-          {product.reviews.slice(0, 5).map((review) => (
-            <ProductRating key={review.id} review={review} />
+          {[...product.reviews]
+            .sort((a, b) => Number(b.id) - Number(a.id))
+            .slice(0, 5)
+            .map((review: any) => (
+              <ProductRating key={review.id} review={review} />
           ))}
           <TouchableOpacity
             style={styles.seeMoreButton}
             onPress={() =>
               redirectToPage(containers.reviewsScreenScreen, {
-                productId: productId,
-                totalReviews: JSON.stringify(product.reviews),
-                productRating: product.rating,
+                productId: productId
               })
             }
           >
