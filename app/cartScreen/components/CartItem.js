@@ -8,6 +8,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 
 function CartItem(props) {
   const item = props.cartItem;
+  console.log("item",item);
   return (
     <>
       <View style={[styles.cartItem, props?.itemContainerStyle]}>
@@ -15,7 +16,7 @@ function CartItem(props) {
           <View>
             {/* Handle both URL strings and require'd assets */}
             <Image 
-              source={typeof item.image === 'string' ? { uri: item.image } : item.image[0]} 
+              source={item.image[0]} 
               style={styles.itemImage} 
             />
           </View>

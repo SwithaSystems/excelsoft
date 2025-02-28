@@ -213,7 +213,9 @@ const ProductDetailScreen = () => {
             style={styles.seeMoreButton}
             onPress={() =>
               redirectToPage(containers.reviewsScreenScreen, {
-                productId: productId
+                productId: productId,
+                totalReviews: JSON.stringify(product.reviews),
+                productRating: product.rating,
               })
             }
           >
