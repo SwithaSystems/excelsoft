@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import styles from "./reviewsScreenStyles";
 import { ScrollView } from "react-native";
@@ -12,15 +12,30 @@ import ProductRating from "@/components/ProductRating";
 import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { API_BASE_URL } from "@/config/constants";
+import axios from "axios";
 
 const reviewsScreen = () => {
   const { productId,totalReviews ,productRating} = useLocalSearchParams();
   const reviewsArray = typeof totalReviews === "string" && totalReviews ? JSON.parse(totalReviews) : [];
-  //const product = products.find((p) => p.id === productId);
-  // const product = products[0];
-  // if (!product) {
-    // return <NoContentFound />;
-  // }
+  const[product,setProduct]=useState<any>(null);
+  
+  useEffect(()=>{
+console.log("ProductId",productId);
+if(productId){
+  fetchProductDetails();
+}
+
+  },[productId])
+  const fetchProductDetails= async()=>{
+    const response = await axios.get(`${API_BASE_URL}products/${productId}`);
+    setProduct(response.data);
+
+  }
+console.log("product",product);
+const soretedReviews = product?.reviews?.sort((a: any, b: any) => b.id - a.id);
+console.log("soretedReviews",soretedReviews);
+
   return (
     <View style={globalStyles.container}>
       <ScrollView>
@@ -37,7 +52,7 @@ const reviewsScreen = () => {
           </View>
           <View style={styles.reviewsContainer}>
             <Text style={styles.reviewContainerHeading}>Reviews</Text>
-            {reviewsArray.map((review:any) => (
+            {soretedReviews?.map((review:any) => (
               <ProductRating key={review.id} review={review} />
             ))}
           </View>

@@ -1,8 +1,8 @@
 import { router } from "expo-router";
 
 export const redirectToPage = (pageName, params = {}) => {
-  router.navigate({
-    pathname: pageName,
+  router.push({
+    pathname: `/${pageName}`,
     params: { ...params },
   });
 };

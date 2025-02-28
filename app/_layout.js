@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import SplashScreen from "../components/commonComponents/SplashScreen";
 import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
+import { Provider } from 'react-redux';
+import { store } from '../store/store';
 
 const LayoutContent = () => {
   const { isLoading, setIsLoading } = useAppContext();
@@ -206,16 +208,19 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
-</Stack>
+          <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
+        </Stack>
       )}
     </>
   );
 };
+
 export default function Layout() {
   return (
-    <AppProvider>
-      <LayoutContent />
-    </AppProvider>
+    <Provider store={store}>
+      <AppProvider>
+        <LayoutContent />
+      </AppProvider>
+    </Provider>
   );
 }
