@@ -131,7 +131,7 @@ const ProductDetailScreen = () => {
                 padding: 20,
               }}
             >
-              <Image source={imageUrl} style={styles.productImage} />
+              <Image source={{ uri: imageUrl }} style={styles.productImage} />
             </View>
           ))}
         </ScrollView>
