@@ -10,10 +10,11 @@ const styles = StyleSheet.create({
   },
   categoryItem: {
     width: itemWidth,
+    //width: itemWidth,
     // padding: 8,
   },
   leftItem: {
-    marginRight: 8,
+    paddingRight: 8,
   },
   listContainer: {
     padding: 16,
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
     
   },
   rightItem: {
-    marginLeft: 8,
+    paddingLeft: 8,
   },
   divider: {
     flex: 1,
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start', 
-    marginHorizontal: -8,
+    //marginHorizontal: -8,
     
   },
 })
