@@ -60,6 +60,7 @@ const categoriesScreen = () => {
         ]}
       >
         <CategoryItem
+          containerStyle={{ width: "100%" }}
           title={item.name}
           image={item.images?.[0] || ""}
           onPress={() =>
