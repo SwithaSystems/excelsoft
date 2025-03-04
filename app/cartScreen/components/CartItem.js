@@ -8,17 +8,13 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 
 function CartItem(props) {
   const item = props.cartItem;
-  console.log("item",item);
   return (
     <>
       <View style={[styles.cartItem, props?.itemContainerStyle]}>
         <View style={styles.cartItemContent}>
-          <View>
+          <View style={styles.cartItemImageContainer}>
             {/* Handle both URL strings and require'd assets */}
-            <Image 
-              source={item.image[0]} 
-              style={styles.itemImage} 
-            />
+            <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
           </View>
           {props?.hideActions ? (
             <>
@@ -73,9 +69,12 @@ function CartItem(props) {
                     />
                   )}
                 </View>
-                <TouchableOpacity onPress={() => {
-                  console.log("Deleting item",item);
-                  props.handleDelete(item)}}>
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log("Deleting item", item);
+                    props.handleDelete(item);
+                  }}
+                >
                   <Ionicons name="trash-outline" size={24} color="gray" />
                 </TouchableOpacity>
               </View>
@@ -102,12 +101,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     backgroundColor: colors.lightgrey,
   },
+  cartItemImageContainer: {
+    justifyContent: "center",
+    height: "100%",
+  },
   itemImage: {
     width: 140,
-    height: "100%",
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    resizeMode: "contain",
+    aspectRatio: 1.5,
+    //borderTopLeftRadius: 10,
+    //borderBottomLeftRadius: 10,
+    resizeMode: "cover",
   },
   itemDetails: {
     flex: 1,
