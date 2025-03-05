@@ -1,5 +1,4 @@
-export default {
-  homeScreen: "home/home",
+export default {homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -10,6 +9,8 @@ export default {
   reviewsScreenScreen: "reviewsScreen/reviewsScreen",
   userReviewScreenScreen: "userReviewScreen/userReviewScreen",
   cartScreenScreen: "cartScreen/cartScreen",
+  pickUpscreenScreen: "pickUpscreen/pickUpscreen",
+  pickupScreenScreen: "pickupScreen/pickupScreen",
   pickUpModescreenScreen: "pickUpModescreen/pickUpModescreen",
   storePickUpScreenScreen: "storePickUpScreen/storePickUpScreen",
   curbsidePickupScreenScreen: "curbsidePickupScreen/curbsidePickupScreen",
@@ -49,5 +50,5 @@ export default {
   feedBackScreenScreen: "feedBackScreen/feedBackScreen",
   dashBoardScreenScreen: "dashBoardScreen/dashBoardScreen",
   filterScreen: "filter/filter",
-  categoriesScreeScreen: "categoriesScree/categoriesScree",
+  categoriesScreeScreen: "categoriesScree/categoriesScree", 
 };

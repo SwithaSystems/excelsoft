@@ -12,7 +12,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import Button from "@/components/commonComponents/Button";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
@@ -22,14 +22,18 @@ const options = [
     label: "Store Pickup",
     description: "Pick up your order from our store",
     icon: "location",
-    redirectionScreen: containers.storePickUpScreenScreen,
+    redirectionScreen: containers.pickupScreenScreen,
+    params: { mode: "store" },
+
   },
   {
     id: "curbside",
     label: "Curbside Pickup",
     description: "Pick up your order curbside, right from your car.",
     icon: "car-outline",
-    redirectionScreen: containers.curbsidePickupScreenScreen,
+    redirectionScreen: containers.pickupScreenScreen,
+    params: { mode: "curbside" },
+
   },
   {
     id: "home",
@@ -37,10 +41,12 @@ const options = [
     description: "Receive your order at your doorstep.",
     icon: "home-outline",
     redirectionScreen: containers.homeDeliveryScreenScreen,
+    params: { mode: "home" },
   },
 ];
 const pickUpModescreen = () => {
-  const [selected, setSelected] = useState({});
+  const [selected, setSelected] = useState<Partial<{ id: string; redirectionScreen: any; params:any  }>>({});
+
 
   return (
     <View style={globalStyles.container}>
@@ -64,10 +70,10 @@ const pickUpModescreen = () => {
             >
               <View style={styles.iconContainer}>
                 <Ionicons
-                  name={option.icon}
+                  name={option.icon as string}
                   size={24}
                   color={colors.black}
-                  style={styles.icon}
+                  // style={styles.icon}
                 />
               </View>
               <View style={styles.textContainer}>
@@ -86,7 +92,9 @@ const pickUpModescreen = () => {
           <Button
             title="Continue"
             onPress={() => {
-              redirectToPage(selected?.redirectionScreen);
+              if (selected?.id) {
+                redirectToPage(selected?.redirectionScreen,selected?.params);
+                }
             }}
           />
         </View>

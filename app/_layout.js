@@ -71,6 +71,10 @@ const LayoutContent = () => {
             name={containers.pickUpModescreenScreen}
             options={{ headerShown: false }}
           />
+          {/* <Stack.Screen
+            name={containers.pickUpscreenScreen}
+            options={{ headerShown: false }}
+          /> */}
           <Stack.Screen
             name={containers.storePickUpScreenScreen}
             options={{ headerShown: false }}
@@ -209,7 +213,9 @@ const LayoutContent = () => {
           />
           <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
           <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
-        </Stack>
+          <Stack.Screen name={containers.pickupScreenScreen} options={{ headerShown: false }} />
+
+</Stack>
       )}
     </>
   );
