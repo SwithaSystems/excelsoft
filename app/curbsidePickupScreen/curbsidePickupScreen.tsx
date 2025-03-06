@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
+import OrderCollectionDetails from '@/components/OrderCollectionDetails';
 
 
 const curbsidePickupScreen = () => {
@@ -122,6 +123,7 @@ const curbsidePickupScreen = () => {
       <Text style={styles.inputLabel}>Additional Details</Text>
           <CustomTextInput containerStyle={globalStyles.pickUpInput} onPress={()=>{}} setValue={setAdditionalDetails} value={additionalDetails} />
       </View>
+      <OrderCollectionDetails />
     </View>
       </ScrollView>
         <View style={globalStyles.p_3}>

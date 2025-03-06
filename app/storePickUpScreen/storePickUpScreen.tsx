@@ -9,6 +9,7 @@ import Button from '@/components/commonComponents/Button';
 import { redirectToPage } from '@/utilities/redirectionHelper';
 import containers from '@/containers';
 import styles from './storePickUpScreenStyles';
+import OrderCollectionDetails from '../../components/OrderCollectionDetails';
 
 const storePickupScreen = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default date as ISO for web support
@@ -93,6 +94,7 @@ const storePickupScreen = () => {
           <Picker.Item style={globalStyles.pickerValue_sm} label="PM" value="pm" />
         </Picker>
       </View>
+      <OrderCollectionDetails />
     </View>
       </ScrollView>
         <View style={globalStyles.p_3}>
