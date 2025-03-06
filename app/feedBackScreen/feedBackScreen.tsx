@@ -18,9 +18,12 @@ import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { ProductsAPI } from "@/services/productService";
 import { useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const feedBackScreen = () => {
-  const {productId,reviewsArrayLength} = useLocalSearchParams();
+  const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [image, setImage] = useState<string | null>(null);
@@ -47,40 +50,48 @@ const feedBackScreen = () => {
   };
 
   const handleAddReview = async () => {
-    console.log(reviewsArrayLength);
+    if (!rating || reviewText.trim() === "") {
+      alert("Please enter both a rating and review text.");
+      return;
+    }
+
     const review = {
-      id: (Number(reviewsArrayLength)+1).toString(),
+      id: (Number(reviewsArrayLength) + 1).toString(),
       rating: rating,
-      name:"User",
+      name: "User",
       review: reviewText,
-      // image: image, 
     };
-  
-    if (review.rating  && reviewText !== "") {
-      try {
-        await ProductsAPI.addReview(Number(productId), review); 
-        setShowReviewconfirmationModal(true);
-      } catch (error) {
-        console.error("Failed to add review:", error);
-        alert("Something went wrong. Please try again.");
-      }
-    } else {
-      alert("Please enter a rating and review.");
+
+    try {
+      await ProductsAPI.addReview(Number(productId), review);
+      setShowReviewconfirmationModal(true);
+
+      // Navigate to product detail page after a short delay
+      setTimeout(() => {
+        redirectToPage(containers.productDetailScreenScreen, {
+          productId: productId,
+        });
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to add review:", error);
+      alert("Something went wrong. Please try again.");
     }
   };
-  
-  
 
   return (
     <View style={globalStyles.container}>
       <Header
         headerText="Feedback"
         secondaryBtnText="Discard"
-        secondaryBtnCallBack={() => {}}
+        secondaryBtnCallBack={() => {
+          redirectToPage(containers.productDetailScreenScreen, {
+            productId: productId,
+          });
+        }}
       />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <View style={styles.ratingContainer}>
+          <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
             <ProductStars
               starsContainer={{ justifyContent: "space-between" }}
@@ -94,12 +105,11 @@ const feedBackScreen = () => {
             <TextInput
               style={[styles.reviewInput, { height: 333 }]}
               placeholder="Add Your Review"
-              multiline={true}
+              multiline
               value={reviewText}
               onChangeText={setReviewText}
             />
           </View>
-
           <View style={styles.imagePickerContainer}>
             <Text style={styles.ratingTitle}>
               Would you like to add some pictures?
@@ -118,23 +128,16 @@ const feedBackScreen = () => {
       </ScrollView>
       <View style={globalStyles.p_3}>
         <Button
-          onPress={() => {
-            handleAddReview();
-          }}
-          title="Add Your Review"
+          title="Submit Review"
+          onPress={handleAddReview}
+          // style={styles.submitButton}
         />
       </View>
-      {showReviewconfirmationModal && (
-        <ConfirmationModal
-          isModalVisible={showReviewconfirmationModal}
-          onClose={() => {}}
-          text={"Successfully Added!"}
-          submitText={"OK"}
-          handleSubmit={() => {
-            setShowReviewconfirmationModal(false);
-          }}
-        />
-      )}
+      <ConfirmationModal
+        visible={showReviewconfirmationModal}
+        message="Review Added Successfully"
+        onClose={() => setShowReviewconfirmationModal(false)}
+      />
     </View>
   );
 };

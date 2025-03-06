@@ -29,6 +29,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
 import categoriesScreen from "../categoriesScree/categoriesScree";
+import { parentCategoryIDAll } from "@/config/constants";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -119,9 +120,12 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await categoryService.getAllCategories();
+        const data = await categoryService.getAllCategories(
+          parentCategoryIDAll
+        );
         console.log(data);
-        setCategories(data);
+        const sortedData = data.sort((a, b) => a.id - b.id);
+        setCategories(sortedData);
       } catch (error) {
         console.error("Error fetching categories:", error);
       } finally {
@@ -179,7 +183,6 @@ const HomePage = () => {
                 <CategoryItem
                   name={item.name}
                   imageUrl={item.images?.[0] || ""}
-                 
                   onPress={() =>
                     item.id === 2
                       ? redirectToPage(containers.categoriesScreeScreen, {

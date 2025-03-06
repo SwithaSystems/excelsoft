@@ -12,8 +12,9 @@ function CartItem(props) {
     <>
       <View style={[styles.cartItem, props?.itemContainerStyle]}>
         <View style={styles.cartItemContent}>
-          <View>
-            <Image source={item.image} style={styles.itemImage} />
+          <View style={styles.cartItemImageContainer}>
+            {/* Handle both URL strings and require'd assets */}
+            <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
           </View>
           {props?.hideActions ? (
             <>
@@ -82,7 +83,12 @@ function CartItem(props) {
                     />
                   )}
                 </View>
-                <TouchableOpacity onPress={() => props.handleDelete(item)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log("Deleting item", item);
+                    props.handleDelete(item);
+                  }}
+                >
                   <Ionicons name="trash-outline" size={24} color="gray" />
                 </TouchableOpacity>
               </View>
@@ -117,11 +123,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     backgroundColor: colors.lightgrey,
   },
+  cartItemImageContainer: {
+    justifyContent: "center",
+    height: "100%",
+  },
   itemImage: {
     width: 140,
-    //height: "100%",
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
+    aspectRatio: 1.5,
+    //borderTopLeftRadius: 10,
+    //borderBottomLeftRadius: 10,
+    resizeMode: "cover",
   },
   itemDetails: {
     flex: 1,
