@@ -1,5 +1,4 @@
-export default {
-  homeScreen: "home/home",
+export default {homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -49,5 +48,4 @@ export default {
   feedBackScreenScreen: "feedBackScreen/feedBackScreen",
   dashBoardScreenScreen: "dashBoardScreen/dashBoardScreen",
   filterScreen: "filter/filter",
-  categoriesScreeScreen: "categoriesScree/categoriesScree",
-};
+  categoriesScreeScreen: "categoriesScree/categoriesScree", NotificationListingScreen: 'NotificationListing/NotificationListing'};

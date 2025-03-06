@@ -2,6 +2,17 @@ import colors from "@/app/config/colors";
 import { StyleSheet } from "react-native";
 
 export const globalStyles = StyleSheet.create({
+  textCenter: {
+    textAlign: "center",
+  },
+  flexRow: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  flexRowReverse: {
+    display: "flex",
+    flexDirection: "row-reverse",
+  },
   input: {
     height: 48,
     borderColor: "#EBEDED",
@@ -57,6 +68,9 @@ export const globalStyles = StyleSheet.create({
   },
   mb_2: {
     marginBottom: 8,
+  },
+  ml_2: {
+    marginLeft: 8,
   },
   h6: {
     fontSize: 16,
@@ -158,4 +172,24 @@ export const globalStyles = StyleSheet.create({
     position: "relative",
   },
   userInputLabelIcon: {},
+  iconContainer: {
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "#FF4B4B",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
 });

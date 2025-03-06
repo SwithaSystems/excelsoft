@@ -3,8 +3,9 @@ import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 const footerOptions = [
   { title: "Home", icon: "home", redirectTo: containers.homeScreen },
@@ -19,39 +20,56 @@ const footerOptions = [
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
-  const cartItemCount = cartItems.reduce((total: any, item: any) => total + item.quantity, 0);
+  const cartItemCount = cartItems.reduce(
+    (total: any, item: any) => total + item.quantity,
+    0
+  );
 
   return (
     <View style={styles.footer}>
       {footerOptions.map((eachFooterOption, index) => {
-        const isCart = eachFooterOption.title.toLowerCase() === 'cart';
-        const isActive = activeTab.toLowerCase() === eachFooterOption.title.toLowerCase();
-        
+        const isCart = eachFooterOption.title.toLowerCase() === "cart";
+        const isActive =
+          activeTab.toLowerCase() === eachFooterOption.title.toLowerCase();
+
         return (
           <>
-          <TouchableOpacity
-            key={index}
-            style={styles.footerTab}
-            onPress={() => redirectToPage(eachFooterOption.redirectTo)}
-          >
-            <View style={styles.iconContainer}>
-              <Ionicons
-                name={eachFooterOption.icon}
-                size={24}
-                color={isActive ? "#3B4FB8" : "#666"}
-              />
-              {isCart && cartItemCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {cartItemCount > 99 ? '99+' : cartItemCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
+            <TouchableOpacity
+              key={index}
+              style={styles.footerTab}
+              onPress={() => redirectToPage(eachFooterOption.redirectTo)}
+            >
+              <View style={[globalStyles.iconContainer]}>
+                <Ionicons
+                  style={globalStyles.textCenter}
+                  name={eachFooterOption.icon}
+                  size={24}
+                  color={isActive ? "#3B4FB8" : "#666"}
+                />
+                <Text style={[globalStyles.textCenter, { fontSize: 10 }]}>
+                  {eachFooterOption.title}
+                </Text>
+                {isCart && cartItemCount > 0 && (
+                  <View style={globalStyles.badge}>
+                    <Text style={globalStyles.badgeText}>
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
           </>
         );
       })}
+      <TouchableOpacity style={styles.footerTab} onPress={() => {}}>
+        <View style={globalStyles.iconContainer}>
+          <Ionicons
+            name={"menu-outline"}
+            size={24}
+            color={false ? "#3B4FB8" : "#666"}
+          />
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -69,26 +87,6 @@ const styles = StyleSheet.create({
   footerTab: {
     alignItems: "center",
     flex: 1,
-  },
-  iconContainer: {
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: '#FF4B4B',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
 });
 

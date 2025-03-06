@@ -151,24 +151,39 @@ const HomePage = () => {
             source={require("../../assets/brandlogo.png")}
             style={homeStyles.logo}
           />
-          <TouchableOpacity
-            onPress={() => {
-              redirectToPage(containers.userProfileScreenScreen);
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ marginRight: 8 }}>Hello, User</Text>
-              <Ionicons name="person-circle-outline" size={24} color="#000" />
-            </View>
-          </TouchableOpacity>
+          <View style={[globalStyles.flexRow]}>
+            <TouchableOpacity
+              onPress={() => {
+                redirectToPage(containers.userProfileScreenScreen);
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={{ marginRight: 8 }}>Hello, User</Text>
+                <Ionicons name="person-circle-outline" size={24} color="#000" />
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={globalStyles.ml_2}
+              onPress={() => {
+                redirectToPage(containers.NotificationListingScreen);
+              }}
+            >
+              <View style={globalStyles.iconContainer}>
+                <Ionicons name="notifications" size={24} color="#000" />
+                <View style={globalStyles.badge}>
+                  <Text style={globalStyles.badgeText}>1</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search Bar */}
-        <Header searchBarNeeded={true} />
+        <Header />
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionTitle}>Categories</Text>
+          {/* <Text style={styles.sectionTitle}>Categories</Text> */}
           {loading ? (
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (

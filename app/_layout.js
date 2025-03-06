@@ -209,7 +209,8 @@ const LayoutContent = () => {
           />
           <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
           <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
-        </Stack>
+          <Stack.Screen name={containers.NotificationListingScreen} options={{ headerShown: false }} />
+</Stack>
       )}
     </>
   );
