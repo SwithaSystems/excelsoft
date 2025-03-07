@@ -5,9 +5,26 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import colors from "@/app/config/colors";
 import Button from "@/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { useSelector, useDispatch } from "react-redux";
+import { addToSavedItems } from "../../../store/slices/savedItemsSlice";
+import { removeFromCart } from "../../../store/slices/cartSlice";
 
 function CartItem(props) {
   const item = props.cartItem;
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => [...state.cart.items]);
+  const savedItems = useSelector((state) => state.savedItems.items);
+
+  const handleSaveItem = (saveItem) => {
+  if (saveItem) {
+    const itemToSave = cartItems.find(item => item.id === saveItem.id);
+    if (itemToSave) {
+      dispatch(addToSavedItems(itemToSave));
+      dispatch(removeFromCart(itemToSave.id)); 
+    }
+  }
+};
+
   return (
     <>
       <View style={[styles.cartItem, props?.itemContainerStyle]}>
@@ -92,7 +109,7 @@ function CartItem(props) {
                   <Ionicons name="trash-outline" size={24} color="gray" />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => alert(JSON.stringify(item))}>
+              <TouchableOpacity onPress={() => handleSaveItem(item)}>
                 <Text style={styles.saveLaterBtn}>
                   {props.footerBtnText || "Save for Later"}
                 </Text>

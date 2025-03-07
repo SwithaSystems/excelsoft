@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, FlatList, SafeAreaView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Footer from "../../components/Footer";
@@ -25,24 +25,58 @@ const SearchResultsScreen = () => {
   const [subCategories, setSubCategories] = useState<any[]>([]);
 
   // const filteredProducts = React.useMemo(() => {
-  //   console.log("categoryId",categoryId);
-  //   if (!query || !categoryId) return products;
-
-  //   const searchQuery = query?.toString().toLowerCase();
-
-  //   return products.filter(
-  //     (product) =>{
-  //       const matchesQuery = searchQuery ?
-  //       product.name.toLowerCase().includes(searchQuery) ||
-  //       product.description.toLowerCase().includes(searchQuery) : true ;
-
-  //       const matchesCategory =  product.categoryId.every((id) => id === +categoryId)
-  
-  //     return  matchesCategory;
-  //     }
-        
+  //   if (!query) return products;
+  //   const searchQuery = query.toString().toLowerCase();
+  //   return products.filter(product => 
+  //     product.name.toLowerCase().includes(searchQuery) ||
+  //     product.description.toLowerCase().includes(searchQuery) ||
+  //     product.category.toLowerCase().includes(searchQuery)
   //   );
-  // }, [query,categoryId,products]);
+  // }, [query]);
+  // Filter products based on search query and categoryId
+
+
+  
+
+  useEffect(()=>{
+    const fetchProducts = async () => {
+      try {
+        const products = await ProductsAPI.getAllProducts();
+        console.log("all Products", products);
+        setProducts(products);
+      } catch (error) {
+        console.error("Error fetching Products:", error);
+      }
+    };
+    fetchProducts();
+
+  },
+  [])
+  const filteredProducts = useMemo(() => {
+    if (!query) return products;
+  
+    const searchQuery = query?.toString().toLowerCase();
+  
+    return products.filter(product => {
+      const matchesQuery = searchQuery
+        ? product.name.toLowerCase().includes(searchQuery) ||
+          product.description.toLowerCase().includes(searchQuery)
+        : true;
+  
+      // const matchesCategory = categoryId
+      //   ? product.categoryId.some(id => id === Number(categoryId))
+      //   : true;
+  
+      return matchesQuery ;
+    });
+  }, [query,products]);
+  
+  // Update `products` state whenever `filteredProducts` changes
+  useEffect(() => {
+    console.log("Filetered products",filteredProducts)
+    setProducts(filteredProducts);
+  }, [filteredProducts?.length>0]);
+  
 
 
 useEffect(() => {
