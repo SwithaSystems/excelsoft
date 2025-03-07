@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import BrandHeader from "../../components/BrandHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import homeStyles from "./Homestyles";
@@ -139,16 +140,16 @@ const HomePage = () => {
     <View style={homeStyles.container}>
       <ScrollView>
         {/* Header */}
-        <View
+        {/* <View
           style={{
-            ...homeStyles.header,
+            padding: 16,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
           <Image
-            source={require("../../assets/brandlogo.png")}
+            source={require("../../assets/images/brandlogo.png")}
             style={homeStyles.logo}
           />
           <TouchableOpacity
@@ -161,7 +162,8 @@ const HomePage = () => {
               <Ionicons name="person-circle-outline" size={24} color="#000" />
             </View>
           </TouchableOpacity>
-        </View>
+        </View> */}
+        <BrandHeader />
 
         {/* Search Bar */}
         <Header searchBarNeeded={true} />
