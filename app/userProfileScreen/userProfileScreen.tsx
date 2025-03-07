@@ -19,6 +19,7 @@ const userProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.feedBackScreenScreen,
+    "Store Information": containers.AdminStoreInformationScreen,
   };
   const user = {
     firstName: "Katleena",
