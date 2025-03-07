@@ -94,7 +94,7 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  redirectToPage(settingsMenu[eachSetting]);
+                  redirectToPage(settingsMenu[eachSetting as keyof typeof settingsMenu]);
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>
