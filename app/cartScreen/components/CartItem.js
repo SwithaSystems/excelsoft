@@ -24,7 +24,14 @@ function CartItem(props) {
                   { height: "100%", justifyContent: "center" },
                 ]}
               >
-                <Text style={globalStyles.h6}>{item.name}</Text>
+                <Text style={globalStyles.h6}>
+                  {item.name}
+                  {props.showStockStatus && (
+                    <Text style={styles.stockStatus}>
+                      {props.stockAvailable ? "In Stock" : "No Stock"}
+                    </Text>
+                  )}
+                </Text>
                 <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
                 <Text style={globalStyles.h6}>
                   <DisplayPrice
@@ -40,7 +47,14 @@ function CartItem(props) {
                 price={item.price}
                 originalPrice={item.originalPrice}
               />
-              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemName}>
+                {item.name}
+                {props.showStockStatus && (
+                  <Text style={styles.stockStatus}>
+                    {props.stockAvailable ? "In Stock" : "No Stock"}
+                  </Text>
+                )}
+              </Text>
               <View style={styles.quantityContainer}>
                 <View style={styles.quantityActionContainer}>
                   {item.quantity && item.quantity > 0 ? (
@@ -91,6 +105,14 @@ function CartItem(props) {
   );
 }
 const styles = StyleSheet.create({
+  stockStatus: {
+    fontStyle: "italic",
+    fontSize: 14,
+    fontWeight: 500,
+    color: colors.secondaryText,
+    marginLeft: 4,
+    textAlign: "right",
+  },
   cartItem: {
     paddingHorizontal: 44,
     marginBottom: 16,
