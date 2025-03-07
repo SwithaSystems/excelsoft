@@ -1,115 +1,245 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
 import styles from './homeDeliveryScreenStyles';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 import { globalStyles } from '@/assets/styles/globalStyles';
 import { Picker } from '@react-native-picker/picker';
 import Header from '@/components/Header';
 import { redirectToPage } from '@/utilities/redirectionHelper';
 import containers from '@/containers';
 import Button from '@/components/commonComponents/Button';
+import { useLocalSearchParams } from 'expo-router';
+import { API_BASE_URL, PICKUP_MODE_IDS } from '@/config/constants';
 
-const homeDeliveryScreen = () => {
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default date as ISO for web support
+const HomeDeliveryScreen = () => {
+  const { orderId } = useLocalSearchParams();
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
-      const [hours, setHours] = useState('');
-      const [minutes, setMinutes] = useState('');
-      const [period, setPeriod] = useState('am');
-      const [address, setAddress] = useState('');
-      const [additionalDetails, setAdditionalDetails] = useState('');
+  const [hours, setHours] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [period, setPeriod] = useState('am');
+  const [address, setAddress] = useState('');
+  const [additionalDetails, setAdditionalDetails] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
 
-      const onDateChange = (event : DateTimePickerEvent, selectedDate : Date | undefined) => {
-        const currentDate = selectedDate || new Date(date);
-        setShowDatePicker(false);
-        setDate(currentDate.toISOString().split('T')[0]); // Format date as yyyy-mm-dd
-      };
+  const onDateChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+    const currentDate = selectedDate || new Date(date);
+    setShowDatePicker(false);
+    setDate(currentDate.toISOString().split('T')[0]);
+  };
+
+  const validateForm = () => {
+    if (!date || !hours || !minutes || !address || !firstName || !lastName || !phone || !email) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return false;
+    }
+
+    // Basic phone validation
+    const phoneRegex = /^\+?[\d\s-]{10,}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert('Error', 'Please enter a valid phone number');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!validateForm()) {
+        return;
+      }
+
+      setIsLoading(true);
+
+      // const deliveryData = {
+      //   orderId,
+      //   pickupModeId: PICKUP_MODE_IDS.HOME_DELIVERY,
+      //   date: new Date(date),
+      //   time: `${hours}:${minutes} ${period}`,
+      //   firstName,
+      //   lastName,
+      //   phone,
+      //   email,
+      //   address,
+      //   additionalDetails,
+      // };
+
+      // const response = await fetch(`${API_BASE_URL}/pickup-details`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(deliveryData),
+      // });
+
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.message || 'Failed to submit delivery request');
+      // }
+
+      // Update order status
+      // await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ status: 'processing' }),
+      // });
+
+      redirectToPage(containers.orderSummeryScreenScreen, {
+        orderId,
+        selectedDate: date,
+        selectedSlot: `${hours}:${minutes} ${period}`,
+        pickupAddress: address,
+        selectedMode: 'Home Delivery',
+        firstName,
+        lastName,
+        phone,
+        email,
+        additionalDetails
+      });
+    } catch (error) {
+      console.error('Error submitting delivery request:', error);
+      Alert.alert(
+        'Error',
+        'Failed to submit delivery request. Please try again later.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderTextInput = (label: string, value: string, onChangeText: (text: string) => void, props = {}) => (
+    <View style={styles.inputContainer}>
+      <Text style={styles.inputLabel}>{label} <Text style={styles.required}>*</Text></Text>
+      <TextInput
+        style={styles.textInput}
+        value={value}
+        onChangeText={onChangeText}
+        {...props}
+      />
+    </View>
+  );
+
   return (
-    <>
     <View style={globalStyles.container}>
       <Header headerText="Home Delivery"/>
       <ScrollView>
-    <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <Text style={styles.label}>
+            Do you prefer home delivery? Let us know your available day and time.
+          </Text>
 
-      <Text style={styles.label}>
-      Do you prefer home delivery? Let us know your available day and time. 
-      </Text>
+          {/* Date Picker */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Date: *</Text>
+            {Platform.OS === 'web' ? (
+              <input
+                type="date"
+                style={globalStyles.webDateInput}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            ) : (
+              <TouchableOpacity
+                style={globalStyles.dateInput}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text>{date}</Text>
+              </TouchableOpacity>
+            )}
+            {showDatePicker && (
+              <DateTimePicker
+                value={new Date(date)}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+              />
+            )}
+          </View>
 
-      {/* Date Picker */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Date: *</Text>
-        {Platform.OS === 'web' ? (
-          <input
-            type="date"
-            style={globalStyles.webDateInput}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+          {/* Time Input */}
+          <Text style={styles.inputLabel}>Time: *</Text>
+          <View style={globalStyles.timeContainer}>
+            <TextInput
+              style={globalStyles.timeInput}
+              placeholder="HH"
+              keyboardType="numeric"
+              maxLength={2}
+              value={hours}
+              onChangeText={setHours}
+            />
+            <Text>:</Text>
+            <TextInput
+              style={globalStyles.timeInput}
+              placeholder="MM"
+              keyboardType="numeric"
+              maxLength={2}
+              value={minutes}
+              onChangeText={setMinutes}
+            />
+            <Picker
+              selectedValue={period}
+              style={globalStyles.picker_sm}
+              onValueChange={(itemValue) => setPeriod(itemValue)}
+            >
+              <Picker.Item label="AM" value="am" />
+              <Picker.Item label="PM" value="pm" />
+            </Picker>
+          </View>
+
+          {/* Contact Information */}
+          {renderTextInput('First Name', firstName, setFirstName)}
+          {renderTextInput('Last Name', lastName, setLastName)}
+          {renderTextInput('Phone', phone, setPhone, { keyboardType: 'phone-pad' })}
+          {renderTextInput('Email', email, setEmail, { keyboardType: 'email-address' })}
+
+          {/* Address */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Address: *</Text>
+            <TextInput
+              style={[styles.textInput, styles.multilineInput]}
+              value={address}
+              onChangeText={setAddress}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          {/* Additional Instructions */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Additional Instructions for delivery partner:</Text>
+            <TextInput
+              style={[styles.textInput, styles.multilineInput]}
+              value={additionalDetails}
+              onChangeText={setAdditionalDetails}
+              multiline
+              numberOfLines={3}
+              placeholder="E.g., Landmark, preferred delivery time, etc."
+            />
+          </View>
+
+          <Button
+            title="Confirm"
+            onPress={handleSubmit}
+            disabled={isLoading}
           />
-        ) : (
-          <TouchableOpacity
-            style={globalStyles.dateInput}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text>{date}</Text>
-          </TouchableOpacity>
-        )}
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(date)}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-          />
-        )}
-      </View>
-
-      {/* Time Input */}
-      <Text style={styles.inputLabel}>Time: *</Text>
-      <View style={globalStyles.timeContainer}>
-        <TextInput
-          style={globalStyles.timeInput}
-          placeholder="HH"
-          keyboardType="numeric"
-          maxLength={2}
-          value={hours}
-          onChangeText={setHours}
-        />
-        <Text>:</Text>
-        <TextInput
-          style={globalStyles.timeInput}
-          placeholder="MM"
-          keyboardType="numeric"
-          maxLength={2}
-          value={minutes}
-          onChangeText={setMinutes}
-        />
-
-        {/* AM/PM Dropdown */}
-        <Picker
-          selectedValue={period}
-          style={globalStyles.picker_sm}
-          onValueChange={(itemValue) => setPeriod(itemValue)}
-        >
-          <Picker.Item style={globalStyles.pickerValue_sm} label="AM" value="am" />
-          <Picker.Item style={globalStyles.pickerValue_sm} label="PM" value="pm" />
-        </Picker>
-      </View>
-      <View style={globalStyles.mb_3}>
-      <Text style={styles.inputLabel}>Address: *</Text>
-          <CustomTextInput multiline={true} textBoxHeight={150} containerStyle={{borderRadius: 10, width: '100%', height:"auto"}} onPress={()=>{}} setValue={setAddress} value={address} />
-      </View>
-      <View style={globalStyles.mb_3}>
-      <Text style={styles.inputLabel}>Additional instructions for delivery partner:  </Text>
-          <CustomTextInput containerStyle={{borderRadius: 10, width: '100%'}}  onPress={()=>{}} setValue={setAdditionalDetails} value={additionalDetails} placeholder='Enter your instructions....'/>
-      </View>
-    </View>
-      </ScrollView>
-        <View style={globalStyles.p_3}>
-          <Button onPress={()=>{redirectToPage(containers.orderSummeryScreenScreen)}} title='Confirm'/>
         </View>
+      </ScrollView>
     </View>
-    </>
   );
 };
 
-export default homeDeliveryScreen;
+export default HomeDeliveryScreen;

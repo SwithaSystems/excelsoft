@@ -23,6 +23,10 @@ const curbsidePickupScreen = () => {
     const [vehicleType, setVehicleType] = useState('');
     const [vehicleNumber, setVehicleNumber] = useState('');
     const [additionalDetails, setAdditionalDetails] = useState('');
+    const [firstName, setFirstName] = useState("");
+      const [lastName, setLastName] = useState("");
+      const [phone, setPhone] = useState("");
+      const [email, setEmail] = useState("");
     
     const onDateChange = (event : DateTimePickerEvent, selectedDate : Date | undefined) => {
       const currentDate = selectedDate || new Date(date);
@@ -122,7 +126,40 @@ const curbsidePickupScreen = () => {
       <Text style={styles.inputLabel}>Additional Details</Text>
           <CustomTextInput containerStyle={globalStyles.pickUpInput} onPress={()=>{}} setValue={setAdditionalDetails} value={additionalDetails} />
       </View>
-    </View>
+      <Text style={styles.sectionTitle}>
+            Fill some basic details of the person who is going to reciver the order.
+          </Text>
+          
+          <Text style={styles.fieldLabel}>First Name</Text>
+          <TextInput
+            style={styles.input}
+            value={firstName}
+            onChangeText={setFirstName}
+          />
+          
+          <Text style={styles.fieldLabel}>Last Name</Text>
+          <TextInput
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
+          />
+          
+          <Text style={styles.fieldLabel}>Phone</Text>
+          <TextInput
+            style={styles.input}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+          
+          <Text style={styles.fieldLabel}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          </View>
       </ScrollView>
         <View style={globalStyles.p_3}>
           <Button onPress={()=>{redirectToPage(containers.orderSummeryScreenScreen)}} title='Confirm'/>

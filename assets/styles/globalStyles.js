@@ -159,7 +159,7 @@ export const globalStyles = StyleSheet.create({
     borderColor: colors.primary,
   },
   pickerValue_sm: {
-    fontSize: 8,
+    fontSize: 6,
   },
   picker_50: {
     height: 43,
