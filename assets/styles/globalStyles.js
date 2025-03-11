@@ -13,6 +13,16 @@ export const globalStyles = StyleSheet.create({
     display: "flex",
     flexDirection: "row-reverse",
   },
+  size_16: { fontSize: 16 },
+  justifyContentCenter: {
+    justifyContent: "center",
+  },
+  justifyContentBetween: {
+    justifyContent: "space-between",
+  },
+  alignItemsCenter: {
+    alignItems: "center",
+  },
   input: {
     height: 48,
     borderColor: "#EBEDED",
@@ -42,8 +52,20 @@ export const globalStyles = StyleSheet.create({
   mb_3: {
     marginBottom: 16,
   },
+  mt_0: {
+    marginTop: 0,
+  },
+  mt_n3: {
+    marginTop: -16,
+  },
+  mt_3: {
+    marginTop: 16,
+  },
   mt_4: {
     marginTop: 24,
+  },
+  mt_2: {
+    marginTop: 8,
   },
   mb_4: {
     marginBottom: 24,
@@ -68,6 +90,12 @@ export const globalStyles = StyleSheet.create({
   },
   mb_2: {
     marginBottom: 8,
+  },
+  mb_1: {
+    marginBottom: 4,
+  },
+  ml_1: {
+    marginLeft: 4,
   },
   ml_2: {
     marginLeft: 8,
@@ -118,6 +146,16 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginHorizontal: 4,
   },
+  picker: {
+    borderColor: colors.primary,
+    padding: 8,
+    borderRadius: 10,
+    fontSize: 16,
+  },
+  pickerValue: {
+    width: "100%",
+    fontSize: 16,
+  },
   picker_sm: {
     height: 16,
     width: 40,
@@ -126,7 +164,7 @@ export const globalStyles = StyleSheet.create({
     borderColor: colors.primary,
   },
   pickerValue_sm: {
-    fontSize: 8,
+    fontSize: 6,
   },
   picker_50: {
     height: 43,
@@ -191,5 +229,24 @@ export const globalStyles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  orderCompletedBadge: {
+    backgroundColor: "#C3FED9",
+    color: "#16A34A",
+  },
+  orderPendingBadge: {
+    backgroundColor: "#F1E29B",
+    color: "#B5990C",
+  },
+  orderCanceledBadge: {
+    backgroundColor: "#EAA9A9",
+    color: "#FC1B1B",
+  },
+  OrderStatusText: {
+    fontSize: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 40,
+    textAlign: "center",
   },
 });

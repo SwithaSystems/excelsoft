@@ -17,6 +17,7 @@ const editProfileScreen = () => {
   const [dateOfBirth, setDateOfBirth] = useState("01/02/1999");
   const [phone, setPhone] = useState("+1 (555) 123-4567");
   const [email, setEmail] = useState("Denniskatleenam@gmail.com");
+  const [role, setRole] = useState("Store Manager");
   return (
     <View style={globalStyles.container}>
       <Header headerText="Edit Profile" />
@@ -128,6 +129,26 @@ const editProfileScreen = () => {
                 onPress={() => {}}
                 setValue={setEmail}
                 keyboardType="email-address"
+              />
+            </View>
+          </View>
+          <View style={globalStyles.profileInputContainer}>
+            <FontAwesome
+              name="envelope-o"
+              size={32}
+              style={globalStyles.userInputLabelIcon}
+            />
+            <View style={{ flex: 1, paddingLeft: 14 }}>
+              <Text style={globalStyles.userInputLabel}>Role</Text>
+              <CustomTextInput
+                containerStyle={globalStyles.userInputContainer}
+                TextStyle={globalStyles.input}
+                placeholder="Role"
+                //disabled={true}
+                value={role}
+                onPress={() => {}}
+                setValue={setRole}
+                //keyboardType="email-address"
               />
             </View>
           </View>

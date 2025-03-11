@@ -13,7 +13,9 @@ import {
   View,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { removeFromCart } from "../../store/slices/cartSlice";
+import { CartItemInterface, removeFromCart } from "../../store/slices/cartSlice";
+import { removeFromSavedItems} from "../../store/slices/savedItemsSlice";
+import { addToSavedItems } from "../../store/slices/savedItemsSlice";
 import colors from "../config/colors";
 import SpecialOffersBanner from "./components/SpecialOffersBanner";
 import CartItem from "./components/CartItem";
@@ -32,26 +34,8 @@ import { redirectToPage } from "../../utilities/redirectionHelper";
 const CartScreen = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state:any) => [...state.cart.items]);
-  
+  const savedItems = useSelector((state:any) => state.savedItems.items);
 
-
-
-  // const savedItems = [
-  //   {
-  //     id: 1,
-  //     image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
-  //     name: "Duck Toys",
-  //     price: 10.0,
-  //     originalPrice: 6.99,
-  //   },
-  //   {
-  //     id: 2,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Orange Juice",
-  //     price: 3.0,
-  //     quantity: 0,
-  //   },
-  // ];
   const recommendedProducts = products
     .filter((p) =>
       ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
@@ -66,31 +50,6 @@ const CartScreen = () => {
       originalPrice: product.originalPrice,
     }));
 
-  // const [cartItems, setCartItems] = useState([
-  //   {
-  //     id: 1,
-  //     image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
-  //     name: "Duck Toys",
-  //     price: 10.0,
-  //     originalPrice: 6.99,
-  //     quantity: 1,
-  //   },
-  //   {
-  //     id: 2,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Orange Juice",
-  //     price: 3.0,
-  //     quantity: 2,
-  //   },
-  //   {
-  //     id: 3,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Whole Wheat Bread",
-  //     price: 12.0,
-  //     quantity: 1,
-  //   },
-  // ]);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{id:number}| null>(null);
 
@@ -98,22 +57,32 @@ const CartScreen = () => {
     setItemToDelete(item);
     setIsModalVisible(true);
   };
-  useEffect(() => {
-    console.log("Item to delete updated:", itemToDelete);
-  }, [itemToDelete]);
-  
+
   const confirmDelete = () => {
     if(itemToDelete) {
-      // Pass just the ID to removeFromCart
       dispatch(removeFromCart(itemToDelete.id));
     }
     setIsModalVisible(false);
-    setItemToDelete(null); // Clear the itemToDelete
+    setItemToDelete(null);
   };
 
   const cancelDelete = () => {
+    if(itemToDelete) {
+      const itemtoSave = cartItems.find(item=>item.id === itemToDelete.id );
+      if(itemtoSave)
+      {
+        dispatch(addToSavedItems(itemtoSave));
+        dispatch(removeFromCart(itemToDelete.id));
+
+      }
+    }
     setIsModalVisible(false);
+    setItemToDelete(null);
   };
+
+  useEffect(() => {
+    console.log("Item to delete updated:", itemToDelete);
+  }, [itemToDelete]);
 
   return (
     <View style={[globalStyles.container]}>
@@ -149,19 +118,21 @@ const CartScreen = () => {
               onPress={() => redirectToPage(containers.pickUpModescreenScreen)}
             />
           </View>
-          {/* <SavedLaterItem
-            savedForLaterItems={savedItems}
-            sectionHeadingStyle={styles.sectionHeading}
-            handleDelete={() => {
-              alert("delete saved");
-            }}
-          /> */}
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
             sectionTitleStyle={styles.sectionHeading}
             title="Similar products to your cart"
             showAddToCart={true}
           />
+          {savedItems.length > 0 && (
+            <SavedLaterItem
+              savedForLaterItems={savedItems}
+              sectionHeadingStyle={styles.sectionHeading}
+              handleDelete={(item:any) => {
+                dispatch(removeFromSavedItems(item.id));
+              }}
+            />
+          )}
         </View>
 
         {/* Delete Confirmation Modal */}

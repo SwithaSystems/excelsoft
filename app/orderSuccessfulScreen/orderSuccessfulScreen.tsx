@@ -11,7 +11,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { router } from "expo-router";
 
 const orderSuccessfulScreen = () => {
-  const isOrderPlacedSuccess = false;
+  const isOrderPlacedSuccess = true;
   const successCartImg = require("../../assets/images/successCartImg.png");
   const failedCartImg = require("../../assets/images/failedCartImg.png");
   function redirectToOrderDetails() {

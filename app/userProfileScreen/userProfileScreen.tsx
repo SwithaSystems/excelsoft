@@ -19,6 +19,7 @@ const userProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.feedBackScreenScreen,
+    "Store Information": containers.AdminStoreInformationScreen,
   };
   const user = {
     firstName: "Katleena",
@@ -94,7 +95,7 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  redirectToPage(settingsMenu[eachSetting]);
+                  redirectToPage(settingsMenu[eachSetting as keyof typeof settingsMenu]);
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>

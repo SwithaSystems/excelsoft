@@ -71,6 +71,10 @@ const LayoutContent = () => {
             name={containers.pickUpModescreenScreen}
             options={{ headerShown: false }}
           />
+          {/* <Stack.Screen
+            name={containers.pickUpscreenScreen}
+            options={{ headerShown: false }}
+          /> */}
           <Stack.Screen
             name={containers.storePickUpScreenScreen}
             options={{ headerShown: false }}
@@ -207,9 +211,43 @@ const LayoutContent = () => {
             name={containers.dashBoardScreenScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen name={containers.filterScreen} options={{ headerShown: false }} />
+          <Stack.Screen
+            name={containers.filterScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminDashboardScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminSeeAllOrdersScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminOrderDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminProductDashboardScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminProductUpdationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminStoreInformationScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminOrderQRScanScreen}
+            options={{ headerShown: false }}
+          />
+
           <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
           <Stack.Screen name={containers.NotificationListingScreen} options={{ headerShown: false }} />
+          <Stack.Screen name={containers.pickupScreenScreen} options={{ headerShown: false }} />
+
 </Stack>
       )}
     </>

@@ -1,108 +1,203 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker'; // Correct picker import for cross-platform
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { globalStyles } from '@/assets/styles/globalStyles';
-import Header from '@/components/Header';
-import colors from '../config/colors';
-import Button from '@/components/commonComponents/Button';
-import { redirectToPage } from '@/utilities/redirectionHelper';
-import containers from '@/containers';
-import styles from './storePickUpScreenStyles';
-import OrderCollectionDetails from '../../components/OrderCollectionDetails';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Platform,
+  ScrollView,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import Header from "@/components/Header";
+import colors from "../config/colors";
+import Button from "@/components/commonComponents/Button";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
+import styles from "./storePickUpScreenStyles";
+import { Ionicons } from "@expo/vector-icons";
 
 const storePickupScreen = () => {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default date as ISO for web support
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [hours, setHours] = useState('');
-  const [minutes, setMinutes] = useState('');
-  const [period, setPeriod] = useState('am');
+  const [hours, setHours] = useState("");
+  const [minutes, setMinutes] = useState("");
+  const [period, setPeriod] = useState("am");
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [amPm, setAmPm] = useState("am");
+  const [collector, setCollector] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
 
   // Handle date change
-  const onDateChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+  const onDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate: Date | undefined
+  ) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(currentDate.toISOString().split('T')[0]); // Format date as yyyy-mm-dd
+    setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
   };
 
   return (
     <View style={globalStyles.container}>
-      <Header headerText="Store Pickup"/>
+      <Header headerText="Store Pickup" />
       <ScrollView>
-    <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <Text style={styles.label}>
+            Do you like to store pick up? Let us know the date and time that
+            suits you for Store pickup.
+          </Text>
 
-      <Text style={styles.label}>
-        Do you like to store pick up? Let us know the date and time that suits you for Store pickup.
-      </Text>
+          {/* Date Picker */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Date: *</Text>
+            {Platform.OS === "web" ? (
+              <input
+                type="date"
+                style={globalStyles.webDateInput}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            ) : (
+              <TouchableOpacity
+                style={globalStyles.dateInput}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text>{date}</Text>
+              </TouchableOpacity>
+            )}
+            {showDatePicker && (
+              <DateTimePicker
+                value={new Date(date)}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+              />
+            )}
+          </View>
 
-      {/* Date Picker */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Date: *</Text>
-        {Platform.OS === 'web' ? (
-          <input
-            type="date"
-            style={globalStyles.webDateInput}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+          {/* Time Input */}
+          <Text style={styles.label}>
+            Time: <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={styles.timeContainer}>
+            <TextInput
+              style={[styles.timeInput, styles.hourMinuteInput]}
+              placeholder="HH"
+              value={hour}
+              onChangeText={setHour}
+              keyboardType="number-pad"
+            />
+            <TextInput
+              style={[styles.timeInput, styles.hourMinuteInput]}
+              placeholder="MM"
+              value={minute}
+              onChangeText={setMinute}
+              keyboardType="number-pad"
+            />
+            <View style={styles.amPmSelector}>
+              <Picker
+                selectedValue={period}
+                onValueChange={(itemValue) => setPeriod(itemValue)}
+              >
+                <Picker.Item
+                  style={globalStyles.pickerValue_sm}
+                  label="AM"
+                  value="am"
+                />
+                <Picker.Item
+                  style={globalStyles.pickerValue_sm}
+                  label="PM"
+                  value="pm"
+                />
+              </Picker>
+            </View>
+          </View>
+          <Text style={styles.sectionTitle}>
+            Let us know who is collecting?
+          </Text>
+          <View style={styles.radioContainer}>
+            <TouchableOpacity
+              style={styles.radioRow}
+              onPress={() => setCollector("myself")}
+            >
+              <View style={styles.radioButton}>
+                {collector === "myself" && (
+                  <View style={styles.radioButtonSelected} />
+                )}
+              </View>
+              <Text style={styles.radioText}>Myself</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.radioRow}
+              onPress={() => setCollector("someone")}
+            >
+              <View style={styles.radioButton}>
+                {collector === "someone" && (
+                  <View style={styles.radioButtonSelected} />
+                )}
+              </View>
+              <Text style={styles.radioText}>Someone Else</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Collector Details */}
+          <Text style={styles.sectionTitle}>
+            Fill some basic details of the person who is going to reciver the
+            order.
+          </Text>
+
+          <Text style={styles.fieldLabel}>First Name</Text>
+          <TextInput
+            style={styles.input}
+            value={firstName}
+            onChangeText={setFirstName}
           />
-        ) : (
-          <TouchableOpacity
-            style={globalStyles.dateInput}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Text>{date}</Text>
-          </TouchableOpacity>
-        )}
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(date)}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
+
+          <Text style={styles.fieldLabel}>Last Name</Text>
+          <TextInput
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
           />
-        )}
-      </View>
 
-      {/* Time Input */}
-      <Text style={styles.inputLabel}>Time: *</Text>
-      <View style={globalStyles.timeContainer}>
-        <TextInput
-          style={globalStyles.timeInput}
-          placeholder="HH"
-          keyboardType="numeric"
-          maxLength={2}
-          value={hours}
-          onChangeText={setHours}
-        />
-        <Text>:</Text>
-        <TextInput
-          style={globalStyles.timeInput}
-          placeholder="MM"
-          keyboardType="numeric"
-          maxLength={2}
-          value={minutes}
-          onChangeText={setMinutes}
-        />
+          <Text style={styles.fieldLabel}>Phone</Text>
+          <TextInput
+            style={styles.input}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
 
-        {/* AM/PM Dropdown */}
-        <Picker
-          selectedValue={period}
-          style={globalStyles.picker_sm}
-          onValueChange={(itemValue) => setPeriod(itemValue)}
-        >
-          <Picker.Item style={globalStyles.pickerValue_sm} label="AM" value="am" />
-          <Picker.Item style={globalStyles.pickerValue_sm} label="PM" value="pm" />
-        </Picker>
-      </View>
-      <OrderCollectionDetails />
-    </View>
-      </ScrollView>
-        <View style={globalStyles.p_3}>
-          <Button onPress={()=>{redirectToPage(containers.orderSummeryScreenScreen)}} title='Confirm'/>
+          <Text style={styles.fieldLabel}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
         </View>
+      </ScrollView>
+      <View style={globalStyles.p_3}>
+        <Button
+          onPress={() => {
+            redirectToPage(containers.orderSummeryScreenScreen);
+          }}
+          title="Confirm"
+        />
+      </View>
     </View>
   );
 };
-
 
 export default storePickupScreen;

@@ -4,52 +4,47 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
 } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { CheckBox } from "react-native-elements";
 import CartItem from "../cartScreen/components/CartItem";
 import OrderSummary from "@/components/OrderSummary";
 import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useSelector } from "react-redux";
+
+type OrderSummeryScreenParams = {
+  orderId: string;
+  address?: string;
+  pickupAddress?: string;
+  selectedDate?: string;
+  selectedSlot?: string;
+  selectedMode?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  additionalDetails?: string;
+}
 
 const orderSummeryScreen = () => {
-  const [address, setAddress] = useState("");
+  const params = useLocalSearchParams<OrderSummeryScreenParams>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  const selectedDeliveryDetails = {
-    selectedDate: "29/01/2025",
-    selectedSlot: "11:00 AM to 12:00 PM",
-    selectedMode: "Home Delivery",
-  };
-  const cartItems = [
-    {
-      id: 1,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Duck Toys",
-      price: 10.0,
-      originalPrice: 6.99,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Orange Juice",
-      price: 3.0,
-      quantity: 2,
-    },
-    {
-      id: 3,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Whole Wheat Bread",
-      price: 12.0,
-      quantity: 1,
-    },
-  ];
+  const cartItems = useSelector((state:any) => [...state.cart.items]);
+
+  
+  // Extract pickup data from route params or use default values
+  const pickupAddress = params.pickupAddress || "";
+  const selectedDate = params.selectedDate || "";
+  const selectedSlot = params.selectedSlot || "";
+  const selectedMode = params.selectedMode || "Delivery";
+  
+    
   return (
     <View style={globalStyles.container}>
       <ScrollView>
@@ -65,26 +60,14 @@ const orderSummeryScreen = () => {
           <View style={styles.section}>
             <Text style={styles.sectionHeading}>Address</Text>
             <View style={globalStyles.pl_3}>
-              <TextInput
-                style={styles.addressTextBox}
-                multiline={true}
-                numberOfLines={4}
-                placeholder="Enter Adress"
-                onChangeText={(newText) => setAddress(newText)}
-                value={address}
-              />
+              <Text style={styles.addressTextBox}>{pickupAddress}</Text>
             </View>
-          </View>
+          </View>76
           <View style={styles.section}>
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                You’ve selected a delivery slot for{" "}
-                {selectedDeliveryDetails.selectedDate} from{" "}
-                {selectedDeliveryDetails.selectedSlot} with{" "}
-                {selectedDeliveryDetails.selectedMode} as your chosen mode. If
-                you’d like to change the delivery time or method, please select
-                a new slot.&nbsp;
+                {selectedMode} scheduled for {selectedDate} at {selectedSlot}
                 <TouchableOpacity
                   onPress={() => {
                     redirectToPage(containers.pickUpModescreenScreen);

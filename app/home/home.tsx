@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import BrandHeader from "../../components/BrandHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import homeStyles from "./Homestyles";
@@ -139,44 +140,30 @@ const HomePage = () => {
     <View style={homeStyles.container}>
       <ScrollView>
         {/* Header */}
-        <View
+        {/* <View
           style={{
-            ...homeStyles.header,
+            padding: 16,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
           <Image
-            source={require("../../assets/brandlogo.png")}
+            source={require("../../assets/images/brandlogo.png")}
             style={homeStyles.logo}
           />
-          <View style={[globalStyles.flexRow]}>
-            <TouchableOpacity
-              onPress={() => {
-                redirectToPage(containers.userProfileScreenScreen);
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={{ marginRight: 8 }}>Hello, User</Text>
-                <Ionicons name="person-circle-outline" size={24} color="#000" />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={globalStyles.ml_2}
-              onPress={() => {
-                redirectToPage(containers.NotificationListingScreen);
-              }}
-            >
-              <View style={globalStyles.iconContainer}>
-                <Ionicons name="notifications" size={24} color="#000" />
-                <View style={globalStyles.badge}>
-                  <Text style={globalStyles.badgeText}>1</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
+          <TouchableOpacity
+            onPress={() => {
+              redirectToPage(containers.userProfileScreenScreen);
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ marginRight: 8 }}>Hello, User</Text>
+              <Ionicons name="person-circle-outline" size={24} color="#000" />
+            </View>
+          </TouchableOpacity>
+        </View> */}
+        <BrandHeader />
 
         {/* Search Bar */}
         <Header />

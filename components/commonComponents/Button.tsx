@@ -8,6 +8,7 @@ interface ButtonProps {
     style?: ViewStyle;
     textStyle?: TextStyle;
     primary?: boolean;
+    disabled?: boolean;
 }
 
 const Button = ({ title, onPress, style, textStyle, primary = true }: ButtonProps) => {

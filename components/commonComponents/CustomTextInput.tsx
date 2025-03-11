@@ -14,6 +14,7 @@ import {
 interface Props {
   placeholder?: string;
   value: string;
+  label?:string;
   setValue: (value: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: string;
@@ -27,6 +28,7 @@ interface Props {
   multiline?: boolean;
   textBoxHeight?: number;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export const CustomTextInput = (props: Props) => {

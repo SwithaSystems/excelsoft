@@ -5,9 +5,26 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import colors from "@/app/config/colors";
 import Button from "@/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { useSelector, useDispatch } from "react-redux";
+import { addToSavedItems } from "../../../store/slices/savedItemsSlice";
+import { removeFromCart } from "../../../store/slices/cartSlice";
 
 function CartItem(props) {
   const item = props.cartItem;
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => [...state.cart.items]);
+  const savedItems = useSelector((state) => state.savedItems.items);
+
+  const handleSaveItem = (saveItem) => {
+  if (saveItem) {
+    const itemToSave = cartItems.find(item => item.id === saveItem.id);
+    if (itemToSave) {
+      dispatch(addToSavedItems(itemToSave));
+      dispatch(removeFromCart(itemToSave.id)); 
+    }
+  }
+};
+
   return (
     <>
       <View style={[styles.cartItem, props?.itemContainerStyle]}>
@@ -24,7 +41,14 @@ function CartItem(props) {
                   { height: "100%", justifyContent: "center" },
                 ]}
               >
-                <Text style={globalStyles.h6}>{item.name}</Text>
+                <Text style={globalStyles.h6}>
+                  {item.name}
+                  {props.showStockStatus && (
+                    <Text style={styles.stockStatus}>
+                      {props.stockAvailable ? "In Stock" : "No Stock"}
+                    </Text>
+                  )}
+                </Text>
                 <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
                 <Text style={globalStyles.h6}>
                   <DisplayPrice
@@ -40,7 +64,14 @@ function CartItem(props) {
                 price={item.price}
                 originalPrice={item.originalPrice}
               />
-              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemName}>
+                {item.name}
+                {props.showStockStatus && (
+                  <Text style={styles.stockStatus}>
+                    {props.stockAvailable ? "In Stock" : "No Stock"}
+                  </Text>
+                )}
+              </Text>
               <View style={styles.quantityContainer}>
                 <View style={styles.quantityActionContainer}>
                   {item.quantity && item.quantity > 0 ? (
@@ -78,7 +109,7 @@ function CartItem(props) {
                   <Ionicons name="trash-outline" size={24} color="gray" />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => alert(JSON.stringify(item))}>
+              <TouchableOpacity onPress={() => handleSaveItem(item)}>
                 <Text style={styles.saveLaterBtn}>
                   {props.footerBtnText || "Save for Later"}
                 </Text>
@@ -91,6 +122,14 @@ function CartItem(props) {
   );
 }
 const styles = StyleSheet.create({
+  stockStatus: {
+    fontStyle: "italic",
+    fontSize: 14,
+    fontWeight: 500,
+    color: colors.secondaryText,
+    marginLeft: 4,
+    textAlign: "right",
+  },
   cartItem: {
     paddingHorizontal: 44,
     marginBottom: 16,
