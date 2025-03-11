@@ -16,6 +16,7 @@ import products from "@/data/products";
 import Footer from "@/components/Footer";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import QRCodeDisplay from "../../components/QRCodeDisplay";
 
 const orderDetailsScreen = () => {
   const recommendedProducts = products
@@ -68,9 +69,10 @@ const orderDetailsScreen = () => {
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>
-              <Text style={styles.barCodeNote}>
+            <QRCodeDisplay qrValue={55555} noteText='*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof.'/>
+              {/* <Text style={styles.barCodeNote}>
                 Show this bar code to our store personnel during the pickup.
-              </Text>
+              </Text> */}
             </View>
             <View style={styles.orderSummaryItem}>
               <Text

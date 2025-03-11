@@ -37,6 +37,7 @@ const myOrderScreen = () => {
             data={orderData}
             renderItem={({ item }) => <OrderItem item={item} />}
             keyExtractor={(item) => item.id}
+            nestedScrollEnabled={true}
           />
         </View>
       </ScrollView>

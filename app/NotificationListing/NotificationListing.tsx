@@ -62,6 +62,7 @@ const NotificationListing = () => {
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => <NotificationItem item={item} />}
               contentContainerStyle={{ paddingBottom: 20 }}
+              nestedScrollEnabled={true}
             />
           </View>
         </View>

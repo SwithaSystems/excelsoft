@@ -34,9 +34,6 @@ const CartScreen = () => {
   const cartItems = useSelector((state:any) => [...state.cart.items]);
   
 
-const screenWidth = Dimensions.get('window').width;
-alert('Screen Width: '+ screenWidth);
-
 
 
   // const savedItems = [
