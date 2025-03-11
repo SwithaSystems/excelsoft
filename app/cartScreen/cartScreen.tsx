@@ -1,6 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
+import { Dimensions } from 'react-native';
 import {
   FlatList,
   Image,
@@ -31,6 +32,10 @@ import { redirectToPage } from "../../utilities/redirectionHelper";
 const CartScreen = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state:any) => [...state.cart.items]);
+  
+
+const screenWidth = Dimensions.get('window').width;
+alert('Screen Width: '+ screenWidth);
 
 
 

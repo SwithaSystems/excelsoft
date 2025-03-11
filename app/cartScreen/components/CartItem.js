@@ -46,19 +46,19 @@ function CartItem(props) {
                   {item.quantity && item.quantity > 0 ? (
                     <>
                       <TouchableOpacity onPress={() => alert("-")}>
-                        <Text
+                        <View
                           style={[styles.quantityActionBtn, styles.minusBtn]}
                         >
                           <Feather name="minus" size={14} color={"#646464"} />
-                        </Text>
+                        </View>
                       </TouchableOpacity>
-                      <Text style={styles.quantityText}>{item.quantity}</Text>
+                      <View style={styles.quantityText}><Text>{item.quantity}</Text></View>
                       <TouchableOpacity onPress={() => alert("+")}>
-                        <Text
+                        <View
                           style={[styles.quantityActionBtn, styles.plusBtn]}
                         >
                           <Feather name="plus" size={14} color={"#646464"} />
-                        </Text>
+                        </View>
                       </TouchableOpacity>
                     </>
                   ) : (
@@ -98,12 +98,13 @@ const styles = StyleSheet.create({
   cartItemContent: {
     borderRadius: 10,
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
     backgroundColor: colors.lightgrey,
   },
   cartItemImageContainer: {
     justifyContent: "center",
-    height: "100%",
+    //height: "100%",
+    //width: 20,
   },
   itemImage: {
     width: 140,
@@ -131,6 +132,7 @@ const styles = StyleSheet.create({
   },
   quantityActionContainer: {
     flexDirection: "row",
+    alignItems: 'center',
     shadowColor: colors.black,
     borderRadius: 4,
     backgroundColor: "#EDEDED",
