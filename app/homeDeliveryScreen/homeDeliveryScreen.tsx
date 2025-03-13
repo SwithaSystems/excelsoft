@@ -9,7 +9,7 @@ import { redirectToPage } from '@/utilities/redirectionHelper';
 import containers from '@/containers';
 import Button from '@/components/commonComponents/Button';
 import { useLocalSearchParams } from 'expo-router';
-import { API_BASE_URL, PICKUP_MODE_IDS } from '@/config/constants';
+import { API_BASE_URL} from '@/config/constants';
 
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();

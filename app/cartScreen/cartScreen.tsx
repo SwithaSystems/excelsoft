@@ -12,8 +12,11 @@ import {
   View,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { CartItemInterface, removeFromCart } from "../../store/slices/cartSlice";
-import { removeFromSavedItems} from "../../store/slices/savedItemsSlice";
+import {
+  CartItemInterface,
+  removeFromCart,
+} from "../../store/slices/cartSlice";
+import { removeFromSavedItems } from "../../store/slices/savedItemsSlice";
 import { addToSavedItems } from "../../store/slices/savedItemsSlice";
 import colors from "../config/colors";
 import SpecialOffersBanner from "./components/SpecialOffersBanner";
@@ -32,8 +35,8 @@ import { redirectToPage } from "../../utilities/redirectionHelper";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
-  const cartItems = useSelector((state:any) => [...state.cart.items]);
-  const savedItems = useSelector((state:any) => state.savedItems.items);
+  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const savedItems = useSelector((state: any) => state.savedItems.items);
 
   const recommendedProducts = products
     .filter((p) =>
@@ -50,15 +53,15 @@ const CartScreen = () => {
     }));
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{id:number}| null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: number } | null>(null);
 
-  const handleDelete = (item:any) => {
+  const handleDelete = (item: any) => {
     setItemToDelete(item);
     setIsModalVisible(true);
   };
 
   const confirmDelete = () => {
-    if(itemToDelete) {
+    if (itemToDelete) {
       dispatch(removeFromCart(itemToDelete.id));
     }
     setIsModalVisible(false);
@@ -66,13 +69,11 @@ const CartScreen = () => {
   };
 
   const cancelDelete = () => {
-    if(itemToDelete) {
-      const itemtoSave = cartItems.find(item=>item.id === itemToDelete.id );
-      if(itemtoSave)
-      {
+    if (itemToDelete) {
+      const itemtoSave = cartItems.find((item) => item.id === itemToDelete.id);
+      if (itemtoSave) {
         dispatch(addToSavedItems(itemtoSave));
         dispatch(removeFromCart(itemToDelete.id));
-
       }
     }
     setIsModalVisible(false);
@@ -89,7 +90,7 @@ const CartScreen = () => {
         <Header headerText="Cart" />
 
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {cartItems?.map((eachCartItem:any) => {
+          {cartItems?.map((eachCartItem: any) => {
             return (
               <CartItem
                 handleDelete={handleDelete}
@@ -127,7 +128,7 @@ const CartScreen = () => {
             <SavedLaterItem
               savedForLaterItems={savedItems}
               sectionHeadingStyle={styles.sectionHeading}
-              handleDelete={(item:any) => {
+              handleDelete={(item: any) => {
                 dispatch(removeFromSavedItems(item.id));
               }}
             />

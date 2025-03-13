@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -62,11 +62,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderRadius: 8,
     alignItems: "center",
-    maxWidth: "80%"
+    maxWidth: "80%",
   },
   modalButtons: {
     marginTop: 16,
-    width: "70%"
+    width: "70%",
   },
 
   savedItem: {
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     textDecorationColor: colors.primary,
   },
-  sectionHeading:{
+  sectionHeading: {
     fontSize: 24,
-    marginBottom: 16
-  }
+    marginBottom: 16,
+  },
 });
 
 export default styles;
