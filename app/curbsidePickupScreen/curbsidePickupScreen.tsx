@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
+import OrderCollectionDetails from '@/components/OrderCollectionDetails';
 
 
 const curbsidePickupScreen = () => {

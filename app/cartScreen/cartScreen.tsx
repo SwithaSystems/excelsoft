@@ -1,6 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
+import { Dimensions } from 'react-native';
 import {
   FlatList,
   Image,

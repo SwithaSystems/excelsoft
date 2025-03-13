@@ -51,7 +51,8 @@ const customerSupportScreen = () => {
                   Speak with our team
                 </Text>
                 <Text style={styles.optionDescription}>+1 (555) 123-4567</Text>
-                <Text style={styles.availability}>
+                <View style={styles.availability}>
+                  <Text>
                   <Ionicons
                     name="time-outline"
                     size={24}
@@ -59,7 +60,8 @@ const customerSupportScreen = () => {
                     style={{ marginRight: 8 }}
                   />
                   Sun-Sat
-                </Text>
+                  </Text>
+                </View>
               </View>
             </TouchableOpacity>
 
