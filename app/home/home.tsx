@@ -166,11 +166,11 @@ const HomePage = () => {
         <BrandHeader />
 
         {/* Search Bar */}
-        <Header searchBarNeeded={true} />
+        <Header />
 
         {/* Categories */}
         <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionTitle}>Categories</Text>
+          {/* <Text style={styles.sectionTitle}>Categories</Text> */}
           {loading ? (
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (

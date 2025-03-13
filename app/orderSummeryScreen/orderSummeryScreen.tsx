@@ -48,7 +48,7 @@ const orderSummeryScreen = () => {
   return (
     <View style={globalStyles.container}>
       <ScrollView>
-        <Header headerText="Order Details" />
+        <Header headerText="Order Summary" />
         <View
           style={[
             globalStyles.sectionContent,

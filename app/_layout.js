@@ -245,6 +245,7 @@ const LayoutContent = () => {
           />
 
           <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name={containers.NotificationListingScreen} options={{ headerShown: false }} />
           <Stack.Screen name={containers.pickupScreenScreen} options={{ headerShown: false }} />
 
 </Stack>

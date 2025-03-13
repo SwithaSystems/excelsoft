@@ -87,6 +87,7 @@ const categoriesScreen = () => {
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
+            //nestedScrollEnabled={true}
           />
         </View>
       </ScrollView>

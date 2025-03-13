@@ -5,6 +5,14 @@ export const globalStyles = StyleSheet.create({
   textCenter: {
     textAlign: "center",
   },
+  flexRow: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  flexRowReverse: {
+    display: "flex",
+    flexDirection: "row-reverse",
+  },
   size_16: { fontSize: 16 },
   justifyContentCenter: {
     justifyContent: "center",
@@ -14,9 +22,6 @@ export const globalStyles = StyleSheet.create({
   },
   alignItemsCenter: {
     alignItems: "center",
-  },
-  flexRow: {
-    flexDirection: "row",
   },
   input: {
     height: 48,
@@ -205,7 +210,26 @@ export const globalStyles = StyleSheet.create({
     position: "relative",
   },
   userInputLabelIcon: {},
-
+  iconContainer: {
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "#FF4B4B",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
   orderCompletedBadge: {
     backgroundColor: "#C3FED9",
     color: "#16A34A",
