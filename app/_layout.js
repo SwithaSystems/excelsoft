@@ -2,8 +2,8 @@ import { Stack } from "expo-router";
 import SplashScreen from "../components/commonComponents/SplashScreen";
 import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
-import { Provider } from 'react-redux';
-import { store } from '../store/store';
+import { Provider } from "react-redux";
+import { store } from "../store/store";
 
 const LayoutContent = () => {
   const { isLoading, setIsLoading } = useAppContext();
@@ -17,6 +17,10 @@ const LayoutContent = () => {
             headerShown: false,
           }}
         >
+          <Stack.Screen
+            name={containers.splashScreenScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="index"
             options={{
@@ -71,10 +75,10 @@ const LayoutContent = () => {
             name={containers.pickUpModescreenScreen}
             options={{ headerShown: false }}
           />
-          {/* <Stack.Screen
-            name={containers.pickUpscreenScreen}
+          <Stack.Screen
+            name={containers.pickupScreenScreen}
             options={{ headerShown: false }}
-          /> */}
+          />
           <Stack.Screen
             name={containers.storePickUpScreenScreen}
             options={{ headerShown: false }}
@@ -244,11 +248,15 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
 
-          <Stack.Screen name={containers.categoriesScreeScreen} options={{ headerShown: false }} />
-          <Stack.Screen name={containers.NotificationListingScreen} options={{ headerShown: false }} />
-          <Stack.Screen name={containers.pickupScreenScreen} options={{ headerShown: false }} />
-
-</Stack>
+          <Stack.Screen
+            name={containers.categoriesScreeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.NotificationListingScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack>
       )}
     </>
   );

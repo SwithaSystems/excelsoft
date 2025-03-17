@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import styles from './allPaymentsScreenStyles';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import styles from "./allPaymentsScreenStyles";
 
 const allPaymentsScreen = () => {
   return (

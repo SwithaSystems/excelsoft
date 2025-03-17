@@ -6,10 +6,17 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 import { Image } from "react-native-elements";
 import styles from "./editProfileScreenStyles";
 import colors from "../config/colors";
+import * as ImagePicker from "expo-image-picker";
 
 const editProfileScreen = () => {
   const [firstName, setFirstName] = useState("Katleena M.");
@@ -18,21 +25,68 @@ const editProfileScreen = () => {
   const [phone, setPhone] = useState("+1 (555) 123-4567");
   const [email, setEmail] = useState("Denniskatleenam@gmail.com");
   const [role, setRole] = useState("Store Manager");
+  const [profileImage, setProfileImage] = useState(
+    "https://via.placeholder.com/100"
+  );
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission to access gallery is required!");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  //function to take photo
+  const takePhoto = async () => {
+    //ask for camera permission
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission to access camera is required!");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
+
   return (
-    <View style={globalStyles.container}>
+    <View style={globalStyles.container as ViewStyle}>
       <Header headerText="Edit Profile" />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           {/* Profile Picture */}
           <View style={globalStyles.profilePictureContainer}>
             <Image
-              source={{ uri: "https://via.placeholder.com/100" }}
+              source={{ uri: profileImage }}
               style={globalStyles.profileImage}
             />
-            <TouchableOpacity style={styles.changePictureButton}>
+            <TouchableOpacity
+              style={styles.changePictureButton}
+              onPress={pickImage}
+            >
               <Feather name="camera" size={24} color={colors.primary} />
             </TouchableOpacity>
-            <Text style={styles.changePictureText}>Change Profile Picture</Text>
+            <Text style={styles.changePictureText} onPress={takePhoto}>
+              Change Profile Picture
+            </Text>
           </View>
           <View style={globalStyles.profileInputContainer}>
             <FontAwesome
