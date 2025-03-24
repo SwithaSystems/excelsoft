@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
 
 export enum PickupMode {
-  HOME_DELIVERY = 'homeDelivery',
-  STORE_PICKUP = 'storePickup',
-  CURBSIDE_PICKUP = 'curbsidePickup',
+  HOME_DELIVERY = "homeDelivery",
+  STORE_PICKUP = "storePickup",
+  CURBSIDE_PICKUP = "curbsidePickup",
 }
 
 export interface OrderProduct {
@@ -60,7 +60,7 @@ export const orderService = {
       console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error("Error fetching orders:", error);
       throw error;
     }
   },

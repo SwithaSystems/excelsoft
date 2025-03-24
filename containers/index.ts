@@ -59,4 +59,6 @@ export default {
   AdminStoreInformationScreen: "AdminStoreInformation/AdminStoreInformation",
   AdminOrderQRScanScreen: "AdminOrderQRScan/AdminOrderQRScan",
   NotificationListingScreen: "NotificationListing/NotificationListing",
+  registerForPushNotifications:
+    "notificationsScreen/registerForPushNotifications",
 };

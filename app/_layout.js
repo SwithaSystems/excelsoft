@@ -1,12 +1,58 @@
+import React, { useEffect } from "react";
 import { Stack } from "expo-router";
+import { Provider } from "react-redux";
+import { store } from "../store/store";
 import SplashScreen from "../components/commonComponents/SplashScreen";
 import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
-import { Provider } from "react-redux";
-import { store } from "../store/store";
+import { NotificationService } from "@/services/notificationService";
+import { useAuth, AuthProvider } from "@/hooks/useAuth";
+
+// Component to handle notifications
+function NotificationsHandler() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Initialize notifications when the app starts
+    const initializeNotifications = async () => {
+      if (user?.id) {
+        await NotificationService.registerForPushNotificationsAsync(user.id);
+
+        // Set up notification listeners
+        const subscription = await NotificationService.subscribeToNotifications(
+          (notification) => {
+            console.log("Notification received:", notification);
+          }
+        );
+
+        const responseSubscription =
+          await NotificationService.handleNotificationResponse((response) => {
+            const data = response.notification.request.content.data;
+            console.log("User interacted with notification:", data);
+
+            // Handle notification response based on data
+            if (data?.orderId) {
+              // Handle navigation to order details
+            }
+          });
+
+        // Clean up subscriptions on unmount
+        return () => {
+          subscription.remove();
+          responseSubscription.remove();
+        };
+      }
+    };
+
+    initializeNotifications();
+  }, [user?.id]);
+
+  return null;
+}
 
 const LayoutContent = () => {
-  const { isLoading, setIsLoading } = useAppContext();
+  const { isLoading } = useAppContext();
+
   return (
     <>
       {isLoading ? (
@@ -21,12 +67,7 @@ const LayoutContent = () => {
             name={containers.splashScreenScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="index"
-            options={{
-              title: "ExcelSoft",
-            }}
-          />
+          <Stack.Screen name="index" options={{ title: "ExcelSoft" }} />
           <Stack.Screen
             name={containers.homeScreen}
             options={{ headerShown: false }}
@@ -247,13 +288,16 @@ const LayoutContent = () => {
             name={containers.AdminOrderQRScanScreen}
             options={{ headerShown: false }}
           />
-
           <Stack.Screen
             name={containers.categoriesScreeScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen
             name={containers.NotificationListingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.registerForPushNotifications}
             options={{ headerShown: false }}
           />
         </Stack>
@@ -266,7 +310,10 @@ export default function Layout() {
   return (
     <Provider store={store}>
       <AppProvider>
-        <LayoutContent />
+        <AuthProvider>
+          <NotificationsHandler />
+          <LayoutContent />
+        </AuthProvider>
       </AppProvider>
     </Provider>
   );

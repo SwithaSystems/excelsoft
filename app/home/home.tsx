@@ -139,30 +139,6 @@ const HomePage = () => {
   return (
     <View style={homeStyles.container}>
       <ScrollView>
-        {/* Header */}
-        {/* <View
-          style={{
-            padding: 16,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Image
-            source={require("../../assets/images/brandlogo.png")}
-            style={homeStyles.logo}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              redirectToPage(containers.userProfileScreenScreen);
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={{ marginRight: 8 }}>Hello, User</Text>
-              <Ionicons name="person-circle-outline" size={24} color="#000" />
-            </View>
-          </TouchableOpacity>
-        </View> */}
         <BrandHeader />
 
         {/* Search Bar */}

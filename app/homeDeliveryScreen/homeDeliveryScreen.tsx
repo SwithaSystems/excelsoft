@@ -1,54 +1,80 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Platform, TouchableOpacity, Alert } from 'react-native';
-import styles from './homeDeliveryScreenStyles';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { globalStyles } from '@/assets/styles/globalStyles';
-import { Picker } from '@react-native-picker/picker';
-import Header from '@/components/Header';
-import { redirectToPage } from '@/utilities/redirectionHelper';
-import containers from '@/containers';
-import Button from '@/components/commonComponents/Button';
-import { useLocalSearchParams } from 'expo-router';
-import { API_BASE_URL} from '@/config/constants';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  Platform,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import styles from "./homeDeliveryScreenStyles";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import { Picker } from "@react-native-picker/picker";
+import Header from "@/components/Header";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
+import Button from "@/components/commonComponents/Button";
+import { useLocalSearchParams } from "expo-router";
+import { API_BASE_URL } from "@/config/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { NotificationService } from "@/services/notificationService";
 
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const { user } = useAuth();
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [hours, setHours] = useState('');
-  const [minutes, setMinutes] = useState('');
-  const [period, setPeriod] = useState('am');
-  const [address, setAddress] = useState('');
-  const [additionalDetails, setAdditionalDetails] = useState('');
+  const [hours, setHours] = useState("");
+  const [minutes, setMinutes] = useState("");
+  const [period, setPeriod] = useState("am");
+  const [address, setAddress] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
 
-  const onDateChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+  const onDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate: Date | undefined
+  ) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(currentDate.toISOString().split('T')[0]);
+    setDate(currentDate.toISOString().split("T")[0]);
   };
 
   const validateForm = () => {
-    if (!date || !hours || !minutes || !address || !firstName || !lastName || !phone || !email) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (
+      !date ||
+      !hours ||
+      !minutes ||
+      !address ||
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !email
+    ) {
+      Alert.alert("Error", "Please fill in all required fields");
       return false;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      Alert.alert("Error", "Please enter a valid email address");
       return false;
     }
 
     // Basic phone validation
     const phoneRegex = /^\+?[\d\s-]{10,}$/;
     if (!phoneRegex.test(phone)) {
-      Alert.alert('Error', 'Please enter a valid phone number');
+      Alert.alert("Error", "Please enter a valid phone number");
       return false;
     }
 
@@ -98,32 +124,59 @@ const HomeDeliveryScreen = () => {
       //   body: JSON.stringify({ status: 'processing' }),
       // });
 
+      // Send notification for order update through the backend
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      // Send both a delivery notification and status update
+      await NotificationService.sendOrderDeliveryUpdate(
+        user.id,
+        orderId as string,
+        date,
+        `${hours}:${minutes} ${period}`
+      );
+
+      // Also trigger a local notification for immediate feedback
+      await NotificationService.scheduleLocalNotification(
+        "Delivery Scheduled",
+        `Your order #${orderId} delivery is scheduled for ${date} at ${hours}:${minutes} ${period}`,
+        { orderId, type: "delivery_scheduled" }
+      );
+
       redirectToPage(containers.orderSummeryScreenScreen, {
         orderId,
         selectedDate: date,
         selectedSlot: `${hours}:${minutes} ${period}`,
         pickupAddress: address,
-        selectedMode: 'Home Delivery',
+        selectedMode: "Home Delivery",
         firstName,
         lastName,
         phone,
         email,
-        additionalDetails
+        additionalDetails,
       });
     } catch (error) {
-      console.error('Error submitting delivery request:', error);
+      console.error("Error submitting delivery request:", error);
       Alert.alert(
-        'Error',
-        'Failed to submit delivery request. Please try again later.'
+        "Error",
+        "Failed to submit delivery request. Please try again later."
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const renderTextInput = (label: string, value: string, onChangeText: (text: string) => void, props = {}) => (
+  const renderTextInput = (
+    label: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    props = {}
+  ) => (
     <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>{label} <Text style={styles.required}>*</Text></Text>
+      <Text style={styles.inputLabel}>
+        {label} <Text style={styles.required}>*</Text>
+      </Text>
       <TextInput
         style={styles.textInput}
         value={value}
@@ -135,17 +188,18 @@ const HomeDeliveryScreen = () => {
 
   return (
     <View style={globalStyles.container}>
-      <Header headerText="Home Delivery"/>
+      <Header headerText="Home Delivery" />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <Text style={styles.label}>
-            Do you prefer home delivery? Let us know your available day and time.
+            Do you prefer home delivery? Let us know your available day and
+            time.
           </Text>
 
           {/* Date Picker */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Date: *</Text>
-            {Platform.OS === 'web' ? (
+            {Platform.OS === "web" ? (
               <input
                 type="date"
                 style={globalStyles.webDateInput}
@@ -201,10 +255,14 @@ const HomeDeliveryScreen = () => {
           </View>
 
           {/* Contact Information */}
-          {renderTextInput('First Name', firstName, setFirstName)}
-          {renderTextInput('Last Name', lastName, setLastName)}
-          {renderTextInput('Phone', phone, setPhone, { keyboardType: 'phone-pad' })}
-          {renderTextInput('Email', email, setEmail, { keyboardType: 'email-address' })}
+          {renderTextInput("First Name", firstName, setFirstName)}
+          {renderTextInput("Last Name", lastName, setLastName)}
+          {renderTextInput("Phone", phone, setPhone, {
+            keyboardType: "phone-pad",
+          })}
+          {renderTextInput("Email", email, setEmail, {
+            keyboardType: "email-address",
+          })}
 
           {/* Address */}
           <View style={styles.inputContainer}>
@@ -220,7 +278,9 @@ const HomeDeliveryScreen = () => {
 
           {/* Additional Instructions */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Additional Instructions for delivery partner:</Text>
+            <Text style={styles.inputLabel}>
+              Additional Instructions for delivery partner:
+            </Text>
             <TextInput
               style={[styles.textInput, styles.multilineInput]}
               value={additionalDetails}
@@ -231,11 +291,7 @@ const HomeDeliveryScreen = () => {
             />
           </View>
 
-          <Button
-            title="Confirm"
-            onPress={handleSubmit}
-            disabled={isLoading}
-          />
+          <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
         </View>
       </ScrollView>
     </View>

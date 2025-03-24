@@ -12,12 +12,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.excelsoft.app"
+      "bundleIdentifier": "com.excelsoft.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "remote-notification"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,8 +27,8 @@
       },
       "package": "com.excelsoft.app",
       "versionCode": 1,
-      "permissions": [],
-      "newArchEnabled": true
+      "newArchEnabled": true,
+      "permissions": ["NOTIFICATION"]
     },
     "web": {
       "bundler": "metro",
@@ -35,7 +36,16 @@
       "favicon": "./assets/brandlogo.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "androidMode": "default",
+          "androidCollapsedTitle": "New messages"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -9,10 +9,12 @@ import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { Button, Platform } from "react-native";
 
 const userProfileScreen = () => {
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
@@ -95,7 +97,9 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  redirectToPage(settingsMenu[eachSetting as keyof typeof settingsMenu]);
+                  redirectToPage(
+                    settingsMenu[eachSetting as keyof typeof settingsMenu]
+                  );
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>
