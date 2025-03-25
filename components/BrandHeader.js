@@ -13,6 +13,7 @@ function BrandHeader(props) {
       const userData = await AsyncStorage.getItem("user");
       if (userData) {
         const user = JSON.parse(userData);
+        console.log("user", user);
         setUsername(user?.firstName || "User");
       }
     };

@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { globalStyles } from "../../assets/styles/globalStyles";
 import styles from "./signInStyles";
-import { UserAPI } from "@/services/userService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/context/AuthContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
@@ -16,6 +15,7 @@ const signIn = () => {
   const [errors, setErrors] = useState<
     Partial<{ email?: string; phone?: string; password?: string }>
   >({});
+  const { login } = useAuth();
 
   const validateFields = () => {
     const newErrors = {} as {
@@ -28,7 +28,6 @@ const signIn = () => {
     } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Enter a valid email address.";
     } else if (phone && !/^(\+91\d{10})$/.test(phone)) {
-      console.log(phone);
       newErrors.phone = "Enter a valid 10-digit phone number.";
     }
 
@@ -44,24 +43,13 @@ const signIn = () => {
 
   const handleSignIn = async () => {
     if (validateFields()) {
-      const data = {
-        ...(email ? { email } : { phone }),
-        password,
-      };
-
-      const response = await UserAPI.userSignIn(data);
-      console.log("response", response);
-      if (response && response.data.message === "Sign-in successful.") {
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
-        const storedData = await AsyncStorage.getItem("user");
-        console.log(
-          "Stored User Data:",
-          storedData ? JSON.parse(storedData) : "No data found"
-        );
+      try {
+        // Use email for JWT authentication
+        await login(phone, password);
         Alert.alert("Success", "You have successfully signed in.");
         redirectToPage(containers.homeScreen);
-      } else {
-        Alert.alert("Error", response?.message || "Sign-in failed.");
+      } catch (error) {
+        Alert.alert("Error", "Invalid credentials. Please try again.");
       }
     } else {
       Alert.alert(
@@ -74,6 +62,7 @@ const signIn = () => {
   const handleBlur = (fieldName: string) => {
     validateFields();
   };
+
   return (
     <View style={styles.container}>
       <Header headerText={"Sign In"} />
@@ -129,9 +118,14 @@ const signIn = () => {
           onPress={handleSignIn}
         />
 
-        <Text style={styles.signUpText}>
-          Don’t have an account? <Text style={styles.signUpLink}>Sign Up</Text>
-        </Text>
+        <TouchableOpacity
+          onPress={() => redirectToPage(containers.signUpScreenScreen)}
+        >
+          <Text style={styles.signUpText}>
+            Don't have an account?{" "}
+            <Text style={styles.signUpLink}>Sign Up</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -7,6 +7,7 @@ import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
 import { useAuth, AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider as ContextAuthProvider } from "../context/AuthContext";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -31,6 +32,8 @@ function NotificationsHandler() {
             console.log("User interacted with notification:", data);
 
             // Handle notification response based on data
+            // For example, navigate to order details if notification is about an order
+
             if (data?.orderId) {
               // Handle navigation to order details
             }
@@ -311,8 +314,10 @@ export default function Layout() {
     <Provider store={store}>
       <AppProvider>
         <AuthProvider>
-          <NotificationsHandler />
-          <LayoutContent />
+          <ContextAuthProvider>
+            <NotificationsHandler />
+            <LayoutContent />
+          </ContextAuthProvider>
         </AuthProvider>
       </AppProvider>
     </Provider>
