@@ -1,21 +1,26 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Button,
+  Platform,
+} from "react-native";
 import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { useEffect, useRef } from "react";
-import { Button, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../services/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
-const { logout } = useAuth();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,7 +30,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const userProfileScreen = () => {
+const UserProfileScreen = () => {
+  const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const notificationListener = useRef<
@@ -34,8 +40,12 @@ const userProfileScreen = () => {
   const responseListener = useRef<Notifications.EventSubscription | undefined>(
     undefined
   );
-
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [user, setUser] = useState<{
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null>(null);
 
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
@@ -45,12 +55,6 @@ const userProfileScreen = () => {
     Feedback: containers.feedBackScreenScreen,
     "Store Information": containers.AdminStoreInformationScreen,
   };
-  interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-  }
-  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -96,9 +100,12 @@ const userProfileScreen = () => {
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };
-  }, []);
+  }, [user]);
+
   const handleLogout = async () => {
     try {
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
       redirectToPage(containers.signInScreen);
@@ -236,9 +243,7 @@ const userProfileScreen = () => {
         isModalVisible={logOutModalOpen}
         text="Are you sure you want to Log out?"
         submitText="Yes"
-        handleSubmit={() => {
-          handleLogout;
-        }}
+        handleSubmit={handleLogout}
         cancelText="No"
         handleCancel={() => {
           setLogOutModalOpen(false);
@@ -261,4 +266,4 @@ const userProfileScreen = () => {
   );
 };
 
-export default userProfileScreen;
+export default UserProfileScreen;

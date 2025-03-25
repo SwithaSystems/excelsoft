@@ -6,18 +6,19 @@ import SplashScreen from "../components/commonComponents/SplashScreen";
 import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
-import { useAuth, AuthProvider } from "@/hooks/useAuth";
-import { AuthProvider as ContextAuthProvider } from "../context/AuthContext";
+import { AuthProvider } from "../context/AuthContext";
+import { authService } from "../services/auth.service";
 
 // Component to handle notifications
 function NotificationsHandler() {
-  const { user } = useAuth();
-
   useEffect(() => {
     // Initialize notifications when the app starts
     const initializeNotifications = async () => {
+      const user = await authService.getCurrentUser();
       if (user?.id) {
-        await NotificationService.registerForPushNotificationsAsync(user.id);
+        await NotificationService.registerForPushNotificationsAsync(
+          user.id.toString()
+        );
 
         // Set up notification listeners
         const subscription = await NotificationService.subscribeToNotifications(
@@ -32,8 +33,6 @@ function NotificationsHandler() {
             console.log("User interacted with notification:", data);
 
             // Handle notification response based on data
-            // For example, navigate to order details if notification is about an order
-
             if (data?.orderId) {
               // Handle navigation to order details
             }
@@ -48,7 +47,7 @@ function NotificationsHandler() {
     };
 
     initializeNotifications();
-  }, [user?.id]);
+  }, []);
 
   return null;
 }
@@ -299,10 +298,6 @@ const LayoutContent = () => {
             name={containers.NotificationListingScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name={containers.registerForPushNotifications}
-            options={{ headerShown: false }}
-          />
         </Stack>
       )}
     </>
@@ -314,10 +309,8 @@ export default function Layout() {
     <Provider store={store}>
       <AppProvider>
         <AuthProvider>
-          <ContextAuthProvider>
-            <NotificationsHandler />
-            <LayoutContent />
-          </ContextAuthProvider>
+          <NotificationsHandler />
+          <LayoutContent />
         </AuthProvider>
       </AppProvider>
     </Provider>

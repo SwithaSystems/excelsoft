@@ -44,7 +44,7 @@ const signIn = () => {
   const handleSignIn = async () => {
     if (validateFields()) {
       try {
-        // Use email for JWT authentication
+        // Use phone for JWT authentication
         await login(phone, password);
         Alert.alert("Success", "You have successfully signed in.");
         redirectToPage(containers.homeScreen);
@@ -76,10 +76,10 @@ const signIn = () => {
           onChangeText={(text) => {
             if (/^(\+91\d{10})$/.test(text)) {
               setPhoneNumber(text);
-              setEmail(""); // Clear email if phone is detected
+              setEmail(""); 
             } else {
               setEmail(text);
-              setPhoneNumber(""); // Clear phone if email is detected
+              setPhoneNumber(""); 
             }
           }}
           onBlur={() => handleBlur("email")}
