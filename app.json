@@ -15,10 +15,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.excelsoft.app",
-      "infoPlist": {
-        "UIBackgroundModes": ["fetch", "remote-notification"]
-      }
+      "bundleIdentifier": "com.excelsoft.app"
     },
     "android": {
       "adaptiveIcon": {
