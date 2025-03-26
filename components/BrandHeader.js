@@ -3,8 +3,24 @@ import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { redirectToPage } from "../utilities/redirectionHelper";
 import containers from "../containers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState, useEffect } from "react";
 
 function BrandHeader(props) {
+  const [username, setUsername] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log("user", user);
+        setUsername(user?.firstName || "User");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <>
       <View
@@ -21,11 +37,17 @@ function BrandHeader(props) {
         />
         <TouchableOpacity
           onPress={() => {
-            redirectToPage(containers.userProfileScreenScreen);
+            if (username) {
+              redirectToPage(containers.userProfileScreenScreen);
+            } else {
+              redirectToPage(containers.signInScreen);
+            }
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: 8 }}>Hello, User</Text>
+            <Text style={{ marginRight: 8 }}>
+              {username ? `Hello, ${username}` : "Sign In"}
+            </Text>
             <Ionicons name="person-circle-outline" size={24} color="#000" />
           </View>
         </TouchableOpacity>

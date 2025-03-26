@@ -1,18 +1,52 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Button,
+  Platform,
+} from "react-native";
 import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import * as Notifications from "expo-notifications";
+import { NotificationService } from "../../services/notificationService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/context/AuthContext";
 
-const userProfileScreen = () => {
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+const UserProfileScreen = () => {
+  const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+  const notificationListener = useRef<
+    Notifications.EventSubscription | undefined
+  >(undefined);
+  const responseListener = useRef<Notifications.EventSubscription | undefined>(
+    undefined
+  );
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [user, setUser] = useState<{
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null>(null);
+
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
@@ -21,9 +55,63 @@ const userProfileScreen = () => {
     Feedback: containers.feedBackScreenScreen,
     "Store Information": containers.AdminStoreInformationScreen,
   };
-  const user = {
-    firstName: "Katleena",
-    lastName: "Dennis",
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        setUser(user || "User");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const getToken = async () => {
+      if (user?.id) {
+        const token =
+          await NotificationService.registerForPushNotificationsAsync(
+            user.id.toString()
+          );
+        setExpoPushToken(token ?? null);
+      }
+    };
+    getToken();
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        console.log("Notification received:", notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("User interacted with notification:", response);
+      });
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(
+          notificationListener.current
+        );
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("user");
+      await AsyncStorage.removeItem("token");
+      await logout();
+      setLogOutModalOpen(false);
+      redirectToPage(containers.signInScreen);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -31,13 +119,15 @@ const userProfileScreen = () => {
       <Header headerText="User Profile" />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.greeting}>Hello, {user.firstName}</Text>
+          <Text style={styles.greeting}>
+            Hello, {user?.firstName || "User"}
+          </Text>
           <Image
             source={require("../../assets/images/icon.png")}
             style={globalStyles.profileImage}
           />
           <Text style={styles.userName}>
-            {user.firstName} {user.lastName}
+            {user?.firstName || ""} {user?.lastName || ""}
           </Text>
 
           <TouchableOpacity
@@ -51,6 +141,24 @@ const userProfileScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.quickActions}>
+            <Button
+              title="Send Test Notification"
+              onPress={async () => {
+                await Notifications.cancelAllScheduledNotificationsAsync();
+
+                await Notifications.scheduleNotificationAsync({
+                  content: {
+                    title: "🚀 Notification Test",
+                    body: "This is a push notification test!",
+                  },
+                  trigger: {
+                    seconds: 2,
+                    repeats: false,
+                    type: "timeInterval",
+                  } as Notifications.TimeIntervalTriggerInput,
+                });
+              }}
+            />
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
@@ -95,7 +203,9 @@ const userProfileScreen = () => {
                 key={index}
                 style={styles.settingOption}
                 onPress={() => {
-                  redirectToPage(settingsMenu[eachSetting as keyof typeof settingsMenu]);
+                  redirectToPage(
+                    settingsMenu[eachSetting as keyof typeof settingsMenu]
+                  );
                 }}
               >
                 <Text style={styles.settingText}>{eachSetting}</Text>
@@ -126,7 +236,6 @@ const userProfileScreen = () => {
           </View>
         </View>
       </ScrollView>
-      {/* logout modal */}
       <ConfirmationModal
         onClose={() => {
           setLogOutModalOpen(false);
@@ -134,13 +243,12 @@ const userProfileScreen = () => {
         isModalVisible={logOutModalOpen}
         text="Are you sure you want to Log out?"
         submitText="Yes"
-        handleSubmit={() => {}}
+        handleSubmit={handleLogout}
         cancelText="No"
         handleCancel={() => {
           setLogOutModalOpen(false);
         }}
       />
-      {/* delete account modal */}
       <ConfirmationModal
         onClose={() => {
           setDeleteAccountModalOpen(false);
@@ -158,4 +266,4 @@ const userProfileScreen = () => {
   );
 };
 
-export default userProfileScreen;
+export default UserProfileScreen;
