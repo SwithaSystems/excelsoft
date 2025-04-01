@@ -140,7 +140,7 @@ const UserProfileScreen = () => {
             <MaterialIcons name="edit" size={24} color={colors.primary} />
           </TouchableOpacity>
 
-          <View style={styles.quickActions}>
+          {/* <View style={styles.quickActions}>
             <Button
               title="Send Test Notification"
               onPress={async () => {
@@ -194,7 +194,7 @@ const UserProfileScreen = () => {
               />
               <Text style={styles.actionText}>Payments</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <Text style={styles.settingsTitle}>Settings</Text>
           <View style={styles.settingsContainer}>
