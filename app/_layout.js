@@ -8,6 +8,7 @@ import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
 import { AuthProvider } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -306,13 +307,15 @@ const LayoutContent = () => {
 
 export default function Layout() {
   return (
-    <Provider store={store}>
-      <AppProvider>
-        <AuthProvider>
-          <NotificationsHandler />
-          <LayoutContent />
-        </AuthProvider>
-      </AppProvider>
-    </Provider>
+    <StripeProvider publishableKey="pk_test_51R964dE2THJkmBnHVkIykpypErffxTtnzoitEUsS0MOdtf2mUCqpARkTLpxXdyoRUxP8yXwzlHN8EZBlUZMlDsg000rsEfx2De">
+      <Provider store={store}>
+        <AppProvider>
+          <AuthProvider>
+            <NotificationsHandler />
+            <LayoutContent />
+          </AuthProvider>
+        </AppProvider>
+      </Provider>
+    </StripeProvider>
   );
 }

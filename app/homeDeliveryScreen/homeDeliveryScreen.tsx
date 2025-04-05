@@ -125,17 +125,17 @@ const HomeDeliveryScreen = () => {
       // });
 
       // Send notification for order update through the backend
-      if (!user?.id) {
-        throw new Error("User not authenticated");
-      }
+      // if (!user?.id) {
+      //   throw new Error("User not authenticated");
+      // }
 
       // Send both a delivery notification and status update
-      await NotificationService.sendOrderDeliveryUpdate(
-        user.id,
-        orderId as string,
-        date,
-        `${hours}:${minutes} ${period}`
-      );
+      // await NotificationService.sendOrderDeliveryUpdate(
+      //   user.id,
+      //   orderId as string,
+      //   date,
+      //   `${hours}:${minutes} ${period}`
+      // );
 
       // Also trigger a local notification for immediate feedback
       await NotificationService.scheduleLocalNotification(
