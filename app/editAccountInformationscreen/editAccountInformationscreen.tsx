@@ -26,7 +26,7 @@ const editAccountInformationscreen = () => {
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <View style={globalStyles.profilePictureContainer}>
             <Image
-              source={{ uri: "https://via.placeholder.com/100" }}
+              source={{ uri: "https://picsum.photos/100" }}
               style={globalStyles.profileImage}
             />
           </View>

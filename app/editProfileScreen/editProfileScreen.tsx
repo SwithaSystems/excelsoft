@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -17,6 +17,19 @@ import { Image } from "react-native-elements";
 import styles from "./editProfileScreenStyles";
 import colors from "../config/colors";
 import * as ImagePicker from "expo-image-picker";
+import { useDerivedValue } from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserAPI } from "@/services/userService";
+
+interface User {
+  id: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profileImage: string;
+  dateOfBirth: string;
+}
 
 const editProfileScreen = () => {
   const [firstName, setFirstName] = useState("Katleena M.");
@@ -25,9 +38,27 @@ const editProfileScreen = () => {
   const [phone, setPhone] = useState("+1 (555) 123-4567");
   const [email, setEmail] = useState("Denniskatleenam@gmail.com");
   const [role, setRole] = useState("Store Manager");
-  const [profileImage, setProfileImage] = useState(
-    "https://via.placeholder.com/100"
-  );
+  const [profileImage, setProfileImage] = useState("https://picsum.photos/100");
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userString: any = await AsyncStorage.getItem("user");
+        // const user = userString ? JSON.parse(userString) : null;
+        // console.log("userString", user?.id);
+        if (userString) {
+          setUser(JSON.parse(userString));
+        } else {
+          console.log("No user found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -47,7 +78,6 @@ const editProfileScreen = () => {
     }
   };
 
-  //function to take photo
   const takePhoto = async () => {
     //ask for camera permission
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -64,6 +94,52 @@ const editProfileScreen = () => {
     });
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const handleEditProfile = async () => {
+    if (!firstName.trim()) {
+      alert("First name is required");
+      return;
+    }
+
+    if (!/^[A-Za-z]+$/.test(lastName.trim())) {
+      alert("Last name should contain only alphabets");
+      return;
+    }
+
+    if (
+      !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateOfBirth)
+    ) {
+      alert("Invalid date format. Use MM/DD/YYYY");
+      return;
+    }
+
+    const formData = new FormData();
+
+    if (profileImage) {
+      try {
+        const response = await fetch(profileImage);
+        const blob = await response.blob();
+        formData.append("image", blob, "profile.jpg");
+      } catch (error) {
+        console.error("Image fetch error:", error);
+        alert("Failed to process the profile image.");
+        return;
+      }
+    }
+
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("dateOfBirth", dateOfBirth);
+
+    try {
+      const response = await UserAPI.userEditProfile(user?.id, formData);
+      console.log("Profile updated successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      alert("Failed to update profile.");
     }
   };
 
@@ -100,7 +176,7 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="First Name"
-                value={firstName}
+                value={user ? user.firstName : firstName}
                 onPress={() => {}}
                 setValue={setFirstName}
               />
@@ -119,7 +195,7 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="Last Name"
-                value={lastName}
+                value={user ? user.lastName : lastName}
                 onPress={() => {}}
                 setValue={setLastName}
               />
@@ -138,7 +214,7 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="--/--/----"
-                value={dateOfBirth}
+                value={user ? user.dateOfBirth : dateOfBirth}
                 onPress={() => {}}
                 setValue={setDateOfBirth}
               />
@@ -158,7 +234,7 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="phone number"
-                value={phone}
+                value={user ? user.phone : phone}
                 onPress={() => {}}
                 setValue={setPhone}
                 keyboardType="phone-pad"
@@ -179,14 +255,14 @@ const editProfileScreen = () => {
                 TextStyle={globalStyles.input}
                 placeholder="email"
                 disabled={true}
-                value={email}
+                value={user ? user.email : email}
                 onPress={() => {}}
                 setValue={setEmail}
                 keyboardType="email-address"
               />
             </View>
           </View>
-          <View style={globalStyles.profileInputContainer}>
+          {/* <View style={globalStyles.profileInputContainer}>
             <FontAwesome
               name="envelope-o"
               size={32}
@@ -205,16 +281,11 @@ const editProfileScreen = () => {
                 //keyboardType="email-address"
               />
             </View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
       <View style={[globalStyles.p_3]}>
-        <Button
-          title="Save"
-          onPress={() => {
-            redirectToPage(containers.userProfileScreenScreen);
-          }}
-        />
+        <Button title="Save" onPress={handleEditProfile} />
       </View>
     </View>
   );

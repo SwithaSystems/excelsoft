@@ -12,4 +12,12 @@ export const UserAPI = {
     const response = await axios.post(`${API_BASE_URL}/users/signIn`, body);
     return response;
   },
+
+  userEditProfile: async (userId: any, body: any) => {
+    const response = await axios.put(
+      `${API_BASE_URL}/users/updateProfile/${userId}`,
+      body
+    );
+    return response;
+  },
 };
