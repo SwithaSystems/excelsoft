@@ -9,8 +9,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { TwilioApi } from "@/services/twilioService";
+import { authService } from "@/services/auth.service";
+import { useLocalSearchParams } from "expo-router";
 
 const signUpScreen = () => {
+  const { phoneNumber } = useLocalSearchParams();
   const [email, setEmail] = useState("");
   const [phone, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -61,35 +64,70 @@ const signUpScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // const handleSignUp = async () => {
+  //   if (validateFields()) {
+  //     const data = { phone, email, password };
+  //     console.log("Phone Number:", data.phone);
+
+  //     const response = await UserAPI.userSignUp(data);
+
+  //     if (
+  //       response &&
+  //       response.data.message === "User registered successfully."
+  //     ) {
+  //       await AsyncStorage.setItem(
+  //         "user",
+  //         JSON.stringify(response?.data?.user)
+  //       );
+
+  //       console.log("Phone Number for OTP:", data?.phone);
+
+  //       if (data?.phone.trim()) {
+  //         // 🔥 Added .trim() to avoid accidental empty spaces
+  //         console.log("Sending OTP to:", data?.phone);
+  //         await TwilioApi.sendOtp({ phone: data?.phone });
+  //       } else {
+  //         console.error("Phone number is missing.");
+  //       }
+
+  //       redirectToPage(containers.verifcationScreenScreen);
+  //     } else {
+  //       Alert.alert("Error", response?.data?.message || "Sign-up failed.");
+  //     }
+  //   } else {
+  //     Alert.alert(
+  //       "Validation Error",
+  //       "Please fix the errors before submitting."
+  //     );
+  //   }
+  // };
+
   const handleSignUp = async () => {
     if (validateFields()) {
-      const data = { phone, email, password };
-      console.log("Phone Number:", data.phone);
+      const userData = { phone, email, password };
+      const userphone = userData.phone;
+      try {
+        const response = await authService.register(userData);
 
-      const response = await UserAPI.userSignUp(data);
+        if (response && response.access_token) {
+          console.log("Phone Number for OTP:", userData.phone);
 
-      if (
-        response &&
-        response.data.message === "User registered successfully."
-      ) {
-        await AsyncStorage.setItem(
-          "user",
-          JSON.stringify(response?.data?.user)
-        );
+          if (userData.phone.trim()) {
+            console.log("Sending OTP to:", userData.phone);
+            await TwilioApi.sendOtp({ phone: userData.phone });
+          } else {
+            console.error("Phone number is missing.");
+          }
 
-        console.log("Phone Number for OTP:", data?.phone);
-
-        if (data?.phone.trim()) {
-          // 🔥 Added .trim() to avoid accidental empty spaces
-          console.log("Sending OTP to:", data?.phone);
-          await TwilioApi.sendOtp({ phone: data?.phone });
+          redirectToPage(containers.verifcationScreenScreen, {
+            phoneNumber: userphone,
+          });
         } else {
-          console.error("Phone number is missing.");
+          Alert.alert("Error", response?.message || "Sign-up failed.");
         }
-
-        redirectToPage(containers.verifcationScreenScreen);
-      } else {
-        Alert.alert("Error", response?.data?.message || "Sign-up failed.");
+      } catch (error) {
+        console.error("Registration error:", error);
+        Alert.alert("Error", "Something went wrong during registration.");
       }
     } else {
       Alert.alert(
@@ -110,7 +148,7 @@ const signUpScreen = () => {
           placeholder="Enter your email or phone number"
           value={email || phone}
           onChangeText={(text) => {
-            if (text.startsWith("+91") && /^\+91\d{10}$/.test(text)) {
+            if (text.startsWith("+") && /^\+91\d{10}$/.test(text)) {
               setPhoneNumber(text);
               setEmail(""); // Clear email if phone is detected
             } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
@@ -163,7 +201,14 @@ const signUpScreen = () => {
 
         <Text style={styles.signUpText}>
           Already have an account?{" "}
-          <Text style={styles.signUpLink}>Sign In</Text>
+          <Text
+            style={styles.signUpLink}
+            onPress={() => {
+              redirectToPage(containers.signInScreen);
+            }}
+          >
+            Sign In
+          </Text>
         </Text>
       </View>
     </View>

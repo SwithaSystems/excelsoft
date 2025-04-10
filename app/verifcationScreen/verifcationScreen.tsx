@@ -11,8 +11,10 @@ import styles from "./verifcationScreenStyles";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { TwilioApi } from "@/services/twilioService";
+import { useLocalSearchParams } from "expo-router";
 
 const verifcationScreen = () => {
+  const { phoneNumber } = useLocalSearchParams();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
 
   const handleChange = (text: any, index: any) => {
@@ -22,8 +24,17 @@ const verifcationScreen = () => {
   };
   const handleVerify = async () => {
     console.log("Code:", code);
-    const res = await TwilioApi.verifyOtp(code);
+    const OtpNumber = code.join("");
+    console.log(phoneNumber, OtpNumber);
+    const res = await TwilioApi.verifyOtp({
+      phoneNumber,
+      OtpNumber,
+    });
     console.log("res", res);
+  };
+
+  const handleResend = async () => {
+    await TwilioApi.sendOtp({ phone: String(phoneNumber) });
   };
   return (
     <>
@@ -53,7 +64,10 @@ const verifcationScreen = () => {
         </TouchableOpacity>
 
         <Text style={styles.resendText}>
-          Didn't receive the code? <Text style={styles.resendLink}>Resend</Text>
+          Didn't receive the code?{" "}
+          <Text style={styles.resendLink} onPress={handleResend}>
+            Resend
+          </Text>
         </Text>
       </View>
     </>

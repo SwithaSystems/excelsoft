@@ -1,28 +1,21 @@
-import axios from "axios";
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import axiosInstance from "./axiosConfig";
 
 export const TwilioApi = {
   sendOtp: async (body: { phone: string }): Promise<any> => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/twilio/SendOtp`, body);
-      console.log("OTP Sent Successfully:", response.data);
+      const response = await axiosInstance.post(`/twilio/SendOtp`, body);
       return response;
     } catch (error) {
-      console.error("Twilio API Error:");
+      console.error("Twilio API Error:", error);
+      throw error;
     }
   },
 
   verifyOtp: async (body: any): Promise<any> => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/twilio/verifyOtp`,
-        body,
-        {
-          timeout: 10000, // 10 seconds timeout
-        }
-      );
-      return response.data; // Return only data to reduce clutter
+      console.log("body", body);
+      const response = await axiosInstance.post(`/twilio/verifyOtp`, body);
+      return response.data;
     } catch (error: any) {
       console.error(
         "Verify OTP Error:",

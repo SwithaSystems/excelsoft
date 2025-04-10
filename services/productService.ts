@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export interface Product {
   id: string;
@@ -20,42 +20,39 @@ export interface Product {
   }[];
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
 export const ProductsAPI = {
   getAllProducts: async (): Promise<Product[]> => {
-    const response = await axios.get(`${API_BASE_URL}/products`);
+    const response = await axiosInstance.get(`/products`);
     return response.data;
   },
 
   getProductByCategoryID: async (id: number): Promise<Product[]> => {
     console.log(id);
-    const response = await axios.get(`${API_BASE_URL}/products/category/${id}`);
-    console.log("AllProducts",response.data);
+    const response = await axiosInstance.get(`/products/category/${id}`);
+    console.log("AllProducts", response.data);
     return response.data;
   },
 
   getProductBYID: async (id: number): Promise<Product> => {
-    const response = await axios.get(`${API_BASE_URL}/products/${id}`);
+    const response = await axiosInstance.get(`/products/${id}`);
     return response.data;
   },
 
   searchProducts: async (query: string): Promise<Product[]> => {
-    const response = await axios.get(
-      `${API_BASE_URL}/products/search?q=${query}`
-    );
+    const response = await axiosInstance.get(`/products/search?q=${query}`);
     return response.data;
   },
 
-  getAllSubCategoriesProducts: async (categoryIds: number[]): Promise<Product[]> => { 
-    const response = await axios.post(`${API_BASE_URL}/products/subCategories`, {
+  getAllSubCategoriesProducts: async (
+    categoryIds: number[]
+  ): Promise<Product[]> => {
+    const response = await axiosInstance.post(`/products/subCategories`, {
       categoryIds: categoryIds,
     });
     return response.data;
   },
 
-addReview: async (productId: Number, review: any): Promise<void> => {
-  await axios.post(`${API_BASE_URL}/products/${productId}/reviews`, review);
-}
-  
+  addReview: async (productId: Number, review: any): Promise<void> => {
+    await axiosInstance.post(`/products/${productId}/reviews`, review);
+  },
 };

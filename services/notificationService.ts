@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
-import { API_BASE_URL } from "@/config/constants";
+import axiosInstance from "./axiosConfig";
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -21,6 +21,7 @@ export class NotificationService {
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
       });
     }
 
@@ -36,35 +37,32 @@ export class NotificationService {
 
       if (finalStatus !== "granted") {
         console.log("Failed to get push token for push notification!");
-        return;
+        return null;
       }
 
       token = (await Notifications.getExpoPushTokenAsync()).data;
 
-      // Store the push token in the backend
-      try {
-        await fetch(`${API_BASE_URL}/notifications/pushToken`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId, pushToken: token }),
-        });
-      } catch (error) {
-        console.error("Error storing push token:", error);
+      // Register token with backend
+      if (token) {
+        try {
+          await axiosInstance.post(`/notifications/pushToken`, {
+            userId,
+            token,
+          });
+        } catch (error) {
+          console.error("Error registering push token:", error);
+        }
       }
-
-      return token;
+    } else {
+      console.log("Must use physical device for Push Notifications");
     }
 
-    return null;
+    return token;
   }
 
   static async unregisterPushNotifications(userId: string) {
     try {
-      await fetch(`${API_BASE_URL}/notifications/pushToken/${userId}`, {
-        method: "DELETE",
-      });
+      await axiosInstance.delete(`/notifications/pushToken/${userId}`);
       return true;
     } catch (error) {
       console.error("Error removing push token:", error);
@@ -78,12 +76,9 @@ export class NotificationService {
     status: string
   ) {
     try {
-      await fetch(`${API_BASE_URL}/notifications/orders/${userId}/status`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId, status }),
+      await axiosInstance.post(`/notifications/orders/${userId}/status`, {
+        orderId,
+        status,
       });
       return true;
     } catch (error) {
@@ -99,12 +94,10 @@ export class NotificationService {
     timeSlot: string
   ) {
     try {
-      await fetch(`${API_BASE_URL}/notifications/orders/${userId}/delivery`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId, deliveryDate, timeSlot }),
+      await axiosInstance.post(`/notifications/orders/${userId}/delivery`, {
+        orderId,
+        deliveryDate,
+        timeSlot,
       });
       return true;
     } catch (error) {
