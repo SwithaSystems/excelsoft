@@ -67,7 +67,10 @@
   "expo": {
     "doctor": {
       "reactNativeDirectoryCheck": {
-        "listUnknownPackages": false
+        "listUnknownPackages": false,
+        "exclude": [
+          "@stripe/stripe-react-native"
+        ]
       }
     }
   },
