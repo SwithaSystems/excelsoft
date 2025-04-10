@@ -194,7 +194,7 @@ const UserProfileScreen = () => {
               />
               <Text style={styles.actionText}>Payments</Text>
             </TouchableOpacity>
-          </View>
+          </View> 
 
           <Text style={styles.settingsTitle}>Settings</Text>
           <View style={styles.settingsContainer}>
