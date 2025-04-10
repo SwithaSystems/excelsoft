@@ -17,7 +17,6 @@ function BrandHeader(props) {
         setUsername(user?.firstName || "User");
       }
     };
-
     fetchUser();
   }, []);
 
@@ -35,6 +34,7 @@ function BrandHeader(props) {
           source={require("../assets/brandlogo.png")}
           style={{ width: 24, height: 24 }}
         />
+        <View style = {{flexDirection: "row", alignItems: "center"}}>
         <TouchableOpacity
           onPress={() => {
             if (username) {
@@ -50,8 +50,14 @@ function BrandHeader(props) {
             </Text>
             <Ionicons name="person-circle-outline" size={24} color="#000" />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> 
+           
+        <TouchableOpacity style={{marginLeft: 14}}>
+          <Ionicons name="notifications" size={24} color="#000" />
+        </TouchableOpacity>    
       </View>
+      </View>
+      
     </>
   );
 }

@@ -55,16 +55,21 @@ const ProductCard = ({
           <Star filled={true} size={16} />
           <Text style={styles.reviews}>({noOfreviews})</Text>
         </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.saleTag}>Sale</Text>
-          <Text style={styles.time}>02:48:26</Text>
+        <View style={styles.saleContainer}>
+          <View style={styles.saleTimeBox}>
+              <View style={styles.saleTag}>
+                <Text style={styles.saleText}>Sale</Text>
+              </View>
+                <Text style={styles.time}>02:48:26</Text>
+          </View>
           <Text style={styles.discount}>
             {Math.round(((originalPrice - price) / originalPrice) * 100)}%
           </Text>
-
-          <Text style={styles.price}>${price}</Text>
-          <Text style={styles.originalPrice}>${originalPrice}</Text>
         </View>
+          <View style={styles.priceContainer}>
+            <Text style={styles.price}>${price}</Text>
+            <Text style={styles.originalPrice}>${originalPrice}</Text>
+          </View>
       </View>
     </TouchableOpacity>
   );
@@ -102,6 +107,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginRight: 4,
+    color:"#6E6F76",
   },
   reviews: {
     margin: 4,
@@ -114,13 +120,26 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     padding: 4,
   },
+  saleContainer:{
+      flexDirection: "row",
+  },
+  saleTimeBox: {
+    flexDirection: "row",
+    backgroundColor:colors.secondary,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+   saleText: {
+      color: colors.white,
+      fontSize: 14,
+      fontWeight: "500",
+    },
   saleTag: {
     backgroundColor: colors.primary,
     color: colors.white,
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 4,
-    fontSize: 12,
     marginRight: 6,
   },
   price: {
@@ -141,15 +160,18 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 14,
     color: colors.primary,
-    marginLeft: 6,
     backgroundColor: colors.secondary,
     borderRadius: 5,
+    paddingRight: 6,
+    marginTop:2,
+    marginRight: 8,
   },
   discount: {
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
     backgroundColor: colors.secondary,
+    padding: 4,
     borderRadius: 5,
   },
 });

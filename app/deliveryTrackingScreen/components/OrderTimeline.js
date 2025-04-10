@@ -1,8 +1,19 @@
 import colors from "@/app/config/colors";
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 
 const OrderTimeline = ({ statusList }) => {
+
+  const icons = [
+    "document-text-outline",
+    "cube-outline",
+    "car-outline",
+    "location-outline",
+    "checkmark-circle-outline",
+  ];
+
+  const currentStatus = 2;
   return (
     <View style={styles.container}>
       <FlatList
@@ -11,17 +22,39 @@ const OrderTimeline = ({ statusList }) => {
         renderItem={({ item, index }) => (
           <View style={styles.itemContainer}>
             {/* Timeline Circle */}
-            <View style={styles.circle} />
+            <View style={[styles.circle,
+                  {backgroundColor: index <= currentStatus ? "#17C6ED":"#7E8A8C"}
+              ]}>
+                {/*Icon for each status */}
+                <Ionicons 
+                  name={icons[index]}
+                  size={22}
+                  color={index <= currentStatus ? "white" : "white"}
+                />
+          </View>
             {/* Status Text */}
-            <Text style={styles.statusText}>{item}</Text>
+            <Text 
+              style={[
+                styles.statusText,
+                {color: index <= currentStatus ? "#17C6ED":"#7E8A8C"}
+              ]}
+            >{item}
+            </Text>
             {/* Connecting Line */}
-            {index !== statusList.length - 1 && <View style={styles.line} />}
+            {index !== statusList.length - 1 && 
+              <View style={[
+                styles.line,
+                {backgroundColor: index < currentStatus ? "#17C6ED":"#7E8A8C"}
+              ]} 
+              />
+            }
           </View>
         )}
       />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -34,19 +67,22 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   circle: {
-    width: 18,
-    height: 18,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.black,
-    marginRight: 30,
+    marginRight: 20,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: "500",
   },
   line: {
     position: "absolute",
-    left: 8,
-    top: 12,
+    left: 18,
+    top: 40,
     height: 60,
     width: 2,
     backgroundColor: colors.black,

@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   actionButton: {
-    width: actionBtnWidth,
+    width: "48%",
     flexDirection: "row",
     alignItems: "center",
     borderColor: colors.black,

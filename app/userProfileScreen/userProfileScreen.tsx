@@ -53,7 +53,7 @@ const UserProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.feedBackScreenScreen,
-    "Store Information": containers.AdminStoreInformationScreen,
+  /*  "Store Information": containers.AdminStoreInformationScreen,*/
   };
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const UserProfileScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.quickActions}>
-            <Button
+           {/*<Button
               title="Send Test Notification"
               onPress={async () => {
                 await Notifications.cancelAllScheduledNotificationsAsync();
@@ -158,7 +158,7 @@ const UserProfileScreen = () => {
                   } as Notifications.TimeIntervalTriggerInput,
                 });
               }}
-            />
+            /> */}
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {

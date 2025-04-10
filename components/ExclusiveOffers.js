@@ -45,10 +45,12 @@ function ExclusiveOffers(props) {
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>
                 <View style={styles.saleContainer}>
+                <View style = {styles.saleTimeBox}>
                   <View style={styles.saleTag}>
                     <Text style={styles.saleText}>Sale</Text>
                   </View>
-                  <Text style={styles.saleTime}>02:48:26</Text>
+                    <Text style={styles.saleTime}>02:48:26</Text>
+                    </View>
                   <View style={styles.discountTag}>
                     <Text style={styles.discountText}>{item.discount}</Text>
                   </View>
@@ -84,7 +86,6 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     color: colors.reviewsColor,
-    marginLeft: 16,
   },
   starIcon: {
     color: colors.reviewsColor,
@@ -102,7 +103,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
     marginRight: 8,
   },
   saleText: {
@@ -110,9 +110,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  saleTimeBox:{
+    backgroundColor:"#E9F3F6",
+    flexDirection: "row",
+  },
   saleTime: {
     color: colors.primary,
     fontSize: 14,
+    marginTop:2,
     marginRight: 8,
   },
   discountTag: {
@@ -120,6 +125,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    marginLeft: 8,
   },
   discountText: {
     color: colors.white,
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   exclusiveDetails: {
-    padding: 16,
+    padding: 12,
   },
   exclusiveImage: {
     width: "100%",
@@ -160,7 +166,7 @@ const styles = StyleSheet.create({
   exclusiveCard: {
     width: 240,
     height: 400,
-    marginRight: 15,
+    marginRight: 12,
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
     overflow: "hidden",

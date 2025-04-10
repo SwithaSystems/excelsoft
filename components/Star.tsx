@@ -6,6 +6,7 @@ import colors from '../app/config/colors';
 interface StarProps {
     filled?: boolean;
     size?: number;
+    color?: string;
 }
 
 const Star = ({ filled = true, size = 16 }: StarProps) => {

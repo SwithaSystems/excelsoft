@@ -48,9 +48,11 @@ const styles = StyleSheet.create({
   },
   leftItem: {
     marginRight: 8,
+    flex: 1,
   },
   rightItem: {
     marginLeft: 8,
+    flex:1,
   },
 });
 

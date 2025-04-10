@@ -31,6 +31,8 @@ alignSelf:'flex-end'
     width: 65,
     height: 65,
     borderRadius: 32.5,
+    borderWidth: 2,
+    borderColor: "#17C6ED",
   },
   categoryText: {
     marginTop: 4,

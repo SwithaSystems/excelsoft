@@ -81,7 +81,7 @@ const feedBackScreen = () => {
   return (
     <View style={globalStyles.container}>
       <Header
-        headerText="Feedback"
+        headerText="Add Your Review"
         secondaryBtnText="Discard"
         secondaryBtnCallBack={() => {
           redirectToPage(containers.productDetailScreenScreen, {
