@@ -123,7 +123,7 @@ const UserProfileScreen = () => {
             Hello, {user?.firstName || "User"}
           </Text>
           <Image
-            source={require("../../assets/images/icon.png")}
+            source={{ uri: "https://picsum.photos/100" }}
             style={globalStyles.profileImage}
           />
           <Text style={styles.userName}>

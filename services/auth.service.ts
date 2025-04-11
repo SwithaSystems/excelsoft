@@ -1,24 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-
-const API_URL = "http://localhost:3002"; // Update with your backend URL
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axiosInstance from "./axiosConfig";
+import { router } from "expo-router";
+import containers from "@/containers";
 
 export const authService = {
   async login(phone: string, password: string) {
     try {
-      const response = await api.post("/auth/login", { phone, password });
+      const response = await axiosInstance.post("/auth/login", {
+        phone,
+        password,
+      });
       await AsyncStorage.setItem("token", response.data.access_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
@@ -27,9 +18,10 @@ export const authService = {
     }
   },
 
-  async register(userData: { name: string; phone: string; password: string }) {
+  async register(userData: { phone: string; email: string; password: string }) {
     try {
-      const response = await api.post("/auth/register", userData);
+      const response = await axiosInstance.post("/auth/register", userData);
+      console.log("response", response.data);
       await AsyncStorage.setItem("token", response.data.access_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
@@ -42,6 +34,7 @@ export const authService = {
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("user");
+      router.replace("/(auth)/signIn" as any);
     } catch (error) {
       throw error;
     }

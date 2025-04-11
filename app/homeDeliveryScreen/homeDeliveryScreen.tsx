@@ -23,6 +23,7 @@ import { useLocalSearchParams } from "expo-router";
 import { API_BASE_URL } from "@/config/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/services/notificationService";
+import colors from "../config/colors";
 
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
@@ -244,14 +245,29 @@ const HomeDeliveryScreen = () => {
               value={minutes}
               onChangeText={setMinutes}
             />
-            <Picker
-              selectedValue={period}
-              style={globalStyles.picker_sm}
-              onValueChange={(itemValue) => setPeriod(itemValue)}
+            <View
+              style={{
+                borderColor: colors.primary,
+                borderWidth: 1,
+                height: 40,
+                width: 150,
+                borderRadius: 8,
+                justifyContent: "center",
+              }}
             >
-              <Picker.Item label="AM" value="am" />
-              <Picker.Item label="PM" value="pm" />
-            </Picker>
+              <Picker
+                selectedValue={period}
+                style={{
+                  // height: 50,
+                  width: 150,
+                  color: colors.black,
+                }}
+                onValueChange={(itemValue) => setPeriod(itemValue)}
+              >
+                <Picker.Item label="AM" value="am" />
+                <Picker.Item label="PM" value="pm" />
+              </Picker>
+            </View>
           </View>
 
           {/* Contact Information */}

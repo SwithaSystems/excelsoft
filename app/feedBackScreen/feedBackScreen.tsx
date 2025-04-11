@@ -21,6 +21,7 @@ import { useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -54,11 +55,12 @@ const feedBackScreen = () => {
       alert("Please enter both a rating and review text.");
       return;
     }
-
+    const user: any = await AsyncStorage.getItem("user");
+    console.log("user", user);
     const review = {
       id: (Number(reviewsArrayLength) + 1).toString(),
       rating: rating,
-      name: "User",
+      name: user?.firsName,
       review: reviewText,
     };
 
