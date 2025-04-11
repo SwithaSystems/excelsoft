@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from "./axiosConfig";
 
 export interface Category {
   id: number;
@@ -8,42 +8,38 @@ export interface Category {
   parentCategory?: number;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
 export const categoryService = {
   getAllCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories`, {
-        params: { parentCategory }
+      const response = await axiosInstance.get(`/categories`, {
+        params: { parentCategory },
       });
-      console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
       throw error;
     }
   },
 
-  getAllSubCategories: async (parentCategory?:number):  Promise<Category[]>=>{
+  getAllSubCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories/${parentCategory}/subcategories`);
-      console.log(response.data);
+      const response = await axiosInstance.get(
+        `/categories/${parentCategory}/subcategories`
+      );
       return response.data;
     } catch (error) {
-      console.error('Error fetching Subcategories:', error);
+      console.error("Error fetching Subcategories:", error);
       throw error;
     }
   },
 
-  getCategoryById: async (categoryId ? : number) : Promise<Category>=>{
+  getCategoryById: async (categoryId?: number): Promise<Category> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/categories/${categoryId}`);
-      console.log(response.data);
+      const response = await axiosInstance.get(`/categories/${categoryId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching Category:', error);
+      console.error("Error fetching Category:", error);
       throw error;
     }
-  }
- 
+  },
 };

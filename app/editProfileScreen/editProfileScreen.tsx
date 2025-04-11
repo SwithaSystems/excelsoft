@@ -116,6 +116,7 @@ const editProfileScreen = () => {
     }
 
     const formData = new FormData();
+    console.log("profileImage", profileImage);
 
     if (profileImage) {
       try {
@@ -136,6 +137,9 @@ const editProfileScreen = () => {
     try {
       const response = await UserAPI.userEditProfile(user?.id, formData);
       console.log("Profile updated successfully:", response.data);
+      if (response?.data) {
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      }
       return response.data;
     } catch (error) {
       console.error("Profile update failed:", error);
