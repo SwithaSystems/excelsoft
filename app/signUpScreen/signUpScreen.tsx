@@ -13,7 +13,6 @@ import { authService } from "@/services/auth.service";
 import { useLocalSearchParams } from "expo-router";
 
 const signUpScreen = () => {
-  const { phoneNumber } = useLocalSearchParams();
   const [email, setEmail] = useState("");
   const [phone, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -121,6 +120,7 @@ const signUpScreen = () => {
 
           redirectToPage(containers.verifcationScreenScreen, {
             phoneNumber: userphone,
+            from: "signup",
           });
         } else {
           Alert.alert("Error", response?.message || "Sign-up failed.");

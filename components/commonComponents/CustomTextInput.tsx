@@ -12,9 +12,10 @@ import {
 } from "react-native";
 
 interface Props {
+  onChangeText?: (text: string) => void;
   placeholder?: string;
   value: string;
-  label?:string;
+  label?: string;
   setValue: (value: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: string;
@@ -29,6 +30,7 @@ interface Props {
   textBoxHeight?: number;
   disabled?: boolean;
   required?: boolean;
+  onblur?: () => void;
 }
 
 export const CustomTextInput = (props: Props) => {
@@ -41,6 +43,7 @@ export const CustomTextInput = (props: Props) => {
         secureTextEntry={props.secureTextEntry}
         multiline={props.multiline}
         editable={!props.disabled}
+        onBlur={props.onblur}
         style={[
           {
             flex: 1,

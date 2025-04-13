@@ -140,8 +140,8 @@ const UserProfileScreen = () => {
             <MaterialIcons name="edit" size={24} color={colors.primary} />
           </TouchableOpacity>
 
-          {/* <View style={styles.quickActions}>
-            <Button
+          <View style={styles.quickActions}>
+            {/* <Button 
               title="Send Test Notification"
               onPress={async () => {
                 await Notifications.cancelAllScheduledNotificationsAsync();
@@ -158,7 +158,7 @@ const UserProfileScreen = () => {
                   } as Notifications.TimeIntervalTriggerInput,
                 });
               }}
-            />
+            />*/}
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => {
@@ -194,7 +194,7 @@ const UserProfileScreen = () => {
               />
               <Text style={styles.actionText}>Payments</Text>
             </TouchableOpacity>
-          </View> */}
+          </View>
 
           <Text style={styles.settingsTitle}>Settings</Text>
           <View style={styles.settingsContainer}>
