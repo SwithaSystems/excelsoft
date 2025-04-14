@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, FlatList, SafeAreaView, Dimensions } from "react-native";
+import { View, Text, FlatList, SafeAreaView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Footer from "../../components/Footer";
 import ProductCard from "../components/ProductCard";
 import styles from "./searchResultsScreenStyles";
-// import products from "../../data/products";
 import colors from "../config/colors";
 import Header from "@/components/Header";
 import CategoryBadges from "./Components/CategoryBadges";
@@ -16,121 +15,102 @@ const SearchResultsScreen = () => {
   const { category } = useLocalSearchParams();
   const { categoryId } = useLocalSearchParams();
   const router = useRouter();
-  const [subCategoriesIds, setSubCategoriesIds] = useState<number[]>([]);
+
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [subCategoriesIds, setSubCategoriesIds] = useState<number[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(
     Number(categoryId)
   );
-  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // const filteredProducts = React.useMemo(() => {
-  //   if (!query) return products;
-  //   const searchQuery = query.toString().toLowerCase();
-  //   return products.filter(product =>
-  //     product.name.toLowerCase().includes(searchQuery) ||
-  //     product.description.toLowerCase().includes(searchQuery) ||
-  //     product.category.toLowerCase().includes(searchQuery)
-  //   );
-  // }, [query]);
-  // Filter products based on search query and categoryId
-
+  // Fetch all products for free-text search only (runs once)
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchAllProducts = async () => {
       try {
-        const products = await ProductsAPI.getAllProducts();
-        console.log("all Products", products);
-        setProducts(products);
+        const data = await ProductsAPI.getAllProducts();
+        setAllProducts(data);
       } catch (error) {
-        console.error("Error fetching Products:", error);
+        console.error("Error fetching all products:", error);
       }
     };
-    fetchProducts();
+    fetchAllProducts();
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    if (!query) return products;
-
-    const searchQuery = query?.toString().toLowerCase();
-
-    return products.filter((product) => {
-      const matchesQuery = searchQuery
-        ? product.name.toLowerCase().includes(searchQuery) ||
-          product.description.toLowerCase().includes(searchQuery)
-        : true;
-
-      // const matchesCategory = categoryId
-      //   ? product.categoryId.some(id => id === Number(categoryId))
-      //   : true;
-
-      return matchesQuery;
-    });
-  }, [query, products?.length > 0]);
-
-  // Update `products` state whenever `filteredProducts` changes
-  useEffect(() => {
-    console.log("Filetered products", filteredProducts);
-    setProducts(filteredProducts);
-  }, [filteredProducts?.length > 0]);
-
+  // Fetch subcategories and prepare list of their IDs
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
         const data = await categoryService.getAllSubCategories(
           Number(categoryId)
         );
-        console.log("all sub categories", data);
         setSubCategories(data);
-        const SubCategories_Ids = data.map((category) => category.id);
-        setSubCategoriesIds(SubCategories_Ids);
+        const ids = data.map((category) => category.id);
+        setSubCategoriesIds(ids);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching subcategories:", error);
       }
     };
     fetchSubCategories();
   }, [categoryId]);
 
+  // Fetch products based on selected category or subcategories
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchCategoryProducts = async () => {
       try {
+        setLoading(true);
+
         if (selectedCategoryId === Number(categoryId)) {
-          // For "All" category, check if there are subcategories
+          // Selected "All" (main category)
           if (subCategoriesIds.length > 0) {
-            // If there are subcategories, fetch products from all of them
             const allSubCategoryProducts = await Promise.all(
               subCategoriesIds.map((id) =>
                 ProductsAPI.getProductByCategoryID(id)
               )
             );
-            const combinedProducts = allSubCategoryProducts.flat();
-            setProducts(combinedProducts);
+            const combined = allSubCategoryProducts.flat();
+            setProducts(combined);
           } else {
-            // If no subcategories, fetch products from the main category
             const mainCategoryProducts =
               await ProductsAPI.getProductByCategoryID(Number(categoryId));
             setProducts(mainCategoryProducts);
           }
         } else {
-          // For specific subcategory, fetch products normally
+          // Specific subcategory
           const categoryProducts = await ProductsAPI.getProductByCategoryID(
             selectedCategoryId
           );
           setProducts(categoryProducts);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching category products:", error);
         setProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchProducts();
+    fetchCategoryProducts();
   }, [selectedCategoryId, categoryId, subCategoriesIds]);
 
+  // Handle free-text search (filter from allProducts)
+  const filteredProducts = useMemo(() => {
+    if (!query) return products;
+
+    const searchQuery = query.toString().toLowerCase();
+    return allProducts.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchQuery) ||
+        product.description.toLowerCase().includes(searchQuery)
+    );
+  }, [query, allProducts]);
+
+  // Handle selecting a category badge
   const handleCategorySelect = (categoryId: number) => {
     setSelectedCategoryId(categoryId);
   };
 
-  // const filteredProducts = ProductsAPI.getAllSubCategoriesProducts(subCategoriesIds);
-
-  const renderItem = ({ item, index }: { item: any; index: number }) => {
+  const renderItem = ({ item, index }: { item: Product; index: number }) => {
     const isEven = index % 2 === 0;
     return (
       <View
@@ -147,7 +127,7 @@ const SearchResultsScreen = () => {
           originalPrice={item.originalPrice}
           image={item.image?.[0] || ""}
           productColors={item.productColors}
-          category={item.category}
+          category={String(item.categoryId)}
           rating={item.rating}
           noOfreviews={item.noOfreviews}
           reviews={item.reviews}
@@ -169,17 +149,21 @@ const SearchResultsScreen = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
       <Header headerText={!fromSearch ? "Search Results" : category} />
-      {!fromSearch ? (
+
+      {loading ? (
+        <Text style={styles.resultsCount}>Loading...</Text>
+      ) : !fromSearch ? (
         <Text style={styles.resultsCount}>
-          {products?.length} search results for {query}
+          {filteredProducts.length} search results for "{query}"
         </Text>
       ) : (
         renderCategoryBadges(Number(categoryId))
       )}
+
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
         <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
+          data={!fromSearch ? filteredProducts : products}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           numColumns={2}
           columnWrapperStyle={styles.row}
@@ -187,12 +171,10 @@ const SearchResultsScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
+
       <Footer navigation={router} activeTab="home" />
     </SafeAreaView>
   );
 };
 
 export default SearchResultsScreen;
-function usestate(): [any, any] {
-  throw new Error("Function not implemented.");
-}
