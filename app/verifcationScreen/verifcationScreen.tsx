@@ -6,16 +6,20 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import styles from "./verifcationScreenStyles";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { TwilioApi } from "@/services/twilioService";
 import { useLocalSearchParams } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const verifcationScreen = () => {
-  const { phoneNumber } = useLocalSearchParams();
+  const { phoneNumber, from } = useLocalSearchParams();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
+  console.log("from", from);
 
   const handleChange = (text: any, index: any) => {
     const newCode = [...code];
@@ -31,6 +35,15 @@ const verifcationScreen = () => {
       OtpNumber,
     });
     console.log("res", res);
+    if (res == "verified successfully" && from === "forgotPassword") {
+      redirectToPage(containers.passwordResetScreenScreen, {
+        phoneNumber: phoneNumber,
+      });
+    } else if (res == "verified successfully" && from === "signup") {
+      redirectToPage(containers.homeScreen);
+    } else {
+      Alert.alert("Error", "Invalid OTP. Please try again.");
+    }
   };
 
   const handleResend = async () => {

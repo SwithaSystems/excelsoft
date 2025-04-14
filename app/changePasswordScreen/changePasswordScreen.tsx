@@ -4,14 +4,85 @@ import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import Header from "@/components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Image } from "react-native-elements";
+import { UserAPI } from "@/services/userService";
+import Bcrypt from "react-native-bcrypt";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [existingPassword, setExistingPassword] = useState("");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log("user", user);
+        setPhoneNumber(user.phoneNumber);
+        setExistingPassword(user.password);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const comparePasswords = async (
+    currentPassword: any,
+    existingPassword: any
+  ) => {
+    return new Promise((resolve, reject) => {
+      Bcrypt.compare(currentPassword, existingPassword, function (err, res) {
+        if (err) reject(err);
+        else resolve(res); // true if match, false otherwise
+      });
+    });
+  };
+
+  const handleBlur = async (currentPassword: string) => {
+    const isMatch = await comparePasswords(currPassword, existingPassword);
+    console.log("isMatch", isMatch);
+    if (!isMatch) {
+      alert("Current password is incorrect");
+    }
+  };
+  const handleChangePassword = async () => {
+    if (!currPassword || !newPassword || !confirmPassword) {
+      alert("All fields are required");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("New and Confirm passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await UserAPI.changePassword(phoneNumber, {
+        // const response = await axios.put(
+        //  `${API_BASE_URL}/users/changePassword/${phoneNumber}`,{
+        newPassword: newPassword,
+      });
+      console.log("response", response.data);
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      } else {
+        alert("Password successfully changed");
+
+        redirectToPage(containers.signInScreen);
+      }
+    } catch (err) {
+      alert("Failed to change password");
+      console.error(err);
+      redirectToPage(containers.userProfileScreenScreen);
+    }
+  };
+
   return (
     <View style={globalStyles.container}>
       <Header headerText="Change Password" />
@@ -34,6 +105,9 @@ const changePasswordScreen = () => {
                 value={currPassword}
                 onPress={() => {}}
                 setValue={setCurrPassword}
+                onblur={() => {
+                  handleBlur(currPassword);
+                }}
               />
             </View>
           </View>
@@ -72,7 +146,7 @@ const changePasswordScreen = () => {
       <View style={globalStyles.p_3}>
         <Button
           onPress={() => {
-            redirectToPage(containers.userProfileScreenScreen);
+            handleChangePassword();
           }}
           title="Save Password"
         />

@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "./axiosConfig";
 
 export const UserAPI = {
@@ -11,13 +12,35 @@ export const UserAPI = {
     return response;
   },
 
-  userEditProfile: async (userId: any, body: any) => {
+  userEditProfile: async (phoneNumber: any, body: any) => {
     console.log("body", body);
+    try {
+      const response = await axiosInstance.put(
+        `/users/updateProfile/${phoneNumber}`,
+        body
+      );
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log("Axios error:", error.response?.data || error.message);
+      } else {
+        console.log("Unknown error:", error);
+      }
+    }
+  },
+
+  getUserByPhonenumber: async (phoneNumber: any) => {
+    const response = await axiosInstance.get(
+      `/users/getUserByPhoneNumber/${phoneNumber}`
+    );
+    return response;
+  },
+
+  changePassword: async (phoneNumber: any, body: any) => {
     const response = await axiosInstance.put(
-      `/users/updateProfile/${userId}`,
+      `/users/changePassword/${phoneNumber}`,
       body
     );
-
     return response;
   },
 };

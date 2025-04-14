@@ -58,7 +58,6 @@ const signIn = () => {
       );
     }
   };
-
   const handleBlur = (fieldName: string) => {
     validateFields();
   };
@@ -76,10 +75,10 @@ const signIn = () => {
           onChangeText={(text) => {
             if (/^(\+91\d{10})$/.test(text)) {
               setPhoneNumber(text);
-              setEmail(""); 
+              setEmail("");
             } else {
               setEmail(text);
-              setPhoneNumber(""); 
+              setPhoneNumber("");
             }
           }}
           onBlur={() => handleBlur("email")}
@@ -109,7 +108,14 @@ const signIn = () => {
             Alert.alert("Forgot Password?", "Feature not implemented yet.")
           }
         >
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          <Text
+            style={styles.forgotPassword}
+            onPress={() =>
+              redirectToPage(containers.forgotPasswordScreenScreen)
+            }
+          >
+            Forgot Password?
+          </Text>
         </TouchableOpacity>
 
         <Button
