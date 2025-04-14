@@ -93,6 +93,9 @@ const HomePage = () => {
   const renderFeaturedProducts = () => (
     <View>
       <Text style={styles.sectionTitle}>Featured Products</Text>
+      <Text style = {styles.featuredDescriptionText}>
+
+      </Text>
       <FlatList
         horizontal
         data={featuredProducts}
@@ -108,7 +111,7 @@ const HomePage = () => {
             <Image source={item.imageUrl} style={styles.featuredImage} />
             <Text style={styles.featuredTitle}>{item.title}</Text>
             <Text style={styles.featuredDescription}>{item.description}</Text>
-          </TouchableOpacity>
+            </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -275,6 +278,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.lightgrey,
     marginHorizontal: 16,
+  },
+  featuredDescriptionText:{
+    fontSize: 14,
+    color: colors.lightgrey,
+    marginLeft: 10,
+    marginBottom:10,
   },
   productsList: {
     padding: 10,

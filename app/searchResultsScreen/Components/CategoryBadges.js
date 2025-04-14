@@ -193,14 +193,17 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingRight: 20,
+    paddingRight: 60,
+    alignItems: "center",
+    flex: 1,
   },
   filterButton: {
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
     backgroundColor: colors.lightSkyBlue,
-    marginRight: 24,
+    marginRight: 12,
+    marginLeft: 0,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
@@ -218,6 +221,7 @@ const styles = StyleSheet.create({
   fixedIcons: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: 'auto',
   },
   iconButton: {
     padding: 2,

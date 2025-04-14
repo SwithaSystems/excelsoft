@@ -14,6 +14,11 @@ function HeroBanner(props) {
           <Text style={styles.shopNowText}>Shop Now</Text>
         </TouchableOpacity>
       </View>
+      <View style = {styles.indicatorContainer}>        
+        <View style = {[styles.indicator, styles.activeIndicator]} />
+        <View style = {[styles.indicator]} />
+        <View style = {[styles.indicator]} />
+      </View>
     </>
   );
 }
@@ -55,6 +60,22 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: "500",
+  },
+
+  indicatorContainer:{
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  indicator: {
+    width: 40,
+    height: 5,
+    borderRadius: 5,
+    backgroundColor: "#989B9C",
+    marginHorizontal: 5,
+  },
+  activeIndicator:{
+    backgroundColor: colors.black,
   },
 });
 export default HeroBanner;

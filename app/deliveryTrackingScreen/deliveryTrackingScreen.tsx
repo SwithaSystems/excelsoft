@@ -11,9 +11,9 @@ const deliveryTrackingScreen = () => {
   const orderStatus = [
     "Order Placed",
     "Order Packed",
-    "Ready to Handover",
-    "Reached the Delivery Location",
-    "Order Delivered",
+    "Out for delivery",
+    "Reached the Location",
+    "Order Delivered Successully!!",
   ];
 
   return (

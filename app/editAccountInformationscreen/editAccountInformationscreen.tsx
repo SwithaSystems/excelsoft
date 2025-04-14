@@ -37,7 +37,16 @@ const editAccountInformationscreen = () => {
               style={globalStyles.userInputLabelIcon}
             />
             <View style={{ flex: 1, paddingLeft: 14 }}>
+            <View style ={globalStyles.deviceHeading}>
               <Text style={globalStyles.userInputLabel}>Phone</Text>
+              <TouchableOpacity
+                  /* onPress={(
+
+                   )}*/  
+                >       
+                <Text style={globalStyles.verify}>verify</Text>
+              </TouchableOpacity>
+            </View>
               <CustomTextInput
                 disabled={true}
                 containerStyle={globalStyles.userInputContainer}
@@ -58,7 +67,16 @@ const editAccountInformationscreen = () => {
               style={globalStyles.userInputLabelIcon}
             />
             <View style={{ flex: 1, paddingLeft: 14 }}>
+            <View style ={globalStyles.deviceHeading}>
               <Text style={globalStyles.userInputLabel}>Email</Text>
+              <TouchableOpacity
+                  /* onPress={(
+
+                   )}*/  
+                >       
+                <Text style={globalStyles.verify}>verify</Text>
+              </TouchableOpacity>
+            </View>
               <CustomTextInput
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}

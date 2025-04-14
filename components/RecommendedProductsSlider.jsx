@@ -39,7 +39,7 @@ function RecommendedProductsSlider(props) {
             <View style={styles.recommendedDetails}>
               <Text style={styles.recommendedTitle}>{item.title}</Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{item.rating} ★</Text>
+                <Text style={styles.ratingText}>{item.rating} ★ </Text>
                 <Text style={styles.reviewsText}>({item.reviews})</Text>
               </View>
               {props.showAddToCart && (
@@ -88,7 +88,6 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     color: colors.reviewsColor,
-    marginLeft: 16,
   },
   ratingContainer: {
     flexDirection: "row",
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   recommendedDetails: {
-    marginLeft: 16,
+    marginLeft: 12,
   },
   recommendedCard: {
     width: 160,

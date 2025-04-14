@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: 200,
-    resizeMode:"cover"
+    resizeMode:"cover",
+    borderRadius: 10,
   },
   contentContainer: {
     padding: 16,
@@ -37,10 +38,81 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: 8,
   },
+  exclusiveDetails: {
+  },
+  exclusiveImage: {
+    width: "100%",
+    height: 250,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  exclusiveCard: {
+    width: 240,
+    height: 400,
+    marginRight: 12,
+    backgroundColor: colors.lightgrey,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: colors.reviewsColor,
+  },
+  starIcon: {
+    color: colors.reviewsColor,
+    fontSize: 14,
+  },
+  reviewsText: {
+    fontSize: 14,
+    color: colors.reviewsColor,
+  },
+  saleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  saleTag: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginRight: 8,
+  },
+  saleText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  saleTimeBox:{
+    backgroundColor:"#E9F3F6",
+    flexDirection: "row",
+  },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 8,
     marginBottom: 16,
+  },
+  saleTime: {
+    color: colors.primary,
+    fontSize: 14,
+    marginTop:2,
+    marginRight: 8,
+  },
+  discountTag: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  discountText: {
+      color: colors.white,
+      fontSize: 12,
+      fontWeight: "500",
   },
   discountedPrice: {
     fontSize: 18,
@@ -66,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   colorSection: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   colorTitle: {
     fontSize: 16,
@@ -88,7 +160,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   quantitySection: {
-    marginBottom: 24,
+    marginBottom: 16,
     flexDirection: 'row',
     justifyContent:'space-between',
     alignItems:"center"
@@ -114,6 +186,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  selectQuantityText:{
+    fontSize:11,
+    color: "#17C6ED",
+    textDecorationLine: "underline",
+    marginLeft: 4,
+    marginTop: 5,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+  },
   buttonsContainer: {
     flexDirection: 'row',
    // gap: 38,
@@ -136,6 +218,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,      
     borderBottomWidth: 1,   
     borderColor: colors.black, 
+    marginBottom:16,
   },
   seeMoreText: {
     color: colors.black,

@@ -21,6 +21,7 @@ import containers from "@/containers";
 import { Product, ProductsAPI } from "@/services/productService";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../store/slices/cartSlice";
+import DisplayPrice from "@/components/DisplayPrice";
 const { width } = Dimensions.get("window");
 
 const ProductDetailScreen = () => {
@@ -137,11 +138,33 @@ const ProductDetailScreen = () => {
         </ScrollView>
 
         <View style={styles.contentContainer}>
-          <Text style={styles.productTitle}>{product.name}</Text>
-          <View style={styles.priceContainer}>
-            <Text style={styles.discountedPrice}>${product.price}</Text>
-            <Text style={styles.originalPrice}>${product.originalPrice}</Text>
-          </View>
+            <View style={styles.exclusiveDetails}>
+              <Text style={styles.productTitle}>{product.name}</Text>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.ratingText}>{product.rating}</Text>
+                <Text style={styles.starIcon}> ★ </Text>
+                <Text style={styles.reviewsText}>({product.reviews.length})</Text>
+              </View>
+              <View style={styles.saleContainer}>
+                <View style={styles.saleTimeBox}>
+                  <View style={styles.saleTag}>
+                    <Text style={styles.saleText}>Sale</Text>
+                  </View>
+                  <Text style={styles.saleTime}>02:48:26</Text>
+                </View>
+                <View style={styles.discountTag}>
+                  <Text style={styles.discountText}>
+                   {/*product.discount || */"20%"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.priceContainer}>
+                <DisplayPrice
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                />
+              </View>
+            </View>
 
           <Text style={styles.infoTitle}>Product Information</Text>
           <Text style={styles.infoText}>{product.description}</Text>
@@ -164,7 +187,16 @@ const ProductDetailScreen = () => {
           </View>
 
           <View style={styles.quantitySection}>
-            <Text style={styles.quantityTitle}>Quantity</Text>
+            <View style = {styles.quantityContainer}>
+              <Text style={styles.quantityTitle}>Quantity</Text>
+              <TouchableOpacity
+                /*onPress={
+                  
+                }*/
+              >
+              <Text style={styles.selectQuantityText}>select quantity</Text>
+              </TouchableOpacity>
+            </View>
             <View style={styles.quantityControl}>
               <TouchableOpacity
                 style={styles.quantityButton}
@@ -181,6 +213,7 @@ const ProductDetailScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
+
           <View style={styles.buttonsContainer}>
             <Button
               title="Add To Cart"

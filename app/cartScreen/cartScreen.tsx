@@ -1,7 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
-import { Dimensions } from 'react-native';
+import { Dimensions, TextInput } from 'react-native';
 import {
   FlatList,
   Image,
@@ -33,6 +33,7 @@ import { router } from "expo-router";
 import Footer from "@/components/Footer";
 import containers from "@/containers";
 import { redirectToPage } from "../../utilities/redirectionHelper";
+import { Ionicons } from "@expo/vector-icons";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -118,6 +119,23 @@ const CartScreen = () => {
               title="Place Order"
               onPress={() => redirectToPage(containers.pickUpModescreenScreen)}
             />
+          </View>
+          
+          <Text>Have a Discount Code?</Text>
+          <View style ={globalStyles.discountSection}>
+            <View style={globalStyles.discountTextInput}>
+              <TextInput
+                style={globalStyles.discountText}
+                placeholder="Enter your discount code"
+                placeholderTextColor="#17C6ED"
+              />       
+              <Ionicons name="close" style={globalStyles.discountClearIcon}/>
+            </View>
+            <View>
+              <TouchableOpacity>
+                <Text style={globalStyles.redeemButton}>Redeem</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}

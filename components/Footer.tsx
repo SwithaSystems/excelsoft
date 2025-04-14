@@ -27,8 +27,14 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="home"
           size={24}
-          color={activeTab.toLowerCase() === "home" ? "#3B4FB8" : "#666"}
+          color={activeTab.toLowerCase() === "home" ? "#17C6ED" : "#666"}
         />
+        <Text style={{
+          fontSize: 10,
+          color: activeTab.toLowerCase() == "home" ? "#17C6ED":"#666"}
+        }>
+          Home
+        </Text>
       </TouchableOpacity>
 
       {/* Saved Button */}
@@ -39,8 +45,14 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="heart"
           size={24}
-          color={activeTab.toLowerCase() === "saved" ? "#3B4FB8" : "#666"}
+          color={activeTab.toLowerCase() === "saved" ? "#17C6ED" : "#666"}
         />
+        <Text style={{
+          fontSize: 10,
+          color: activeTab.toLowerCase() == "saved" ? "#17C6ED":"#666"}
+        }>
+          Saved
+        </Text>
       </TouchableOpacity>
 
       {/* Search Button */}
@@ -51,8 +63,14 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="search"
           size={24}
-          color={activeTab.toLowerCase() === "search" ? "#3B4FB8" : "#666"}
+          color={activeTab.toLowerCase() === "search" ? "#17C6ED" : "#666"}
         />
+        <Text style={{
+          fontSize: 10,
+          color: activeTab.toLowerCase() == "search" ? "#17C6ED":"#666"}
+        }>
+          Search
+        </Text>
       </TouchableOpacity>
 
       {/* Cart Button */}
@@ -64,7 +82,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           <Ionicons
             name="cart"
             size={24}
-            color={activeTab.toLowerCase() === "cart" ? "#3B4FB8" : "#666"}
+            color={activeTab.toLowerCase() === "cart" ? "#17C6ED" : "#666"}
           />
           {cartItemCount > 0 && (
             <View style={styles.badge}>
@@ -74,6 +92,28 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
             </View>
           )}
         </View>
+        <Text style={{
+          fontSize: 10,
+          color: activeTab.toLowerCase() == "cart" ? "#17C6ED":"#666"}
+        }>
+          Cart
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style = {styles.footerTab}
+        onPress = {() => redirectToPage(containers.userProfileScreenScreen)}
+      >
+          <Ionicons
+          name="menu"
+          size={24}
+          color={activeTab.toLowerCase()=="menu"?"#17C6ED":"#666"}
+        />
+        <Text style={{
+          fontSize: 10,
+          color: activeTab.toLowerCase() == "menu" ? "#17C6ED":"#666"}
+        }>
+          Menu
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -82,7 +122,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    backgroundColor: "#CEF1F9",
     paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: "#eee",
