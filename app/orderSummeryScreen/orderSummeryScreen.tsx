@@ -53,11 +53,12 @@ const orderSummeryScreen = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://192.168.1.9:3002/payments/create-payment-intent`,
-        {
-          amount: 1000,
-          currency: "usd",
-        }
+        //`http://192.168.1.9:3002/payments/create-payment-intent`,
+          `${API_BASE_URL}/payments/create-payment-intent`,
+          {
+            amount: 1000,
+            currency: "usd",
+          }        
       );
 
       return {
