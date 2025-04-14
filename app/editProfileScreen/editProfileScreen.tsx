@@ -7,8 +7,8 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
   ViewStyle,
@@ -20,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useDerivedValue } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
+import { Text } from "react-native-elements";
 
 interface User {
   id: string;
@@ -59,6 +60,13 @@ const editProfileScreen = () => {
 
     fetchUser();
   }, []);
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
+      setDateOfBirth(user.dateOfBirth);
+    }
+  }, [user]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -135,12 +143,20 @@ const editProfileScreen = () => {
     formData.append("dateOfBirth", dateOfBirth);
 
     try {
-      const response = await UserAPI.userEditProfile(user?.id, formData);
-      console.log("Profile updated successfully:", response.data);
+      const response = await UserAPI.userEditProfile(user?.phone, formData);
+      console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        Alert.alert("Message", "Profile updated successfully.", [
+          {
+            text: "OK",
+            onPress: () => {
+              redirectToPage(containers.userProfileScreenScreen);
+            },
+          },
+        ]);
       }
-      return response.data;
+      return response?.data;
     } catch (error) {
       console.error("Profile update failed:", error);
       alert("Failed to update profile.");
@@ -180,9 +196,10 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="First Name"
-                value={user ? user.firstName : firstName}
+                value={firstName}
                 onPress={() => {}}
                 setValue={setFirstName}
+                onChangeText={(text: any) => setFirstName(text)}
               />
             </View>
           </View>
@@ -199,9 +216,10 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="Last Name"
-                value={user ? user.lastName : lastName}
+                value={lastName}
                 onPress={() => {}}
                 setValue={setLastName}
+                onChangeText={(text: any) => setLastName(text)}
               />
             </View>
           </View>
@@ -218,7 +236,7 @@ const editProfileScreen = () => {
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="--/--/----"
-                value={user ? user.dateOfBirth : dateOfBirth}
+                value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
                 onPress={() => {}}
                 setValue={setDateOfBirth}
               />
