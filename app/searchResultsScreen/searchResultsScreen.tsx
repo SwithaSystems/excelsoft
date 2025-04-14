@@ -8,26 +8,25 @@ import styles from "./searchResultsScreenStyles";
 import colors from "../config/colors";
 import Header from "@/components/Header";
 import CategoryBadges from "./Components/CategoryBadges";
-import {Product, ProductsAPI} from "@/services/productService"
+import { Product, ProductsAPI } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
 
-
-
 const SearchResultsScreen = () => {
-  const { fromSearch } = useLocalSearchParams();
-  const {category}= useLocalSearchParams();
-  const {categoryId}= useLocalSearchParams();
-  const { query } = useLocalSearchParams();
+  const { fromSearch, query } = useLocalSearchParams();
+  const { category } = useLocalSearchParams();
+  const { categoryId } = useLocalSearchParams();
   const router = useRouter();
-  const [subCategoriesIds,setSubCategoriesIds] = useState<number[]>([]);
-  const [products,setProducts] = useState<Product[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(Number(categoryId));
+  const [subCategoriesIds, setSubCategoriesIds] = useState<number[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(
+    Number(categoryId)
+  );
   const [subCategories, setSubCategories] = useState<any[]>([]);
 
   // const filteredProducts = React.useMemo(() => {
   //   if (!query) return products;
   //   const searchQuery = query.toString().toLowerCase();
-  //   return products.filter(product => 
+  //   return products.filter(product =>
   //     product.name.toLowerCase().includes(searchQuery) ||
   //     product.description.toLowerCase().includes(searchQuery) ||
   //     product.category.toLowerCase().includes(searchQuery)
@@ -35,10 +34,7 @@ const SearchResultsScreen = () => {
   // }, [query]);
   // Filter products based on search query and categoryId
 
-
-  
-
-  useEffect(()=>{
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
         const products = await ProductsAPI.getAllProducts();
@@ -49,40 +45,39 @@ const SearchResultsScreen = () => {
       }
     };
     fetchProducts();
+  }, []);
 
-  },
-  [])
   const filteredProducts = useMemo(() => {
     if (!query) return products;
-  
+
     const searchQuery = query?.toString().toLowerCase();
-  
-    return products.filter(product => {
+
+    return products.filter((product) => {
       const matchesQuery = searchQuery
         ? product.name.toLowerCase().includes(searchQuery) ||
           product.description.toLowerCase().includes(searchQuery)
         : true;
-  
+
       // const matchesCategory = categoryId
       //   ? product.categoryId.some(id => id === Number(categoryId))
       //   : true;
-  
-      return matchesQuery ;
+
+      return matchesQuery;
     });
-  }, [query,products]);
-  
+  }, [query, products?.length > 0]);
+
   // Update `products` state whenever `filteredProducts` changes
   useEffect(() => {
-    console.log("Filetered products",filteredProducts)
+    console.log("Filetered products", filteredProducts);
     setProducts(filteredProducts);
-  }, [filteredProducts?.length>0]);
-  
+  }, [filteredProducts?.length > 0]);
 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const data = await categoryService.getAllSubCategories(Number(categoryId));
+        const data = await categoryService.getAllSubCategories(
+          Number(categoryId)
+        );
         console.log("all sub categories", data);
         setSubCategories(data);
         const SubCategories_Ids = data.map((category) => category.id);
@@ -102,18 +97,23 @@ useEffect(() => {
           if (subCategoriesIds.length > 0) {
             // If there are subcategories, fetch products from all of them
             const allSubCategoryProducts = await Promise.all(
-              subCategoriesIds.map(id => ProductsAPI.getProductByCategoryID(id))
+              subCategoriesIds.map((id) =>
+                ProductsAPI.getProductByCategoryID(id)
+              )
             );
             const combinedProducts = allSubCategoryProducts.flat();
             setProducts(combinedProducts);
           } else {
             // If no subcategories, fetch products from the main category
-            const mainCategoryProducts = await ProductsAPI.getProductByCategoryID(Number(categoryId));
+            const mainCategoryProducts =
+              await ProductsAPI.getProductByCategoryID(Number(categoryId));
             setProducts(mainCategoryProducts);
           }
         } else {
           // For specific subcategory, fetch products normally
-          const categoryProducts = await ProductsAPI.getProductByCategoryID(selectedCategoryId);
+          const categoryProducts = await ProductsAPI.getProductByCategoryID(
+            selectedCategoryId
+          );
           setProducts(categoryProducts);
         }
       } catch (error) {
@@ -128,8 +128,7 @@ useEffect(() => {
     setSelectedCategoryId(categoryId);
   };
 
-// const filteredProducts = ProductsAPI.getAllSubCategoriesProducts(subCategoriesIds);
-
+  // const filteredProducts = ProductsAPI.getAllSubCategoriesProducts(subCategoriesIds);
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const isEven = index % 2 === 0;
@@ -157,12 +156,14 @@ useEffect(() => {
     );
   };
 
-  const renderCategoryBadges = (categoryId:number) => {
-    return <CategoryBadges 
-      categoryId={categoryId}
-      subCategories={subCategories}
-      onCategorySelect={handleCategorySelect}
-    />;
+  const renderCategoryBadges = (categoryId: number) => {
+    return (
+      <CategoryBadges
+        categoryId={categoryId}
+        subCategories={subCategories}
+        onCategorySelect={handleCategorySelect}
+      />
+    );
   };
 
   return (

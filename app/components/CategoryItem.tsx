@@ -1,10 +1,11 @@
 import React from "react";
 import { TouchableOpacity, Text, Image, StyleSheet } from "react-native";
 import colors from "../config/colors";
+import { ImageSourcePropType } from "react-native";
 
 interface CategoryItemProps {
   title: string;
-  image: string;
+  image: ImageSourcePropType;
   onPress: () => void;
   containerStyle?: {};
 }
@@ -21,7 +22,11 @@ const CategoryItem = ({
       style={[styles.container, containerStyle]}
       onPress={onPress}
     >
-      <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
+      <Image
+        source={typeof image === "string" ? { uri: image } : image}
+        style={styles.image}
+        resizeMode="cover"
+      />
       <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   );
