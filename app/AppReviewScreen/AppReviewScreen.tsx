@@ -29,7 +29,7 @@ const appReviewScreen = () => {
     return(
         <View style={styles.container}>
         <Header
-            headerText="Add Your Review"
+            headerText="Feedback"
             secondaryBtnText="Discard"
             secondaryBtnCallBack={() => {
             redirectToPage(containers.userProfileScreenScreen);
@@ -40,13 +40,16 @@ const appReviewScreen = () => {
         <View style={styles.ratingCategory}>
             <Text style = {styles.secondaryText}>Tell us about your expereince!</Text>
             <Text>Rate your site Experience</Text>
-            <ProductStars
-              starsContainer={{ justifyContent: "space-between" }}
-              rating={rating}
-              needAction={true}
-              size={60}
-              onChangeRating={setRating}
-            />
+                <ProductStars
+                starsContainer=
+                               {{ justifyContent: "space-between",
+                                  //backgroundColor: colors.placeholdergrey,
+                               }}
+                rating={rating}
+                needAction={true}
+                size={60}
+                onChangeRating={setRating}
+                />
         </View>
         <View style = {styles.selectCategory}>
             <Text>Tell us your feedback about</Text>
@@ -81,7 +84,7 @@ const appReviewScreen = () => {
         <View style={styles.addYourReview}>
             <Text>Do you want to talk more about your experience?</Text>
             <TextInput 
-                        style = {styles.reviewText}
+                        style = {[ styles.reviewText]}
                         placeholder="Add your experience"
                         multiline
                         numberOfLines={8}

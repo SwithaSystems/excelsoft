@@ -23,19 +23,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-   checkBoxContainer: {
-      backgroundColor: colors.white,
-      borderWidth: 0,
-      padding: 10,
-      marginTop: 0,
-      marginBottom: 16,
-      marginLeft: 0,
-      marginRight: 0,
-    },
-    checkBoxText: {
-      color: colors.black,
-      fontWeight: 400,
-    },
   cartItemContainerStyle:{
     paddingHorizontal: 0
   }, 
@@ -257,6 +244,19 @@ const styles = StyleSheet.create({
    noteText:{
       color: colors.black,
    },
+ checkBoxContainer: {
+    backgroundColor: colors.white,
+    borderWidth: 0,
+    padding: 10,
+    marginTop: 0,
+    marginBottom: 16,
+    marginLeft: 0,
+    marginRight: 0,
+  },
+  checkBoxText: {
+    color: colors.black,
+    fontWeight: 400,
+  },
 });
 
 export default styles;

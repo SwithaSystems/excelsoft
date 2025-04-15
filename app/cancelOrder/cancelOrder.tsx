@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
-import styles from "./returnOrderStyles";
-import { globalStyles } from "@/assets/styles/globalStyles";
+import styles from "./cancelOrderStyles";
 import { CheckBox } from "react-native-elements";
+import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../config/colors";
@@ -20,8 +20,6 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { redirectToPage } from "@/utilities/redirectionHelper";
-import containers from "@/containers";
 
 const cartItems = [
   {
@@ -50,22 +48,6 @@ const cartItems = [
   },
 ];
 
-const options = [
-  {
-    id: "store",
-    label: "Drop at the store",
-    description: "Drop your order at the store",
-    icon: "location",
-    params: { mode: "store" },
-  },
-  {
-    id: "home",
-    label: "Pickup at your doorstep",
-    description: "Free pickup from your home in 24 hours.",
-    icon: "home-outline",
-    params: { mode: "home" },
-  },
-];
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -85,8 +67,8 @@ type OrderSummeryScreenParams = {
 const returnOrder = () => {
   const params = useLocalSearchParams<OrderSummeryScreenParams>();
   const [selected, setSelected] = useState<Partial<{ id: string; params: any }>>({});
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
   const [amPm, setAmPm] = useState("am");
@@ -101,7 +83,7 @@ const returnOrder = () => {
     ) => {
       const currentDate = selectedDate || new Date(date);
       setShowDatePicker(false);
-      setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+      setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd,
     };
   
 
@@ -140,102 +122,8 @@ const returnOrder = () => {
               </View>
             </View>
           ))}
-        <View style={styles.returnModeCategory}>
-          <Text style={styles.returnHeading}>Return Mode:</Text>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.option,
-                selected?.id === option.id && styles.selectedOption,
-              ]}
-              onPress={() => setSelected(option)}
-            >
-              <View style={styles.textContainer}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
-                <Text style={styles.optionDescription}>{option.description}</Text>
-              </View>
-              <View style={styles.radioCircle}>
-                {selected.id === option.id && <View style={styles.selectedRadio} />}
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View> 
-        {selected.id === "home" && (
-            <View style={styles.section}>
-                        <Text style={styles.sectionHeading}>Address</Text>
-                        <View style={globalStyles.pl_3}>
-                          <Text style={styles.addressTextBox}>{pickupAddress}</Text>
-                        </View>
-            </View>
-        )
-        }
-        <View style ={styles.datetimeContainer}>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Date: *</Text>
-                  {Platform.OS === "web" ? (
-                    <input
-                      type="date"
-                      style={globalStyles.webDateInput}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  ) : (
-                    <TouchableOpacity
-                      style={globalStyles.dateInput}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text>{date}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={new Date(date)}
-                      mode="date"
-                      display="default"
-                      onChange={onDateChange}
-                    />
-                  )}
-                </View>
-            <Text style={styles.label}>
-                Time: <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.timeContainer}>
-                <TextInput
-                  style={[styles.timeInput, styles.hourMinuteInput]}
-                  placeholder="HH"
-                  value={hour}
-                  onChangeText={setHour}
-                  keyboardType="number-pad"
-                />
-                <TextInput
-                  style={[styles.timeInput, styles.hourMinuteInput]}
-                  placeholder="MM"
-                  value={minute}
-                  onChangeText={setMinute}
-                  keyboardType="number-pad"
-                />
-                <View style={styles.amPmSelector}>
-                  <Picker
-                    selectedValue={period}
-                    onValueChange={(itemValue) => setPeriod(itemValue)}
-                  >
-                    <Picker.Item
-                      style={globalStyles.pickerValue_sm}
-                      label="AM"
-                      value="am"
-                    />
-                    <Picker.Item
-                      style={globalStyles.pickerValue_sm}
-                      label="PM"
-                      value="pm"
-                    />
-                  </Picker>
-            </View>
-          </View>
-        </View>
         <View style = {styles.returnReason}>
-                    <Text style = {styles.label}>Reason for Return</Text>
+                    <Text style = {styles.label}>Reason for Cancellation</Text>
                     <View style = {styles.selectReason}>
                         <TextInput 
                             placeholder="Tell us why"
@@ -262,10 +150,6 @@ const returnOrder = () => {
             <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
           </View>
           <View style={styles.returnOrderSummary}>
-            <Text style={styles.returnOrderDetails}>Return Date: </Text>
-            <Text style={styles.returnOrderDetails}>21-01-2025</Text>
-          </View>
-          <View style={styles.returnOrderSummary}>
             <Text style={styles.returnOrderDetails}>Items being returned:</Text>
             <Text style={styles.returnOrderDetails}>1</Text>
           </View>
@@ -277,14 +161,10 @@ const returnOrder = () => {
           <Text style = {styles.noteText}>Note: Refund money would be processed in 3 to 5 business days. </Text>
         
           <TouchableOpacity style={styles.submitButton}>
-            <Text style = {styles.buttonText}>Request Cancellation</Text>
+            <Text style = {styles.buttonText}>Submit Cancellation Request</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.replacementButton}
-            onPress={() => {
-                        redirectToPage(containers.replaceOrderScreenScreen);
-            }}
-          >
-            <Text style = {styles.buttonText}>Request Replacement</Text>
+          <TouchableOpacity style={styles.replacementButton}>
+            <Text style = {styles.buttonText}>Keep Order</Text>
           </TouchableOpacity>
       </ScrollView>
     </View>

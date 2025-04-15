@@ -11,5 +11,5 @@ export default {
   secondaryText: "#7E8A8C",
   switchTrackOff: "#D2D3D8",
   error: "red",
-  placeholdergrey: "D9D9D9",
+  placeholdergrey: "#D9D9D9",
 };

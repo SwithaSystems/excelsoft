@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
   },
   radioContainer: {
     marginVertical: 20,
+    marginBottom: 16,
   },
   radioOption: {
     flexDirection: 'row',
@@ -48,12 +49,11 @@ const styles = StyleSheet.create({
   },
   addYourReview: {
     marginVertical: 20,
-    backgroundColor: colors.placeholdergrey,
   },
   reviewText: {
     height: 150,
     backgroundColor: colors.placeholdergrey,
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 8,
     padding: 10,
     textAlignVertical: 'top',  

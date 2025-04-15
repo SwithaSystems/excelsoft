@@ -305,6 +305,8 @@ const LayoutContent = () => {
           <Stack.Screen 
           name={containers.AppReviewScreenScreen} 
           options={{ headerShown: false }} />
+  <Stack.Screen name={containers.cancelOrderScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.replaceOrderScreenScreen} options={{ headerShown: false }} />
 </Stack>
       )}
     </>
