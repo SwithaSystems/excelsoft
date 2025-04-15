@@ -8,28 +8,35 @@ import {
 } from "react-native";
 import styles from "./orderSuccessfulScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import { router } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const orderSuccessfulScreen = () => {
+  const { orderData } = useLocalSearchParams();
+  console.log("orderData", orderData);
   const isOrderPlacedSuccess = true;
   const successCartImg = require("../../assets/images/successCartImg.png");
   const failedCartImg = require("../../assets/images/failedCartImg.png");
+
   function redirectToOrderDetails() {
-    router.replace({
-      pathname: "/orderDetailsScreen/orderDetailsScreen",
+    // router.replace({
+    //   pathname: "/orderDetailsScreen/orderDetailsScreen",
+    //   params: { orderData },
+    // });
+
+    redirectToPage(containers.orderDetailsScreenScreen, {
+      orderData: orderData,
     });
   }
-  let handleRedirectTimeOut: any = null;
+
   useEffect(() => {
-    handleRedirectTimeOut = setTimeout(redirectToOrderDetails, 5000);
+    const handleRedirectTimeOut = setTimeout(redirectToOrderDetails, 5000);
+    return () => clearTimeout(handleRedirectTimeOut);
   }, []);
+
   return (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        clearInterval(handleRedirectTimeOut);
-        redirectToOrderDetails();
-      }}
-    >
+    <TouchableWithoutFeedback onPress={redirectToOrderDetails}>
       <View
         style={[
           styles.container,
@@ -39,11 +46,10 @@ const orderSuccessfulScreen = () => {
       >
         <Image
           source={isOrderPlacedSuccess ? successCartImg : failedCartImg}
-          style={{}}
           alt={
             isOrderPlacedSuccess
               ? "Order placed successfull"
-              : "Order placemewnt failed"
+              : "Order placement failed"
           }
         />
         <Text
@@ -51,7 +57,7 @@ const orderSuccessfulScreen = () => {
             textAlign: "center",
             marginTop: 48,
             fontSize: 24,
-            fontWeight: 600,
+            fontWeight: "600",
           }}
         >
           {isOrderPlacedSuccess

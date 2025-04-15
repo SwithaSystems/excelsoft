@@ -1,25 +1,23 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { CheckBox } from "react-native-elements";
 import CartItem from "../cartScreen/components/CartItem";
 import OrderSummary from "@/components/OrderSummary";
 import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { useSelector } from "react-redux";
-import { Alert, ActivityIndicator } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { Alert } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
+import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
+import { removeFromCart } from "@/store/slices/cartSlice";
+import { addToSavedItems } from "@/store/slices/savedItemsSlice";
+import { orderService, PickupMode } from "@/services/orderService";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -41,6 +39,9 @@ const orderSummeryScreen = () => {
   const cartItems = useSelector((state: any) => [...state.cart.items]);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
+  const dispatch = useDispatch();
 
   // Extract pickup data from route params or use default values
   const pickupAddress = params.pickupAddress || "";
@@ -49,16 +50,23 @@ const orderSummeryScreen = () => {
   const selectedMode = params.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
+  const calculateSubtotal = () => {
+    return cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
+  };
+
   const fetchPaymentIntent = async () => {
     setLoading(true);
     try {
       const response = await axios.post(
         //`http://192.168.1.9:3002/payments/create-payment-intent`,
-          `${API_BASE_URL}/payments/create-payment-intent`,
-          {
-            amount: 1000,
-            currency: "usd",
-          }        
+        `${API_BASE_URL}/payments/create-payment-intent`,
+        {
+          amount: Math.round(calculateSubtotal() * 100),
+          currency: "usd",
+        }
       );
 
       return {
@@ -74,6 +82,12 @@ const orderSummeryScreen = () => {
       setLoading(false);
     }
   };
+  const products = cartItems.map((item) => ({
+    productId: item.id,
+    name: item.name,
+    quantity: item.quantity,
+    price: item.price,
+  }));
   const handlePayment = async () => {
     const paymentData = await fetchPaymentIntent();
     if (!paymentData) return;
@@ -99,9 +113,67 @@ const orderSummeryScreen = () => {
       Alert.alert("Payment Failed", paymentError.message);
     } else {
       Alert.alert("Success", "Payment completed successfully!");
-      redirectToPage(containers.orderSuccessfulScreenScreen);
+
+      const response = await orderService.createOrder({
+        products: products,
+        shippingCharges: 10,
+        discounts: [10],
+        tax: 2.99,
+        totalAmount:
+          Math.round(calculateSubtotal() * 100) / 100 + 10 + 2.99 - 10,
+        paymentMethod: "credit_card",
+        pickupModeId: (params.selectedMode
+          ? params.selectedMode
+          : "Delivery") as PickupMode,
+        timeslot: params.selectedSlot?.toString()
+          ? new Date(params.selectedSlot)
+          : undefined,
+        // shippingAddress: {
+        //   line1: "123 Street",
+        //   city: "Cityville",
+        //   state: "Stateburg",
+        //   postalCode: "123456",
+        //   country: "Countryland",
+        // },
+        shippingAddress: {
+          line1: params.address ? String(params.address) : "N/A",
+          city: "Cityville",
+          state: "Stateburg",
+          postalCode: "123456",
+          country: "Countryland",
+        },
+      });
+      console.log("after order placed", response);
+      redirectToPage(containers.orderSuccessfulScreenScreen, {
+        orderData: JSON.stringify(response),
+      });
     }
   };
+  const handleDelete = (item: any) => {
+    setItemToDelete(item);
+    setIsModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      dispatch(removeFromCart(itemToDelete.id));
+    }
+    setIsModalVisible(false);
+    setItemToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    if (itemToDelete) {
+      const itemtoSave = cartItems.find((item) => item.id === itemToDelete.id);
+      if (itemtoSave) {
+        dispatch(addToSavedItems(itemtoSave));
+        dispatch(removeFromCart(itemToDelete.id));
+      }
+    }
+    setIsModalVisible(false);
+    setItemToDelete(null);
+  };
+  console.log("cartItems", cartItems);
 
   return (
     <View style={globalStyles.container}>
@@ -164,7 +236,7 @@ const orderSummeryScreen = () => {
                 return (
                   <CartItem
                     itemContainerStyle={styles.cartItemContainerStyle}
-                    handleDelete={() => {}}
+                    handleDelete={handleDelete}
                     key={eachCartItem.id}
                     cartItem={eachCartItem}
                   />
@@ -180,6 +252,7 @@ const orderSummeryScreen = () => {
           </View>
         </View>
       </ScrollView>
+
       <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
         <Button
           onPress={() => {
@@ -188,6 +261,17 @@ const orderSummeryScreen = () => {
           title="Confirm and Checkout"
         />
       </View>
+      <ConfirmationModal
+        onClose={() => {
+          setIsModalVisible(false);
+        }}
+        isModalVisible={isModalVisible}
+        text="Are you sure you want to delete this? You can save this item for later too."
+        submitText="Delete Item"
+        handleSubmit={confirmDelete}
+        cancelText="Save for Later"
+        handleCancel={cancelDelete}
+      />
     </View>
   );
 };

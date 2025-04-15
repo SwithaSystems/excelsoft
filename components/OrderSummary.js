@@ -3,83 +3,81 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 function OrderSummary(props) {
-  const cartItems = props.cartItems;
   const calculateTotal = () => {
     return cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
   };
+  const cartItems = props.cartItems;
+  const total = calculateTotal();
+  const discount = props?.discount || 0;
+  const shipping = props?.shipping || 0;
+  const subTotal = total - discount + shipping;
   return (
-    <>
-      <View style={[styles.orderSummary, props?.containerStyle]}>
-        {!props?.hideHeading && (
-          <Text style={props.sectionHeadingStyle || styles.summaryText}>
-            Order Details
-          </Text>
-        )}
+    <View style={[styles.orderSummary, props?.containerStyle]}>
+      {!props?.hideHeading && (
+        <Text style={props.sectionHeadingStyle || styles.summaryText}>
+          Order Details
+        </Text>
+      )}
+      <View style={styles.summaryItem}>
+        <Text style={styles.summaryName}>Item Name</Text>
+        <Text style={styles.summaryQuantity}>Total Items</Text>
+        <Text style={styles.summaryPrice}>Price</Text>
+      </View>
+      <View style={{ paddingHorizontal: 5 }}>
+        {cartItems.map((item) => (
+          <View key={item.id} style={styles.summaryItem}>
+            <Text style={styles.summaryName}>{item.name}</Text>
+            <Text style={styles.summaryQuantity}>{item.quantity}</Text>
+            <Text style={styles.summaryPrice}>
+              ${(item.price * item.quantity).toFixed(2)}
+            </Text>
+          </View>
+        ))}
+
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryName}>Item Name</Text>
-          <Text style={styles.summaryQuantity}>Total Items</Text>
-          <Text style={styles.summaryPrice}>Price</Text>
+          <Text style={[styles.summaryName, { color: colors.primary }]}>
+            Total Price
+          </Text>
+          <Text style={styles.summaryQuantity}></Text>
+          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+            ${total.toFixed(2)}
+          </Text>
         </View>
-        <View style={{ paddingHorizontal: 5 }}>
-          {cartItems.map((item) => (
-            <View key={item.id} style={styles.summaryItem}>
-              <Text style={styles.summaryName}>{item.name}</Text>
-              <Text style={styles.summaryQuantity}>{item.quantity}</Text>
-              <Text style={styles.summaryPrice}>
-                ${(item.price * item.quantity).toFixed(2)}
-              </Text>
-            </View>
-          ))}
-          <View style={[styles.summaryItem]}>
-            <Text style={[styles.summaryName, { color: colors.primary }]}>
-              Total Price
-            </Text>
-            <Text
-              style={[styles.summaryQuantity, { color: colors.primary }]}
-            ></Text>
-            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-              $38
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryName, { color: colors.primary }]}>
-              Discount
-            </Text>
-            <Text
-              style={[styles.summaryQuantity, { color: colors.primary }]}
-            ></Text>
-            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-              $38
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryName, { color: colors.primary }]}>
-              Shipping
-            </Text>
-            <Text
-              style={[styles.summaryQuantity, { color: colors.primary }]}
-            ></Text>
-            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-              $38
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={[styles.summaryName, { color: colors.primary }]}>
-              SubTotal
-            </Text>
-            <Text
-              style={[styles.summaryQuantity, { color: colors.primary }]}
-            ></Text>
-            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-              $38
-            </Text>
-          </View>
+
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryName, { color: colors.primary }]}>
+            Discount
+          </Text>
+          <Text style={styles.summaryQuantity}></Text>
+          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+            -${discount.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryName, { color: colors.primary }]}>
+            Shipping
+          </Text>
+          <Text style={styles.summaryQuantity}></Text>
+          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+            +${shipping.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryName, { color: colors.primary }]}>
+            SubTotal
+          </Text>
+          <Text style={styles.summaryQuantity}></Text>
+          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+            ${subTotal.toFixed(2)}
+          </Text>
         </View>
       </View>
-    </>
+    </View>
   );
 }
 const styles = StyleSheet.create({
