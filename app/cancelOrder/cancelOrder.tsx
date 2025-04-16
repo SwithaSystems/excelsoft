@@ -89,7 +89,7 @@ const returnOrder = () => {
 
   return (
     <View style={styles.container}>
-      <Header headerText="Return Order" />
+      <Header headerText="Cancel Order" />
       <ScrollView>
         <View style={styles.returnOrderCategory}>
           <Text style={styles.returnOrderItemText}>Order Number:</Text>
@@ -131,12 +131,12 @@ const returnOrder = () => {
                         />
                         <Ionicons name="chevron-down-outline"
                                   size = {24}
-                                  color={colors.primary}
+                                  color={colors.black}
                         />
                     </View>
           </View>
           <View style={styles.addComments}>
-                      <Text>Do you want to talk more about your experience?</Text>
+                      <Text style = {styles.label}>Do you want to talk more about your experience?</Text>
                       <TextInput 
                           style = {[ styles.commentsText]}
                           placeholder="Add additional comments"
@@ -145,17 +145,20 @@ const returnOrder = () => {
                       />
           </View>
 
-          <View style={styles.returnOrderSummary}>
-            <Text style={styles.returnOrderDetails}>Order Number: </Text>
-            <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
-          </View>
-          <View style={styles.returnOrderSummary}>
-            <Text style={styles.returnOrderDetails}>Items being returned:</Text>
-            <Text style={styles.returnOrderDetails}>1</Text>
-          </View>
-          <View style={styles.returnOrderSummary}>
-            <Text style={styles.returnOrderItemText}>Refund Total:</Text>
-            <Text style={styles.returnOrderItemText}>$25.00</Text>                     
+          <View style = {styles.cancelOrderDetails}>
+                <Text style = {styles.label}>Cancel Order Details:</Text>
+                <View style={styles.returnOrderSummary}>
+                  <Text style={styles.returnOrderDetails}>Order Number: </Text>
+                  <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
+                </View>
+                <View style={styles.returnOrderSummary}>
+                  <Text style={styles.returnOrderDetails}>Items being returned:</Text>
+                  <Text style={styles.returnOrderDetails}>1</Text>
+                </View>
+                <View style={styles.returnOrderSummary}>
+                  <Text style={styles.returnOrderItemText}>Refund Total:</Text>
+                  <Text style={styles.returnOrderItemText}>$25.00</Text>                     
+                </View>
           </View>
 
           <Text style = {styles.noteText}>Note: Refund money would be processed in 3 to 5 business days. </Text>

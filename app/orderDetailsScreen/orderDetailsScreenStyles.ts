@@ -5,6 +5,7 @@ const styles = StyleSheet.create({
   container:{
     padding: 16,
     backgroundColor: colors.white,
+    marginBottom: 16,
   },
   cartItemContainerStyle:{
     paddingHorizontal: 0

@@ -5,13 +5,13 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: colors.white,
+    marginBottom: 16,
   },
   returnOrderCategory:{
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,  
-    marginVertical: 20, 
-    marginBottom: 10
+    justifyContent: "space-between", 
+    marginVertical: 17, 
+    marginBottom: 16,
   },
   returnOrderItemText:{
     color: colors.black,
@@ -28,10 +28,10 @@ const styles = StyleSheet.create({
   }, 
   cartItem: {
     flexDirection: "row",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F8F8F8",
     borderRadius: 10,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 16,
     alignItems: "center",
   },
   itemImage: {
@@ -72,6 +72,11 @@ const styles = StyleSheet.create({
   },
   returnHeading:{
 
+  },
+  label:{
+    fontSize: 15,
+    fontWeight: "semibold",
+    marginBottom: 16,
   },
  option: {
     flexDirection: "row",
@@ -151,10 +156,7 @@ const styles = StyleSheet.create({
           borderRadius: 10,
           textAlignVertical: 'top', 
     },
-    label: {
-      fontSize: 14,
-      marginBottom: 8,
-    },
+    
     timeContainer: {
       flexDirection: 'row',
       marginBottom: 16,
@@ -191,16 +193,15 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        backgroundColor: '#fff',
+        backgroundColor: colors.placeholdergrey,
         marginTop: 10,
       },
       placeholderText: {
         flex: 1,
         fontSize: 16,
-        backgroundColor: colors.placeholdergrey,
       },
       addComments: {
-        marginVertical: 20,
+        marginBottom: 16,
       },
       commentsText: {
         height: 150,
@@ -209,6 +210,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         textAlignVertical: 'top',  
+      },
+      cancelOrderDetails:{
+        marginBottom: 16,
       },
       returnOrderSummary:{
         flexDirection: "row",
@@ -245,7 +249,7 @@ const styles = StyleSheet.create({
       color: colors.black,
    },
  checkBoxContainer: {
-    backgroundColor: colors.white,
+    //backgroundColor: colors.white,
     borderWidth: 0,
     padding: 10,
     marginTop: 0,

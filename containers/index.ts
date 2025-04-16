@@ -59,4 +59,4 @@ export default {homeScreen: "home/home",
   AdminOrderQRScanScreen: "AdminOrderQRScan/AdminOrderQRScan",
   NotificationListingScreen: "NotificationListing/NotificationListing",
   returnOrderScreen: 'returnOrder/returnOrder', 
-  AppReviewScreenScreen: 'AppReviewScreen/AppReviewScreen', cancelOrderScreen: 'cancelOrder/cancelOrder', replaceOrderScreenScreen: 'replaceOrderScreen/replaceOrderScreen'};
+  AppReviewScreenScreen: 'AppReviewScreen/AppReviewScreen', cancelOrderScreen: 'cancelOrder/cancelOrder', replaceOrderScreenScreen: 'replaceOrderScreen/replaceOrderScreen', adminUserOrderDisplayScreen: 'adminUserOrderDisplay/adminUserOrderDisplay'};

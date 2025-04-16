@@ -307,6 +307,7 @@ const LayoutContent = () => {
           options={{ headerShown: false }} />
   <Stack.Screen name={containers.cancelOrderScreen} options={{ headerShown: false }} />
   <Stack.Screen name={containers.replaceOrderScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.adminUserOrderDisplayScreen} options={{ headerShown: false }} />
 </Stack>
       )}
     </>
