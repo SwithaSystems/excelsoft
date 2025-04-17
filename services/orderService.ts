@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export enum PickupMode {
   HOME_DELIVERY = "homeDelivery",
@@ -35,20 +36,20 @@ export interface PickupDetails {
 }
 
 export interface Order {
-  id: string; // ObjectId as a string
+  _id: string; // MongoDB default
   userId: string;
-  timeslot?: string; // Date string if applicable
   products: OrderProduct[];
   shippingCharges: number;
   discounts: number[];
   tax: number;
   totalAmount: number;
   paymentMethod: string;
-  pickupMode: PickupMode;
+  pickupModeId: PickupMode;
+  timeslot?: Date;
   shippingAddress?: ShippingAddress;
   pickupDetails?: PickupDetails;
-  createdAt: string; // Date string
-  updatedAt: string; // Date string
+  createdAt: string;
+  updatedAt: string;
 }
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -56,11 +57,28 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
     try {
-      const response = await axios.get<Order[]>(`${API_BASE_URL}/orders`);
+      const response = await axiosInstance.get<Order[]>(
+        `${API_BASE_URL}/orders`
+      );
       console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);
+      throw error;
+    }
+  },
+
+  createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
+    console.log("orderPayload", orderPayload);
+    try {
+      const response = await axiosInstance.post<Order>(
+        `${API_BASE_URL}/orders`,
+        orderPayload
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error create orders:", error);
       throw error;
     }
   },

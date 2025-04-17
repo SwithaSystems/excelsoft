@@ -10,15 +10,36 @@ import styles from "./orderDetailsScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import CartItem from "../cartScreen/components/CartItem";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import RecommendedProductsSlider from "@/components/RecommendedProductsSlider";
 import products from "@/data/products";
 import Footer from "@/components/Footer";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import QRCodeDisplay from "../../components/QRCodeDisplay";
+import { useSelector } from "react-redux";
 
 const orderDetailsScreen = () => {
+  const { orderData } = useLocalSearchParams();
+  const [orderDetails, setOrderDetails] = React.useState<any>(null);
+  const cartItems = useSelector((state: any) => [...state.cart.items]);
+
+  console.log("cartItems in orderDetails", cartItems);
+
+  console.log("orderData in orderDetails", orderData);
+
+  React.useEffect(() => {
+    if (typeof orderData === "string") {
+      try {
+        const parsed = JSON.parse(orderData);
+        setOrderDetails(parsed);
+      } catch (err) {
+        console.error("Failed to parse orderData:", err);
+      }
+    }
+  }, [orderData]);
+  console.log("orderDetails", orderDetails);
+  console.log("ordernumber", orderDetails?.orderNumber);
   const recommendedProducts = products
     .filter((p) =>
       ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
@@ -33,35 +54,35 @@ const orderDetailsScreen = () => {
       originalPrice: product.originalPrice,
     }));
 
-  const deliveryMode = {
-    mode: "Home Delivery",
-    address:
-      "H.No: 1-123, xyz street, That Town, Near Mellinda Cafe, UK, 3123456",
-  };
-  const cartItems = [
-    {
-      id: 1,
-      image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
-      name: "Duck Toys",
-      price: 10.0,
-      originalPrice: 6.99,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Orange Juice",
-      price: 3.0,
-      quantity: 2,
-    },
-    {
-      id: 3,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Whole Wheat Bread",
-      price: 12.0,
-      quantity: 1,
-    },
-  ];
+  // const deliveryMode = {
+  //   mode: "Home Delivery",
+  //   address:
+  //     "H.No: 1-123, xyz street, That Town, Near Mellinda Cafe, UK, 3123456",
+  // };
+  // const cartItems = [
+  //   {
+  //     id: 1,
+  //     image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
+  //     name: "Duck Toys",
+  //     price: 10.0,
+  //     originalPrice: 6.99,
+  //     quantity: 1,
+  //   },
+  //   {
+  //     id: 2,
+  //     image: require("../../assets/baby-bicycle.png"),
+  //     name: "Orange Juice",
+  //     price: 3.0,
+  //     quantity: 2,
+  //   },
+  //   {
+  //     id: 3,
+  //     image: require("../../assets/baby-bicycle.png"),
+  //     name: "Whole Wheat Bread",
+  //     price: 12.0,
+  //     quantity: 1,
+  //   },
+  // ];
   return (
     <>
       <View style={styles.container}>
@@ -69,7 +90,10 @@ const orderDetailsScreen = () => {
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>
-            <QRCodeDisplay qrValue={55555} noteText='*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof.'/>
+              <QRCodeDisplay
+                qrValue={orderDetails?.orderNumber}
+                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
+              />
               {/* <Text style={styles.barCodeNote}>
                 Show this bar code to our store personnel during the pickup.
               </Text> */}
@@ -94,19 +118,27 @@ const orderDetailsScreen = () => {
             </View>
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Order Number: </Text>
-              <Text style={styles.orderSummaryItemText}>#ORD-2025-1234</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.orderNumber}
+              </Text>
             </View>
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
-              <Text style={styles.orderSummaryItemText}>21-01-2025</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.orderDate}
+              </Text>
             </View>
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-              <Text style={styles.orderSummaryItemText}>$25.00</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.shippingCharges}
+              </Text>
             </View>
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-              <Text style={styles.orderSummaryItemText}>$25.00</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.totalAmount}
+              </Text>
             </View>
             <View style={{ marginTop: 8 }}>
               {cartItems.map((eachCartItem) => {
@@ -139,10 +171,16 @@ const orderDetailsScreen = () => {
                 </TouchableOpacity>
               </View>
               <Text style={[styles.orderSummaryItemText, globalStyles.mb_2]}>
-                Choosen Delivery: {deliveryMode.mode}
+                Choosen Delivery: {orderDetails?.pickupMode}
               </Text>
               <Text style={[styles.orderSummaryItemText, globalStyles.mb_3]}>
-                Address: {deliveryMode.address}
+                Address: {orderDetails?.shippingAddress?.line1}
+                {"\n"}
+                {orderDetails?.shippingAddress?.city},{" "}
+                {orderDetails?.shippingAddress?.state}
+                {"\n"}
+                {orderDetails?.shippingAddress?.postalCode},{" "}
+                {orderDetails?.shippingAddress?.country}
               </Text>
             </View>
             <View>

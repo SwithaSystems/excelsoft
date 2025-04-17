@@ -2,7 +2,15 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "@/config/constants";
 
-const EXCLUDED_APIS = ["/twilio/SendOtp", "/twilio/verifyOtp"];
+const EXCLUDED_APIS = [
+  "/twilio/SendOtp",
+  "/twilio/verifyOtp",
+  "/products/category",
+  "/products",
+  "/products/subCategories",
+  "/products/search",
+  "/categories",
+];
 // Create axios instance
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -22,6 +30,7 @@ axiosInstance.interceptors.request.use(
       if (token && !isExcluded) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      console.log("config", config.headers.Authorization);
       return config;
     } catch (error) {
       return Promise.reject(error);
