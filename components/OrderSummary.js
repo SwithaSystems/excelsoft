@@ -27,15 +27,16 @@ function OrderSummary(props) {
         <Text style={styles.summaryPrice}>Price</Text>
       </View>
       <View style={{ paddingHorizontal: 5 }}>
-        {cartItems.map((item) => (
-          <View key={item.id} style={styles.summaryItem}>
-            <Text style={styles.summaryName}>{item.name}</Text>
-            <Text style={styles.summaryQuantity}>{item.quantity}</Text>
-            <Text style={styles.summaryPrice}>
-              ${(item.price * item.quantity).toFixed(2)}
-            </Text>
-          </View>
-        ))}
+        {!props.hideItems &&
+          cartItems.map((item) => (
+            <View key={item.id} style={styles.summaryItem}>
+              <Text style={styles.summaryName}>{item.name}</Text>
+              <Text style={styles.summaryQuantity}>{item.quantity}</Text>
+              <Text style={styles.summaryPrice}>
+                ${(item.price * item.quantity).toFixed(2)}
+              </Text>
+            </View>
+          ))}
 
         <View style={styles.summaryItem}>
           <Text style={[styles.summaryName, { color: colors.primary }]}>

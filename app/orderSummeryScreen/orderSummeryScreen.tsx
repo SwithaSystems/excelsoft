@@ -257,6 +257,8 @@ const orderSummeryScreen = () => {
         <Button
           onPress={() => {
             handlePayment();
+            //
+            //redirectToPage(containers.billingAddressScreenScreen)
           }}
           title="Confirm and Checkout"
         />

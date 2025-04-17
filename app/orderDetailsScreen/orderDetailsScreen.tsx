@@ -85,7 +85,7 @@ const orderDetailsScreen = () => {
   // ];
   return (
     <>
-      <View style={globalStyles.container}>
+      <View style={styles.container}>
         <Header headerText="Order Details" />
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
@@ -196,6 +196,20 @@ const orderDetailsScreen = () => {
               />
             </View>
           </View>
+            <TouchableOpacity style={styles.cancelButton}
+            onPress={() => {
+              redirectToPage(containers.cancelOrderScreen);
+            }}
+            >
+              <Text style = {styles.buttonText}>Request Cancellation</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.requestButton}
+            onPress={() => {
+              redirectToPage(containers.returnOrderScreen);
+            }}
+            >
+              <Text style = {styles.buttonText}>Request Return</Text>
+            </TouchableOpacity>
         </ScrollView>
         <Footer />
       </View>
