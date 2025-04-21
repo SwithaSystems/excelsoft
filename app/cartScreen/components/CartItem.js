@@ -8,6 +8,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { useSelector, useDispatch } from "react-redux";
 import { addToSavedItems } from "../../../store/slices/savedItemsSlice";
 import { removeFromCart } from "../../../store/slices/cartSlice";
+import { updateQuantity } from "../../../store/slices/cartSlice";
 
 function CartItem(props) {
   const item = props.cartItem;
@@ -16,14 +17,30 @@ function CartItem(props) {
   const savedItems = useSelector((state) => state.savedItems.items);
 
   const handleSaveItem = (saveItem) => {
-  if (saveItem) {
-    const itemToSave = cartItems.find(item => item.id === saveItem.id);
-    if (itemToSave) {
-      dispatch(addToSavedItems(itemToSave));
-      dispatch(removeFromCart(itemToSave.id)); 
+    if (saveItem) {
+      const itemToSave = cartItems.find((item) => item.id === saveItem.id);
+      if (itemToSave) {
+        dispatch(addToSavedItems(itemToSave));
+        dispatch(removeFromCart(itemToSave.id));
+      }
     }
-  }
-};
+  };
+  const increaseQuantity = (itemId, currentQuantity) => {
+    dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
+  };
+
+  const decreaseQuantity = (itemId, currentQuantity) => {
+    if (currentQuantity > 1) {
+      dispatch(updateQuantity({ id: itemId, quantity: currentQuantity - 1 }));
+    } else {
+      // remove when quantity hits 0
+      dispatch(removeFromCart(itemId));
+    }
+  };
+
+  const handleAdd = (itemId) => {
+    dispatch(updateQuantity({ id: itemId, quantity: 1 }));
+  };
 
   return (
     <>
@@ -76,15 +93,21 @@ function CartItem(props) {
                 <View style={styles.quantityActionContainer}>
                   {item.quantity && item.quantity > 0 ? (
                     <>
-                      <TouchableOpacity onPress={() => alert("-")}>
+                      <TouchableOpacity
+                        onPress={() => decreaseQuantity(item.id, item.quantity)}
+                      >
                         <View
                           style={[styles.quantityActionBtn, styles.minusBtn]}
                         >
                           <Feather name="minus" size={14} color={"#646464"} />
                         </View>
                       </TouchableOpacity>
-                      <View style={styles.quantityText}><Text>{item.quantity}</Text></View>
-                      <TouchableOpacity onPress={() => alert("+")}>
+                      <View style={styles.quantityText}>
+                        <Text>{item.quantity}</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => increaseQuantity(item.id, item.quantity)}
+                      >
                         <View
                           style={[styles.quantityActionBtn, styles.plusBtn]}
                         >
@@ -95,7 +118,9 @@ function CartItem(props) {
                   ) : (
                     <Button
                       style={{ paddingVertical: 10 }}
-                      onPress={() => {}}
+                      onPress={() => {
+                        handleAdd(item.id);
+                      }}
                       title="Add"
                     />
                   )}
@@ -171,7 +196,7 @@ const styles = StyleSheet.create({
   },
   quantityActionContainer: {
     flexDirection: "row",
-    alignItems: 'center',
+    alignItems: "center",
     shadowColor: colors.black,
     borderRadius: 4,
     backgroundColor: "#EDEDED",

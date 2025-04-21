@@ -24,6 +24,7 @@ import { API_BASE_URL } from "@/config/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
+import { PickupMode } from "@/services/orderService";
 
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
@@ -150,7 +151,7 @@ const HomeDeliveryScreen = () => {
         selectedDate: date,
         selectedSlot: `${hours}:${minutes} ${period}`,
         pickupAddress: address,
-        selectedMode: "Home Delivery",
+        selectedMode: PickupMode.HOME_DELIVERY,
         firstName,
         lastName,
         phone,
