@@ -32,7 +32,7 @@ const AdminDashboard = () => {
     return (
       <TouchableOpacity
         onPress={() => {
-          redirectToPage(containers.adminUserOrderDisplayScreen);
+          redirectToPage(containers.AdminSeeAllOrdersScreen);
         }}
       >
         <View style={styles.orderContainer}>

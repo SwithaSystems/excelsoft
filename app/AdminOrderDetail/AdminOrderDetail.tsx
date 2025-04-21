@@ -42,20 +42,21 @@ const AdminOrderDetail = () => {
   return (
     <>
       <View style={globalStyles.container}>
-        <Header headerText="Order Detailss" />
+        <Header headerText="Order Details" />
         
         <SafeAreaView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {cartItems.map((eachCartItem) => {
               return (
-                <CartItem
+               /* <CartItem
                   hideActions={true}
                   itemContainerStyle={{ paddingHorizontal: 0 }}
                   key={eachCartItem.id}
                   cartItem={eachCartItem}
                   showStockStatus={true}
                   stockAvailable={true}
-                />
+                /> */
+                <Text>{JSON.stringify(eachCartItem)}</Text>
               );
             })}
             <View>
