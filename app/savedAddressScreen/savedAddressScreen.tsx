@@ -15,6 +15,16 @@ import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
+interface Address {
+  id: string;
+  name: string;
+  street: string;
+  town: string;
+  country: string;
+  phone: string;
+  isDefault: boolean;
+}
+
 const savedAddressScreen = () => {
   const addressData = [
     {
@@ -46,7 +56,7 @@ const savedAddressScreen = () => {
     },
   ];
 
-  const AddressItem = ({ item }) => (
+  const AddressItem = ({ item }: { item: Address }) => (
     <View style={styles.addressContainer}>
       <View>
         <View style={styles.nameRow}>
@@ -102,7 +112,7 @@ const savedAddressScreen = () => {
           <Button
             title="Add New Address"
             onPress={() => {
-              redirectToPage(containers.editAddressScreenScreen);
+              redirectToPage(containers.addAddressScreenScreen);
             }}
           />
         </View>

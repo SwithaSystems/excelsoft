@@ -16,6 +16,7 @@ import colors from "../config/colors";
 import { useLocalSearchParams } from "expo-router";
 import OrderSummary from "@/components/OrderSummary";
 import CartItem from "../cartScreen/components/CartItem";
+import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import { useSelector } from "react-redux";
 
 const billingAddressScreen = () => {
@@ -26,6 +27,8 @@ const [line2, setLine2] = useState("");
 const [towncity, setTownCity] = useState("");
 const [postalcode, setPostalCode] = useState("");
 const [country, setCountry] = useState("");
+const [selectedCountry, setSelectedCountry] = useState('');
+
   return (
     <View style={styles.container}>
        <Header headerText="Billing Address" />
@@ -68,19 +71,27 @@ const [country, setCountry] = useState("");
             keyboardType="email-address"
           />
           <Text style={styles.fieldLabel}>Country</Text>
-          <View style = {styles.countriesdropdown}>
-            <TextInput
-              style={styles.input}
-              value={country}
-              onChangeText={setCountry}
-              keyboardType="email-address"
-            />
-            <Ionicons
-              name="chevron-down-outline"
-              size={24}
-              color={colors.black}
-            />
+          <Text style={styles.fieldLabel}>Country</Text>
+          <View style={styles.countriesdropdown}>
+            <Picker
+              selectedValue={selectedCountry}
+              onValueChange={(itemValue) => setSelectedCountry(itemValue)}
+              style={styles.input} // This will apply the same input look
+            >
+              <Picker.Item label="-- Select Country --" value="" />
+              <Picker.Item label="United States" value="US" />
+              <Picker.Item label="India" value="IN" />
+              <Picker.Item label="United Kingdom" value="UK" />
+              <Picker.Item label="Germany" value="DE" />
+              <Picker.Item label="Australia" value="AU" />
+            </Picker>
           </View>
+
+          <TouchableOpacity
+          style={styles.submitButton}
+          >
+            <Text style={styles.buttonText}>Save Address</Text>
+          </TouchableOpacity>
         </View>
         <View style={[styles.section, globalStyles.mb_0]}>
           <Text style={styles.sectionHeading}>Order Details</Text>
@@ -93,6 +104,11 @@ const [country, setCountry] = useState("");
             hideItems={true}
             containerStyle={styles.orderSummaryContainer}
           />
+          <TouchableOpacity
+          style={styles.submitButton}
+          >
+            <Text style={styles.buttonText}>Confirm Order</Text>
+          </TouchableOpacity>
       </View>
 
     </View>

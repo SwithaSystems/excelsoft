@@ -45,6 +45,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  submitButton:{
+    backgroundColor: colors.primary,
+    paddingVertical: 15,
+    borderRadius: 8,
+    marginBottom:32,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText:{
+    color:colors.white,
+    alignContent: "center",
+  }
 });
 
 export default styles;

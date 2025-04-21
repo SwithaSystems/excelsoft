@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ordersData from "@/data/ordersData";
 import Button from "@/components/commonComponents/Button";
 import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import AdminFooter from "../AdminFooter/AdminFooter";
 
 const AdminSeeAllOrders = () => {
   const renderOrderItem = ({ item }) => {
@@ -96,7 +96,7 @@ const AdminSeeAllOrders = () => {
           </View>
         </View>
       </ScrollView>
-      <Footer />
+      <AdminFooter />
     </View>
   );
 };
