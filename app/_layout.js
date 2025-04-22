@@ -300,18 +300,52 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen 
-          name={containers.returnOrderScreen} 
-          options={{ headerShown: false }} />
+            name={containers.returnOrderScreen} 
+            options={{ headerShown: false }} />
           <Stack.Screen 
-          name={containers.AppReviewScreenScreen} 
-          options={{ headerShown: false }} />
-  <Stack.Screen name={containers.cancelOrderScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.replaceOrderScreenScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.adminUserOrderDisplayScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.addAddressScreenScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.AdminFooterScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.adminProductDisplayScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.verifyUserOrderScreenScreen} options={{ headerShown: false }} />
+            name={containers.AppReviewScreenScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.cancelOrderScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.replaceOrderScreenScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.addAddressScreenScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.AdminFooterScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.adminProductDisplayScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.verifyUserOrderScreenScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.AdminOrderTrackingScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.AdminUserProfileScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.AdminEditProfileScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name={containers.AdminNotificationSettingsScreen} 
+            options={{ headerShown: false }} 
+          />
 </Stack>
       )}
     </>

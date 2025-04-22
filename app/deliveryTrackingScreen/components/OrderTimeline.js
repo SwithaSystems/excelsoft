@@ -31,7 +31,7 @@ const OrderTimeline = ({ statusList }) => {
                   size={22}
                   color={index <= currentStatus ? "white" : "white"}
                 />
-          </View>
+            </View>
             {/* Status Text */}
             <Text 
               style={[
@@ -41,13 +41,11 @@ const OrderTimeline = ({ statusList }) => {
             >{item}
             </Text>
             {/* Connecting Line */}
-            {index !== statusList.length - 1 && 
               <View style={[
                 styles.line,
                 {backgroundColor: index < currentStatus ? "#17C6ED":"#7E8A8C"}
               ]} 
               />
-            }
           </View>
         )}
       />
@@ -78,12 +76,13 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 16,
     fontWeight: "500",
+    marginRight: 20,
   },
   line: {
     position: "absolute",
     left: 18,
     top: 40,
-    height: 60,
+    height: 28,
     width: 2,
     backgroundColor: colors.black,
   },

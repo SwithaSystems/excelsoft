@@ -62,6 +62,11 @@ export default {homeScreen: "home/home",
   AppReviewScreenScreen: 'AppReviewScreen/AppReviewScreen', 
   cancelOrderScreen: 'cancelOrder/cancelOrder', 
   replaceOrderScreenScreen: 'replaceOrderScreen/replaceOrderScreen', 
-  adminUserOrderDisplayScreen: 'adminUserOrderDisplay/adminUserOrderDisplay', 
   addAddressScreenScreen: 'addAddressScreen/addAddressScreen', 
-  AdminFooterScreen: 'AdminFooter/AdminFooter', adminProductDisplayScreen: 'adminProductDisplay/adminProductDisplay', verifyUserOrderScreenScreen: 'verifyUserOrderScreen/verifyUserOrderScreen'};
+  AdminFooterScreen: 'AdminFooter/AdminFooter', 
+  adminProductDisplayScreen: 'adminProductDisplay/adminProductDisplay', 
+  verifyUserOrderScreenScreen: 'verifyUserOrderScreen/verifyUserOrderScreen', 
+  AdminOrderTrackingScreen: 'AdminOrderTracking/AdminOrderTracking', 
+  AdminUserProfileScreen: 'AdminUserProfile/AdminUserProfile', 
+  AdminEditProfileScreen: 'AdminEditProfile/AdminEditProfile', 
+  AdminNotificationSettingsScreen: 'AdminNotificationSettings/AdminNotificationSettings'};

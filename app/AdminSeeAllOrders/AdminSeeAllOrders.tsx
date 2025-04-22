@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -9,8 +9,29 @@ import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import AdminFooter from "../AdminFooter/AdminFooter";
+import SearchBar from "../components/searchBar";
+import useDebounce from "../../utilities/customHooks/useDebounce";
+import CategoryBadges from "../searchResultsScreen/Components/CategoryBadges";
 
 const AdminSeeAllOrders = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 500);
+  /*const [selectedCategory, setSelectedCategory] = useState("All Orders");
+  
+  const orderCategories = [
+    { id: "all", name: "All Orders" },
+    { id: "cancelled", name: "Cancelled" },
+    { id: "replaced", name: "Replaced" },
+    { id: "returned", name: "Returned" }
+  ]
+
+  const handleCategorySelect = (categoryId) => {
+    const category = orderCategories.find(category => category.id === categoryId);
+    if(category){
+      setSelectedCategory(category.name);
+    }
+  };*/
+
   const renderOrderItem = ({ item }) => {
     return (
       <>
@@ -84,6 +105,17 @@ const AdminSeeAllOrders = () => {
             globalStyles.pb_0,
           ]}
         >
+          <SearchBar 
+            placeholder="Search Orders..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={()=>{}}
+          />
+        { /* <CategoryBadges 
+            onCategorySelect={handleCategorySelect}
+            selectedCategory={selectedCategory}
+            categoryId = "orders"
+          />*/}
           <Text style={styles.heading}>
             WELCOME, Let's go through the orders details!
           </Text>
