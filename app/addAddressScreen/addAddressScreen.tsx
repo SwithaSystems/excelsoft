@@ -1,28 +1,15 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  TextInput,
-} from "react-native";
-import styles from "./editAddressScreenStyles";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import styles from "./addAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
-import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../config/colors";
-import OrderSummary from "@/components/OrderSummary";
-import { useSelector } from "react-redux";
 import { addressService } from "@/services/addressService";
-import { useAppContext } from "../../context/AppContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
-const editAddressScreen = () => {
-  const { selectedAddress } = useAppContext();
+const addAddressScreen = () => {
   const [address, setAddress] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
@@ -32,43 +19,32 @@ const editAddressScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
 
-  useEffect(() => {
-    if (selectedAddress) {
-      setAddress(selectedAddress.name || "");
-      setLine1(selectedAddress.line1 || "");
-      setLine2(selectedAddress.line2 || "");
-      setTownCity(selectedAddress.city || "");
-      setPostalCode(selectedAddress.postalCode || "");
-      setCountry(selectedAddress.country || "");
-      setPhoneNumber(selectedAddress.phone || "");
-      setIsDefault(selectedAddress.isDefault || false);
+  const handleAddAddress = async () => {
+    try {
+      const response = await addressService.addShippingAddress({
+        name: address,
+        line1: line1,
+        line2: line2,
+        city: towncity,
+        state: "",
+        country: "India",
+        postalCode: postalcode,
+        phone: phoneNumber,
+        isDefault: isDefault,
+      });
+      if (response.status === 200 || response.status === 201) {
+        alert("Address added successfully");
+      } else {
+        alert("Failed to add address");
+      }
+      redirectToPage(containers.savedAddressScreenScreen);
+    } catch (error) {
+      console.error("Error adding address:", error);
     }
-  }, [selectedAddress]);
-
-  const handleSubmit = async () => {
-    const response = await addressService.updateShippingAddress({
-      _id: selectedAddress._id,
-      name: address,
-      line1: line1,
-      line2: line2,
-      city: towncity,
-      state: "",
-      country: country,
-      postalCode: postalcode,
-      phone: phoneNumber,
-      isDefault: isDefault,
-    });
-    console.log("Updated address", response.data);
-    if (response.status === 200) {
-      alert("Address updated successfully");
-    } else {
-      alert("Failed to update address");
-    }
-    redirectToPage(containers.savedAddressScreenScreen);
   };
   return (
     <View style={styles.container}>
-      <Header headerText="Edit Address" />
+      <Header headerText="Add New Address" />
 
       <Text style={styles.fieldLabel}>Address</Text>
       <TextInput
@@ -128,11 +104,11 @@ const editAddressScreen = () => {
         <Text>Mark as default address</Text>
       </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Update Address</Text>
+      <TouchableOpacity style={styles.submitButton} onPress={handleAddAddress}>
+        <Text style={styles.buttonText}>Add Address</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-export default editAddressScreen;
+export default addAddressScreen;

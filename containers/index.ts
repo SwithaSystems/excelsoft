@@ -1,4 +1,5 @@
-export default {homeScreen: "home/home",
+export default {
+  homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -58,5 +59,12 @@ export default {homeScreen: "home/home",
   AdminStoreInformationScreen: "AdminStoreInformation/AdminStoreInformation",
   AdminOrderQRScanScreen: "AdminOrderQRScan/AdminOrderQRScan",
   NotificationListingScreen: "NotificationListing/NotificationListing",
-  returnOrderScreen: 'returnOrder/returnOrder', 
-  AppReviewScreenScreen: 'AppReviewScreen/AppReviewScreen', cancelOrderScreen: 'cancelOrder/cancelOrder', replaceOrderScreenScreen: 'replaceOrderScreen/replaceOrderScreen', adminUserOrderDisplayScreen: 'adminUserOrderDisplay/adminUserOrderDisplay'};
+  returnOrderScreen: "returnOrder/returnOrder",
+  AppReviewScreenScreen: "AppReviewScreen/AppReviewScreen",
+  cancelOrderScreen: "cancelOrder/cancelOrder",
+  replaceOrderScreenScreen: "replaceOrderScreen/replaceOrderScreen",
+  adminUserOrderDisplayScreen: "adminUserOrderDisplay/adminUserOrderDisplay",
+  addAddressScreenScreen: "addAddressScreen/addAddressScreen",
+  selectBillingAddressScreenScreen:
+    "selectBillingAddressScreen/selectBillingAddressScreen",
+};
