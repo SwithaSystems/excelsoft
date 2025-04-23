@@ -55,7 +55,7 @@ function BrandHeader(props) {
         <TouchableOpacity style={{marginLeft: 14}}
         onPress={() => {
           if (username) {
-            redirectToPage(containers.notificationsScreenScreen);
+            redirectToPage(containers.userNotificationScreenScreen);
           } else {
             redirectToPage(containers.signInScreen);
           }

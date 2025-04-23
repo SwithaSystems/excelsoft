@@ -69,4 +69,7 @@ export default {homeScreen: "home/home",
   AdminOrderTrackingScreen: 'AdminOrderTracking/AdminOrderTracking', 
   AdminUserProfileScreen: 'AdminUserProfile/AdminUserProfile', 
   AdminEditProfileScreen: 'AdminEditProfile/AdminEditProfile', 
-  AdminNotificationSettingsScreen: 'AdminNotificationSettings/AdminNotificationSettings'};
+  AdminNotificationSettingsScreen: 'AdminNotificationSettings/AdminNotificationSettings', 
+  AdminVerifyOrderConfirmScreenScreen: 'AdminVerifyOrderConfirmScreen/AdminVerifyOrderConfirmScreen', 
+  userNotificationScreenScreen: 'userNotificationScreen/userNotificationScreen'
+};

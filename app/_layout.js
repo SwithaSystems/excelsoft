@@ -346,6 +346,8 @@ const LayoutContent = () => {
             name={containers.AdminNotificationSettingsScreen} 
             options={{ headerShown: false }} 
           />
+  <Stack.Screen name={containers.AdminVerifyOrderConfirmScreenScreen} options={{ headerShown: false }} />
+  <Stack.Screen name={containers.userNotificationScreenScreen} options={{ headerShown: false }} />
 </Stack>
       )}
     </>
