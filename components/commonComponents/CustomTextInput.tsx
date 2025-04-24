@@ -47,7 +47,8 @@ export const CustomTextInput = (props: Props) => {
         style={[
           {
             flex: 1,
-            padding: 10,
+            paddingLeft: 12,
+            paddingVertical: 10,
           },
           props?.TextStyle,
         ]}
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 4,
-    height: 45,
+    height: 56,
     width: "100%",
   },
 });

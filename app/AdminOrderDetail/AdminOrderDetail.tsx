@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
@@ -7,7 +7,9 @@ import Header from "@/components/Header";
 import CartItem from "../cartScreen/components/CartItem";
 import { Picker } from "@react-native-picker/picker";
 import Button from "@/components/commonComponents/Button";
-import Footer from "@/components/Footer";
+import { Ionicons } from "@expo/vector-icons";
+import colors from "../config/colors";
+import AdminFooter from "../AdminFooter/AdminFooter";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -41,18 +43,20 @@ const AdminOrderDetail = () => {
     <>
       <View style={globalStyles.container}>
         <Header headerText="Order Details" />
+        
         <SafeAreaView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {cartItems.map((eachCartItem) => {
               return (
-                <CartItem
+               /* <CartItem
                   hideActions={true}
                   itemContainerStyle={{ paddingHorizontal: 0 }}
                   key={eachCartItem.id}
                   cartItem={eachCartItem}
                   showStockStatus={true}
                   stockAvailable={true}
-                />
+                /> */
+                <Text>{JSON.stringify(eachCartItem)}</Text>
               );
             })}
             <View>
@@ -156,7 +160,7 @@ const AdminOrderDetail = () => {
           </View>
         </SafeAreaView>
       </View>
-      <Footer />
+      <AdminFooter />
     </>
   );
 };
