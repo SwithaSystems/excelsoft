@@ -1,0 +1,97 @@
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Address } from "@/services/addressService";
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
+
+type AddressItemProps = {
+  item: Address;
+  onEdit?: (item: Address) => void;
+  onDelete?: (item: Address) => void;
+  showRadio?: boolean;
+  isSelected?: boolean;
+  onSelect?: () => void;
+};
+
+const AddressItem = ({
+  item,
+  onEdit,
+  onDelete,
+  onSelect,
+  showRadio = false,
+  isSelected = false,
+}: AddressItemProps) => {
+  return (
+    <>
+      <TouchableOpacity onPress={onSelect}>
+        {showRadio && (
+          <Ionicons
+            name={isSelected ? "radio-button-on" : "radio-button-off"}
+            size={20}
+            color={isSelected ? colors.primary : "gray"}
+            style={{ marginRight: 8, marginTop: 3 }}
+          />
+        )}
+      </TouchableOpacity>
+      <View style={styles.addressContainer}>
+        <View>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{item.name}</Text>
+          </View>
+          <Text>{item.line1}</Text>
+          <Text>{item.line2}</Text>
+          <Text>{item.city}</Text>
+          <Text>{item.state}</Text>
+          <Text>{item.country}</Text>
+          <Text>{item.postalCode}</Text>
+          <Text>Phone No: {item.phone}</Text>
+        </View>
+        <View style={styles.iconRow}>
+          {onEdit && (
+            <TouchableOpacity
+              style={{ marginRight: 12 }}
+              onPress={() => onEdit(item)}
+            >
+              <Ionicons name="create-outline" size={24} color="black" />
+            </TouchableOpacity>
+          )}
+          {onDelete && (
+            <TouchableOpacity onPress={() => onDelete(item)}>
+              <Ionicons name="trash-outline" size={24} color="red" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </>
+  );
+};
+
+export default AddressItem;
+
+const styles = StyleSheet.create({
+  addressContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.black,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  nameRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  name: {
+    fontSize: 16,
+  },
+  iconRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+});

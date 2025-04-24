@@ -154,7 +154,7 @@ const CartScreen = () => {
           )}
         </View>
 
-        {/* Delete Confirmation Modal */}
+        {/* Delete Item Modal */}
         <ConfirmationModal
           onClose={() => {
             setIsModalVisible(false);

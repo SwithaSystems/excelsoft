@@ -37,7 +37,7 @@ const orderSummeryScreen = () => {
   const params = useLocalSearchParams<OrderSummeryScreenParams>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  // const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
@@ -50,104 +50,111 @@ const orderSummeryScreen = () => {
   const selectedMode = params.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-  const calculateSubtotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
-  };
+  // const calculateSubtotal = () => {
+  //   return cartItems.reduce(
+  //     (total, item) => total + item.price * item.quantity,
+  //     0
+  //   );
+  // };
 
-  const fetchPaymentIntent = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        //`http://192.168.1.9:3002/payments/create-payment-intent`,
-        `${API_BASE_URL}/payments/create-payment-intent`,
-        {
-          amount: Math.round(calculateSubtotal() * 100),
-          currency: "usd",
-        }
-      );
+  // const fetchPaymentIntent = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await axios.post(
+  //       //`http://192.168.1.9:3002/payments/create-payment-intent`,
+  //       `${API_BASE_URL}/payments/create-payment-intent`,
+  //       {
+  //         amount: Math.round(calculateSubtotal() * 100),
+  //         currency: "usd",
+  //       }
+  //     );
 
-      return {
-        clientSecret: response.data.paymentIntent.client_secret,
-        ephemeralKey: response.data.ephemeralKey,
-        customer: response.data.customer,
-      };
-    } catch (error) {
-      Alert.alert("Error", "Failed to get payment intent.");
-      console.error(error);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     return {
+  //       clientSecret: response.data.paymentIntent.client_secret,
+  //       ephemeralKey: response.data.ephemeralKey,
+  //       customer: response.data.customer,
+  //     };
+  //   } catch (error) {
+  //     Alert.alert("Error", "Failed to get payment intent.");
+  //     console.error(error);
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const products = cartItems.map((item) => ({
     productId: item.id,
     name: item.name,
     quantity: item.quantity,
     price: item.price,
   }));
-  const handlePayment = async () => {
-    const paymentData = await fetchPaymentIntent();
-    if (!paymentData) return;
+  // const handlePayment = async () => {
+  //   const paymentData = await fetchPaymentIntent();
+  //   if (!paymentData) return;
 
-    const { clientSecret, ephemeralKey, customer } = paymentData;
+  //   const { clientSecret, ephemeralKey, customer } = paymentData;
 
-    const { error: initError } = await initPaymentSheet({
-      merchantDisplayName: "Store Name",
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: clientSecret,
-      allowsDelayedPaymentMethods: true,
+  //   const { error: initError } = await initPaymentSheet({
+  //     merchantDisplayName: "Store Name",
+  //     customerId: customer,
+  //     customerEphemeralKeySecret: ephemeralKey,
+  //     paymentIntentClientSecret: clientSecret,
+  //     allowsDelayedPaymentMethods: true,
+  //   });
+
+  //   if (initError) {
+  //     Alert.alert("Error", initError.message);
+  //     return;
+  //   }
+
+  //   const { error: paymentError } = await presentPaymentSheet();
+
+  //   if (paymentError) {
+  //     Alert.alert("Payment Failed", paymentError.message);
+  //   } else {
+  //     Alert.alert("Success", "Payment completed successfully!");
+
+  //     const response = await orderService.createOrder({
+  //       products: products,
+  //       shippingCharges: 10,
+  //       discounts: [10],
+  //       tax: 2.99,
+  //       totalAmount:
+  //         Math.round(calculateSubtotal() * 100) / 100 + 10 + 2.99 - 10,
+  //       paymentMethod: "credit_card",
+  //       pickupModeId: (params.selectedMode
+  //         ? params.selectedMode
+  //         : "Delivery") as PickupMode,
+  //       timeslot: params.selectedSlot?.toString()
+  //         ? new Date(params.selectedSlot)
+  //         : undefined,
+  //       // shippingAddress: {
+  //       //   line1: "123 Street",
+  //       //   city: "Cityville",
+  //       //   state: "Stateburg",
+  //       //   postalCode: "123456",
+  //       //   country: "Countryland",
+  //       // },
+  //       shippingAddress: {
+  //         line1: params.address ? String(params.address) : "N/A",
+  //         city: "Cityville",
+  //         state: "Stateburg",
+  //         postalCode: "123456",
+  //         country: "Countryland",
+  //       },
+  //     });
+  //     console.log("after order placed", response);
+  //     redirectToPage(containers.orderSuccessfulScreenScreen, {
+  //       orderData: JSON.stringify(response),
+  //     });
+  //   }
+  // };
+  const handlePress = async () => {
+    redirectToPage(containers.selectBillingAddressScreenScreen, {
+      selectedMode: selectedMode,
+      selectedSlot: selectedSlot,
+      selectedDate: selectedDate,
     });
-
-    if (initError) {
-      Alert.alert("Error", initError.message);
-      return;
-    }
-
-    const { error: paymentError } = await presentPaymentSheet();
-
-    if (paymentError) {
-      Alert.alert("Payment Failed", paymentError.message);
-    } else {
-      Alert.alert("Success", "Payment completed successfully!");
-
-      const response = await orderService.createOrder({
-        products: products,
-        shippingCharges: 10,
-        discounts: [10],
-        tax: 2.99,
-        totalAmount:
-          Math.round(calculateSubtotal() * 100) / 100 + 10 + 2.99 - 10,
-        paymentMethod: "credit_card",
-        pickupModeId: (params.selectedMode
-          ? params.selectedMode
-          : "Delivery") as PickupMode,
-        timeslot: params.selectedSlot?.toString()
-          ? new Date(params.selectedSlot)
-          : undefined,
-        // shippingAddress: {
-        //   line1: "123 Street",
-        //   city: "Cityville",
-        //   state: "Stateburg",
-        //   postalCode: "123456",
-        //   country: "Countryland",
-        // },
-        shippingAddress: {
-          line1: params.address ? String(params.address) : "N/A",
-          city: "Cityville",
-          state: "Stateburg",
-          postalCode: "123456",
-          country: "Countryland",
-        },
-      });
-      console.log("after order placed", response);
-      redirectToPage(containers.orderSuccessfulScreenScreen, {
-        orderData: JSON.stringify(response),
-      });
-    }
   };
   const handleDelete = (item: any) => {
     setItemToDelete(item);
@@ -256,11 +263,10 @@ const orderSummeryScreen = () => {
       <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
         <Button
           onPress={() => {
-            handlePayment();
-            //
-            //redirectToPage(containers.billingAddressScreenScreen)
+            handlePress();
+            // redirectToPage(containers.billingAddressScreenScreen);
           }}
-          title="Confirm and Checkout"
+          title="Confirm Billing Address"
         />
       </View>
       <ConfirmationModal

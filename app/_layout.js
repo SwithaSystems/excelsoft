@@ -295,56 +295,71 @@ const LayoutContent = () => {
             name={containers.NotificationListingScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.returnOrderScreen} 
-            options={{ headerShown: false }} />
-          <Stack.Screen 
-            name={containers.AppReviewScreenScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.returnOrderScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.cancelOrderScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.AppReviewScreenScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.replaceOrderScreenScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.cancelOrderScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.addAddressScreenScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.replaceOrderScreenScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.AdminFooterScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.addAddressScreenScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.adminProductDisplayScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.AdminFooterScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.verifyUserOrderScreenScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.adminProductDisplayScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.AdminOrderTrackingScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.verifyUserOrderScreenScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.AdminUserProfileScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.AdminOrderTrackingScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.AdminEditProfileScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.AdminUserProfileScreen}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen 
-            name={containers.AdminNotificationSettingsScreen} 
-            options={{ headerShown: false }} 
+          <Stack.Screen
+            name={containers.AdminEditProfileScreen}
+            options={{ headerShown: false }}
           />
-  <Stack.Screen name={containers.AdminVerifyOrderConfirmScreenScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.userNotificationScreenScreen} options={{ headerShown: false }} />
-</Stack>
+          <Stack.Screen
+            name={containers.AdminNotificationSettingsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AdminVerifyOrderConfirmScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.userNotificationScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.addAddressScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.selectBillingAddressScreenScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack>
       )}
     </>
   );
