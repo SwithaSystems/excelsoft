@@ -32,6 +32,7 @@ const ProductDetailScreen = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
+
   const dispatch = useDispatch();
 
   const fetchProduct = async () => {
@@ -62,38 +63,57 @@ const ProductDetailScreen = () => {
     }, [productId])
   );
 
+  // useEffect(() => {
+  //   if (!product?.image?.length || !scrollViewRef.current) return;
+
+  //   let isCancelled = false;
+
+  //   const scrollNextImage = () => {
+  //     setCurrentIndex((prevIndex) => {
+  //       const nextIndex =
+  //         prevIndex + 1 === product.image.length ? 0 : prevIndex + 1;
+
+  //       if (scrollViewRef.current) {
+  //         scrollViewRef.current.scrollTo({
+  //           x: nextIndex * width,
+  //           animated: true,
+  //         });
+  //       }
+
+  //       if (!isCancelled) {
+  //         setTimeout(scrollNextImage, 3000);
+  //       }
+
+  //       return nextIndex;
+  //     });
+  //   };
+
+  //   const timeoutId = setTimeout(scrollNextImage, 3000);
+
+  //   return () => {
+  //     isCancelled = true;
+  //     clearTimeout(timeoutId);
+  //   };
+  // }, [product?.image]);
+  const indexRef = useRef(0);
+
   useEffect(() => {
     if (!product?.image?.length || !scrollViewRef.current) return;
 
-    let isCancelled = false;
+    const interval = setInterval(() => {
+      const nextIndex = (indexRef.current + 1) % product.image.length;
 
-    const scrollNextImage = () => {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex =
-          prevIndex + 1 === product.image.length ? 0 : prevIndex + 1;
-
-        if (scrollViewRef.current) {
-          scrollViewRef.current.scrollTo({
-            x: nextIndex * width,
-            animated: true,
-          });
-        }
-
-        if (!isCancelled) {
-          setTimeout(scrollNextImage, 3000);
-        }
-
-        return nextIndex;
+      scrollViewRef.current?.scrollTo({
+        x: nextIndex * width,
+        animated: true,
       });
-    };
 
-    const timeoutId = setTimeout(scrollNextImage, 3000);
+      indexRef.current = nextIndex;
+      setCurrentIndex(nextIndex);
+    }, 3000);
 
-    return () => {
-      isCancelled = true;
-      clearTimeout(timeoutId);
-    };
-  }, [product?.image]);
+    return () => clearInterval(interval);
+  }, [product?.image?.length]);
 
   if (loading) {
     return (
@@ -115,56 +135,82 @@ const ProductDetailScreen = () => {
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }}>
         <Header headerText={"About the Product"} />
-        <ScrollView
-          ref={scrollViewRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEventThrottle={16}
-        >
-          {product.image.map((imageUrl: any, index: any) => (
-            <View
-              key={index}
-              style={{
-                width: width,
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 20,
-              }}
-            >
-              <Image source={{ uri: imageUrl }} style={styles.productImage} />
-            </View>
-          ))}
-        </ScrollView>
+        <View style={{ position: "relative" }}>
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            // onScroll={(event) => {
+            //   const index = Math.floor(event.nativeEvent.contentOffset.x / width);
+            //   setCurrentIndex(index);
+            // }}
+            onScroll={(event) => {
+              const index = Math.floor(
+                event.nativeEvent.contentOffset.x / width
+              );
+              setCurrentIndex(index);
+            }}
+            onMomentumScrollEnd={(event) => {
+              const index = Math.floor(
+                event.nativeEvent.contentOffset.x / width
+              );
+              setCurrentIndex(index);
+            }}
+          >
+            {product.image.map((imageUrl: any, index: any) => (
+              <View
+                key={index}
+                style={{
+                  width: width,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 20,
+                }}
+              >
+                <Image source={{ uri: imageUrl }} style={styles.productImage} />
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.dotContainer}>
+            {product.image.map((_: any, index: number) => (
+              <View
+                key={index}
+                style={[styles.dot, currentIndex === index && styles.activeDot]}
+              />
+            ))}
+          </View>
+        </View>
 
         <View style={styles.contentContainer}>
-            <View style={styles.exclusiveDetails}>
-              <Text style={styles.productTitle}>{product.name}</Text>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{product.rating}</Text>
-                <Text style={styles.starIcon}> ★ </Text>
-                <Text style={styles.reviewsText}>({product.reviews.length})</Text>
-              </View>
-              <View style={styles.saleContainer}>
-                <View style={styles.saleTimeBox}>
-                  <View style={styles.saleTag}>
-                    <Text style={styles.saleText}>Sale</Text>
-                  </View>
-                  <Text style={styles.saleTime}>02:48:26</Text>
+          <View style={styles.exclusiveDetails}>
+            <Text style={styles.productTitle}>{product.name}</Text>
+            <View style={styles.ratingContainer}>
+              <Text style={styles.ratingText}>{product.rating}</Text>
+              <Text style={styles.starIcon}> ★ </Text>
+              <Text style={styles.reviewsText}>({product.reviews.length})</Text>
+            </View>
+            <View style={styles.saleContainer}>
+              <View style={styles.saleTimeBox}>
+                <View style={styles.saleTag}>
+                  <Text style={styles.saleText}>Sale</Text>
                 </View>
-                <View style={styles.discountTag}>
-                  <Text style={styles.discountText}>
-                   {/*product.discount || */"20%"}
-                  </Text>
-                </View>
+                <Text style={styles.saleTime}>02:48:26</Text>
               </View>
-              <View style={styles.priceContainer}>
-                <DisplayPrice
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                />
+              <View style={styles.discountTag}>
+                <Text style={styles.discountText}>
+                  {/*product.discount || */ "20%"}
+                </Text>
               </View>
             </View>
+            <View style={styles.priceContainer}>
+              <DisplayPrice
+                price={product.price}
+                originalPrice={product.originalPrice}
+              />
+            </View>
+          </View>
 
           <Text style={styles.infoTitle}>Product Information</Text>
           <Text style={styles.infoText}>{product.description}</Text>
@@ -187,14 +233,14 @@ const ProductDetailScreen = () => {
           </View>
 
           <View style={styles.quantitySection}>
-            <View style = {styles.quantityContainer}>
+            <View style={styles.quantityContainer}>
               <Text style={styles.quantityTitle}>Quantity</Text>
               <TouchableOpacity
-                /*onPress={
+              /*onPress={
                   
                 }*/
               >
-              <Text style={styles.selectQuantityText}>select quantity</Text>
+                <Text style={styles.selectQuantityText}>select quantity</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.quantityControl}>
@@ -218,16 +264,18 @@ const ProductDetailScreen = () => {
             <Button
               title="Add To Cart"
               onPress={() => {
-                if(product){
-                  dispatch(addToCart({
-                    id: Number(product.id),
-                    name: product.name,
-                    price: product.price,
-                    quantity: quantity,
-                    image: product.image
-                  }));
-                };
-             }}
+                if (product) {
+                  dispatch(
+                    addToCart({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      quantity: quantity,
+                      image: product.image,
+                    })
+                  );
+                }
+              }}
               style={styles.button}
             />
             {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
@@ -241,7 +289,7 @@ const ProductDetailScreen = () => {
             .slice(0, 5)
             .map((review: any) => (
               <ProductRating key={review.id} review={review} />
-          ))}
+            ))}
           <TouchableOpacity
             style={styles.seeMoreButton}
             onPress={() =>
