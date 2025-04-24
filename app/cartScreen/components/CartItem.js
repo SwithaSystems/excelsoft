@@ -134,7 +134,15 @@ function CartItem(props) {
                   <Ionicons name="trash-outline" size={24} color="gray" />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => handleSaveItem(item)}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (props.onFooterAction) {
+                    props.onFooterAction(item);
+                  } else {
+                    handleSaveItem(item);
+                  }
+                }}
+              >
                 <Text style={styles.saveLaterBtn}>
                   {props.footerBtnText || "Save for Later"}
                 </Text>

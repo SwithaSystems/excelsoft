@@ -152,37 +152,28 @@ const orderDetailsScreen = () => {
                 );
               })}
             </View>
-            <View>
-              <View style={[styles.orderSummaryItem, globalStyles.mb_2]}>
-                <Text
-                  style={[
-                    styles.orderSummaryItemText,
-                    globalStyles.fontWeight500,
-                  ]}
-                >
-                  Deliver To:
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    redirectToPage(containers.deliveryTrackingScreenScreen);
-                  }}
-                >
-                  <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={[styles.orderSummaryItemText, globalStyles.mb_2]}>
-                Choosen Delivery: {orderDetails?.pickupMode}
-              </Text>
-              <Text style={[styles.orderSummaryItemText, globalStyles.mb_3]}>
-                Address: {orderDetails?.shippingAddress?.line1}
-                {"\n"}
-                {orderDetails?.shippingAddress?.city},{" "}
-                {orderDetails?.shippingAddress?.state}
-                {"\n"}
-                {orderDetails?.shippingAddress?.postalCode},{" "}
-                {orderDetails?.shippingAddress?.country}
-              </Text>
+            <View style={globalStyles.mb_2}>
+              <Text style={globalStyles.fontWeight500}>Deliver To:</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.deliveryTrackingScreenScreen);
+                }}
+              >
+                <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>
+              </TouchableOpacity>
             </View>
+            <Text style={globalStyles.mb_2}>
+              Choosen Delivery: {orderDetails?.pickupMode}
+            </Text>
+            <Text style={globalStyles.mb_3}>
+              Address: {orderDetails?.shippingAddress?.line1}
+              {"\n"}
+              {orderDetails?.shippingAddress?.city},{" "}
+              {orderDetails?.shippingAddress?.state}
+              {"\n"}
+              {orderDetails?.shippingAddress?.postalCode},{" "}
+              {orderDetails?.shippingAddress?.country}
+            </Text>
             <View>
               <RecommendedProductsSlider
                 recommendedProducts={recommendedProducts}
@@ -196,20 +187,22 @@ const orderDetailsScreen = () => {
               />
             </View>
           </View>
-            <TouchableOpacity style={styles.cancelButton}
+          <TouchableOpacity
+            style={styles.cancelButton}
             onPress={() => {
               redirectToPage(containers.cancelOrderScreen);
             }}
-            >
-              <Text style = {styles.buttonText}>Request Cancellation</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.requestButton}
+          >
+            <Text style={styles.buttonText}>Request Cancellation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.requestButton}
             onPress={() => {
               redirectToPage(containers.returnOrderScreen);
             }}
-            >
-              <Text style = {styles.buttonText}>Request Return</Text>
-            </TouchableOpacity>
+          >
+            <Text style={styles.buttonText}>Request Return</Text>
+          </TouchableOpacity>
         </ScrollView>
         <Footer />
       </View>

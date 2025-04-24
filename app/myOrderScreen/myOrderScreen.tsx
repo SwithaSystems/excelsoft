@@ -26,19 +26,20 @@ const myOrderScreen = () => {
   //     subtotal: "$15", // Changed subtotal for demonstration
   //   },
   // ];
-const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
-useEffect(() => {
-  const fetchOrders = async () => {
-    try {
-      const response = await orderService.getAllOrders();
-      setOrders(response);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
-  };
-  fetchOrders();
-})
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await orderService.getAllOrders();
+        console.log(" all my orders", response);
+        setOrders(response);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+    fetchOrders();
+  }, []);
   return (
     <View style={globalStyles.container}>
       <Header headerText="Your Orders" />
@@ -49,7 +50,7 @@ useEffect(() => {
           <FlatList
             data={orders}
             renderItem={({ item }) => <OrderItem item={item} />}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item._id}
             nestedScrollEnabled={true}
           />
         </View>
