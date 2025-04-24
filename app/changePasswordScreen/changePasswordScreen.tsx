@@ -63,18 +63,14 @@ const changePasswordScreen = () => {
     }
 
     try {
-      const response = await UserAPI.changePassword(phoneNumber, {
-        // const response = await axios.put(
-        //  `${API_BASE_URL}/users/changePassword/${phoneNumber}`,{
-        newPassword: newPassword,
-      });
+      const response = await UserAPI.changePassword({ newPassword });
       console.log("response", response.data);
-      if (!response.data.success) {
-        throw new Error(response.data.message);
-      } else {
+      if (response.data.message === "Password successfully changed") {
         alert("Password successfully changed");
-
         redirectToPage(containers.signInScreen);
+      } else {
+        alert("Failed to change password");
+        redirectToPage(containers.userProfileScreenScreen);
       }
     } catch (err) {
       alert("Failed to change password");

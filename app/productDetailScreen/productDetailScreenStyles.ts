@@ -239,6 +239,8 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     backgroundColor: "#000",
+    width: 10,
+    height: 10,
   },
 });
 

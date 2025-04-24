@@ -299,18 +299,35 @@ const LayoutContent = () => {
             name={containers.NotificationListingScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen 
-          name={containers.returnOrderScreen} 
-          options={{ headerShown: false }} />
-          <Stack.Screen 
-          name={containers.AppReviewScreenScreen} 
-          options={{ headerShown: false }} />
-  <Stack.Screen name={containers.cancelOrderScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.replaceOrderScreenScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.adminUserOrderDisplayScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.addAddressScreenScreen} options={{ headerShown: false }} />
-  <Stack.Screen name={containers.selectBillingAddressScreenScreen} options={{ headerShown: false }} />
-</Stack>
+          <Stack.Screen
+            name={containers.returnOrderScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.AppReviewScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.cancelOrderScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.replaceOrderScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.adminUserOrderDisplayScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.addAddressScreenScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.selectBillingAddressScreenScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack>
       )}
     </>
   );
