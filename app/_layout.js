@@ -148,10 +148,6 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name={containers.billingAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
             name={containers.orderSuccessfulScreenScreen}
             options={{ headerShown: false }}
           />
