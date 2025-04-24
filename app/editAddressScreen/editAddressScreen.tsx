@@ -135,4 +135,4 @@ const editAddressScreen = () => {
   );
 };
 
-export default billingAddressScreen;
+export default editAddressScreen;
