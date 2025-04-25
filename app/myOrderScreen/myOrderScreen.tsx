@@ -48,7 +48,14 @@ const myOrderScreen = () => {
           <Text style={styles.yourLastOrders}>Your last orders</Text>
 
           <FlatList
-            data={orders}
+            data={orders.map((order) => ({
+              orderId: `#ORD-${order.orderNumber}`,
+              date: new Date(order.createdAt).toLocaleString(), // or format however you like
+              // status: order.status,
+              totalItems: order.products?.length ?? 0,
+              subtotal: order.totalAmount.toFixed(2),
+              _id: order._id,
+            }))}
             renderItem={({ item }) => <OrderItem item={item} />}
             keyExtractor={(item) => item._id}
             nestedScrollEnabled={true}
