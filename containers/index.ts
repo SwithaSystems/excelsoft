@@ -18,6 +18,7 @@ export default {
   orderSummeryScreenScreen: "orderSummeryScreen/orderSummeryScreen",
   paymentScreenScreen: "paymentScreen/paymentScreen",
   paymentSaveCardScreenScreen: "paymentSaveCardScreen/paymentSaveCardScreen",
+  billingAddressScreenScreen: "billingAddressScreen/billingAddressScreen",
   orderSuccessfulScreenScreen: "orderSuccessfulScreen/orderSuccessfulScreen",
   deliveryTrackingScreenScreen: "deliveryTrackingScreen/deliveryTrackingScreen",
   offersScreenScreen: "offersScreen/offersScreen",
@@ -66,15 +67,4 @@ export default {
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
   selectBillingAddressScreenScreen:
     "selectBillingAddressScreen/selectBillingAddressScreen",
-  AdminFooterScreen: "AdminFooter/AdminFooter",
-  adminProductDisplayScreen: "adminProductDisplay/adminProductDisplay",
-  verifyUserOrderScreenScreen: "verifyUserOrderScreen/verifyUserOrderScreen",
-  AdminOrderTrackingScreen: "AdminOrderTracking/AdminOrderTracking",
-  AdminUserProfileScreen: "AdminUserProfile/AdminUserProfile",
-  AdminEditProfileScreen: "AdminEditProfile/AdminEditProfile",
-  AdminNotificationSettingsScreen:
-    "AdminNotificationSettings/AdminNotificationSettings",
-  AdminVerifyOrderConfirmScreenScreen:
-    "AdminVerifyOrderConfirmScreen/AdminVerifyOrderConfirmScreen",
-  userNotificationScreenScreen: "userNotificationScreen/userNotificationScreen",
 };

@@ -8,14 +8,13 @@ import {
   FlatList,
 } from "react-native";
 import styles from "./AdminDashboardStyles";
-import AdminBrandHeader from "@/components/AdminBrandHeader";
+import BrandHeader from "@/components/BrandHeader";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/components/Footer";
 import ordersData from "../../data/ordersData";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import AdminFooter from "../AdminFooter/AdminFooter";
 
 const AdminDashboard = () => {
   const getStatusBadgeStyle = (status: String) => {
@@ -32,7 +31,7 @@ const AdminDashboard = () => {
     return (
       <TouchableOpacity
         onPress={() => {
-          redirectToPage(containers.AdminSeeAllOrdersScreen);
+          redirectToPage(containers.AdminOrderDetailScreen);
         }}
       >
         <View style={styles.orderContainer}>
@@ -74,7 +73,7 @@ const AdminDashboard = () => {
   return (
     <>
       <View style={globalStyles.container}>
-        <AdminBrandHeader />
+        <BrandHeader />
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <Text style={styles.title}>Dashboard</Text>
@@ -128,7 +127,7 @@ const AdminDashboard = () => {
               <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
               <TouchableOpacity
                 onPress={() => {
-                  redirectToPage(containers.adminUserOrderDisplayScreen);
+                  redirectToPage(containers.AdminSeeAllOrdersScreen);
                 }}
               >
                 <Text style={styles.seeAll}>See All</Text>
@@ -141,7 +140,7 @@ const AdminDashboard = () => {
             />
           </View>
         </ScrollView>
-        <AdminFooter activeTab="home" />
+        <Footer activeTab="home" />
       </View>
     </>
   );

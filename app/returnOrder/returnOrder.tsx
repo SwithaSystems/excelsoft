@@ -93,8 +93,6 @@ const returnOrder = () => {
   const [period, setPeriod] = useState("am");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const pickupAddress = params.pickupAddress || "";
-  const [showReasonPicker, setShowReasonPicker] = useState(false);
-  const [selectedReason, setSelectedReason] = useState("");
 
 
   const onDateChange = (
@@ -236,51 +234,19 @@ const returnOrder = () => {
             </View>
           </View>
         </View>
-        <View style={styles.returnReason}>
-              <Text style={styles.label}>Reason for Return</Text>
-              <View style={styles.selectReason}>
-                <TextInput 
-                  placeholder="Tell us why"
-                  style={styles.placeholderText}
-                  value={selectedReason}
-                  editable={false}
-                />
-                <TouchableOpacity onPress={() => setShowReasonPicker(!showReasonPicker)}>
-                  <Ionicons 
-                    name={showReasonPicker ? "chevron-up-outline" : "chevron-down-outline"}
-                    size={24}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {showReasonPicker && (
-                <View style={styles.amPmSelector}>
-                  <Picker
-                    selectedValue={selectedReason}
-                    onValueChange={(itemValue) => {
-                      setSelectedReason(itemValue);
-                      setShowReasonPicker(false);  
-                    }}
-                  >
-                    <Picker.Item 
-                    style={globalStyles.pickerValue_sm}
-                    label="Order past expiry date" 
-                    value="reason_1" 
-                    />
-                    <Picker.Item 
-                    style={globalStyles.pickerValue_sm}
-                    label="Order got damaged during delivery" 
-                    value="reason_2" 
-                    />
-                    <Picker.Item style={globalStyles.pickerValue_sm}
-                    label="No longer needs the delivery" 
-                    value="reason_3" />
-                  </Picker>
-                </View>
-              )}
-            </View>
-
+        <View style = {styles.returnReason}>
+                    <Text style = {styles.label}>Reason for Return</Text>
+                    <View style = {styles.selectReason}>
+                        <TextInput 
+                            placeholder="Tell us why"
+                            style = {styles.placeholderText}
+                        />
+                        <Ionicons name="chevron-down-outline"
+                                  size = {24}
+                                  color={colors.primary}
+                        />
+                    </View>
+          </View>
           <View style={styles.addComments}>
                       <Text>Do you want to talk more about your experience?</Text>
                       <TextInput 

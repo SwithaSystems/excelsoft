@@ -19,6 +19,7 @@ const reviewsScreen = () => {
   const { productId,totalReviews ,productRating} = useLocalSearchParams();
   const reviewsArray = typeof totalReviews === "string" && totalReviews ? JSON.parse(totalReviews) : [];
   const[product,setProduct]=useState<any>(null);
+  
   useEffect(()=>{
 console.log("ProductId",productId);
 if(productId){

@@ -22,7 +22,6 @@ import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CustomOverlay from "../../components/commonComponents/CustomOverlay"
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -31,18 +30,6 @@ const feedBackScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
-  const[showDiscard, setShowDiscard] = useState(false);
-
-  const onDiscard = () => {
-    setShowDiscard(true);
-  }
-  const confirmDiscard = () => {
-    setShowDiscard(false);
-    redirectToPage(containers.feedBackScreenScreen);
-  }
-  const cancelDiscard = () => {
-    setShowDiscard(false);
-  }  
 
   const pickImage = async () => {
     // Request permission to access media library
@@ -98,12 +85,11 @@ const feedBackScreen = () => {
       <Header
         headerText="Add Your Review"
         secondaryBtnText="Discard"
-        /*secondaryBtnCallBack={() => {
+        secondaryBtnCallBack={() => {
           redirectToPage(containers.productDetailScreenScreen, {
             productId: productId,
           });
-        }}*/
-       secondaryBtnCallBack={onDiscard}
+        }}
       />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
@@ -153,15 +139,6 @@ const feedBackScreen = () => {
         visible={showReviewconfirmationModal}
         message="Review Added Successfully"
         onClose={() => setShowReviewconfirmationModal(false)}
-      />
-
-      <CustomOverlay 
-        visible = {showDiscard}
-        overlayText = "Are you sure you want to discard your review?"
-        okButtonText="Yes"
-        cancelButton="No"
-        onOk={confirmDiscard}
-        onCancel={()=>setShowDiscard(false)}
       />
     </View>
   );

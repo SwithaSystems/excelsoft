@@ -218,19 +218,6 @@ const styles = StyleSheet.create({
       fontSize: 16,
       marginBottom: 4,
     },
-    returnReason: {
-      marginBottom: 16,
-    },
-    amPmSelector: {
-      // backgroundColor: '#f8f8f8',
-      borderRadius: 8,
-      padding: 15,
-      flexDirection: 'row',
-      alignItems: 'center',
-      width: 80,
-      justifyContent: 'space-between',
-    },
-   
 });
 
 export default styles;

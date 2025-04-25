@@ -10,7 +10,16 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 12,
     color: 'black',
-  }
+  },
+  searchSection:{
+
+  },
+  searchbar:{
+
+  },
+  subCategory:{
+
+  },
 });
 
 export default styles;
