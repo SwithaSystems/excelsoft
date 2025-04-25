@@ -36,7 +36,8 @@ export interface PickupDetails {
 }
 
 export interface Order {
-  _id: string; // MongoDB default
+  _id: string;
+  orderNumber?: string;
   userId: string;
   products: OrderProduct[];
   shippingCharges: number;

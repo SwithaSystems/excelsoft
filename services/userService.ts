@@ -36,11 +36,18 @@ export const UserAPI = {
     return response;
   },
 
-  changePassword: async (phoneNumber: any, body: any) => {
-    const response = await axiosInstance.put(
-      `/users/changePassword/${phoneNumber}`,
-      body
-    );
+  // changePassword: async (phoneNumber: any, body: any) => {
+  //   const response = await axiosInstance.put(
+  //     `/users/changePassword/${phoneNumber}`,
+  //     body
+  //   );
+  //   return response;
+  // },
+  changePassword: async (body: { newPassword: string }) => {
+    console.log("newPassword", body.newPassword);
+    const response = await axiosInstance.put("/users/changePassword", {
+      newPassword: body.newPassword,
+    });
     return response;
   },
 };

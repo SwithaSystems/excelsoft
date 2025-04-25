@@ -1,5 +1,5 @@
-import { StyleSheet, Dimensions } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet, Dimensions } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -7,26 +7,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.black,
-    marginLeft:80
+    marginLeft: 80,
   },
-  imageContainer:{
-    width:'90%',
-    alignItems:'center',
-    justifyContent:'center',
-    marginHorizontal:16
+  imageContainer: {
+    width: "90%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
   },
   productImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode:"cover",
+    resizeMode: "cover",
     borderRadius: 10,
   },
   contentContainer: {
@@ -34,12 +34,11 @@ const styles = StyleSheet.create({
   },
   productTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.black,
     marginBottom: 8,
   },
-  exclusiveDetails: {
-  },
+  exclusiveDetails: {},
   exclusiveImage: {
     width: "100%",
     height: 250,
@@ -86,20 +85,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-  saleTimeBox:{
-    backgroundColor:"#E9F3F6",
+  saleTimeBox: {
+    backgroundColor: "#E9F3F6",
     flexDirection: "row",
   },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
     marginBottom: 16,
   },
   saleTime: {
     color: colors.primary,
     fontSize: 14,
-    marginTop:2,
+    marginTop: 2,
     marginRight: 8,
   },
   discountTag: {
@@ -110,24 +109,24 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   discountText: {
-      color: colors.white,
-      fontSize: 12,
-      fontWeight: "500",
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "500",
   },
   discountedPrice: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginRight: 8,
   },
   originalPrice: {
     fontSize: 16,
     color: colors.lightgrey,
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
   },
   infoTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.black,
     marginBottom: 8,
   },
@@ -142,11 +141,11 @@ const styles = StyleSheet.create({
   },
   colorTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
   },
   colorOptions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   colorOption: {
@@ -161,17 +160,17 @@ const styles = StyleSheet.create({
   },
   quantitySection: {
     marginBottom: 16,
-    flexDirection: 'row',
-    justifyContent:'space-between',
-    alignItems:"center"
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   quantityTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   quantityControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
   },
   quantityButton: {
@@ -179,15 +178,15 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 10,
     backgroundColor: colors.lightgrey,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
-  selectQuantityText:{
-    fontSize:11,
+  selectQuantityText: {
+    fontSize: 11,
     color: "#17C6ED",
     textDecorationLine: "underline",
     marginLeft: 4,
@@ -197,8 +196,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   buttonsContainer: {
-    flexDirection: 'row',
-   // gap: 38,
+    flexDirection: "row",
+    // gap: 38,
     //paddingHorizontal: 16,
   },
   button: {
@@ -207,24 +206,42 @@ const styles = StyleSheet.create({
   reviewsSection: {
     marginTop: 24,
     paddingHorizontal: 16,
-  }, reviewsTitle: {
+  },
+  reviewsTitle: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 16,
   },
   seeMoreButton: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 8,
-    borderTopWidth: 1,      
-    borderBottomWidth: 1,   
-    borderColor: colors.black, 
-    marginBottom:16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.black,
+    marginBottom: 16,
   },
   seeMoreText: {
     color: colors.black,
     fontSize: 16,
-    fontWeight: '500',
-  }
+    fontWeight: "500",
+  },
+  dotContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ccc",
+    margin: 4,
+  },
+  activeDot: {
+    backgroundColor: "#000",
+    width: 10,
+    height: 10,
+  },
 });
 
 export default styles;

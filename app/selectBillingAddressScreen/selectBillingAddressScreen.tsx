@@ -18,9 +18,9 @@ import { useLocalSearchParams } from "expo-router";
 const selectBillingAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
-  const { setSelectedAddress } = useAppContext();
+  const { selectedAddress, setSelectedAddress } = useAppContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedId, setSelectedId] = useState<string>("");
+  const [selectedId, setSelectedId] = useState(null);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
   const { handlePayment } = usePaymentHandler();
   const params = useLocalSearchParams();
@@ -95,7 +95,7 @@ const selectBillingAddressScreen = () => {
                 onDelete={handleDelete}
                 showRadio
                 isSelected={item._id === selectedId}
-                onSelect={() => setSelectedId(item._id)}
+                onSelect={() => setSelectedAddress(item)}
               />
             )}
             keyExtractor={(item) => item._id}
@@ -129,7 +129,7 @@ const selectBillingAddressScreen = () => {
               title="Proceed for Payment"
               onPress={() =>
                 handlePayment(cartItems, {
-                  address: selectedId,
+                  address: selectedAddress,
                   selectedSlot: Array.isArray(selectedMode)
                     ? selectedMode[0]
                     : selectedMode,

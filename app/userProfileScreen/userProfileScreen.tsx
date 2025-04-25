@@ -52,8 +52,8 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    "Feedback": containers.AppReviewScreenScreen,
-  /*  "Store Information": containers.AdminStoreInformationScreen,*/
+    Feedback: containers.AppReviewScreenScreen,
+    /*  "Store Information": containers.AdminStoreInformationScreen,*/
   };
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const UserProfileScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.quickActions}>
-           {/*<Button
+            {/*<Button
               title="Send Test Notification"
               onPress={async () => {
                 await Notifications.cancelAllScheduledNotificationsAsync();
@@ -194,7 +194,7 @@ const UserProfileScreen = () => {
               />
               <Text style={styles.actionText}>Payments</Text>
             </TouchableOpacity>
-          </View> 
+          </View>
 
           <Text style={styles.settingsTitle}>Settings</Text>
           <View style={styles.settingsContainer}>

@@ -53,7 +53,14 @@ export const usePaymentHandler = () => {
   const handlePayment = async (
     cartItems: Product[],
     params: {
-      address?: string;
+      address?: {
+        line1: string;
+        line2?: string;
+        city: string;
+        state: string;
+        postalCode: string;
+        country: string;
+      };
       selectedSlot?: string;
       selectedMode?: string;
     }
@@ -96,11 +103,12 @@ export const usePaymentHandler = () => {
           ? new Date(params.selectedSlot)
           : undefined,
         shippingAddress: {
-          line1: params.address ? String(params.address) : "N/A",
-          city: "Cityville",
-          state: "Stateburg",
-          postalCode: "123456",
-          country: "Countryland",
+          line1: params.address?.line1 ?? "N/A",
+          line2: params.address?.line2 ?? "",
+          city: params.address?.city ?? "N/A",
+          state: params.address?.state ?? "N/A",
+          postalCode: params.address?.postalCode ?? "N/A",
+          country: params.address?.country ?? "N/A",
         },
       });
       console.log("after order placed", response);
