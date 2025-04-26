@@ -121,7 +121,7 @@ const CartScreen = () => {
             />
           </View>
 
-          <Text>Have a Discount Code?</Text>
+          {/*<Text>Have a Discount Code?</Text>
           <View style={globalStyles.discountSection}>
             <View style={globalStyles.discountTextInput}>
               <TextInput
@@ -136,7 +136,7 @@ const CartScreen = () => {
                 <Text style={globalStyles.redeemButton}>Redeem</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </View>*/}
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
             sectionTitleStyle={styles.sectionHeading}

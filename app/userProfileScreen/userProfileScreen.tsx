@@ -21,6 +21,7 @@ import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../services/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
+import { deviceType } from "expo-device";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -75,7 +76,8 @@ const UserProfileScreen = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        setExpoPushToken(token ?? null);
+          console.log("Expo Push Token:", token);
+          setExpoPushToken(token ?? null);
       }
     };
     getToken();
