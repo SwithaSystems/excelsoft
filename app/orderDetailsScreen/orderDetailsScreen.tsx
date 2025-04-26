@@ -18,8 +18,10 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import QRCodeDisplay from "../../components/QRCodeDisplay";
 import { useSelector } from "react-redux";
+import { orderService } from "@/services/orderService";
 
 const orderDetailsScreen = () => {
+  const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -40,6 +42,24 @@ const orderDetailsScreen = () => {
   }, [orderData]);
   console.log("orderDetails", orderDetails);
   console.log("ordernumber", orderDetails?.orderNumber);
+
+  React.useEffect(() => {
+    const fetchOrderDetails = async () => {
+      if (orderId) {
+        try {
+          const response = await orderService.getOrderById(String(orderId));
+          console.log("response", response);
+          setOrderDetails(response);
+        } catch (err) {
+          console.error("Failed to fetch order details:", err);
+        }
+      }
+    };
+
+    fetchOrderDetails();
+  }, [orderId]);
+
+  console.log("orderDetails by order ID", orderDetails);
   const recommendedProducts = products
     .filter((p) =>
       ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
@@ -89,15 +109,18 @@ const orderDetailsScreen = () => {
         <Header headerText="Order Details" />
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <View style={{}}>
-              <QRCodeDisplay
-                qrValue={orderDetails?.orderNumber}
-                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
-              />
-              {/* <Text style={styles.barCodeNote}>
+            if(orderDetails?.status === "Pending")&&
+            {
+              <View style={{}}>
+                <QRCodeDisplay
+                  qrValue={orderDetails?.orderNumber}
+                  noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
+                />
+                {/* <Text style={styles.barCodeNote}>
                 Show this bar code to our store personnel during the pickup.
               </Text> */}
-            </View>
+              </View>
+            }
             <View style={styles.orderSummaryItem}>
               <Text
                 style={[
@@ -190,7 +213,9 @@ const orderDetailsScreen = () => {
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => {
-              redirectToPage(containers.cancelOrderScreen);
+              redirectToPage(containers.cancelOrderScreen, {
+                orderDetails: orderDetails,
+              });
             }}
           >
             <Text style={styles.buttonText}>Request Cancellation</Text>
@@ -198,7 +223,9 @@ const orderDetailsScreen = () => {
           <TouchableOpacity
             style={styles.requestButton}
             onPress={() => {
-              redirectToPage(containers.returnOrderScreen);
+              redirectToPage(containers.returnOrderScreen, {
+                orderDetails: orderDetails,
+              });
             }}
           >
             <Text style={styles.buttonText}>Request Return</Text>

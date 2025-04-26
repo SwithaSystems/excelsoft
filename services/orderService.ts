@@ -69,6 +69,19 @@ export const orderService = {
     }
   },
 
+  getOrderById: async (orderId: string): Promise<Order> => {
+    try {
+      const response = await axiosInstance.get<Order>(
+        `${API_BASE_URL}/orders/getById/${orderId}`
+      );
+      console.log("orderdata by id", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by orderId:", error);
+      throw error;
+    }
+  },
+
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
     console.log("orderPayload", orderPayload);
     try {

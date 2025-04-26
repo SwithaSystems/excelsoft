@@ -9,10 +9,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 function OrderItem(props) {
   const item = props.item;
+  console.log("item", item);
   return (
     <TouchableOpacity
       onPress={() => {
-        redirectToPage(containers.orderDetailsScreenScreen);
+        redirectToPage(containers.orderDetailsScreenScreen, {
+          orderId: item._id,
+        });
       }}
     >
       <View style={styles.orderContainer}>
