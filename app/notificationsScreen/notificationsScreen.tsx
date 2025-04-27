@@ -10,6 +10,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import colors from "../config/colors";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import { useEffect } from "react";
+import { Alert } from "react-native";
+
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
