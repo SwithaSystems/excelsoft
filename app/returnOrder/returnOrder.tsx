@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -22,33 +21,34 @@ import { Platform } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import ReturnReplaceToggle from "./return_replace_radioButtons";
 
-const cartItems = [
-  {
-    id: 1,
-    image: require("../../assets/baby-bicycle.png"),
-    name: "Duck Toys",
-    price: "$10.00",
-    originalPrice: "$18.00",
-    quantity: 5,
-  },
-  {
-    id: 2,
-    image: require("../../assets/baby-bicycle.png"),
-    name: "Orange Juice",
-    price: "$3.00",
-    originalPrice: "$5.00",
-    quantity: 1,
-  },
-  {
-    id: 3,
-    image: require("../../assets/baby-bicycle.png"),
-    name: "Strawberries",
-    price: "$12.00",
-    originalPrice: "$18.00",
-    quantity: 1,
-  },
-];
+// const cartItems = [
+//   {
+//     id: 1,
+//     image: require("../../assets/baby-bicycle.png"),
+//     name: "Duck Toys",
+//     price: "$10.00",
+//     originalPrice: "$18.00",
+//     quantity: 5,
+//   },
+//   {
+//     id: 2,
+//     image: require("../../assets/baby-bicycle.png"),
+//     name: "Orange Juice",
+//     price: "$3.00",
+//     originalPrice: "$5.00",
+//     quantity: 1,
+//   },
+//   {
+//     id: 3,
+//     image: require("../../assets/baby-bicycle.png"),
+//     name: "Strawberries",
+//     price: "$12.00",
+//     originalPrice: "$18.00",
+//     quantity: 1,
+//   },
+// ];
 
 const options = [
   {
@@ -82,8 +82,8 @@ type OrderSummeryScreenParams = {
 };
 
 const returnOrder = () => {
-  const params = useLocalSearchParams<OrderSummeryScreenParams>();
-  const { orderDetails } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const rawOrderDetails = params.orderDetails;
   const [selected, setSelected] = useState<
     Partial<{ id: string; params: any }>
   >({});
@@ -95,8 +95,24 @@ const returnOrder = () => {
   const [period, setPeriod] = useState("am");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const pickupAddress = params.pickupAddress || "";
+  const [mode, setMode] = useState("return");
 
-  console.log("order Details", orderDetails);
+  console.log("raw orderDetials", rawOrderDetails);
+
+  const orderDetails =
+    typeof rawOrderDetails === "string"
+      ? JSON.parse(rawOrderDetails)
+      : rawOrderDetails;
+
+  console.log("orderDetails parsed:", orderDetails);
+  const cartItems = orderDetails?.products.map((item: any) => ({
+    id: item.id,
+    image: item.image,
+    name: item.name,
+    price: item.price,
+    originalPrice: item.originalPrice,
+    quantity: item.quantity,
+  }));
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -104,19 +120,20 @@ const returnOrder = () => {
   ) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+    setDate(currentDate.toISOString().split("T")[0]);
   };
 
   return (
     <View style={styles.container}>
       <Header headerText="Return Order" />
       <ScrollView>
+        <ReturnReplaceToggle mode={mode} setMode={setMode} />
         <View style={styles.returnOrderCategory}>
           <Text style={styles.returnOrderItemText}>Order Number:</Text>
           <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
         </View>
 
-        {cartItems.map((item) => (
+        {cartItems.map((item: any) => (
           <View style={styles.cartItem} key={item.id}>
             <Image source={item.image} style={styles.itemImage} />
             <View style={styles.itemDetails}>

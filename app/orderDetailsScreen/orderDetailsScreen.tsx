@@ -224,7 +224,7 @@ const orderDetailsScreen = () => {
             style={styles.requestButton}
             onPress={() => {
               redirectToPage(containers.returnOrderScreen, {
-                orderDetails: orderDetails,
+                orderDetails: JSON.stringify(orderDetails),
               });
             }}
           >
