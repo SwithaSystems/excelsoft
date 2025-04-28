@@ -41,7 +41,10 @@ const categoriesScreen = () => {
           Number(categoryId)
         );
         console.log(data);
-        setsubCategories(data);
+        const filterData = data.filter(
+          (item) => item.id !== Number(categoryId)
+        );
+        setsubCategories(filterData);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }

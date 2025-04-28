@@ -30,6 +30,7 @@ export const UserAPI = {
   },
 
   getUserByPhonenumber: async (phoneNumber: any) => {
+    console.log("phoneNumber", phoneNumber);
     const response = await axiosInstance.get(
       `/users/getUserByPhoneNumber/${phoneNumber}`
     );

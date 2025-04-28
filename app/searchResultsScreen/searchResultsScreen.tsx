@@ -24,23 +24,29 @@ const SearchResultsScreen = () => {
     Number(categoryId)
   );
   const [loading, setLoading] = useState<boolean>(true);
+  console.log("all params", fromSearch, query, category, categoryId);
+  const [headerTitle, setHeaderTitle] = useState(
+    fromSearch ? category : "Search Results"
+  );
 
   // Fetch all products for free-text search only (runs once)
-  useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        const data = await ProductsAPI.getAllProducts();
-        setAllProducts(data);
-      } catch (error) {
-        console.error("Error fetching all products:", error);
-      }
-    };
-    fetchAllProducts();
-  }, []);
+  // useEffect(() => {
+  //   const fetchAllProducts = async () => {
+  //     try {
+  //       const data = await ProductsAPI.getAllProducts();
+  //       setAllProducts(data);
+  //     } catch (error) {
+  //       console.error("Error fetching all products:", error);
+  //     }
+  //   };
+  //   fetchAllProducts();
+  // }, []);
 
   // Fetch subcategories and prepare list of their IDs
   useEffect(() => {
     const fetchSubCategories = async () => {
+      if (subCategories.length > 0) return; // Already fetched, no need again
+
       try {
         const data = await categoryService.getAllSubCategories(
           Number(categoryId)
@@ -55,12 +61,18 @@ const SearchResultsScreen = () => {
     fetchSubCategories();
   }, [categoryId]);
 
+  // console.log("subcategories", subCategories);
+  // console.log("selcted sub category", selectedCategoryId);
   // Fetch products based on selected category or subcategories
   useEffect(() => {
     const fetchCategoryProducts = async () => {
       try {
         setLoading(true);
-
+        console.log(
+          "selected category id and category id",
+          selectedCategoryId,
+          Number(categoryId)
+        );
         if (selectedCategoryId === Number(categoryId)) {
           // Selected "All" (main category)
           if (subCategoriesIds.length > 0) {
@@ -71,10 +83,10 @@ const SearchResultsScreen = () => {
             );
             const combined = allSubCategoryProducts.flat();
             setProducts(combined);
-          } else {
-            const mainCategoryProducts =
-              await ProductsAPI.getProductByCategoryID(Number(categoryId));
-            setProducts(mainCategoryProducts);
+            // } else {
+            //   const mainCategoryProducts =
+            //     await ProductsAPI.getProductByCategoryID(Number(categoryId));
+            //   setProducts(mainCategoryProducts);
           }
         } else {
           // Specific subcategory
@@ -139,16 +151,17 @@ const SearchResultsScreen = () => {
   const renderCategoryBadges = (categoryId: number) => {
     return (
       <CategoryBadges
-        categoryId={categoryId}
+        categoryId={selectedCategoryId}
         subCategories={subCategories}
         onCategorySelect={handleCategorySelect}
+        onCategoryNameChange={(name: any) => setHeaderTitle(name)}
       />
     );
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
-      <Header headerText={!fromSearch ? "Search Results" : category} />
+      <Header headerText={headerTitle} />
 
       {loading ? (
         <Text style={styles.resultsCount}>Loading...</Text>
