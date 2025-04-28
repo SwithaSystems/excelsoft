@@ -18,6 +18,9 @@ import OrderSummary from "@/components/OrderSummary";
 import CartItem from "../cartScreen/components/CartItem";
 import { useSelector } from "react-redux";
 import { addressService } from "@/services/addressService";
+import Button from "@/components/commonComponents/Button";
+import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 const addBillingAddressScreen = () => {
   const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -41,6 +44,27 @@ const addBillingAddressScreen = () => {
     };
     fetchBillingAddress();
   }, []);
+  const handleSaveAddress = async () => {
+    try {
+      const response = await addressService.addBillingAddress({
+        name: address,
+        line1: line1,
+        line2: line2,
+        city: towncity,
+        state: "",
+        country: "India",
+        postalCode: postalcode,
+      });
+      if (response.status === 200 || response.status === 201) {
+        alert("Address added successfully");
+      } else {
+        alert("Failed to add address");
+      }
+      redirectToPage(containers.billingAddressScreenScreen);
+    } catch (error) {
+      console.error("Error adding address:", error);
+    }
+  };
 
   console.log("billing address ", billingAddress);
 
@@ -63,7 +87,7 @@ const addBillingAddressScreen = () => {
           style={styles.input}
           value={line2}
           onChangeText={setLine2}
-          keyboardType="phone-pad"
+          keyboardType="email-address"
         />
 
         <Text style={styles.fieldLabel}>Town/City</Text>
@@ -93,6 +117,17 @@ const addBillingAddressScreen = () => {
             name="chevron-down-outline"
             size={24}
             color={colors.black}
+          />
+        </View>
+      </View>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+        <View style={styles.addressList}>
+          <Button
+            title="Save Address"
+            onPress={() => {
+              handleSaveAddress();
+              redirectToPage(containers.selectBillingAddressScreenScreen);
+            }}
           />
         </View>
       </View>

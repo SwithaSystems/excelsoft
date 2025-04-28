@@ -34,11 +34,26 @@ import Footer from "@/components/Footer";
 import containers from "@/containers";
 import { redirectToPage } from "../../utilities/redirectionHelper";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItems = useSelector((state: any) => state.cart?.items || []);
+  // const cartItems = useSelector((state: any) => [state.cart.items]);
   const savedItems = useSelector((state: any) => state.savedItems.items);
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log("user", user);
+        setUser(user);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const recommendedProducts = products
     .filter((p) =>
@@ -72,7 +87,9 @@ const CartScreen = () => {
 
   const cancelDelete = () => {
     if (itemToDelete) {
-      const itemtoSave = cartItems.find((item) => item.id === itemToDelete.id);
+      const itemtoSave = cartItems.find(
+        (item: any) => item.id === itemToDelete.id
+      );
       if (itemtoSave) {
         dispatch(addToSavedItems(itemtoSave));
         dispatch(removeFromCart(itemToDelete.id));
@@ -85,6 +102,14 @@ const CartScreen = () => {
   useEffect(() => {
     console.log("Item to delete updated:", itemToDelete);
   }, [itemToDelete]);
+  const handlePlaceOrder = () => {
+    console.log("User:", user);
+    if (!user) {
+      redirectToPage(containers.signInScreen);
+    } else {
+      redirectToPage(containers.pickUpModescreenScreen);
+    }
+  };
 
   return (
     <View style={[globalStyles.container]}>
@@ -115,10 +140,7 @@ const CartScreen = () => {
               marginBottom: 16,
             }}
           >
-            <Button
-              title="Place Order"
-              onPress={() => redirectToPage(containers.pickUpModescreenScreen)}
-            />
+            <Button title="Place Order" onPress={handlePlaceOrder} />
           </View>
 
           {/*<Text>Have a Discount Code?</Text>

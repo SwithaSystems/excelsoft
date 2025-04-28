@@ -1,45 +1,49 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
+  addressList: {
+    paddingHorizontal: 26,
+  },
   container: {
     padding: 16,
     backgroundColor: colors.white,
   },
   text: {
     fontSize: 12,
-    color: 'black',
+    color: "black",
   },
-  section:{
-    marginBottom: 16
+  section: {
+    marginBottom: 16,
   },
-  sectionText:{
-    fontSize: 14
+  sectionText: {
+    fontSize: 14,
   },
-  sectionHeading :{
+  sectionHeading: {
     fontSize: 16,
     fontWeight: 600,
-    marginBottom: 16
+    marginBottom: 16,
   },
-  cartItemContainerStyle:{
-    paddingHorizontal: 0
+  cartItemContainerStyle: {
+    paddingHorizontal: 0,
   },
-  orderSummaryContainer:{
+  orderSummaryContainer: {
     marginTop: 0,
-    paddingHorizontal: 0
+    paddingHorizontal: 0,
   },
   fieldLabel: {
     fontSize: 14,
     marginBottom: 8,
     marginTop: 16,
-  },  input: {
-    backgroundColor: '#f8f8f8',
+  },
+  input: {
+    backgroundColor: "#f8f8f8",
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
     marginBottom: 4,
   },
-  countriesdropdown:{
+  countriesdropdown: {
     backgroundColor: colors.lightgrey,
     flexDirection: "row",
     justifyContent: "space-between",

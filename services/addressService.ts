@@ -1,4 +1,6 @@
+import { AnimateStyle } from "react-native-reanimated";
 import axiosInstance from "./axiosConfig";
+import { AnimationType } from "expo-symbols";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -16,25 +18,6 @@ export interface Address {
 }
 
 export const addressService = {
-  addShippingAddress: async (
-    shippingAddressData: any
-  ): Promise<{ data: Address; status: number }> => {
-    console.log("AddressData ADDED", shippingAddressData);
-    try {
-      const response = await axiosInstance.post(
-        `${API_BASE_URL}/shippingAddress`,
-        shippingAddressData
-      );
-      console.log("shippingAddress", response);
-      return {
-        data: response.data,
-        status: response.status,
-      };
-    } catch (error) {
-      throw error;
-    }
-  },
-
   updateShippingAddress: async (
     shippingAddressData: Address
   ): Promise<{ data: Address; status: number }> => {
@@ -63,14 +46,37 @@ export const addressService = {
       return { success: false };
     }
   },
-  addBillingAddress: async (billingAddressData: Address): Promise<Address> => {
+  addShippingAddress: async (
+    shippingAddressData: any
+  ): Promise<{ data: Address; status: number }> => {
+    console.log("AddressData ADDED", shippingAddressData);
+    try {
+      const response = await axiosInstance.post(
+        `${API_BASE_URL}/shippingAddress`,
+        shippingAddressData
+      );
+      console.log("shippingAddress", response);
+      return {
+        data: response.data,
+        status: response.status,
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
+  addBillingAddress: async (
+    billingAddressData: any
+  ): Promise<{ data: Address; status: number }> => {
     try {
       const response = await axiosInstance.post(
         `${API_BASE_URL}/billingAddress`,
         billingAddressData
       );
-      console.log("shippingAddress", response.data);
-      return response.data;
+      console.log("billingAddress", response.data);
+      return {
+        data: response.data,
+        status: response.status,
+      };
     } catch (error) {
       throw error;
     }
