@@ -12,29 +12,32 @@ import ProductRating from "@/components/ProductRating";
 import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { API_BASE_URL } from "@/config/constants";
 import axios from "axios";
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {
-  const { productId,totalReviews ,productRating} = useLocalSearchParams();
-  const reviewsArray = typeof totalReviews === "string" && totalReviews ? JSON.parse(totalReviews) : [];
-  const[product,setProduct]=useState<any>(null);
-  
-  useEffect(()=>{
-console.log("ProductId",productId);
-if(productId){
-  fetchProductDetails();
-}
+  const { productId, totalReviews, productRating } = useLocalSearchParams();
+  const reviewsArray =
+    typeof totalReviews === "string" && totalReviews
+      ? JSON.parse(totalReviews)
+      : [];
+  const [product, setProduct] = useState<any>(null);
 
-  },[productId])
-  const fetchProductDetails= async()=>{
-    const response = await axios.get(`${API_BASE_URL}products/${productId}`);
+  useEffect(() => {
+    console.log("ProductId", productId);
+    if (productId) {
+      fetchProductDetails();
+    }
+  }, [productId]);
+  const fetchProductDetails = async () => {
+    const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
     setProduct(response.data);
-
-  }
-console.log("product",product);
-const soretedReviews = product?.reviews?.sort((a: any, b: any) => b.id - a.id);
-console.log("soretedReviews",soretedReviews);
+  };
+  console.log("product", product);
+  const soretedReviews = product?.reviews?.sort(
+    (a: any, b: any) => b.id - a.id
+  );
+  console.log("soretedReviews", soretedReviews);
 
   return (
     <View style={globalStyles.container}>
@@ -52,7 +55,7 @@ console.log("soretedReviews",soretedReviews);
           </View>
           <View style={styles.reviewsContainer}>
             <Text style={styles.reviewContainerHeading}>Reviews</Text>
-            {soretedReviews?.map((review:any) => (
+            {soretedReviews?.map((review: any) => (
               <ProductRating key={review.id} review={review} />
             ))}
           </View>
@@ -61,7 +64,12 @@ console.log("soretedReviews",soretedReviews);
       <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
-          onPress={() => redirectToPage(containers.feedBackScreenScreen,{productId:productId,reviewsArrayLength:reviewsArray.length})}
+          onPress={() =>
+            redirectToPage(containers.feedBackScreenScreen, {
+              productId: productId,
+              reviewsArrayLength: reviewsArray.length,
+            })
+          }
           style={styles.addReviewBtn}
         />
       </View>

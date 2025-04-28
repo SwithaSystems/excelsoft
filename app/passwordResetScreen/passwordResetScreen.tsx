@@ -7,7 +7,6 @@ import Button from "@/components/commonComponents/Button";
 import { useLocalSearchParams } from "expo-router";
 import { UserAPI } from "@/services/userService";
 import axios from "axios";
-import { API_BASE_URL } from "@/config/constants";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
@@ -45,11 +44,7 @@ const passwordResetScreen = () => {
 
   const handlePress = async () => {
     if (validateFields()) {
-      const response = await UserAPI.changePassword(phoneNumber, {
-        // const response = await axios.put(
-        //  `${API_BASE_URL}/users/changePassword/${phoneNumber}`,{
-        newPassword: password,
-      });
+      const response = await UserAPI.changePassword({ newPassword: password });
       Alert.alert("Message", response.data.message, [
         {
           text: "OK",

@@ -240,7 +240,7 @@ const ProductDetailScreen = () => {
                   
                 }*/
               >
-                <Text style={styles.selectQuantityText}>select quantity</Text>
+                {/* <Text style={styles.selectQuantityText}>select quantity</Text> */}
               </TouchableOpacity>
             </View>
             <View style={styles.quantityControl}>

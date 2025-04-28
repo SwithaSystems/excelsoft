@@ -18,7 +18,7 @@ export default {
   orderSummeryScreenScreen: "orderSummeryScreen/orderSummeryScreen",
   paymentScreenScreen: "paymentScreen/paymentScreen",
   paymentSaveCardScreenScreen: "paymentSaveCardScreen/paymentSaveCardScreen",
-  billingAddressScreenScreen: "billingAddressScreen/billingAddressScreen",
+  billingAddressScreenScreen: "addBillingAddressScreen/addBillingAddressScreen",
   orderSuccessfulScreenScreen: "orderSuccessfulScreen/orderSuccessfulScreen",
   deliveryTrackingScreenScreen: "deliveryTrackingScreen/deliveryTrackingScreen",
   offersScreenScreen: "offersScreen/offersScreen",

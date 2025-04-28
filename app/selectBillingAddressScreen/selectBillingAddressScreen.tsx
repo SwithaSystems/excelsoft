@@ -28,6 +28,7 @@ const selectBillingAddressScreen = () => {
   const selectedMode = params?.selectedMode;
   const selectedSlot = params?.selectedSlot;
   const selectedDate = params?.selectedDate;
+  const selectShippingAddress = params?.selectShippingAddress;
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -107,7 +108,7 @@ const selectBillingAddressScreen = () => {
             <Button
               title="Add New Address"
               onPress={() => {
-                redirectToPage(containers.addAddressScreenScreen);
+                redirectToPage(containers.billingAddressScreenScreen);
               }}
             />
           </View>

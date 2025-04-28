@@ -154,6 +154,7 @@ const orderSummeryScreen = () => {
       selectedMode: selectedMode,
       selectedSlot: selectedSlot,
       selectedDate: selectedDate,
+      shippingAddress: pickupAddress,
     });
   };
   const handleDelete = (item: any) => {

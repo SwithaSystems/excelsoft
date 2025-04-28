@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,32 +12,43 @@ import colors from "../config/colors";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import { categoryService } from "@/services/categoryService";
 
 const Filter = () => {
+  const props = useLocalSearchParams();
+  console.log("props", props.categoryId);
+  const categoryID = props.categoryId;
+  console.log("cate", categoryID);
   const navigation = useNavigation();
-  const categories = [
-    "Kids Gadgets",
-    "Kids toys",
-    "Baby Food",
-    "Baby books",
-    "Kids clothes",
-  ];
+
   const brands = ["Brand1", "Brand2", "Brand3", "Brand4", "Brand5", "Brand6"];
   const [selectedCategories, setSelectedCategories] = useState<any>({});
 
   const [selectedBrands, setSelectedBrands] = useState<any>({});
+  const [categories, setCategories] = useState<any>([]);
 
   const { width } = Dimensions.get("window");
   const itemWidth = (width - 30) / 2 - 8; // calculating the width of each item by screen size
 
-  const handleCategorySelect = (category: any) => {
-    setSelectedCategories({
-      ...selectedCategories,
-      [category]: !selectedCategories[category],
-    });
+  useEffect(() => {
+    const fetchSubCategories = async () => {
+      const data = await categoryService.getAllSubCategories(
+        Number(categoryID)
+      );
+      console.log("all sub categories in badges", data);
+      setCategories(data);
+    };
+    fetchSubCategories();
+  }, [categoryID]);
+
+  const handleCategorySelect = (categoryId: number) => {
+    setSelectedCategories((prev: any) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
   };
 
   const handleBrandSelect = (brand: any) => {
@@ -45,20 +56,21 @@ const Filter = () => {
   };
 
   const applyFilters = () => {
-    const appliedCategories = Object.keys(selectedCategories).filter(
-      (category) => selectedCategories[category]
-    );
-    const appliedBrands = Object.keys(selectedBrands).filter(
-      (brand) => selectedBrands[brand]
-    );
+    const selectedCategoryIds = Object.keys(selectedCategories)
+      .filter((categoryId) => selectedCategories[categoryId])
+      .map(Number); // convert string keys to numbers
 
-    console.log("Applied Filters:", {
-      categories: appliedCategories,
-      brands: appliedBrands,
-    });
-    navigation.canGoBack()
-      ? navigation.goBack()
-      : redirectToPage(containers.homeScreen);
+    console.log("Selected Subcategory IDs:", selectedCategoryIds);
+    if (selectedCategoryIds.length === 0) {
+      alert("Please select at least one category!");
+      return;
+    } else {
+      // Now navigate to the search result screen and pass these IDs
+      redirectToPage(containers.searchResultsScreenScreen, {
+        selectedSubCategories: selectedCategoryIds,
+        fromSearch: true,
+      });
+    }
   };
 
   return (
@@ -69,12 +81,12 @@ const Filter = () => {
           <View style={[styles.section, { marginBottom: 0 }]}>
             <Text style={styles.sectionTitle}>Categories</Text>
             <View style={styles.checkBoxRow}>
-              {categories.map((category) => (
-                <View key={category} style={[{ width: itemWidth }]}>
+              {categories.map((category: any) => (
+                <View key={category.id} style={[{ width: itemWidth }]}>
                   <CheckBox
-                    title={category}
-                    checked={selectedCategories[category]}
-                    onPress={() => handleCategorySelect(category)}
+                    title={category.name}
+                    checked={selectedCategories[category.id]}
+                    onPress={() => handleCategorySelect(category.id)}
                     containerStyle={styles.checkBoxContainer}
                     textStyle={styles.checkBoxText}
                   />

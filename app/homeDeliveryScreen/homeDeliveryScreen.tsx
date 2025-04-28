@@ -20,12 +20,12 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Button from "@/components/commonComponents/Button";
 import { useLocalSearchParams } from "expo-router";
-import { API_BASE_URL } from "@/config/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
 import { PickupMode } from "@/services/orderService";
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
   const { user } = useAuth();

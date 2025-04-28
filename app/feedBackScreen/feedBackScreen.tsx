@@ -22,6 +22,7 @@ import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserAPI } from "@/services/userService";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -55,12 +56,17 @@ const feedBackScreen = () => {
       alert("Please enter both a rating and review text.");
       return;
     }
-    const user: any = await AsyncStorage.getItem("user");
-    console.log("user", user);
+    const userfromasync: any = await AsyncStorage.getItem("user");
+    const userphone = JSON.parse(userfromasync);
+    console.log("userPhone", userphone.phone);
+    const user = await UserAPI.getUserByPhonenumber(userphone.phone);
+    console.log("user from add review", user.data);
+    const UserParsed = user.data;
+    console.log("User", UserParsed.firstName);
     const review = {
       id: (Number(reviewsArrayLength) + 1).toString(),
       rating: rating,
-      name: user?.firsName,
+      name: UserParsed?.firstName,
       review: reviewText,
     };
 

@@ -53,6 +53,8 @@ export const ProductsAPI = {
   },
 
   addReview: async (productId: Number, review: any): Promise<void> => {
+    console.log("productId", productId);
+    console.log("review", review);
     await axiosInstance.post(`/products/${productId}/reviews`, review);
   },
 };

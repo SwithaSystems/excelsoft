@@ -21,7 +21,6 @@ import containers from "@/containers";
 import styles from "./pickupScreenStyles";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
-import { API_BASE_URL } from "@/config/constants";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();

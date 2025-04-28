@@ -25,16 +25,6 @@ const CategoryBadges = (props) => {
     { label: "High to Low", value: "highToLow" },
   ];
   const [subCategoriesNames, setsubCategoriesNames] = useState([]);
-  // const categories = [
-  //   "All",
-  //   "Babies",
-  //   "Kids",
-  //   "Toys",
-  //   "Clothing",
-  //   "Cribs",
-  //   "Accessories",
-  //   "Shoes",
-  // ];
 
   useEffect(() => {
     const fetchSubCategories = async () => {
@@ -43,20 +33,25 @@ const CategoryBadges = (props) => {
           props.categoryId
         );
         console.log("all sub categories", data);
+
         if (data && data.length > 0) {
           const setsubCategories = data.map((category) => category.name);
           setsubCategoriesNames(setsubCategories);
         } else {
-          // If no subcategories, only show "All"
           setsubCategoriesNames([]);
         }
-        setActiveFilter("All");
-        props.onCategorySelect && props.onCategorySelect(props.categoryId);
+
+        // Only reset if no activeFilter selected yet
+        if (!activeFilter) {
+          setActiveFilter("All");
+          props.onCategorySelect && props.onCategorySelect(props.categoryId);
+        }
       } catch (error) {
         console.error("Error fetching categories:", error);
         setsubCategoriesNames([]);
       }
     };
+
     fetchSubCategories();
   }, [props.categoryId]);
 
@@ -86,7 +81,7 @@ const CategoryBadges = (props) => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
         >
-          {["All",...subCategoriesNames].map((category, index) => (
+          {["All", ...subCategoriesNames].map((category, index) => (
             <TouchableOpacity
               key={category}
               style={[
@@ -94,20 +89,24 @@ const CategoryBadges = (props) => {
                 activeFilter === category && styles.activeFilterButton,
                 index === subCategoriesNames.length - 1
                   ? { marginRight: 0 }
-                  : {}, // Remove margin for last item
+                  : {},
               ]}
               onPress={() => {
                 setActiveFilter(category);
+
                 if (category === "All") {
-                  props.onCategorySelect && props.onCategorySelect(props.categoryId);
+                  props.onCategorySelect &&
+                    props.onCategorySelect(props.categoryId);
                 } else {
                   const selectedSubCategory = props.subCategories.find(
                     (subCat) => subCat.name === category
                   );
                   if (selectedSubCategory) {
-                    props.onCategorySelect && props.onCategorySelect(selectedSubCategory.id);
+                    // props.onCategorySelect &&
+                    props.onCategorySelect(selectedSubCategory.id);
                   }
                 }
+                props.onCategoryNameChange?.(category);
               }}
             >
               <Text
@@ -126,7 +125,9 @@ const CategoryBadges = (props) => {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => {
-              redirectToPage(containers.filterScreen);
+              redirectToPage(containers.filterScreen, {
+                categoryId: props.categoryId,
+              });
             }}
           >
             <Feather name="filter" size={26} color={colors.black} />
@@ -195,7 +196,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingRight: 60,
     alignItems: "center",
-    flex: 1,
   },
   filterButton: {
     paddingVertical: 8,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   fixedIcons: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 'auto',
+    marginLeft: "auto",
   },
   iconButton: {
     padding: 2,
