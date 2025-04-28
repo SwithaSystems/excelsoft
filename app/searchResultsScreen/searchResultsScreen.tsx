@@ -14,6 +14,7 @@ const SearchResultsScreen = () => {
   const { fromSearch, query } = useLocalSearchParams();
   const { category } = useLocalSearchParams();
   const { categoryId } = useLocalSearchParams();
+  const { selectedSubCategories } = useLocalSearchParams();
   const router = useRouter();
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -29,6 +30,19 @@ const SearchResultsScreen = () => {
     fromSearch ? category : "Search Results"
   );
 
+  useEffect(() => {
+    console.log("sub ids from filterscreen (raw)", selectedSubCategories);
+
+    if (selectedSubCategories) {
+      const parsedIds = Array.isArray(selectedSubCategories)
+        ? selectedSubCategories.map((id) => Number(id))
+        : selectedSubCategories.split(",").map((id) => Number(id));
+
+      console.log("parsed subCategory IDs:", parsedIds);
+      setSubCategoriesIds(parsedIds);
+    }
+  }, [selectedSubCategories]);
+  console.log("sub categories ids ", subCategoriesIds);
   // Fetch all products for free-text search only (runs once)
   // useEffect(() => {
   //   const fetchAllProducts = async () => {
@@ -45,7 +59,7 @@ const SearchResultsScreen = () => {
   // Fetch subcategories and prepare list of their IDs
   useEffect(() => {
     const fetchSubCategories = async () => {
-      if (subCategories.length > 0) return; // Already fetched, no need again
+      if (subCategories.length > 0) return;
 
       try {
         const data = await categoryService.getAllSubCategories(
@@ -61,35 +75,61 @@ const SearchResultsScreen = () => {
     fetchSubCategories();
   }, [categoryId]);
 
-  // console.log("subcategories", subCategories);
-  // console.log("selcted sub category", selectedCategoryId);
-  // Fetch products based on selected category or subcategories
   useEffect(() => {
     const fetchCategoryProducts = async () => {
       try {
         setLoading(true);
         console.log(
-          "selected category id and category id",
+          "Selected category ID:",
           selectedCategoryId,
-          Number(categoryId)
+          "Main category ID:",
+          Number(categoryId),
+          "Subcategory IDs:",
+          subCategoriesIds
         );
-        if (selectedCategoryId === Number(categoryId)) {
-          // Selected "All" (main category)
-          if (subCategoriesIds.length > 0) {
-            const allSubCategoryProducts = await Promise.all(
-              subCategoriesIds.map((id) =>
-                ProductsAPI.getProductByCategoryID(id)
-              )
+
+        // If subcategories are selected through filters
+        if (subCategoriesIds.length > 0 && selectedSubCategories) {
+          // Fetch products for all selected subcategories
+          const allSubCategoryProducts = await Promise.all(
+            subCategoriesIds.map((id) => ProductsAPI.getProductByCategoryID(id))
+          );
+          const combined = allSubCategoryProducts.flat();
+          const uniqueProducts = Array.from(
+            new Map(combined.map((item) => [item.id, item])).values()
+          );
+          setProducts(uniqueProducts);
+        }
+        // If parent category is selected (matches the main categoryId)
+        else if (selectedCategoryId === Number(categoryId)) {
+          // For parent category, fetch all products from parent AND all its subcategories
+          const mainCategoryProducts = await ProductsAPI.getProductByCategoryID(
+            Number(categoryId)
+          );
+
+          // If subcategories exist, also fetch their products
+          if (subCategories.length > 0) {
+            const subCategoryProductsPromises = subCategories.map((subCat) =>
+              ProductsAPI.getProductByCategoryID(subCat.id)
             );
-            const combined = allSubCategoryProducts.flat();
-            setProducts(combined);
-            // } else {
-            //   const mainCategoryProducts =
-            //     await ProductsAPI.getProductByCategoryID(Number(categoryId));
-            //   setProducts(mainCategoryProducts);
+            const allSubCategoryProducts = await Promise.all(
+              subCategoryProductsPromises
+            );
+            const allProducts = [
+              ...mainCategoryProducts,
+              ...allSubCategoryProducts.flat(),
+            ];
+            const uniqueProducts = Array.from(
+              new Map(allProducts.map((item) => [item.id, item])).values()
+            );
+            setProducts(uniqueProducts);
+          } else {
+            setProducts(mainCategoryProducts);
           }
-        } else {
-          // Specific subcategory
+        }
+        // If a specific subcategory is selected
+        else {
+          // Fetch products just for the selected subcategory
           const categoryProducts = await ProductsAPI.getProductByCategoryID(
             selectedCategoryId
           );
@@ -102,8 +142,15 @@ const SearchResultsScreen = () => {
         setLoading(false);
       }
     };
+
     fetchCategoryProducts();
-  }, [selectedCategoryId, categoryId, subCategoriesIds]);
+  }, [
+    selectedCategoryId,
+    categoryId,
+    subCategoriesIds,
+    selectedSubCategories,
+    subCategories,
+  ]);
 
   // Handle free-text search (filter from allProducts)
   const filteredProducts = useMemo(() => {
@@ -119,6 +166,7 @@ const SearchResultsScreen = () => {
 
   // Handle selecting a category badge
   const handleCategorySelect = (categoryId: number) => {
+    console.log("selected category id from cat badge", categoryId);
     setSelectedCategoryId(categoryId);
   };
 

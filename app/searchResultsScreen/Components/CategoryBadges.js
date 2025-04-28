@@ -125,7 +125,9 @@ const CategoryBadges = (props) => {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => {
-              redirectToPage(containers.filterScreen);
+              redirectToPage(containers.filterScreen, {
+                categoryId: props.categoryId,
+              });
             }}
           >
             <Feather name="filter" size={26} color={colors.black} />
