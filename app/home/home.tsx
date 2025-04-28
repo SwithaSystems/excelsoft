@@ -93,9 +93,6 @@ const HomePage = () => {
   const renderFeaturedProducts = () => (
     <View>
       <Text style={styles.sectionTitle}>Featured Products</Text>
-      <Text style = {styles.featuredDescriptionText}>
-
-      </Text>
       <FlatList
         horizontal
         data={featuredProducts}
@@ -268,6 +265,8 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 140,
     marginBottom: 8,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius:10,
   },
   featuredTitle: {
     fontSize: 16,
@@ -278,6 +277,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.lightgrey,
     marginHorizontal: 16,
+    //marginBottom:10,
+    //lineHeight:18,
   },
   featuredDescriptionText:{
     fontSize: 14,

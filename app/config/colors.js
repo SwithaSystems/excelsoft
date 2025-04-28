@@ -12,4 +12,5 @@ export default {
   switchTrackOff: "#D2D3D8",
   error: "red",
   placeholdergrey: "#D9D9D9",
+  buttonError: "#EB0A0A",
 };

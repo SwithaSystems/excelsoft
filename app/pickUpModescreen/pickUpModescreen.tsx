@@ -21,7 +21,7 @@ const options = [
     id: "store",
     label: "Store Pickup",
     description: "Pick up your order from our store",
-    icon: "location",
+    icon: "location-outline",
     redirectionScreen: containers.pickupScreenScreen,
     params: { mode: "store" },
 

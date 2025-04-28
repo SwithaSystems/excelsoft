@@ -31,6 +31,11 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  note:{
+    color: colors.buttonError, 
+    fontSize: 14,
+    marginBottom:16,
+  }
 });
 
 export default styles;

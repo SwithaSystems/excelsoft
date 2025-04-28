@@ -41,8 +41,10 @@ const styles = StyleSheet.create({
   amPmText: {
     fontSize: 16,
   },
-
-
+  // note:{
+  //   color: colors.buttonError,
+  //   fontSize: 14,
+  // },
   sectionTitle: {
     fontSize: 15,
     marginTop: 20,

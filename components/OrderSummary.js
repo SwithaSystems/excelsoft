@@ -83,14 +83,15 @@ function OrderSummary(props) {
 }
 const styles = StyleSheet.create({
   summaryName: {
-    width: "60%",
+    width: "33.33%",
+    flexWrap:"wrap",
   },
   summaryPrice: {
-    width: "20%",
+    width: "33.33%",
     textAlign: "right",
   },
   summaryQuantity: {
-    width: "20%",
+    width: "33.33%",
     textAlign: "center",
   },
   orderSummary: {

@@ -307,7 +307,9 @@ const HomeDeliveryScreen = () => {
               placeholder="E.g., Landmark, preferred delivery time, etc."
             />
           </View>
-
+           <Text style={ styles.note }>
+              *Please ensure you carry a valid ID Proof
+            </Text>
           <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
         </View>
       </ScrollView>

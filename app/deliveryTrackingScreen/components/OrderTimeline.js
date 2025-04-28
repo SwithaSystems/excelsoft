@@ -41,7 +41,7 @@ const OrderTimeline = ({ statusList }) => {
             >{item}
             </Text>
             {/* Connecting Line */}
-            {index !== statusList.length - 1 && 
+            {index !== statusList.length && 
               <View style={[
                 styles.line,
                 {backgroundColor: index < currentStatus ? "#17C6ED":"#7E8A8C"}
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 90,
     position: "relative",
   },
   circle: {
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     left: 18,
     top: 40,
     height: 60,
-    width: 2,
+    width: 1,
     backgroundColor: colors.black,
   },
 });
