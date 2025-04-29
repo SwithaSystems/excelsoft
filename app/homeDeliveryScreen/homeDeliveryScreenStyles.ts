@@ -35,6 +35,12 @@ const styles = StyleSheet.create({
     color: colors.buttonError, 
     fontSize: 14,
     marginBottom:16,
+  },
+  savedAddressContainer:{
+
+  },
+  addressTitle:{
+    
   }
 });
 

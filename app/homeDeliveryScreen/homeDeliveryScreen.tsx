@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
+  FlatList
 } from "react-native";
 import styles from "./homeDeliveryScreenStyles";
 import DateTimePicker, {
@@ -24,8 +25,23 @@ import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
 import { PickupMode } from "@/services/orderService";
+import AddressItem from "../components/AddressItem"
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+type Address = {
+  _id: string;
+  name: string,
+  line1: string,
+  line2: string,
+  city: string,
+  state: string;
+  country: string;
+  postalCode: string;
+  phone: string;
+  isDefault: boolean;
+}
+
 const HomeDeliveryScreen = () => {
   const { orderId } = useLocalSearchParams();
   const { user } = useAuth();
@@ -41,6 +57,53 @@ const HomeDeliveryScreen = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [addressData, setAddressData] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  const loadAddresses = () => {
+    const mockAddresses: Address[] =[
+      {
+        _id: "1",
+        name: "priya",
+        line1: "123 street",
+        line2: "xyz road",
+        city: "abc city",
+        state: "telangana",
+        country: "India",
+        postalCode: "500043",
+        phone: "9876543210",
+        isDefault: true,
+      },
+      {
+          _id: "2",
+          name: "Lakshmi",
+          line1: "123 street",
+          line2: "xyz road",
+          city: "abc city",
+          state: "telangana",
+          country: "India",
+          postalCode: "500043",
+          phone: "9876543210",
+          isDefault: false,
+      },
+    ];
+    setAddressData(mockAddresses);
+  };
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+  
+  const handleAddNewAddress = () => {
+    redirectToPage(containers.addAddressScreenScreen);
+  };
+
+  const handleEditAddress = () => {
+    redirectToPage(containers.editAddressScreenScreen);
+  };
+
+  const handleDeleteAddress = (item: Address) => {
+
+  };
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -282,6 +345,23 @@ const HomeDeliveryScreen = () => {
           })}
 
           {/* Address */}
+          <FlatList
+            data={addressData}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <AddressItem
+                item={item}
+                showRadio={true}
+                isSelected={item._id === selectedAddressId}
+                onSelect={() => {
+                  setSelectedAddressId(item._id);
+                }}
+                onEdit={handleEditAddress}
+                onDelete={handleDeleteAddress}
+              />
+            )}
+          />
+
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Address: *</Text>
             <TextInput
