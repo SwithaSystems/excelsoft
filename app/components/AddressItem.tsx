@@ -23,7 +23,7 @@ const AddressItem = ({
   isSelected = false,
 }: AddressItemProps) => {
   return (
-    <>
+    <View style={styles.addressSection}>
       <TouchableOpacity onPress={onSelect}>
         {showRadio && (
           <Ionicons
@@ -63,14 +63,19 @@ const AddressItem = ({
           )}
         </View>
       </View>
-    </>
+    </View>
   );
 };
 
 export default AddressItem;
 
 const styles = StyleSheet.create({
+  addressSection:{
+    flexDirection:"row",
+    alignItems: "center"
+  },
   addressContainer: {
+    width: '90%',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 10,

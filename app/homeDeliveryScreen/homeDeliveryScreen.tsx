@@ -335,14 +335,28 @@ const HomeDeliveryScreen = () => {
           </View>
 
           {/* Contact Information */}
-          {renderTextInput("First Name", firstName, setFirstName)}
-          {renderTextInput("Last Name", lastName, setLastName)}
-          {renderTextInput("Phone", phone, setPhone, {
-            keyboardType: "phone-pad",
-          })}
-          {renderTextInput("Email", email, setEmail, {
-            keyboardType: "email-address",
-          })}
+          {addressData.length === 0 && (
+            <>
+              {renderTextInput("First Name", firstName, setFirstName)}
+              {renderTextInput("Last Name", lastName, setLastName)}
+              {renderTextInput("Phone", phone, setPhone, {
+                keyboardType: "phone-pad",
+              })}
+              {renderTextInput("Email", email, setEmail, {
+                keyboardType: "email-address",
+              })}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Address: *</Text>
+                <TextInput
+                  style={[styles.textInput, styles.multilineInput]}
+                  value={address}
+                  onChangeText={setAddress}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+            </>
+          )}
 
           {/* Address */}
           <FlatList
@@ -361,18 +375,6 @@ const HomeDeliveryScreen = () => {
               />
             )}
           />
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Address: *</Text>
-            <TextInput
-              style={[styles.textInput, styles.multilineInput]}
-              value={address}
-              onChangeText={setAddress}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
           {/* Additional Instructions */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>

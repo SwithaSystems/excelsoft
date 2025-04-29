@@ -6,8 +6,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
   },
   container: {
-    padding: 16,
     backgroundColor: colors.white,
+    flex: 1,
   },
   text: {
     fontSize: 12,
