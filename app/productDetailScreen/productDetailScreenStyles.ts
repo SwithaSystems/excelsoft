@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   saleTimeBox: {
-    backgroundColor: "#E9F3F6",
+    backgroundColor: colors.secondary,
     flexDirection: "row",
   },
   priceContainer: {
@@ -97,21 +97,23 @@ const styles = StyleSheet.create({
   },
   saleTime: {
     color: colors.primary,
+    backgroundColor:colors.secondary,
     fontSize: 14,
     marginTop: 2,
     marginRight: 8,
   },
   discountTag: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     marginLeft: 8,
   },
   discountText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "500",
+    color: colors.primary,
+    fontSize: 14,
+    marginTop: 2,
+    marginRight: 6,
   },
   discountedPrice: {
     fontSize: 18,

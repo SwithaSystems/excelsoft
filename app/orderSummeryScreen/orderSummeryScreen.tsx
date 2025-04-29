@@ -207,13 +207,13 @@ const orderSummeryScreen = () => {
             <View style={globalStyles.pl_3}>
               <Text>
                 {selectedMode} scheduled for {selectedDate} at {selectedSlot}
-                <TouchableOpacity
+                {/*<TouchableOpacity
                   onPress={() => {
                     redirectToPage(containers.pickUpModescreenScreen);
                   }}
                 >
                   <Text style={styles.changeSlotText}>Change the slot</Text>
-                </TouchableOpacity>
+                </TouchableOpacity>*/}
               </Text>
             </View>
           </View>
