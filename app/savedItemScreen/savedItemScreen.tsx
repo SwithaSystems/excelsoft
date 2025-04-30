@@ -33,7 +33,6 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
-
   return (
     <View style={globalStyles.container}>
       <Header headerText="Saved Items" />

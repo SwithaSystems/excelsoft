@@ -3,9 +3,10 @@ import colors from '../config/colors';
 
 const styles = StyleSheet.create({
   container:{
-    padding: 16,
+    flex:1,
+    //padding: 16,
     backgroundColor: colors.white,
-    marginBottom: 16,
+    //marginBottom: 16,
   },
   cartItemContainerStyle:{
     paddingHorizontal: 0
@@ -18,7 +19,7 @@ const styles = StyleSheet.create({
   orderSummaryItem:{
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10
+    marginBottom: 16
   },
   orderSummaryItemText:{
     fontSize: 16
@@ -34,15 +35,26 @@ const styles = StyleSheet.create({
       borderRadius: 8,
       marginBottom:32,
       alignItems: 'center',
-      marginTop: 20,
+     marginTop: 16,
   },
   cancelButton: {
-      backgroundColor: colors.error,
+      backgroundColor: colors.buttonError,
       paddingVertical: 15,
       borderRadius: 8,
       alignItems: 'center',
-      marginTop: 20,
-  }
+      //marginTop: 20,
+  },
+  deliverSection:{
+    flexDirection:"row",
+    justifyContent:"space-between",
+    //marginTop: 16,
+  },
+  addressText:{
+    fontSize: 15,
+  },
+  buttonContainer:{
+    marginHorizontal:16,
+  },
 });
 
 export default styles;

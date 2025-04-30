@@ -159,20 +159,20 @@ const orderDetailsScreen = () => {
                 );
               })}
             </View>
-            <View style={globalStyles.mb_2}>
-              <Text style={globalStyles.fontWeight500}>Deliver To:</Text>
+            <View style={[globalStyles.mb_2, styles.deliverSection]}>
+              <Text style={[globalStyles.fontWeight500,styles.orderSummaryItemText]}>Deliver To:</Text>
               <TouchableOpacity
                 onPress={() => {
                   redirectToPage(containers.deliveryTrackingScreenScreen);
                 }}
               >
-                <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>
+                <Text style={[globalStyles.btnSmUnderLine, {fontSize: 12}]}>Track Order</Text>
               </TouchableOpacity>
             </View>
-            <Text style={globalStyles.mb_2}>
+            <Text style={[globalStyles.mb_2, styles.addressText]}>
               Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-            <Text style={globalStyles.mb_3}>
+            <Text style={[globalStyles.mb_3,styles.addressText]}>
               Address: {orderDetails?.shippingAddress?.line1}
               {"\n"}
               {orderDetails?.shippingAddress?.city},{" "}
@@ -187,33 +187,35 @@ const orderDetailsScreen = () => {
                 sectionTitleStyle={[
                   styles.orderSummaryItemText,
                   globalStyles.fontWeight500,
-                  globalStyles.mb_3,
+                  //{marginBottom:16},
                 ]}
                 title="Would you like to see these too?"
                 showAddToCart={false}
               />
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => {
-              redirectToPage(containers.cancelOrderScreen, {
-                orderDetails: orderDetails,
-              });
-            }}
-          >
-            <Text style={styles.buttonText}>Request Cancellation</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.requestButton}
-            onPress={() => {
-              redirectToPage(containers.returnOrderScreen, {
-                orderDetails: JSON.stringify(orderDetails),
-              });
-            }}
-          >
-            <Text style={styles.buttonText}>Request Return</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                redirectToPage(containers.cancelOrderScreen, {
+                  orderDetails: orderDetails,
+                });
+              }}
+            >
+              <Text style={styles.buttonText}>Request Cancellation</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.requestButton}
+              onPress={() => {
+                redirectToPage(containers.returnOrderScreen, {
+                  orderDetails: JSON.stringify(orderDetails),
+                });
+              }}
+            >
+              <Text style={styles.buttonText}>Request Return</Text>
+            </TouchableOpacity>
+          </View> 
         </ScrollView>
         <Footer />
       </View>

@@ -369,6 +369,9 @@ const PickupScreen = () => {
             keyboardType: "email-address",
           })}
 
+          <Text style={ inputStyles.note }>
+            *Please ensure you carry a valid ID Proof
+          </Text>
           <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
         </View>
       </ScrollView>
@@ -389,6 +392,11 @@ const inputStyles = StyleSheet.create({
     height: 80,
     textAlignVertical: "top",
   },
+  note:{
+    color: colors.buttonError, 
+    fontSize: 14,
+    marginBottom:16,
+  }
 });
 
 export default PickupScreen;

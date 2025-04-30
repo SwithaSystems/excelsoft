@@ -251,6 +251,9 @@ const storePickupScreen = () => {
           />
         </View>
       </ScrollView>
+      <Text style={{ color: colors.error, fontSize: 14 }}>
+        *Please ensure you carry a valid ID Proof
+      </Text>      
       <View style={globalStyles.p_3}>
         <Button
           onPress={() => {

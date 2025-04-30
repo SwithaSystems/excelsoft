@@ -48,7 +48,7 @@ function RecommendedProductsSlider(props) {
                     price={item.price}
                     originalPrice={item.originalPrice}
                   />
-                  <View style={{ width: "50%", marginTop: 4 }}>
+                  <View style={[{ width: "50%", marginTop: 4 }, styles.button]}>
                     <Button
                       style={styles.addToCArtBtn}
                       textStyle={styles.addToCArtBtnText}
@@ -77,6 +77,11 @@ const styles = StyleSheet.create({
   },
   addToCArtBtnText: {
     fontSize: 12,
+  },
+  button:{
+    alignItems: 'center',
+    justifyContent:'center',
+    alignSelf:'center',
   },
   productsList: {
     padding: 10,
