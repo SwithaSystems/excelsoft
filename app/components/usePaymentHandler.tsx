@@ -53,7 +53,7 @@ export const usePaymentHandler = () => {
   const handlePayment = async (
     cartItems: Product[],
     params: {
-      address?: {
+      billingAddress?: {
         line1: string;
         line2?: string;
         city: string;
@@ -61,6 +61,27 @@ export const usePaymentHandler = () => {
         postalCode: string;
         country: string;
       };
+      shippingAddress?: {
+        line1: string;
+        line2?: string;
+        city: string;
+        state: string;
+        postalCode: string;
+        country: string;
+      };
+      pickupdetails?: {
+        time: string;
+        date: string;
+        vehicleType?: string;
+        vehicleNumber?: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        email: string;
+        additionalDetails?: string;
+      };
+      deliveryDate?: string;
+      deliveryTime?: string;
       selectedSlot?: string;
       selectedMode?: string;
     }
@@ -98,17 +119,38 @@ export const usePaymentHandler = () => {
         tax: 2.99,
         totalAmount: subtotal + 10 + 2.99 - 10,
         paymentMethod: "credit_card",
-        pickupModeId: (params.selectedMode || "Delivery") as PickupMode,
-        timeslot: params.selectedSlot
-          ? new Date(params.selectedSlot)
-          : undefined,
+        pickupMode: (params.selectedMode || "Delivery") as PickupMode,
+        deliveryDate: params.deliveryDate ?? "N/A",
+        deliveryTime: params.deliveryTime,
+        billingAddress: {
+          line1: params.billingAddress?.line1 ?? "N/A",
+          line2: params.billingAddress?.line2 ?? "",
+          city: params.billingAddress?.city ?? "N/A",
+          state: params.billingAddress?.state ?? "N/A",
+          postalCode: params.billingAddress?.postalCode ?? "N/A",
+          country: params.billingAddress?.country ?? "N/A",
+        },
         shippingAddress: {
-          line1: params.address?.line1 ?? "N/A",
-          line2: params.address?.line2 ?? "",
-          city: params.address?.city ?? "N/A",
-          state: params.address?.state ?? "N/A",
-          postalCode: params.address?.postalCode ?? "N/A",
-          country: params.address?.country ?? "N/A",
+          line1: params.shippingAddress?.line1 ?? "N/A",
+          line2: params.shippingAddress?.line2 ?? "",
+          city: params.shippingAddress?.city ?? "N/A",
+          state: params.shippingAddress?.state ?? "N/A",
+          postalCode: params.shippingAddress?.postalCode ?? "N/A",
+          country: params.shippingAddress?.country ?? "N/A",
+        },
+        // timeslot: params.selectedSlot
+        //   ? new Date(params.selectedSlot)
+        //   : undefined,
+        pickupDetails: {
+          date: params.pickupdetails?.date ?? "N/A",
+          time: params.pickupdetails?.time ?? "N/A",
+          firstName: params.pickupdetails?.firstName ?? "N/A",
+          lastName: params.pickupdetails?.lastName ?? "N/A",
+          phone: params.pickupdetails?.phone ?? "N/A",
+          email: params.pickupdetails?.email ?? "N/A",
+          vehicleType: params.pickupdetails?.vehicleType,
+          vehicleNumber: params.pickupdetails?.vehicleNumber,
+          additionalDetails: params.pickupdetails?.additionalDetails,
         },
       });
       console.log("after order placed", response);

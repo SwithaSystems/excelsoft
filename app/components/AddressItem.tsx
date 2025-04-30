@@ -23,44 +23,46 @@ const AddressItem = ({
   isSelected = false,
 }: AddressItemProps) => {
   return (
-    <View style={styles.addressSection}>
-      <TouchableOpacity onPress={onSelect}>
-        {showRadio && (
-          <Ionicons
-            name={isSelected ? "radio-button-on" : "radio-button-off"}
-            size={20}
-            color={isSelected ? colors.primary : "gray"}
-            style={{ marginRight: 8, marginTop: 3 }}
-          />
-        )}
-      </TouchableOpacity>
-      <View style={styles.addressContainer}>
-        <View>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{item.name}</Text>
+    <>
+      <View style={styles.addressSection}>
+        <TouchableOpacity onPress={onSelect} style={{ top: -90 }}>
+          {showRadio && (
+            <Ionicons
+              name={isSelected ? "radio-button-on" : "radio-button-off"}
+              size={20}
+              color={isSelected ? colors.primary : "gray"}
+              style={{ marginRight: 8, marginTop: 3 }}
+            />
+          )}
+        </TouchableOpacity>
+        <View style={styles.addressContainer}>
+          <View>
+            <View style={styles.nameRow}>
+              <Text style={styles.name}>{item.name}</Text>
+            </View>
+            <Text>{item.line1}</Text>
+            <Text>{item.line2}</Text>
+            <Text>{item.city}</Text>
+            <Text>{item.state}</Text>
+            <Text>{item.country}</Text>
+            <Text>{item.postalCode}</Text>
+            <Text>Phone No: {item.phone}</Text>
           </View>
-          <Text>{item.line1}</Text>
-          <Text>{item.line2}</Text>
-          <Text>{item.city}</Text>
-          <Text>{item.state}</Text>
-          <Text>{item.country}</Text>
-          <Text>{item.postalCode}</Text>
-          <Text>Phone No: {item.phone}</Text>
-        </View>
-        <View style={styles.iconRow}>
-          {onEdit && (
-            <TouchableOpacity
-              style={{ marginRight: 12 }}
-              onPress={() => onEdit(item)}
-            >
-              <Ionicons name="create-outline" size={24} color="black" />
-            </TouchableOpacity>
-          )}
-          {onDelete && (
-            <TouchableOpacity onPress={() => onDelete(item)}>
-              <Ionicons name="trash-outline" size={24} color="red" />
-            </TouchableOpacity>
-          )}
+          <View style={styles.iconRow}>
+            {onEdit && (
+              <TouchableOpacity
+                style={{ marginRight: 12 }}
+                onPress={() => onEdit(item)}
+              >
+                <Ionicons name="create-outline" size={24} color="black" />
+              </TouchableOpacity>
+            )}
+            {onDelete && (
+              <TouchableOpacity onPress={() => onDelete(item)}>
+                <Ionicons name="trash-outline" size={24} color="red" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -70,12 +72,12 @@ const AddressItem = ({
 export default AddressItem;
 
 const styles = StyleSheet.create({
-  addressSection:{
-    flexDirection:"row",
-    alignItems: "center"
+  addressSection: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   addressContainer: {
-    width: '90%',
+    width: "90%",
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 10,

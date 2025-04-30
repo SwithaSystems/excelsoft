@@ -21,6 +21,7 @@ import containers from "@/containers";
 import styles from "./pickupScreenStyles";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
+import { PickupMode } from "@/services/orderService";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -35,6 +36,7 @@ const PickupScreen = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  console.log("Selected mode is:", mode); // store / curbside
 
   // Curbside specific fields
   const [vehicleType, setVehicleType] = useState("");
@@ -85,7 +87,7 @@ const PickupScreen = () => {
     }
 
     // Basic phone validation (adjust regex based on your requirements)
-    const phoneRegex = /^\+?[\d\s-]{10,}$/;
+    const phoneRegex = /^\d{10,}$/;
     if (!phoneRegex.test(phone)) {
       Alert.alert("Error", "Please enter a valid phone number");
       return false;
@@ -105,7 +107,18 @@ const PickupScreen = () => {
       // Format time string
       const formattedTime = `${hours}:${minutes} ${period}`;
 
-      // Format address string with user details
+      // Format pickup details string with user details
+      const pickupDetails = {
+        date: date,
+        time: formattedTime,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        vehicleType: vehicleType,
+        vehicleNumber: vehicleNumber,
+        additionalDetails: additionalDetails,
+      };
       const userDetails = `${firstName} ${lastName}\nPhone: ${phone}\nEmail: ${email}`;
 
       // Add vehicle details for curbside pickup
@@ -123,10 +136,11 @@ const PickupScreen = () => {
 
       // Navigate to order summary screen with pickup data
       redirectToPage(containers.orderSummeryScreenScreen, {
-        pickupAddress,
-        selectedDate: date,
-        selectedSlot: formattedTime,
-        selectedMode: mode === "store" ? "Store Pickup" : "Curbside Pickup",
+        pickupDetails: JSON.stringify(pickupDetails),
+        pickupAddress: JSON.stringify(pickupDetails),
+        // selectedDate: date,
+        // selectedSlot: formattedTime,
+        selectedMode: mode === "store" ? "storePickup" : "curbsidePickup",
       });
     } catch (error) {
       console.error("Error processing pickup request:", error);
@@ -161,7 +175,11 @@ const PickupScreen = () => {
   return (
     <View style={globalStyles.container}>
       <Header
-        headerText={mode === "store" ? "Store Pickup" : "Curbside Pickup"}
+        headerText={
+          mode === "store"
+            ? PickupMode.STORE_PICKUP
+            : PickupMode.CURBSIDE_PICKUP
+        }
       />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>

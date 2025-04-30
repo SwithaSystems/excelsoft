@@ -15,20 +15,78 @@ import { useSelector } from "react-redux";
 import { usePaymentHandler } from "../components/usePaymentHandler";
 import { useLocalSearchParams } from "expo-router";
 
+type PickupDetailsDto = {
+  time: string;
+  date: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  vehicleType?: string;
+  vehicleNumber?: string;
+  additionalDetails?: string;
+};
+type shippingAddressDTo = {
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
+
 const selectBillingAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
-  const { selectedAddress, setSelectedAddress } = useAppContext();
+  const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState<any>(null);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
   const { handlePayment } = usePaymentHandler();
   const params = useLocalSearchParams();
 
+  console.log("params in billing screen", params);
+
   const selectedMode = params?.selectedMode;
-  const selectedSlot = params?.selectedSlot;
-  const selectedDate = params?.selectedDate;
-  const selectShippingAddress = params?.selectShippingAddress;
+  // const selectShippingAddress = params?.shippingAddress;
+  // const pickupDetails = params?.pickupDetails as PickupDetailsDto;
+  let pickupDetails: PickupDetailsDto | undefined;
+
+  if (typeof params.pickupDetails === "string") {
+    try {
+      pickupDetails = JSON.parse(params.pickupDetails);
+    } catch (err) {
+      console.error("Failed to parse pickupDetails:", err);
+      pickupDetails = undefined;
+    }
+  } else if (
+    typeof params.pickupDetails === "object" &&
+    !Array.isArray(params.pickupDetails)
+  ) {
+    pickupDetails = params.pickupDetails as PickupDetailsDto;
+  } else {
+    pickupDetails = undefined;
+  }
+  let shippingAddress: shippingAddressDTo | undefined;
+
+  if (typeof params.shippingAddress === "string") {
+    try {
+      shippingAddress = JSON.parse(params.shippingAddress);
+    } catch (err) {
+      console.error("Failed to parse shippingAddress:", err);
+      shippingAddress = undefined;
+    }
+  } else if (
+    typeof params.shippingAddress === "object" &&
+    !Array.isArray(params.shippingAddress)
+  ) {
+    shippingAddress = params.shippingAddress as shippingAddressDTo;
+  } else {
+    shippingAddress = undefined;
+  }
+
+  console.log("selectShippingAddress", shippingAddress);
+  console.log("pickupDetails", pickupDetails);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -36,6 +94,14 @@ const selectBillingAddressScreen = () => {
         const response = await addressService.getAllBillingAddress_userId();
         setAddressData(response);
         console.log("Billing addresses:", response);
+        // Set initial selected address if one exists in context
+        if (selectedBillingAddress?._id) {
+          setSelectedId(selectedBillingAddress._id);
+        } else if (response.length > 0) {
+          // If no address is selected yet, select the first one by default
+          setSelectedBillingAddress(response[0]);
+          setSelectedId(response[0]._id);
+        }
       } catch (err) {
         console.error("Error fetching billing addresses:", err);
       }
@@ -44,7 +110,7 @@ const selectBillingAddressScreen = () => {
     fetchAddresses();
   }, []);
   console.log("Billingaddress saved address", addressData);
-
+  console.log("Selected address ID:", selectedId);
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
@@ -72,13 +138,18 @@ const selectBillingAddressScreen = () => {
     setItemToDelete(null);
   };
   const handleEdit = (item: Address) => {
-    setSelectedAddress(item);
+    setSelectedBillingAddress(item);
     redirectToPage(containers.editAddressScreenScreen);
   };
 
   const handleDelete = (item: Address) => {
     setIsModalVisible(true);
     setItemToDelete({ id: item._id });
+  };
+  const handleSelectBillingAddress = (item: Address) => {
+    setSelectedId(item._id);
+    setSelectedBillingAddress(item);
+    console.log("Selected address:", item);
   };
 
   return (
@@ -96,7 +167,7 @@ const selectBillingAddressScreen = () => {
                 onDelete={handleDelete}
                 showRadio
                 isSelected={item._id === selectedId}
-                onSelect={() => setSelectedAddress(item)}
+                onSelect={() => handleSelectBillingAddress(item)}
               />
             )}
             keyExtractor={(item) => item._id}
@@ -130,7 +201,11 @@ const selectBillingAddressScreen = () => {
               title="Proceed for Payment"
               onPress={() =>
                 handlePayment(cartItems, {
-                  address: selectedAddress,
+                  billingAddress: selectedBillingAddress,
+                  shippingAddress: shippingAddress,
+                  pickupdetails: pickupDetails,
+                  deliveryDate: pickupDetails?.date,
+                  deliveryTime: pickupDetails?.time,
                   selectedSlot: Array.isArray(selectedMode)
                     ? selectedMode[0]
                     : selectedMode,
