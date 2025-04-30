@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
+  FlatList,
 } from "react-native";
 import styles from "./homeDeliveryScreenStyles";
 import DateTimePicker, {
@@ -23,24 +24,43 @@ import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
-import { PickupMode } from "@/services/orderService";
+import { Address, addressService } from "@/services/addressService";
+import AddressItem from "../components/AddressItem";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
-  const { orderId } = useLocalSearchParams();
-  const { user } = useAuth();
+  const { orderId, mode } = useLocalSearchParams();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState<any>("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [setshippingAddress, setSelectedShippingAddress] = useState<Address[]>(
+    []
+  );
+  const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const response = await addressService.getAllShppingAddress_userId();
+        setSelectedShippingAddress(response);
+        console.log("Shipping addresses:", response);
+      } catch (err) {
+        console.error("Error fetching shipping addresses:", err);
+      }
+    };
+
+    fetchAddresses();
+  }, []);
+  console.log("shipping address saved address", setshippingAddress);
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -85,9 +105,9 @@ const HomeDeliveryScreen = () => {
 
   const handleSubmit = async () => {
     try {
-      if (!validateForm()) {
-        return;
-      }
+      // if (!validateForm()) {
+      //   return;
+      // }
 
       setIsLoading(true);
 
@@ -146,17 +166,39 @@ const HomeDeliveryScreen = () => {
         { orderId, type: "delivery_scheduled" }
       );
 
+      // const shippingAddress = {
+      //   name: `${firstName} ${lastName}`,
+      //   line1: "",
+      //   line2: "",
+      //   city: "",
+      //   state: "",
+      //   postalCode: "",
+      //   country: "",
+      //   phone: phone,
+      // };
+      const shippingAddress = setshippingAddress;
+      const pickupDetails = {
+        date: date,
+        time: `${hours}:${minutes} ${period}`,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        additionalDetails: additionalDetails,
+      };
       redirectToPage(containers.orderSummeryScreenScreen, {
-        orderId,
-        selectedDate: date,
-        selectedSlot: `${hours}:${minutes} ${period}`,
-        pickupAddress: address,
-        selectedMode: PickupMode.HOME_DELIVERY,
-        firstName,
-        lastName,
-        phone,
-        email,
-        additionalDetails,
+        // orderId,
+        // selectedDate: date,
+        // selectedSlot: `${hours}:${minutes} ${period}`,
+        pickupAddress: JSON.stringify(address),
+        selectedMode: "homeDelivery",
+        // firstName,
+        // lastName,
+        // phone,
+        // email,
+        // additionalDetails,
+        shippingAddress: JSON.stringify(shippingAddress),
+        pickupDetails: JSON.stringify(pickupDetails),
       });
     } catch (error) {
       console.error("Error submitting delivery request:", error);
@@ -187,6 +229,10 @@ const HomeDeliveryScreen = () => {
       />
     </View>
   );
+  // const handleEditAddress = (item: Address) => {
+  //     setSelectedAddressId(item);
+  //     redirectToPage(containers.editAddressScreenScreen);
+  //   };
 
   return (
     <View style={globalStyles.container}>
@@ -272,26 +318,48 @@ const HomeDeliveryScreen = () => {
           </View>
 
           {/* Contact Information */}
-          {renderTextInput("First Name", firstName, setFirstName)}
-          {renderTextInput("Last Name", lastName, setLastName)}
-          {renderTextInput("Phone", phone, setPhone, {
-            keyboardType: "phone-pad",
-          })}
-          {renderTextInput("Email", email, setEmail, {
-            keyboardType: "email-address",
-          })}
+          {setshippingAddress.length == 0 && (
+            <>
+              {renderTextInput("First Name", firstName, setFirstName)}
+              {renderTextInput("Last Name", lastName, setLastName)}
+              {renderTextInput("Phone", phone, setPhone, {
+                keyboardType: "phone-pad",
+              })}
+              {renderTextInput("Email", email, setEmail, {
+                keyboardType: "email-address",
+              })}
 
+              {/* Address */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Address: *</Text>
+                <TextInput
+                  style={[styles.textInput, styles.multilineInput]}
+                  value={address}
+                  onChangeText={setAddress}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+            </>
+          )}
           {/* Address */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Address: *</Text>
-            <TextInput
-              style={[styles.textInput, styles.multilineInput]}
-              value={address}
-              onChangeText={setAddress}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
+          <FlatList
+            data={setshippingAddress}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <AddressItem
+                item={item}
+                showRadio={true}
+                isSelected={item._id === selectedAddressId}
+                onSelect={() => {
+                  setSelectedAddressId(item._id);
+                  setAddress(item);
+                }}
+                // onEdit={handleEditAddress}
+                // onDelete={handleDeleteAddress}
+              />
+            )}
+          />
 
           {/* Additional Instructions */}
           <View style={styles.inputContainer}>

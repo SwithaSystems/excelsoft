@@ -24,7 +24,6 @@ const options = [
     icon: "location",
     redirectionScreen: containers.pickupScreenScreen,
     params: { mode: "store" },
-
   },
   {
     id: "curbside",
@@ -33,7 +32,6 @@ const options = [
     icon: "car-outline",
     redirectionScreen: containers.pickupScreenScreen,
     params: { mode: "curbside" },
-
   },
   {
     id: "home",
@@ -45,8 +43,9 @@ const options = [
   },
 ];
 const pickUpModescreen = () => {
-  const [selected, setSelected] = useState<Partial<{ id: string; redirectionScreen: any; params:any  }>>({});
-
+  const [selected, setSelected] = useState<
+    Partial<{ id: string; redirectionScreen: any; params: any }>
+  >({});
 
   return (
     <View style={globalStyles.container}>
@@ -70,7 +69,7 @@ const pickUpModescreen = () => {
             >
               <View style={styles.iconContainer}>
                 <Ionicons
-                  name={option.icon as string}
+                  name={option.icon}
                   size={24}
                   color={colors.black}
                   // style={styles.icon}
@@ -93,8 +92,8 @@ const pickUpModescreen = () => {
             title="Continue"
             onPress={() => {
               if (selected?.id) {
-                redirectToPage(selected?.redirectionScreen,selected?.params);
-                }
+                redirectToPage(selected?.redirectionScreen, selected?.params);
+              }
             }}
           />
         </View>

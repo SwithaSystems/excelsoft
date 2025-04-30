@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -18,6 +18,7 @@ import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
+import { addressService } from "@/services/addressService";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -34,127 +35,32 @@ type OrderSummeryScreenParams = {
 };
 
 const orderSummeryScreen = () => {
-  const params = useLocalSearchParams<OrderSummeryScreenParams>();
+  const params = useLocalSearchParams<any>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
   // const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
 
   // Extract pickup data from route params or use default values
-  const pickupAddress = params.pickupAddress || "";
-  const selectedDate = params.selectedDate || "";
-  const selectedSlot = params.selectedSlot || "";
-  const selectedMode = params.selectedMode || "Delivery";
+  const pickupAddress = params?.pickupAddress
+    ? JSON.parse(params.pickupAddress as string)
+    : null;
+  const pickupDetails = params?.pickupDetails || "";
+  const selectedMode = params?.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+  console.log("params", params);
+  const { name, line1, line2, city, state, postalCode, country, phone } =
+    pickupAddress;
 
-  // const calculateSubtotal = () => {
-  //   return cartItems.reduce(
-  //     (total, item) => total + item.price * item.quantity,
-  //     0
-  //   );
-  // };
-
-  // const fetchPaymentIntent = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.post(
-  //       //`http://192.168.1.9:3002/payments/create-payment-intent`,
-  //       `${API_BASE_URL}/payments/create-payment-intent`,
-  //       {
-  //         amount: Math.round(calculateSubtotal() * 100),
-  //         currency: "usd",
-  //       }
-  //     );
-
-  //     return {
-  //       clientSecret: response.data.paymentIntent.client_secret,
-  //       ephemeralKey: response.data.ephemeralKey,
-  //       customer: response.data.customer,
-  //     };
-  //   } catch (error) {
-  //     Alert.alert("Error", "Failed to get payment intent.");
-  //     console.error(error);
-  //     return null;
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const products = cartItems.map((item) => ({
-    productId: item.id,
-    name: item.name,
-    quantity: item.quantity,
-    price: item.price,
-  }));
-  // const handlePayment = async () => {
-  //   const paymentData = await fetchPaymentIntent();
-  //   if (!paymentData) return;
-
-  //   const { clientSecret, ephemeralKey, customer } = paymentData;
-
-  //   const { error: initError } = await initPaymentSheet({
-  //     merchantDisplayName: "Store Name",
-  //     customerId: customer,
-  //     customerEphemeralKeySecret: ephemeralKey,
-  //     paymentIntentClientSecret: clientSecret,
-  //     allowsDelayedPaymentMethods: true,
-  //   });
-
-  //   if (initError) {
-  //     Alert.alert("Error", initError.message);
-  //     return;
-  //   }
-
-  //   const { error: paymentError } = await presentPaymentSheet();
-
-  //   if (paymentError) {
-  //     Alert.alert("Payment Failed", paymentError.message);
-  //   } else {
-  //     Alert.alert("Success", "Payment completed successfully!");
-
-  //     const response = await orderService.createOrder({
-  //       products: products,
-  //       shippingCharges: 10,
-  //       discounts: [10],
-  //       tax: 2.99,
-  //       totalAmount:
-  //         Math.round(calculateSubtotal() * 100) / 100 + 10 + 2.99 - 10,
-  //       paymentMethod: "credit_card",
-  //       pickupModeId: (params.selectedMode
-  //         ? params.selectedMode
-  //         : "Delivery") as PickupMode,
-  //       timeslot: params.selectedSlot?.toString()
-  //         ? new Date(params.selectedSlot)
-  //         : undefined,
-  //       // shippingAddress: {
-  //       //   line1: "123 Street",
-  //       //   city: "Cityville",
-  //       //   state: "Stateburg",
-  //       //   postalCode: "123456",
-  //       //   country: "Countryland",
-  //       // },
-  //       shippingAddress: {
-  //         line1: params.address ? String(params.address) : "N/A",
-  //         city: "Cityville",
-  //         state: "Stateburg",
-  //         postalCode: "123456",
-  //         country: "Countryland",
-  //       },
-  //     });
-  //     console.log("after order placed", response);
-  //     redirectToPage(containers.orderSuccessfulScreenScreen, {
-  //       orderData: JSON.stringify(response),
-  //     });
-  //   }
-  // };
+  console.log("pickupAddress", pickupAddress);
   const handlePress = async () => {
     redirectToPage(containers.selectBillingAddressScreenScreen, {
       selectedMode: selectedMode,
-      selectedSlot: selectedSlot,
-      selectedDate: selectedDate,
-      shippingAddress: pickupAddress,
+      pickupDetails: params.pickupDetails || "N/A",
+      shippingAddress: params.pickupAddress || "N/A",
     });
   };
   const handleDelete = (item: any) => {
@@ -196,23 +102,43 @@ const orderSummeryScreen = () => {
           ]}
         >
           <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Address</Text>
+            {selectedMode === "Store Pickup" ||
+            selectedMode === "Curbside Pickup" ? (
+              <Text style={styles.sectionHeading}>User Details</Text>
+            ) : (
+              <Text style={styles.sectionHeading}>Address</Text>
+            )}
+
             <View style={globalStyles.pl_3}>
-              <Text style={styles.addressTextBox}>{pickupAddress}</Text>
+              <Text style={styles.addressTextBox}>
+                {pickupAddress.name}
+                {"\n"}
+                {pickupAddress.line1}
+                {"\n"}
+                {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
+                {pickupAddress.city}
+                {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
+                {pickupAddress.postalCode}
+                {"\n"}
+                {pickupAddress.country}
+                {"\n"}
+                {pickupAddress.phone}
+              </Text>
             </View>
           </View>
-          76
+
           <View style={styles.section}>
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                {selectedMode} scheduled for {selectedDate} at {selectedSlot}
+                {selectedMode} scheduled for {pickupDetails.date} at{" "}
+                {pickupDetails.time}
                 <TouchableOpacity
                   onPress={() => {
                     redirectToPage(containers.pickUpModescreenScreen);
                   }}
                 >
-                  <Text style={styles.changeSlotText}>Change the slot</Text>
+                  {/* <Text style={styles.changeSlotText}>Change the slot</Text> */}
                 </TouchableOpacity>
               </Text>
             </View>

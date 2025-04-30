@@ -1,7 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
-import { Dimensions, TextInput } from "react-native";
+import { Alert, Dimensions, TextInput } from "react-native";
 import {
   FlatList,
   Image,
@@ -105,6 +105,7 @@ const CartScreen = () => {
   const handlePlaceOrder = () => {
     console.log("User:", user);
     if (!user) {
+      Alert.alert("Please login", "You need to login before placing an order");
       redirectToPage(containers.signInScreen);
     } else {
       redirectToPage(containers.pickUpModescreenScreen);
