@@ -53,8 +53,8 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    Feedback: containers.AppReviewScreenScreen,
-     "Store Information": containers.billingAddressScreenScreen,
+    "Feedback": containers.AppReviewScreenScreen,
+    // "Store Information": containers.returnOrderScreen,
   };
 
   useEffect(() => {

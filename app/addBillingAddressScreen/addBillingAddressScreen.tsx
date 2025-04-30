@@ -21,8 +21,8 @@ import { addressService } from "@/services/addressService";
 import Button from "@/components/commonComponents/Button";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import { usePaymentHandler } from "../components/usePaymentHandler";
-import { useAppContext } from "@/context/AppContext";
+//import { usePaymentHandler } from "../components/usePaymentHandler";
+//import { useAppContext } from "@/context/AppContext";
 
 const addBillingAddressScreen = () => {
   const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -33,11 +33,11 @@ const addBillingAddressScreen = () => {
   const [postalcode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
   const [billingAddress, setBillingAddress] = useState({});
-  const { handlePayment } = usePaymentHandler();
+  //const { handlePayment } = usePaymentHandler();
   const params = useLocalSearchParams();
-  const { selectedAddress, setSelectedAddress } = useAppContext();
+  //const { selectedAddress, setSelectedAddress } = useAppContext();
   
-  const selectedMode = params?.selectedMode;
+ // const selectedMode = params?.selectedMode;
 
   useEffect(() => {
     const fetchBillingAddress = async () => {
@@ -151,7 +151,7 @@ const addBillingAddressScreen = () => {
               containerStyle={styles.orderSummaryContainer}
             />
           </View>
-          <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          {/*<View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
               <View style={styles.addressList}>
                 <Button
                   title="Proceed for Payment"
@@ -168,7 +168,7 @@ const addBillingAddressScreen = () => {
                   }
                 />
               </View>
-          </View>
+          </View>*/}
           </ScrollView>
         </View>
   );

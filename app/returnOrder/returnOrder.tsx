@@ -23,32 +23,32 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import ReturnReplaceToggle from "./return_replace_radioButtons";
 
-// const cartItems = [
-//   {
-//     id: 1,
-//     image: require("../../assets/baby-bicycle.png"),
-//     name: "Duck Toys",
-//     price: "$10.00",
-//     originalPrice: "$18.00",
-//     quantity: 5,
-//   },
-//   {
-//     id: 2,
-//     image: require("../../assets/baby-bicycle.png"),
-//     name: "Orange Juice",
-//     price: "$3.00",
-//     originalPrice: "$5.00",
-//     quantity: 1,
-//   },
-//   {
-//     id: 3,
-//     image: require("../../assets/baby-bicycle.png"),
-//     name: "Strawberries",
-//     price: "$12.00",
-//     originalPrice: "$18.00",
-//     quantity: 1,
-//   },
-// ];
+const cartItems = [
+  {
+    id: 1,
+    image: require("../../assets/baby-bicycle.png"),
+    name: "Duck Toys",
+    price: "$10.00",
+    originalPrice: "$18.00",
+    quantity: 5,
+  },
+  {
+    id: 2,
+    image: require("../../assets/baby-bicycle.png"),
+    name: "Orange Juice",
+    price: "$3.00",
+    originalPrice: "$5.00",
+    quantity: 1,
+  },
+  {
+    id: 3,
+    image: require("../../assets/baby-bicycle.png"),
+    name: "Strawberries",
+    price: "$12.00",
+    originalPrice: "$18.00",
+    quantity: 1,
+  },
+];
 
 const options = [
   {
@@ -81,21 +81,22 @@ type OrderSummeryScreenParams = {
   additionalDetails?: string;
 };
 
-const returnOrder = () => {
+const ReturnOrder = () => {
   const params = useLocalSearchParams();
   const rawOrderDetails = params.orderDetails;
   const [selected, setSelected] = useState<
     Partial<{ id: string; params: any }>
   >({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
-  const [hour, setHour] = useState("");
-  const [minute, setMinute] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [amPm, setAmPm] = useState("am");
   const [period, setPeriod] = useState("am");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const pickupAddress = params.pickupAddress || "";
   const [mode, setMode] = useState("return");
+  const [minutes, setMinutes] = useState("");
+  const [hours, setHours] = useState("");
+  
 
   console.log("raw orderDetials", rawOrderDetails);
 
@@ -105,14 +106,14 @@ const returnOrder = () => {
       : rawOrderDetails;
 
   console.log("orderDetails parsed:", orderDetails);
-  const cartItems = orderDetails?.products.map((item: any) => ({
+ {/* const cartItems = orderDetails?.products.map((item: any) => ({
     id: item.id,
     image: item.image,
     name: item.name,
     price: item.price,
     originalPrice: item.originalPrice,
     quantity: item.quantity,
-  }));
+  }));*/}
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -125,67 +126,74 @@ const returnOrder = () => {
 
   return (
     <View style={styles.container}>
-      <Header headerText="Return Order" />
-      <ScrollView>
+      <Header headerText="Return orders" />
+      <ScrollView style={{padding:16}}>
         <ReturnReplaceToggle mode={mode} setMode={setMode} />
         <View style={styles.returnOrderCategory}>
           <Text style={styles.returnOrderItemText}>Order Number:</Text>
           <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
         </View>
-
-        {cartItems.map((item: any) => (
-          <View style={styles.cartItem} key={item.id}>
-            <Image source={item.image} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
-              <Text style={styles.itemPrice}>
-                {item.price}{" "}
-                <Text style={styles.striked}>{item.originalPrice}</Text>
-              </Text>
-            </View>
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <CheckBox
-                checked={selectedItems.includes(item.id)}
-                onPress={() => {
-                  if (selectedItems.includes(item.id)) {
-                    setSelectedItems(
-                      selectedItems.filter((id) => id !== item.id)
-                    );
-                  } else {
-                    setSelectedItems([...selectedItems, item.id]);
-                  }
-                }}
-                containerStyle={styles.checkBoxContainer}
-                textStyle={styles.checkBoxText}
-              />
-            </View>
-          </View>
-        ))}
-        <View style={styles.returnModeCategory}>
-          <Text style={styles.returnHeading}>Return Mode:</Text>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.option,
-                selected?.id === option.id && styles.selectedOption,
-              ]}
-              onPress={() => setSelected(option)}
-            >
-              <View style={styles.textContainer}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
-                <Text style={styles.optionDescription}>
-                  {option.description}
+        
+        <View style={styles.cartItemsContainer}>
+          {cartItems.map((item: any) => (
+            <View style={styles.cartItem} key={item.id}>
+              <Image source={item.image} style={styles.itemImage} />
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
+                <Text style={styles.itemPrice}>
+                  {item.price}{" "}
+                  <Text style={styles.striked}>{item.originalPrice}</Text>
                 </Text>
               </View>
-              <View style={styles.radioCircle}>
-                {selected.id === option.id && (
-                  <View style={styles.selectedRadio} />
-                )}
+              <View style={{ justifyContent: "center", alignItems: "center" }}>
+                <CheckBox
+                  checked={selectedItems.includes(item.id)}
+                  onPress={() => {
+                    if (selectedItems.includes(item.id)) {
+                      setSelectedItems(
+                        selectedItems.filter((id) => id !== item.id)
+                      );
+                    } else {
+                      setSelectedItems([...selectedItems, item.id]);
+                    }
+                  }}
+                  containerStyle={styles.checkBoxContainer}
+                  textStyle={styles.checkBoxText}
+                />
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
+        </View>
+
+        <View style={styles.returnModeCategory}>
+          <Text style={styles.label}>Return Mode:</Text>
+          <View style={styles.returnSection}>
+            {options.map((option) => (
+              <TouchableOpacity
+                key={option.id}
+                style={[
+                  styles.option,
+                  selected?.id === option.id && styles.selectedOption,
+                ]}
+                onPress={() => setSelected(option)}
+              >
+              <View style={styles.returnModes}>
+                <View style={styles.textContainer}>
+                  <Text style={styles.optionLabel}>{option.label}</Text>
+                  <Text style={styles.optionDescription}>
+                    {option.description}
+                  </Text>
+                </View>
+                  <View style={styles.radioCircle}>
+                    {selected.id === option.id && (
+                      <View style={styles.selectedRadio} />
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
         {selected.id === "home" && (
           <View style={styles.section}>
@@ -197,7 +205,7 @@ const returnOrder = () => {
         )}
         <View style={styles.datetimeContainer}>
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Date: *</Text>
+            <Text style={styles.inputLabel}>Date: <Text style={styles.required}>*</Text></Text>
             {Platform.OS === "web" ? (
               <input
                 type="date"
@@ -222,42 +230,51 @@ const returnOrder = () => {
               />
             )}
           </View>
-          <Text style={styles.label}>
-            Time: <Text style={styles.required}>*</Text>
-          </Text>
-          <View style={styles.timeContainer}>
+          <View style={styles.timeRow}>
+          <Text style={styles.inputLabel}>Time: *</Text>
+          <View style={globalStyles.timeContainer}>
             <TextInput
-              style={[styles.timeInput, styles.hourMinuteInput]}
+              style={globalStyles.timeInput}
               placeholder="HH"
-              value={hour}
-              onChangeText={setHour}
-              keyboardType="number-pad"
+              keyboardType="numeric"
+              maxLength={2}
+              value={hours}
+              onChangeText={setHours}
             />
+            <Text>:</Text>
             <TextInput
-              style={[styles.timeInput, styles.hourMinuteInput]}
+              style={globalStyles.timeInput}
               placeholder="MM"
-              value={minute}
-              onChangeText={setMinute}
-              keyboardType="number-pad"
+              keyboardType="numeric"
+              maxLength={2}
+              value={minutes}
+              onChangeText={setMinutes}
             />
-            <View style={styles.amPmSelector}>
+            <View
+              style={{
+                borderColor: colors.primary,
+                borderWidth: 1,
+                height: 40,
+                width: 150,
+                borderRadius: 8,
+                justifyContent: "center",
+              }}
+            >
               <Picker
                 selectedValue={period}
+                style={{
+                  // height: 50,
+                  width: 150,
+                  color: colors.black,
+                }}
                 onValueChange={(itemValue) => setPeriod(itemValue)}
               >
-                <Picker.Item
-                  style={globalStyles.pickerValue_sm}
-                  label="AM"
-                  value="am"
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue_sm}
-                  label="PM"
-                  value="pm"
-                />
+                <Picker.Item label="AM" value="am" />
+                <Picker.Item label="PM" value="pm" />
               </Picker>
             </View>
           </View>
+        </View>
         </View>
         <View style={styles.returnReason}>
           <Text style={styles.label}>Reason for Return</Text>
@@ -274,7 +291,7 @@ const returnOrder = () => {
           </View>
         </View>
         <View style={styles.addComments}>
-          <Text>Do you want to talk more about your experience?</Text>
+          <Text style={styles.label}>Do you want to talk about your experience?</Text>
           <TextInput
             style={[styles.commentsText]}
             placeholder="Add additional comments"
@@ -283,41 +300,45 @@ const returnOrder = () => {
           />
         </View>
 
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Order Number: </Text>
-          <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
+        <View style={styles.refundStatusSection}>
+          <Text style={styles.label}>Refund Status</Text>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Order Number: </Text>
+            <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Return Date: </Text>
+            <Text style={styles.returnOrderDetails}>21-01-2025</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Items being returned:</Text>
+            <Text style={styles.returnOrderDetails}>1</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderItemText}>Refund Total:</Text>
+            <Text style={styles.returnOrderItemText}>$25.00</Text>
+          </View>
         </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Return Date: </Text>
-          <Text style={styles.returnOrderDetails}>21-01-2025</Text>
-        </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Items being returned:</Text>
-          <Text style={styles.returnOrderDetails}>1</Text>
-        </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderItemText}>Refund Total:</Text>
-          <Text style={styles.returnOrderItemText}>$25.00</Text>
-        </View>
-
         <Text style={styles.noteText}>
           Note: Refund money would be processed in 3 to 5 business days.{" "}
         </Text>
-
-        <TouchableOpacity style={styles.submitButton}>
-          <Text style={styles.buttonText}>Request Cancellation</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.replacementButton}
-          onPress={() => {
-            redirectToPage(containers.replaceOrderScreenScreen);
-          }}
-        >
-          <Text style={styles.buttonText}>Request Replacement</Text>
-        </TouchableOpacity>
+        
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.submitButton}>
+            <Text style={styles.buttonText}>Request Cancellation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.replacementButton}
+            onPress={() => {
+              redirectToPage(containers.replaceOrderScreenScreen);
+            }}
+          >
+            <Text style={styles.buttonText}>Request Replacement</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
 };
 
-export default returnOrder;
+export default ReturnOrder;

@@ -29,10 +29,10 @@ const customerSupportScreen = () => {
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <View>
             <Text style={styles.subtitle}>
-              Choose the way you prefer to contact us
+              Please contact us at
             </Text>
 
-            <TouchableOpacity
+            {/*<TouchableOpacity
               style={styles.contactOption}
               onPress={handlePhonePress}
             >
@@ -63,7 +63,7 @@ const customerSupportScreen = () => {
                   </Text>
                 </View>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity>*/}
 
             <TouchableOpacity
               style={styles.contactOption}
