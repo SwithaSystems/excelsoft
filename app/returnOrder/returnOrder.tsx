@@ -88,7 +88,7 @@ const returnOrder = () => {
     Partial<{ id: string; params: any }>
   >({});
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
   const [amPm, setAmPm] = useState("am");

@@ -153,7 +153,7 @@ const orderSummeryScreen = () => {
             <View style={globalStyles.pl_3}>
               <Text>
                 {selectedMode === "homedelivery"
-                  ? `${selectedMode} scheduled for ${pickupDetails.date} at ${pickupDetails.time}`
+                  ? `${selectedMode} scheduled for ${pickupAddress.date} at ${pickupAddress.time}`
                   : `${selectedMode} scheduled for ${pickupAddress.date} at ${pickupAddress.time}`}
               </Text>
             </View>

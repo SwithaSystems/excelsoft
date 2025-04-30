@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -20,47 +20,18 @@ import QRCodeDisplay from "../../components/QRCodeDisplay";
 import { useSelector } from "react-redux";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
+import { ProductsAPI } from "@/services/productService";
 
 const orderDetailsScreen = () => {
   const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  // const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
 
-  console.log("cartItems in orderDetails", cartItems);
-
-  console.log("orderData in orderDetails", orderData);
-
-  React.useEffect(() => {
-    if (typeof orderData === "string") {
-      try {
-        const parsed = JSON.parse(orderData);
-        setOrderDetails(parsed);
-      } catch (err) {
-        console.error("Failed to parse orderData:", err);
-      }
-    }
-  }, [orderData]);
-  console.log("orderDetails", orderDetails);
-  console.log("ordernumber", orderDetails?.orderNumber);
-  const formattedDate = new Date(orderDetails?.orderDate).toLocaleDateString(
-    "en-CA"
-  );
-
-  useEffect(() => {
-    const fetchShippingAddress = async () => {
-      try {
-        const response = await addressService.getShippingAddressById(
-          String(orderDetails?.shippingAddress?._id)
-        );
-        console.log("response shipping address", response);
-        setOrderDetails(response);
-      } catch (err) {
-        console.error("Failed to fetch order details:", err);
-      }
-    };
-    fetchShippingAddress();
-  }, [orderDetails]);
+  const [shippingAddress_order, setShippingAddress_order] =
+    React.useState<any>(null);
+  console.log("orderId", orderId);
 
   React.useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -77,6 +48,79 @@ const orderDetailsScreen = () => {
 
     fetchOrderDetails();
   }, [orderId]);
+
+  React.useEffect(() => {
+    const loadOrderDetails = async () => {
+      try {
+        if (orderData && typeof orderData === "string") {
+          const parsed = JSON.parse(orderData);
+          setOrderDetails(parsed);
+        } else if (orderId) {
+          const response = await orderService.getOrderById(String(orderId));
+          setOrderDetails(response);
+        }
+      } catch (err) {
+        console.error("Failed to load order details:", err);
+      }
+    };
+
+    loadOrderDetails();
+  }, [orderId, orderData]);
+
+  console.log("orderDetails", orderDetails);
+  console.log("shippingAddress_id", orderDetails?.shippingAddress);
+
+  useEffect(() => {
+    const fetchShippingAddress = async () => {
+      if (!orderDetails?.shippingAddress) return;
+      try {
+        const response = await addressService.getShippingAddressById(
+          orderDetails?.shippingAddress
+        );
+        console.log("response shipping address", response);
+        setShippingAddress_order(response);
+      } catch (err) {
+        console.error("Failed to fetch order details:", err);
+      }
+    };
+    fetchShippingAddress();
+  }, [orderDetails?.shippingAddress]);
+
+  const cartItems = orderDetails?.products || [];
+
+  console.log("Cart Items:", cartItems);
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (!orderDetails?.products?.length) return;
+
+      try {
+        const detailedCartItems = await Promise.all(
+          orderDetails.products.map(async (item: any) => {
+            const productDetails = await ProductsAPI.getProductBYID(
+              item.productId
+            );
+            return {
+              ...item,
+              image: productDetails.image,
+            };
+          })
+        );
+        setCartItemsWithDetails(detailedCartItems);
+      } catch (err) {
+        console.error("Failed to fetch product details:", err);
+      }
+    };
+
+    fetchProductDetails();
+  }, [orderDetails]);
+
+  console.log("orderData in orderDetails", orderData);
+  console.log("ordernumber", orderDetails?.orderNumber);
+  const formattedDate = new Date(orderDetails?.orderDate).toLocaleDateString(
+    "en-CA"
+  );
+  console.log("cartItemsWithDetails", cartItemsWithDetails);
 
   console.log("orderDetails by order ID", orderDetails);
   const recommendedProducts = products
@@ -97,17 +141,14 @@ const orderDetailsScreen = () => {
     <>
       <View style={styles.container}>
         <Header headerText="Order Details" />
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            if(orderDetails?.status === "Pending")&&
-            {
-              <View style={{}}>
-                <QRCodeDisplay
-                  qrValue={orderDetails?.orderNumber}
-                  noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
-                />
-              </View>
-            }
+            <View style={{}}>
+              <QRCodeDisplay
+                qrValue={orderDetails?.orderNumber}
+                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
+              />
+            </View>
             <View style={styles.orderSummaryItem}>
               <Text
                 style={[
@@ -152,16 +193,14 @@ const orderDetailsScreen = () => {
               </Text>
             </View>
             <View style={{ marginTop: 8 }}>
-              {cartItems.map((eachCartItem) => {
-                return (
-                  <CartItem
-                    hideActions={true}
-                    itemContainerStyle={styles.cartItemContainerStyle}
-                    key={eachCartItem.id}
-                    cartItem={eachCartItem}
-                  />
-                );
-              })}
+              {cartItemsWithDetails.map((eachProduct: any) => (
+                <CartItem
+                  hideActions={true}
+                  itemContainerStyle={styles.cartItemContainerStyle}
+                  key={eachProduct._id}
+                  cartItem={eachProduct}
+                />
+              ))}
             </View>
             <View style={[globalStyles.mb_2, styles.deliverSection]}>
               <Text
@@ -185,15 +224,16 @@ const orderDetailsScreen = () => {
             <Text style={[globalStyles.mb_2, styles.addressText]}>
               Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-            <Text style={[globalStyles.mb_3, styles.addressText]}>
-              Address: {orderDetails?.shippingAddress?.line1}
-              {"\n"}
-              {orderDetails?.shippingAddress?.city},{" "}
-              {orderDetails?.shippingAddress?.state}
-              {"\n"}
-              {orderDetails?.shippingAddress?.postalCode},{" "}
-              {orderDetails?.shippingAddress?.country}
-            </Text>
+            {orderDetails?.pickupMode === "homeDelivery" && (
+              <Text style={[globalStyles.mb_3, styles.addressText]}>
+                Address: {shippingAddress_order?.line1}
+                {"\n"}
+                {shippingAddress_order?.city}, {shippingAddress_order?.state}
+                {"\n"}
+                {shippingAddress_order?.postalCode},{" "}
+                {shippingAddress_order?.country}
+              </Text>
+            )}
             <View>
               <RecommendedProductsSlider
                 recommendedProducts={recommendedProducts}
@@ -206,28 +246,28 @@ const orderDetailsScreen = () => {
                 showAddToCart={false}
               />
             </View>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => {
-                redirectToPage(containers.cancelOrderScreen, {
-                  orderDetails: orderDetails,
-                });
-              }}
-            >
-              <Text style={styles.buttonText}>Request Cancellation</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.requestButton}
-              onPress={() => {
-                redirectToPage(containers.returnOrderScreen, {
-                  orderDetails: JSON.stringify(orderDetails),
-                });
-              }}
-            >
-              <Text style={styles.buttonText}>Request Return</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  redirectToPage(containers.cancelOrderScreen, {
+                    orderDetails: orderDetails,
+                  });
+                }}
+              >
+                <Text style={styles.buttonText}>Request Cancellation</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.requestButton}
+                onPress={() => {
+                  redirectToPage(containers.returnOrderScreen, {
+                    orderDetails: JSON.stringify(orderDetails),
+                  });
+                }}
+              >
+                <Text style={styles.buttonText}>Request Return</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
         <Footer />
