@@ -235,13 +235,9 @@ const ProductDetailScreen = () => {
           <View style={styles.quantitySection}>
             <View style={styles.quantityContainer}>
               <Text style={styles.quantityTitle}>Quantity</Text>
-             {/* <TouchableOpacity
-              onPress={
-                  
-                }
-              >
-                {/* <Text style={styles.selectQuantityText}>select quantity</Text> */}
-              </TouchableOpacity>
+              {/* <TouchableOpacity>
+                <Text style={styles.selectQuantityText}>select quantity</Text>
+              </TouchableOpacity> */}
             </View>
             <View style={styles.quantityControl}>
               <TouchableOpacity

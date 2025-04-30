@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import containers from "@/containers";
 import QRCodeDisplay from "../../components/QRCodeDisplay";
 import { useSelector } from "react-redux";
 import { orderService } from "@/services/orderService";
+import { addressService } from "@/services/addressService";
 
 const orderDetailsScreen = () => {
   const { orderId } = useLocalSearchParams();
@@ -42,6 +43,21 @@ const orderDetailsScreen = () => {
   }, [orderData]);
   console.log("orderDetails", orderDetails);
   console.log("ordernumber", orderDetails?.orderNumber);
+
+  useEffect(() => {
+    const fetchShippingAddress = async () => {
+      try {
+        const response = await addressService.getShippingAddressById(
+          String(orderDetails?.shippingAddress?._id)
+        );
+        console.log("response shipping address", response);
+        setOrderDetails(response);
+      } catch (err) {
+        console.error("Failed to fetch order details:", err);
+      }
+    };
+    fetchShippingAddress();
+  }, [orderDetails]);
 
   React.useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -74,35 +90,6 @@ const orderDetailsScreen = () => {
       originalPrice: product.originalPrice,
     }));
 
-  // const deliveryMode = {
-  //   mode: "Home Delivery",
-  //   address:
-  //     "H.No: 1-123, xyz street, That Town, Near Mellinda Cafe, UK, 3123456",
-  // };
-  // const cartItems = [
-  //   {
-  //     id: 1,
-  //     image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
-  //     name: "Duck Toys",
-  //     price: 10.0,
-  //     originalPrice: 6.99,
-  //     quantity: 1,
-  //   },
-  //   {
-  //     id: 2,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Orange Juice",
-  //     price: 3.0,
-  //     quantity: 2,
-  //   },
-  //   {
-  //     id: 3,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Whole Wheat Bread",
-  //     price: 12.0,
-  //     quantity: 1,
-  //   },
-  // ];
   return (
     <>
       <View style={styles.container}>
@@ -116,9 +103,6 @@ const orderDetailsScreen = () => {
                   qrValue={orderDetails?.orderNumber}
                   noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
                 />
-                {/* <Text style={styles.barCodeNote}>
-                Show this bar code to our store personnel during the pickup.
-              </Text> */}
               </View>
             }
             <View style={styles.orderSummaryItem}>

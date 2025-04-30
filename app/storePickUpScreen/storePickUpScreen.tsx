@@ -21,6 +21,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import styles from "./storePickUpScreenStyles";
 import { Ionicons } from "@expo/vector-icons";
+import { PickupMode } from "@/services/orderService";
 
 const storePickupScreen = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
@@ -36,6 +37,10 @@ const storePickupScreen = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [address, setAddress] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
+  const [orderId, setOrderId] = useState("");
 
   // Handle date change
   const onDateChange = (
@@ -46,7 +51,65 @@ const storePickupScreen = () => {
     setShowDatePicker(false);
     setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
   };
+  const validateForm = () => {
+    if (
+      !date ||
+      !hours ||
+      !minutes ||
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !email
+    ) {
+      Alert.alert("Error", "Please fill in all required fields");
+      return false;
+    }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return false;
+    }
+
+    // Basic phone validation
+    const phoneRegex = /^\d{10,}$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert("Error", "Please enter a valid phone number");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = () => {
+    try {
+      if (!validateForm()) {
+        return;
+      }
+      setIsLoading(true);
+      redirectToPage(containers.orderSummeryScreenScreen, {
+        orderId,
+        selectedDate: date,
+        selectedSlot: `${hours}:${minutes} ${period}`,
+        pickupAddress: address,
+        selectedMode: PickupMode.HOME_DELIVERY,
+        firstName,
+        lastName,
+        phone,
+        email,
+        additionalDetails,
+      });
+    } catch (error) {
+      console.error("Error submitting delivery request:", error);
+      Alert.alert(
+        "Error",
+        "Failed to submit delivery request. Please try again later."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <View style={globalStyles.container}>
       <Header headerText="Store Pickup" />
@@ -194,7 +257,8 @@ const storePickupScreen = () => {
       <View style={globalStyles.p_3}>
         <Button
           onPress={() => {
-            redirectToPage(containers.orderSummeryScreenScreen);
+            handleSubmit;
+            // redirectToPage(containers.orderSummeryScreenScreen);
           }}
           title="Confirm"
         />

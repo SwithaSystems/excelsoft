@@ -1,6 +1,7 @@
 import { AnimateStyle } from "react-native-reanimated";
 import axiosInstance from "./axiosConfig";
 import { AnimationType } from "expo-symbols";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -61,6 +62,17 @@ export const addressService = {
         status: response.status,
       };
     } catch (error) {
+      throw error;
+    }
+  },
+  getShippingAddressById: async (id: string): Promise<Address> => {
+    try {
+      const response = await axiosInstance.get<Address>(
+        `${API_BASE_URL}/shippingAddress/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching shippingAddress:", error);
       throw error;
     }
   },

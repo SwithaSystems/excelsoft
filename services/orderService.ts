@@ -44,9 +44,11 @@ export interface Order {
   tax: number;
   totalAmount: number;
   paymentMethod: string;
-  pickupModeId: PickupMode;
-  timeslot?: Date;
+  pickupMode: PickupMode;
+  deliveryDate?: string;
+  deliveryTime?: string;
   shippingAddress?: ShippingAddress;
+  billingAddress?: ShippingAddress;
   pickupDetails?: PickupDetails;
   createdAt: string;
   updatedAt: string;
