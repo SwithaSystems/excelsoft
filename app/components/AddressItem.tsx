@@ -65,7 +65,7 @@ const AddressItem = ({
           </View>
         </View>
       </View>
-    </View>
+    </>
   );
 };
 

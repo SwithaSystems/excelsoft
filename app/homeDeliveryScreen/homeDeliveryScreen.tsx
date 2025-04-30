@@ -28,20 +28,6 @@ import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-type Address = {
-  _id: string;
-  name: string,
-  line1: string,
-  line2: string,
-  city: string,
-  state: string;
-  country: string;
-  postalCode: string;
-  phone: string;
-  isDefault: boolean;
-}
-
 const HomeDeliveryScreen = () => {
   const { orderId, mode } = useLocalSearchParams();
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
