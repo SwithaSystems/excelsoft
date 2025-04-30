@@ -110,20 +110,41 @@ const orderSummeryScreen = () => {
             )}
 
             <View style={globalStyles.pl_3}>
-              <Text style={styles.addressTextBox}>
-                {pickupAddress.name}
-                {"\n"}
-                {pickupAddress.line1}
-                {"\n"}
-                {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
-                {pickupAddress.city}
-                {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
-                {pickupAddress.postalCode}
-                {"\n"}
-                {pickupAddress.country}
-                {"\n"}
-                {pickupAddress.phone}
-              </Text>
+              {pickupAddress.firstName ? (
+                <Text style={styles.addressTextBox}>
+                  {pickupAddress.firstName}
+                  {""}
+                  {pickupAddress?.lastName}
+                  {"\n"}
+                  {pickupAddress.phone}
+                  {"\n"}
+                  {pickupAddress.email}
+                  {pickupAddress.vehicleType
+                    ? `${pickupAddress.vehicleType}\n`
+                    : ""}
+                  {pickupAddress.vehicleNumber
+                    ? `${pickupAddress.vehicleNumber}\n`
+                    : ""}
+                  {pickupAddress.additionalDetails
+                    ? `${pickupAddress.additionalDetails}\n`
+                    : ""}
+                </Text>
+              ) : (
+                <Text style={styles.addressTextBox}>
+                  {pickupAddress.name}
+                  {"\n"}
+                  {pickupAddress.line1}
+                  {"\n"}
+                  {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
+                  {pickupAddress.city}
+                  {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
+                  {pickupAddress.postalCode}
+                  {"\n"}
+                  {pickupAddress.country}
+                  {"\n"}
+                  {pickupAddress.phone}
+                </Text>
+              )}
             </View>
           </View>
 
@@ -131,15 +152,9 @@ const orderSummeryScreen = () => {
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                {selectedMode} scheduled for {pickupDetails.date} at{" "}
-                {pickupDetails.time}
-                <TouchableOpacity
-                  onPress={() => {
-                    redirectToPage(containers.pickUpModescreenScreen);
-                  }}
-                >
-                  {/* <Text style={styles.changeSlotText}>Change the slot</Text> */}
-                </TouchableOpacity>
+                {selectedMode === "homedelivery"
+                  ? `${selectedMode} scheduled for ${pickupDetails.date} at ${pickupDetails.time}`
+                  : `${selectedMode} scheduled for ${pickupAddress.date} at ${pickupAddress.time}`}
               </Text>
             </View>
           </View>

@@ -43,6 +43,9 @@ const orderDetailsScreen = () => {
   }, [orderData]);
   console.log("orderDetails", orderDetails);
   console.log("ordernumber", orderDetails?.orderNumber);
+  const formattedDate = new Date(orderDetails?.orderDate).toLocaleDateString(
+    "en-CA"
+  );
 
   useEffect(() => {
     const fetchShippingAddress = async () => {
@@ -132,7 +135,8 @@ const orderDetailsScreen = () => {
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
               <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.orderDate}
+                {/* {orderDetails?.orderDate} */}
+                {formattedDate}
               </Text>
             </View>
             <View style={styles.orderSummaryItem}>
@@ -160,19 +164,28 @@ const orderDetailsScreen = () => {
               })}
             </View>
             <View style={[globalStyles.mb_2, styles.deliverSection]}>
-              <Text style={[globalStyles.fontWeight500,styles.orderSummaryItemText]}>Deliver To:</Text>
+              <Text
+                style={[
+                  globalStyles.fontWeight500,
+                  styles.orderSummaryItemText,
+                ]}
+              >
+                Deliver To:
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   redirectToPage(containers.deliveryTrackingScreenScreen);
                 }}
               >
-                <Text style={[globalStyles.btnSmUnderLine, {fontSize: 12}]}>Track Order</Text>
+                <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
+                  Track Order
+                </Text>
               </TouchableOpacity>
             </View>
             <Text style={[globalStyles.mb_2, styles.addressText]}>
               Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-            <Text style={[globalStyles.mb_3,styles.addressText]}>
+            <Text style={[globalStyles.mb_3, styles.addressText]}>
               Address: {orderDetails?.shippingAddress?.line1}
               {"\n"}
               {orderDetails?.shippingAddress?.city},{" "}
@@ -215,7 +228,7 @@ const orderDetailsScreen = () => {
             >
               <Text style={styles.buttonText}>Request Return</Text>
             </TouchableOpacity>
-          </View> 
+          </View>
         </ScrollView>
         <Footer />
       </View>
