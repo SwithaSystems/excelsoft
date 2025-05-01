@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity } from "react-native";
 import styles from "./offersScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -56,7 +56,14 @@ const offersScreen = () => {
       <ScrollView>
         <Header headerText="Store Offers" />
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <HeroBanner />
+          {/* <HeroBanner /> */}
+          <View style={styles.offerBanner}>
+            <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
+            <Text style={styles.bannerDiscount}>40-60% Discount</Text>
+            <Text style={styles.bannerText}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit
+            </Text>
+          </View>        
           <View style={[globalStyles.mt_4, globalStyles.mb_4]}>
             <Text style={globalStyles.sectionHeading}>Today's Deals</Text>
             <FlatList

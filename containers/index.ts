@@ -64,6 +64,5 @@ export default {
   cancelOrderScreen: "cancelOrder/cancelOrder",
   replaceOrderScreenScreen: "replaceOrderScreen/replaceOrderScreen",
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
-  selectBillingAddressScreenScreen:
-    "selectBillingAddressScreen/selectBillingAddressScreen",
-};
+  selectBillingAddressScreenScreen:"selectBillingAddressScreen/selectBillingAddressScreen",
+  };

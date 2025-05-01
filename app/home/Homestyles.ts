@@ -37,6 +37,9 @@ alignSelf:'flex-end'
   categoryText: {
     marginTop: 4,
     fontSize: 12,
+    textAlign:'center',
+    maxWidth:80,
+    //flexWrap:'wrap',
   },
   banner: {
     height: 150,

@@ -189,7 +189,7 @@ const orderDetailsScreen = () => {
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
               <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.totalAmount}
+              {orderDetails?.totalAmount.toFixed(2)}
               </Text>
             </View>
             <View style={{ marginTop: 8 }}>

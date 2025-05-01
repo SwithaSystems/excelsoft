@@ -323,7 +323,7 @@ const LayoutContent = () => {
             name={containers.selectBillingAddressScreenScreen}
             options={{ headerShown: false }}
           />
-        </Stack>
+          </Stack>
       )}
     </>
   );
