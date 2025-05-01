@@ -54,6 +54,7 @@ export const usePaymentHandler = () => {
     cartItems: Product[],
     params: {
       billingAddress?: {
+        name: string;
         line1: string;
         line2?: string;
         city: string;
@@ -62,6 +63,7 @@ export const usePaymentHandler = () => {
         country: string;
       };
       shippingAddress?: {
+        name: string;
         line1: string;
         line2?: string;
         city: string;
@@ -123,6 +125,7 @@ export const usePaymentHandler = () => {
         deliveryDate: params.deliveryDate ?? "N/A",
         deliveryTime: params.deliveryTime,
         billingAddress: {
+          name: params.billingAddress?.name ?? "N/A",
           line1: params.billingAddress?.line1 ?? "N/A",
           line2: params.billingAddress?.line2 ?? "",
           city: params.billingAddress?.city ?? "N/A",
@@ -131,6 +134,7 @@ export const usePaymentHandler = () => {
           country: params.billingAddress?.country ?? "N/A",
         },
         shippingAddress: {
+          name: params.shippingAddress?.name ?? "N/A",
           line1: params.shippingAddress?.line1 ?? "N/A",
           line2: params.shippingAddress?.line2 ?? "",
           city: params.shippingAddress?.city ?? "N/A",

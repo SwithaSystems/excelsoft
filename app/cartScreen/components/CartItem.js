@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   cartItemImageContainer: {
     justifyContent: "center",
-    height:136,
+    height: 136,
     //width: 20,
   },
   itemImage: {
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     //aspectRatio: 1.5,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
-    height:'100%',
+    height: "100%",
     resizeMode: "cover",
   },
   itemDetails: {
