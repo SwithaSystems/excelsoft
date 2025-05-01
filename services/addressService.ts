@@ -67,6 +67,7 @@ export const addressService = {
   },
   getShippingAddressById: async (id: string): Promise<Address> => {
     try {
+      console.log("id", id);
       const response = await axiosInstance.get<Address>(
         `${API_BASE_URL}/shippingAddress/${id}`
       );

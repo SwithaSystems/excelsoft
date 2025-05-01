@@ -27,6 +27,7 @@ type PickupDetailsDto = {
   additionalDetails?: string;
 };
 type shippingAddressDTo = {
+  name: string;
   line1: string;
   line2?: string;
   city: string;
