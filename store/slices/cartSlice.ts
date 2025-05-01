@@ -5,7 +5,7 @@ export interface CartItemInterface {
   name: string;
   price: number;
   quantity: number;
-  image: string | any[]; // Update type to handle both string URLs and array of require'd assets
+  image: string | any[];
 }
 
 interface CartState {
@@ -27,7 +27,7 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += action.payload.quantity;
       } else {
-        state.items.push({ ...action.payload, quantity: 1 });
+        state.items.push({ ...action.payload });
       }
     },
     removeFromCart: (state, action: PayloadAction<string>) => {

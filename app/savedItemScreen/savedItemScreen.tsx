@@ -46,6 +46,7 @@ const savedItemScreen = () => {
                 onFooterAction={() => handleMoveToCart(eachItem)}
                 key={eachItem.id}
                 cartItem={eachItem}
+                isSavedItem="true"
               />
             );
           })}

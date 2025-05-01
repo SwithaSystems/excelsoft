@@ -55,12 +55,18 @@ const CategoryBadges = (props) => {
     fetchSubCategories();
   }, [props.categoryId]);
 
+  useEffect(() => {
+    if (props.onSortChange) {
+      props.onSortChange(selectedOption);
+    }
+  }, [selectedOption]);
+
   const renderSortOption = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
         setSelectedOption(item.value);
         setIsDropdownVisible(false);
-        alert(item.value);
+        props.onSortChange && props.onSortChange(item.value);
       }}
     >
       <Text

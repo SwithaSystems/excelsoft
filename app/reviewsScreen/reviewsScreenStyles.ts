@@ -1,40 +1,39 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-  heading:{
+  heading: {
     fontSize: 18,
-    marginBottom: 16
+    marginBottom: 16,
   },
-  overAllRatingContainer:{
+  overAllRatingContainer: {
     marginBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems:"center"
+    alignItems: "center",
   },
-  rating:{
+  rating: {
     fontSize: 32,
-    lineHeight:0,
-    //fontWeight: 500
+    fontWeight: 500,
   },
-  reviewsContainer:{},
-  reviewContainerHeading:{
+  reviewsContainer: {},
+  reviewContainerHeading: {
     //fontWeight: 500,
     fontSize: 36,
     marginBottom: 16,
-    lineHeight:36,
+    lineHeight: 36,
   },
-  addReviewContainer:{
+  addReviewContainer: {
     flexDirection: "row-reverse",
-    flexWrap:"nowrap",
+    flexWrap: "nowrap",
     paddingHorizontal: 16,
-    paddingBottom: 16
+    paddingBottom: 16,
   },
   addReviewBtn: {
-    borderRadius: 50
+    borderRadius: 50,
   },
-  starsContainer:{
-    marginBottom: 0
-  }
+  starsContainer: {
+    marginBottom: 0,
+  },
 });
 
 export default styles;

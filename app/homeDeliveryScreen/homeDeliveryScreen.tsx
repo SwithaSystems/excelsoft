@@ -42,16 +42,15 @@ const HomeDeliveryScreen = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [setshippingAddress, setSelectedShippingAddress] = useState<Address[]>(
-    []
-  );
+  const [existingShippingAddress, setExistingSelectedShippingAddress] =
+    useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
         const response = await addressService.getAllShppingAddress_userId();
-        setSelectedShippingAddress(response);
+        setExistingSelectedShippingAddress(response);
         console.log("Shipping addresses:", response);
       } catch (err) {
         console.error("Error fetching shipping addresses:", err);
@@ -60,7 +59,7 @@ const HomeDeliveryScreen = () => {
 
     fetchAddresses();
   }, []);
-  console.log("shipping address saved address", setshippingAddress);
+  console.log("shipping address saved address", existingShippingAddress);
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -176,7 +175,7 @@ const HomeDeliveryScreen = () => {
       //   country: "",
       //   phone: phone,
       // };
-      const shippingAddress = setshippingAddress;
+      const shippingAddress = existingShippingAddress;
       const pickupDetails = {
         date: date,
         time: `${hours}:${minutes} ${period}`,
@@ -237,90 +236,93 @@ const HomeDeliveryScreen = () => {
   return (
     <View style={globalStyles.container}>
       <Header headerText="Home Delivery" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.label}>
-            Do you prefer home delivery? Let us know your available day and
-            time.
-          </Text>
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.label}>
+                Do you prefer home delivery? Let us know your available day and
+                time.
+              </Text>
 
-          {/* Date Picker */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Date: *</Text>
-            {Platform.OS === "web" ? (
-              <input
-                type="date"
-                style={globalStyles.webDateInput}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            ) : (
-              <TouchableOpacity
-                style={globalStyles.dateInput}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text>{date}</Text>
-              </TouchableOpacity>
-            )}
-            {showDatePicker && (
-              <DateTimePicker
-                value={new Date(date)}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-              />
-            )}
-          </View>
+              {/* Date Picker */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Date: *</Text>
+                {Platform.OS === "web" ? (
+                  <input
+                    type="date"
+                    style={globalStyles.webDateInput}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={globalStyles.dateInput}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Text>{date}</Text>
+                  </TouchableOpacity>
+                )}
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(date)}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                  />
+                )}
+              </View>
 
-          {/* Time Input */}
-          <Text style={styles.inputLabel}>Time: *</Text>
-          <View style={globalStyles.timeContainer}>
-            <TextInput
-              style={globalStyles.timeInput}
-              placeholder="HH"
-              keyboardType="numeric"
-              maxLength={2}
-              value={hours}
-              onChangeText={setHours}
-            />
-            <Text>:</Text>
-            <TextInput
-              style={globalStyles.timeInput}
-              placeholder="MM"
-              keyboardType="numeric"
-              maxLength={2}
-              value={minutes}
-              onChangeText={setMinutes}
-            />
-            <View
-              style={{
-                borderColor: colors.primary,
-                borderWidth: 1,
-                height: 40,
-                width: 150,
-                borderRadius: 8,
-                justifyContent: "center",
-              }}
-            >
-              <Picker
-                selectedValue={period}
-                style={{
-                  // height: 50,
-                  width: 150,
-                  color: colors.black,
-                }}
-                onValueChange={(itemValue) => setPeriod(itemValue)}
-              >
-                <Picker.Item label="AM" value="am" />
-                <Picker.Item label="PM" value="pm" />
-              </Picker>
-            </View>
-          </View>
+              {/* Time Input */}
+              <Text style={styles.inputLabel}>Time: *</Text>
+              <View style={globalStyles.timeContainer}>
+                <TextInput
+                  style={globalStyles.timeInput}
+                  placeholder="HH"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  value={hours}
+                  onChangeText={setHours}
+                />
+                <Text>:</Text>
+                <TextInput
+                  style={globalStyles.timeInput}
+                  placeholder="MM"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  value={minutes}
+                  onChangeText={setMinutes}
+                />
+                <View
+                  style={{
+                    borderColor: colors.primary,
+                    borderWidth: 1,
+                    height: 40,
+                    width: 150,
+                    borderRadius: 8,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Picker
+                    selectedValue={period}
+                    style={{
+                      // height: 50,
+                      width: 150,
+                      color: colors.black,
+                    }}
+                    onValueChange={(itemValue) => setPeriod(itemValue)}
+                  >
+                    <Picker.Item label="AM" value="am" />
+                    <Picker.Item label="PM" value="pm" />
+                  </Picker>
+                </View>
+              </View>
 
-          {/* Contact Information */}
-          {setshippingAddress.length == 0 && (
-            <>
-              {renderTextInput("First Name", firstName, setFirstName)}
+              {/* Contact Information */}
+              {existingShippingAddress.length == 0 && (
+                <>
+                  {/* {renderTextInput("First Name", firstName, setFirstName)}
               {renderTextInput("Last Name", lastName, setLastName)}
               {renderTextInput("Phone", phone, setPhone, {
                 keyboardType: "phone-pad",
@@ -329,7 +331,6 @@ const HomeDeliveryScreen = () => {
                 keyboardType: "email-address",
               })}
 
-              {/* Address */}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Address: *</Text>
                 <TextInput
@@ -339,48 +340,66 @@ const HomeDeliveryScreen = () => {
                   multiline
                   numberOfLines={4}
                 />
-              </View>
-            </>
-          )}
-          {/* Address */}
-          <FlatList
-            data={setshippingAddress}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <AddressItem
-                item={item}
-                showRadio={true}
-                isSelected={item._id === selectedAddressId}
-                onSelect={() => {
-                  setSelectedAddressId(item._id);
-                  setAddress(item);
-                }}
-                // onEdit={handleEditAddress}
-                // onDelete={handleDeleteAddress}
+              </View> */}
+                  <Button
+                    title="Add Address"
+                    onPress={() => {
+                      redirectToPage(containers.addAddressScreenScreen, {
+                        from: "homeDelivery",
+                      });
+                    }}
+                  ></Button>
+                </>
+              )}
+              {/* Address */}
+              <FlatList
+                data={existingShippingAddress}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                  <AddressItem
+                    item={item}
+                    showRadio={true}
+                    isSelected={item._id === selectedAddressId}
+                    onSelect={() => {
+                      setSelectedAddressId(item._id);
+                      setAddress(item);
+                    }}
+                    // onEdit={handleEditAddress}
+                    // onDelete={handleDeleteAddress}
+                  />
+                )}
               />
-            )}
-          />
 
-          {/* Additional Instructions */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>
-              Additional Instructions for delivery partner:
-            </Text>
-            <TextInput
-              style={[styles.textInput, styles.multilineInput]}
-              value={additionalDetails}
-              onChangeText={setAdditionalDetails}
-              multiline
-              numberOfLines={3}
-              placeholder="E.g., Landmark, preferred delivery time, etc."
-            />
-          </View>
-           <Text style={ styles.note }>
-              *Please ensure you carry a valid ID Proof
-            </Text>
-          <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
-        </View>
-      </ScrollView>
+              {/* Additional Instructions */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>
+                  Additional Instructions for delivery partner:
+                </Text>
+                <TextInput
+                  style={[styles.textInput, styles.multilineInput]}
+                  value={additionalDetails}
+                  onChangeText={setAdditionalDetails}
+                  multiline
+                  numberOfLines={3}
+                  placeholder="E.g., Landmark, preferred delivery time, etc."
+                />
+              </View>
+              {/* <Text style={styles.note}>
+                *Please ensure you carry a valid ID Proof
+              </Text> */}
+              <Button
+                title="Confirm"
+                onPress={handleSubmit}
+                disabled={isLoading}
+              />
+            </View>
+          </>
+        }
+        data={[]}
+        renderItem={null}
+      />
+
+      {/* </ScrollView> */}
     </View>
   );
 };

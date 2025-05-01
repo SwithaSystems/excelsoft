@@ -33,40 +33,36 @@ interface User {
 }
 
 const editProfileScreen = () => {
-  const [firstName, setFirstName] = useState("Katleena M.");
-  const [lastName, setLastName] = useState("Dennis");
-  const [dateOfBirth, setDateOfBirth] = useState("01/02/1999");
-  const [phone, setPhone] = useState("+1 (555) 123-4567");
-  const [email, setEmail] = useState("Denniskatleenam@gmail.com");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("Store Manager");
   const [profileImage, setProfileImage] = useState("https://picsum.photos/100");
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userString: any = await AsyncStorage.getItem("user");
-        // const user = userString ? JSON.parse(userString) : null;
-        // console.log("userString", user?.id);
-        if (userString) {
-          setUser(JSON.parse(userString));
-        } else {
-          console.log("No user found in AsyncStorage");
+    const getUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      console.log("userData", userData);
+      if (userData) {
+        const user = await UserAPI.getUserByPhonenumber(
+          JSON.parse(userData)?.phone
+        );
+
+        console.log("user", user.data);
+        if (user) {
+          setFirstName(user.data.firstName);
+          setLastName(user.data.lastName);
+          setPhone(user.data.phone);
+          setDateOfBirth(user.data.dateOfBirth);
+          setEmail(user.data?.email || "No mail added");
         }
-      } catch (error) {
-        console.error("Error fetching user:", error);
       }
     };
-
-    fetchUser();
+    getUser();
   }, []);
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName);
-      setLastName(user.lastName);
-      setDateOfBirth(user.dateOfBirth);
-    }
-  }, [user]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -143,7 +139,7 @@ const editProfileScreen = () => {
     formData.append("dateOfBirth", dateOfBirth);
 
     try {
-      const response = await UserAPI.userEditProfile(user?.phone, formData);
+      const response = await UserAPI.userEditProfile(phone, formData);
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         await AsyncStorage.setItem("user", JSON.stringify(response.data.user));

@@ -37,18 +37,13 @@ const editAccountInformationscreen = () => {
               style={globalStyles.userInputLabelIcon}
             />
             <View style={{ flex: 1, paddingLeft: 14 }}>
-            <View style ={globalStyles.deviceHeading}>
-              <Text style={globalStyles.userInputLabel}>Phone</Text>
-              <TouchableOpacity
-                  /* onPress={(
-
-                   )}*/  
-                >       
-                <Text style={globalStyles.verify}>verify</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={globalStyles.deviceHeading}>
+                <Text style={globalStyles.userInputLabel}>Phone</Text>
+                <TouchableOpacity>
+                  <Text style={globalStyles.verify}>verify</Text>
+                </TouchableOpacity>
+              </View>
               <CustomTextInput
-                disabled={true}
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="phone number"
@@ -67,21 +62,16 @@ const editAccountInformationscreen = () => {
               style={globalStyles.userInputLabelIcon}
             />
             <View style={{ flex: 1, paddingLeft: 14 }}>
-            <View style ={globalStyles.deviceHeading}>
-              <Text style={globalStyles.userInputLabel}>Email</Text>
-              <TouchableOpacity
-                  /* onPress={(
-
-                   )}*/  
-                >       
-                <Text style={globalStyles.verify}>verify</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={globalStyles.deviceHeading}>
+                <Text style={globalStyles.userInputLabel}>Email</Text>
+                <TouchableOpacity>
+                  <Text style={globalStyles.verify}>verify</Text>
+                </TouchableOpacity>
+              </View>
               <CustomTextInput
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
                 placeholder="email"
-                disabled={true}
                 value={email}
                 onPress={() => {}}
                 setValue={setEmail}

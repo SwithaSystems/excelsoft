@@ -49,24 +49,32 @@ const NotificationListing = () => {
   return (
     <View style={globalStyles.container}>
       <Header headerText="Notifications" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={[globalStyles.flexRowReverse, globalStyles.mb_3]}>
-            <TouchableOpacity onPress={() => {}}>
-              <Text style={globalStyles.btnSmUnderLine}>Clear all</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.notificationContainer}>
-            <FlatList
-              data={notifications}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <NotificationItem item={item} />}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              nestedScrollEnabled={true}
-            />
-          </View>
-        </View>
-      </ScrollView>
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={[globalStyles.flexRowReverse, globalStyles.mb_3]}>
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={globalStyles.btnSmUnderLine}>Clear all</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.notificationContainer}>
+                <FlatList
+                  data={notifications}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => <NotificationItem item={item} />}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  nestedScrollEnabled={true}
+                />
+              </View>
+            </View>
+          </>
+        }
+        data={[]}
+        renderItem={() => null}
+      />
+      {/* </ScrollView> */}
     </View>
   );
 };
