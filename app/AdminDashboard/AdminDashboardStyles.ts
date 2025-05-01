@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     color: '#00BFFF',
   },
   metricsContainer: {
-    paddingHorizontal: 64,
+    paddingHorizontal: 48,
   },
   metricBox: {
     backgroundColor: colors.secondary,
@@ -34,6 +34,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 8,
     textAlign: "center"
+  },
+  salesRaiseSection:{
+    flexDirection:"row",
   },
   metricChange: {
     fontSize: 14,

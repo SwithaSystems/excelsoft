@@ -15,6 +15,7 @@ import ordersData from "../../data/ordersData";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const AdminDashboard = () => {
   const getStatusBadgeStyle = (status: String) => {
@@ -73,7 +74,7 @@ const AdminDashboard = () => {
   return (
     <>
       <View style={globalStyles.container}>
-        <BrandHeader />
+        <BrandHeader hideUserGreeting={true}/>
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <Text style={styles.title}>Dashboard</Text>
@@ -82,7 +83,7 @@ const AdminDashboard = () => {
               <View style={styles.metricBox}>
                 <View style={styles.metricIconContainer}>
                   <MaterialIcons
-                    name="shopping-bag"
+                    name="work-outline"
                     size={24}
                     color="#2563EB"
                   />
@@ -90,13 +91,21 @@ const AdminDashboard = () => {
                 </View>
                 <View>
                   <Text style={styles.metricValue}>1,248</Text>
-                  <Text style={styles.metricChange}>+12.5%</Text>
+                  <View style={styles.salesRaiseSection}>
+                      <Ionicons
+                        name="trending-up-outline"
+                        size={24}
+                        color= {colors.primary}
+                        style={{paddingRight:8}}
+                      />
+                        <Text style={styles.metricChange}>+12.5%</Text>
+                  </View>
                 </View>
               </View>
               <View style={styles.metricBox}>
                 <View style={styles.metricIconContainer}>
                   <MaterialIcons
-                    name="shopping-bag"
+                    name="work-outline"
                     size={24}
                     color="#2563EB"
                   />
@@ -104,13 +113,21 @@ const AdminDashboard = () => {
                 </View>
                 <View>
                   <Text style={styles.metricValue}>26</Text>
-                  <Text style={styles.metricChange}>5 new</Text>
+                  <View style={styles.salesRaiseSection}>
+                      <Ionicons
+                        name="trending-up-outline"
+                        size={24}
+                        color= {colors.primary}
+                        style={{paddingRight:8}}
+                      />
+                      <Text style={styles.metricChange}>5 new</Text>
+                  </View>
                 </View>
               </View>
               <View style={styles.metricBox}>
                 <View style={styles.metricIconContainer}>
                   <MaterialIcons
-                    name="shopping-bag"
+                    name="work-outline"
                     size={24}
                     color="#2563EB"
                   />
@@ -118,7 +135,15 @@ const AdminDashboard = () => {
                 </View>
                 <View>
                   <Text style={styles.metricValue}>8,459</Text>
-                  <Text style={styles.metricChange}>+14.5%</Text>
+                  <View style={styles.salesRaiseSection}>
+                    <Ionicons
+                      name="trending-up-outline"
+                      size={24}
+                      color= {colors.primary}
+                      style={{paddingRight:8}}
+                    />
+                    <Text style={styles.metricChange}>+14.5%</Text>
+                  </View>
                 </View>
               </View>
             </View>

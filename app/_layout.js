@@ -316,10 +316,6 @@ const LayoutContent = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name={containers.adminUserOrderDisplayScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
             name={containers.addAddressScreenScreen}
             options={{ headerShown: false }}
           />

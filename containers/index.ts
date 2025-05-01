@@ -63,7 +63,6 @@ export default {
   AppReviewScreenScreen: "AppReviewScreen/AppReviewScreen",
   cancelOrderScreen: "cancelOrder/cancelOrder",
   replaceOrderScreenScreen: "replaceOrderScreen/replaceOrderScreen",
-  adminUserOrderDisplayScreen: "adminUserOrderDisplay/adminUserOrderDisplay",
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
   selectBillingAddressScreenScreen:
     "selectBillingAddressScreen/selectBillingAddressScreen",

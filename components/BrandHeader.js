@@ -45,9 +45,11 @@ function BrandHeader(props) {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: 8 }}>
-              {username ? `Hello, ${username}` : "Sign In"}
-            </Text>
+            {!props.hideUserGreeting && (
+              <Text style={{ marginRight: 8 }}>
+                {username ? `Hello, ${username}` : "Sign In"}
+              </Text>
+           ) }
             <Ionicons name="person-circle-outline" size={24} color="#000" />
           </View>
         </TouchableOpacity> 
