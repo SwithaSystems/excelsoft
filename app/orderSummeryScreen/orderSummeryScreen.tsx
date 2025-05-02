@@ -48,13 +48,14 @@ const orderSummeryScreen = () => {
   const pickupAddress = params?.pickupAddress
     ? JSON.parse(params.pickupAddress as string)
     : null;
-  const pickupDetails = params?.pickupDetails || "";
+  const pickupDetails = JSON.parse(params?.pickupDetails) || "";
   const selectedMode = params?.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
   console.log("params", params);
   const { name, line1, line2, city, state, postalCode, country, phone } =
     pickupAddress;
 
+  console.log("hi", pickupDetails);
   console.log("pickupAddress", pickupAddress);
   const handlePress = async () => {
     redirectToPage(containers.selectBillingAddressScreenScreen, {
@@ -152,9 +153,9 @@ const orderSummeryScreen = () => {
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                {selectedMode === "homedelivery"
-                  ? `${selectedMode} scheduled for ${pickupAddress.date} at ${pickupAddress.time}`
-                  : `${selectedMode} scheduled for ${pickupAddress.date} at ${pickupAddress.time}`}
+                {selectedMode === "homeDelivery"
+                  ? `${selectedMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
+                  : `${selectedMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
               </Text>
             </View>
           </View>

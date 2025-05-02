@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import ReturnReplaceToggle from "./return_replace_radioButtons";
+import { ProductsAPI } from "@/services/productService";
 
 // const cartItems = [
 //   {
@@ -91,11 +92,12 @@ const returnOrder = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
-  const [amPm, setAmPm] = useState("am");
   const [period, setPeriod] = useState("am");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const pickupAddress = params.pickupAddress || "";
-  const [mode, setMode] = useState("return");
+  const [mode, setMode] = useState("Return");
+  const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
+  const [reason, setReason] = useState("");
 
   console.log("raw orderDetials", rawOrderDetails);
 
@@ -105,14 +107,40 @@ const returnOrder = () => {
       : rawOrderDetails;
 
   console.log("orderDetails parsed:", orderDetails);
-  const cartItems = orderDetails?.products.map((item: any) => ({
-    id: item.id,
-    image: item.image,
-    name: item.name,
-    price: item.price,
-    originalPrice: item.originalPrice,
-    quantity: item.quantity,
-  }));
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (!orderDetails?.products?.length) return;
+
+      try {
+        const detailedCartItems = await Promise.all(
+          orderDetails.products.map(async (item: any) => {
+            const productDetails = await ProductsAPI.getProductBYID(
+              item.productId
+            );
+            return {
+              ...item,
+              image: productDetails.image,
+            };
+          })
+        );
+        setCartItemsWithDetails(detailedCartItems);
+      } catch (err) {
+        console.error("Failed to fetch product details:", err);
+      }
+    };
+
+    fetchProductDetails();
+  }, [orderDetails?.products]);
+
+  console.log("cartItemsWithDetails", cartItemsWithDetails);
+  // const cartItems = orderDetails?.products.map((item: any) => ({
+  //   id: item.id,
+  //   image: item.image,
+  //   name: item.name,
+  //   price: item.price,
+  //   originalPrice: item.originalPrice,
+  //   quantity: item.quantity,
+  // }));
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -125,7 +153,7 @@ const returnOrder = () => {
 
   return (
     <View style={styles.container}>
-      <Header headerText="Return Order" />
+      <Header headerText="Return/Replace Order" />
       <ScrollView>
         <ReturnReplaceToggle mode={mode} setMode={setMode} />
         <View style={styles.returnOrderCategory}>
@@ -133,9 +161,9 @@ const returnOrder = () => {
           <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
         </View>
 
-        {cartItems.map((item: any) => (
+        {cartItemsWithDetails.map((item: any) => (
           <View style={styles.cartItem} key={item.id}>
-            <Image source={item.image} style={styles.itemImage} />
+            <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.name}</Text>
               <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
@@ -162,127 +190,169 @@ const returnOrder = () => {
             </View>
           </View>
         ))}
-        <View style={styles.returnModeCategory}>
-          <Text style={styles.returnHeading}>Return Mode:</Text>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.option,
-                selected?.id === option.id && styles.selectedOption,
-              ]}
-              onPress={() => setSelected(option)}
-            >
-              <View style={styles.textContainer}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
-                <Text style={styles.optionDescription}>
-                  {option.description}
-                </Text>
+        {mode === "Return" && (
+          <>
+            <View style={styles.returnModeCategory}>
+              <Text style={styles.returnHeading}>Return Mode:</Text>
+
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.option,
+                    selected?.id === option.id && styles.selectedOption,
+                  ]}
+                  onPress={() => setSelected(option)}
+                >
+                  <View style={styles.textContainer}>
+                    <Text style={styles.optionLabel}>{option.label}</Text>
+                    <Text style={styles.optionDescription}>
+                      {option.description}
+                    </Text>
+                  </View>
+                  <View style={styles.radioCircle}>
+                    {selected.id === option.id && (
+                      <View style={styles.selectedRadio} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {selected.id === "home" && (
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Address</Text>
+                <View style={globalStyles.pl_3}>
+                  <Text style={styles.addressTextBox}>{pickupAddress}</Text>
+                </View>
               </View>
-              <View style={styles.radioCircle}>
-                {selected.id === option.id && (
-                  <View style={styles.selectedRadio} />
+            )}
+            <View style={styles.datetimeContainer}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>
+                  Date:<Text style={styles.required}>*</Text>
+                </Text>
+                {Platform.OS === "web" ? (
+                  <input
+                    type="date"
+                    style={globalStyles.webDateInput}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={globalStyles.dateInput}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Text>{date}</Text>
+                  </TouchableOpacity>
+                )}
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(date)}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                  />
                 )}
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-        {selected.id === "home" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Address</Text>
-            <View style={globalStyles.pl_3}>
-              <Text style={styles.addressTextBox}>{pickupAddress}</Text>
+              <Text style={styles.label}>
+                Time: <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.timeContainer}>
+                <TextInput
+                  style={[styles.timeInput, styles.hourMinuteInput]}
+                  placeholder="HH"
+                  value={hour}
+                  onChangeText={setHour}
+                  keyboardType="number-pad"
+                />
+                <TextInput
+                  style={[styles.timeInput, styles.hourMinuteInput]}
+                  placeholder="MM"
+                  value={minute}
+                  onChangeText={setMinute}
+                  keyboardType="number-pad"
+                />
+                <View style={styles.amPmSelector}>
+                  <View
+                    style={{
+                      borderColor: colors.primary,
+                      borderWidth: 1,
+                      height: 40,
+                      width: 150,
+                      borderRadius: 8,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Picker
+                      selectedValue={period}
+                      style={{
+                        width: 110,
+                        color: colors.black,
+                        justifyContent: "flex-end",
+                      }}
+                      onValueChange={(itemValue) => setPeriod(itemValue)}
+                    >
+                      <Picker.Item label="AM" value="am" />
+                      <Picker.Item label="PM" value="pm" />
+                    </Picker>
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
+            {/* <View style={styles.returnReason}>
+              <Text style={styles.label}>Reason for Return</Text>
+              <View style={styles.selectReason}>
+                <TextInput
+                  placeholder="Tell us why"
+                  style={styles.placeholderText}
+                />
+                <Ionicons
+                  name="chevron-down-outline"
+                  size={24}
+                  color={colors.primary}
+                />
+              </View>
+            </View> */}
+            <View style={styles.returnReason}>
+              <Text style={styles.label}>Reason for Return</Text>
+              <View
+                style={{
+                  borderColor: colors.primary,
+                  borderWidth: 1,
+                  height: 40,
+                  width: 350,
+                  borderRadius: 8,
+                  justifyContent: "center",
+                }}
+              >
+                <Picker
+                  selectedValue={reason}
+                  onValueChange={(itemValue) => setReason(itemValue)}
+                  style={{ height: 50, color: "#333" }}
+                >
+                  <Picker.Item label="Tell us why" value="" />
+                  <Picker.Item
+                    label="Wrong product delivered"
+                    value="wrong_product"
+                  />
+                  <Picker.Item label="Product damaged" value="damaged" />
+                  <Picker.Item label="Changed my mind" value="change_mind" />
+                  <Picker.Item label="Other" value="other" />
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.addComments}>
+              <Text>Do you want to talk more about your experience?</Text>
+              <TextInput
+                style={[styles.commentsText]}
+                placeholder="Add additional comments"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+          </>
         )}
-        <View style={styles.datetimeContainer}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Date: *</Text>
-            {Platform.OS === "web" ? (
-              <input
-                type="date"
-                style={globalStyles.webDateInput}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            ) : (
-              <TouchableOpacity
-                style={globalStyles.dateInput}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text>{date}</Text>
-              </TouchableOpacity>
-            )}
-            {showDatePicker && (
-              <DateTimePicker
-                value={new Date(date)}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-              />
-            )}
-          </View>
-          <Text style={styles.label}>
-            Time: <Text style={styles.required}>*</Text>
-          </Text>
-          <View style={styles.timeContainer}>
-            <TextInput
-              style={[styles.timeInput, styles.hourMinuteInput]}
-              placeholder="HH"
-              value={hour}
-              onChangeText={setHour}
-              keyboardType="number-pad"
-            />
-            <TextInput
-              style={[styles.timeInput, styles.hourMinuteInput]}
-              placeholder="MM"
-              value={minute}
-              onChangeText={setMinute}
-              keyboardType="number-pad"
-            />
-            <View style={styles.amPmSelector}>
-              <Picker
-                selectedValue={period}
-                onValueChange={(itemValue) => setPeriod(itemValue)}
-              >
-                <Picker.Item
-                  style={globalStyles.pickerValue_sm}
-                  label="AM"
-                  value="am"
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue_sm}
-                  label="PM"
-                  value="pm"
-                />
-              </Picker>
-            </View>
-          </View>
-        </View>
-        <View style={styles.returnReason}>
-          <Text style={styles.label}>Reason for Return</Text>
-          <View style={styles.selectReason}>
-            <TextInput
-              placeholder="Tell us why"
-              style={styles.placeholderText}
-            />
-            <Ionicons
-              name="chevron-down-outline"
-              size={24}
-              color={colors.primary}
-            />
-          </View>
-        </View>
-        <View style={styles.addComments}>
-          <Text>Do you want to talk more about your experience?</Text>
-          <TextInput
-            style={[styles.commentsText]}
-            placeholder="Add additional comments"
-            multiline
-            numberOfLines={4}
-          />
-        </View>
-
         <View style={styles.returnOrderSummary}>
           <Text style={styles.returnOrderDetails}>Order Number: </Text>
           <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
@@ -303,17 +373,13 @@ const returnOrder = () => {
         <Text style={styles.noteText}>
           Note: Refund money would be processed in 3 to 5 business days.{" "}
         </Text>
-
-        <TouchableOpacity style={styles.submitButton}>
-          <Text style={styles.buttonText}>Request Cancellation</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={styles.replacementButton}
           onPress={() => {
             redirectToPage(containers.replaceOrderScreenScreen);
           }}
         >
-          <Text style={styles.buttonText}>Request Replacement</Text>
+          <Text style={styles.buttonText}>{mode}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

@@ -29,6 +29,7 @@ const SearchResultsScreen = () => {
   const [headerTitle, setHeaderTitle] = useState(
     fromSearch ? category : "Search Results"
   );
+  const [sortedProducts, setSortedProducts] = useState<any>([]);
 
   useEffect(() => {
     console.log("sub ids from filterscreen (raw)", selectedSubCategories);
@@ -169,6 +170,23 @@ const SearchResultsScreen = () => {
     console.log("selected category id from cat badge", categoryId);
     setSelectedCategoryId(categoryId);
   };
+  const handleSortChange = (sortOption: string) => {
+    let originalProducts = !fromSearch ? filteredProducts : products;
+    let sorted = [...originalProducts]; // Assume this holds the unsorted list
+
+    if (sortOption === "lowToHigh") {
+      sorted.sort((a, b) => a.price - b.price);
+    } else if (sortOption === "highToLow") {
+      sorted.sort((a, b) => b.price - a.price);
+    } else {
+      sorted = [...originalProducts]; // fallback to default/relevance
+    }
+
+    setSortedProducts(sorted);
+  };
+
+  // console.log("sortedProducts", sortedProducts);
+  console.log(sortedProducts.map((p: any) => `${p.name}: $${p.price}`));
 
   const renderItem = ({ item, index }: { item: Product; index: number }) => {
     const isEven = index % 2 === 0;
@@ -203,6 +221,7 @@ const SearchResultsScreen = () => {
         subCategories={subCategories}
         onCategorySelect={handleCategorySelect}
         onCategoryNameChange={(name: any) => setHeaderTitle(name)}
+        onSortChange={handleSortChange}
       />
     );
   };
@@ -223,7 +242,8 @@ const SearchResultsScreen = () => {
 
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
         <FlatList
-          data={!fromSearch ? filteredProducts : products}
+          // data={!fromSearch ? filteredProducts : products}
+          data={sortedProducts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           numColumns={2}

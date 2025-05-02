@@ -20,9 +20,10 @@ import { addressService } from "@/services/addressService";
 import { useAppContext } from "../../context/AppContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useLocalSearchParams } from "expo-router";
 
 const editAddressScreen = () => {
-  const { selectedAddress } = useAppContext();
+  const { params } = useLocalSearchParams();
   const [address, setAddress] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
@@ -31,9 +32,14 @@ const editAddressScreen = () => {
   const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
+  console.log("params from edit page", params);
+  const { edit_address } = useLocalSearchParams();
 
   useEffect(() => {
-    if (selectedAddress) {
+    if (edit_address) {
+      const selectedAddress = edit_address
+        ? JSON.parse(edit_address as string)
+        : null;
       setAddress(selectedAddress.name || "");
       setLine1(selectedAddress.line1 || "");
       setLine2(selectedAddress.line2 || "");
@@ -43,11 +49,11 @@ const editAddressScreen = () => {
       setPhoneNumber(selectedAddress.phone || "");
       setIsDefault(selectedAddress.isDefault || false);
     }
-  }, [selectedAddress]);
+  }, [edit_address]);
 
   const handleSubmit = async () => {
     const response = await addressService.updateShippingAddress({
-      _id: selectedAddress._id,
+      _id: JSON.parse(edit_address as string)._id,
       name: address,
       line1: line1,
       line2: line2,

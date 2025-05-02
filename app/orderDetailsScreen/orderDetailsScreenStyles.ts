@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 32,
     alignItems: "center",
-    marginTop: 16,
+    marginTop: -216,
   },
   cancelButton: {
     backgroundColor: colors.buttonError,
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   deliverSection: {
     flexDirection: "row",
     justifyContent: "space-between",
-    //marginTop: 16,
+    marginTop: -250,
   },
   addressText: {
     fontSize: 15,

@@ -5,6 +5,7 @@ const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedBillingAddress, setSelectedBillingAddress] = useState(null);
+  const [SelectedAddress, setSelectedAddress] = useState(null);
 
   return (
     <AppContext.Provider
@@ -13,6 +14,8 @@ export const AppProvider = ({ children }) => {
         setIsLoading,
         selectedBillingAddress,
         setSelectedBillingAddress,
+        SelectedAddress,
+        setSelectedAddress,
       }}
     >
       {children}
