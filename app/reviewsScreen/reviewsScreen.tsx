@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import styles from "./reviewsScreenStyles";
 import { ScrollView } from "react-native";
@@ -13,9 +13,12 @@ import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import axios from "axios";
+import { useAppContext } from "@/context/AppContext";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {
+  const {  setIsLoading } = useAppContext();
+  const idForReview = useId()
   const { productId, totalReviews, productRating } = useLocalSearchParams();
   const reviewsArray =
     typeof totalReviews === "string" && totalReviews
@@ -30,8 +33,10 @@ const reviewsScreen = () => {
     }
   }, [productId]);
   const fetchProductDetails = async () => {
+    //setIsLoading(true)
     const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
     setProduct(response.data);
+    setIsLoading(false)
   };
   console.log("product", product);
   const soretedReviews = product?.reviews?.sort(

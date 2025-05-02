@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
 
   },
   label:{
-    fontSize: 15,
-    fontWeight: "semibold",
+    fontSize: 16,
+    fontWeight: "bold",
     marginBottom: 16,
   },
  option: {
@@ -191,10 +191,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingHorizontal: 8,
+        //paddingVertical: 10,
         backgroundColor: colors.placeholdergrey,
-        marginTop: 10,
+        //marginTop: 10,
       },
       placeholderText: {
         flex: 1,
@@ -217,7 +217,6 @@ const styles = StyleSheet.create({
       returnOrderSummary:{
         flexDirection: "row",
         justifyContent: "space-between",
-        marginVertical: 20, 
         marginBottom: 10
       },
       returnOrderDetails:{
@@ -233,7 +232,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.primary,
         paddingVertical: 15,
         borderRadius: 8,
-        marginBottom:32,
         alignItems: 'center',
         marginTop: 20,
      },
@@ -260,6 +258,9 @@ const styles = StyleSheet.create({
   checkBoxText: {
     color: colors.black,
     fontWeight: 400,
+  },
+  buttonContainer:{
+    marginHorizontal: 16,
   },
 });
 

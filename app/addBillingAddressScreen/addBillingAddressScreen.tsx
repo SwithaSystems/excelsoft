@@ -21,6 +21,8 @@ import { addressService } from "@/services/addressService";
 import Button from "@/components/commonComponents/Button";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+//import { usePaymentHandler } from "../components/usePaymentHandler";
+//import { useAppContext } from "@/context/AppContext";
 
 const addBillingAddressScreen = () => {
   const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -31,6 +33,12 @@ const addBillingAddressScreen = () => {
   const [postalcode, setPostalCode] = useState("");
   const [country, setCountry] = useState("");
   const [billingAddress, setBillingAddress] = useState({});
+  //const { handlePayment } = usePaymentHandler();
+  const params = useLocalSearchParams();
+  //const { selectedAddress, setSelectedAddress } = useAppContext();
+  
+ // const selectedMode = params?.selectedMode;
+
   useEffect(() => {
     const fetchBillingAddress = async () => {
       try {
@@ -71,78 +79,98 @@ const addBillingAddressScreen = () => {
   return (
     <View style={styles.container}>
       <Header headerText="Billing Address" />
-      <View>
-        <Text style={styles.fieldLabel}>Address</Text>
-        <TextInput
-          style={styles.input}
-          value={address}
-          onChangeText={setAddress}
-        />
+      <ScrollView style={{ padding: 16 }}>
+          <View>
+            <Text style={styles.fieldLabel}>Address</Text>
+            <TextInput
+              style={styles.input}
+              value={address}
+              onChangeText={setAddress}
+            />
 
-        <Text style={styles.fieldLabel}>Line 1</Text>
-        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+            <Text style={styles.fieldLabel}>Line 1</Text>
+            <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
 
-        <Text style={styles.fieldLabel}>Line 2</Text>
-        <TextInput
-          style={styles.input}
-          value={line2}
-          onChangeText={setLine2}
-          keyboardType="email-address"
-        />
+            <Text style={styles.fieldLabel}>Line 2</Text>
+            <TextInput
+              style={styles.input}
+              value={line2}
+              onChangeText={setLine2}
+              keyboardType="email-address"
+            />
 
-        <Text style={styles.fieldLabel}>Town/City</Text>
-        <TextInput
-          style={styles.input}
-          value={towncity}
-          onChangeText={setTownCity}
-          keyboardType="email-address"
-        />
+            <Text style={styles.fieldLabel}>Town/City</Text>
+            <TextInput
+              style={styles.input}
+              value={towncity}
+              onChangeText={setTownCity}
+              keyboardType="email-address"
+            />
 
-        <Text style={styles.fieldLabel}>Postal Code</Text>
-        <TextInput
-          style={styles.input}
-          value={postalcode}
-          onChangeText={setPostalCode}
-          keyboardType="email-address"
-        />
-        <Text style={styles.fieldLabel}>Country</Text>
-        <View style={styles.countriesdropdown}>
-          <TextInput
-            style={styles.input}
-            value={country}
-            onChangeText={setCountry}
-            keyboardType="email-address"
-          />
-          <Ionicons
-            name="chevron-down-outline"
-            size={24}
-            color={colors.black}
-          />
+            <Text style={styles.fieldLabel}>Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              value={postalcode}
+              onChangeText={setPostalCode}
+              keyboardType="email-address"
+            />
+            <Text style={styles.fieldLabel}>Country</Text>
+            <View style={styles.countriesdropdown}>
+              <TextInput
+                style={styles.input}
+                value={country}
+                onChangeText={setCountry}
+                keyboardType="email-address"
+              />
+              <Ionicons
+                name="chevron-down-outline"
+                size={24}
+                color={colors.black}
+              />
+            </View>
+          </View>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+            <View style={styles.addressList}>
+              <Button
+                title="Save Address"
+                onPress={() => {
+                  handleSaveAddress();
+                  redirectToPage(containers.selectBillingAddressScreenScreen);
+                }}
+              />
+            </View>
+          </View>
+          <View style={[styles.section, globalStyles.mb_0]}>
+            <Text style={styles.sectionHeading}>Order Details</Text>
+            <View style={globalStyles.pl_3}></View>
+            <OrderSummary
+              cartItems={cartItems}
+              sectionHeadingStyle={styles.sectionHeading}
+              hideHeading={true}
+              hideItems={true}
+              containerStyle={styles.orderSummaryContainer}
+            />
+          </View>
+          {/*<View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+              <View style={styles.addressList}>
+                <Button
+                  title="Proceed for Payment"
+                  onPress={() =>
+                    handlePayment(cartItems, {
+                      address: selectedAddress,
+                      selectedSlot: Array.isArray(selectedMode)
+                        ? selectedMode[0]
+                        : selectedMode,
+                      selectedMode: Array.isArray(selectedMode)
+                        ? selectedMode[0]
+                        : selectedMode,
+                    })
+                  }
+                />
+              </View>
+          </View>*/}
+          </ScrollView>
         </View>
-      </View>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        <View style={styles.addressList}>
-          <Button
-            title="Save Address"
-            onPress={() => {
-              handleSaveAddress();
-              redirectToPage(containers.selectBillingAddressScreenScreen);
-            }}
-          />
-        </View>
-      </View>
-      <View style={[styles.section, globalStyles.mb_0]}>
-        <Text style={styles.sectionHeading}>Order Details</Text>
-        <View style={globalStyles.pl_3}></View>
-        <OrderSummary
-          cartItems={cartItems}
-          sectionHeadingStyle={styles.sectionHeading}
-          hideHeading={true}
-          hideItems={true}
-          containerStyle={styles.orderSummaryContainer}
-        />
-      </View>
-    </View>
   );
 };
 

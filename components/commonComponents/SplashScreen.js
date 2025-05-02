@@ -1,15 +1,18 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import colors from "../../app/config/colors";
 import Logo from "./Logo";
 
 const SplashScreen = () => {
   return (
-    <View style={styles.container}>
+    <>
+    {/* <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Logo logoStyle={styles.logo} />
       </View>
-    </View>
+    </View> */}
+    <ActivityIndicator size="large" color={colors.primary} />
+    </>
   );
 };
 

@@ -1,6 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import colors from "../app/config/colors";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 function HeroBanner(props) {
   return (
     <>
@@ -10,7 +12,7 @@ function HeroBanner(props) {
         <Text style={styles.bannerText}>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit
         </Text>
-        <TouchableOpacity style={styles.shopNowButton}>
+        <TouchableOpacity style={styles.shopNowButton} onPress={(e)=>{redirectToPage(containers.offersScreenScreen)}}>
           <Text style={styles.shopNowText}>Shop Now</Text>
         </TouchableOpacity>
       </View>

@@ -28,7 +28,7 @@ export const globalStyles = StyleSheet.create({
     borderColor: "#EBEDED",
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: 0,
+    paddingHorizontal: 8,
     paddingVertical: 0,
     marginBottom: 16,
     backgroundColor: "#F8F8F8",

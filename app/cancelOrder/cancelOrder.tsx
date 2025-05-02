@@ -58,7 +58,7 @@ type OrderSummeryScreenParams = {
   additionalDetails?: string;
 };
 
-const returnOrder = () => {
+const cancelOrder = () => {
   const params = useLocalSearchParams<OrderSummeryScreenParams>();
   const { orderDetails } = useLocalSearchParams();
   const [selected, setSelected] = useState<
@@ -146,7 +146,7 @@ const returnOrder = () => {
         </View>
         <View style={styles.addComments}>
           <Text style={styles.label}>
-            Do you want to talk more about your experience?
+            Do you want to talk about your experience?
           </Text>
           <TextInput
             style={[styles.commentsText]}
@@ -175,16 +175,17 @@ const returnOrder = () => {
         <Text style={styles.noteText}>
           Note: Refund money would be processed in 3 to 5 business days.{" "}
         </Text>
-
-        <TouchableOpacity style={styles.submitButton}>
-          <Text style={styles.buttonText}>Submit Cancellation Request</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.replacementButton}>
-          <Text style={styles.buttonText}>Keep Order</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.submitButton}>
+            <Text style={styles.buttonText}>Submit Cancellation Request</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.replacementButton}>
+            <Text style={styles.buttonText}>Keep Order</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
 };
 
-export default returnOrder;
+export default cancelOrder;

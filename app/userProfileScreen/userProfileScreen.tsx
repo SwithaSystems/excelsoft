@@ -54,8 +54,8 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    Feedback: containers.AppReviewScreenScreen,
-    /*  "Store Information": containers.AdminStoreInformationScreen,*/
+    "Feedback": containers.AppReviewScreenScreen,
+    //"Store Information": containers.AdminOrderQRScanScreen,
   };
 
   useEffect(() => {

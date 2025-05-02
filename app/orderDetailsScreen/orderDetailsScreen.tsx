@@ -138,130 +138,141 @@ const orderDetailsScreen = () => {
     }));
 
   return (
-    <View style={styles.container}>
-      <Header headerText="Order Details" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 240 }}>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={{}}>
-            <QRCodeDisplay
-              qrValue={orderDetails?.orderNumber}
-              noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
-            />
-          </View>
-          <View style={styles.orderSummaryItem}>
-            <Text
-              style={[styles.orderSummaryItemText, globalStyles.fontWeight500]}
-            >
-              Status
-            </Text>
-            <Text
-              style={[styles.orderSummaryItemText, globalStyles.fontWeight500]}
-            >
-              Processed
-            </Text>
-          </View>
-          <View style={styles.orderSummaryItem}>
-            <Text style={styles.orderSummaryItemText}>Order Number: </Text>
-            <Text style={styles.orderSummaryItemText}>
-              {orderDetails?.orderNumber}
-            </Text>
-          </View>
-          <View style={styles.orderSummaryItem}>
-            <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
-            <Text style={styles.orderSummaryItemText}>
-              {/* {orderDetails?.orderDate} */}
-              {formattedDate}
-            </Text>
-          </View>
-          <View style={styles.orderSummaryItem}>
-            <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-            <Text style={styles.orderSummaryItemText}>
-              {orderDetails?.shippingCharges}
-            </Text>
-          </View>
-          <View style={styles.orderSummaryItem}>
-            <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-            <Text style={styles.orderSummaryItemText}>
-              {orderDetails?.totalAmount}
-            </Text>
-          </View>
-          <View style={{ marginTop: 8 }}>
-            {cartItemsWithDetails.map((eachProduct: any) => (
-              <CartItem
-                hideActions={true}
-                itemContainerStyle={styles.cartItemContainerStyle}
-                key={eachProduct._id}
-                cartItem={eachProduct}
+    <>
+      <View style={styles.container}>
+        <Header headerText="Order Details" />
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <View style={{}}>
+              <QRCodeDisplay
+                qrValue={orderDetails?.orderNumber}
+                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
               />
-            ))}
-          </View>
-          <View style={[globalStyles.mb_2, styles.deliverSection]}>
-            <Text
-              style={[globalStyles.fontWeight500, styles.orderSummaryItemText]}
-            >
-              Deliver To:
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                redirectToPage(containers.deliveryTrackingScreenScreen);
-              }}
-            >
-              <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
-                Track Order
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text
+                style={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                ]}
+              >
+                Status
               </Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={[globalStyles.mb_2, styles.addressText]}>
-            Choosen Delivery: {orderDetails?.pickupMode}
-          </Text>
-          {orderDetails?.pickupMode === "homeDelivery" && (
-            <Text style={[globalStyles.mb_3, styles.addressText]}>
-              Address: {shippingAddress_order?.line1}
-              {"\n"}
-              {shippingAddress_order?.city}, {shippingAddress_order?.state}
-              {"\n"}
-              {shippingAddress_order?.postalCode},{" "}
-              {shippingAddress_order?.country}
+              <Text
+                style={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                ]}
+              >
+                Processed
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Order Number: </Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.orderNumber}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
+              <Text style={styles.orderSummaryItemText}>
+                {/* {orderDetails?.orderDate} */}
+                {formattedDate}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Shipping:</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.shippingCharges}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
+              <Text style={styles.orderSummaryItemText}>
+              {orderDetails?.totalAmount.toFixed(2)}
+              </Text>
+            </View>
+            <View style={{ marginTop: 8 }}>
+              {cartItemsWithDetails.map((eachProduct: any) => (
+                <CartItem
+                  hideActions={true}
+                  itemContainerStyle={styles.cartItemContainerStyle}
+                  key={eachProduct._id}
+                  cartItem={eachProduct}
+                />
+              ))}
+            </View>
+            <View style={[globalStyles.mb_2, styles.deliverSection]}>
+              <Text
+                style={[
+                  globalStyles.fontWeight500,
+                  styles.orderSummaryItemText,
+                ]}
+              >
+                Deliver To:
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.deliveryTrackingScreenScreen);
+                }}
+              >
+                <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
+                  Track Order
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[globalStyles.mb_2, styles.addressText]}>
+              Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-          )}
-          <View>
-            <RecommendedProductsSlider
-              recommendedProducts={recommendedProducts}
-              sectionTitleStyle={[
-                styles.orderSummaryItemText,
-                globalStyles.fontWeight500,
-                //{marginBottom:16},
-              ]}
-              title="Would you like to see these too?"
-              showAddToCart={false}
-            />
+            {orderDetails?.pickupMode === "homeDelivery" && (
+              <Text style={[globalStyles.mb_3, styles.addressText]}>
+                Address: {shippingAddress_order?.line1}
+                {"\n"}
+                {shippingAddress_order?.city}, {shippingAddress_order?.state}
+                {"\n"}
+                {shippingAddress_order?.postalCode},{" "}
+                {shippingAddress_order?.country}
+              </Text>
+            )}
+            <View>
+              <RecommendedProductsSlider
+                recommendedProducts={recommendedProducts}
+                sectionTitleStyle={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                  //{marginBottom:16},
+                ]}
+                title="Would you like to see these too?"
+                showAddToCart={false}
+              />
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  redirectToPage(containers.cancelOrderScreen, {
+                    orderDetails: orderDetails,
+                  });
+                }}
+              >
+                <Text style={styles.buttonText}>Request Cancellation</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.requestButton}
+                onPress={() => {
+                  redirectToPage(containers.returnOrderScreen, {
+                    orderDetails: JSON.stringify(orderDetails),
+                  });
+                }}
+              >
+                <Text style={styles.buttonText}>Request Return</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => {
-                redirectToPage(containers.cancelOrderScreen, {
-                  orderDetails: orderDetails,
-                });
-              }}
-            >
-              <Text style={styles.buttonText}>Request Cancellation</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.requestButton}
-              onPress={() => {
-                redirectToPage(containers.returnOrderScreen, {
-                  orderDetails: JSON.stringify(orderDetails),
-                });
-              }}
-            >
-              <Text style={styles.buttonText}>Request Return</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-      <Footer />
-    </View>
+        </ScrollView>
+        <Footer />
+      </View>
+    </>
   );
 };
 

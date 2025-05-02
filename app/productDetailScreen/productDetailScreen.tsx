@@ -215,7 +215,7 @@ const ProductDetailScreen = () => {
           <Text style={styles.infoTitle}>Product Information</Text>
           <Text style={styles.infoText}>{product.description}</Text>
 
-          <View style={styles.colorSection}>
+          { (product.productColors && product.productColors.length > 0) && <><View style={styles.colorSection}>
             <Text style={styles.colorTitle}>Select Color</Text>
             <View style={styles.colorOptions}>
               {product.productColors.map((color: any) => (
@@ -229,8 +229,8 @@ const ProductDetailScreen = () => {
                   ]}
                 />
               ))}
-            </View>
-          </View>
+            </View> 
+          </View> </>}
 
           <View style={styles.quantitySection}>
             <View style={styles.quantityContainer}>

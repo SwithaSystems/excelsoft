@@ -16,7 +16,7 @@ const CategoryItem = ({ name, imageUrl, onPress }: CategoryItemProps) => {
         source={isRemoteImage ? { uri: imageUrl } : imageUrl}
         style={HomeStyles.categoryImage}
       />
-      <Text style={HomeStyles.categoryText}>{name}</Text>
+      <Text style={HomeStyles.categoryText} numberOfLines={2}>{name}</Text>
     </TouchableOpacity>
   );
 };

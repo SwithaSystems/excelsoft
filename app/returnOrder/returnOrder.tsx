@@ -23,7 +23,6 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import ReturnReplaceToggle from "./return_replace_radioButtons";
 import { ProductsAPI } from "@/services/productService";
-
 // const cartItems = [
 //   {
 //     id: 1,
@@ -82,7 +81,7 @@ type OrderSummeryScreenParams = {
   additionalDetails?: string;
 };
 
-const returnOrder = () => {
+const ReturnOrder = () => {
   const params = useLocalSearchParams();
   const rawOrderDetails = params.orderDetails;
   const [selected, setSelected] = useState<
@@ -386,4 +385,4 @@ const returnOrder = () => {
   );
 };
 
-export default returnOrder;
+export default ReturnOrder;

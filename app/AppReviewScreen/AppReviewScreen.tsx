@@ -13,12 +13,6 @@ import Header from "@/components/Header";
 import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/components/ProductStars";
-import Button from "@/components/commonComponents/Button";
-import * as ImagePicker from "expo-image-picker";
-import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
-import { ProductsAPI } from "@/services/productService";
-import { useLocalSearchParams } from "expo-router";
-import { router } from "expo-router";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import colors from "../config/colors";
@@ -30,16 +24,16 @@ const appReviewScreen = () => {
         <View style={styles.container}>
         <Header
             headerText="Feedback"
-            secondaryBtnText="Discard"
-            secondaryBtnCallBack={() => {
-            redirectToPage(containers.userProfileScreenScreen);
-            }}
+            // secondaryBtnText="Discard"
+            // secondaryBtnCallBack={() => {
+            // redirectToPage(containers.userProfileScreenScreen);
+            // }}
         />
 
-        <ScrollView>
+        <ScrollView style={styles.reviewContainer}>
         <View style={styles.ratingCategory}>
-            <Text style = {styles.secondaryText}>Tell us about your expereince!</Text>
-            <Text>Rate your site Experience</Text>
+            <Text style = {styles.label}>Tell us about your expereince!</Text>
+            <Text style={styles.label}>Rate your site Experience</Text>
                 <ProductStars
                 starsContainer=
                                {{ justifyContent: "space-between",
@@ -52,7 +46,7 @@ const appReviewScreen = () => {
                 />
         </View>
         <View style = {styles.selectCategory}>
-            <Text>Tell us your feedback about</Text>
+            <Text style={styles.label}>Tell us your feedback about</Text>
             <View style = {styles.chooseCategory}>
                 <TextInput 
                     placeholder="Choose your category"
@@ -65,7 +59,7 @@ const appReviewScreen = () => {
             </View>
         </View>
         <View style={styles.radioContainer}>
-                <Text>Did any thing made you stop from your shopping?</Text>
+                <Text style={styles.label}>Did any thing stop your shopping?</Text>
                 <TouchableOpacity style={styles.radioOption}>
                     <Ionicons name="radio-button-off"
                               size = {20}
@@ -82,7 +76,7 @@ const appReviewScreen = () => {
                 </TouchableOpacity>
         </View>       
         <View style={styles.addYourReview}>
-            <Text>Do you want to talk more about your experience?</Text>
+            <Text style={styles.label}>Do you want to talk about your experience?</Text>
             <TextInput 
                         style = {[ styles.reviewText]}
                         placeholder="Add your experience"
