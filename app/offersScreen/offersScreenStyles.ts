@@ -51,6 +51,51 @@ const styles = StyleSheet.create({
       textAlign: "center",
       marginBottom: 20,
     },
+    banner:{
+      width: '100%',
+      height: 170,
+    },
+    exclusiveText:{
+      marginLeft: 20,
+      marginTop: 20,
+      fontSize: 18,
+      fontWeight:"bold",
+      color: "#F0EC05",
+    },
+    tagsRow:{
+      flexDirection: 'row',
+      marginLeft: 20,
+      marginTop: 30,
+      gap: 20,
+    },
+    blackTag:{
+      backgroundColor: colors.black,
+      borderRadius: 5,
+    },
+    redTag:{
+      backgroundColor: colors.error,
+      borderRadius: 5,
+    },
+    tagText:{
+      color: colors.white,
+      fontSize: 18,
+      marginHorizontal: 6,
+      marginVertical: 4,
+    },
+    categoryContainer:{
+      marginVertical: 15,
+      alignSelf: 'flex-start',
+      backgroundColor: colors.white,
+      marginHorizontal: 20,
+      borderRadius: 5,
+    },
+    categoryText:{
+      color: colors.black,
+      padding: 5,
+      fontSize: 16,
+      fontWeight: 500,
+      letterSpacing: 1,
+    },
 });
 
 export default styles;

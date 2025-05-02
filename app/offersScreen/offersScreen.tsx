@@ -9,6 +9,7 @@ import HeroBanner from "@/components/HeroBanner";
 import ExclusiveOffers from "@/components/ExclusiveOffers";
 import { router } from "expo-router";
 import Footer from "@/components/Footer";
+import { ImageBackground } from "react-native";
 
 const offersScreen = () => {
   const filteredProducts = products;
@@ -59,7 +60,27 @@ const offersScreen = () => {
           <>
             <Header headerText="Store Offers" />
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <HeroBanner />
+              {/* <HeroBanner /> */}
+              <ImageBackground
+                source={require('../../assets/images/storeOffersbg.png')}
+                style={styles.banner}
+                imageStyle={{borderRadius: 20}}
+              >
+                <Text style={styles.exclusiveText}>Exclusive For Members only</Text>
+
+                <View style={styles.tagsRow}>
+                  <View style={styles.blackTag}>
+                    <Text style={styles.tagText}>30% off</Text>
+                  </View>
+                  <View style={styles.redTag}>
+                    <Text style={styles.tagText}>Ends in 3 hours</Text>
+                  </View>
+                </View>
+
+                <View style={styles.categoryContainer}>
+                    <Text style={styles.categoryText}>In Fresh Food Category</Text>
+                </View>
+              </ImageBackground>
               <View style={[globalStyles.mt_4, globalStyles.mb_4]}>
                 <Text style={globalStyles.sectionHeading}>Today's Deals</Text>
                 <FlatList

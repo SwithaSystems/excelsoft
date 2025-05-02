@@ -67,7 +67,7 @@ function CartItem(props) {
 
   return (
     <>
-      <View style={[styles.cartItem, props?.itemContainerStyle]}>
+      <View style={[styles.cartItem, /*props?.itemContainerStyle*/]}>
         <View style={styles.cartItemContent}>
           <View style={styles.cartItemImageContainer}>
             {/* Handle both URL strings and require'd assets */}
@@ -187,8 +187,8 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   cartItem: {
-    paddingHorizontal: 44,
-    marginBottom: 16,
+    //paddingHorizontal: 16,
+    //marginBottom: 8,
   },
   cartItemContent: {
     borderRadius: 10,

@@ -215,7 +215,7 @@ const HomePage = () => {
         }
         data={[]} // No actual data here — just to use FlatList as scroll container
         renderItem={null}
-        ListFooterComponent={<Footer navigation={router} activeTab="home" />}
+        // ListFooterComponent={<Footer navigation={router} activeTab="home" />}
       />
       {/* Footer */}
       <Footer navigation={router} activeTab="home" />

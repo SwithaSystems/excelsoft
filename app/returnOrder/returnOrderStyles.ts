@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     //paddingHorizontal: 20,  
-    marginVertical: 16, 
+    //marginVertical: 16, 
     //marginBottom: 10
   },
   returnOrderItemText: {
@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
       fontSize: 14,
       marginRight: 8,
       textAlign: 'center',
+      width:60,
+      height:40,
     },
     hourMinuteInput: {
       width: 50,
@@ -201,7 +203,8 @@ const styles = StyleSheet.create({
       padding: 15,
       //flexDirection: 'row',
       //alignItems: 'center',
-      width: 80,
+      width: 120,
+      height:40,
       justifyContent: 'center',
     },
     amPmText: {
@@ -288,6 +291,17 @@ const styles = StyleSheet.create({
    buttonContainer:{
 
    },
+   timeSection: {
+    flexDirection: 'column',
+  },
+   pickerContainer: {
+    borderColor: colors.primary,
+    borderWidth: 1,
+    height: 40,
+    width: 150,
+    borderRadius: 8,
+    justifyContent: 'center',
+  },
 });
 
 export default styles;

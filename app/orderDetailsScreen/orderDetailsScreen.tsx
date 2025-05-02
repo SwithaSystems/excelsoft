@@ -141,7 +141,7 @@ const orderDetailsScreen = () => {
     <>
       <View style={styles.container}>
         <Header headerText="Order Details" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 450 }}>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>
               <QRCodeDisplay
