@@ -14,8 +14,10 @@ import colors from "../config/colors";
 import { addressService } from "@/services/addressService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useLocalSearchParams } from "expo-router";
 
 const addAddressScreen = () => {
+  const params = useLocalSearchParams();
   const [name, setName] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
@@ -25,6 +27,8 @@ const addAddressScreen = () => {
   const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
+  console.log("params", params);
+  const from = params.from;
 
   const handleAddAddress = async () => {
     try {
@@ -44,7 +48,11 @@ const addAddressScreen = () => {
       } else {
         alert("Failed to add address");
       }
-      redirectToPage(containers.savedAddressScreenScreen);
+      if (from === "homeDelivery") {
+        redirectToPage(containers.homeDeliveryScreenScreen);
+      } else {
+        redirectToPage(containers.savedAddressScreenScreen);
+      }
     } catch (error) {
       console.error("Error adding address:", error);
     }

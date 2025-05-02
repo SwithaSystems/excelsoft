@@ -32,9 +32,21 @@ const savedItemsSlice = createSlice({
     moveToCart: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
+    updateSavedItemQuantity: (state, action) => {
+      console.log("Reducer received:", action.payload);
+      const { id, quantity } = action.payload;
+      const item = state.items.find((item) => item.id === id);
+      if (item) {
+        item.quantity = quantity;
+      }
+    },
   },
 });
 
-export const { addToSavedItems, removeFromSavedItems, moveToCart } =
-  savedItemsSlice.actions;
+export const {
+  addToSavedItems,
+  removeFromSavedItems,
+  moveToCart,
+  updateSavedItemQuantity,
+} = savedItemsSlice.actions;
 export default savedItemsSlice.reducer;

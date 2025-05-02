@@ -283,16 +283,20 @@ const ProductDetailScreen = () => {
           {[...product.reviews]
             .sort((a, b) => Number(b.id) - Number(a.id))
             .slice(0, 5)
-            .map((review: any) => (
-              <ProductRating key={review.id} review={review} />
+            .map((review: any, index: number) => (
+              <ProductRating
+                key={review.id?.toString() || `review-${index}`}
+                review={review}
+              />
             ))}
+
           <TouchableOpacity
             style={styles.seeMoreButton}
             onPress={() =>
               redirectToPage(containers.reviewsScreenScreen, {
                 productId: productId,
                 totalReviews: JSON.stringify(product.reviews),
-                productRating: product.rating,
+                productRating: JSON.stringify(product.rating) || product.rating,
               })
             }
           >

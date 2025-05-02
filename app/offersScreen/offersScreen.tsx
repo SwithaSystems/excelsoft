@@ -53,32 +53,33 @@ const offersScreen = () => {
   };
   return (
     <View style={[globalStyles.container]}>
-      <ScrollView>
-        <Header headerText="Store Offers" />
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {/* <HeroBanner /> */}
-          <View style={styles.offerBanner}>
-            <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
-            <Text style={styles.bannerDiscount}>40-60% Discount</Text>
-            <Text style={styles.bannerText}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit
-            </Text>
-          </View>        
-          <View style={[globalStyles.mt_4, globalStyles.mb_4]}>
-            <Text style={globalStyles.sectionHeading}>Today's Deals</Text>
-            <FlatList
-              data={filteredProducts}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              numColumns={2}
-              columnWrapperStyle={styles.row}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View>
-      </ScrollView>
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <Header headerText="Store Offers" />
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <HeroBanner />
+              <View style={[globalStyles.mt_4, globalStyles.mb_4]}>
+                <Text style={globalStyles.sectionHeading}>Today's Deals</Text>
+                <FlatList
+                  data={filteredProducts}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderItem}
+                  numColumns={2}
+                  columnWrapperStyle={styles.row}
+                  contentContainerStyle={styles.listContainer}
+                  showsVerticalScrollIndicator={false}
+                />
+              </View>
+              <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+            </View>
+          </>
+        }
+        data={[]}
+        renderItem={() => null}
+      />
+      {/* </ScrollView> */}
       <Footer navigation={router} />
     </View>
   );

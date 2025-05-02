@@ -105,8 +105,10 @@ const savedAddressScreen = () => {
   // );
 
   const handleEdit = (item: Address) => {
-    setSelectedAddress(item);
-    redirectToPage(containers.editAddressScreenScreen);
+    // setSelectedAddress(item);
+    redirectToPage(containers.editAddressScreenScreen, {
+      edit_address: JSON.stringify(item),
+    });
   };
 
   const handleDelete = (item: Address) => {
@@ -117,48 +119,56 @@ const savedAddressScreen = () => {
   return (
     <View style={globalStyles.container}>
       <Header headerText="Saved Address" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.sectionTitle}>Default Address</Text>
-          <FlatList
-            data={addressData.filter((address) => address.isDefault)}
-            renderItem={({ item }) => (
-              <AddressItem
-                item={item}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.sectionTitle}>Default Address</Text>
+              <FlatList
+                data={addressData.filter((address) => address.isDefault)}
+                renderItem={({ item }) => (
+                  <AddressItem
+                    item={item}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                )}
+                keyExtractor={(item) => item._id}
+                contentContainerStyle={styles.addressList}
               />
-            )}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={styles.addressList}
-          />
 
-          <Text style={styles.sectionTitle}>Address</Text>
-          <FlatList
-            data={addressData.filter((address) => !address.isDefault)}
-            renderItem={({ item }) => (
-              <AddressItem
-                item={item}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+              <Text style={styles.sectionTitle}>Address</Text>
+              <FlatList
+                data={addressData.filter((address) => !address.isDefault)}
+                renderItem={({ item }) => (
+                  <AddressItem
+                    item={item}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                )}
+                keyExtractor={(item) => item._id}
+                contentContainerStyle={styles.addressList}
               />
-            )}
-            keyExtractor={(item) => item._id}
-            contentContainerStyle={styles.addressList}
-          />
-        </View>
-        <ConfirmationModal
-          onClose={() => {
-            setIsModalVisible(false);
-          }}
-          isModalVisible={isModalVisible}
-          text="Are you sure you want to delete this address?"
-          submitText="Delete Address"
-          handleSubmit={confirmDelete}
-          cancelText="Cancel"
-          handleCancel={cancelDelete}
-        />
-      </ScrollView>
+            </View>
+            <ConfirmationModal
+              onClose={() => {
+                setIsModalVisible(false);
+              }}
+              isModalVisible={isModalVisible}
+              text="Are you sure you want to delete this address?"
+              submitText="Delete Address"
+              handleSubmit={confirmDelete}
+              cancelText="Cancel"
+              handleCancel={cancelDelete}
+            />
+          </>
+        }
+        data={[]} // No actual data here — just to use FlatList as scroll container
+        renderItem={null}
+      />
+      {/* </ScrollView> */}
       <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
         <View style={styles.addressList}>
           <Button

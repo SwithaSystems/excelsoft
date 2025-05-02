@@ -6,7 +6,10 @@ import colors from "@/app/config/colors";
 import Button from "@/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { useSelector, useDispatch } from "react-redux";
-import { addToSavedItems } from "../../../store/slices/savedItemsSlice";
+import {
+  addToSavedItems,
+  updateSavedItemQuantity,
+} from "../../../store/slices/savedItemsSlice";
 import { removeFromCart } from "../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../store/slices/cartSlice";
 
@@ -15,6 +18,7 @@ function CartItem(props) {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => [...state.cart.items]);
   const savedItems = useSelector((state) => state.savedItems.items);
+  console.log("props", props);
 
   const handleSaveItem = (saveItem) => {
     if (saveItem) {
@@ -26,20 +30,39 @@ function CartItem(props) {
     }
   };
   const increaseQuantity = (itemId, currentQuantity) => {
-    dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
+    if (props.isSavedItem) {
+      dispatch(
+        updateSavedItemQuantity({ id: itemId, quantity: currentQuantity + 1 })
+      );
+    } else {
+      dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
+    }
   };
 
   const decreaseQuantity = (itemId, currentQuantity) => {
     if (currentQuantity > 1) {
-      dispatch(updateQuantity({ id: itemId, quantity: currentQuantity - 1 }));
+      if (props.isSavedItem) {
+        dispatch(
+          updateSavedItemQuantity({ id: itemId, quantity: currentQuantity - 1 })
+        );
+      } else {
+        dispatch(updateQuantity({ id: itemId, quantity: currentQuantity - 1 }));
+      }
     } else {
-      // remove when quantity hits 0
-      dispatch(removeFromCart(itemId));
+      if (props.isSavedItem) {
+        dispatch(removeFromSavedItems(itemId));
+      } else {
+        dispatch(removeFromCart(itemId));
+      }
     }
   };
 
   const handleAdd = (itemId) => {
-    dispatch(updateQuantity({ id: itemId, quantity: 1 }));
+    if (props.isSavedItem) {
+      dispatch(updateSavedItemQuantity({ id: itemId, quantity: 1 }));
+    } else {
+      dispatch(updateQuantity({ id: itemId, quantity: 1 }));
+    }
   };
 
   return (

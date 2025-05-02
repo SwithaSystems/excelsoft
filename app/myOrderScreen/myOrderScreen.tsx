@@ -26,7 +26,7 @@ const myOrderScreen = () => {
   //     subtotal: "$15", // Changed subtotal for demonstration
   //   },
   // ];
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -43,25 +43,33 @@ const myOrderScreen = () => {
   return (
     <View style={globalStyles.container}>
       <Header headerText="Your Orders" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.yourLastOrders}>Your last orders</Text>
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.yourLastOrders}>Your last orders</Text>
 
-          <FlatList
-            data={orders.map((order) => ({
-              orderId: `#ORD-${order.orderNumber}`,
-              date: new Date(order.createdAt).toLocaleString(), // or format however you like
-              // status: order.status,
-              totalItems: order.products?.length ?? 0,
-              subtotal: order.totalAmount.toFixed(2),
-              _id: order._id,
-            }))}
-            renderItem={({ item }) => <OrderItem item={item} />}
-            keyExtractor={(item) => item._id}
-            nestedScrollEnabled={true}
-          />
-        </View>
-      </ScrollView>
+              <FlatList
+                data={orders.map((order) => ({
+                  orderId: `#ORD-${order.orderNumber}`,
+                  date: new Date(order.createdAt).toLocaleString(), // or format however you like
+                  status: order?.status,
+                  totalItems: order.products?.length ?? 0,
+                  subtotal: order.totalAmount.toFixed(2),
+                  _id: order._id,
+                }))}
+                renderItem={({ item }) => <OrderItem item={item} />}
+                keyExtractor={(item) => item._id}
+                nestedScrollEnabled={true}
+              />
+            </View>
+          </>
+        }
+        data={[]}
+        renderItem={() => null}
+      />
+      {/* </ScrollView> */}
       <Footer />
     </View>
   );

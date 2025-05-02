@@ -1,27 +1,27 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
     flex:1,
   },
-  returnOrderCategory:{
+  returnOrderCategory: {
     flexDirection: "row",
     justifyContent: "space-between",
     //paddingHorizontal: 20,  
     marginVertical: 16, 
     //marginBottom: 10
   },
-  returnOrderItemText:{
+  returnOrderItemText: {
     color: colors.black,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   returnOrderId: {
     color: colors.black,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   cartItemsContainer:{
     marginTop: 16,
@@ -84,17 +84,13 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   striked: {
-    textDecorationLine: 'line-through',
-    color: 'gray',
+    textDecorationLine: "line-through",
+    color: "gray",
     fontSize: 14,
   },
-  returnModeCategory:{
-
-  },
-  returnHeading:{
-
-  },
- option: {
+  returnModeCategory: {},
+  returnHeading: {},
+  option: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.white,
@@ -105,9 +101,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.lightSkyBlue,
     elevation: 4,
-    shadowColor: '#DEF7FC', 
+    shadowColor: "#DEF7FC",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1.0, 
+    shadowOpacity: 1.0,
     shadowRadius: 4,
   },
   selectedOption: {

@@ -22,6 +22,7 @@ import { NotificationService } from "../../services/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import { deviceType } from "expo-device";
+import axiosInstance from "@/services/axiosConfig";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -62,13 +63,18 @@ const UserProfileScreen = () => {
       const userData = await AsyncStorage.getItem("user");
       if (userData) {
         const user = JSON.parse(userData);
-        setUser(user || "User");
+        console.log("userData", user);
+        const response = await axiosInstance.get("/users/" + user.id);
+        console.log("response", response.data);
+
+        setUser(response.data || "User");
       }
     };
 
     fetchUser();
   }, []);
 
+  console.log("user details fetched", user);
   useEffect(() => {
     const getToken = async () => {
       if (user?.id) {
@@ -76,8 +82,8 @@ const UserProfileScreen = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-          console.log("Expo Push Token:", token);
-          setExpoPushToken(token ?? null);
+        console.log("Expo Push Token:", token);
+        setExpoPushToken(token ?? null);
       }
     };
     getToken();

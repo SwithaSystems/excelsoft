@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,8 @@ import styles from "./pickupScreenStyles";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { PickupMode } from "@/services/orderService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserAPI } from "@/services/userService";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -171,6 +173,26 @@ const PickupScreen = () => {
       />
     </View>
   );
+  useEffect(() => {
+    const getUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      console.log("userData", userData);
+      if (userData) {
+        const user = await UserAPI.getUserByPhonenumber(
+          JSON.parse(userData)?.phone
+        );
+        console.log("user", user.data);
+        if (user) {
+          setFirstName(user.data.firstName);
+          setLastName(user.data.lastName);
+          setPhone(user.data.phone);
+          setEmail(user.data.email);
+        }
+      }
+    };
+    getUser();
+  }, []);
+  console.log("user destructured data", firstName, lastName, phone, email);
 
   return (
     <View style={globalStyles.container}>
@@ -198,6 +220,7 @@ const PickupScreen = () => {
                 style={globalStyles.webDateInput}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
               />
             ) : (
               <TouchableOpacity
@@ -213,6 +236,7 @@ const PickupScreen = () => {
                 mode="date"
                 display="default"
                 onChange={onDateChange}
+                minimumDate={new Date()}
               />
             )}
           </View>
@@ -325,7 +349,13 @@ const PickupScreen = () => {
           <View style={styles.collectorOptions}>
             <TouchableOpacity
               style={styles.radioOption}
-              onPress={() => setCollector("myself")}
+              onPress={() => {
+                setCollector("myself");
+                setFirstName("");
+                setLastName("");
+                setPhone("");
+                setEmail("");
+              }}
             >
               <View
                 style={[
@@ -369,7 +399,7 @@ const PickupScreen = () => {
             keyboardType: "email-address",
           })}
 
-          <Text style={ inputStyles.note }>
+          <Text style={inputStyles.note}>
             *Please ensure you carry a valid ID Proof
           </Text>
           <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
@@ -392,11 +422,11 @@ const inputStyles = StyleSheet.create({
     height: 80,
     textAlignVertical: "top",
   },
-  note:{
-    color: colors.buttonError, 
+  note: {
+    color: colors.buttonError,
     fontSize: 14,
-    marginBottom:16,
-  }
+    marginBottom: 16,
+  },
 });
 
 export default PickupScreen;

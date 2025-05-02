@@ -80,20 +80,29 @@ const categoriesScreen = () => {
   return (
     <View style={[globalStyles.container]}>
       <Header headerText={category?.name} />
-      <ScrollView>
-        <View style={[{ backgroundColor: colors.white, flex: 1 }]}>
-          <FlatList
-            data={subCategories}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-            //nestedScrollEnabled={true}
-          />
-        </View>
-      </ScrollView>
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[{ backgroundColor: colors.white, flex: 1 }]}>
+              <FlatList
+                data={subCategories}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+                numColumns={2}
+                columnWrapperStyle={styles.row}
+                contentContainerStyle={styles.listContainer}
+                showsVerticalScrollIndicator={false}
+                //nestedScrollEnabled={true}
+              />
+            </View>
+          </>
+        }
+        data={[]}
+        renderItem={null}
+      />
+
+      {/* </ScrollView> */}
       <Footer navigation={router} activeTab="home" />
     </View>
   );

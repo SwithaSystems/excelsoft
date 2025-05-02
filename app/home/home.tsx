@@ -108,7 +108,7 @@ const HomePage = () => {
             <Image source={item.imageUrl} style={styles.featuredImage} />
             <Text style={styles.featuredTitle}>{item.title}</Text>
             <Text style={styles.featuredDescription}>{item.description}</Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -138,74 +138,85 @@ const HomePage = () => {
 
   return (
     <View style={homeStyles.container}>
-      <ScrollView>
-        <BrandHeader />
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <BrandHeader />
 
-        {/* Search Bar */}
-        <Header />
+            {/* Search Bar */}
+            <Header />
 
-        {/* Categories */}
-        <View style={styles.categoriesContainer}>
-          {/* <Text style={styles.sectionTitle}>Categories</Text> */}
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <FlatList
-              data={categories}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.id}
-              renderItem={({ item }) => (
-                <CategoryItem
-                  name={item.name}
-                  imageUrl={item.images?.[0] || ""}
-                  onPress={() =>
-                    item.id === 2
-                      ? redirectToPage(containers.categoriesScreeScreen, {
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                      : redirectToPage(containers.searchResultsScreenScreen, {
-                          fromSearch: true,
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                  }
-                  // onPress={() =>
-                  //   router.push("/categoriesScree/categoriesScree")
-                  // }
+            {/* Categories */}
+            <View style={styles.categoriesContainer}>
+              {/* <Text style={styles.sectionTitle}>Categories</Text> */}
+              {loading ? (
+                <ActivityIndicator size="large" color={colors.primary} />
+              ) : (
+                <FlatList
+                  data={categories}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item: any) => item.id}
+                  renderItem={({ item }) => (
+                    <CategoryItem
+                      name={item.name}
+                      imageUrl={item.images?.[0] || ""}
+                      onPress={() =>
+                        item.id === 2
+                          ? redirectToPage(containers.categoriesScreeScreen, {
+                              category: item.name,
+                              categoryId: item.id,
+                            })
+                          : redirectToPage(
+                              containers.searchResultsScreenScreen,
+                              {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              }
+                            )
+                      }
+                      // onPress={() =>
+                      //   router.push("/categoriesScree/categoriesScree")
+                      // }
+                    />
+                  )}
                 />
               )}
+            </View>
+
+            {/* Banner */}
+            <View style={{ margin: 10 }}>{renderBanner()}</View>
+
+            {/* Recommended Products */}
+            <RecommendedProductsSlider
+              recommendedProducts={recommendedProducts}
+              sectionTitleStyle={styles.sectionTitle}
+              title="Recommended for You"
             />
-          )}
-        </View>
 
-        {/* Banner */}
-        <View style={{ margin: 10 }}>{renderBanner()}</View>
+            {/* Exclusive Offers */}
+            <View style={globalStyles.px_3}>
+              <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+            </View>
 
-        {/* Recommended Products */}
-        <RecommendedProductsSlider
-          recommendedProducts={recommendedProducts}
-          sectionTitleStyle={styles.sectionTitle}
-          title="Recommended for You"
-        />
+            {/* Best Sellers */}
+            <RecommendedProductsSlider
+              recommendedProducts={bestSellers}
+              sectionTitleStyle={styles.sectionTitle}
+              title="Best Sellers"
+            />
 
-        {/* Exclusive Offers */}
-        <View style={globalStyles.px_3}>
-          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View>
-
-        {/* Best Sellers */}
-        <RecommendedProductsSlider
-          recommendedProducts={bestSellers}
-          sectionTitleStyle={styles.sectionTitle}
-          title="Best Sellers"
-        />
-
-        {/* Featured Products */}
-        {renderFeaturedProducts()}
-      </ScrollView>
-
+            {/* Featured Products */}
+            {renderFeaturedProducts()}
+            {/* </ScrollView> */}
+          </>
+        }
+        data={[]} // No actual data here — just to use FlatList as scroll container
+        renderItem={null}
+        ListFooterComponent={<Footer navigation={router} activeTab="home" />}
+      />
       {/* Footer */}
       <Footer navigation={router} activeTab="home" />
     </View>
@@ -266,7 +277,7 @@ const styles = StyleSheet.create({
     height: 140,
     marginBottom: 8,
     borderTopLeftRadius: 10,
-    borderTopRightRadius:10,
+    borderTopRightRadius: 10,
   },
   featuredTitle: {
     fontSize: 16,
@@ -280,11 +291,11 @@ const styles = StyleSheet.create({
     //marginBottom:10,
     //lineHeight:18,
   },
-  featuredDescriptionText:{
+  featuredDescriptionText: {
     fontSize: 14,
     color: colors.lightgrey,
     marginLeft: 10,
-    marginBottom:10,
+    marginBottom: 10,
   },
   productsList: {
     padding: 10,
