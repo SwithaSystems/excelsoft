@@ -3,15 +3,15 @@ import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
     backgroundColor: colors.white,
+    flex:1,
   },
   returnOrderCategory: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginVertical: 20,
-    marginBottom: 10,
+    //paddingHorizontal: 20,  
+    marginVertical: 16, 
+    //marginBottom: 10
   },
   returnOrderItemText: {
     color: colors.black,
@@ -23,38 +23,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  cartItemsContainer:{
+    marginTop: 16,
+  },
   checkBoxContainer: {
-    backgroundColor: colors.white,
-    borderWidth: 0,
-    padding: 10,
-    marginTop: 0,
-    marginBottom: 16,
-    marginLeft: 0,
-    marginRight: 0,
-  },
-  checkBoxText: {
-    color: colors.black,
-    fontWeight: 400,
-  },
-  cartItemContainerStyle: {
-    paddingHorizontal: 0,
-  },
+      //backgroundColor: colors.white,
+      borderWidth: 0,
+      padding: 10,
+      marginTop: 0,
+      marginBottom: 16,
+      marginLeft: 0,
+      marginRight: 0,
+    },
+    checkBoxText: {
+      color: colors.black,
+      fontWeight: 400,
+    },
+  cartItemContainerStyle:{
+    paddingHorizontal: 0
+  }, 
   cartItem: {
     flexDirection: "row",
     backgroundColor: "#f0f0f0",
     borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
     alignItems: "center",
+    height: 120,
+    //flex: 1,
   },
   itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 120,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    height:'100%',
+    aspectRatio:1,
+    resizeMode: "cover",
   },
   itemDetails: {
     flex: 1,
+    paddingLeft: 8,
   },
   itemName: {
     fontSize: 16,
@@ -85,12 +93,12 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.lightgrey,
+    backgroundColor: colors.white,
     paddingVertical: 15,
     paddingHorizontal: 8,
     borderRadius: 10,
     marginBottom: 24,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.lightSkyBlue,
     elevation: 4,
     shadowColor: "#DEF7FC",
@@ -102,160 +110,184 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   textContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  optionLabel: {
-    fontSize: 16,
-    color: colors.black,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: colors.secondaryText,
-  },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  selectedRadio: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.primary,
-  },
-  datetimeContainer: {
-    flexDirection: "row",
-  },
-  inputContainer: {
+      flex: 1,
+      paddingHorizontal: 16
+    },
+    optionLabel: {
+      fontSize: 16,
+      color: colors.black,
+    },
+    optionDescription: {
+      fontSize: 14,
+      color: colors.secondaryText,
+    },
+    radioCircle: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    selectedRadio: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.primary,
+    },
+    datetimeContainer:{
+        flexDirection: "row",
+        gap: 20,
+    },
+    inputContainer: {
+      marginBottom: 16,
+
+    },
+    inputLabel: {
+      fontSize: 16,
+      marginBottom: 4,
+    },
+    required: {
+      color: 'red',
+    },
+    section:{
+      marginBottom: 16
+    },
+    sectionText:{
+      fontSize: 14
+    },
+    sectionHeading :{
+      fontSize: 16,
+      fontWeight: 600,
+      marginBottom: 16
+    },
+    addressTextBox: {
+          height: 150,
+          borderWidth: 1,
+          borderColor: colors.black,
+          padding: 10,
+          borderRadius: 10,
+          textAlignVertical: 'top', 
+    },
+    label: {
+      fontSize: 16,
+      marginBottom: 16,
+      fontWeight:"bold",
+    },
+    timeContainer: {
+      flexDirection: 'row',
+      marginBottom: 16,
+    }, 
+    timeInput: {
+      backgroundColor: colors.white,
+      borderWidth:1,
+      borderColor: colors.primary,
+      borderRadius: 8,
+      paddingHorizontal: 6,
+      paddingVertical: 4,
+      fontSize: 14,
+      marginRight: 8,
+      textAlign: 'center',
+    },
+    hourMinuteInput: {
+      width: 50,
+    },
+    amPmSelector: {
+      // backgroundColor: '#f8f8f8',
+      borderRadius: 8,
+      borderWidth:1,
+      borderColor: colors.primary,
+      padding: 15,
+      //flexDirection: 'row',
+      //alignItems: 'center',
+      width: 80,
+      justifyContent: 'center',
+    },
+    amPmText: {
+      fontSize: 16,
+    },
+    timeRow: {
+      flexDirection: 'column',
+      //alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },    
+    returnReason: {
+        marginBottom: 16,
+      },
+      selectReason: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        //paddingVertical: 10,
+        backgroundColor: colors.placeholdergrey,
+      },
+      placeholderText: {
+        flex: 1,
+        fontSize: 16,
+        backgroundColor: colors.placeholdergrey,
+      },
+      addComments: {
+        marginVertical: 20,
+      },
+      commentsText: {
+        height: 150,
+        backgroundColor: colors.placeholdergrey,
+        borderWidth: 0,
+        borderRadius: 8,
+        padding: 10,
+        textAlignVertical: 'top',  
+      },
+      returnOrderSummary:{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginVertical: 20, 
+        marginBottom: 10
+      },
+      returnOrderDetails:{
+        color: colors.black,
+        fontSize: 16,
+      },
+      refundStatusSection:{
+        marginVertical: 16,
+      },
+      buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+      }, 
+      submitButton: {
+        backgroundColor: colors.primary,
+        paddingVertical: 15,
+        borderRadius: 8,
+       // marginBottom:32,
+        alignItems: 'center',
+        marginTop: 20,
+     },
+     replacementButton: {
+      backgroundColor: colors.reviewsColor,
+      paddingVertical: 15,
+      borderRadius: 8,
+      marginBottom:32,
+      alignItems: 'center',
+      marginTop: 20,
+   },
+   noteText:{
+      color: colors.black,
+   },
+   returnModes:{
+    flexDirection: "row-reverse",
+    alignItems:"center",
+   },
+   returnSection:{
     marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  required: {
-    color: "red",
-  },
-  section: {
-    marginBottom: 16,
-  },
-  sectionText: {
-    fontSize: 14,
-  },
-  sectionHeading: {
-    fontSize: 16,
-    fontWeight: 600,
-    marginBottom: 16,
-  },
-  addressTextBox: {
-    height: 150,
-    borderWidth: 1,
-    borderColor: colors.black,
-    padding: 10,
-    borderRadius: 10,
-    textAlignVertical: "top",
-  },
-  label: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  timeContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  timeInput: {
-    borderWidth: 1,
-    borderColor: colors.primary,
-    padding: 8,
-    borderRadius: 8,
-    width: 50,
-    height: 40,
-    textAlign: "center",
-    marginHorizontal: 4,
-  },
-  hourMinuteInput: {
-    // width: 60,
-  },
-  amPmSelector: {
-    // backgroundColor: '#f8f8f8',
-    borderRadius: 8,
-    padding: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    width: 80,
-    justifyContent: "space-between",
-  },
-  amPmText: {
-    fontSize: 16,
-  },
-  returnReason: {
-    marginBottom: 16,
-  },
-  selectReason: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    marginTop: 10,
-  },
-  placeholderText: {
-    flex: 1,
-    fontSize: 16,
-    backgroundColor: colors.placeholdergrey,
-  },
-  addComments: {
-    marginVertical: 20,
-  },
-  commentsText: {
-    height: 150,
-    backgroundColor: colors.placeholdergrey,
-    borderWidth: 0,
-    borderRadius: 8,
-    padding: 10,
-    textAlignVertical: "top",
-  },
-  returnOrderSummary: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 20,
-    marginBottom: 10,
-  },
-  returnOrderDetails: {
-    color: colors.black,
-    fontSize: 16,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  submitButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginBottom: 32,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  replacementButton: {
-    backgroundColor: colors.reviewsColor,
-    paddingVertical: 15,
-    borderRadius: 8,
-    marginBottom: 32,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  noteText: {
-    color: colors.black,
-  },
+   },
+   buttonContainer:{
+
+   },
 });
 
 export default styles;

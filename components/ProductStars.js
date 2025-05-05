@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useId } from "react";
 import Star from "./Star";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 function ProductStars(props) {
+  const id = useId()
   return (
     <View style={[styles.starsContainer, props?.starsContainer]}>
       {[1, 2, 3, 4, 5].map((star, index) => (
-        <React.Fragment key={`star-${index}`}>
+        <React.Fragment key={`star-${id + index}`}>
           {props.needAction ? (
             <TouchableOpacity
               key={index}

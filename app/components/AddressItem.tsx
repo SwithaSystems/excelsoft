@@ -36,7 +36,7 @@ const AddressItem = ({
           )}
         </TouchableOpacity>
         <View style={styles.addressContainer}>
-          <View>
+          <View style={styles.addressDetails}>
             <View style={styles.nameRow}>
               <Text style={styles.name}>{item.name}</Text>
             </View>
@@ -51,14 +51,17 @@ const AddressItem = ({
           <View style={styles.iconRow}>
             {onEdit && (
               <TouchableOpacity
-                style={{ marginRight: 12 }}
+                style={ styles.iconButton }
                 onPress={() => onEdit(item)}
               >
                 <Ionicons name="create-outline" size={24} color="black" />
               </TouchableOpacity>
             )}
             {onDelete && (
-              <TouchableOpacity onPress={() => onDelete(item)}>
+              <TouchableOpacity 
+              style = { styles.iconButton }
+              onPress={() => onDelete(item)}
+              >
                 <Ionicons name="trash-outline" size={24} color="red" />
               </TouchableOpacity>
             )}
@@ -77,7 +80,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   addressContainer: {
-    width: "90%",
+    width: "100%",
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -100,5 +103,13 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
+    alignItems: "center",
+    width:"20%",
+  },
+  addressDetails:{
+    width:"80%",
+  },
+  iconButton:{
+    marginLeft: 12,
   },
 });
