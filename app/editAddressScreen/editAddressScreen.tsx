@@ -109,7 +109,7 @@ const editAddressScreen = () => {
         onChangeText={setPostalCode}
         keyboardType="email-address"
       />
-      <Text style={styles.fieldLabel}>Country</Text>
+      {/* <Text style={styles.fieldLabel}>Country</Text>
       <View style={styles.countriesdropdown}>
         <TextInput
           style={styles.input}
@@ -118,7 +118,7 @@ const editAddressScreen = () => {
           keyboardType="email-address"
         />
         <Ionicons name="chevron-down-outline" size={24} color={colors.black} />
-      </View>
+      </View> */}
       <Text style={styles.fieldLabel}>Phone Number</Text>
       <TextInput
         style={styles.input}

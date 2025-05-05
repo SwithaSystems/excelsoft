@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   sectionTitle: {
@@ -23,6 +24,15 @@ const styles = StyleSheet.create({
   orderSummaryContainer: {
     marginTop: 0,
     paddingHorizontal: 0,
+  },
+  activeBtn: {
+    backgroundColor: colors.primary,
+  },
+  disabledBtn: {
+    backgroundColor: colors.lightgrey,
+  },
+  buttonText: {
+    color: colors.black,
   },
 });
 

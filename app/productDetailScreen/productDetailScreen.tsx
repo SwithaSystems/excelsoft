@@ -23,12 +23,14 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../../store/slices/cartSlice";
 import DisplayPrice from "@/components/DisplayPrice";
 const { width } = Dimensions.get("window");
+import { useAppContext } from "@/context/AppContext";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
-  const [selectedColor, setSelectedColor] = useState("black");
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
+  const { isLoading, setIsLoading } = useAppContext();
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -41,10 +43,13 @@ const ProductDetailScreen = () => {
         Number(productId)
       );
       setProduct(fetchedProduct);
+      if (fetchedProduct?.productColors?.length) {
+        setSelectedColor(fetchedProduct.productColors[0]);
+      }
     } catch (error) {
       console.error("Error fetching product:", error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -63,38 +68,6 @@ const ProductDetailScreen = () => {
     }, [productId])
   );
 
-  // useEffect(() => {
-  //   if (!product?.image?.length || !scrollViewRef.current) return;
-
-  //   let isCancelled = false;
-
-  //   const scrollNextImage = () => {
-  //     setCurrentIndex((prevIndex) => {
-  //       const nextIndex =
-  //         prevIndex + 1 === product.image.length ? 0 : prevIndex + 1;
-
-  //       if (scrollViewRef.current) {
-  //         scrollViewRef.current.scrollTo({
-  //           x: nextIndex * width,
-  //           animated: true,
-  //         });
-  //       }
-
-  //       if (!isCancelled) {
-  //         setTimeout(scrollNextImage, 3000);
-  //       }
-
-  //       return nextIndex;
-  //     });
-  //   };
-
-  //   const timeoutId = setTimeout(scrollNextImage, 3000);
-
-  //   return () => {
-  //     isCancelled = true;
-  //     clearTimeout(timeoutId);
-  //   };
-  // }, [product?.image]);
   const indexRef = useRef(0);
 
   useEffect(() => {
@@ -115,7 +88,7 @@ const ProductDetailScreen = () => {
     return () => clearInterval(interval);
   }, [product?.image?.length]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <Text>Loading...</Text>
@@ -200,7 +173,8 @@ const ProductDetailScreen = () => {
               </View>
               <View style={styles.discountTag}>
                 <Text style={styles.discountText}>
-                  {/*product.discount || */ "20%"}
+                  {(product.originalPrice - product.price).toFixed(0) + "%" ||
+                    "20%"}
                 </Text>
               </View>
             </View>
@@ -268,6 +242,8 @@ const ProductDetailScreen = () => {
                       price: product.price,
                       quantity: quantity,
                       image: product.image,
+                      originalPrice: product.originalPrice,
+                      discount: product.originalPrice - product.price,
                     })
                   );
                 }

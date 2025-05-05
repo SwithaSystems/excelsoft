@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
@@ -6,8 +6,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
-
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -15,10 +14,35 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
     (total: any, item: any) => total + item.quantity,
     0
   );
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      // const user = await AsyncStorage.getItem("user");
+      const userData_redux = useSelector((state: any) => state.user.user);
+      if (userData_redux) {
+        setUser(userData_redux);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleMenuPress = async () => {
+    if (user) {
+      redirectToPage(containers.userProfileScreenScreen);
+    } else {
+      redirectToPage(containers.signInScreen);
+    }
+  };
+  const handleSavedItems = async () => {
+    if (user) {
+      redirectToPage(containers.savedItemScreenScreen);
+    } else {
+      redirectToPage(containers.signInScreen);
+    }
+  };
 
   return (
     <View style={styles.footer}>
-      
       {/* Home Button */}
       <TouchableOpacity
         style={styles.footerTab}
@@ -29,28 +53,29 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           size={24}
           color={activeTab.toLowerCase() === "home" ? "#17C6ED" : "#666"}
         />
-        <Text style={{
-          fontSize: 10,
-          color: activeTab.toLowerCase() == "home" ? "#17C6ED":"#666"}
-        }>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "home" ? "#17C6ED" : "#666",
+          }}
+        >
           Home
         </Text>
       </TouchableOpacity>
 
       {/* Saved Button */}
-      <TouchableOpacity
-       style={styles.footerTab} 
-      onPress={() => redirectToPage(containers.savedItemScreenScreen)}>
-        
+      <TouchableOpacity style={styles.footerTab} onPress={handleSavedItems}>
         <Ionicons
           name="heart"
           size={24}
           color={activeTab.toLowerCase() === "saved" ? "#17C6ED" : "#666"}
         />
-        <Text style={{
-          fontSize: 10,
-          color: activeTab.toLowerCase() == "saved" ? "#17C6ED":"#666"}
-        }>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "saved" ? "#17C6ED" : "#666",
+          }}
+        >
           Saved
         </Text>
       </TouchableOpacity>
@@ -65,10 +90,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           size={24}
           color={activeTab.toLowerCase() === "search" ? "#17C6ED" : "#666"}
         />
-        <Text style={{
-          fontSize: 10,
-          color: activeTab.toLowerCase() == "search" ? "#17C6ED":"#666"}
-        }>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "search" ? "#17C6ED" : "#666",
+          }}
+        >
           Search
         </Text>
       </TouchableOpacity>
@@ -92,26 +119,27 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
             </View>
           )}
         </View>
-        <Text style={{
-          fontSize: 10,
-          color: activeTab.toLowerCase() == "cart" ? "#17C6ED":"#666"}
-        }>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "cart" ? "#17C6ED" : "#666",
+          }}
+        >
           Cart
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style = {styles.footerTab}
-        onPress = {() => redirectToPage(containers.userProfileScreenScreen)}
-      >
-          <Ionicons
+      <TouchableOpacity style={styles.footerTab} onPress={handleMenuPress}>
+        <Ionicons
           name="menu"
           size={24}
-          color={activeTab.toLowerCase()=="menu"?"#17C6ED":"#666"}
+          color={activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666"}
         />
-        <Text style={{
-          fontSize: 10,
-          color: activeTab.toLowerCase() == "menu" ? "#17C6ED":"#666"}
-        }>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666",
+          }}
+        >
           Menu
         </Text>
       </TouchableOpacity>

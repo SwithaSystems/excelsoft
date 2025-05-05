@@ -23,6 +23,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import { deviceType } from "expo-device";
 import axiosInstance from "@/services/axiosConfig";
+import { useSelector } from "react-redux";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -49,6 +50,7 @@ const UserProfileScreen = () => {
     lastName: string;
   } | null>(null);
 
+  const userData_redux = useSelector((state: any) => state.user.user);
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
@@ -60,11 +62,12 @@ const UserProfileScreen = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        console.log("userData", user);
-        const response = await axiosInstance.get("/users/" + user.id);
+      // const userData = await AsyncStorage.getItem("user");
+
+      if (userData_redux) {
+        // const user = JSON.parse(userData);
+        // console.log("userData", user);
+        const response = await axiosInstance.get("/users/" + userData_redux.id);
         console.log("response", response.data);
 
         setUser(response.data || "User");
@@ -72,7 +75,7 @@ const UserProfileScreen = () => {
     };
 
     fetchUser();
-  }, []);
+  }, [userData_redux]);
 
   console.log("user details fetched", user);
   useEffect(() => {

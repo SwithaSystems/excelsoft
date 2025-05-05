@@ -105,7 +105,7 @@ const addBillingAddressScreen = () => {
           onChangeText={setPostalCode}
           keyboardType="email-address"
         />
-        <Text style={styles.fieldLabel}>Country</Text>
+        {/* <Text style={styles.fieldLabel}>Country</Text>
         <View style={styles.countriesdropdown}>
           <TextInput
             style={styles.input}
@@ -118,20 +118,19 @@ const addBillingAddressScreen = () => {
             size={24}
             color={colors.black}
           />
-        </View>
+        </View> */}
       </View>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        <View style={styles.addressList}>
-          <Button
-            title="Save Address"
-            onPress={() => {
-              handleSaveAddress();
-              redirectToPage(containers.selectBillingAddressScreenScreen);
-            }}
-          />
-        </View>
+      <View>
+        <Button
+          title="Save Address"
+          onPress={() => {
+            handleSaveAddress();
+            redirectToPage(containers.selectBillingAddressScreenScreen);
+          }}
+          style={styles.submitButton}
+        />
       </View>
-      <View style={[styles.section, globalStyles.mb_0]}>
+      {/* <View style={[styles.section, globalStyles.mb_0]}>
         <Text style={styles.sectionHeading}>Order Details</Text>
         <View style={globalStyles.pl_3}></View>
         <OrderSummary
@@ -141,7 +140,7 @@ const addBillingAddressScreen = () => {
           hideItems={true}
           containerStyle={styles.orderSummaryContainer}
         />
-      </View>
+      </View> */}
     </View>
   );
 };

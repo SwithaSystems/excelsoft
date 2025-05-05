@@ -78,10 +78,10 @@ const styles = StyleSheet.create({
   addToCArtBtnText: {
     fontSize: 12,
   },
-  button:{
-    alignItems: 'center',
-    justifyContent:'center',
-    alignSelf:'center',
+  button: {
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
   },
   productsList: {
     padding: 10,

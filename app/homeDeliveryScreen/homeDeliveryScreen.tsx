@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
 import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
+import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
@@ -45,6 +46,10 @@ const HomeDeliveryScreen = () => {
   const [existingShippingAddress, setExistingSelectedShippingAddress] =
     useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
+  const [addressData, setAddressData] = useState<Address[]>([]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -104,9 +109,9 @@ const HomeDeliveryScreen = () => {
 
   const handleSubmit = async () => {
     try {
-      // if (!validateForm()) {
-      //   return;
-      // }
+      if (!validateForm()) {
+        return;
+      }
 
       setIsLoading(true);
 
@@ -228,10 +233,152 @@ const HomeDeliveryScreen = () => {
       />
     </View>
   );
-  // const handleEditAddress = (item: Address) => {
-  //     setSelectedAddressId(item);
-  //     redirectToPage(containers.editAddressScreenScreen);
-  //   };
+  const confirmDelete = async () => {
+    if (itemToDelete) {
+      try {
+        const response = await addressService.deleteShippingAddress(
+          itemToDelete.id
+        );
+        if (response.success) {
+          setAddressData((prev) =>
+            prev.filter((item) => item._id !== itemToDelete.id)
+          );
+        } else {
+          alert("Failed to delete address.");
+        }
+      } catch (err) {
+        console.error("Delete error:", err);
+        alert("Something went wrong.");
+      }
+    }
+    setIsModalVisible(false);
+    setItemToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setIsModalVisible(false);
+    setItemToDelete(null);
+  };
+  const handleEditAddress = (item: Address) => {
+    setSelectedAddressId(item);
+    redirectToPage(containers.editAddressScreenScreen);
+  };
+  const handleDeleteAddress = (item: Address) => {
+    setItemToDelete({ id: item._id });
+    setIsModalVisible(true);
+  };
+  // Function to validate if the selected time is in the future
+  const validateFutureTime = (hours: any, minutes: any, period: any) => {
+    // Convert input values to numbers
+    const numHours = parseInt(hours, 10);
+    const numMinutes = parseInt(minutes, 10);
+
+    // Validate the input format first
+    if (isNaN(numHours) || isNaN(numMinutes)) {
+      return {
+        isValid: false,
+        message: "Please enter valid hour and minute values.",
+      };
+    }
+
+    if (numHours < 1 || numHours > 12) {
+      return { isValid: false, message: "Hours must be between 1 and 12." };
+    }
+
+    if (numMinutes < 0 || numMinutes > 59) {
+      return { isValid: false, message: "Minutes must be between 0 and 59." };
+    }
+
+    // Get current date and time
+    const now = new Date();
+
+    // Create a date object for the selected time
+    const selectedTime = new Date();
+
+    // Convert 12-hour format to 24-hour format
+    let hours24 = numHours;
+    if (period === "pm" && numHours !== 12) {
+      hours24 += 12;
+    } else if (period === "am" && numHours === 12) {
+      hours24 = 0;
+    }
+
+    // Set hours and minutes for the selected time
+    selectedTime.setHours(hours24);
+    selectedTime.setMinutes(numMinutes);
+    selectedTime.setSeconds(0);
+
+    // Compare with current time
+    if (selectedTime <= now) {
+      return {
+        isValid: false,
+        message: "Please select a future time.",
+      };
+    }
+
+    return { isValid: true };
+  };
+  // Use refs to focus between fields
+  const minutesRef = useRef(null);
+
+  // Validate the time whenever any input changes
+  const validateTime = () => {
+    // Only validate if both hours and minutes have values
+    if (hours && minutes) {
+      const validation = validateFutureTime(hours, minutes, period);
+
+      if (!validation.isValid) {
+        setError(validation.message?.toString() ?? null);
+        return false;
+      } else {
+        setError("");
+        return true;
+      }
+    }
+    return true; // Don't show error while incomplete
+  };
+
+  // Handle hours input changes
+  const handleHoursChange = (text: any) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, "");
+    setHours(numericText);
+
+    // Auto-move to minutes input when 2 digits entered
+    if (numericText.length === 2) {
+      if (minutesRef.current) {
+        (minutesRef.current as any).focus();
+      }
+    }
+  };
+
+  // Handle minutes input changes
+  const handleMinutesChange = (text: any) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, "");
+    setMinutes(numericText);
+
+    // Validate when leaving the minutes field
+    if (numericText.length === 2) {
+      setTimeout(() => {
+        validateTime();
+      }, 100);
+    }
+  };
+
+  // Handle period changes
+  const handlePeriodChange = (value: any) => {
+    setPeriod(value);
+    // Validate immediately when period changes
+    setTimeout(() => {
+      validateTime();
+    }, 100);
+  };
+
+  // Handle blur events to validate when leaving a field
+  const handleBlur = () => {
+    validateTime();
+  };
 
   return (
     <View style={globalStyles.container}>
@@ -270,6 +417,7 @@ const HomeDeliveryScreen = () => {
                     mode="date"
                     display="default"
                     onChange={onDateChange}
+                    minimumDate={new Date()}
                   />
                 )}
               </View>
@@ -278,25 +426,34 @@ const HomeDeliveryScreen = () => {
               <Text style={styles.inputLabel}>Time: *</Text>
               <View style={globalStyles.timeContainer}>
                 <TextInput
-                  style={globalStyles.timeInput}
+                  style={[
+                    globalStyles.timeInput,
+                    error ? { borderColor: "red" } : {},
+                  ]}
                   placeholder="HH"
                   keyboardType="numeric"
                   maxLength={2}
                   value={hours}
-                  onChangeText={setHours}
+                  onChangeText={handleHoursChange}
+                  onBlur={handleBlur}
                 />
                 <Text>:</Text>
                 <TextInput
-                  style={globalStyles.timeInput}
+                  ref={minutesRef}
+                  style={[
+                    globalStyles.timeInput,
+                    error ? { borderColor: "red" } : {},
+                  ]}
                   placeholder="MM"
                   keyboardType="numeric"
                   maxLength={2}
                   value={minutes}
-                  onChangeText={setMinutes}
+                  onChangeText={handleMinutesChange}
+                  onBlur={handleBlur}
                 />
                 <View
                   style={{
-                    borderColor: colors.primary,
+                    borderColor: error ? "red" : colors.primary,
                     borderWidth: 1,
                     height: 40,
                     width: 150,
@@ -311,14 +468,16 @@ const HomeDeliveryScreen = () => {
                       width: 150,
                       color: colors.black,
                     }}
-                    onValueChange={(itemValue) => setPeriod(itemValue)}
+                    onValueChange={handlePeriodChange}
                   >
                     <Picker.Item label="AM" value="am" />
                     <Picker.Item label="PM" value="pm" />
                   </Picker>
                 </View>
               </View>
-
+              {error ? (
+                <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+              ) : null}
               {/* Contact Information */}
               {existingShippingAddress.length == 0 && (
                 <>
@@ -364,8 +523,8 @@ const HomeDeliveryScreen = () => {
                       setSelectedAddressId(item._id);
                       setAddress(item);
                     }}
-                    // onEdit={handleEditAddress}
-                    // onDelete={handleDeleteAddress}
+                    onEdit={handleEditAddress}
+                    onDelete={handleDeleteAddress}
                   />
                 )}
               />
@@ -384,15 +543,23 @@ const HomeDeliveryScreen = () => {
                   placeholder="E.g., Landmark, preferred delivery time, etc."
                 />
               </View>
-              {/* <Text style={styles.note}>
-                *Please ensure you carry a valid ID Proof
-              </Text> */}
               <Button
                 title="Confirm"
                 onPress={handleSubmit}
                 disabled={isLoading}
               />
             </View>
+            <ConfirmationModal
+              onClose={() => {
+                setIsModalVisible(false);
+              }}
+              isModalVisible={isModalVisible}
+              text="Are you sure you want to delete this address?"
+              submitText="Delete Address"
+              handleSubmit={confirmDelete}
+              cancelText="Cancel"
+              handleCancel={cancelDelete}
+            />
           </>
         }
         data={[]}

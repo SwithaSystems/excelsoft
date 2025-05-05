@@ -4,7 +4,8 @@ import axios from "axios";
 import { orderService, PickupMode } from "@/services/orderService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 
 type Product = {
   productId: string;
@@ -24,6 +25,7 @@ export const usePaymentHandler = () => {
     quantity: item.quantity,
     price: item.price,
   }));
+  const dispatch = useDispatch();
 
   const calculateSubtotal = (cartItems: Product[]) =>
     cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -158,6 +160,7 @@ export const usePaymentHandler = () => {
         },
       });
       console.log("after order placed", response);
+      dispatch(clearCart());
       redirectToPage(containers.orderSuccessfulScreenScreen, {
         orderData: JSON.stringify(response),
       });

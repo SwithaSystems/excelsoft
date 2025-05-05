@@ -4,6 +4,8 @@ export interface CartItemInterface {
   id: string;
   name: string;
   price: number;
+  originalPrice: number;
+  discount: number;
   quantity: number;
   image: string | any[];
 }

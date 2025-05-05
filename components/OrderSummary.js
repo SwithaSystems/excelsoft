@@ -11,7 +11,8 @@ function OrderSummary(props) {
   };
   const cartItems = props.cartItems;
   const total = calculateTotal();
-  const discount = props?.discount || 0;
+  // const discount = props?.discount || 0;
+  const discount = typeof props?.discount === "number" ? props.discount : 0;
   const shipping = props?.shipping || 0;
   const subTotal = total - discount + shipping;
   return (
@@ -33,7 +34,7 @@ function OrderSummary(props) {
               <Text style={styles.summaryName}>{item.name}</Text>
               <Text style={styles.summaryQuantity}>{item.quantity}</Text>
               <Text style={styles.summaryPrice}>
-                ${(item.price * item.quantity).toFixed(2)}
+                {(item.price * item.quantity).toFixed(2)}
               </Text>
             </View>
           ))}
@@ -48,15 +49,17 @@ function OrderSummary(props) {
           </Text>
         </View>
 
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryName, { color: colors.primary }]}>
-            Discount
-          </Text>
-          <Text style={styles.summaryQuantity}></Text>
-          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            -${discount.toFixed(2)}
-          </Text>
-        </View>
+        {discount > 0 && (
+          <View style={styles.summaryItem}>
+            <Text style={[styles.summaryName, { color: colors.primary }]}>
+              Discount
+            </Text>
+            <Text style={styles.summaryQuantity}></Text>
+            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+              -${discount.toFixed(2)}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.summaryItem}>
           <Text style={[styles.summaryName, { color: colors.primary }]}>
@@ -84,7 +87,7 @@ function OrderSummary(props) {
 const styles = StyleSheet.create({
   summaryName: {
     width: "33.33%",
-    flexWrap:"wrap",
+    flexWrap: "wrap",
   },
   summaryPrice: {
     width: "33.33%",
