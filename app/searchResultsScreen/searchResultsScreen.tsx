@@ -1,5 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, FlatList, SafeAreaView } from "react-native";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  SafeAreaView,
+  ActivityIndicator,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Footer from "../../components/Footer";
 import ProductCard from "../components/ProductCard";
@@ -12,226 +18,270 @@ import { categoryService } from "@/services/categoryService";
 import NoContentFound from "@/components/NoContentFound";
 
 const SearchResultsScreen = () => {
-  const { fromSearch, query } = useLocalSearchParams();
-  const { category } = useLocalSearchParams();
-  const { categoryId } = useLocalSearchParams();
-  const { selectedSubCategories } = useLocalSearchParams();
+  const { fromSearch, query, category, categoryId, selectedSubCategories } =
+    useLocalSearchParams();
   const router = useRouter();
 
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  // Convert params to proper types
+  const isFromSearch = fromSearch === "true";
+  const searchQuery = query?.toString() || "";
+  const categoryName = category?.toString() || "";
+  const parsedCategoryId = Number(categoryId) || 0;
+
+  // State management
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [subCategories, setSubCategories] = useState<any[]>([]);
-  const [subCategoriesIds, setSubCategoriesIds] = useState<number[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(
-    Number(categoryId)
-  );
-  const [loading, setLoading] = useState<boolean>(true);
-  // const [isLoading, setIsLoading] = useappContext();
-  console.log("all params", fromSearch, query, category, categoryId);
+  const [selectedCategoryId, setSelectedCategoryId] =
+    useState<number>(parsedCategoryId);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [headerTitle, setHeaderTitle] = useState(
-    fromSearch ? category : "Search Results"
+    isFromSearch ? categoryName : "Search Results"
   );
-  const [sortedProducts, setSortedProducts] = useState<any>([]);
+  const [sortOption, setSortOption] = useState<string>("default");
 
-  useEffect(() => {
-    console.log("sub ids from filterscreen (raw)", selectedSubCategories);
+  // Parse selected subcategories
+  const parsedSubCategoryIds = useMemo(() => {
+    if (!selectedSubCategories) return [];
 
-    if (selectedSubCategories) {
-      const parsedIds = Array.isArray(selectedSubCategories)
-        ? selectedSubCategories.map((id) => Number(id))
-        : selectedSubCategories.split(",").map((id) => Number(id));
-
-      console.log("parsed subCategory IDs:", parsedIds);
-      setSubCategoriesIds(parsedIds);
-    }
+    return Array.isArray(selectedSubCategories)
+      ? selectedSubCategories.map((id) => Number(id))
+      : selectedSubCategories
+          .toString()
+          .split(",")
+          .map((id) => Number(id.trim()))
+          .filter(Boolean);
   }, [selectedSubCategories]);
-  console.log("sub categories ids ", subCategoriesIds);
-  // Fetch all products for free-text search only (runs once)
-  // useEffect(() => {
-  //   const fetchAllProducts = async () => {
-  //     try {
-  //       const data = await ProductsAPI.getAllProducts();
-  //       setAllProducts(data);
-  //     } catch (error) {
-  //       console.error("Error fetching all products:", error);
-  //     }
-  //   };
-  //   fetchAllProducts();
-  // }, []);
 
-  // Fetch subcategories and prepare list of their IDs
+  // Fetch all products (for search functionality)
   useEffect(() => {
-    const fetchSubCategories = async () => {
-      if (subCategories.length > 0) return;
+    if (!isFromSearch && searchQuery) {
+      const fetchAllProducts = async () => {
+        try {
+          setIsLoading(true);
+          const data = await ProductsAPI.getAllProducts();
+          setAllProducts(data);
+        } catch (err) {
+          console.error("Error fetching all products:", err);
+          setError("Failed to fetch products. Please try again.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-      try {
-        const data = await categoryService.getAllSubCategories(
-          Number(categoryId)
-        );
-        setSubCategories(data);
-        const ids = data.map((category) => category.id);
-        setSubCategoriesIds(ids);
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-    fetchSubCategories();
-  }, [categoryId]);
+      fetchAllProducts();
+    }
+  }, [isFromSearch, searchQuery]);
 
+  // Fetch subcategories for the selected category
+  useEffect(() => {
+    if (isFromSearch && parsedCategoryId) {
+      const fetchSubCategories = async () => {
+        try {
+          setIsLoading(true);
+          const data = await categoryService.getAllSubCategories(
+            parsedCategoryId
+          );
+          setSubCategories(data);
+        } catch (err) {
+          console.error("Error fetching subcategories:", err);
+          setError("Failed to load categories. Please try again.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchSubCategories();
+    }
+  }, [isFromSearch, parsedCategoryId]);
+
+  // Fetch products based on category selection
   useEffect(() => {
     const fetchCategoryProducts = async () => {
+      if (!isFromSearch && !parsedCategoryId) return;
+
       try {
-        setLoading(true);
-        console.log(
-          "Selected category ID:",
-          selectedCategoryId,
-          "Main category ID:",
-          Number(categoryId),
-          "Subcategory IDs:",
-          subCategoriesIds
-        );
+        setIsLoading(true);
+        setError(null);
 
-        // If subcategories are selected through filters
-        if (subCategoriesIds.length > 0 && selectedSubCategories) {
-          // Fetch products for all selected subcategories
-          const allSubCategoryProducts = await Promise.all(
-            subCategoriesIds.map((id) => ProductsAPI.getProductByCategoryID(id))
+        let fetchedProducts: Product[] = [];
+
+        // Case 1: Selected subcategories from filters
+        if (parsedSubCategoryIds.length > 0) {
+          const productPromises = parsedSubCategoryIds.map((id) =>
+            ProductsAPI.getProductByCategoryID(id)
           );
-          const combined = allSubCategoryProducts.flat();
-          const uniqueProducts = Array.from(
-            new Map(combined.map((item) => [item.id, item])).values()
-          );
-          setProducts(uniqueProducts);
+          const allSubProducts = await Promise.all(productPromises);
+          fetchedProducts = allSubProducts.flat();
         }
-        // If parent category is selected (matches the main categoryId)
-        else if (selectedCategoryId === Number(categoryId)) {
-          // For parent category, fetch all products from parent AND all its subcategories
-          const mainCategoryProducts = await ProductsAPI.getProductByCategoryID(
-            Number(categoryId)
+        // Case 2: Selected parent category (show all products including subcategories)
+        else if (selectedCategoryId === parsedCategoryId) {
+          // Get products from main category
+          const mainProducts = await ProductsAPI.getProductByCategoryID(
+            parsedCategoryId
           );
+          fetchedProducts = mainProducts;
 
-          // If subcategories exist, also fetch their products
+          // If we have subcategories, get their products too
           if (subCategories.length > 0) {
-            const subCategoryProductsPromises = subCategories.map((subCat) =>
+            const subProductPromises = subCategories.map((subCat) =>
               ProductsAPI.getProductByCategoryID(subCat.id)
             );
-            const allSubCategoryProducts = await Promise.all(
-              subCategoryProductsPromises
-            );
-            const allProducts = [
-              ...mainCategoryProducts,
-              ...allSubCategoryProducts.flat(),
-            ];
-            const uniqueProducts = Array.from(
-              new Map(allProducts.map((item) => [item.id, item])).values()
-            );
-            setProducts(uniqueProducts);
-          } else {
-            setProducts(mainCategoryProducts);
+            const subProducts = await Promise.all(subProductPromises);
+            fetchedProducts = [...fetchedProducts, ...subProducts.flat()];
           }
         }
-        // If a specific subcategory is selected
+        // Case 3: Selected specific subcategory
         else {
-          // Fetch products just for the selected subcategory
-          const categoryProducts = await ProductsAPI.getProductByCategoryID(
+          fetchedProducts = await ProductsAPI.getProductByCategoryID(
             selectedCategoryId
           );
-          setProducts(categoryProducts);
         }
-      } catch (error) {
-        console.error("Error fetching category products:", error);
+
+        // Remove duplicates by product ID
+        const uniqueProducts = Array.from(
+          new Map(fetchedProducts.map((item) => [item.id, item])).values()
+        );
+
+        setProducts(uniqueProducts);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products. Please try again.");
         setProducts([]);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchCategoryProducts();
   }, [
+    isFromSearch,
+    parsedCategoryId,
     selectedCategoryId,
-    categoryId,
-    subCategoriesIds,
-    selectedSubCategories,
+    parsedSubCategoryIds,
     subCategories,
   ]);
 
-  // Handle free-text search (filter from allProducts)
+  // Filter products by search query
   const filteredProducts = useMemo(() => {
-    if (!query) return products;
+    if (!searchQuery) return [];
 
-    const searchQuery = query.toString().toLowerCase();
+    const normalizedQuery = searchQuery.toLowerCase();
     return allProducts.filter(
       (product) =>
-        product.name.toLowerCase().includes(searchQuery) ||
-        product.description.toLowerCase().includes(searchQuery)
+        product.name.toLowerCase().includes(normalizedQuery) ||
+        product.description.toLowerCase().includes(normalizedQuery)
     );
-  }, [query, allProducts]);
+  }, [searchQuery, allProducts]);
 
-  useEffect(() => {
-    if (!fromSearch) {
-      setSortedProducts(filteredProducts);
-    } else {
-      setSortedProducts(products);
+  // Apply sorting to products
+  const sortedProducts = useMemo(() => {
+    const productsToSort = isFromSearch ? products : filteredProducts;
+    if (!productsToSort.length) return [];
+
+    const sorted = [...productsToSort];
+
+    switch (sortOption) {
+      case "lowToHigh":
+        return sorted.sort((a, b) => a.price - b.price);
+      case "highToLow":
+        return sorted.sort((a, b) => b.price - a.price);
+      default:
+        return sorted;
     }
-  }, [filteredProducts, products, fromSearch]);
+  }, [isFromSearch, products, filteredProducts, sortOption]);
 
-  // Handle selecting a category badge
-  const handleCategorySelect = (categoryId: number) => {
-    console.log("selected category id from cat badge", categoryId);
-    setSelectedCategoryId(categoryId);
-  };
-  const handleSortChange = (sortOption: string) => {
-    let originalProducts = !fromSearch ? filteredProducts : products;
-    let sorted = [...originalProducts]; // Assume this holds the unsorted list
+  // Handle category selection from badges
+  const handleCategorySelect = useCallback((catId: number) => {
+    setSelectedCategoryId(catId);
+  }, []);
 
-    if (sortOption === "lowToHigh") {
-      sorted.sort((a, b) => a.price - b.price);
-    } else if (sortOption === "highToLow") {
-      sorted.sort((a, b) => b.price - a.price);
-    } else {
-      sorted = [...originalProducts]; // fallback to default/relevance
-    }
+  // Handle sort option change
+  const handleSortChange = useCallback((option: string) => {
+    setSortOption(option);
+  }, []);
 
-    setSortedProducts(sorted);
-  };
+  // Products to display based on mode (search or category)
+  const displayProducts =
+    sortedProducts.length > 0
+      ? sortedProducts
+      : isFromSearch
+      ? products
+      : filteredProducts;
 
-  const productsToRender =
-    sortedProducts.length > 0 || fromSearch ? sortedProducts : products;
+  // Render product item
+  const renderItem = useCallback(
+    ({ item, index }: { item: Product; index: number }) => {
+      const isEven = index % 2 === 0;
+      return (
+        <View
+          style={[
+            styles.productItem,
+            isEven ? styles.leftItem : styles.rightItem,
+          ]}
+        >
+          <ProductCard
+            id={item.id}
+            name={item.name}
+            description={item.description}
+            price={item.price}
+            originalPrice={item.originalPrice}
+            image={item.image?.[0] || ""}
+            productColors={item.productColors}
+            category={String(item.categoryId)}
+            rating={item.rating}
+            noOfreviews={item.noOfreviews}
+            reviews={item.reviews}
+          />
+        </View>
+      );
+    },
+    []
+  );
 
-  const renderItem = ({ item, index }: { item: Product; index: number }) => {
-    const isEven = index % 2 === 0;
-    return (
-      <View
-        style={[
-          styles.productItem,
-          isEven ? styles.leftItem : styles.rightItem,
-        ]}
-      >
-        <ProductCard
-          id={item.id}
-          name={item.name}
-          description={item.description}
-          price={item.price}
-          originalPrice={item.originalPrice}
-          image={item.image?.[0] || ""}
-          productColors={item.productColors}
-          category={String(item.categoryId)}
-          rating={item.rating}
-          noOfreviews={item.noOfreviews}
-          reviews={item.reviews}
-        />
-      </View>
-    );
-  };
-
-  const renderCategoryBadges = (categoryId: number) => {
-    return (
+  // Render category badges component
+  const renderCategoryBadges = useCallback(
+    () => (
       <CategoryBadges
         categoryId={selectedCategoryId}
         subCategories={subCategories}
         onCategorySelect={handleCategorySelect}
-        onCategoryNameChange={(name: any) => setHeaderTitle(name)}
+        onCategoryNameChange={setHeaderTitle}
         onSortChange={handleSortChange}
+      />
+    ),
+    [selectedCategoryId, subCategories, handleCategorySelect, handleSortChange]
+  );
+
+  // Render content based on loading state
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <View>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text>Loading products...</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return <NoContentFound message={error} />;
+    }
+
+    if (!displayProducts.length) {
+      return <NoContentFound message="No products found" />;
+    }
+
+    return (
+      <FlatList
+        data={displayProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
       />
     );
   };
@@ -240,32 +290,20 @@ const SearchResultsScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
       <Header headerText={headerTitle} />
 
-      {loading ? (
-        <Text style={styles.resultsCount}>Loading...</Text>
-      ) : !fromSearch ? (
-        <Text style={styles.resultsCount}>
-          {filteredProducts.length} search results for "{query}"
-        </Text>
-      ) : (
-        renderCategoryBadges(Number(categoryId))
+      {!isLoading && !error && (
+        <>
+          {!isFromSearch && searchQuery ? (
+            <Text style={styles.resultsCount}>
+              {filteredProducts.length} search results for "{searchQuery}"
+            </Text>
+          ) : isFromSearch ? (
+            renderCategoryBadges()
+          ) : null}
+        </>
       )}
 
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
-        {loading ? (
-          <Text style={styles.resultsCount}>Loading...</Text>
-        ) : productsToRender.length === 0 ? (
-          <NoContentFound message="No products found" />
-        ) : (
-          <FlatList
-            data={productsToRender}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        {renderContent()}
       </View>
 
       <Footer navigation={router} activeTab="home" />
@@ -274,6 +312,3 @@ const SearchResultsScreen = () => {
 };
 
 export default SearchResultsScreen;
-function useappContext(): [any, any] {
-  throw new Error("Function not implemented.");
-}
