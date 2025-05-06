@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   option: {
@@ -13,25 +13,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lightSkyBlue,
     elevation: 4,
-    shadowColor: '#DEF7FC', 
+    shadowColor: "#DEF7FC",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1.0, 
+    shadowOpacity: 1.0,
     shadowRadius: 4,
   },
-  iconContainer:{
+  iconContainer: {
     height: 32,
     width: 32,
     backgroundColor: colors.secondary,
     borderRadius: 32,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   selectedOption: {
     borderColor: colors.primary,
   },
   textContainer: {
     flex: 1,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   optionLabel: {
     fontSize: 16,
@@ -67,6 +67,15 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: colors.lightgrey,
+    // or any other dimmed color
+  },
+  buttonText_disabled: {
+    color: colors.black,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

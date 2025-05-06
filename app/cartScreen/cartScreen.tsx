@@ -35,25 +35,16 @@ import containers from "@/containers";
 import { redirectToPage } from "../../utilities/redirectionHelper";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RootState } from "@/store/store";
+import NoContentFound from "@/components/NoContentFound";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
-  const cartItems = useSelector((state: any) => state.cart?.items || []);
-  // const cartItems = useSelector((state: any) => [state.cart.items]);
-  const savedItems = useSelector((state: any) => state.savedItems.items);
-  const [user, setUser] = useState<any>(null);
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        console.log("user", user);
-        setUser(user);
-      }
-    };
+  const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+  const savedItems = useSelector((state: RootState) => state.savedItems.items);
+  const user = useSelector((state: RootState) => state.user.user);
 
-    fetchUser();
-  }, []);
+  console.log("user in cart screen", user);
 
   const recommendedProducts = products
     .filter((p) =>
@@ -68,6 +59,7 @@ const CartScreen = () => {
       price: product.price,
       originalPrice: product.originalPrice,
     }));
+  console.log("Recommended Products", recommendedProducts);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
@@ -116,34 +108,41 @@ const CartScreen = () => {
     <View style={[globalStyles.container]}>
       <ScrollView>
         <Header headerText="Cart" />
-
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {cartItems?.map((eachCartItem: any) => {
-            return (
-              <CartItem
-                handleDelete={handleDelete}
-                key={eachCartItem.id}
-                cartItem={eachCartItem}
+          {cartItems.length === 0 ? (
+            <View>
+              <NoContentFound
+                message="Your cart is empty"
+                buttonText="Go to Shop"
+                onPress={() => redirectToPage(containers.homeScreen)}
               />
-            );
-          })}
-          <SpecialOffersBanner />
-
-          <OrderSummary
-            cartItems={cartItems}
-            sectionHeadingStyle={styles.sectionHeading}
-          />
-          <View
-            style={{
-              width: "50%",
-              marginHorizontal: "auto",
-              marginTop: 4,
-              marginBottom: 16,
-            }}
-          >
-            <Button title="Place Order" onPress={handlePlaceOrder} />
-          </View>
-
+            </View>
+          ) : (
+            <>
+              {cartItems.map((eachCartItem: any) => (
+                <CartItem
+                  handleDelete={handleDelete}
+                  key={eachCartItem.id}
+                  cartItem={eachCartItem}
+                />
+              ))}
+              <SpecialOffersBanner />
+              <OrderSummary
+                cartItems={cartItems}
+                sectionHeadingStyle={styles.sectionHeading}
+              />
+              <View
+                style={{
+                  width: "50%",
+                  marginHorizontal: "auto",
+                  marginTop: 4,
+                  marginBottom: 16,
+                }}
+              >
+                <Button title="Place Order" onPress={handlePlaceOrder} />
+              </View>
+            </>
+          )}
           {/*<Text>Have a Discount Code?</Text>
           <View style={globalStyles.discountSection}>
             <View style={globalStyles.discountTextInput}>

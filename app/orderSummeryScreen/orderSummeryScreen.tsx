@@ -19,6 +19,7 @@ import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
+import { RootState } from "@/store/store";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -37,7 +38,7 @@ type OrderSummeryScreenParams = {
 const orderSummeryScreen = () => {
   const params = useLocalSearchParams<any>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItems = useSelector((state: RootState) => [...state.cart.items]);
   // const { initPaymentSheet, presentPaymentSheet } = useStripe();
   // const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);

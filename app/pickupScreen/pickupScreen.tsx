@@ -24,6 +24,7 @@ import colors from "../config/colors";
 import { PickupMode } from "@/services/orderService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
+import { useSelector } from "react-redux";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -38,6 +39,18 @@ const PickupScreen = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Store user data from Redux
+  const userData_redux = useSelector((state: any) => state.user.user);
+
+  // Store the original user data to use when toggling between "Myself" and "Someone Else"
+  const [originalUserData, setOriginalUserData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+  });
+
   console.log("Selected mode is:", mode); // store / curbside
 
   // Curbside specific fields
@@ -173,25 +186,62 @@ const PickupScreen = () => {
       />
     </View>
   );
+
+  // Load user data
   useEffect(() => {
     const getUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      console.log("userData", userData);
-      if (userData) {
-        const user = await UserAPI.getUserByPhonenumber(
-          JSON.parse(userData)?.phone
-        );
-        console.log("user", user.data);
-        if (user) {
-          setFirstName(user.data.firstName);
-          setLastName(user.data.lastName);
-          setPhone(user.data.phone);
-          setEmail(user.data.email);
+      if (userData_redux) {
+        try {
+          const user = await UserAPI.getUserByPhonenumber(
+            userData_redux?.phone
+          );
+          console.log("user", user.data);
+          if (user && user.data) {
+            // Save original user data
+            const userData = {
+              firstName: user.data.firstName || "",
+              lastName: user.data.lastName || "",
+              phone: user.data.phone || "",
+              email: user.data.email || "",
+            };
+
+            setOriginalUserData(userData);
+
+            // If collector is "myself", populate the fields
+            if (collector === "myself") {
+              setFirstName(userData.firstName);
+              setLastName(userData.lastName);
+              setPhone(userData.phone);
+              setEmail(userData.email);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
         }
       }
     };
     getUser();
-  }, []);
+  }, [userData_redux]);
+
+  // Handle collector change
+  const handleCollectorChange = (newCollector: any) => {
+    setCollector(newCollector);
+
+    if (newCollector === "myself") {
+      // Restore original user data when selecting "Myself"
+      setFirstName(originalUserData.firstName);
+      setLastName(originalUserData.lastName);
+      setPhone(originalUserData.phone);
+      setEmail(originalUserData.email);
+    } else {
+      // Clear fields when selecting "Someone Else"
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setEmail("");
+    }
+  };
+
   console.log("user destructured data", firstName, lastName, phone, email);
 
   return (
@@ -349,13 +399,7 @@ const PickupScreen = () => {
           <View style={styles.collectorOptions}>
             <TouchableOpacity
               style={styles.radioOption}
-              onPress={() => {
-                setCollector("myself");
-                setFirstName("");
-                setLastName("");
-                setPhone("");
-                setEmail("");
-              }}
+              onPress={() => handleCollectorChange("myself")}
             >
               <View
                 style={[
@@ -369,7 +413,7 @@ const PickupScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.radioOption}
-              onPress={() => setCollector("someone_else")}
+              onPress={() => handleCollectorChange("someone_else")}
             >
               <View
                 style={[

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Stack } from "expo-router";
 import { Provider } from "react-redux";
-import { store } from "../store/store";
+import { store, persistor } from "../store/store";
 import SplashScreen from "../components/commonComponents/SplashScreen";
 import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
@@ -9,6 +9,7 @@ import { NotificationService } from "@/services/notificationService";
 import { AuthProvider } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
 import { StripeProvider } from "@stripe/stripe-react-native";
+import { PersistGate } from "redux-persist/integration/react";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -333,12 +334,14 @@ export default function Layout() {
   return (
     <StripeProvider publishableKey="pk_test_51R964dE2THJkmBnHVkIykpypErffxTtnzoitEUsS0MOdtf2mUCqpARkTLpxXdyoRUxP8yXwzlHN8EZBlUZMlDsg000rsEfx2De">
       <Provider store={store}>
-        <AppProvider>
-          <AuthProvider>
-            <NotificationsHandler />
-            <LayoutContent />
-          </AuthProvider>
-        </AppProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <AppProvider>
+            <AuthProvider>
+              <NotificationsHandler />
+              <LayoutContent />
+            </AuthProvider>
+          </AppProvider>
+        </PersistGate>
       </Provider>
     </StripeProvider>
   );

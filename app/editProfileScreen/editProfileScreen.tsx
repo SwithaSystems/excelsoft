@@ -21,6 +21,8 @@ import { useDerivedValue } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 interface User {
   id: string;
@@ -41,16 +43,14 @@ const editProfileScreen = () => {
   const [role, setRole] = useState("Store Manager");
   const [profileImage, setProfileImage] = useState("https://picsum.photos/100");
   const [user, setUser] = useState<User | null>(null);
+  const userData = useSelector((state: RootState) => state.user.user);
 
   useEffect(() => {
     const getUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
+      // const userData = await AsyncStorage.getItem("user");
       console.log("userData", userData);
       if (userData) {
-        const user = await UserAPI.getUserByPhonenumber(
-          JSON.parse(userData)?.phone
-        );
-
+        const user = await UserAPI.getUserByPhonenumber(userData?.phone);
         console.log("user", user.data);
         if (user) {
           setFirstName(user.data.firstName);
@@ -62,7 +62,7 @@ const editProfileScreen = () => {
       }
     };
     getUser();
-  }, []);
+  }, [userData]);
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();

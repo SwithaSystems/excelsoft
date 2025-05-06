@@ -98,10 +98,10 @@ const selectBillingAddressScreen = () => {
         // Set initial selected address if one exists in context
         if (selectedBillingAddress?._id) {
           setSelectedId(selectedBillingAddress._id);
-        } else if (response.length > 0) {
-          // If no address is selected yet, select the first one by default
-          setSelectedBillingAddress(response[0]);
-          setSelectedId(response[0]._id);
+          // } else if (response.length > 0) {
+          //   // If no address is selected yet, select the first one by default
+          //   setSelectedBillingAddress(response[0]);
+          //   setSelectedId(response[0]._id);
         }
       } catch (err) {
         console.error("Error fetching billing addresses:", err);
@@ -152,6 +152,14 @@ const selectBillingAddressScreen = () => {
     setSelectedBillingAddress(item);
     console.log("Selected address:", item);
   };
+  const isPaymentEnabled =
+    cartItems.length > 0 &&
+    selectedBillingAddress &&
+    shippingAddress &&
+    pickupDetails?.date &&
+    pickupDetails?.time &&
+    selectedMode &&
+    (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
     <View style={globalStyles.container}>
@@ -205,6 +213,7 @@ const selectBillingAddressScreen = () => {
               <View style={styles.addressList}>
                 <Button
                   title="Proceed for Payment"
+                  disabled={!isPaymentEnabled}
                   onPress={() =>
                     handlePayment(cartItems, {
                       billingAddress: selectedBillingAddress,
@@ -220,6 +229,10 @@ const selectBillingAddressScreen = () => {
                         : selectedMode,
                     })
                   }
+                  style={
+                    isPaymentEnabled ? styles.activeBtn : styles.disabledBtn
+                  }
+                  textStyle={styles.buttonText}
                 />
               </View>
             </View>

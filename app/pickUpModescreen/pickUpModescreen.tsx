@@ -95,6 +95,9 @@ const pickUpModescreen = () => {
                 redirectToPage(selected?.redirectionScreen, selected?.params);
               }
             }}
+            disabled={!selected?.id}
+            style={!selected?.id ? styles.disabledButton : {}}
+            textStyle={!selected?.id ? styles.buttonText_disabled : {}}
           />
         </View>
       </ScrollView>
