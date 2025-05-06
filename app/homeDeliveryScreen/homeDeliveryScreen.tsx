@@ -170,16 +170,6 @@ const HomeDeliveryScreen = () => {
         { orderId, type: "delivery_scheduled" }
       );
 
-      // const shippingAddress = {
-      //   name: `${firstName} ${lastName}`,
-      //   line1: "",
-      //   line2: "",
-      //   city: "",
-      //   state: "",
-      //   postalCode: "",
-      //   country: "",
-      //   phone: phone,
-      // };
       const shippingAddress = existingShippingAddress;
       const pickupDetails = {
         date: date,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -39,6 +39,7 @@ const PickupScreen = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Store user data from Redux
   const userData_redux = useSelector((state: any) => state.user.user);
@@ -244,6 +245,119 @@ const PickupScreen = () => {
 
   console.log("user destructured data", firstName, lastName, phone, email);
 
+  // Function to validate if the selected time is in the future
+  const validateFutureTime = (hours: any, minutes: any, period: any) => {
+    // Convert input values to numbers
+    const numHours = parseInt(hours, 10);
+    const numMinutes = parseInt(minutes, 10);
+
+    // Validate the input format first
+    if (isNaN(numHours) || isNaN(numMinutes)) {
+      return {
+        isValid: false,
+        message: "Please enter valid hour and minute values.",
+      };
+    }
+
+    if (numHours < 1 || numHours > 12) {
+      return { isValid: false, message: "Hours must be between 1 and 12." };
+    }
+
+    if (numMinutes < 0 || numMinutes > 59) {
+      return { isValid: false, message: "Minutes must be between 0 and 59." };
+    }
+
+    // Get current date and time
+    const now = new Date();
+
+    // Create a date object for the selected time
+    const selectedTime = new Date();
+
+    // Convert 12-hour format to 24-hour format
+    let hours24 = numHours;
+    if (period === "pm" && numHours !== 12) {
+      hours24 += 12;
+    } else if (period === "am" && numHours === 12) {
+      hours24 = 0;
+    }
+
+    // Set hours and minutes for the selected time
+    selectedTime.setHours(hours24);
+    selectedTime.setMinutes(numMinutes);
+    selectedTime.setSeconds(0);
+
+    // Compare with current time
+    if (selectedTime <= now) {
+      return {
+        isValid: false,
+        message: "Please select a future time.",
+      };
+    }
+
+    return { isValid: true };
+  };
+  // Use refs to focus between fields
+  const minutesRef = useRef(null);
+
+  // Validate the time whenever any input changes
+  const validateTime = () => {
+    // Only validate if both hours and minutes have values
+    if (hours && minutes) {
+      const validation = validateFutureTime(hours, minutes, period);
+
+      if (!validation.isValid) {
+        setError(validation.message?.toString() ?? null);
+        return false;
+      } else {
+        setError("");
+        return true;
+      }
+    }
+    return true; // Don't show error while incomplete
+  };
+
+  // Handle hours input changes
+  const handleHoursChange = (text: any) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, "");
+    setHours(numericText);
+
+    // Auto-move to minutes input when 2 digits entered
+    if (numericText.length === 2) {
+      if (minutesRef.current) {
+        (minutesRef.current as any).focus();
+      }
+    }
+  };
+
+  // Handle minutes input changes
+  const handleMinutesChange = (text: any) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, "");
+    setMinutes(numericText);
+
+    // Validate when leaving the minutes field
+    if (numericText.length === 2) {
+      setTimeout(() => {
+        validateTime();
+      }, 100);
+    }
+  };
+
+  // Handle period changes
+  const handlePeriodChange = (value: any) => {
+    setPeriod(value);
+    // Validate immediately when period changes
+    setTimeout(() => {
+      validateTime();
+    }, 100);
+  };
+
+  // Handle blur events to validate when leaving a field
+  const handleBlur = () => {
+    validateTime();
+  };
+
   return (
     <View style={globalStyles.container}>
       <Header
@@ -270,7 +384,6 @@ const PickupScreen = () => {
                 style={globalStyles.webDateInput}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
               />
             ) : (
               <TouchableOpacity
@@ -295,25 +408,34 @@ const PickupScreen = () => {
           <Text style={styles.inputLabel}>Time: *</Text>
           <View style={globalStyles.timeContainer}>
             <TextInput
-              style={globalStyles.timeInput}
+              style={[
+                globalStyles.timeInput,
+                error ? { borderColor: "red" } : {},
+              ]}
               placeholder="HH"
               keyboardType="numeric"
               maxLength={2}
               value={hours}
-              onChangeText={setHours}
+              onChangeText={handleHoursChange}
+              onBlur={handleBlur}
             />
             <Text>:</Text>
             <TextInput
-              style={globalStyles.timeInput}
+              ref={minutesRef}
+              style={[
+                globalStyles.timeInput,
+                error ? { borderColor: "red" } : {},
+              ]}
               placeholder="MM"
               keyboardType="numeric"
               maxLength={2}
               value={minutes}
-              onChangeText={setMinutes}
+              onChangeText={handleMinutesChange}
+              onBlur={handleBlur}
             />
             <View
               style={{
-                borderColor: colors.primary,
+                borderColor: error ? "red" : colors.primary,
                 borderWidth: 1,
                 height: 40,
                 width: 150,
@@ -328,14 +450,16 @@ const PickupScreen = () => {
                   width: 150,
                   color: colors.black,
                 }}
-                mode="dialog"
-                onValueChange={(itemValue) => setPeriod(itemValue)}
+                onValueChange={handlePeriodChange}
               >
-                <Picker.Item label="AM" value="am" color={colors.black} />
-                <Picker.Item label="PM" value="pm" color={colors.black} />
+                <Picker.Item label="AM" value="am" />
+                <Picker.Item label="PM" value="pm" />
               </Picker>
             </View>
           </View>
+          {error ? (
+            <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+          ) : null}
 
           {/* Curbside Specific Fields */}
           {mode === "curbside" && (
