@@ -82,7 +82,7 @@ function CartItem(props) {
               <View
                 style={[
                   globalStyles.pl_3,
-                  { height: "100%", justifyContent: "center" },
+                  { justifyContent: "center" },
                 ]}
               >
                 <Text style={globalStyles.h6}>
@@ -278,6 +278,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textDecorationLine: "underline",
     fontSize: 12,
+    marginBottom:4,
   },
 });
 export default CartItem;

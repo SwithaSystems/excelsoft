@@ -33,7 +33,7 @@ function HeroBanner(props) {
   return (
     <>
       <Carousel 
-        width={width}
+        width={width-16}
         height={230}
         data={bannerData}
         onSnapToItem={(index) => setCurrentIndex(index)}

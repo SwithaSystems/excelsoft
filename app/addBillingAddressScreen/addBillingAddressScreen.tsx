@@ -71,6 +71,7 @@ const addBillingAddressScreen = () => {
   return (
     <View style={styles.container}>
       <Header headerText="Billing Address" />
+      <ScrollView style={{padding:16}}>
       <View>
         <Text style={styles.fieldLabel}>Address</Text>
         <TextInput
@@ -120,7 +121,7 @@ const addBillingAddressScreen = () => {
           />
         </View> */}
       </View>
-      <View>
+      <View style={{marginHorizontal:16}}>
         <Button
           title="Save Address"
           onPress={() => {
@@ -130,6 +131,7 @@ const addBillingAddressScreen = () => {
           style={styles.submitButton}
         />
       </View>
+      </ScrollView>
       {/* <View style={[styles.section, globalStyles.mb_0]}>
         <Text style={styles.sectionHeading}>Order Details</Text>
         <View style={globalStyles.pl_3}></View>

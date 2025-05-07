@@ -182,7 +182,7 @@ const orderSummeryScreen = () => {
           </View>
           <View style={[styles.section, globalStyles.mb_0]}>
             <Text style={styles.sectionHeading}>Order Details</Text>
-            <View style={globalStyles.pl_3}>
+            <View style={[globalStyles.pl_3, {marginBottom:16}]}>
               {cartItems.map((eachCartItem) => {
                 return (
                   <CartItem

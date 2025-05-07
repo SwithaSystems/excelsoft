@@ -11,11 +11,11 @@ function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const user = useSelector((state) => state.user.user);
 
-  console.log("user in home page", user.phone);
+  console.log("user in home page", user?.phone);
   useEffect(() => {
     const fetchUser = async () => {
-      if (user && user.phone) {
-        const userPhone = user.phone;
+      if (user && user?.phone) {
+        const userPhone = user?.phone;
         console.log("userPhone", userPhone);
         const response = await UserAPI.getUserByPhonenumber(userPhone);
         console.log("userdata", response.data);

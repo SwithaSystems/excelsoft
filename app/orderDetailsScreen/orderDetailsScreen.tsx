@@ -141,7 +141,7 @@ const orderDetailsScreen = () => {
     <>
       <View style={styles.container}>
         <Header headerText="Order Details" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 450 }}>
+        <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>
               <QRCodeDisplay
@@ -192,7 +192,7 @@ const orderDetailsScreen = () => {
               {orderDetails?.totalAmount.toFixed(2)}
               </Text>
             </View>
-            <View style={{ marginTop: 8 }}>
+            <View>
               {cartItemsWithDetails.map((eachProduct: any) => (
                 <CartItem
                   hideActions={true}
@@ -227,9 +227,7 @@ const orderDetailsScreen = () => {
             {orderDetails?.pickupMode === "homeDelivery" && (
               <Text style={[globalStyles.mb_3, styles.addressText]}>
                 Address: {shippingAddress_order?.line1}
-                {"\n"}
                 {shippingAddress_order?.city}, {shippingAddress_order?.state}
-                {"\n"}
                 {shippingAddress_order?.postalCode},{" "}
                 {shippingAddress_order?.country}
               </Text>

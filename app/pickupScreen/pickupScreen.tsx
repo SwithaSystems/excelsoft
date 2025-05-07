@@ -363,7 +363,9 @@ const PickupScreen = () => {
                     }}
                     onValueChange={(itemValue) => setVehicleType(itemValue)}
                   >
-                    <Picker.Item label="Select Vehicle Type" value="" />
+                    <Picker.Item 
+                       style={{ fontSize: 13 }}
+                      label="Select Vehicle Type" value="" />
                     {vehicleTypeOptions.map((option) => (
                       <Picker.Item
                         key={option.value}
@@ -380,7 +382,7 @@ const PickupScreen = () => {
                 setVehicleNumber
               )}
               {renderTextInput(
-                "Additional details",
+                "Additional Details",
                 additionalDetails,
                 setAdditionalDetails,
                 {

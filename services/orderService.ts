@@ -1,9 +1,9 @@
 import axiosInstance from "./axiosConfig";
 
 export enum PickupMode {
-  HOME_DELIVERY = "homeDelivery",
-  STORE_PICKUP = "storePickup",
-  CURBSIDE_PICKUP = "curbsidePickup",
+  HOME_DELIVERY = "Home Delivery",
+  STORE_PICKUP = "Store Pickup",
+  CURBSIDE_PICKUP = "Curbside Pickup",
 }
 
 export interface OrderProduct {

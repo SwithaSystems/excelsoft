@@ -66,6 +66,7 @@ const savedItemScreen = () => {
                   marginTop: 48,
                   fontSize: 24,
                   fontWeight: "600",
+                  paddingBottom: 16,
                 }}
               >
                 Uh-oh! You have no saved Items! Would you like to explore some

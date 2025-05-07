@@ -185,7 +185,7 @@ const selectBillingAddressScreen = () => {
                 keyExtractor={(item, index) =>
                   item._id?.toString() || `address-${index}`
                 }
-                contentContainerStyle={styles.addressList}
+                contentContainerStyle={[styles.addressList, {paddingLeft: 16}]}
               />
             </View>
             <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>

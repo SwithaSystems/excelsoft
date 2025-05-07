@@ -126,6 +126,7 @@ const CartScreen = () => {
                   cartItem={eachCartItem}
                 />
               ))}
+              <View style={{ margin: 16 }} />
               <SpecialOffersBanner />
               <OrderSummary
                 cartItems={cartItems}
