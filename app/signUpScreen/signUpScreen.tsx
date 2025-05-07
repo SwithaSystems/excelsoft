@@ -39,10 +39,13 @@ const signUpScreen = () => {
       newErrors.email = "Email or Phone number is required.";
     }
 
-    if (phone && !/^(\+91\d{10})$/.test(phone.trim())) {
-      newErrors.phone = "Enter a valid phone number with country code.";
-    }
+    // if (phone && !/^(\+91\d{10})$/.test(phone.trim())) {
+    //   newErrors.phone = "Enter a valid phone number with country code.";
+    // }
 
+    if (phone && !/^(\+91\d{10}|\d{10})$/.test(phone.trim())) {
+      newErrors.phone = "Enter a valid 10-digit number or with +91.";
+    }
     // if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     //   newErrors.email = "Enter a valid email address.";
     // }
@@ -103,7 +106,13 @@ const signUpScreen = () => {
 
   const handleSignUp = async () => {
     if (validateFields()) {
-      const userData = { phone, email, password };
+      let formattedPhone = phone.trim();
+
+      // If phone is 10 digits, prepend +91
+      if (/^\d{10}$/.test(formattedPhone)) {
+        formattedPhone = `+91${formattedPhone}`;
+      }
+      const userData = { phone: formattedPhone, email, password };
       const userphone = userData.phone;
       try {
         const response = await authService.register(userData);
@@ -111,12 +120,12 @@ const signUpScreen = () => {
         if (response && response.access_token) {
           console.log("Phone Number for OTP:", userData.phone);
 
-          if (userData.phone.trim()) {
-            console.log("Sending OTP to:", userData.phone);
-            await TwilioApi.sendOtp({ phone: userData.phone });
-          } else {
-            console.error("Phone number is missing.");
-          }
+          // if (userData.phone.trim()) {
+          console.log("Sending OTP to:", userData.phone);
+          await TwilioApi.sendOtp({ phone: userData.phone });
+          // } else {
+          // console.error("Phone number is missing.");
+          // }
 
           redirectToPage(containers.verifcationScreenScreen, {
             phoneNumber: userphone,

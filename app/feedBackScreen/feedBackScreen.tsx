@@ -23,7 +23,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
-
+import { useSelector } from "react-redux";
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
@@ -31,7 +31,7 @@ const feedBackScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
-
+  const userData_redux = useSelector((state: any) => state.user);
   const pickImage = async () => {
     // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -56,8 +56,9 @@ const feedBackScreen = () => {
       alert("Please enter both a rating and review text.");
       return;
     }
-    const userfromasync: any = await AsyncStorage.getItem("user");
-    const userphone = JSON.parse(userfromasync);
+    // const userfromasync: any = await AsyncStorage.getItem("user");
+    // const userphone = JSON.parse(userfromasync);
+    const userphone = userData_redux?.phone;
     console.log("userPhone", userphone.phone);
     const user = await UserAPI.getUserByPhonenumber(userphone.phone);
     console.log("user from add review", user.data);

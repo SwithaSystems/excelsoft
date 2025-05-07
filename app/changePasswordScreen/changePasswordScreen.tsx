@@ -10,6 +10,7 @@ import { ScrollView, Text, View } from "react-native";
 import { Image } from "react-native-elements";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
+import { useSelector } from "react-redux";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -17,20 +18,23 @@ const changePasswordScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
+  const user = useSelector((state: any) => state.user.user);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        console.log("user", user);
-        setPhoneNumber(user.phoneNumber);
+      // const userData = await AsyncStorage.getItem("user");
+      if (user) {
+        // const user = JSON.parse(userData);
+        console.log("user in change password", user);
+        setPhoneNumber(user.phone);
         setExistingPassword(user.password);
       }
     };
 
     fetchUser();
-  }, []);
+  }, [user]);
+
+  console.log("phone in change password", phoneNumber);
 
   const comparePasswords = async (
     currentPassword: any,

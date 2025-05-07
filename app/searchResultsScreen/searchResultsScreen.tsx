@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import CategoryBadges from "./Components/CategoryBadges";
 import { Product, ProductsAPI } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
+import NoContentFound from "@/components/NoContentFound";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query } = useLocalSearchParams();
@@ -25,6 +26,7 @@ const SearchResultsScreen = () => {
     Number(categoryId)
   );
   const [loading, setLoading] = useState<boolean>(true);
+  // const [isLoading, setIsLoading] = useappContext();
   console.log("all params", fromSearch, query, category, categoryId);
   const [headerTitle, setHeaderTitle] = useState(
     fromSearch ? category : "Search Results"
@@ -165,6 +167,14 @@ const SearchResultsScreen = () => {
     );
   }, [query, allProducts]);
 
+  useEffect(() => {
+    if (!fromSearch) {
+      setSortedProducts(filteredProducts);
+    } else {
+      setSortedProducts(products);
+    }
+  }, [filteredProducts, products, fromSearch]);
+
   // Handle selecting a category badge
   const handleCategorySelect = (categoryId: number) => {
     console.log("selected category id from cat badge", categoryId);
@@ -185,8 +195,8 @@ const SearchResultsScreen = () => {
     setSortedProducts(sorted);
   };
 
-  // console.log("sortedProducts", sortedProducts);
-  console.log(sortedProducts.map((p: any) => `${p.name}: $${p.price}`));
+  const productsToRender =
+    sortedProducts.length > 0 || fromSearch ? sortedProducts : products;
 
   const renderItem = ({ item, index }: { item: Product; index: number }) => {
     const isEven = index % 2 === 0;
@@ -241,16 +251,21 @@ const SearchResultsScreen = () => {
       )}
 
       <View style={[styles.divider, { backgroundColor: colors.white }]}>
-        <FlatList
-          // data={!fromSearch ? filteredProducts : products}
-          data={sortedProducts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
+        {loading ? (
+          <Text style={styles.resultsCount}>Loading...</Text>
+        ) : productsToRender.length === 0 ? (
+          <NoContentFound message="No products found" />
+        ) : (
+          <FlatList
+            data={productsToRender}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
 
       <Footer navigation={router} activeTab="home" />
@@ -259,3 +274,6 @@ const SearchResultsScreen = () => {
 };
 
 export default SearchResultsScreen;
+function useappContext(): [any, any] {
+  throw new Error("Function not implemented.");
+}

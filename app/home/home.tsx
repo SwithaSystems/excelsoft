@@ -30,6 +30,7 @@ import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
 import categoriesScreen from "../categoriesScree/categoriesScree";
 import { parentCategoryIDAll } from "@/config/constants";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -137,7 +138,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <View style={homeStyles.container}>
+    <SafeAreaView style={homeStyles.container}>
       {/* <ScrollView> */}
       <FlatList
         ListHeaderComponent={
@@ -218,8 +219,7 @@ const HomePage = () => {
         // ListFooterComponent={<Footer navigation={router} activeTab="home" />}
       />
       {/* Footer */}
-      <Footer navigation={router} activeTab="home" />
-    </View>
+    </SafeAreaView>
   );
 };
 

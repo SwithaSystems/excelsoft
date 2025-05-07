@@ -71,7 +71,11 @@ function CartItem(props) {
         <View style={styles.cartItemContent}>
           <View style={styles.cartItemImageContainer}>
             {/* Handle both URL strings and require'd assets */}
-            <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
+            {item.image?.[0] ? (
+              <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
+            ) : (
+              <View style={[styles.itemImage, { backgroundColor: "#ccc" }]} />
+            )}
           </View>
           {props?.hideActions ? (
             <>
