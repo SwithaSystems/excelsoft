@@ -13,19 +13,26 @@ export const UserAPI = {
   },
 
   userEditProfile: async (phoneNumber: any, body: any) => {
-    console.log("body", body);
+    console.log("Sending body to API:", body);
+
     try {
       const response = await axiosInstance.put(
         `/users/updateProfile/${phoneNumber}`,
-        body
+        {
+          body,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       return response;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log("Axios error:", error.response?.data || error.message);
+        console.log("API error:", error.response?.data || error.message);
       } else {
         console.log("Unknown error:", error);
       }
+      throw error;
     }
   },
 

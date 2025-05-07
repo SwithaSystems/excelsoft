@@ -58,6 +58,7 @@ const editProfileScreen = () => {
           setPhone(user.data.phone);
           setDateOfBirth(user.data.dateOfBirth);
           setEmail(user.data?.email || "No mail added");
+          setProfileImage(user.data.profileImageUrl);
         }
       }
     };
@@ -120,23 +121,27 @@ const editProfileScreen = () => {
     }
 
     const formData = new FormData();
+
     console.log("profileImage", profileImage);
 
-    if (profileImage) {
-      try {
-        const response = await fetch(profileImage);
-        const blob = await response.blob();
-        formData.append("image", blob, "profile.jpg");
-      } catch (error) {
-        console.error("Image fetch error:", error);
-        alert("Failed to process the profile image.");
-        return;
-      }
+    if (
+      profileImage &&
+      typeof profileImage === "string" &&
+      (profileImage.startsWith("http") || profileImage.startsWith("file://"))
+    ) {
+      formData.append("image", {
+        uri: profileImage,
+        name: "profile.jpg",
+        type: "image/jpeg",
+      } as any);
     }
 
+    // These should work with any FormData implementation
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("dateOfBirth", dateOfBirth);
+
+    console.log("formData", formData);
 
     try {
       const response = await UserAPI.userEditProfile(phone, formData);
@@ -158,7 +163,6 @@ const editProfileScreen = () => {
       alert("Failed to update profile.");
     }
   };
-
   return (
     <View style={globalStyles.container as ViewStyle}>
       <Header headerText="Edit Profile" />
@@ -167,7 +171,9 @@ const editProfileScreen = () => {
           {/* Profile Picture */}
           <View style={globalStyles.profilePictureContainer}>
             <Image
-              source={{ uri: profileImage }}
+              source={{
+                uri: "https://res.cloudinary.com/dvilk51ol/image/upload/v1746601422/users/7/x3warol5ipzcshd6ec4p.jpg",
+              }}
               style={globalStyles.profileImage}
             />
             <TouchableOpacity

@@ -48,6 +48,7 @@ const UserProfileScreen = () => {
     id: number;
     firstName: string;
     lastName: string;
+    profileImageUrl: string;
   } | null>(null);
 
   const userData_redux = useSelector((state: any) => state.user.user);
@@ -56,7 +57,7 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    "Feedback": containers.AppReviewScreenScreen,
+    Feedback: containers.AppReviewScreenScreen,
     //"Store Information": containers.AdminOrderQRScanScreen,
   };
 
@@ -134,7 +135,9 @@ const UserProfileScreen = () => {
             Hello, {user?.firstName || "User"}
           </Text>
           <Image
-            source={{ uri: "https://picsum.photos/100" }}
+            source={{
+              uri: user ? user.profileImageUrl : "https://picsum.photos/100",
+            }}
             style={globalStyles.profileImage}
           />
           <Text style={styles.userName}>
