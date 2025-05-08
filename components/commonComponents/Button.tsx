@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  ActivityIndicator,
 } from "react-native";
 import colors from "../../app/config/colors";
 
@@ -15,6 +16,7 @@ interface ButtonProps {
   textStyle?: TextStyle;
   primary?: boolean;
   disabled?: boolean;
+  loading?: boolean; // 👈 new prop
 }
 
 const Button = ({
@@ -24,27 +26,37 @@ const Button = ({
   textStyle,
   primary = true,
   disabled = false,
+  loading = false,
 }: ButtonProps) => {
+  const isDisabled = disabled || loading;
+
   return (
     <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
       style={[
         styles.button,
         primary ? styles.primaryButton : styles.secondaryButton,
-        disabled && styles.disabledButton,
+        isDisabled && styles.disabledButton,
         style,
       ]}
+      onPress={onPress}
+      disabled={isDisabled}
     >
-      <Text
-        style={[
-          styles.text,
-          primary ? styles.primaryText : styles.secondaryText,
-          textStyle,
-        ]}
-      >
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={primary ? colors.white : colors.primary}
+        />
+      ) : (
+        <Text
+          style={[
+            styles.text,
+            primary ? styles.primaryText : styles.secondaryText,
+            textStyle,
+          ]}
+        >
+          {title}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -65,9 +77,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
   },
-  disabledButton: {
-    backgroundColor: colors.lightgrey, // 🧊 visually shows disabled
-  },
   text: {
     fontSize: 16,
     fontWeight: "600",
@@ -77,6 +86,9 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     color: colors.primary,
+  },
+  disabledButton: {
+    backgroundColor: colors.lightgrey,
   },
 });
 

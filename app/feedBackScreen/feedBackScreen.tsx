@@ -24,6 +24,7 @@ import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
+
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
@@ -32,18 +33,15 @@ const feedBackScreen = () => {
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
-  console.log("userData_redux from addreview", userData_redux);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickImage = async () => {
-    // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Permission to access gallery is required!");
       return;
     }
-    // Open the image picker
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -56,16 +54,15 @@ const feedBackScreen = () => {
   };
 
   const handleAddReview = async () => {
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    if (!rating || reviewText.trim() === "") {
-      alert("Please enter both a rating and review text.");
-      setIsSubmitting(false);
+    if (isSubmitting) {
       return;
     }
 
+    if (!rating || reviewText.trim() === "") {
+      alert("Please enter both a rating and review text.");
+      return;
+    }
+    setIsSubmitting(true);
     try {
       const userphone = userData_redux.phone;
       const user = await UserAPI.getUserByPhonenumber(userphone);
@@ -81,11 +78,11 @@ const feedBackScreen = () => {
       await ProductsAPI.addReview(Number(productId), review);
       setShowReviewconfirmationModal(true);
 
-      setTimeout(() => {
-        redirectToPage(containers.productDetailScreenScreen, {
-          productId: productId,
-        });
-      }, 1500);
+      // setTimeout(() => {
+      redirectToPage(containers.productDetailScreenScreen, {
+        productId: productId,
+      });
+      // }, 1500);
     } catch (error) {
       console.error("Failed to add review:", error);
       alert("Something went wrong. Please try again.");
@@ -124,14 +121,23 @@ const feedBackScreen = () => {
               multiline
               value={reviewText}
               onChangeText={setReviewText}
+              editable={!isSubmitting}
             />
           </View>
           <View style={styles.imagePickerContainer}>
             <Text style={styles.ratingTitle}>
               Would you like to add some pictures?
             </Text>
-            <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-              <Ionicons name="add" size={30} color="gray" />
+            <TouchableOpacity
+              style={styles.addImageButton}
+              onPress={pickImage}
+              disabled={isSubmitting}
+            >
+              <Ionicons
+                name="add"
+                size={30}
+                color={isSubmitting ? "#ccc" : "gray"}
+              />
             </TouchableOpacity>
             {image && (
               <Image
@@ -144,10 +150,10 @@ const feedBackScreen = () => {
       </ScrollView>
       <View style={globalStyles.p_3}>
         <Button
-          title="Submit Review"
+          title={isSubmitting ? "Submitting..." : "Submit Review"}
           onPress={handleAddReview}
-          // style={styles.submitButton}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !rating || reviewText.trim() === ""}
+          loading={isSubmitting}
         />
       </View>
       <ConfirmationModal
