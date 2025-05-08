@@ -31,7 +31,11 @@ const feedBackScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
-  const userData_redux = useSelector((state: any) => state.user);
+  const userData_redux = useSelector((state: any) => state.user.user);
+  console.log("userData_redux from addreview", userData_redux);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const pickImage = async () => {
     // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -52,30 +56,31 @@ const feedBackScreen = () => {
   };
 
   const handleAddReview = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     if (!rating || reviewText.trim() === "") {
       alert("Please enter both a rating and review text.");
+      setIsSubmitting(false);
       return;
     }
-    // const userfromasync: any = await AsyncStorage.getItem("user");
-    // const userphone = JSON.parse(userfromasync);
-    const userphone = userData_redux?.phone;
-    console.log("userPhone", userphone.phone);
-    const user = await UserAPI.getUserByPhonenumber(userphone.phone);
-    console.log("user from add review", user.data);
-    const UserParsed = user.data;
-    console.log("User", UserParsed.firstName);
-    const review = {
-      id: (Number(reviewsArrayLength) + 1).toString(),
-      rating: rating,
-      name: UserParsed?.firstName,
-      review: reviewText,
-    };
 
     try {
+      const userphone = userData_redux.phone;
+      const user = await UserAPI.getUserByPhonenumber(userphone);
+      const UserParsed = user.data;
+
+      const review = {
+        id: (Number(reviewsArrayLength) + 1).toString(),
+        rating: rating,
+        name: UserParsed?.firstName,
+        review: reviewText,
+      };
+
       await ProductsAPI.addReview(Number(productId), review);
       setShowReviewconfirmationModal(true);
 
-      // Navigate to product detail page after a short delay
       setTimeout(() => {
         redirectToPage(containers.productDetailScreenScreen, {
           productId: productId,
@@ -84,6 +89,8 @@ const feedBackScreen = () => {
     } catch (error) {
       console.error("Failed to add review:", error);
       alert("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -140,6 +147,7 @@ const feedBackScreen = () => {
           title="Submit Review"
           onPress={handleAddReview}
           // style={styles.submitButton}
+          disabled={isSubmitting}
         />
       </View>
       <ConfirmationModal

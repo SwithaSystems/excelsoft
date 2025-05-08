@@ -43,6 +43,7 @@ const PickupScreen = () => {
 
   // Store user data from Redux
   const userData_redux = useSelector((state: any) => state.user.user);
+  console.log("userData_redux from pickup screen", userData_redux);
 
   // Store the original user data to use when toggling between "Myself" and "Someone Else"
   const [originalUserData, setOriginalUserData] = useState({
@@ -135,7 +136,9 @@ const PickupScreen = () => {
         vehicleNumber: vehicleNumber,
         additionalDetails: additionalDetails,
       };
-      const userDetails = `${firstName} ${lastName}\nPhone: ${phone}\nEmail: ${email}`;
+      const userDetails = `${firstName.padEnd(
+        6
+      )}${lastName}\nPhone: ${phone}\nEmail: ${email}`;
 
       // Add vehicle details for curbside pickup
       const vehicleDetails =
