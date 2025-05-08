@@ -17,6 +17,7 @@ import { Address, addressService } from "@/services/addressService";
 import { useAppContext } from "@/context/AppContext";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import AddressItem from "../components/AddressItem";
+import NoContentFound from "@/components/NoContentFound";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -123,35 +124,39 @@ const savedAddressScreen = () => {
       <FlatList
         ListHeaderComponent={
           <>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <Text style={styles.sectionTitle}>Default Address</Text>
-              <FlatList
-                data={addressData.filter((address) => address.isDefault)}
-                renderItem={({ item }) => (
-                  <AddressItem
-                    item={item}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                )}
-                keyExtractor={(item) => item._id}
-                contentContainerStyle={styles.addressList}
-              />
+            {addressData.length === 0 ? (
+              <NoContentFound message="No saved address found" />
+            ) : (
+              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+                <Text style={styles.sectionTitle}>Default Address</Text>
+                <FlatList
+                  data={addressData.filter((address) => address.isDefault)}
+                  renderItem={({ item }) => (
+                    <AddressItem
+                      item={item}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  )}
+                  keyExtractor={(item) => item._id}
+                  contentContainerStyle={styles.addressList}
+                />
 
-              <Text style={styles.sectionTitle}>Address</Text>
-              <FlatList
-                data={addressData.filter((address) => !address.isDefault)}
-                renderItem={({ item }) => (
-                  <AddressItem
-                    item={item}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                )}
-                keyExtractor={(item) => item._id}
-                contentContainerStyle={styles.addressList}
-              />
-            </View>
+                <Text style={styles.sectionTitle}>Address</Text>
+                <FlatList
+                  data={addressData.filter((address) => !address.isDefault)}
+                  renderItem={({ item }) => (
+                    <AddressItem
+                      item={item}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  )}
+                  keyExtractor={(item) => item._id}
+                  contentContainerStyle={styles.addressList}
+                />
+              </View>
+            )}
             <ConfirmationModal
               onClose={() => {
                 setIsModalVisible(false);

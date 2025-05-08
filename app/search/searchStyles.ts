@@ -1,25 +1,74 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
   },
-  searchContainer: {
+  searchBarContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  content: {
+    flex: 1,
+  },
+  section: {
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 15,
+    marginHorizontal: 15,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 15,
+    marginBottom: 15,
+  },
+  clearAllText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  trendingGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    paddingHorizontal: 15,
+    justifyContent: "space-between",
+  },
+  categoriesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+  },
+  suggestionsContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  suggestionItem: {
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  searchInput: {
-    backgroundColor: colors.lightgrey,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  recentSearchesTitle: {
+  suggestionText: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  emptyStateText: {
     color: colors.black,
+    textAlign: "center",
+    paddingRight: 15,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
 

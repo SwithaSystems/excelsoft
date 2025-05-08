@@ -11,7 +11,7 @@ function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const user = useSelector((state) => state.user.user);
 
-  console.log("user in home page", user.phone);
+  console.log("user in home page", user?.phone);
   useEffect(() => {
     const fetchUser = async () => {
       if (user && user.phone) {

@@ -17,8 +17,8 @@ import { useAppContext } from "@/context/AppContext";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {
-  const {  setIsLoading } = useAppContext();
-  const idForReview = useId()
+  const { setIsLoading } = useAppContext();
+  const idForReview = useId();
   const { productId, totalReviews, productRating } = useLocalSearchParams();
   const reviewsArray =
     typeof totalReviews === "string" && totalReviews
@@ -36,7 +36,7 @@ const reviewsScreen = () => {
     //setIsLoading(true)
     const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
     setProduct(response.data);
-    setIsLoading(false)
+    setIsLoading(false);
   };
   console.log("product", product);
   const soretedReviews = product?.reviews?.sort(
@@ -60,8 +60,8 @@ const reviewsScreen = () => {
           </View>
           <View style={styles.reviewsContainer}>
             <Text style={styles.reviewContainerHeading}>Reviews</Text>
-            {soretedReviews?.map((review: any) => (
-              <ProductRating key={review.id} review={review} />
+            {soretedReviews?.map((review: any, index: number) => (
+              <ProductRating key={`${review.id}-${index}`} review={review} />
             ))}
           </View>
         </View>
