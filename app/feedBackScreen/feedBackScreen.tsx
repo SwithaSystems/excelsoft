@@ -31,7 +31,7 @@ const feedBackScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
-  const userData_redux = useSelector((state: any) => state.user);
+  const userData_redux = useSelector((state: any) => state.user.user);
   const pickImage = async () => {
     // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
