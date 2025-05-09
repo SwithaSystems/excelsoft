@@ -5,12 +5,14 @@ import {
   StyleSheet,
   Image,
   TouchableWithoutFeedback,
+  SafeAreaView,
 } from "react-native";
 import styles from "./orderSuccessfulScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { useLocalSearchParams, router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const orderSuccessfulScreen = () => {
   const { orderData } = useLocalSearchParams();
@@ -36,6 +38,7 @@ const orderSuccessfulScreen = () => {
   }, []);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <TouchableWithoutFeedback onPress={redirectToOrderDetails}>
       <View
         style={[
@@ -66,6 +69,7 @@ const orderSuccessfulScreen = () => {
         </Text>
       </View>
     </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 };
 

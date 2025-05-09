@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Linking,
   TouchableOpacity,
+  SafeAreaView
 } from "react-native";
 import styles from "./customerSupportScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -23,6 +24,7 @@ const customerSupportScreen = () => {
     Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Customer Support" />
       <ScrollView>
@@ -89,6 +91,7 @@ const customerSupportScreen = () => {
       </ScrollView>
       <Footer />
     </View>
+    </SafeAreaView>
   );
 };
 

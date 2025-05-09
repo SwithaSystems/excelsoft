@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from "react-native";
 import styles from "./savedAddressScreenStyles";
 import Button from "@/components/commonComponents/Button";
@@ -18,6 +19,7 @@ import { useAppContext } from "@/context/AppContext";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import AddressItem from "../components/AddressItem";
 import NoContentFound from "@/components/NoContentFound";
+import colors from "../config/colors";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -118,6 +120,7 @@ const savedAddressScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Saved Address" />
       {/* <ScrollView> */}
@@ -185,6 +188,7 @@ const savedAddressScreen = () => {
         </View>
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

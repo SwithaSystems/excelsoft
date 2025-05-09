@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import SearchBar from "../components/searchBar";
 import colors from "../config/colors";
@@ -52,6 +52,7 @@ const SearchSuggestionsScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Search Page"} />
 
@@ -79,6 +80,7 @@ const SearchSuggestionsScreen = () => {
         ))}
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

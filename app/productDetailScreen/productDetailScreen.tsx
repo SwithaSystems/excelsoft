@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
@@ -116,6 +117,7 @@ const ProductDetailScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }}>
         <Header headerText={"About the Product"} />
@@ -307,6 +309,7 @@ const ProductDetailScreen = () => {
 
       <Footer navigation={router} activeTab="home" />
     </View>
+    </SafeAreaView>
   );
 };
 

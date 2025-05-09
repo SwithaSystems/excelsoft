@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import styles from './AdminOrderQRScanStyles';
 import Header from '@/components/Header';
 import { Ionicons } from "@expo/vector-icons";
@@ -11,6 +11,7 @@ import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 const AdminOrderQRScan = () => {
   const [qrCode,setQrCode] = useState("");
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Scan QR Code" />
       <ScrollView>
@@ -48,6 +49,7 @@ const AdminOrderQRScan = () => {
 
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

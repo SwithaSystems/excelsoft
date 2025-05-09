@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, SafeAreaView } from "react-native";
 import styles from "./savedItemScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { selectSavedItems } from "@/store/selectors/savedItemsSelectors";
 import { Image } from "react-native-elements";
 import Button from "@/components/commonComponents/Button";
+import colors from "../config/colors";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ const savedItemScreen = () => {
     dispatch(removeFromSavedItems(item.id));
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Saved Items" />
       <ScrollView>
@@ -84,6 +86,7 @@ const savedItemScreen = () => {
       </ScrollView>
       <Footer navigation={router} activeTab="saved" />
     </View>
+    </SafeAreaView>
   );
 };
 

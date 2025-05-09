@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker, {
@@ -362,6 +363,7 @@ const PickupScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header
         headerText={
@@ -579,6 +581,7 @@ const PickupScreen = () => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

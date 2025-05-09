@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import styles from './updateCardDetailsScreenStyles';
+import colors from '../config/colors';
 
 const updateCardDetailsScreen = () => {
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Text style={styles.text}>updateCardDetailsScreen Component</Text>
     </View>
+    </SafeAreaView>
   );
 };
 

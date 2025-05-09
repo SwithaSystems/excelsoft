@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View, SafeAreaView } from "react-native";
 import { globalStyles } from "../../assets/styles/globalStyles";
 import styles from "./signUpScreenStyles";
 import { UserAPI } from "@/services/userService";
@@ -11,6 +11,7 @@ import containers from "@/containers";
 import { TwilioApi } from "@/services/twilioService";
 import { authService } from "@/services/auth.service";
 import { useLocalSearchParams } from "expo-router";
+import colors from "../config/colors";
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -147,6 +148,7 @@ const signUpScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Sign Up"} />
 
@@ -221,6 +223,7 @@ const signUpScreen = () => {
         </Text>
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

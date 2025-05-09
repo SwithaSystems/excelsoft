@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import styles from "./addAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
@@ -15,6 +16,7 @@ import { addressService } from "@/services/addressService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -58,6 +60,7 @@ const addAddressScreen = () => {
     }
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Add New Address" />
       <ScrollView>
@@ -134,6 +137,7 @@ const addAddressScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

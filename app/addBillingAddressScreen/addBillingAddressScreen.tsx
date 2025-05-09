@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  SafeAreaView,
 } from "react-native";
 import styles from "./billingAddressScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -69,6 +70,7 @@ const addBillingAddressScreen = () => {
   console.log("billing address ", billingAddress);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Billing Address" />
       <ScrollView style={{padding:16}}>
@@ -144,6 +146,7 @@ const addBillingAddressScreen = () => {
         />
       </View> */}
     </View>
+    </SafeAreaView>
   );
 };
 

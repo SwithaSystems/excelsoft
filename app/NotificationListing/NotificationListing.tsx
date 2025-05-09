@@ -6,12 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  SafeAreaView
 } from "react-native";
 import styles from "./NotificationListingStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import { Ionicons } from "@expo/vector-icons";
+import colors from "../config/colors";
 
 const NotificationListing = () => {
   const notifications = [
@@ -47,6 +49,7 @@ const NotificationListing = () => {
     </View>
   );
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Notifications" />
       {/* <ScrollView> */}
@@ -76,6 +79,7 @@ const NotificationListing = () => {
       />
       {/* </ScrollView> */}
     </View>
+    </SafeAreaView>
   );
 };
 

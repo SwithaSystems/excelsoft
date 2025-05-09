@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  SafeAreaView
 } from "react-native";
 import styles from "./orderDetailsScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -21,6 +22,7 @@ import { useSelector } from "react-redux";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
+import colors from "../config/colors";
 
 const orderDetailsScreen = () => {
   const { orderId } = useLocalSearchParams();
@@ -139,6 +141,7 @@ const orderDetailsScreen = () => {
 
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={styles.container}>
         <Header headerText="Order Details" />
         <ScrollView>
@@ -270,6 +273,7 @@ const orderDetailsScreen = () => {
         </ScrollView>
         <Footer />
       </View>
+      </SafeAreaView>
     </>
   );
 };

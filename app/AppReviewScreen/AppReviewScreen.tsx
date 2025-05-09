@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  SafeAreaView
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import styles from "./AppReviewScreenStyles"
@@ -21,6 +22,7 @@ const appReviewScreen = () => {
     const [rating, setRating] = useState(0);
     
     return(
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
         <View style={styles.container}>
         <Header
             headerText="Feedback"
@@ -90,6 +92,7 @@ const appReviewScreen = () => {
         </TouchableOpacity>
         </ScrollView>        
         </View>
+        </SafeAreaView>
     );
 };
 

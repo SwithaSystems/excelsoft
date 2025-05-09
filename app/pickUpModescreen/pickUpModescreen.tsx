@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import styles from "./pickUpModescreenStyles";
 import colors from "../config/colors";
@@ -48,6 +49,7 @@ const pickUpModescreen = () => {
   >({});
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <ScrollView>
         <Header headerText="Pick up Options" />
@@ -102,6 +104,7 @@ const pickUpModescreen = () => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

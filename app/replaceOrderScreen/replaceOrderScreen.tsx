@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  SafeAreaView,
 } from "react-native";
 import colors from "../config/colors";
 import { CheckBox } from "react-native-elements";
@@ -119,6 +120,7 @@ const replaceOrderScreen = () => {
     };
   
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Replace Order" />
       <ScrollView style={styles.view}>
@@ -314,6 +316,7 @@ const replaceOrderScreen = () => {
           </TouchableOpacity>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

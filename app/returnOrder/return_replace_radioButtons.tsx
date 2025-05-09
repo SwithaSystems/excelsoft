@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import { StyleSheet } from "react-native"; // Replace with your style file
+import colors from "../config/colors";
 
 const ReturnReplaceToggle = ({ mode, setMode }: any) => {
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={{ flexDirection: "row", marginVertical: 10 }}>
       {["return", "replace"].map((option) => (
         <TouchableOpacity
@@ -23,6 +25,7 @@ const ReturnReplaceToggle = ({ mode, setMode }: any) => {
         </TouchableOpacity>
       ))}
     </View>
+    </SafeAreaView>
   );
 };
 

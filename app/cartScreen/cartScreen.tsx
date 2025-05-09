@@ -11,6 +11,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -105,6 +106,7 @@ const CartScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={[globalStyles.container]}>
       <ScrollView>
         <Header headerText="Cart" />
@@ -192,6 +194,7 @@ const CartScreen = () => {
       </ScrollView>
       <Footer navigation={router} activeTab="cart" />
     </View>
+    </SafeAreaView>
   );
 };
 

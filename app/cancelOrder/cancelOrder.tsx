@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  SafeAreaView
 } from "react-native";
 import styles from "./cancelOrderStyles";
 import { CheckBox } from "react-native-elements";
@@ -93,6 +94,7 @@ const cancelOrder = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Cancel Order" />
       <ScrollView>
@@ -185,6 +187,7 @@ const cancelOrder = () => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, TouchableOpacity, SafeAreaView } from "react-native";
 import styles from "./offersScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -10,6 +10,7 @@ import ExclusiveOffers from "@/components/ExclusiveOffers";
 import { router } from "expo-router";
 import Footer from "@/components/Footer";
 import { ImageBackground } from "react-native";
+import colors from "../config/colors";
 
 const offersScreen = () => {
   const filteredProducts = products;
@@ -53,6 +54,7 @@ const offersScreen = () => {
     );
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={[globalStyles.container]}>
       {/* <ScrollView> */}
       <FlatList
@@ -103,6 +105,7 @@ const offersScreen = () => {
       {/* </ScrollView> */}
       <Footer navigation={router} />
     </View>
+    </SafeAreaView>
   );
 };
 

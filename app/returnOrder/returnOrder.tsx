@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  SafeAreaView,
 } from "react-native";
 import styles from "./returnOrderStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -151,6 +152,7 @@ const ReturnOrder = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Return/Replace Order" />
       <ScrollView style={{paddingHorizontal:16}}>
@@ -378,6 +380,7 @@ const ReturnOrder = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

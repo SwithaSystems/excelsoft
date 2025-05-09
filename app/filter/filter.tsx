@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  SafeAreaView
 } from "react-native";
 import { CheckBox } from "react-native-elements";
 import colors from "../config/colors";
@@ -74,6 +75,7 @@ const Filter = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Filter"} headerStyle={styles.header} />
       <View style={globalStyles.sectionContent}>
@@ -121,6 +123,7 @@ const Filter = () => {
         </View>
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

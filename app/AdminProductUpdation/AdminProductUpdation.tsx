@@ -15,8 +15,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SafeAreaView
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
+import colors from "../config/colors";
 
 const AdminProductUpdation = () => {
   const [productName, setProductName] = useState("");
@@ -40,6 +42,7 @@ const AdminProductUpdation = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Add Product" />
       <ScrollView>
@@ -212,6 +215,7 @@ const AdminProductUpdation = () => {
         <Button onPress={() => {}} title="Discard" primary={false} />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, SafeAreaView } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -9,6 +9,7 @@ import Button from "@/components/commonComponents/Button";
 import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const AdminSeeAllOrders = () => {
   const renderOrderItem = ({ item }) => {
@@ -74,6 +75,7 @@ const AdminSeeAllOrders = () => {
     );
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Orders" />
       <ScrollView>
@@ -98,6 +100,7 @@ const AdminSeeAllOrders = () => {
       </ScrollView>
       <Footer />
     </View>
+    </SafeAreaView>
   );
 };
 

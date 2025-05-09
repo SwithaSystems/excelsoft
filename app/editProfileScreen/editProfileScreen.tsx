@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  SafeAreaView
 } from "react-native";
 import { Image } from "react-native-elements";
 import styles from "./editProfileScreenStyles";
@@ -164,6 +165,7 @@ const editProfileScreen = () => {
     }
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container as ViewStyle}>
       <Header headerText="Edit Profile" />
       <ScrollView>
@@ -312,6 +314,7 @@ const editProfileScreen = () => {
         <Button title="Save" onPress={handleEditProfile} />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

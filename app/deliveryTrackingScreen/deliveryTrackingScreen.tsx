@@ -1,11 +1,12 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, SafeAreaView } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
 import Footer from "@/components/Footer";
 import { router } from "expo-router";
+import colors from "../config/colors";
 
 const deliveryTrackingScreen = () => {
   const orderStatus = [
@@ -17,6 +18,7 @@ const deliveryTrackingScreen = () => {
   ];
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={[globalStyles.container]}>
       <Header headerText="Order Tracking" />
       <ScrollView>
@@ -31,6 +33,7 @@ const deliveryTrackingScreen = () => {
       </ScrollView>
       <Footer navigation={router} />
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,16 +1,18 @@
 import Button from "@/components/commonComponents/Button";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, SafeAreaView } from "react-native";
 import Logo from "../../components/commonComponents/Logo";
 import styles from "./welcomeStyles";
 import { useRouter } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const welcome = () => {
   const router = useRouter();
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Logo />
       <Text style={styles.title}>Welcome to Our Store</Text>
@@ -32,6 +34,7 @@ const welcome = () => {
         style={styles.signUpButton}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

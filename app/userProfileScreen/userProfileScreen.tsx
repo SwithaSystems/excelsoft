@@ -10,6 +10,7 @@ import {
   View,
   Button,
   Platform,
+  SafeAreaView
 } from "react-native";
 import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
@@ -127,6 +128,7 @@ const UserProfileScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="User Profile" />
       <ScrollView>
@@ -277,6 +279,7 @@ const UserProfileScreen = () => {
         }}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

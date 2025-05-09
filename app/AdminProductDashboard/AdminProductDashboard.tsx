@@ -4,9 +4,10 @@ import Header from "@/components/Header";
 import products from "@/data/products";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React from "react";
-import { FlatList, Image, ScrollView, Text, View } from "react-native";
+import { FlatList, Image, ScrollView, Text, View, SafeAreaView } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const AdminProductDashboard = () => {
   const productsList = products;
@@ -62,6 +63,7 @@ const AdminProductDashboard = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Product Details" />
       <ScrollView>
@@ -84,6 +86,7 @@ const AdminProductDashboard = () => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

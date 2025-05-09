@@ -81,6 +81,7 @@ const categoriesScreen = () => {
     );
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={[globalStyles.container]}>
       <Header headerText={category?.name} />
       {/* <ScrollView> */}
@@ -111,6 +112,7 @@ const categoriesScreen = () => {
       {/* </ScrollView> */}
       <Footer navigation={router} activeTab="home" />
     </View>
+    </SafeAreaView>
   );
 };
 
