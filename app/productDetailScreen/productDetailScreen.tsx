@@ -200,22 +200,26 @@ const ProductDetailScreen = () => {
           <Text style={styles.infoTitle}>Product Information</Text>
           <Text style={styles.infoText}>{product.description}</Text>
 
-          { (product.productColors && product.productColors.length > 0) && <><View style={styles.colorSection}>
-            <Text style={styles.colorTitle}>Select Color</Text>
-            <View style={styles.colorOptions}>
-              {product.productColors.map((color: any) => (
-                <TouchableOpacity
-                  key={color}
-                  onPress={() => setSelectedColor(color)}
-                  style={[
-                    styles.colorOption,
-                    { backgroundColor: color },
-                    selectedColor === color && styles.selectedColorOption,
-                  ]}
-                />
-              ))}
-            </View> 
-          </View> </>}
+          {product.productColors && product.productColors.length > 0 && (
+            <>
+              <View style={styles.colorSection}>
+                <Text style={styles.colorTitle}>Select Color</Text>
+                <View style={styles.colorOptions}>
+                  {product.productColors.map((color: any) => (
+                    <TouchableOpacity
+                      key={color}
+                      onPress={() => setSelectedColor(color)}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && styles.selectedColorOption,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>{" "}
+            </>
+          )}
 
           <View style={styles.quantitySection}>
             <View style={styles.quantityContainer}>
@@ -281,7 +285,7 @@ const ProductDetailScreen = () => {
             .slice(0, 5)
             .map((review: any, index: number) => (
               <ProductRating
-                key={review.id?.toString() || `review-${index}`}
+                key={`${review.id ?? "review"}-${index}`}
                 review={review}
               />
             ))}

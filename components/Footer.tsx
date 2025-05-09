@@ -15,10 +15,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
     0
   );
   const [user, setUser] = useState(null);
+  const userData_redux = useSelector((state: any) => state.user.user);
+
   useEffect(() => {
     const fetchUser = async () => {
       // const user = await AsyncStorage.getItem("user");
-      const userData_redux = useSelector((state: any) => state.user.user);
+      console.log("userData_redux", userData_redux);
       if (userData_redux) {
         setUser(userData_redux);
       }
