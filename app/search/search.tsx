@@ -8,6 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  SafeAreaView
 } from "react-native";
 import colors from "../config/colors";
 import SearchHistoryItem from "../components/SearchHistoryItem";
@@ -307,6 +308,7 @@ const SearchScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Search"} />
 
@@ -322,6 +324,7 @@ const SearchScreen = () => {
 
       {renderMainContent()}
     </View>
+    </SafeAreaView>
   );
 };
 

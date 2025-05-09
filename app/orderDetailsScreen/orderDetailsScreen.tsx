@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  SafeAreaView
 } from "react-native";
 import styles from "./orderDetailsScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -21,6 +22,7 @@ import { useSelector } from "react-redux";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
+import colors from "../config/colors";
 
 const orderDetailsScreen = () => {
   const { orderId } = useLocalSearchParams();
@@ -139,9 +141,10 @@ const orderDetailsScreen = () => {
 
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={styles.container}>
         <Header headerText="Order Details" />
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>
               <QRCodeDisplay
@@ -192,7 +195,7 @@ const orderDetailsScreen = () => {
               {orderDetails?.totalAmount.toFixed(2)}
               </Text>
             </View>
-            <View style={{ marginTop: 8 }}>
+            <View>
               {cartItemsWithDetails.map((eachProduct: any) => (
                 <CartItem
                   hideActions={true}
@@ -227,9 +230,7 @@ const orderDetailsScreen = () => {
             {orderDetails?.pickupMode === "homeDelivery" && (
               <Text style={[globalStyles.mb_3, styles.addressText]}>
                 Address: {shippingAddress_order?.line1}
-                {"\n"}
                 {shippingAddress_order?.city}, {shippingAddress_order?.state}
-                {"\n"}
                 {shippingAddress_order?.postalCode},{" "}
                 {shippingAddress_order?.country}
               </Text>
@@ -272,6 +273,7 @@ const orderDetailsScreen = () => {
         </ScrollView>
         <Footer />
       </View>
+      </SafeAreaView>
     </>
   );
 };

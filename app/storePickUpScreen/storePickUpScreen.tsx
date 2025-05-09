@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
   ScrollView,
+  SafeAreaView
 } from "react-native";
 import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
@@ -111,6 +112,7 @@ const storePickupScreen = () => {
     }
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Store Pickup" />
       <ScrollView>
@@ -264,6 +266,7 @@ const storePickupScreen = () => {
         />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

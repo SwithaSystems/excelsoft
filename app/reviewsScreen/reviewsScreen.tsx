@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import styles from "./reviewsScreenStyles";
-import { ScrollView } from "react-native";
+import { ScrollView, SafeAreaView } from "react-native";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 // import products from "@/data/products";
@@ -14,6 +14,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
+import colors from "../config/colors";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {
@@ -45,6 +46,7 @@ const reviewsScreen = () => {
   console.log("soretedReviews", soretedReviews);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <ScrollView>
         <Header headerText={"Product Reviews"} />
@@ -79,6 +81,7 @@ const reviewsScreen = () => {
         />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

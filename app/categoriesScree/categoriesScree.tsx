@@ -19,6 +19,8 @@ import styles from "./categoriesScreeStyles";
 import { categoryService, Category } from "@/services/categoryService";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
+const screenWidth = Dimensions.get("window").width;
+
 const categoriesScreen = () => {
   const [subCategories, setsubCategories] = useState<Category[]>([]);
   const [category, setCategory] = useState<Category>();
@@ -60,6 +62,7 @@ const categoriesScreen = () => {
         style={[
           styles.categoryItem,
           isEven ? styles.leftItem : styles.rightItem,
+          { width: (screenWidth / 2) - 15 },
         ]}
       >
         <CategoryItem
@@ -78,19 +81,23 @@ const categoriesScreen = () => {
     );
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={[globalStyles.container]}>
       <Header headerText={category?.name} />
       {/* <ScrollView> */}
       <FlatList
         ListHeaderComponent={
           <>
-            <View style={[{ backgroundColor: colors.white, flex: 1 }]}>
+            <View style={[{ backgroundColor: colors.white, flex: 1, padding: 16 }]}>
               <FlatList
                 data={subCategories}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 numColumns={2}
-                columnWrapperStyle={styles.row}
+                columnWrapperStyle={[
+                  styles.row,
+                  { justifyContent: 'space-between' }
+                ]}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
                 //nestedScrollEnabled={true}
@@ -105,6 +112,7 @@ const categoriesScreen = () => {
       {/* </ScrollView> */}
       <Footer navigation={router} activeTab="home" />
     </View>
+    </SafeAreaView>
   );
 };
 

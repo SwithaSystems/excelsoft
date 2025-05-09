@@ -8,6 +8,7 @@ import CartItem from "../cartScreen/components/CartItem";
 import { Picker } from "@react-native-picker/picker";
 import Button from "@/components/commonComponents/Button";
 import Footer from "@/components/Footer";
+import colors from "../config/colors";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -39,6 +40,7 @@ const AdminOrderDetail = () => {
 
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={globalStyles.container}>
         <Header headerText="Order Details" />
         <SafeAreaView>
@@ -157,6 +159,7 @@ const AdminOrderDetail = () => {
         </SafeAreaView>
       </View>
       <Footer />
+    </SafeAreaView>
     </>
   );
 };

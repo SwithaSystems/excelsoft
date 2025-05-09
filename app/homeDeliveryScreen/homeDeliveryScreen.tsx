@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  SafeAreaView,
 } from "react-native";
 import styles from "./homeDeliveryScreenStyles";
 import DateTimePicker, {
@@ -371,6 +372,7 @@ const HomeDeliveryScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Home Delivery" />
       {/* <ScrollView> */}
@@ -558,6 +560,7 @@ const HomeDeliveryScreen = () => {
 
       {/* </ScrollView> */}
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
 import styles from './curbsidePickupScreenStyles';
 import { redirectToPage } from '@/utilities/redirectionHelper';
 import containers from '@/containers';
@@ -10,6 +10,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { Picker } from '@react-native-picker/picker';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 import OrderCollectionDetails from '@/components/OrderCollectionDetails';
+import colors from '../config/colors';
 
 
 const curbsidePickupScreen = () => {
@@ -37,6 +38,7 @@ const curbsidePickupScreen = () => {
 
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Curbside Pickup"/>
       <ScrollView>
@@ -166,6 +168,7 @@ const curbsidePickupScreen = () => {
           <Button onPress={()=>{redirectToPage(containers.orderSummeryScreenScreen)}} title='Confirm'/>
         </View>
     </View>
+    </SafeAreaView>
     </>
   );
 };

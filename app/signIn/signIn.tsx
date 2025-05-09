@@ -1,12 +1,13 @@
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View, SafeAreaView } from "react-native";
 import { globalStyles } from "../../assets/styles/globalStyles";
 import styles from "./signInStyles";
 import { useAuth } from "@/context/AuthContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const signIn = () => {
   const [email, setEmail] = useState("");
@@ -63,6 +64,7 @@ const signIn = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Sign In"} />
 
@@ -134,6 +136,7 @@ const signIn = () => {
         </TouchableOpacity>
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

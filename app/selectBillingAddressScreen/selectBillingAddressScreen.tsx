@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, SafeAreaView } from "react-native";
 import styles from "./selectBillingAddressScreenStyles";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import Button from "@/components/commonComponents/Button";
@@ -14,6 +14,7 @@ import OrderSummary from "@/components/OrderSummary";
 import { useSelector } from "react-redux";
 import { usePaymentHandler } from "../components/usePaymentHandler";
 import { useLocalSearchParams } from "expo-router";
+import colors from "../config/colors";
 
 type PickupDetailsDto = {
   time: string;
@@ -162,6 +163,7 @@ const selectBillingAddressScreen = () => {
     (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Billing Address" />
       {/* <ScrollView> */}
@@ -185,7 +187,7 @@ const selectBillingAddressScreen = () => {
                 keyExtractor={(item, index) =>
                   item._id?.toString() || `address-${index}`
                 }
-                contentContainerStyle={styles.addressList}
+                contentContainerStyle={[styles.addressList, {paddingLeft: 16}]}
               />
             </View>
             <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -254,6 +256,7 @@ const selectBillingAddressScreen = () => {
       />
       {/* </ScrollView> */}
     </View>
+    </SafeAreaView>
   );
 };
 

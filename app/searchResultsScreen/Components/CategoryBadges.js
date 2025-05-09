@@ -93,7 +93,7 @@ const CategoryBadges = (props) => {
               style={[
                 styles.filterButton,
                 activeFilter === category && styles.activeFilterButton,
-                index === subCategoriesNames.length - 1
+                index === subCategoriesNames.length 
                   ? { marginRight: 0 }
                   : {},
               ]}

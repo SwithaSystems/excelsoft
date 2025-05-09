@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, SafeAreaView } from "react-native";
 import styles from "./myOrderScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import OrderItem from "./components/OrderItem";
 import Footer from "@/components/Footer";
 import { Order, orderService } from "@/services/orderService";
+import colors from "../config/colors";
 
 const myOrderScreen = () => {
   // const orderData = [
@@ -41,6 +42,7 @@ const myOrderScreen = () => {
     fetchOrders();
   }, []);
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Your Orders" />
       {/* <ScrollView> */}
@@ -72,6 +74,7 @@ const myOrderScreen = () => {
       {/* </ScrollView> */}
       <Footer />
     </View>
+    </SafeAreaView>
   );
 };
 

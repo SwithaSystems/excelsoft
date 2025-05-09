@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import { View, Text, StyleSheet, TextInput, SafeAreaView } from "react-native";
 import styles from "./forgotPasswordScreenStyles";
 import BackArrow from "@/components/commonComponents/BackArrow";
 import Header from "@/components/Header";
@@ -10,6 +10,7 @@ import containers from "@/containers";
 import { TwilioApi } from "@/services/twilioService";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { UserAPI } from "@/services/userService";
+import colors from "../config/colors";
 
 const forgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
@@ -40,6 +41,7 @@ const forgotPasswordScreen = () => {
   }, [phoneNumber]);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={"Forgot Password"} />
       <View style={styles.sectionContainer}>
@@ -85,6 +87,7 @@ const forgotPasswordScreen = () => {
         }}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
@@ -24,6 +25,8 @@ import { addToCart } from "../../store/slices/cartSlice";
 import DisplayPrice from "@/components/DisplayPrice";
 const { width } = Dimensions.get("window");
 import { useAppContext } from "@/context/AppContext";
+import Toast from "react-native-toast-message"; 
+import CustomToastAlert from "@/components/commonComponents/CustomToastAlert";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -34,6 +37,7 @@ const ProductDetailScreen = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
+  const [toast, setToast] = useState<{text1: String; text2?:string} | null>(null);
 
   const dispatch = useDispatch();
 
@@ -104,7 +108,16 @@ const ProductDetailScreen = () => {
     );
   }
 
+  const showToast = (text1: string, text2?:string)=>{
+    setToast({text1, text2});
+
+    setTimeout(()=>{
+      setToast(null);
+    }, 3000);
+  };
+
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }}>
         <Header headerText={"About the Product"} />
@@ -250,6 +263,15 @@ const ProductDetailScreen = () => {
                       discount: product.originalPrice - product.price,
                     })
                   );
+                  Toast.show({
+                    type: "customToast",
+                    text1: "Product added successfully!",
+                    text2: "View Cart",
+                    onPress: () => {
+                      redirectToPage(containers.cartScreenScreen);
+                    },
+                  });
+                  
                 }
               }}
               style={styles.button}
@@ -287,6 +309,7 @@ const ProductDetailScreen = () => {
 
       <Footer navigation={router} activeTab="home" />
     </View>
+    </SafeAreaView>
   );
 };
 

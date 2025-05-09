@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  SafeAreaView
 } from "react-native";
 import styles from "./AdminDashboardStyles";
 import BrandHeader from "@/components/BrandHeader";
@@ -73,6 +74,7 @@ const AdminDashboard = () => {
 
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={globalStyles.container}>
         <BrandHeader hideUserGreeting={true}/>
         <ScrollView>
@@ -167,6 +169,7 @@ const AdminDashboard = () => {
         </ScrollView>
         <Footer activeTab="home" />
       </View>
+      </SafeAreaView>
     </>
   );
 };

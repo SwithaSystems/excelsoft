@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  SafeAreaView
 } from "react-native";
 import styles from "./verifcationScreenStyles";
 import Header from "@/components/Header";
@@ -15,6 +16,7 @@ import { TwilioApi } from "@/services/twilioService";
 import { useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const verifcationScreen = () => {
   const { phoneNumber, from } = useLocalSearchParams();
@@ -51,6 +53,7 @@ const verifcationScreen = () => {
   };
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={styles.container}>
         <Header headerText="Verify Your Account" />
         <Image
@@ -83,6 +86,7 @@ const verifcationScreen = () => {
           </Text>
         </Text>
       </View>
+      </SafeAreaView>
     </>
   );
 };

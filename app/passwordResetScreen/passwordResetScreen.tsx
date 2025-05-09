@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
+import { View, Text, StyleSheet, TextInput, Alert, SafeAreaView } from "react-native";
 import styles from "./passwordResetScreenStyles";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -9,6 +9,7 @@ import { UserAPI } from "@/services/userService";
 import axios from "axios";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import colors from "../config/colors";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -54,6 +55,7 @@ const passwordResetScreen = () => {
     }
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText={" Reset Your Password"} />
       <View style={styles.sectionContainer}>
@@ -92,6 +94,7 @@ const passwordResetScreen = () => {
         />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

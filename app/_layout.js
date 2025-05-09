@@ -10,6 +10,8 @@ import { AuthProvider } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
+import Toast from "react-native-toast-message";
+import CustomToastAlert from "../components/commonComponents/CustomToastAlert";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -339,6 +341,13 @@ export default function Layout() {
             <AuthProvider>
               <NotificationsHandler />
               <LayoutContent />
+              <Toast 
+                config={{
+                  customToast: ({text1,text2, onPress}) => (
+                      <CustomToastAlert text1={text1} text2={text2} onPress={onPress}/>
+                  ),
+                }}  
+              />
             </AuthProvider>
           </AppProvider>
         </PersistGate>

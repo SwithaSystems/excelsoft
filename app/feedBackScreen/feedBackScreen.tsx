@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  SafeAreaView,
 } from "react-native";
 import styles from "./feedBackScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -24,6 +25,7 @@ import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
+import colors from "../config/colors";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -92,6 +94,7 @@ const feedBackScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header
         headerText="Add Your Review"
@@ -162,6 +165,7 @@ const feedBackScreen = () => {
         onClose={() => setShowReviewconfirmationModal(false)}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

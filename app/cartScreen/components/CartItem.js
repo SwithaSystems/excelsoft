@@ -67,7 +67,7 @@ function CartItem(props) {
 
   return (
     <>
-      <View style={[styles.cartItem, props?.itemContainerStyle]}>
+      <View style={[styles.cartItem, /*props?.itemContainerStyle*/]}>
         <View style={styles.cartItemContent}>
           <View style={styles.cartItemImageContainer}>
             {/* Handle both URL strings and require'd assets */}
@@ -82,7 +82,7 @@ function CartItem(props) {
               <View
                 style={[
                   globalStyles.pl_3,
-                  { height: "100%", justifyContent: "center" },
+                  { justifyContent: "center" },
                 ]}
               >
                 <Text style={globalStyles.h6}>
@@ -191,8 +191,8 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   cartItem: {
-    paddingHorizontal: 44,
-    marginBottom: 16,
+    //paddingHorizontal: 16,
+    //marginBottom: 8,
   },
   cartItemContent: {
     borderRadius: 10,
@@ -278,6 +278,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textDecorationLine: "underline",
     fontSize: 12,
+    marginBottom:4,
   },
 });
 export default CartItem;

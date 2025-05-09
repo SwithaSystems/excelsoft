@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
 import colors from "../config/colors";
 import * as Notifications from "expo-notifications";
@@ -112,6 +113,7 @@ const notificationsScreen: React.FC = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Notification Settings" />
       <ScrollView>
@@ -195,6 +197,7 @@ const notificationsScreen: React.FC = () => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

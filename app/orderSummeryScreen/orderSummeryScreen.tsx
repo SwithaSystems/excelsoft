@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -20,6 +20,7 @@ import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { RootState } from "@/store/store";
+import colors from "../config/colors";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -92,6 +93,7 @@ const orderSummeryScreen = () => {
   console.log("cartItems", cartItems);
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <ScrollView>
         <Header headerText="Order Summary" />
@@ -182,7 +184,7 @@ const orderSummeryScreen = () => {
           </View>
           <View style={[styles.section, globalStyles.mb_0]}>
             <Text style={styles.sectionHeading}>Order Details</Text>
-            <View style={globalStyles.pl_3}>
+            <View style={[globalStyles.pl_3, {marginBottom:16}]}>
               {cartItems.map((eachCartItem) => {
                 return (
                   <CartItem
@@ -225,6 +227,7 @@ const orderSummeryScreen = () => {
         handleCancel={cancelDelete}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -188,27 +188,29 @@ const HomePage = () => {
             </View>
 
             {/* Banner */}
-            <View style={{ margin: 10 }}>{renderBanner()}</View>
+            <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>{renderBanner()}</View>
 
             {/* Recommended Products */}
-            <RecommendedProductsSlider
-              recommendedProducts={recommendedProducts}
-              sectionTitleStyle={styles.sectionTitle}
-              title="Recommended for You"
-            />
-
+            <View style={{marginVertical:16}}>
+              <RecommendedProductsSlider
+                recommendedProducts={recommendedProducts}
+                sectionTitleStyle={styles.sectionTitle}
+                title="Recommended for You"
+              />
+            </View>
             {/* Exclusive Offers */}
             <View style={globalStyles.px_3}>
               <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
             </View>
 
             {/* Best Sellers */}
-            <RecommendedProductsSlider
-              recommendedProducts={bestSellers}
-              sectionTitleStyle={styles.sectionTitle}
-              title="Best Sellers"
-            />
-
+            <View style={{marginVertical:16}}>
+              <RecommendedProductsSlider
+                recommendedProducts={bestSellers}
+                sectionTitleStyle={styles.sectionTitle}
+                title="Best Sellers"
+              />
+            </View>
             {/* Featured Products */}
             {renderFeaturedProducts()}
             {/* </ScrollView> */}
@@ -216,9 +218,10 @@ const HomePage = () => {
         }
         data={[]} // No actual data here — just to use FlatList as scroll container
         renderItem={null}
-        ListFooterComponent={<Footer navigation={router} activeTab="home" />}
       />
       {/* Footer */}
+      <Footer />
+      {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
     </SafeAreaView>
   );
 };
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   categoriesContainer: {
-    padding: 10,
+    padding: 8,
   },
 });
 

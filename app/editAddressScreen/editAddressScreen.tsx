@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  SafeAreaView
 } from "react-native";
 import styles from "./editAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
@@ -73,6 +74,7 @@ const editAddressScreen = () => {
     redirectToPage(containers.savedAddressScreenScreen);
   };
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Edit Address" />
 
@@ -138,6 +140,7 @@ const editAddressScreen = () => {
         <Text style={styles.buttonText}>Update Address</Text>
       </TouchableOpacity>
     </View>
+    </SafeAreaView>
   );
 };
 

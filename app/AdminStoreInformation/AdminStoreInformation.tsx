@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, SafeAreaView } from "react-native";
 import styles from "./AdminStoreInformationStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -7,6 +7,7 @@ import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import { Picker } from "@react-native-picker/picker";
 import Button from "@/components/commonComponents/Button";
+import colors from "../config/colors";
 
 const AdminStoreInformation = () => {
   const [storeName, setStoreName] = useState("");
@@ -17,6 +18,7 @@ const AdminStoreInformation = () => {
   const [period, setPeriod] = useState("am");
   return (
     <>
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={globalStyles.container}>
         <Header headerText="Store Details" />
         <ScrollView>
@@ -108,6 +110,7 @@ const AdminStoreInformation = () => {
           <Button onPress={() => {}} title="Save" />
         </View>
       </View>
+      </SafeAreaView>
     </>
   );
 };

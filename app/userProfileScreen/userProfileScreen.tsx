@@ -10,6 +10,7 @@ import {
   View,
   Button,
   Platform,
+  SafeAreaView
 } from "react-native";
 import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
@@ -57,8 +58,8 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    Feedback: containers.AppReviewScreenScreen,
-    //"Store Information": containers.AdminOrderQRScanScreen,
+    "Feedback": containers.AppReviewScreenScreen,
+    "Store Information": containers.billingAddressScreenScreen,
   };
 
   useEffect(() => {
@@ -127,6 +128,7 @@ const UserProfileScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="User Profile" />
       <ScrollView>
@@ -277,6 +279,7 @@ const UserProfileScreen = () => {
         }}
       />
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  SafeAreaView,
 } from "react-native";
 import styles from "./returnOrderStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -151,71 +152,77 @@ const ReturnOrder = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={styles.container}>
       <Header headerText="Return/Replace Order" />
-      <ScrollView>
+      <ScrollView style={{paddingHorizontal:16}}>
         <ReturnReplaceToggle mode={mode} setMode={setMode} />
         <View style={styles.returnOrderCategory}>
           <Text style={styles.returnOrderItemText}>Order Number:</Text>
           <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
         </View>
 
-        {cartItemsWithDetails.map((item: any) => (
-          <View style={styles.cartItem} key={item.id}>
-            <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
-              <Text style={styles.itemPrice}>
-                {item.price}{" "}
-                <Text style={styles.striked}>{item.originalPrice}</Text>
-              </Text>
+        <View style={styles.cartItemsContainer}>  
+          {cartItemsWithDetails.map((item: any) => (
+            <View style={styles.cartItem} key={item.id}>
+              <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
+                <Text style={styles.itemPrice}>
+                  {item.price}{" "}
+                  <Text style={styles.striked}>{item.originalPrice}</Text>
+                </Text>
+              </View>
+              <View style={{ justifyContent: "center", alignItems: "center" }}>
+                <CheckBox
+                  checked={selectedItems.includes(item.id)}
+                  onPress={() => {
+                    if (selectedItems.includes(item.id)) {
+                      setSelectedItems(
+                        selectedItems.filter((id) => id !== item.id)
+                      );
+                    } else {
+                      setSelectedItems([...selectedItems, item.id]);
+                    }
+                  }}
+                  containerStyle={styles.checkBoxContainer}
+                  textStyle={styles.checkBoxText}
+                />
+              </View>
             </View>
-            <View style={{ justifyContent: "center", alignItems: "center" }}>
-              <CheckBox
-                checked={selectedItems.includes(item.id)}
-                onPress={() => {
-                  if (selectedItems.includes(item.id)) {
-                    setSelectedItems(
-                      selectedItems.filter((id) => id !== item.id)
-                    );
-                  } else {
-                    setSelectedItems([...selectedItems, item.id]);
-                  }
-                }}
-                containerStyle={styles.checkBoxContainer}
-                textStyle={styles.checkBoxText}
-              />
-            </View>
-          </View>
-        ))}
+          ))}
+        </View>
         {mode === "Return" && (
           <>
             <View style={styles.returnModeCategory}>
-              <Text style={styles.returnHeading}>Return Mode:</Text>
-
-              {options.map((option) => (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[
-                    styles.option,
-                    selected?.id === option.id && styles.selectedOption,
-                  ]}
-                  onPress={() => setSelected(option)}
-                >
-                  <View style={styles.textContainer}>
-                    <Text style={styles.optionLabel}>{option.label}</Text>
-                    <Text style={styles.optionDescription}>
-                      {option.description}
-                    </Text>
-                  </View>
-                  <View style={styles.radioCircle}>
-                    {selected.id === option.id && (
-                      <View style={styles.selectedRadio} />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
+              <Text style={styles.label}>Return Mode:</Text>
+              <View style={styles.returnSection}>
+                  {options.map((option) => (
+                    <TouchableOpacity
+                        key={option.id}
+                        style={[
+                          styles.option,
+                          selected?.id === option.id && styles.selectedOption,
+                        ]}
+                        onPress={() => setSelected(option)}
+                      >
+                      <View style={styles.returnModes}>
+                        <View style={styles.textContainer}>
+                          <Text style={styles.optionLabel}>{option.label}</Text>
+                          <Text style={styles.optionDescription}>
+                            {option.description}
+                          </Text>
+                        </View>
+                        <View style={styles.radioCircle}>
+                          {selected.id === option.id && (
+                            <View style={styles.selectedRadio} />
+                          )}
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+              </View>
             </View>
             {selected.id === "home" && (
               <View style={styles.section}>
@@ -227,8 +234,8 @@ const ReturnOrder = () => {
             )}
             <View style={styles.datetimeContainer}>
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Date:<Text style={styles.required}>*</Text>
+                <Text style={styles.label}>
+                  Return Date:<Text style={styles.required}>*</Text>
                 </Text>
                 {Platform.OS === "web" ? (
                   <input
@@ -254,6 +261,7 @@ const ReturnOrder = () => {
                   />
                 )}
               </View>
+              <View style={styles.timeSection}>
               <Text style={styles.label}>
                 Time: <Text style={styles.required}>*</Text>
               </Text>
@@ -273,16 +281,6 @@ const ReturnOrder = () => {
                   keyboardType="number-pad"
                 />
                 <View style={styles.amPmSelector}>
-                  <View
-                    style={{
-                      borderColor: colors.primary,
-                      borderWidth: 1,
-                      height: 40,
-                      width: 150,
-                      borderRadius: 8,
-                      justifyContent: "center",
-                    }}
-                  >
                     <Picker
                       selectedValue={period}
                       style={{
@@ -295,10 +293,10 @@ const ReturnOrder = () => {
                       <Picker.Item label="AM" value="am" />
                       <Picker.Item label="PM" value="pm" />
                     </Picker>
-                  </View>
                 </View>
               </View>
             </View>
+          </View>
             {/* <View style={styles.returnReason}>
               <Text style={styles.label}>Reason for Return</Text>
               <View style={styles.selectReason}>
@@ -342,7 +340,7 @@ const ReturnOrder = () => {
               </View>
             </View>
             <View style={styles.addComments}>
-              <Text>Do you want to talk more about your experience?</Text>
+              <Text style={styles.label}>Do you want to talk about your experience?</Text>
               <TextInput
                 style={[styles.commentsText]}
                 placeholder="Add additional comments"
@@ -382,6 +380,7 @@ const ReturnOrder = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -6,11 +6,12 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, Text, View } from "react-native";
 import { Image } from "react-native-elements";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
+import colors from "../config/colors";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -84,6 +85,7 @@ const changePasswordScreen = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
     <View style={globalStyles.container}>
       <Header headerText="Change Password" />
       <ScrollView>
@@ -152,6 +154,7 @@ const changePasswordScreen = () => {
         />
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,12 +1,61 @@
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import colors from "../app/config/colors";
+import React, {useState} from "react";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import colors from "../app/config/colors"
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import Carousel from 'react-native-reanimated-carousel';
+
+const {width} = Dimensions.get("window");
+
+const bannerData = [
+  {
+    title: "New Year Eve Special discount!",
+    discount: "40-60% Discount",
+    description:"Limited time offers on all products",
+    backgroundColor: "#2E2A5C",
+  },
+  {
+    title: "Flash Sale This Weekend!",
+    discount: "Up to 70% Off!",
+    description:"Don't miss out on hot deals!",
+    backgroundColor: colors.starColor,
+  },
+  {
+    title: "Clearance Sale!",
+    discount: "upto 50% Discount",
+    description:"Stock Clearance on selected items!",
+    backgroundColor: colors.black,
+  },
+];
+
 function HeroBanner(props) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   return (
     <>
-      <View style={styles.banner}>
+      <Carousel 
+        width={width-16}
+        height={230}
+        data={bannerData}
+        onSnapToItem={(index) => setCurrentIndex(index)}
+        scrollAnimationDuration={600}
+        renderItem={({item}) => (
+          <View style = {[styles.banner, {backgroundColor: item.backgroundColor}]}>
+                <Text style={styles.bannerTitle}>{item.title}</Text>
+                <Text style={styles.bannerDiscount}>{item.discount}</Text>
+                <Text style={styles.bannerText}>{item.description}</Text>
+                <TouchableOpacity
+                  style={styles.shopNowButton}
+                  onPress={() => redirectToPage(containers.offersScreenScreen)}
+                >
+                    <Text style={styles.shopNowText}>Shop Now</Text>
+                </TouchableOpacity>
+          </View>
+        )}
+        loop 
+        autoPlay
+      />
+
+      {/* <View style={styles.banner}>
         <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
         <Text style={styles.bannerDiscount}>40-60% Discount</Text>
         <Text style={styles.bannerText}>
@@ -15,18 +64,28 @@ function HeroBanner(props) {
         <TouchableOpacity style={styles.shopNowButton} onPress={(e)=>{redirectToPage(containers.offersScreenScreen)}}>
           <Text style={styles.shopNowText}>Shop Now</Text>
         </TouchableOpacity>
-      </View>
-      <View style = {styles.indicatorContainer}>        
-        <View style = {[styles.indicator, styles.activeIndicator]} />
-        <View style = {[styles.indicator]} />
-        <View style = {[styles.indicator]} />
-      </View>
+      </View> */}
+      <View style={styles.indicatorContainer}>
+          {bannerData.map((banner, index) => {
+            const isActive = currentIndex === index; 
+            return (
+              <View
+                key={index}
+                style={[
+                  styles.indicator,  
+                  isActive && styles.activeIndicator,  
+                ]}
+              />
+            );
+          })}
+        </View>
+
     </>
   );
 }
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: "#2E2A5C",
+    //backgroundColor: "#2E2A5C",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -35,7 +94,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: colors.white,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
