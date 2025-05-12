@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.excelsoft.app"
@@ -25,7 +27,9 @@
       "package": "com.excelsoft.app",
       "versionCode": 1,
       "newArchEnabled": true,
-      "permissions": ["NOTIFICATION"]
+      "permissions": [
+        "NOTIFICATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +46,9 @@
           "androidMode": "default",
           "androidCollapsedTitle": "New messages"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
