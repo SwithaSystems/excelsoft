@@ -82,13 +82,12 @@ const categoriesScreen = () => {
   };
   return (
     <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={[globalStyles.container]}>
+    <View style={{flex:1}}>
       <Header headerText={category?.name} />
-      {/* <ScrollView> */}
+       <ScrollView style = {styles.categories}> 
       <FlatList
         ListHeaderComponent={
-          <>
-            <View style={[{ backgroundColor: colors.white, flex: 1, padding: 16 }]}>
+            <View style={[{ backgroundColor: colors.white }]}>
               <FlatList
                 data={subCategories}
                 keyExtractor={(item) => item.id.toString()}
@@ -103,16 +102,15 @@ const categoriesScreen = () => {
                 //nestedScrollEnabled={true}
               />
             </View>
-          </>
         }
         data={[]}
         renderItem={null}
       />
 
-      {/* </ScrollView> */}
+     </ScrollView> 
       <Footer navigation={router} activeTab="home" />
     </View>
-    </SafeAreaView>
+   </SafeAreaView>
   );
 };
 

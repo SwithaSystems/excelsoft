@@ -5,7 +5,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  Platform,
+  BackHandler,
 } from "react-native";
 import styles from "./orderDetailsScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -15,7 +17,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import RecommendedProductsSlider from "@/components/RecommendedProductsSlider";
 import products from "@/data/products";
 import Footer from "@/components/Footer";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import QRCodeDisplay from "../../components/QRCodeDisplay";
 import { useSelector } from "react-redux";
@@ -139,11 +141,24 @@ const orderDetailsScreen = () => {
       originalPrice: product.originalPrice,
     }));
 
+    useEffect(() => {
+      const handleHardwareBackPress = () => {
+          clearNavigationStack('home/home');
+          return true; 
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleHardwareBackPress
+      );
+      return () => backHandler.remove();
+    },[]);
+
   return (
     <>
     <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
       <View style={styles.container}>
-        <Header headerText="Order Details" />
+        <Header headerText="Order Details" needResetNavigation={true}/>
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <View style={{}}>

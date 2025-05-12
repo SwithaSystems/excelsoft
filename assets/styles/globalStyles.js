@@ -2,6 +2,10 @@ import colors from "@/app/config/colors";
 import { StyleSheet } from "react-native";
 
 export const globalStyles = StyleSheet.create({
+  safeAreaContainer: {
+    flex:1,
+    backgroundColor: colors.white
+  },
   textCenter: {
     textAlign: "center",
   },

@@ -52,7 +52,7 @@ const ProductCard = ({
         </Text>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>{rating}</Text>
-          <Star filled={true} size={16} />
+          <Star filled={false} size={16} />
           <Text style={styles.reviews}>({noOfreviews})</Text>
         </View>
         <View style={styles.saleContainer}>
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   originalPrice: {
     fontSize: 14,
-    color: colors.primary,
+    color: colors.secondaryText,
     textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,

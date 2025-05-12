@@ -12,9 +12,9 @@ interface StarProps {
 const Star = ({ filled = true, size = 16 }: StarProps) => {
     return (
         <Ionicons 
-            name={filled ? "star" : "star-outline"} 
+            name={filled ? "star-sharp" : "star-sharp"} 
             size={size} 
-            color={filled ? colors.starColor : colors.black}
+            color={filled ? colors.starColor : colors.placeholdergrey}
         />
     );
 };

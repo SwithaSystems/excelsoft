@@ -6,3 +6,10 @@ export const redirectToPage = (pageName, params = {}) => {
     params: { ...params },
   });
 };
+
+export const clearNavigationStack = (pageName, params = {}) => {
+  router.replace({
+    pathname: `/${pageName}`,
+    params: { ...params },
+  });
+};

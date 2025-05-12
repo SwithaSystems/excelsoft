@@ -17,6 +17,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import { Colors } from "@/constants/Colors";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -60,7 +61,7 @@ const addAddressScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText="Add New Address" />
       <ScrollView>
