@@ -19,7 +19,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.excelsoft.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "This app uses the camera to allow users to take photos for their profile or uploads.",
+        "NSPhotoLibraryUsageDescription": "This app uses your photo library to let you select images for uploads or customization.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide location-based content or services."
       }
     },
     "android": {

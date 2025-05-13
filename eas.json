@@ -11,10 +11,14 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
+      "distribution": "store", 
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "local",
+        "autoIncrement": true
+      },
+      "ios": {
+        "credentialsSource": "remote" ,
         "autoIncrement": true
       }
     },
@@ -23,11 +27,37 @@
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "credentialsSource": "remote" 
       }
     },
     "testing": {
       "android": {
         "buildType": "apk"
+      }
+    },
+    "adhoc": {
+      "ios": {
+        "distribution": "internal",
+        "credentialsSource": "remote"
+      }
+    }
+  },
+  "submit": {
+    "preview": {
+      "ios": {
+        "appleId": "saikishore1726@gmail.com",  
+        "ascAppId": "6742980956" 
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "saikishore1726@gmail.com",
+        "ascAppId": "6742980956"
       }
     }
   }
