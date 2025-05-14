@@ -5,7 +5,7 @@ import colors from '../config/colors';
 
 const addNewPaymentScreen = () => {
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Text style={styles.text}>addNewPaymentScreen Component</Text>
     </View>

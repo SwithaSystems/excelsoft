@@ -156,7 +156,7 @@ const orderDetailsScreen = () => {
 
   return (
     <>
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={styles.container}>
         <Header headerText="Order Details" needResetNavigation={true}/>
         <ScrollView>

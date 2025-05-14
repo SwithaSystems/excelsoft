@@ -41,7 +41,7 @@ const forgotPasswordScreen = () => {
   }, [phoneNumber]);
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Forgot Password"} />
       <View style={styles.sectionContainer}>

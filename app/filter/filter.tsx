@@ -75,7 +75,7 @@ const Filter = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Filter"} headerStyle={styles.header} />
       <View style={globalStyles.sectionContent}>

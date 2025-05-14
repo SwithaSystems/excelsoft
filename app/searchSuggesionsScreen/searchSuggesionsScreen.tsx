@@ -52,7 +52,7 @@ const SearchSuggestionsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Search Page"} />
 

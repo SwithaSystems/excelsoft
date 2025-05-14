@@ -22,7 +22,7 @@ const editAccountInformationscreen = () => {
   const [phone, setPhone] = useState("+1 (555) 123-4567");
   const [email, setEmail] = useState("Denniskatleenam@gmail.com");
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={globalStyles.container}>
       <Header headerText="Edit Account Information" />
       <ScrollView>
