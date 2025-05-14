@@ -1,29 +1,26 @@
 import axios from "axios";
-import axiosInstance from "./axiosConfig";
+import axiosInstance, { jsonAxios } from "./axiosConfig";
+import createAxiosInstance from "./axiosConfig";
 
 export const UserAPI = {
   userSignUp: async (body: any) => {
-    const response = await axiosInstance.post(`/users/signUp`, body);
+    const response = await jsonAxios.post(`/users/signUp`, body);
     return response;
   },
 
   userSignIn: async (body: any): Promise<any> => {
-    const response = await axiosInstance.post(`/users/signIn`, body);
+    const response = await jsonAxios.post(`/users/signIn`, body);
     return response;
   },
 
   userEditProfile: async (phoneNumber: any, body: any) => {
     console.log("Sending body to API:", body);
+    const formDataAxios = createAxiosInstance("formdata");
 
     try {
-      const response = await axiosInstance.put(
+      const response = await formDataAxios.put(
         `/users/updateProfile/${phoneNumber}`,
-        {
-          body,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        body
       );
       return response;
     } catch (error) {
@@ -38,7 +35,7 @@ export const UserAPI = {
 
   getUserByPhonenumber: async (phoneNumber: any) => {
     console.log("phoneNumber", phoneNumber);
-    const response = await axiosInstance.get(
+    const response = await jsonAxios.get(
       `/users/getUserByPhoneNumber/${phoneNumber}`
     );
     return response;
@@ -53,7 +50,7 @@ export const UserAPI = {
   // },
   changePassword: async (body: { newPassword: string }) => {
     console.log("newPassword", body.newPassword);
-    const response = await axiosInstance.put("/users/changePassword", {
+    const response = await jsonAxios.put("/users/changePassword", {
       newPassword: body.newPassword,
     });
     return response;

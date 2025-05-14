@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosConfig";
+import { jsonAxios } from "./axiosConfig";
 
 export interface Category {
   id: number;
@@ -11,7 +11,7 @@ export interface Category {
 export const categoryService = {
   getAllCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
-      const response = await axiosInstance.get(`/categories`, {
+      const response = await jsonAxios.get(`/categories`, {
         params: { parentCategory },
       });
       return response.data;
@@ -23,7 +23,7 @@ export const categoryService = {
 
   getAllSubCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
-      const response = await axiosInstance.get(
+      const response = await jsonAxios.get(
         `/categories/${parentCategory}/subcategories`
       );
       return response.data;
@@ -35,7 +35,7 @@ export const categoryService = {
 
   getCategoryById: async (categoryId?: number): Promise<Category> => {
     try {
-      const response = await axiosInstance.get(`/categories/${categoryId}`);
+      const response = await jsonAxios.get(`/categories/${categoryId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching Category:", error);

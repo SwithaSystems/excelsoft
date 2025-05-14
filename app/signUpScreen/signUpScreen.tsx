@@ -1,7 +1,14 @@
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View, SafeAreaView } from "react-native";
+import {
+  Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+} from "react-native";
 import { globalStyles } from "../../assets/styles/globalStyles";
 import styles from "./signUpScreenStyles";
 import { UserAPI } from "@/services/userService";
@@ -148,81 +155,81 @@ const signUpScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={styles.container}>
-      <Header headerText={"Sign Up"} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+      <View style={styles.container}>
+        <Header headerText={"Sign Up"} />
 
-      <View style={styles.sectionContainer}>
-        <Text style={styles.label}>Email Address/Phone Number</Text>
-        <TextInput
-          style={globalStyles.input}
-          placeholder="Enter your email or phone number"
-          value={email || phone}
-          onChangeText={(text) => {
-            if (text.startsWith("+") && /^\+91\d{10}$/.test(text)) {
-              setPhoneNumber(text);
-              setEmail(""); // Clear email if phone is detected
-            } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
-              setEmail(text);
-              setPhoneNumber(""); // Clear phone if email is detected
-            } else {
-              setEmail(text); // Fallback for other text entries
-              setPhoneNumber("");
-            }
-          }}
-        />
-        {/* {errors.email && (
+        <View style={styles.sectionContainer}>
+          <Text style={styles.label}>Email Address/Phone Number</Text>
+          <TextInput
+            style={globalStyles.input}
+            placeholder="Enter your email or phone number"
+            value={email || phone}
+            onChangeText={(text) => {
+              if (text.startsWith("+") && /^\+91\d{10}$/.test(text)) {
+                setPhoneNumber(text);
+                setEmail(""); // Clear email if phone is detected
+              } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
+                setEmail(text);
+                setPhoneNumber(""); // Clear phone if email is detected
+              } else {
+                setEmail(text); // Fallback for other text entries
+                setPhoneNumber("");
+              }
+            }}
+          />
+          {/* {errors.email && (
           <Text style={globalStyles.errorText}>{errors.email}</Text>
         )} */}
 
-        <Text style={styles.label}> Password</Text>
-        <TextInput
-          style={[
-            globalStyles.input,
-            errors.password && globalStyles.errorInput,
-          ]}
-          placeholder="Enter your password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {errors.password && (
-          <Text style={globalStyles.errorText}>{errors.password}</Text>
-        )}
-        <Text style={styles.label}> Confirm Password</Text>
-        <TextInput
-          style={[
-            globalStyles.input,
-            errors.confirmPassword && globalStyles.errorInput,
-          ]}
-          placeholder="Confirm Password"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        {errors.password && (
-          <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
-        )}
+          <Text style={styles.label}> Password</Text>
+          <TextInput
+            style={[
+              globalStyles.input,
+              errors.password && globalStyles.errorInput,
+            ]}
+            placeholder="Enter your password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          {errors.password && (
+            <Text style={globalStyles.errorText}>{errors.password}</Text>
+          )}
+          <Text style={styles.label}> Confirm Password</Text>
+          <TextInput
+            style={[
+              globalStyles.input,
+              errors.confirmPassword && globalStyles.errorInput,
+            ]}
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          {errors.password && (
+            <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
+          )}
 
-        <Button
-          title="Sign Up"
-          style={styles.signInButton}
-          onPress={handleSignUp}
-        />
+          <Button
+            title="Sign Up"
+            style={styles.signInButton}
+            onPress={handleSignUp}
+          />
 
-        <Text style={styles.signUpText}>
-          Already have an account?{" "}
-          <Text
-            style={styles.signUpLink}
-            onPress={() => {
-              redirectToPage(containers.signInScreen);
-            }}
-          >
-            Sign In
+          <Text style={styles.signUpText}>
+            Already have an account?{" "}
+            <Text
+              style={styles.signUpLink}
+              onPress={() => {
+                redirectToPage(containers.signInScreen);
+              }}
+            >
+              Sign In
+            </Text>
           </Text>
-        </Text>
+        </View>
       </View>
-    </View>
     </SafeAreaView>
   );
 };

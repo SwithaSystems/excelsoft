@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosConfig";
+import { jsonAxios } from "./axiosConfig";
 
 export interface Product {
   id: string;
@@ -22,31 +23,31 @@ export interface Product {
 
 export const ProductsAPI = {
   getAllProducts: async (): Promise<Product[]> => {
-    const response = await axiosInstance.get(`/products`);
+    const response = await jsonAxios.get(`/products`);
     return response.data;
   },
 
   getProductByCategoryID: async (id: number): Promise<Product[]> => {
     console.log(id);
-    const response = await axiosInstance.get(`/products/category/${id}`);
+    const response = await jsonAxios.get(`/products/category/${id}`);
     console.log("AllProducts", response.data);
     return response.data;
   },
 
   getProductBYID: async (id: number): Promise<Product> => {
-    const response = await axiosInstance.get(`/products/${id}`);
+    const response = await jsonAxios.get(`/products/${id}`);
     return response.data;
   },
 
   searchProducts: async (query: string): Promise<Product[]> => {
-    const response = await axiosInstance.get(`/products/search?q=${query}`);
+    const response = await jsonAxios.get(`/products/search?q=${query}`);
     return response.data;
   },
 
   getAllSubCategoriesProducts: async (
     categoryIds: number[]
   ): Promise<Product[]> => {
-    const response = await axiosInstance.post(`/products/subCategories`, {
+    const response = await jsonAxios.post(`/products/subCategories`, {
       categoryIds: categoryIds,
     });
     return response.data;
@@ -55,6 +56,6 @@ export const ProductsAPI = {
   addReview: async (productId: Number, review: any): Promise<void> => {
     console.log("productId", productId);
     console.log("review", review);
-    await axiosInstance.post(`/products/${productId}/reviews`, review);
+    await jsonAxios.post(`/products/${productId}/reviews`, review);
   },
 };

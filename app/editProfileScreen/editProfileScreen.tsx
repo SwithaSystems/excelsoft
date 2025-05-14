@@ -12,9 +12,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
-import { Image } from "react-native-elements";
+import { Image } from "react-native";
 import styles from "./editProfileScreenStyles";
 import colors from "../config/colors";
 import * as ImagePicker from "expo-image-picker";
@@ -24,6 +24,8 @@ import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/store/slices/userSlice";
 
 interface User {
   id: string;
@@ -45,10 +47,11 @@ const editProfileScreen = () => {
   const [profileImage, setProfileImage] = useState("https://picsum.photos/100");
   const [user, setUser] = useState<User | null>(null);
   const userData = useSelector((state: RootState) => state.user.user);
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getUser = async () => {
-      // const userData = await AsyncStorage.getItem("user");
       console.log("userData", userData);
       if (userData) {
         const user = await UserAPI.getUserByPhonenumber(userData?.phone);
@@ -66,41 +69,86 @@ const editProfileScreen = () => {
     getUser();
   }, [userData]);
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access gallery is required!");
-      return;
-    }
+  const openImagePickerAsync = async (type: "camera" | "gallery") => {
+    let result;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+    try {
+      if (type === "camera") {
+        const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+        if (!cameraPerm.granted) {
+          alert("Permission to access camera is required!");
+          return;
+        }
+
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      } else {
+        const galleryPerm =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!galleryPerm.granted) {
+          alert("Permission to access gallery is required!");
+          return;
+        }
+
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      }
+
+      // ✅ Handle image result safely
+      if (!result.canceled && "assets" in result && result.assets?.length > 0) {
+        setProfileImage(result.assets[0].uri);
+      } else {
+        console.log("Image picking was cancelled or returned no assets.");
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      alert("Something went wrong while picking the image.");
     }
   };
 
-  const takePhoto = async () => {
-    //ask for camera permission
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access camera is required!");
-      return;
-    }
+  // const takePhoto = async () => {
+  //   //ask for camera permission
+  //   const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  //   if (status !== "granted") {
+  //     alert("Permission to access camera is required!");
+  //     return;
+  //   }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
-    }
+  //   const result = await ImagePicker.launchCameraAsync({
+  //     // mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     mediaTypes: ["images"],
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     quality: 1,
+  //   });
+  //   if (!result.canceled) {
+  //     setProfileImage(result.assets[0].uri);
+  //   }
+  // };
+
+  const showImageOptions = () => {
+    Alert.alert("Select Image", "Choose image source", [
+      {
+        text: "Take Photo",
+        onPress: () => openImagePickerAsync("camera"),
+      },
+      {
+        text: "Choose from Gallery",
+        onPress: () => openImagePickerAsync("gallery"),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
   };
 
   const handleEditProfile = async () => {
@@ -145,10 +193,12 @@ const editProfileScreen = () => {
     console.log("formData", formData);
 
     try {
+      setLoading(true);
       const response = await UserAPI.userEditProfile(phone, formData);
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        dispatch(setUserData(response.data.user));
         Alert.alert("Message", "Profile updated successfully.", [
           {
             text: "OK",
@@ -162,158 +212,140 @@ const editProfileScreen = () => {
     } catch (error) {
       console.error("Profile update failed:", error);
       alert("Failed to update profile.");
+    } finally {
+      setLoading(false);
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container as ViewStyle}>
-      <Header headerText="Edit Profile" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {/* Profile Picture */}
-          <View style={globalStyles.profilePictureContainer}>
-            <Image
-              source={{
-                uri: "https://res.cloudinary.com/dvilk51ol/image/upload/v1746601422/users/7/x3warol5ipzcshd6ec4p.jpg",
-              }}
-              style={globalStyles.profileImage}
-            />
-            <TouchableOpacity
-              style={styles.changePictureButton}
-              onPress={pickImage}
-            >
-              <Feather name="camera" size={24} color={colors.primary} />
-            </TouchableOpacity>
-            <Text style={styles.changePictureText} onPress={takePhoto}>
-              Change Profile Picture
-            </Text>
-          </View>
-          <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="user-o"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>First Name</Text>
-              <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="First Name"
-                value={firstName}
-                onPress={() => {}}
-                setValue={setFirstName}
-                onChangeText={(text: any) => setFirstName(text)}
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+      <View style={globalStyles.container as ViewStyle}>
+        <Header headerText="Edit Profile" />
+        <ScrollView>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            {/* Profile Picture */}
+            <View style={globalStyles.profilePictureContainer}>
+              <Image
+                source={{
+                  uri: profileImage,
+                }}
+                style={globalStyles.profileImage}
               />
+              <TouchableOpacity
+                style={styles.changePictureButton}
+                onPress={showImageOptions}
+              >
+                <Feather name="camera" size={24} color={colors.primary} />
+              </TouchableOpacity>
+              <Text style={styles.changePictureText}>
+                Change Profile Picture
+              </Text>
             </View>
-          </View>
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="user-o"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
+              />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>First Name</Text>
+                <CustomTextInput
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="First Name"
+                  value={firstName}
+                  onPress={() => {}}
+                  setValue={setFirstName}
+                  onChangeText={(text: any) => setFirstName(text)}
+                />
+              </View>
+            </View>
 
-          <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="user-o"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>Last Name</Text>
-              <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="Last Name"
-                value={lastName}
-                onPress={() => {}}
-                setValue={setLastName}
-                onChangeText={(text: any) => setLastName(text)}
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="user-o"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
               />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>Last Name</Text>
+                <CustomTextInput
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="Last Name"
+                  value={lastName}
+                  onPress={() => {}}
+                  setValue={setLastName}
+                  onChangeText={(text: any) => setLastName(text)}
+                />
+              </View>
             </View>
-          </View>
 
-          <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="calendar-o"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-              <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="--/--/----"
-                value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
-                onPress={() => {}}
-                setValue={setDateOfBirth}
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="calendar-o"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
               />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
+                <CustomTextInput
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="----/--/--"
+                  value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
+                  onPress={() => {}}
+                  setValue={setDateOfBirth}
+                />
+              </View>
             </View>
-          </View>
 
-          <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="phone"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>Phone</Text>
-              <CustomTextInput
-                disabled={true}
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="phone number"
-                value={user ? user.phone : phone}
-                onPress={() => {}}
-                setValue={setPhone}
-                keyboardType="phone-pad"
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="phone"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
               />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>Phone</Text>
+                <CustomTextInput
+                  disabled={true}
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="phone number"
+                  value={user ? user.phone : phone}
+                  onPress={() => {}}
+                  setValue={setPhone}
+                  keyboardType="phone-pad"
+                />
+              </View>
             </View>
-          </View>
 
-          <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="envelope-o"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>Email</Text>
-              <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="email"
-                disabled={true}
-                value={user ? user.email : email}
-                onPress={() => {}}
-                setValue={setEmail}
-                keyboardType="email-address"
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="envelope-o"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
               />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>Email</Text>
+                <CustomTextInput
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="email"
+                  disabled={true}
+                  value={user ? user.email : email}
+                  onPress={() => {}}
+                  setValue={setEmail}
+                  keyboardType="email-address"
+                />
+              </View>
             </View>
           </View>
-          {/* <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="envelope-o"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
-              <Text style={globalStyles.userInputLabel}>Role</Text>
-              <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="Role"
-                //disabled={true}
-                value={role}
-                onPress={() => {}}
-                setValue={setRole}
-                //keyboardType="email-address"
-              />
-            </View>
-          </View> */}
+        </ScrollView>
+        <View style={[globalStyles.p_3]}>
+          <Button title="Save" onPress={handleEditProfile} disabled={loading} />
         </View>
-      </ScrollView>
-      <View style={[globalStyles.p_3]}>
-        <Button title="Save" onPress={handleEditProfile} />
       </View>
-    </View>
     </SafeAreaView>
   );
 };

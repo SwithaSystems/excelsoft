@@ -1,4 +1,5 @@
-import axiosInstance from "./axiosConfig";
+// import axiosInstance from "./axiosConfig";
+import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {
   HOME_DELIVERY = "Home Delivery",
@@ -60,9 +61,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
     try {
-      const response = await axiosInstance.get<Order[]>(
-        `${API_BASE_URL}/orders`
-      );
+      const response = await jsonAxios.get<Order[]>(`${API_BASE_URL}/orders`);
       console.log(response.data);
       return response.data;
     } catch (error) {
@@ -73,7 +72,7 @@ export const orderService = {
 
   getOrderById: async (orderId: string): Promise<Order> => {
     try {
-      const response = await axiosInstance.get<Order>(
+      const response = await jsonAxios.get<Order>(
         `${API_BASE_URL}/orders/getById/${orderId}`
       );
       console.log("orderdata by id", response.data);
@@ -87,7 +86,7 @@ export const orderService = {
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
     console.log("orderPayload", orderPayload);
     try {
-      const response = await axiosInstance.post<Order>(
+      const response = await jsonAxios.post<Order>(
         `${API_BASE_URL}/orders`,
         orderPayload
       );

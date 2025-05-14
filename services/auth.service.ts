@@ -1,12 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axiosInstance from "./axiosConfig";
 import { router } from "expo-router";
 import containers from "@/containers";
+import { jsonAxios } from "./axiosConfig";
 
 export const authService = {
   async login(phone: string, password: string) {
     try {
-      const response = await axiosInstance.post("/auth/login", {
+      const response = await jsonAxios.post("/auth/login", {
         phone,
         password,
       });
@@ -20,7 +20,7 @@ export const authService = {
 
   async register(userData: { phone: string; email: string; password: string }) {
     try {
-      const response = await axiosInstance.post("/auth/register", userData);
+      const response = await jsonAxios.post("/auth/register", userData);
       console.log("response", response.data);
       await AsyncStorage.setItem("token", response.data.access_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));

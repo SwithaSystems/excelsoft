@@ -23,8 +23,10 @@ import { NotificationService } from "../../services/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import { deviceType } from "expo-device";
-import axiosInstance from "@/services/axiosConfig";
+// import axiosInstance from "@/services/axiosConfig";
 import { useSelector } from "react-redux";
+import { jsonAxios } from "@/services/axiosConfig";
+import { RootState } from "@/store/store";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -53,32 +55,64 @@ const UserProfileScreen = () => {
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const userData_redux = useSelector((state: RootState) => state.user.user);
 
-  const userData_redux = useSelector((state: any) => state.user.user);
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
-    //"Store Information": containers.billingAddressScreenScreen,
   };
 
+  // useEffect(() => {
+  //   const getUser = async () => {
+  //     console.log("userData", userData);
+  //     if (userData) {
+  //       const user = await UserAPI.getUserByPhonenumber(userData?.phone);
+  //       console.log("user", user.data);
+  //       if (user) {
+  //         setFirstName(user.data.firstName);
+  //         setLastName(user.data.lastName);
+  //         setPhone(user.data.phone);
+  //         setDateOfBirth(user.data.dateOfBirth);
+  //         setEmail(user.data?.email || "No mail added");
+  //         setProfileImage(user.data.profileImageUrl);
+  //       }
+  //     }
+  //   };
+  //   getUser();
+  // }, [userData]);
+  console.log("userData_redux", userData_redux);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     if (!userData_redux?.id) return;
+
+  //     try {
+  //       const response = await jsonAxios.get("/users/" + userData_redux.phone);
+  //       if (response?.data) {
+  //         setUser(response.data);
+  //       } else {
+  //         console.warn("No user data received");
+  //       }
+  //     } catch (err) {
+  //       console.error("User fetch failed", err);
+  //     }
+  //   };
+
+  //   fetchUser();
+  // }, [userData_redux?.id]);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      // const userData = await AsyncStorage.getItem("user");
-
-      if (userData_redux) {
-        // const user = JSON.parse(userData);
-        // console.log("userData", user);
-        const response = await axiosInstance.get("/users/" + userData_redux.id);
-        console.log("response", response.data);
-
-        setUser(response.data || "User");
-      }
-    };
-
-    fetchUser();
+    if (userData_redux) {
+      setUser({
+        id: Number(userData_redux?.id),
+        firstName: userData_redux?.firstName ?? "",
+        lastName: userData_redux?.lastName ?? "",
+        profileImageUrl:
+          userData_redux?.profileImageUrl ?? "https://picsum.photos/100",
+      });
+    }
   }, [userData_redux]);
 
   console.log("user details fetched", user);
@@ -123,7 +157,8 @@ const UserProfileScreen = () => {
       await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
-      redirectToPage(containers.signInScreen);
+      redirectToPage(containers.homeScreen);
+      // redirectToPage(containers.signInScreen);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -135,12 +170,10 @@ const UserProfileScreen = () => {
         <Header headerText="User Profile" />
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <Text style={styles.greeting}>
-              Hello, {user?.firstName || "User"}
-            </Text>
+            <Text style={styles.greeting}>Hello, {user?.firstName}</Text>
             <Image
               source={{
-                uri: user ? user.profileImageUrl : "https://picsum.photos/100",
+                uri: user?.profileImageUrl,
               }}
               style={globalStyles.profileImage}
             />
