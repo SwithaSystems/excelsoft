@@ -130,4 +130,20 @@ export const addressService = {
       return { success: false };
     }
   },
+  updateBillingAddress: async (
+    billingAddressData: any
+  ): Promise<{ data: any; status: number }> => {
+    try {
+      const response = await jsonAxios.put(
+        `${API_BASE_URL}/billingAddress/${billingAddressData._id}`,
+        billingAddressData
+      );
+      return {
+        data: response.data,
+        status: response.status,
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
 };

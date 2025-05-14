@@ -92,18 +92,18 @@ const HomeDeliveryScreen = () => {
     }
 
     // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return false;
-    }
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(email)) {
+    //   Alert.alert("Error", "Please enter a valid email address");
+    //   return false;
+    // }
 
     // Basic phone validation
-    const phoneRegex = /^\+?[\d\s-]{10,}$/;
-    if (!phoneRegex.test(phone)) {
-      Alert.alert("Error", "Please enter a valid phone number");
-      return false;
-    }
+    // const phoneRegex = /^\+?[\d\s-]{10,}$/;
+    // if (!phoneRegex.test(phone)) {
+    //   Alert.alert("Error", "Please enter a valid phone number");
+    //   return false;
+    // }
 
     return true;
   };

@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import styles from "./editAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
@@ -74,44 +74,44 @@ const editAddressScreen = () => {
     redirectToPage(containers.savedAddressScreenScreen);
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={styles.container}>
-      <Header headerText="Edit Address" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+      <View style={styles.container}>
+        <Header headerText="Edit Address" />
 
-      <Text style={styles.fieldLabel}>Address</Text>
-      <TextInput
-        style={styles.input}
-        value={address}
-        onChangeText={setAddress}
-      />
+        <Text style={styles.fieldLabel}>Address</Text>
+        <TextInput
+          style={styles.input}
+          value={address}
+          onChangeText={setAddress}
+        />
 
-      <Text style={styles.fieldLabel}>Line 1</Text>
-      <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+        <Text style={styles.fieldLabel}>Line 1</Text>
+        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
 
-      <Text style={styles.fieldLabel}>Line 2</Text>
-      <TextInput
-        style={styles.input}
-        value={line2}
-        onChangeText={setLine2}
-        keyboardType="email-address"
-      />
+        <Text style={styles.fieldLabel}>Line 2</Text>
+        <TextInput
+          style={styles.input}
+          value={line2}
+          onChangeText={setLine2}
+          keyboardType="email-address"
+        />
 
-      <Text style={styles.fieldLabel}>Town/City</Text>
-      <TextInput
-        style={styles.input}
-        value={towncity}
-        onChangeText={setTownCity}
-        keyboardType="email-address"
-      />
+        <Text style={styles.fieldLabel}>Town/City</Text>
+        <TextInput
+          style={styles.input}
+          value={towncity}
+          onChangeText={setTownCity}
+          keyboardType="email-address"
+        />
 
-      <Text style={styles.fieldLabel}>Postal Code</Text>
-      <TextInput
-        style={styles.input}
-        value={postalcode}
-        onChangeText={setPostalCode}
-        keyboardType="email-address"
-      />
-      {/* <Text style={styles.fieldLabel}>Country</Text>
+        <Text style={styles.fieldLabel}>Postal Code</Text>
+        <TextInput
+          style={styles.input}
+          value={postalcode}
+          onChangeText={setPostalCode}
+          keyboardType="email-address"
+        />
+        {/* <Text style={styles.fieldLabel}>Country</Text>
       <View style={styles.countriesdropdown}>
         <TextInput
           style={styles.input}
@@ -121,25 +121,25 @@ const editAddressScreen = () => {
         />
         <Ionicons name="chevron-down-outline" size={24} color={colors.black} />
       </View> */}
-      <Text style={styles.fieldLabel}>Phone Number</Text>
-      <TextInput
-        style={styles.input}
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-      />
-      <View style={styles.checkBox}>
-        <CheckBox
-          checked={isDefault}
-          onPress={() => setIsDefault(!isDefault)}
+        <Text style={styles.fieldLabel}>Phone Number</Text>
+        <TextInput
+          style={styles.input}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
         />
-        <Text>Mark as default address</Text>
-      </View>
+        <View style={styles.checkBox}>
+          <CheckBox
+            checked={isDefault}
+            onPress={() => setIsDefault(!isDefault)}
+          />
+          <Text>Mark as default address</Text>
+        </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Update Address</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Update Address</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
