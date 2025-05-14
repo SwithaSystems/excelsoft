@@ -120,7 +120,8 @@ const selectBillingAddressScreen = () => {
   }, []);
   console.log("Billingaddress saved address", addressData);
   console.log("Selected address ID:", selectedId);
-  const confirmDelete = async () => {
+  const confirmDelete = async (itemToDelete: any) => {
+    console.log("Item to delete:", itemToDelete);
     if (itemToDelete) {
       try {
         const response = await addressService.deleteBillingAddress(
@@ -257,7 +258,7 @@ const selectBillingAddressScreen = () => {
                 isModalVisible={isModalVisible}
                 text="Are you sure you want to delete this address?"
                 submitText="Delete Address"
-                handleSubmit={confirmDelete}
+                handleSubmit={() => confirmDelete(itemToDelete!)}
                 cancelText="Cancel"
                 handleCancel={cancelDelete}
               />

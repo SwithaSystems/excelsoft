@@ -27,6 +27,7 @@ import { deviceType } from "expo-device";
 import { useSelector } from "react-redux";
 import { jsonAxios } from "@/services/axiosConfig";
 import { RootState } from "@/store/store";
+import { UserAPI } from "@/services/userService";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -83,37 +84,39 @@ const UserProfileScreen = () => {
   //   };
   //   getUser();
   // }, [userData]);
-  console.log("userData_redux", userData_redux);
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     if (!userData_redux?.id) return;
-
-  //     try {
-  //       const response = await jsonAxios.get("/users/" + userData_redux.phone);
-  //       if (response?.data) {
-  //         setUser(response.data);
-  //       } else {
-  //         console.warn("No user data received");
-  //       }
-  //     } catch (err) {
-  //       console.error("User fetch failed", err);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, [userData_redux?.id]);
-
+  console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
-    if (userData_redux) {
-      setUser({
-        id: Number(userData_redux?.id),
-        firstName: userData_redux?.firstName ?? "",
-        lastName: userData_redux?.lastName ?? "",
-        profileImageUrl:
-          userData_redux?.profileImageUrl ?? "https://picsum.photos/100",
-      });
-    }
-  }, [userData_redux]);
+    const fetchUser = async () => {
+      if (!userData_redux?.id) return;
+
+      try {
+        const response = await UserAPI.getUserByPhonenumber(
+          userData_redux?.phone
+        );
+        if (response?.data) {
+          setUser(response.data);
+        } else {
+          console.warn("No user data received");
+        }
+      } catch (err) {
+        console.error("User fetch failed", err);
+      }
+    };
+
+    fetchUser();
+  }, [userData_redux?.id]);
+
+  // useEffect(() => {
+  //   if (userData_redux) {
+  //     setUser({
+  //       id: Number(userData_redux?.id),
+  //       firstName: userData_redux?.firstName ?? "",
+  //       lastName: userData_redux?.lastName ?? "",
+  //       profileImageUrl:
+  //         userData_redux?.profileImageUrl ?? "https://picsum.photos/100",
+  //     });
+  //   }
+  // }, [userData_redux]);
 
   console.log("user details fetched", user);
   useEffect(() => {
