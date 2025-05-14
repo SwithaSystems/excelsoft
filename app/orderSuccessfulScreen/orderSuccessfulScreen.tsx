@@ -29,6 +29,7 @@ const orderSuccessfulScreen = () => {
 
     redirectToPage(containers.orderDetailsScreenScreen, {
       orderData: orderData,
+      //from: 'cart',
     });
   }
 

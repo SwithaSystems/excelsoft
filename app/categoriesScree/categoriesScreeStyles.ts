@@ -8,6 +8,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  categories:{
+    //padding: 16
+  },
   categoryItem: {
     width: itemWidth,
     //width: itemWidth,

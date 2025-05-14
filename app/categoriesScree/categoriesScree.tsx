@@ -62,7 +62,7 @@ const categoriesScreen = () => {
         style={[
           styles.categoryItem,
           isEven ? styles.leftItem : styles.rightItem,
-          { width: (screenWidth / 2) - 15 },
+          { width: (screenWidth - 48) / 2 },
         ]}
       >
         <CategoryItem
@@ -82,13 +82,12 @@ const categoriesScreen = () => {
   };
   return (
     <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={[globalStyles.container]}>
+    <View style={{flex:1}}>
       <Header headerText={category?.name} />
-      {/* <ScrollView> */}
+       <ScrollView style = {styles.categories}> 
       <FlatList
         ListHeaderComponent={
-          <>
-            <View style={[{ backgroundColor: colors.white, flex: 1, padding: 16 }]}>
+            <View style={[{ backgroundColor: colors.white }]}>
               <FlatList
                 data={subCategories}
                 keyExtractor={(item) => item.id.toString()}
@@ -96,23 +95,22 @@ const categoriesScreen = () => {
                 numColumns={2}
                 columnWrapperStyle={[
                   styles.row,
-                  { justifyContent: 'space-between' }
+                  { justifyContent: 'space-between', paddingHorizontal: 16 }
                 ]}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
                 //nestedScrollEnabled={true}
               />
             </View>
-          </>
         }
         data={[]}
         renderItem={null}
       />
 
-      {/* </ScrollView> */}
+     </ScrollView> 
       <Footer navigation={router} activeTab="home" />
     </View>
-    </SafeAreaView>
+   </SafeAreaView>
   );
 };
 

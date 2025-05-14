@@ -16,7 +16,7 @@ function Header(props) {
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
           <View style={{ position: "absolute", left: 16, top: 16, zIndex: 1 }}>
-            <BackArrow />
+            <BackArrow needResetNavigation={props.needResetNavigation}/>
           </View>
           <Text style={styles.headerTitle}>{props.headerText}</Text>
           {props.secondaryBtnText && (
