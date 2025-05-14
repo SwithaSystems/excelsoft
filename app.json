@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.excelsoft.app",
@@ -33,9 +31,7 @@
       "package": "com.excelsoft.app",
       "versionCode": 1,
       "newArchEnabled": true,
-      "permissions": [
-        "NOTIFICATION"
-      ]
+      "permissions": ["NOTIFICATION"]
     },
     "web": {
       "bundler": "metro",
@@ -51,6 +47,12 @@
           "color": "#ffffff",
           "androidMode": "default",
           "androidCollapsedTitle": "New messages"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
       "expo-font",

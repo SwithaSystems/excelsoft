@@ -76,8 +76,7 @@
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false,
         "exclude": [
-          "@stripe/stripe-react-native",
-          "redux-persist"
+          "@stripe/stripe-react-native"
         ]
       }
     }
