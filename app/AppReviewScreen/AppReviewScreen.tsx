@@ -22,7 +22,7 @@ const appReviewScreen = () => {
     const [rating, setRating] = useState(0);
     
     return(
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
         <View style={styles.container}>
         <Header
             headerText="Feedback"

@@ -37,7 +37,7 @@ function HeroBanner(props) {
         height={230}
         data={bannerData}
         onSnapToItem={(index) => setCurrentIndex(index)}
-        scrollAnimationDuration={600}
+        scrollAnimationDuration={300}
         renderItem={({item}) => (
           <View style = {[styles.banner, {backgroundColor: item.backgroundColor}]}>
                 <Text style={styles.bannerTitle}>{item.title}</Text>
@@ -52,6 +52,7 @@ function HeroBanner(props) {
           </View>
         )}
         loop 
+        autoPlayInterval={5000}
         autoPlay
       />
 

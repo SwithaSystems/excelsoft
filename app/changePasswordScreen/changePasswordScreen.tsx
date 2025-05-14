@@ -12,6 +12,7 @@ import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -85,7 +86,8 @@ const changePasswordScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header headerText="Change Password" />
       <ScrollView>
@@ -154,6 +156,7 @@ const changePasswordScreen = () => {
         />
       </View>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

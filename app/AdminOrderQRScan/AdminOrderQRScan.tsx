@@ -11,7 +11,7 @@ import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 const AdminOrderQRScan = () => {
   const [qrCode,setQrCode] = useState("");
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText="Scan QR Code" />
       <ScrollView>

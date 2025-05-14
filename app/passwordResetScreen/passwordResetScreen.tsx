@@ -55,7 +55,7 @@ const passwordResetScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={" Reset Your Password"} />
       <View style={styles.sectionContainer}>

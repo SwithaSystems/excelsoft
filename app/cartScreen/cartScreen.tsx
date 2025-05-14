@@ -106,7 +106,7 @@ const CartScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={[globalStyles.container]}>
       <ScrollView>
         <Header headerText="Cart" />

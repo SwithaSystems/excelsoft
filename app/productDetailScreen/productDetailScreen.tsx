@@ -26,6 +26,7 @@ import DisplayPrice from "@/components/DisplayPrice";
 const { width } = Dimensions.get("window");
 import { useAppContext } from "@/context/AppContext";
 import Toast from "react-native-toast-message"; 
+import { globalStyles } from "@/assets/styles/globalStyles";
 import CustomToastAlert from "@/components/commonComponents/CustomToastAlert";
 
 const ProductDetailScreen = () => {
@@ -117,7 +118,7 @@ const ProductDetailScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }}>
         <Header headerText={"About the Product"} />

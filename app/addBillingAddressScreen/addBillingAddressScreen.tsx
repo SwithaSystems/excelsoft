@@ -22,6 +22,7 @@ import { addressService } from "@/services/addressService";
 import Button from "@/components/commonComponents/Button";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -156,7 +157,8 @@ const addBillingAddressScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
       <View style={styles.container}>
         <Header
           headerText={isEditMode ? "Edit Billing Address" : "Billing Address"}
@@ -250,6 +252,7 @@ const addBillingAddressScreen = () => {
           </View>
         </ScrollView>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

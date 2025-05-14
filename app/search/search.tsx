@@ -22,6 +22,7 @@ import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import styles from "./searchStyles";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
@@ -308,7 +309,7 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Search"} />
 

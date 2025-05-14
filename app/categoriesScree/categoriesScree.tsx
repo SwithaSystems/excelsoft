@@ -81,7 +81,7 @@ const categoriesScreen = () => {
     );
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={{flex:1}}>
       <Header headerText={category?.name} />
        <ScrollView style = {styles.categories}> 

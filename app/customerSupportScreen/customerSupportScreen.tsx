@@ -24,7 +24,7 @@ const customerSupportScreen = () => {
     Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={globalStyles.container}>
       <Header headerText="Customer Support" />
       <ScrollView>

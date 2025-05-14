@@ -152,7 +152,7 @@ const ReturnOrder = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText="Return/Replace Order" />
       <ScrollView style={{paddingHorizontal:16}}>

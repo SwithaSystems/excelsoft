@@ -15,20 +15,24 @@ import colors from '../config/colors';
 
 const curbsidePickupScreen = () => {
   const vehicleTypeOptions = [
-    { label:"type 1", value: "type1" },{ label:"type 2", value: "type2" },
+    { label:"Car", value: "Car" },
+    { label:"MotorCycle", value: "MotorCycle" },
+    { label:"Bike", value: "Bike" },
+    { label:"Van", value: "Van" },
   ]
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); // Default date as ISO for web support
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [hours, setHours] = useState('');
     const [minutes, setMinutes] = useState('');
-    const [period, setPeriod] = useState('am');
-    const [vehicleType, setVehicleType] = useState('');
+    const [period, setPeriod] = useState('am')
+    const [vehicleType, setVehicleType] = useState('Car');
     const [vehicleNumber, setVehicleNumber] = useState('');
     const [additionalDetails, setAdditionalDetails] = useState('');
     const [firstName, setFirstName] = useState("");
       const [lastName, setLastName] = useState("");
       const [phone, setPhone] = useState("");
       const [email, setEmail] = useState("");
+
     
     const onDateChange = (event : DateTimePickerEvent, selectedDate : Date | undefined) => {
       const currentDate = selectedDate || new Date(date);
@@ -38,7 +42,7 @@ const curbsidePickupScreen = () => {
 
   return (
     <>
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={globalStyles.container}>
       <Header headerText="Curbside Pickup"/>
       <ScrollView>

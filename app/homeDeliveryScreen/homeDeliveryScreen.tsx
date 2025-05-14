@@ -380,18 +380,18 @@ const HomeDeliveryScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
-      <View style={globalStyles.container}>
-        <Header headerText="Home Delivery" />
-        {/* <ScrollView> */}
-        <FlatList
-          ListHeaderComponent={
-            <>
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-                <Text style={styles.label}>
-                  Do you prefer home delivery? Let us know your available day
-                  and time.
-                </Text>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <View style={globalStyles.container}>
+      <Header headerText="Home Delivery" />
+      {/* <ScrollView> */}
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.label}>
+                Do you prefer home delivery? Let us know your available day and
+                time.
+              </Text>
 
                 {/* Date Picker */}
                 <View style={styles.inputContainer}>

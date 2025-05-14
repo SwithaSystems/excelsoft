@@ -12,7 +12,7 @@ const welcome = () => {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Logo />
       <Text style={styles.title}>Welcome to Our Store</Text>

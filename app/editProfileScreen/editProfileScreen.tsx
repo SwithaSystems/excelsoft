@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 interface User {
   id: string;
@@ -217,135 +218,141 @@ const editProfileScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
-      <View style={globalStyles.container as ViewStyle}>
-        <Header headerText="Edit Profile" />
-        <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            {/* Profile Picture */}
-            <View style={globalStyles.profilePictureContainer}>
-              <Image
-                source={{
-                  uri: profileImage,
-                }}
-                style={globalStyles.profileImage}
-              />
-              <TouchableOpacity
-                style={styles.changePictureButton}
-                onPress={showImageOptions}
-              >
-                <Feather name="camera" size={24} color={colors.primary} />
-              </TouchableOpacity>
-              <Text style={styles.changePictureText}>
-                Change Profile Picture
-              </Text>
-            </View>
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="user-o"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>First Name</Text>
-                <CustomTextInput
-                  containerStyle={globalStyles.userInputContainer}
-                  TextStyle={globalStyles.input}
-                  placeholder="First Name"
-                  value={firstName}
-                  onPress={() => {}}
-                  setValue={setFirstName}
-                  onChangeText={(text: any) => setFirstName(text)}
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
+        <View style={globalStyles.container as ViewStyle}>
+          <Header headerText="Edit Profile" />
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              {/* Profile Picture */}
+              <View style={globalStyles.profilePictureContainer}>
+                <Image
+                  source={{
+                    uri: profileImage,
+                  }}
+                  style={globalStyles.profileImage}
                 />
+                <TouchableOpacity
+                  style={styles.changePictureButton}
+                  onPress={showImageOptions}
+                >
+                  <Feather name="camera" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <Text style={styles.changePictureText}>
+                  Change Profile Picture
+                </Text>
               </View>
-            </View>
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="user-o"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
+                />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>First Name</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="First Name"
+                    value={firstName}
+                    onPress={() => {}}
+                    setValue={setFirstName}
+                    onChangeText={(text: any) => setFirstName(text)}
+                  />
+                </View>
+              </View>
 
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="user-o"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>Last Name</Text>
-                <CustomTextInput
-                  containerStyle={globalStyles.userInputContainer}
-                  TextStyle={globalStyles.input}
-                  placeholder="Last Name"
-                  value={lastName}
-                  onPress={() => {}}
-                  setValue={setLastName}
-                  onChangeText={(text: any) => setLastName(text)}
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="user-o"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
                 />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Last Name</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="Last Name"
+                    value={lastName}
+                    onPress={() => {}}
+                    setValue={setLastName}
+                    onChangeText={(text: any) => setLastName(text)}
+                  />
+                </View>
               </View>
-            </View>
 
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="calendar-o"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                <CustomTextInput
-                  containerStyle={globalStyles.userInputContainer}
-                  TextStyle={globalStyles.input}
-                  placeholder="----/--/--"
-                  value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
-                  onPress={() => {}}
-                  setValue={setDateOfBirth}
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="calendar-o"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
                 />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="----/--/--"
+                    value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
+                    onPress={() => {}}
+                    setValue={setDateOfBirth}
+                  />
+                </View>
               </View>
-            </View>
 
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="phone"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>Phone</Text>
-                <CustomTextInput
-                  disabled={true}
-                  containerStyle={globalStyles.userInputContainer}
-                  TextStyle={globalStyles.input}
-                  placeholder="phone number"
-                  value={user ? user.phone : phone}
-                  onPress={() => {}}
-                  setValue={setPhone}
-                  keyboardType="phone-pad"
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="phone"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
                 />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Phone</Text>
+                  <CustomTextInput
+                    disabled={true}
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="phone number"
+                    value={user ? user.phone : phone}
+                    onPress={() => {}}
+                    setValue={setPhone}
+                    keyboardType="phone-pad"
+                  />
+                </View>
               </View>
-            </View>
 
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="envelope-o"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>Email</Text>
-                <CustomTextInput
-                  containerStyle={globalStyles.userInputContainer}
-                  TextStyle={globalStyles.input}
-                  placeholder="email"
-                  disabled={true}
-                  value={user ? user.email : email}
-                  onPress={() => {}}
-                  setValue={setEmail}
-                  keyboardType="email-address"
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="envelope-o"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
                 />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Email</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="email"
+                    disabled={true}
+                    value={user ? user.email : email}
+                    onPress={() => {}}
+                    setValue={setEmail}
+                    keyboardType="email-address"
+                  />
+                </View>
               </View>
             </View>
+          </ScrollView>
+          <View style={[globalStyles.p_3]}>
+            <Button
+              title="Save"
+              onPress={handleEditProfile}
+              disabled={loading}
+            />
           </View>
-        </ScrollView>
-        <View style={[globalStyles.p_3]}>
-          <Button title="Save" onPress={handleEditProfile} disabled={loading} />
         </View>
-      </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };
