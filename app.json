@@ -12,10 +12,18 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.excelsoft.app"
+      "bundleIdentifier": "com.excelsoft.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "This app uses the camera to allow users to take photos for their profile or uploads.",
+        "NSPhotoLibraryUsageDescription": "This app uses your photo library to let you select images for uploads or customization.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide location-based content or services."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +33,9 @@
       "package": "com.excelsoft.app",
       "versionCode": 1,
       "newArchEnabled": true,
-      "permissions": ["NOTIFICATION"]
+      "permissions": [
+        "NOTIFICATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +52,9 @@
           "androidMode": "default",
           "androidCollapsedTitle": "New messages"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

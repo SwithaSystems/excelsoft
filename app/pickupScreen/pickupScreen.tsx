@@ -250,7 +250,12 @@ const PickupScreen = () => {
   console.log("user destructured data", firstName, lastName, phone, email);
 
   // Function to validate if the selected time is in the future
-  const validateFutureTime = (hours: any, minutes: any, period: any) => {
+  const validateFutureTime = (
+    hours: any,
+    minutes: any,
+    period: any,
+    selectedDate: string
+  ) => {
     // Convert input values to numbers
     const numHours = parseInt(hours, 10);
     const numMinutes = parseInt(minutes, 10);
@@ -271,11 +276,8 @@ const PickupScreen = () => {
       return { isValid: false, message: "Minutes must be between 0 and 59." };
     }
 
-    // Get current date and time
-    const now = new Date();
-
     // Create a date object for the selected time
-    const selectedTime = new Date();
+    const selectedTime = new Date(selectedDate);
 
     // Convert 12-hour format to 24-hour format
     let hours24 = numHours;
@@ -290,8 +292,14 @@ const PickupScreen = () => {
     selectedTime.setMinutes(numMinutes);
     selectedTime.setSeconds(0);
 
+    // Get current date and time
+    const now = new Date();
+
+    // If selected date is today, compare with current time
+    const isSameDay = now.toISOString().split("T")[0] === selectedDate;
+
     // Compare with current time
-    if (selectedTime <= now) {
+    if (isSameDay && selectedTime <= now) {
       return {
         isValid: false,
         message: "Please select a future time.",
@@ -307,7 +315,7 @@ const PickupScreen = () => {
   const validateTime = () => {
     // Only validate if both hours and minutes have values
     if (hours && minutes) {
-      const validation = validateFutureTime(hours, minutes, period);
+      const validation = validateFutureTime(hours, minutes, period, date);
 
       if (!validation.isValid) {
         setError(validation.message?.toString() ?? null);
@@ -380,207 +388,213 @@ const PickupScreen = () => {
               : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
           </Text>
 
-          {/* Date Picker */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Date: *</Text>
-            {Platform.OS === "web" ? (
-              <input
-                type="date"
-                style={globalStyles.webDateInput}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            ) : (
-              <TouchableOpacity
-                style={globalStyles.dateInput}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text>{date}</Text>
-              </TouchableOpacity>
-            )}
-            {showDatePicker && (
-              <DateTimePicker
-                value={new Date(date)}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-                minimumDate={new Date()}
-              />
-            )}
-          </View>
-
-          {/* Time Input */}
-          <Text style={styles.inputLabel}>Time: *</Text>
-          <View style={globalStyles.timeContainer}>
-            <TextInput
-              style={[
-                globalStyles.timeInput,
-                error ? { borderColor: "red" } : {},
-              ]}
-              placeholder="HH"
-              keyboardType="numeric"
-              maxLength={2}
-              value={hours}
-              onChangeText={handleHoursChange}
-              onBlur={handleBlur}
-            />
-            <Text>:</Text>
-            <TextInput
-              ref={minutesRef}
-              style={[
-                globalStyles.timeInput,
-                error ? { borderColor: "red" } : {},
-              ]}
-              placeholder="MM"
-              keyboardType="numeric"
-              maxLength={2}
-              value={minutes}
-              onChangeText={handleMinutesChange}
-              onBlur={handleBlur}
-            />
-            <View
-              style={{
-                borderColor: error ? "red" : colors.primary,
-                borderWidth: 1,
-                height: 40,
-                width: 150,
-                borderRadius: 8,
-                justifyContent: "center",
-              }}
-            >
-              <Picker
-                selectedValue={period}
-                style={{
-                  // height: 50,
-                  width: 150,
-                  color: colors.black,
-                }}
-                onValueChange={handlePeriodChange}
-              >
-                <Picker.Item label="AM" value="am" />
-                <Picker.Item label="PM" value="pm" />
-              </Picker>
-            </View>
-          </View>
-          {error ? (
-            <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
-          ) : null}
-
-          {/* Curbside Specific Fields */}
-          {mode === "curbside" && (
-            <>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Vehicle Type: *</Text>
-                <View
-                  style={{
-                    borderColor: colors.primary,
-                    borderWidth: 1,
-                    height: 40,
-                    width: 250,
-                    borderRadius: 8,
-                    justifyContent: "center",
-                  }}
+            {/* Date Picker */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Date: *</Text>
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  style={globalStyles.webDateInput}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={globalStyles.dateInput}
+                  onPress={() => setShowDatePicker(true)}
                 >
-                  <Picker
-                    selectedValue={vehicleType}
+                  <Text>{date}</Text>
+                </TouchableOpacity>
+              )}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={new Date(date)}
+                  mode="date"
+                  display="default"
+                  onChange={onDateChange}
+                  minimumDate={new Date()}
+                />
+              )}
+            </View>
+
+            {/* Time Input */}
+            <Text style={styles.inputLabel}>Time: *</Text>
+            <View style={globalStyles.timeContainer}>
+              <TextInput
+                style={[
+                  globalStyles.timeInput,
+                  error ? { borderColor: "red" } : {},
+                ]}
+                placeholder="HH"
+                keyboardType="numeric"
+                maxLength={2}
+                value={hours}
+                onChangeText={handleHoursChange}
+                onBlur={handleBlur}
+              />
+              <Text>:</Text>
+              <TextInput
+                ref={minutesRef}
+                style={[
+                  globalStyles.timeInput,
+                  error ? { borderColor: "red" } : {},
+                ]}
+                placeholder="MM"
+                keyboardType="numeric"
+                maxLength={2}
+                value={minutes}
+                onChangeText={handleMinutesChange}
+                onBlur={handleBlur}
+              />
+              <View
+                style={{
+                  borderColor: error ? "red" : colors.primary,
+                  borderWidth: 1,
+                  height: 40,
+                  width: 150,
+                  borderRadius: 8,
+                  justifyContent: "center",
+                }}
+              >
+                <Picker
+                  selectedValue={period}
+                  style={{
+                    // height: 50,
+                    width: 150,
+                    color: colors.black,
+                  }}
+                  onValueChange={handlePeriodChange}
+                >
+                  <Picker.Item label="AM" value="am" />
+                  <Picker.Item label="PM" value="pm" />
+                </Picker>
+              </View>
+            </View>
+            {error ? (
+              <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+            ) : null}
+
+            {/* Curbside Specific Fields */}
+            {mode === "curbside" && (
+              <>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Vehicle Type: *</Text>
+                  <View
                     style={{
-                      height: 50,
-                      width: 250,
-                      color: colors.black,
-                      borderColor: colors.black,
+                      borderColor: colors.primary,
                       borderWidth: 1,
+                      height: 40,
+                      width: 250,
+                      borderRadius: 8,
+                      justifyContent: "center",
                     }}
-                    onValueChange={(itemValue) => setVehicleType(itemValue)}
                   >
-                    <Picker.Item 
-                       style={{ fontSize: 13 }}
-                      label="Select Vehicle Type" value="" />
-                    {vehicleTypeOptions.map((option) => (
+                    <Picker
+                      selectedValue={vehicleType}
+                      style={{
+                        height: 50,
+                        width: 250,
+                        color: colors.black,
+                        borderColor: colors.black,
+                        borderWidth: 1,
+                      }}
+                      onValueChange={(itemValue) => setVehicleType(itemValue)}
+                    >
                       <Picker.Item
-                        key={option.value}
-                        label={option.label}
-                        value={option.value}
+                        style={{ fontSize: 13 }}
+                        label="Select Vehicle Type"
+                        value=""
                       />
-                    ))}
-                  </Picker>
+                      {vehicleTypeOptions.map((option) => (
+                        <Picker.Item
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
                 </View>
-              </View>
-              {renderTextInput(
-                "Vehicle Number",
-                vehicleNumber,
-                setVehicleNumber
-              )}
-              {renderTextInput(
-                "Additional Details",
-                additionalDetails,
-                setAdditionalDetails,
-                {
-                  multiline: true,
-                  numberOfLines: 3,
-                  style: [inputStyles.textInput, inputStyles.multilineInput],
-                }
-              )}
-            </>
-          )}
-
-          {/* Collector Information */}
-          <Text style={styles.sectionTitle}>
-            Let us know who is collecting?
-          </Text>
-          <View style={styles.collectorOptions}>
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => handleCollectorChange("myself")}
-            >
-              <View
-                style={[
-                  styles.radio,
-                  collector === "myself" && styles.radioSelected,
-                ]}
-              >
-                {collector === "myself" && <View style={styles.radioInner} />}
-              </View>
-              <Text style={styles.radioLabel}>Myself</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => handleCollectorChange("someone_else")}
-            >
-              <View
-                style={[
-                  styles.radio,
-                  collector === "someone_else" && styles.radioSelected,
-                ]}
-              >
-                {collector === "someone_else" && (
-                  <View style={styles.radioInner} />
+                {renderTextInput(
+                  "Vehicle Number",
+                  vehicleNumber,
+                  setVehicleNumber
                 )}
-              </View>
-              <Text style={styles.radioLabel}>Someone Else</Text>
-            </TouchableOpacity>
+                {renderTextInput(
+                  "Additional Details",
+                  additionalDetails,
+                  setAdditionalDetails,
+                  {
+                    multiline: true,
+                    numberOfLines: 3,
+                    style: [inputStyles.textInput, inputStyles.multilineInput],
+                  }
+                )}
+              </>
+            )}
+
+            {/* Collector Information */}
+            <Text style={styles.sectionTitle}>
+              Let us know who is collecting?
+            </Text>
+            <View style={styles.collectorOptions}>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => handleCollectorChange("myself")}
+              >
+                <View
+                  style={[
+                    styles.radio,
+                    collector === "myself" && styles.radioSelected,
+                  ]}
+                >
+                  {collector === "myself" && <View style={styles.radioInner} />}
+                </View>
+                <Text style={styles.radioLabel}>Myself</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => handleCollectorChange("someone_else")}
+              >
+                <View
+                  style={[
+                    styles.radio,
+                    collector === "someone_else" && styles.radioSelected,
+                  ]}
+                >
+                  {collector === "someone_else" && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>Someone Else</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.helperText}>
+              Fill some basic details of the person who is going to receive the
+              order.
+            </Text>
+
+            {renderTextInput("First Name", firstName, setFirstName)}
+            {renderTextInput("Last Name", lastName, setLastName)}
+            {renderTextInput("Phone", phone, setPhone, {
+              keyboardType: "phone-pad",
+            })}
+            {renderTextInput("Email", email, setEmail, {
+              keyboardType: "email-address",
+            })}
+
+            <Text style={inputStyles.note}>
+              *Please ensure you carry a valid ID Proof
+            </Text>
+            <Button
+              title="Confirm"
+              onPress={handleSubmit}
+              disabled={isLoading}
+            />
           </View>
-
-          <Text style={styles.helperText}>
-            Fill some basic details of the person who is going to receive the
-            order.
-          </Text>
-
-          {renderTextInput("First Name", firstName, setFirstName)}
-          {renderTextInput("Last Name", lastName, setLastName)}
-          {renderTextInput("Phone", phone, setPhone, {
-            keyboardType: "phone-pad",
-          })}
-          {renderTextInput("Email", email, setEmail, {
-            keyboardType: "email-address",
-          })}
-
-          <Text style={inputStyles.note}>
-            *Please ensure you carry a valid ID Proof
-          </Text>
-          <Button title="Confirm" onPress={handleSubmit} disabled={isLoading} />
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
