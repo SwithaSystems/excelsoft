@@ -62,7 +62,7 @@ const categoriesScreen = () => {
         style={[
           styles.categoryItem,
           isEven ? styles.leftItem : styles.rightItem,
-          { width: (screenWidth / 2) - 15 },
+          { width: (screenWidth - 48) / 2 },
         ]}
       >
         <CategoryItem
@@ -95,7 +95,7 @@ const categoriesScreen = () => {
                 numColumns={2}
                 columnWrapperStyle={[
                   styles.row,
-                  { justifyContent: 'space-between' }
+                  { justifyContent: 'space-between', paddingHorizontal: 16 }
                 ]}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}

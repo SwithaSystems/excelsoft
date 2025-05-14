@@ -13,4 +13,5 @@ export default {
   error: "red",
   placeholdergrey: "#D9D9D9",
   buttonError: "#EB0A0A",
+  lightGreen: "#DCF0E4",
 };

@@ -266,7 +266,7 @@ const ProductDetailScreen = () => {
                   Toast.show({
                     type: "customToast",
                     text1: "Product added successfully!",
-                    text2: "View Cart",
+                    text2: `${product.name} - ${product.price}`,
                     onPress: () => {
                       redirectToPage(containers.cartScreenScreen);
                     },
