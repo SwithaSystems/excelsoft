@@ -24,6 +24,7 @@ import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 interface User {
   id: string;
@@ -166,6 +167,7 @@ const editProfileScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={globalStyles.container as ViewStyle}>
       <Header headerText="Edit Profile" />
       <ScrollView>
@@ -314,6 +316,7 @@ const editProfileScreen = () => {
         <Button title="Save" onPress={handleEditProfile} />
       </View>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

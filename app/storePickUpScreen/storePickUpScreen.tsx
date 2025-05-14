@@ -8,7 +8,7 @@ import {
   Alert,
   Platform,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
@@ -23,6 +23,7 @@ import containers from "@/containers";
 import styles from "./storePickUpScreenStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { PickupMode } from "@/services/orderService";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const storePickupScreen = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
@@ -113,6 +114,7 @@ const storePickupScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header headerText="Store Pickup" />
       <ScrollView>
@@ -266,6 +268,7 @@ const storePickupScreen = () => {
         />
       </View>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

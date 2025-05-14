@@ -22,6 +22,7 @@ import { addressService } from "@/services/addressService";
 import Button from "@/components/commonComponents/Button";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const addBillingAddressScreen = () => {
   const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -58,10 +59,10 @@ const addBillingAddressScreen = () => {
       });
       if (response.status === 200 || response.status === 201) {
         alert("Address added successfully");
+        redirectToPage(containers.selectBillingAddressScreenScreen);
       } else {
         alert("Failed to add address");
       }
-      redirectToPage(containers.billingAddressScreenScreen);
     } catch (error) {
       console.error("Error adding address:", error);
     }
@@ -71,6 +72,7 @@ const addBillingAddressScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={styles.container}>
       <Header headerText="Billing Address" />
       <ScrollView style={{padding:16}}>
@@ -146,6 +148,7 @@ const addBillingAddressScreen = () => {
         />
       </View> */}
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

@@ -26,6 +26,7 @@ import { PickupMode } from "@/services/orderService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -57,13 +58,15 @@ const PickupScreen = () => {
   console.log("Selected mode is:", mode); // store / curbside
 
   // Curbside specific fields
-  const [vehicleType, setVehicleType] = useState("");
+  const [vehicleType, setVehicleType] = useState("Car");
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
 
   const vehicleTypeOptions = [
-    { label: "type 1", value: "type1" },
-    { label: "type 2", value: "type2" },
+    { label:"Car", value: "Car" },
+    { label:"MotorCycle", value: "MotorCycle" },
+    { label:"Bike", value: "Bike" },
+    { label:"Van", value: "Van" },
   ];
 
   const onDateChange = (
@@ -372,6 +375,7 @@ const PickupScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header
         headerText={
@@ -595,6 +599,7 @@ const PickupScreen = () => {
           </View>
         </ScrollView>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

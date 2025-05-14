@@ -40,7 +40,7 @@ function BrandHeader(props) {
       >
         <Image
           source={require("../assets/brandlogo.png")}
-          style={{ width: 24, height: 24 }}
+          style={{ width: 36, height: 36 }}
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
