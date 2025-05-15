@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import colors from "@/app/config/colors";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -53,12 +54,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="home"
           size={24}
-          color={activeTab.toLowerCase() === "home" ? "#17C6ED" : "#666"}
+          color={activeTab.toLowerCase() === "home" ? colors.primary : "#666"}
         />
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "home" ? "#17C6ED" : "#666",
+            color: activeTab.toLowerCase() == "home" ? colors.primary : "#666",
           }}
         >
           Home
@@ -70,12 +71,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="heart"
           size={24}
-          color={activeTab.toLowerCase() === "saved" ? "#17C6ED" : "#666"}
+          color={activeTab.toLowerCase() === "saved" ? colors.primary : "#666"}
         />
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "saved" ? "#17C6ED" : "#666",
+            color: activeTab.toLowerCase() == "saved" ? colors.primary : "#666",
           }}
         >
           Saved
@@ -90,12 +91,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="search"
           size={24}
-          color={activeTab.toLowerCase() === "search" ? "#17C6ED" : "#666"}
+          color={activeTab.toLowerCase() === "search" ? colors.primary : "#666"}
         />
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "search" ? "#17C6ED" : "#666",
+            color: activeTab.toLowerCase() == "search" ? colors.primary : "#666",
           }}
         >
           Search
@@ -111,7 +112,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           <Ionicons
             name="cart"
             size={24}
-            color={activeTab.toLowerCase() === "cart" ? "#17C6ED" : "#666"}
+            color={activeTab.toLowerCase() === "cart" ? colors.primary : "#666"}
           />
           {cartItemCount > 0 && (
             <View style={styles.badge}>
@@ -124,7 +125,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "cart" ? "#17C6ED" : "#666",
+            color: activeTab.toLowerCase() == "cart" ? colors.primary : "#666",
           }}
         >
           Cart
@@ -134,12 +135,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Ionicons
           name="menu"
           size={24}
-          color={activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666"}
+          color={activeTab.toLowerCase() == "menu" ? colors.primary : "#666"}
         />
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666",
+            color: activeTab.toLowerCase() == "menu" ? colors.primary : "#666",
           }}
         >
           Menu
@@ -152,12 +153,12 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
-    backgroundColor: "#CEF1F9",
+    backgroundColor: colors.white,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
     justifyContent: "space-around",
     alignItems: "center",
+    borderTopColor: colors.placeholdergrey,
   },
   footerTab: {
     alignItems: "center",

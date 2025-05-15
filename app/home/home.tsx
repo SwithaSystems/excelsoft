@@ -138,16 +138,14 @@ const HomePage = () => {
   }, []);
 
   return (
-    <SafeAreaView style={homeStyles.container}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
       {/* <ScrollView> */}
+      <BrandHeader />
       <FlatList
         ListHeaderComponent={
           <>
-            <BrandHeader />
-
             {/* Search Bar */}
             <Header />
-
             {/* Categories */}
             <View style={styles.categoriesContainer}>
               {/* <Text style={styles.sectionTitle}>Categories</Text> */}
@@ -220,7 +218,7 @@ const HomePage = () => {
         renderItem={null}
       />
       {/* Footer */}
-      <Footer />
+      <Footer activeTab="home"/>
       {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
     </SafeAreaView>
   );
