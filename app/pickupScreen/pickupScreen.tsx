@@ -470,7 +470,7 @@ const PickupScreen = () => {
                   onChange={(option) => setPeriod(option.value)}
                 >
                   <TextInput
-                    style={globalStyles.picker_sm}
+                    style={globalStyles.picker_50}
                     editable={false}
                     value={period?.toUpperCase() || ''}
                   />
