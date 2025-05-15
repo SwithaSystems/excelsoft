@@ -13,6 +13,7 @@ import {
   View,
   ViewStyle,
   SafeAreaView,
+  DeviceEventEmitter,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./editProfileScreenStyles";
@@ -163,12 +164,12 @@ const editProfileScreen = () => {
       return;
     }
 
-    if (
-      !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateOfBirth)
-    ) {
-      alert("Invalid date format. Use MM/DD/YYYY");
-      return;
-    }
+    // if (
+    //   !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateOfBirth)
+    // ) {
+    //   alert("Invalid date format. Use MM/DD/YYYY");
+    //   return;
+    // }
 
     const formData = new FormData();
 
@@ -198,6 +199,7 @@ const editProfileScreen = () => {
       const response = await UserAPI.userEditProfile(phone, formData);
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
+        DeviceEventEmitter.emit("fetchUser");
         await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
         dispatch(setUserData(response.data.user));
         Alert.alert("Message", "Profile updated successfully.", [

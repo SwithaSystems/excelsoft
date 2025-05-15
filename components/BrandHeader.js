@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  DeviceEventEmitter,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { redirectToPage } from "../utilities/redirectionHelper";
 import containers from "../containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,22 +17,31 @@ function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const user = useSelector((state) => state.user.user);
 
+  const fetchUser = async () => {
+    if (user && user?.phone) {
+      const userPhone = user?.phone;
+      console.log("userPhone", userPhone);
+      const response = await UserAPI.getUserByPhonenumber(userPhone);
+      console.log("userdata", response.data);
+      setUsername(response?.data?.firstName || "User");
+    } else {
+      console.log("user or user.phone is undefined", user);
+    }
+  };
+
   console.log("user in home page", user?.phone);
   useEffect(() => {
-    const fetchUser = async () => {
-      if (user && user?.phone) {
-        const userPhone = user?.phone;
-        console.log("userPhone", userPhone);
-        const response = await UserAPI.getUserByPhonenumber(userPhone);
-        console.log("userdata", response.data);
-        setUsername(response?.data?.firstName || "User");
-      } else {
-        console.log("user or user.phone is undefined", user);
-      }
-    };
-
     fetchUser();
-  }, [user?.phone]);
+    const fetchUser_Listener = DeviceEventEmitter.addListener(
+      "fetchUser",
+      () => {
+        fetchUser();
+      }
+    );
+    return () => {
+      fetchUser_Listener.remove();
+    };
+  }, []);
 
   return (
     <>
