@@ -1,4 +1,5 @@
 // import axiosInstance from "./axiosConfig";
+import { get } from "axios";
 import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {
@@ -66,6 +67,19 @@ export const orderService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);
+      throw error;
+    }
+  },
+
+  getOrdersByUserId: async (userId: string): Promise<Order[]> => {
+    try {
+      const response = await jsonAxios.get<Order[]>(
+        `${API_BASE_URL}/orders/user/${userId}`
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching orders by userId:", error);
       throw error;
     }
   },

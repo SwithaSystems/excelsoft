@@ -218,7 +218,9 @@ const UserProfileScreen = () => {
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => {
-                  redirectToPage(containers.myOrderScreenScreen);
+                  redirectToPage(containers.myOrderScreenScreen, {
+                    userId: userData_redux?.id,
+                  });
                 }}
               >
                 <FontAwesome
