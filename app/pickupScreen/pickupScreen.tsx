@@ -27,6 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import ModalSelector from 'react-native-modal-selector';
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -63,11 +64,11 @@ const PickupScreen = () => {
   const [additionalDetails, setAdditionalDetails] = useState("");
 
   const vehicleTypeOptions = [
-    { label:"Car", value: "Car" },
-    { label:"MotorCycle", value: "MotorCycle" },
-    { label:"Bike", value: "Bike" },
-    { label:"Van", value: "Van" },
-  ];
+    {key:1, label:"Car", value: "Car" },
+    {key:2, label:"MotorCycle", value: "MotorCycle" },
+    {key:3, label:"Bike", value: "Bike" },
+    {key:4, label:"Van", value: "Van" },
+  ]
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -460,18 +461,20 @@ const PickupScreen = () => {
                   justifyContent: "center",
                 }}
               >
-                <Picker
-                  selectedValue={period}
-                  style={{
-                    // height: 50,
-                    width: 150,
-                    color: colors.black,
-                  }}
-                  onValueChange={handlePeriodChange}
+                <ModalSelector
+                  data={[
+                    { key: 1, label: 'AM', value: 'am' },
+                    { key: 2, label: 'PM', value: 'pm' },
+                  ]}
+                  initValue="Select Period"
+                  onChange={(option) => setPeriod(option.value)}
                 >
-                  <Picker.Item label="AM" value="am" />
-                  <Picker.Item label="PM" value="pm" />
-                </Picker>
+                  <TextInput
+                    style={globalStyles.picker_sm}
+                    editable={false}
+                    value={period?.toUpperCase() || ''}
+                  />
+                </ModalSelector>
               </View>
             </View>
             {error ? (
@@ -493,30 +496,17 @@ const PickupScreen = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <Picker
-                      selectedValue={vehicleType}
-                      style={{
-                        height: 50,
-                        width: 250,
-                        color: colors.black,
-                        borderColor: colors.black,
-                        borderWidth: 1,
-                      }}
-                      onValueChange={(itemValue) => setVehicleType(itemValue)}
+                    <ModalSelector
+                      data={vehicleTypeOptions}
+                      initValue="Select Vehicle Type"
+                      onChange={(option) => setVehicleType(option.value)}
                     >
-                      <Picker.Item
-                        style={{ fontSize: 13 }}
-                        label="Select Vehicle Type"
-                        value=""
+                      <TextInput
+                        style={globalStyles.picker_50}
+                        editable={false}
+                        value={vehicleType}
                       />
-                      {vehicleTypeOptions.map((option) => (
-                        <Picker.Item
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </Picker>
+                    </ModalSelector>
                   </View>
                 </View>
                 {renderTextInput(
