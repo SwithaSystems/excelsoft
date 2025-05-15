@@ -5,7 +5,7 @@ export const globalStyles = StyleSheet.create({
   safeAreaContainer: {
     flex: 1,
     backgroundColor: colors.white,
-    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   textCenter: {
     textAlign: "center",
