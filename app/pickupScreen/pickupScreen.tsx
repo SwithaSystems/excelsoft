@@ -109,11 +109,11 @@ const PickupScreen = () => {
     }
 
     // Basic phone validation (adjust regex based on your requirements)
-    const phoneRegex = /^\d{10,}$/;
-    if (!phoneRegex.test(phone)) {
-      Alert.alert("Error", "Please enter a valid phone number");
-      return false;
-    }
+    // const phoneRegex = /^\d{10,}$/;
+    // if (!phoneRegex.test(phone)) {
+    //   Alert.alert("Error", "Please enter a valid phone number");
+    //   return false;
+    // }
 
     return true;
   };

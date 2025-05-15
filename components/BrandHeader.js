@@ -13,6 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
 import { UserAPI } from "../services/userService";
 import { useSelector } from "react-redux";
+import { Platform } from "react-native";
+
 function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const user = useSelector((state) => state.user.user);
@@ -47,10 +49,12 @@ function BrandHeader(props) {
     <>
       <View
         style={{
-          padding: 16,
+          padding: Platform.OS === 'android' ? 0 : 16,
+          paddingHorizontal: 16,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          bottom: Platform.OS === 'android' ? 20 : 0,
         }}
       >
         <Image
