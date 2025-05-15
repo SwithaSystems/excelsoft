@@ -79,7 +79,8 @@
         "listUnknownPackages": false,
         "exclude": [
           "@stripe/stripe-react-native",
-          "redux-persist"
+          "redux-persist",
+          "react-native-modal-selector"
         ]
       }
     }
