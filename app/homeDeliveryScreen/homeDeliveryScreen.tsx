@@ -28,6 +28,7 @@ import colors from "../config/colors";
 import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
+import ModalSelector from 'react-native-modal-selector';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
@@ -461,18 +462,20 @@ const HomeDeliveryScreen = () => {
                       justifyContent: "center",
                     }}
                   >
-                    <Picker
-                      selectedValue={period}
-                      style={{
-                        // height: 50,
-                        width: 150,
-                        color: colors.black,
-                      }}
-                      onValueChange={handlePeriodChange}
+                    <ModalSelector
+                      data={[
+                       { key: 1, label: 'AM', value: 'am' },
+                       { key: 2, label: 'PM', value: 'pm' },
+                      ]}
+                      initValue="Select Period"
+                      onChange={(option) => setPeriod(option.value)}
                     >
-                      <Picker.Item label="AM" value="am" />
-                      <Picker.Item label="PM" value="pm" />
-                    </Picker>
+                    <TextInput
+                      style={globalStyles.picker_sm}
+                      editable={false}
+                      value={period?.toUpperCase() || ''}
+                    />
+                  </ModalSelector>
                   </View>
                 </View>
                 {error ? (
