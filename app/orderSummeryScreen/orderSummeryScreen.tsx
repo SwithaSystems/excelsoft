@@ -168,7 +168,7 @@ const orderSummeryScreen = () => {
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                {selectedMode === "Home Delivery"
+                {selectedMode === "homeDelivery"
                   ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
                   : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
               </Text>
