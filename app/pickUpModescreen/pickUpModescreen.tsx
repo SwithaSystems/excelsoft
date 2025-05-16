@@ -42,7 +42,7 @@ const options = [
     redirectionScreen: containers.homeDeliveryScreenScreen,
     params: { mode: "home" },
   },
-];
+] as const;
 const pickUpModescreen = () => {
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>

@@ -28,6 +28,7 @@ import { useSelector } from "react-redux";
 import { jsonAxios } from "@/services/axiosConfig";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -329,6 +330,7 @@ const UserProfileScreen = () => {
           }}
         />
       </View>
+      <Footer activeTab="menu"/>
     </SafeAreaView>
   );
 };

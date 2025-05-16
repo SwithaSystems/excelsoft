@@ -8,7 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/brandlogo.png",
+      "image": "./assets/weekesLogo02.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

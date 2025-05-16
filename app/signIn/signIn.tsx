@@ -213,6 +213,7 @@ const signIn = () => {
             </>
           )}
 
+          <View style = {styles.passwordContainer}>
           <Text style={styles.label}>Enter your Password</Text>
           <TextInput
             style={[
@@ -228,6 +229,7 @@ const signIn = () => {
           {errors.password && (
             <Text style={globalStyles.errorText}>{errors.password}</Text>
           )}
+          </View>
           <TouchableOpacity
             onPress={() =>
               redirectToPage(containers.forgotPasswordScreenScreen)

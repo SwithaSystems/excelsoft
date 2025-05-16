@@ -17,6 +17,7 @@ import containers from "@/containers";
 import { TwilioApi } from "@/services/twilioService";
 import { authService } from "@/services/auth.service";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import colors from "../config/colors";
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -135,7 +136,7 @@ const signUpScreen = () => {
             <TouchableOpacity
               style={[
                 styles.toggleButton,
-                mode === "phone" && styles.activeToggle,
+                mode === "phone" && {backgroundColor: colors.primary},
               ]}
               onPress={() => toggleMode("phone")}
             >
