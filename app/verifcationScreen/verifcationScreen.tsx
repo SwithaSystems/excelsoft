@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -21,24 +21,60 @@ import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const verifcationScreen = () => {
-  const { userData, from } = useLocalSearchParams();
+  const { userData, from, phoneNumber_forgetPwd } = useLocalSearchParams();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [parsedUserData, setParsedUserData] = useState(null);
   const inputRefs = useRef<TextInput[]>([]);
-  console.log("from", from, userData);
 
-  let parsedUserData: any;
+  console.log("from", from, userData, phoneNumber_forgetPwd);
 
-  if (typeof userData === "string") {
-    try {
-      parsedUserData = JSON.parse(userData);
-    } catch (e) {
-      console.error("Invalid JSON in userData", e);
+  useEffect(() => {
+    console.log("Source:", from);
+    console.log("Raw userData:", userData);
+    console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
+
+    // Set phone number based on source
+    if (from === "signup" && userData) {
+      let parsed = null;
+      if (typeof userData === "string") {
+        try {
+          parsed = JSON.parse(userData);
+          setParsedUserData(parsed);
+          if (parsed?.phone) {
+            setPhoneNumber(parsed.phone);
+          } else {
+            console.error("No phone number in userData");
+          }
+        } catch (e) {
+          console.error("Invalid JSON in userData", e);
+        }
+      }
+    } else if (from === "forgotPassword" && phoneNumber_forgetPwd) {
+      let parsed = null;
+      if (typeof phoneNumber_forgetPwd === "string") {
+        try {
+          parsed = JSON.parse(phoneNumber_forgetPwd);
+          setPhoneNumber(parsed);
+        } catch (e) {
+          console.error("Invalid JSON in PhoneNumber", e);
+        }
+      }
     }
-  } else {
-    console.warn("userData is not a string:", userData);
-  }
+  }, [from, userData, phoneNumber_forgetPwd]);
 
-  const phoneNumber = parsedUserData?.phone;
+  // let parsedUserData: any;
+  // if (typeof userData === "string") {
+  //   try {
+  //     parsedUserData = JSON.parse(userData);
+  //   } catch (e) {
+  //     console.error("Invalid JSON in userData", e);
+  //   }
+  // } else {
+  //   console.warn("userData is not a string:", userData);
+  // }
+
+  // const phoneNumber = parsedUserData?.phone;
 
   console.log("phoneNumber", phoneNumber);
   const handleChange = (text: string, index: number) => {
