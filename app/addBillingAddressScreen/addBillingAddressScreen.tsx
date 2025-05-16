@@ -143,7 +143,11 @@ const addBillingAddressScreen = () => {
         }
       }
 
-      redirectToPage(containers.selectBillingAddressScreenScreen);
+      redirectToPage(containers.selectBillingAddressScreenScreen, {
+        pickupDetails: params.pickupDetails,
+        shippingAddress: params.shippingAddress,
+        selectedMode: params.selectedMode,
+      });
     } catch (error) {
       console.error(
         `Error ${isEditMode ? "updating" : "adding"} address:`,
