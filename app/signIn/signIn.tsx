@@ -162,19 +162,21 @@ const signIn = () => {
           </View>
           {mode === "email" ? (
             <>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={globalStyles.input}
-                placeholder="Enter your email address"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text); // Fallback for other text entries
-                  setPhoneNumber("");
-                }}
-              />
-              {errors.input && (
-                <Text style={globalStyles.errorText}>{errors.input}</Text>
-              )}
+              <View style={styles.emailContainer}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text); // Fallback for other text entries
+                    setPhoneNumber("");
+                  }}
+                />
+                {errors.input && (
+                  <Text style={globalStyles.errorText}>{errors.input}</Text>
+                )}
+              </View>
             </>
           ) : (
             <>
@@ -214,21 +216,21 @@ const signIn = () => {
           )}
 
           <View style = {styles.passwordContainer}>
-          <Text style={styles.label}>Enter your Password</Text>
-          <TextInput
-            style={[
-              globalStyles.input,
-              errors.password && globalStyles.errorInput,
-            ]}
-            placeholder="Enter your password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            onBlur={handleBlur}
-          />
-          {errors.password && (
-            <Text style={globalStyles.errorText}>{errors.password}</Text>
-          )}
+            <Text style={styles.label}>Enter your Password</Text>
+            <TextInput
+              style={[
+                globalStyles.input,
+                errors.password && globalStyles.errorInput,
+              ]}
+              placeholder="Enter your password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              onBlur={handleBlur}
+            />
+            {errors.password && (
+              <Text style={globalStyles.errorText}>{errors.password}</Text>
+            )}
           </View>
           <TouchableOpacity
             onPress={() =>

@@ -48,7 +48,7 @@ const forgotPasswordScreen = () => {
         <Text>
           Please enter your email/phone number to reset your password.
         </Text>
-        <Text style={styles.label}>Phone Number</Text>
+        <Text style={styles.label}>Email/Phone</Text>
         <TextInput
           style={globalStyles.input}
           placeholder="Enter your email or phone number"

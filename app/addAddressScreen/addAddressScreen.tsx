@@ -18,6 +18,8 @@ import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -62,6 +64,7 @@ const addAddressScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
     <View style={styles.container}>
       <Header headerText="Add New Address" />
       <ScrollView>
@@ -138,6 +141,7 @@ const addAddressScreen = () => {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

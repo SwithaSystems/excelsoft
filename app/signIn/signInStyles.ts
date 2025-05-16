@@ -16,6 +16,17 @@ const styles = StyleSheet.create({
   passwordContainer:{
     paddingTop:16,
   },
+  emailContainer:{
+    //marginBottom: 10,
+  },
+  input: {
+    height: 48,
+    borderColor: "#EBEDED",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 0,
+    backgroundColor: "#F8F8F8",
+  },
   label: {
     fontSize: 16,
     marginBottom: 5,
@@ -70,9 +81,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#EBEDED",
     borderRadius: 5,
     overflow: "hidden",
+    height: 48,
   },
   countryPickerContainer: {
     flexDirection: "row",
@@ -81,6 +93,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRightWidth: 1,
     borderRightColor: "#ccc",
+    //height: 36,
   },
   countryPickerButton: {
     paddingVertical: 8,
@@ -91,6 +104,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 10,
     fontSize: 16,
+    backgroundColor: colors.lightgrey,
   },
 });
 

@@ -15,6 +15,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
+    paddingTop: 16,
   },
   required: {
     color: colors.error,

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { colors } from "react-native-elements";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
@@ -16,6 +16,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  input: {
+    height: 48,
+    borderColor: "#EBEDED",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 0,
+    backgroundColor: "#F8F8F8",
   },
   forgotPassword: {
     color: colors.primary,
@@ -67,17 +75,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#EBEDED",
     borderRadius: 5,
     overflow: "hidden",
+    height: 48,
   },
   countryPickerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.lightgrey,
     paddingHorizontal: 10,
     borderRightWidth: 1,
-    borderRightColor: "#ccc",
+    borderRightColor: "#EBEDED",
   },
   countryPickerButton: {
     paddingVertical: 8,
@@ -88,6 +97,10 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 10,
     fontSize: 16,
+    backgroundColor: colors.lightgrey,
+  },
+  passwordContainer:{
+    paddingTop: 16,
   },
 });
 

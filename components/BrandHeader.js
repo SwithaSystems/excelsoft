@@ -58,8 +58,8 @@ function BrandHeader(props) {
         }}
       >
         <Image
-          source={require("../assets/bannerheaderlogo.png")}
-          style={{ width: 42, height: 42 }}
+          source={require("../assets/FinalizedLogo.png")}
+          style={{ width: 112, height: 34 }}
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity

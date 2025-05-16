@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
+    paddingTop: 16,
   },
   signInButton: {
     marginBottom: 16,

@@ -79,7 +79,7 @@ const featuredProducts = products
   .map((product) => ({
     id: product.id,
     title: product.name,
-    description: product.description.slice(0, 50) + "...",
+    description: product.description.slice(0, 20) + "...",
     imageUrl: product.image,
   }));
 
@@ -287,8 +287,9 @@ const styles = StyleSheet.create({
   },
   featuredDescription: {
     fontSize: 12,
-    color: colors.lightgrey,
+    color: colors.reviewsColor,
     marginHorizontal: 16,
+    paddingBottom: 8,
     //marginBottom:10,
     //lineHeight:18,
   },

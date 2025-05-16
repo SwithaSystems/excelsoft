@@ -469,9 +469,12 @@ const HomeDeliveryScreen = () => {
                       ]}
                       initValue="Select Period"
                       onChange={(option) => setPeriod(option.value)}
+                      optionTextStyle={{color: colors.primary}}
+                      optionContainerStyle={{ backgroundColor: colors.white }}
+                      cancelStyle={{backgroundColor:colors.white}}
                     >
                     <TextInput
-                      style={globalStyles.picker_sm}
+                      style={globalStyles.picker_50}
                       editable={false}
                       value={period?.toUpperCase() || ''}
                     />

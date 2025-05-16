@@ -128,7 +128,9 @@ const savedAddressScreen = () => {
         ListHeaderComponent={
           <>
             {addressData.length === 0 ? (
-              <NoContentFound message="No saved address found" />
+              <View style={{ flex:1, padding: 16 }}>
+                <NoContentFound message="No saved address found" />
+              </View>
             ) : (
               <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
                 <Text style={styles.sectionTitle}>Default Address</Text>

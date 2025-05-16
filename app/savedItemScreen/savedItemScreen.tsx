@@ -61,7 +61,10 @@ const savedItemScreen = () => {
                   { paddingHorizontal: 20 },
                 ]}
               ></View>
-              <Image source={require("../../assets/emptycart.png")} />
+              <Image 
+                source={require("../../assets/emptycart.png")} 
+                style = {styles.emptyImage}
+              />
               <Text
                 style={{
                   textAlign: "center",

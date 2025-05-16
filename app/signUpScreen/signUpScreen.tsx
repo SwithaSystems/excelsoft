@@ -207,7 +207,7 @@ const signUpScreen = () => {
             <>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={globalStyles.input}
+                style={styles.input}
                 placeholder="Enter your email address"
                 value={email}
                 onChangeText={(text) => {
@@ -259,6 +259,7 @@ const signUpScreen = () => {
             </>
           )}
 
+          <View style={styles.passwordContainer}>
           <Text style={styles.label}> Password</Text>
           <TextInput
             style={[
@@ -288,6 +289,7 @@ const signUpScreen = () => {
           {errors.password && (
             <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
           )}
+          </View>
 
           <Button
             title="Sign Up"

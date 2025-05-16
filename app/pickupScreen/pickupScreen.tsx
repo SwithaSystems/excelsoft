@@ -468,6 +468,9 @@ const PickupScreen = () => {
                     ]}
                     initValue="Select Period"
                     onChange={(option) => setPeriod(option.value)}
+                    optionTextStyle={{color: colors.primary}}
+                    optionContainerStyle={{ backgroundColor: colors.white }}
+                    cancelStyle={{backgroundColor:colors.white}}
                   >
                     <TextInput
                       style={globalStyles.picker_50}
@@ -500,6 +503,9 @@ const PickupScreen = () => {
                         data={vehicleTypeOptions}
                         initValue="Select Vehicle Type"
                         onChange={(option) => setVehicleType(option.value)}
+                        optionTextStyle={{color: colors.primary}}
+                        optionContainerStyle={{ backgroundColor: colors.white }}
+                        cancelStyle={{backgroundColor:colors.white}}
                       >
                         <TextInput
                           style={globalStyles.picker_50}

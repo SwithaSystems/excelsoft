@@ -57,13 +57,13 @@ export const CustomTextInput = (props: Props) => {
         <TouchableWithoutFeedback onPress={props.onPress}>
           {props.iconType === "Ionic" ? (
             <Ionicons
-              name={props.iconName}
+              name={props.iconName as any}
               size={props.iconSize || 20}
               color={props.iconColor || colors.primary}
             />
           ) : (
             <MaterialIcons
-              name={props.iconName}
+              name={props.iconName as any}
               size={props.iconSize || 20}
               color={props.iconColor || colors.primary}
             />
