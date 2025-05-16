@@ -49,12 +49,12 @@ function BrandHeader(props) {
     <>
       <View
         style={{
-          padding: Platform.OS === 'android' ? 0 : 16,
+          padding: Platform.OS === "android" ? 0 : 16,
           paddingHorizontal: 16,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          bottom: Platform.OS === 'android' ? 20 : 0,
+          bottom: Platform.OS === "android" ? 20 : 0,
         }}
       >
         <Image
@@ -64,7 +64,7 @@ function BrandHeader(props) {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
             onPress={() => {
-              if (username) {
+              if (user) {
                 redirectToPage(containers.userProfileScreenScreen);
               } else {
                 redirectToPage(containers.signInScreen);
