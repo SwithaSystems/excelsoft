@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Header from "@/components/Header";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 const suggestions = [
   "baby toys",

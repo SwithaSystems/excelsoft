@@ -59,6 +59,18 @@ const orderSummeryScreen = () => {
 
   console.log("hi", pickupDetails);
   console.log("pickupAddress", pickupAddress);
+
+  let displayMode = "";
+  if (selectedMode === "curbsidePickup") {
+    displayMode = "Curbside Pickup";
+  } else if (selectedMode === "storePickup") {
+    displayMode = "Store Pickup";
+  } else if (selectedMode === "homeDelivery") {
+    displayMode = "Home Delivery";
+  } else {
+    displayMode = selectedMode; 
+  }
+
   const handlePress = async () => {
     redirectToPage(containers.selectBillingAddressScreenScreen, {
       selectedMode: selectedMode,
@@ -156,9 +168,9 @@ const orderSummeryScreen = () => {
             <Text style={styles.sectionHeading}>Your Slot</Text>
             <View style={globalStyles.pl_3}>
               <Text>
-                {selectedMode === "homeDelivery"
-                  ? `${selectedMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
-                  : `${selectedMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
+                {selectedMode === "Home Delivery"
+                  ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
+                  : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
               </Text>
             </View>
           </View>

@@ -121,14 +121,14 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   discountTag: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.lightSkyBlue,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     marginLeft: 8,
   },
   discountText: {
-    color: colors.white,
+    color: colors.primary,
     fontSize: 12,
     fontWeight: "500",
   },

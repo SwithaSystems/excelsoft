@@ -205,7 +205,7 @@ const SearchScreen = () => {
   const handleSelectCategories = (category: any) => {
     redirectToPage(containers.searchResultsScreenScreen, {
       fromSearch: true,
-      category: category.name,
+      category: category.title,
       categoryId: category.id,
     });
   };

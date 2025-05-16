@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import { usePaymentHandler } from "../components/usePaymentHandler";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 type PickupDetailsDto = {
   time: string;
@@ -174,6 +175,7 @@ const selectBillingAddressScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={globalStyles.container}>
         <Header headerText="Billing Address" />
         {/* <ScrollView> */}
@@ -269,6 +271,7 @@ const selectBillingAddressScreen = () => {
         />
         {/* </ScrollView> */}
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

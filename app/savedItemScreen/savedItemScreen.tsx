@@ -16,6 +16,8 @@ import { selectSavedItems } from "@/store/selectors/savedItemsSelectors";
 import { Image } from "react-native-elements";
 import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
+import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -34,6 +36,7 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
+
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={globalStyles.container}>
@@ -79,7 +82,9 @@ const savedItemScreen = () => {
               </Text>
               <Button
                 title="Start Shopping"
-                onPress={() => router.back()}
+                onPress={() => {
+                   redirectToPage(containers.homeScreen);
+                }}                
                 style={styles.button}
                 textStyle={styles.text}
               ></Button>

@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
   },
   saleTimeBox: {
     flexDirection: "row",
-    backgroundColor:colors.secondary,
-    borderRadius: 5,
+    backgroundColor:colors.lightSkyBlue,
+    //borderRadius: 5,
     alignItems: "center",
   },
    saleText: {
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     paddingHorizontal: 6,
     paddingVertical: 4,
-    borderRadius: 4,
+    //borderRadius: 4,
     marginRight: 6,
   },
   price: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 14,
     color: colors.primary,
-    backgroundColor: colors.secondary,
+    //backgroundColor: colors.secondary,
     borderRadius: 5,
     paddingRight: 6,
     marginTop:2,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.lightSkyBlue,
     padding: 4,
     borderRadius: 5,
   },
