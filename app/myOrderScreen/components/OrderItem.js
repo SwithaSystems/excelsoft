@@ -15,6 +15,7 @@ function OrderItem(props) {
       onPress={() => {
         redirectToPage(containers.orderDetailsScreenScreen, {
           orderId: item._id,
+          from: props.from,
         });
       }}
     >

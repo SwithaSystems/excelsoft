@@ -75,7 +75,9 @@ const myOrderScreen = () => {
                     subtotal: order.totalAmount.toFixed(2),
                     _id: order._id,
                   }))}
-                  renderItem={({ item }) => <OrderItem item={item} />}
+                  renderItem={({ item }) => (
+                    <OrderItem item={item} from="myOrders" />
+                  )}
                   keyExtractor={(item) => item._id}
                   nestedScrollEnabled={true}
                 />

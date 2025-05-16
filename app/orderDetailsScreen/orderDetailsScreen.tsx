@@ -17,7 +17,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import RecommendedProductsSlider from "@/components/RecommendedProductsSlider";
 import products from "@/data/products";
 import Footer from "@/components/Footer";
-import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
+import {
+  clearNavigationStack,
+  redirectToPage,
+} from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import QRCodeDisplay from "../../components/QRCodeDisplay";
 import { useSelector } from "react-redux";
@@ -27,6 +30,7 @@ import { ProductsAPI } from "@/services/productService";
 import colors from "../config/colors";
 
 const orderDetailsScreen = () => {
+  const { from } = useLocalSearchParams();
   const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
@@ -141,153 +145,156 @@ const orderDetailsScreen = () => {
       originalPrice: product.originalPrice,
     }));
 
-    useEffect(() => {
-      const handleHardwareBackPress = () => {
-          clearNavigationStack('home/home');
-          return true; 
-      };
+  useEffect(() => {
+    const handleHardwareBackPress = () => {
+      clearNavigationStack("home/home");
+      return true;
+    };
 
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        handleHardwareBackPress
-      );
-      return () => backHandler.remove();
-    },[]);
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleHardwareBackPress
+    );
+    return () => backHandler.remove();
+  }, []);
 
   return (
     <>
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={styles.container}>
-        <Header headerText="Order Details" needResetNavigation={true}/>
-        <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <View style={{}}>
-              <QRCodeDisplay
-                qrValue={orderDetails?.orderNumber}
-                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
-              />
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text
-                style={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                ]}
-              >
-                Status
-              </Text>
-              <Text
-                style={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                ]}
-              >
-                Processed
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Order Number: </Text>
-              <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.orderNumber}
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
-              <Text style={styles.orderSummaryItemText}>
-                {/* {orderDetails?.orderDate} */}
-                {formattedDate}
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-              <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.shippingCharges}
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-              <Text style={styles.orderSummaryItemText}>
-              {orderDetails?.totalAmount.toFixed(2)}
-              </Text>
-            </View>
-            <View>
-              {cartItemsWithDetails.map((eachProduct: any) => (
-                <CartItem
-                  hideActions={true}
-                  itemContainerStyle={styles.cartItemContainerStyle}
-                  key={eachProduct._id}
-                  cartItem={eachProduct}
+      <SafeAreaView style={globalStyles.safeAreaContainer}>
+        <View style={styles.container}>
+          <Header
+            headerText="Order Details"
+            needResetNavigation={from !== "myOrders"}
+          />
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={{}}>
+                <QRCodeDisplay
+                  qrValue={orderDetails?.orderNumber}
+                  noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
                 />
-              ))}
-            </View>
-            <View style={[globalStyles.mb_2, styles.deliverSection]}>
-              <Text
-                style={[
-                  globalStyles.fontWeight500,
-                  styles.orderSummaryItemText,
-                ]}
-              >
-                Deliver To:
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  redirectToPage(containers.deliveryTrackingScreenScreen);
-                }}
-              >
-                <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
-                  Track Order
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text
+                  style={[
+                    styles.orderSummaryItemText,
+                    globalStyles.fontWeight500,
+                  ]}
+                >
+                  Status
                 </Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[globalStyles.mb_2, styles.addressText]}>
-              Choosen Delivery: {orderDetails?.pickupMode}
-            </Text>
-            {orderDetails?.pickupMode === "homeDelivery" && (
-              <Text style={[globalStyles.mb_3, styles.addressText]}>
-                Address: {shippingAddress_order?.line1}
-                {shippingAddress_order?.city}, {shippingAddress_order?.state}
-                {shippingAddress_order?.postalCode},{" "}
-                {shippingAddress_order?.country}
+                <Text
+                  style={[
+                    styles.orderSummaryItemText,
+                    globalStyles.fontWeight500,
+                  ]}
+                >
+                  Processed
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Order Number: </Text>
+                <Text style={styles.orderSummaryItemText}>
+                  {orderDetails?.orderNumber}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
+                <Text style={styles.orderSummaryItemText}>
+                  {/* {orderDetails?.orderDate} */}
+                  {formattedDate}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Shipping:</Text>
+                <Text style={styles.orderSummaryItemText}>
+                  {orderDetails?.shippingCharges}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
+                <Text style={styles.orderSummaryItemText}>
+                  {orderDetails?.totalAmount.toFixed(2)}
+                </Text>
+              </View>
+              <View>
+                {cartItemsWithDetails.map((eachProduct: any) => (
+                  <CartItem
+                    hideActions={true}
+                    itemContainerStyle={styles.cartItemContainerStyle}
+                    key={eachProduct._id}
+                    cartItem={eachProduct}
+                  />
+                ))}
+              </View>
+              <View style={[globalStyles.mb_2, styles.deliverSection]}>
+                <Text
+                  style={[
+                    globalStyles.fontWeight500,
+                    styles.orderSummaryItemText,
+                  ]}
+                >
+                  Deliver To:
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    redirectToPage(containers.deliveryTrackingScreenScreen);
+                  }}
+                >
+                  <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
+                    Track Order
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={[globalStyles.mb_2, styles.addressText]}>
+                Choosen Delivery: {orderDetails?.pickupMode}
               </Text>
-            )}
-            <View>
-              <RecommendedProductsSlider
-                recommendedProducts={recommendedProducts}
-                sectionTitleStyle={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                  //{marginBottom:16},
-                ]}
-                title="Would you like to see these too?"
-                showAddToCart={false}
-              />
+              {orderDetails?.pickupMode === "homeDelivery" && (
+                <Text style={[globalStyles.mb_3, styles.addressText]}>
+                  Address: {shippingAddress_order?.line1}
+                  {shippingAddress_order?.city}, {shippingAddress_order?.state}
+                  {shippingAddress_order?.postalCode},{" "}
+                  {shippingAddress_order?.country}
+                </Text>
+              )}
+              <View>
+                <RecommendedProductsSlider
+                  recommendedProducts={recommendedProducts}
+                  sectionTitleStyle={[
+                    styles.orderSummaryItemText,
+                    globalStyles.fontWeight500,
+                    //{marginBottom:16},
+                  ]}
+                  title="Would you like to see these too?"
+                  showAddToCart={false}
+                />
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    redirectToPage(containers.cancelOrderScreen, {
+                      orderDetails: orderDetails,
+                    });
+                  }}
+                >
+                  <Text style={styles.buttonText}>Request Cancellation</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.requestButton}
+                  onPress={() => {
+                    redirectToPage(containers.returnOrderScreen, {
+                      orderDetails: JSON.stringify(orderDetails),
+                    });
+                  }}
+                >
+                  <Text style={styles.buttonText}>Request Return</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => {
-                  redirectToPage(containers.cancelOrderScreen, {
-                    orderDetails: orderDetails,
-                  });
-                }}
-              >
-                <Text style={styles.buttonText}>Request Cancellation</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.requestButton}
-                onPress={() => {
-                  redirectToPage(containers.returnOrderScreen, {
-                    orderDetails: JSON.stringify(orderDetails),
-                  });
-                }}
-              >
-                <Text style={styles.buttonText}>Request Return</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-        <Footer />
-      </View>
+          </ScrollView>
+          <Footer />
+        </View>
       </SafeAreaView>
     </>
   );

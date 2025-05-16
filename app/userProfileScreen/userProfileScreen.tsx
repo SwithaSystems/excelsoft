@@ -109,19 +109,7 @@ const UserProfileScreen = () => {
     };
 
     fetchUser();
-  }, [userData_redux?.id]);
-
-  // useEffect(() => {
-  //   if (userData_redux) {
-  //     setUser({
-  //       id: Number(userData_redux?.id),
-  //       firstName: userData_redux?.firstName ?? "",
-  //       lastName: userData_redux?.lastName ?? "",
-  //       profileImageUrl:
-  //         userData_redux?.profileImageUrl ?? "https://picsum.photos/100",
-  //     });
-  //   }
-  // }, [userData_redux]);
+  }, [userData_redux]);
 
   console.log("user details fetched", user);
   useEffect(() => {
@@ -201,29 +189,13 @@ const UserProfileScreen = () => {
             </TouchableOpacity>
 
             <View style={styles.quickActions}>
-              {/*<Button
-              title="Send Test Notification"
-              onPress={async () => {
-                await Notifications.cancelAllScheduledNotificationsAsync();
-
-                await Notifications.scheduleNotificationAsync({
-                  content: {
-                    title: "🚀 Notification Test",
-                    body: "This is a push notification test!",
-                  },
-                  trigger: {
-                    seconds: 2,
-                    repeats: false,
-                    type: "timeInterval",
-                  } as Notifications.TimeIntervalTriggerInput,
-                });
-              }}j
-            /> */}
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => {
                   redirectToPage(containers.myOrderScreenScreen, {
-                    userId: userData_redux?._id,
+                    userId: userData_redux?._id
+                      ? userData_redux?._id
+                      : userData_redux?.id,
                   });
                 }}
               >
@@ -333,7 +305,7 @@ const UserProfileScreen = () => {
           }}
         />
       </View>
-      <Footer activeTab="menu"/>
+      <Footer activeTab="menu" />
     </SafeAreaView>
   );
 };

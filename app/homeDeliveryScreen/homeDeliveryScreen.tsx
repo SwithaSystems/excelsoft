@@ -28,7 +28,7 @@ import colors from "../config/colors";
 import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
-import ModalSelector from 'react-native-modal-selector';
+import ModalSelector from "react-native-modal-selector";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
@@ -166,6 +166,7 @@ const HomeDeliveryScreen = () => {
       // );
 
       // Also trigger a local notification for immediate feedback
+
       await NotificationService.scheduleLocalNotification(
         "Delivery Scheduled",
         `Your order #${orderId} delivery is scheduled for ${date} at ${hours}:${minutes} ${period}`,
@@ -232,7 +233,7 @@ const HomeDeliveryScreen = () => {
           itemToDelete.id
         );
         if (response.success) {
-          setAddressData((prev) =>
+          setExistingSelectedShippingAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
           );
         } else {
@@ -382,17 +383,17 @@ const HomeDeliveryScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Home Delivery" />
-      {/* <ScrollView> */}
-      <FlatList
-        ListHeaderComponent={
-          <>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <Text style={styles.label}>
-                Do you prefer home delivery? Let us know your available day and
-                time.
-              </Text>
+      <View style={globalStyles.container}>
+        <Header headerText="Home Delivery" />
+        {/* <ScrollView> */}
+        <FlatList
+          ListHeaderComponent={
+            <>
+              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+                <Text style={styles.label}>
+                  Do you prefer home delivery? Let us know your available day
+                  and time.
+                </Text>
 
                 {/* Date Picker */}
                 <View style={styles.inputContainer}>
@@ -464,48 +465,28 @@ const HomeDeliveryScreen = () => {
                   >
                     <ModalSelector
                       data={[
-                       { key: 1, label: 'AM', value: 'am' },
-                       { key: 2, label: 'PM', value: 'pm' },
+                        { key: 1, label: "AM", value: "am" },
+                        { key: 2, label: "PM", value: "pm" },
                       ]}
                       initValue="Select Period"
                       onChange={(option) => setPeriod(option.value)}
-                      optionTextStyle={{color: colors.primary}}
+                      optionTextStyle={{ color: colors.primary }}
                       optionContainerStyle={{ backgroundColor: colors.white }}
-                      cancelStyle={{backgroundColor:colors.white}}
+                      cancelStyle={{ backgroundColor: colors.white }}
                     >
-                    <TextInput
-                      style={globalStyles.picker_50}
-                      editable={false}
-                      value={period?.toUpperCase() || ''}
-                    />
-                  </ModalSelector>
+                      <TextInput
+                        style={globalStyles.picker_50}
+                        editable={false}
+                        value={period?.toUpperCase() || ""}
+                      />
+                    </ModalSelector>
                   </View>
                 </View>
                 {error ? (
                   <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
                 ) : null}
-                {/* Contact Information */}
                 {existingShippingAddress.length == 0 && (
                   <>
-                    {/* {renderTextInput("First Name", firstName, setFirstName)}
-              {renderTextInput("Last Name", lastName, setLastName)}
-              {renderTextInput("Phone", phone, setPhone, {
-                keyboardType: "phone-pad",
-              })}
-              {renderTextInput("Email", email, setEmail, {
-                keyboardType: "email-address",
-              })}
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Address: *</Text>
-                <TextInput
-                  style={[styles.textInput, styles.multilineInput]}
-                  value={address}
-                  onChangeText={setAddress}
-                  multiline
-                  numberOfLines={4}
-                />
-              </View> */}
                     <Button
                       title="Add Address"
                       onPress={() => {
