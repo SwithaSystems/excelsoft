@@ -55,6 +55,7 @@ const UserProfileScreen = () => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [user, setUser] = useState<{
     id: number;
+    _id: string;
     firstName: string;
     lastName: string;
     profileImageUrl: string;
@@ -215,13 +216,13 @@ const UserProfileScreen = () => {
                     type: "timeInterval",
                   } as Notifications.TimeIntervalTriggerInput,
                 });
-              }}
+              }}j
             /> */}
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => {
                   redirectToPage(containers.myOrderScreenScreen, {
-                    userId: userData_redux?.id,
+                    userId: userData_redux?._id,
                   });
                 }}
               >

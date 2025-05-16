@@ -106,16 +106,14 @@ const selectBillingAddressScreen = () => {
         // Set initial selected address if one exists in context
         if (selectedBillingAddress?._id) {
           setSelectedId(selectedBillingAddress._id);
-          // } else if (response.length > 0) {
-          //   // If no address is selected yet, select the first one by default
-          //   setSelectedBillingAddress(response[0]);
-          //   setSelectedId(response[0]._id);
+        } else if (response.length > 0) {
+          setSelectedBillingAddress(response[0]);
+          setSelectedId(response[0]._id);
         }
       } catch (err) {
         console.error("Error fetching billing addresses:", err);
       }
     };
-
     fetchAddresses();
   }, []);
   console.log("Billingaddress saved address", addressData);
@@ -163,10 +161,21 @@ const selectBillingAddressScreen = () => {
     setSelectedBillingAddress(item);
     console.log("Selected address:", item);
   };
+  console.log("isPaymentEnabled Breakdown:", {
+    cartItemsCount: cartItems.length,
+    billingAddressExists: !!selectedBillingAddress,
+    shippingAddressExists: !!shippingAddress,
+    pickupDate: pickupDetails?.date,
+    pickupTime: pickupDetails?.time,
+    selectedMode: selectedMode,
+  });
+
+  const isPickupMode =
+    selectedMode === "curbsidePickup" || selectedMode === "storePickup";
   const isPaymentEnabled =
     cartItems.length > 0 &&
     selectedBillingAddress &&
-    shippingAddress &&
+    (isPickupMode || shippingAddress) &&
     pickupDetails?.date &&
     pickupDetails?.time &&
     selectedMode &&
@@ -208,7 +217,11 @@ const selectBillingAddressScreen = () => {
                   <Button
                     title="Add New Address"
                     onPress={() => {
-                      redirectToPage(containers.billingAddressScreenScreen);
+                      redirectToPage(containers.billingAddressScreenScreen, {
+                        pickupDetails: JSON.stringify(pickupDetails),
+                        shippingAddress: JSON.stringify(shippingAddress),
+                        selectedMode: selectedMode,
+                      });
                     }}
                   />
                 </View>
