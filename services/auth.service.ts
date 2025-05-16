@@ -18,9 +18,11 @@ export const authService = {
     }
   },
 
-  async register(userData: { phone: string; email: string; password: string }) {
+  async register(payload: {
+    userData: { phone: string; email: string; password: string };
+  }) {
     try {
-      const response = await jsonAxios.post("/auth/register", userData);
+      const response = await jsonAxios.post("/auth/register", payload);
       console.log("response", response.data);
       await AsyncStorage.setItem("token", response.data.access_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));

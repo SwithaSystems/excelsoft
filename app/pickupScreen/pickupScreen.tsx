@@ -27,7 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
-import ModalSelector from 'react-native-modal-selector';
+import ModalSelector from "react-native-modal-selector";
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -64,11 +64,11 @@ const PickupScreen = () => {
   const [additionalDetails, setAdditionalDetails] = useState("");
 
   const vehicleTypeOptions = [
-    {key:1, label:"Car", value: "Car" },
-    {key:2, label:"MotorCycle", value: "MotorCycle" },
-    {key:3, label:"Bike", value: "Bike" },
-    {key:4, label:"Van", value: "Van" },
-  ]
+    { key: 1, label: "Car", value: "Car" },
+    { key: 2, label: "MotorCycle", value: "MotorCycle" },
+    { key: 3, label: "Bike", value: "Bike" },
+    { key: 4, label: "Van", value: "Van" },
+  ];
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -376,219 +376,224 @@ const PickupScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <KeyBoardWrapper>
-    <View style={globalStyles.container}>
-      <Header
-        headerText={
-          mode === "store"
-            ? PickupMode.STORE_PICKUP
-            : PickupMode.CURBSIDE_PICKUP
-        }
-      />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.label}>
-            {mode === "store"
-              ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
-              : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
-          </Text>
+      <KeyBoardWrapper>
+        <View style={globalStyles.container}>
+          <Header
+            headerText={
+              mode === "store"
+                ? PickupMode.STORE_PICKUP
+                : PickupMode.CURBSIDE_PICKUP
+            }
+          />
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.label}>
+                {mode === "store"
+                  ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
+                  : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
+              </Text>
 
-            {/* Date Picker */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Date: *</Text>
-              {Platform.OS === "web" ? (
-                <input
-                  type="date"
-                  style={globalStyles.webDateInput}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              ) : (
-                <TouchableOpacity
-                  style={globalStyles.dateInput}
-                  onPress={() => setShowDatePicker(true)}
-                >
-                  <Text>{date}</Text>
-                </TouchableOpacity>
-              )}
-              {showDatePicker && (
-                <DateTimePicker
-                  value={new Date(date)}
-                  mode="date"
-                  display="default"
-                  onChange={onDateChange}
-                  minimumDate={new Date()}
-                />
-              )}
-            </View>
-
-            {/* Time Input */}
-            <Text style={styles.inputLabel}>Time: *</Text>
-            <View style={globalStyles.timeContainer}>
-              <TextInput
-                style={[
-                  globalStyles.timeInput,
-                  error ? { borderColor: "red" } : {},
-                ]}
-                placeholder="HH"
-                keyboardType="numeric"
-                maxLength={2}
-                value={hours}
-                onChangeText={handleHoursChange}
-                onBlur={handleBlur}
-              />
-              <Text>:</Text>
-              <TextInput
-                ref={minutesRef}
-                style={[
-                  globalStyles.timeInput,
-                  error ? { borderColor: "red" } : {},
-                ]}
-                placeholder="MM"
-                keyboardType="numeric"
-                maxLength={2}
-                value={minutes}
-                onChangeText={handleMinutesChange}
-                onBlur={handleBlur}
-              />
-              <View
-                style={{
-                  borderColor: error ? "red" : colors.primary,
-                  borderWidth: 1,
-                  height: 40,
-                  width: 150,
-                  borderRadius: 8,
-                  justifyContent: "center",
-                }}
-              >
-                <ModalSelector
-                  data={[
-                    { key: 1, label: 'AM', value: 'am' },
-                    { key: 2, label: 'PM', value: 'pm' },
-                  ]}
-                  initValue="Select Period"
-                  onChange={(option) => setPeriod(option.value)}
-                >
-                  <TextInput
-                    style={globalStyles.picker_50}
-                    editable={false}
-                    value={period?.toUpperCase() || ''}
+              {/* Date Picker */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Date: *</Text>
+                {Platform.OS === "web" ? (
+                  <input
+                    type="date"
+                    style={globalStyles.webDateInput}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                   />
-                </ModalSelector>
-              </View>
-            </View>
-            {error ? (
-              <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
-            ) : null}
-
-            {/* Curbside Specific Fields */}
-            {mode === "curbside" && (
-              <>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Vehicle Type: *</Text>
-                  <View
-                    style={{
-                      borderColor: colors.primary,
-                      borderWidth: 1,
-                      height: 40,
-                      width: 250,
-                      borderRadius: 8,
-                      justifyContent: "center",
-                    }}
+                ) : (
+                  <TouchableOpacity
+                    style={globalStyles.dateInput}
+                    onPress={() => setShowDatePicker(true)}
                   >
-                    <ModalSelector
-                      data={vehicleTypeOptions}
-                      initValue="Select Vehicle Type"
-                      onChange={(option) => setVehicleType(option.value)}
+                    <Text>{date}</Text>
+                  </TouchableOpacity>
+                )}
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(date)}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                    minimumDate={new Date()}
+                  />
+                )}
+              </View>
+
+              {/* Time Input */}
+              <Text style={styles.inputLabel}>Time: *</Text>
+              <View style={globalStyles.timeContainer}>
+                <TextInput
+                  style={[
+                    globalStyles.timeInput,
+                    error ? { borderColor: "red" } : {},
+                  ]}
+                  placeholder="HH"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  value={hours}
+                  onChangeText={handleHoursChange}
+                  onBlur={handleBlur}
+                />
+                <Text>:</Text>
+                <TextInput
+                  ref={minutesRef}
+                  style={[
+                    globalStyles.timeInput,
+                    error ? { borderColor: "red" } : {},
+                  ]}
+                  placeholder="MM"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  value={minutes}
+                  onChangeText={handleMinutesChange}
+                  onBlur={handleBlur}
+                />
+                <View
+                  style={{
+                    borderColor: error ? "red" : colors.primary,
+                    borderWidth: 1,
+                    height: 40,
+                    width: 150,
+                    borderRadius: 8,
+                    justifyContent: "center",
+                  }}
+                >
+                  <ModalSelector
+                    data={[
+                      { key: 1, label: "AM", value: "am" },
+                      { key: 2, label: "PM", value: "pm" },
+                    ]}
+                    initValue="Select Period"
+                    onChange={(option) => setPeriod(option.value)}
+                  >
+                    <TextInput
+                      style={globalStyles.picker_50}
+                      editable={false}
+                      value={period?.toUpperCase() || ""}
+                    />
+                  </ModalSelector>
+                </View>
+              </View>
+              {error ? (
+                <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+              ) : null}
+
+              {/* Curbside Specific Fields */}
+              {mode === "curbside" && (
+                <>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Vehicle Type: *</Text>
+                    <View
+                      style={{
+                        borderColor: colors.primary,
+                        borderWidth: 1,
+                        height: 40,
+                        width: 250,
+                        borderRadius: 8,
+                        justifyContent: "center",
+                      }}
                     >
-                      <TextInput
-                        style={globalStyles.picker_50}
-                        editable={false}
-                        value={vehicleType}
-                      />
-                    </ModalSelector>
+                      <ModalSelector
+                        data={vehicleTypeOptions}
+                        initValue="Select Vehicle Type"
+                        onChange={(option) => setVehicleType(option.value)}
+                      >
+                        <TextInput
+                          style={globalStyles.picker_50}
+                          editable={false}
+                          value={vehicleType}
+                        />
+                      </ModalSelector>
+                    </View>
                   </View>
-                </View>
-                {renderTextInput(
-                  "Vehicle Number",
-                  vehicleNumber,
-                  setVehicleNumber
-                )}
-                {renderTextInput(
-                  "Additional Details",
-                  additionalDetails,
-                  setAdditionalDetails,
-                  {
-                    multiline: true,
-                    numberOfLines: 3,
-                    style: [inputStyles.textInput, inputStyles.multilineInput],
-                  }
-                )}
-              </>
-            )}
-
-            {/* Collector Information */}
-            <Text style={styles.sectionTitle}>
-              Let us know who is collecting?
-            </Text>
-            <View style={styles.collectorOptions}>
-              <TouchableOpacity
-                style={styles.radioOption}
-                onPress={() => handleCollectorChange("myself")}
-              >
-                <View
-                  style={[
-                    styles.radio,
-                    collector === "myself" && styles.radioSelected,
-                  ]}
-                >
-                  {collector === "myself" && <View style={styles.radioInner} />}
-                </View>
-                <Text style={styles.radioLabel}>Myself</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.radioOption}
-                onPress={() => handleCollectorChange("someone_else")}
-              >
-                <View
-                  style={[
-                    styles.radio,
-                    collector === "someone_else" && styles.radioSelected,
-                  ]}
-                >
-                  {collector === "someone_else" && (
-                    <View style={styles.radioInner} />
+                  {renderTextInput(
+                    "Vehicle Number",
+                    vehicleNumber,
+                    setVehicleNumber
                   )}
-                </View>
-                <Text style={styles.radioLabel}>Someone Else</Text>
-              </TouchableOpacity>
+                  {renderTextInput(
+                    "Additional Details",
+                    additionalDetails,
+                    setAdditionalDetails,
+                    {
+                      multiline: true,
+                      numberOfLines: 3,
+                      style: [
+                        inputStyles.textInput,
+                        inputStyles.multilineInput,
+                      ],
+                    }
+                  )}
+                </>
+              )}
+
+              {/* Collector Information */}
+              <Text style={styles.sectionTitle}>
+                Let us know who is collecting?
+              </Text>
+              <View style={styles.collectorOptions}>
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => handleCollectorChange("myself")}
+                >
+                  <View
+                    style={[
+                      styles.radio,
+                      collector === "myself" && styles.radioSelected,
+                    ]}
+                  >
+                    {collector === "myself" && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>Myself</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => handleCollectorChange("someone_else")}
+                >
+                  <View
+                    style={[
+                      styles.radio,
+                      collector === "someone_else" && styles.radioSelected,
+                    ]}
+                  >
+                    {collector === "someone_else" && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>Someone Else</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.helperText}>
+                Fill some basic details of the person who is going to receive
+                the order.
+              </Text>
+
+              {renderTextInput("First Name", firstName, setFirstName)}
+              {renderTextInput("Last Name", lastName, setLastName)}
+              {renderTextInput("Phone", phone, setPhone, {
+                keyboardType: "phone-pad",
+              })}
+              {renderTextInput("Email", email, setEmail, {
+                keyboardType: "email-address",
+              })}
+
+              <Text style={inputStyles.note}>
+                *Please ensure you carry a valid ID Proof
+              </Text>
+              <Button
+                title="Confirm"
+                onPress={handleSubmit}
+                disabled={isLoading}
+              />
             </View>
-
-            <Text style={styles.helperText}>
-              Fill some basic details of the person who is going to receive the
-              order.
-            </Text>
-
-            {renderTextInput("First Name", firstName, setFirstName)}
-            {renderTextInput("Last Name", lastName, setLastName)}
-            {renderTextInput("Phone", phone, setPhone, {
-              keyboardType: "phone-pad",
-            })}
-            {renderTextInput("Email", email, setEmail, {
-              keyboardType: "email-address",
-            })}
-
-            <Text style={inputStyles.note}>
-              *Please ensure you carry a valid ID Proof
-            </Text>
-            <Button
-              title="Confirm"
-              onPress={handleSubmit}
-              disabled={isLoading}
-            />
-          </View>
-        </ScrollView>
-      </View>
+          </ScrollView>
+        </View>
       </KeyBoardWrapper>
     </SafeAreaView>
   );

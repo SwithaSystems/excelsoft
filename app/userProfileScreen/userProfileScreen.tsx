@@ -16,7 +16,10 @@ import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import {
+  clearNavigationStack,
+  redirectToPage,
+} from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../services/notificationService";
@@ -161,8 +164,7 @@ const UserProfileScreen = () => {
       await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
-      redirectToPage(containers.homeScreen);
-      // redirectToPage(containers.signInScreen);
+      router.replace("/home/home");
     } catch (error) {
       console.error("Logout error:", error);
     }
