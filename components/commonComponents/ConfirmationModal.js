@@ -29,10 +29,12 @@ function ConfirmationModal(props) {
                     onPress={props?.handleSubmit}
                     title={props.submitText}
                   />
-                  {props.cancelText && <Button
-                    onPress={props?.handleCancel}
-                    title={props.cancelText}
-                  /> }
+                  {props.cancelText && (
+                    <Button
+                      onPress={props?.handleCancel}
+                      title={props.cancelText}
+                    />
+                  )}
                 </View>
               </View>
             </View>

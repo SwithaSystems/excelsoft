@@ -44,6 +44,29 @@ const signUpScreen = () => {
     setConfirmPassword("");
   };
 
+  const checkIfUserExists = async () => {
+    const trimmedPhone = phone.trim();
+    if (!trimmedPhone || !callingCode) return;
+    if (trimmedPhone) {
+      const normalizedPhone = trimmedPhone.startsWith("0")
+        ? trimmedPhone.slice(1)
+        : trimmedPhone;
+      const formattedPhone = `+${callingCode}${normalizedPhone}`;
+      try {
+        const response = await UserAPI.getUserByPhonenumber(formattedPhone);
+        if (response?.data) {
+          Alert.alert(
+            "Already Registered",
+            "This phone number is already in use."
+          );
+          setPhoneNumber("");
+        }
+      } catch (error) {
+        console.error("Error checking phone number", error);
+      }
+    }
+  };
+
   const validateFields = () => {
     const newErrors = {} as {
       phone?: string;
@@ -96,22 +119,38 @@ const signUpScreen = () => {
       const formattedPhone = `+${callingCode}${normalizedPhone}`;
 
       const userData = { phone: formattedPhone, email, password };
-      const userphone = userData.phone;
 
       try {
-        const response = await authService.register(userData);
+        // const response = await authService.register(userData);
 
-        if (response && response.access_token) {
-          console.log("Phone Number for OTP:", userData.phone);
-          await TwilioApi.sendOtp({ phone: userData.phone });
-
+        const responseFromTwilio = await TwilioApi.sendOtp({
+          phone: userData.phone,
+        });
+        console.log("responseFromTwilio", responseFromTwilio);
+        if (
+          responseFromTwilio?.status === 201 &&
+          responseFromTwilio.data?.status === "pending"
+        ) {
+          // OTP sent successfully, proceed to verification screen
           redirectToPage(containers.verifcationScreenScreen, {
-            phoneNumber: userphone,
+            // phoneNumber: userData.phone,
+            userData: JSON.stringify(userData),
             from: "signup",
           });
         } else {
-          Alert.alert("Error", response?.message || "Sign-up failed.");
+          Alert.alert("Error", "Failed to send OTP. Please try again.");
         }
+        // if (response && response.access_token) {
+        //   console.log("Phone Number for OTP:", userData.phone);
+        //   await TwilioApi.sendOtp({ phone: userData.phone });
+
+        //   redirectToPage(containers.verifcationScreenScreen, {
+        //     phoneNumber: userphone,
+        //     from: "signup",
+        //   });
+        // } else {
+        //   Alert.alert("Error", response?.message || "Sign-up failed.");
+        // }
       } catch (error) {
         console.error("Registration error:", error);
         Alert.alert("Error", "Something went wrong during registration.");
@@ -205,7 +244,9 @@ const signUpScreen = () => {
                   onChangeText={(text) => {
                     setPhoneNumber(text);
                     setEmail("");
+                    setErrors((prev) => ({ ...prev, phone: undefined }));
                   }}
+                  onBlur={checkIfUserExists}
                   maxLength={11}
                   keyboardType="phone-pad"
                 />
@@ -226,6 +267,7 @@ const signUpScreen = () => {
             placeholder="Enter your password"
             secureTextEntry
             value={password}
+            onFocus={checkIfUserExists}
             onChangeText={setPassword}
           />
           {errors.password && (
