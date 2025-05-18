@@ -18,26 +18,29 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   const [user, setUser] = useState(null);
   const userData_redux = useSelector((state: any) => state.user.user);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      // const user = await AsyncStorage.getItem("user");
-      console.log("userData_redux", userData_redux);
-      if (userData_redux) {
-        setUser(userData_redux);
-      }
-    };
-    fetchUser();
-  }, []);
+  const fetchUser = async () => {
+    // const user = await AsyncStorage.getItem("user");
+    console.log("userData_redux", userData_redux);
+    if (userData_redux) {
+      setUser(userData_redux);
+    } else {
+      setUser(null);
+    }
+  };
 
-  const handleMenuPress = async () => {
-    if (user) {
+  useEffect(() => {
+    fetchUser();
+  }, [userData_redux]);
+
+  const handleMenuPress = () => {
+    if (userData_redux) {
       redirectToPage(containers.userProfileScreenScreen);
     } else {
       redirectToPage(containers.signInScreen);
     }
   };
-  const handleSavedItems = async () => {
-    if (user) {
+  const handleSavedItems = () => {
+    if (userData_redux) {
       redirectToPage(containers.savedItemScreenScreen);
     } else {
       redirectToPage(containers.signInScreen);
@@ -96,7 +99,8 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <Text
           style={{
             fontSize: 10,
-            color: activeTab.toLowerCase() == "search" ? colors.primary : "#666",
+            color:
+              activeTab.toLowerCase() == "search" ? colors.primary : "#666",
           }}
         >
           Search
