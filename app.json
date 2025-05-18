@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Weekes Retails Supplies",
+    "name": "Weekes",
     "slug": "excelsoft-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/weekesLogo01.png",
+    "icon": "./assets/shortLogo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/weekesLogo02.png",
+      "image": "./assets/SplashScreenLogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

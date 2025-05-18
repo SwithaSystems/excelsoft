@@ -270,7 +270,7 @@ const orderDetailsScreen = () => {
                 />
               </View>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => {
                     redirectToPage(containers.cancelOrderScreen, {
@@ -289,7 +289,7 @@ const orderDetailsScreen = () => {
                   }}
                 >
                   <Text style={styles.buttonText}>Request Return</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             </View>
           </ScrollView>

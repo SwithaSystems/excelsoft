@@ -12,6 +12,7 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
 import Toast from "react-native-toast-message";
 import CustomToastAlert from "../components/commonComponents/CustomToastAlert";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -339,6 +340,7 @@ export default function Layout() {
         <PersistGate loading={null} persistor={persistor}>
           <AppProvider>
             <AuthProvider>
+              <KeyBoardWrapper>
               <NotificationsHandler />
               <LayoutContent />
               <Toast 
@@ -348,6 +350,7 @@ export default function Layout() {
                   ),
                 }}  
               />
+              </KeyBoardWrapper>
             </AuthProvider>
           </AppProvider>
         </PersistGate>
