@@ -55,4 +55,13 @@ export const UserAPI = {
     });
     return response;
   },
+
+  resetPassword: async (body: { newPassword: string; phoneNumber: string }) => {
+    console.log("newPassword", body.newPassword, body.phoneNumber);
+    const response = await jsonAxios.post("/users/resetPassword", {
+      newPassword: body.newPassword,
+      phoneNumber: body.phoneNumber,
+    });
+    return response;
+  },
 };
