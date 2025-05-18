@@ -51,14 +51,18 @@ const verifcationScreen = () => {
         }
       }
     } else if (from === "forgotPassword" && phoneNumber_forgetPwd) {
-      let parsed = null;
-      if (typeof phoneNumber_forgetPwd === "string") {
-        try {
-          parsed = JSON.parse(phoneNumber_forgetPwd);
-          setPhoneNumber(parsed);
-        } catch (e) {
-          console.error("Invalid JSON in PhoneNumber", e);
-        }
+      if (Array.isArray(phoneNumber_forgetPwd)) {
+        setPhoneNumber(phoneNumber_forgetPwd[0]);
+        console.log(
+          "Set phone number (from array) for password reset:",
+          phoneNumber_forgetPwd[0]
+        );
+      } else {
+        setPhoneNumber(phoneNumber_forgetPwd);
+        console.log(
+          "Set phone number (from string) for password reset:",
+          phoneNumber_forgetPwd
+        );
       }
     }
   }, [from, userData, phoneNumber_forgetPwd]);
