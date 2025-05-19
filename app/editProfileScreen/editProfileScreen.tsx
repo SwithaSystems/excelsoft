@@ -46,7 +46,7 @@ const editProfileScreen = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Store Manager");
-  const [profileImage, setProfileImage] = useState("https://picsum.photos/100");
+  const [profileImage, setProfileImage] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
@@ -229,9 +229,11 @@ const editProfileScreen = () => {
               {/* Profile Picture */}
               <View style={globalStyles.profilePictureContainer}>
                 <Image
-                  source={{
-                    uri: profileImage,
-                  }}
+                  source={
+                    profileImage
+                      ? { uri: profileImage }
+                      : require("../../assets/default_user_profile.png")
+                  }
                   style={globalStyles.profileImage}
                 />
                 <TouchableOpacity

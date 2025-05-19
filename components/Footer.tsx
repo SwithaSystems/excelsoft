@@ -8,6 +8,7 @@ import { RootState } from "../store/store";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from "@/app/config/colors";
+import { UserAPI } from "@/services/userService";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -16,31 +17,67 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
     0
   );
   const [user, setUser] = useState(null);
+  const [isValidUser, setIsValidUser] = useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch();
 
-  const fetchUser = async () => {
-    // const user = await AsyncStorage.getItem("user");
-    console.log("userData_redux", userData_redux);
-    if (userData_redux) {
-      setUser(userData_redux);
-    } else {
-      setUser(null);
+  const validateAndFetchUser = async () => {
+    try {
+      if (userData_redux && userData_redux?.phone) {
+        // Validate if the user exists in the database
+        const response = await UserAPI.getUserByPhonenumber(
+          userData_redux.phone
+        );
+
+        if (response?.data) {
+          console.log("User validated in database");
+          setIsValidUser(true);
+        } else {
+          console.log("User not found in database, clearing local data");
+          setIsValidUser(false);
+
+          // Clear AsyncStorage and Redux
+          try {
+            await AsyncStorage.removeItem("user");
+            // Make sure this action exists in your reducer
+            dispatch({ type: "user/clearUser" });
+          } catch (error) {
+            console.error("Error clearing user data:", error);
+          }
+        }
+      } else {
+        // No user in Redux
+        console.log("No user in Redux");
+        setIsValidUser(false);
+      }
+    } catch (error) {
+      console.error("Error validating user:", error);
+      setIsValidUser(false);
     }
   };
+  // const fetchUser = async () => {
+  //   // const user = await AsyncStorage.getItem("user");
+  //   console.log("userData_redux", userData_redux);
+  //   if (userData_redux) {
+  //     setUser(userData_redux);
+  //   } else {
+  //     setUser(null);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchUser();
+    validateAndFetchUser();
   }, [userData_redux]);
 
   const handleMenuPress = () => {
-    if (userData_redux) {
+    if (isValidUser) {
       redirectToPage(containers.userProfileScreenScreen);
     } else {
       redirectToPage(containers.signInScreen);
     }
   };
   const handleSavedItems = () => {
-    if (userData_redux) {
+    if (isValidUser) {
       redirectToPage(containers.savedItemScreenScreen);
     } else {
       redirectToPage(containers.signInScreen);

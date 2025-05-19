@@ -169,9 +169,11 @@ const UserProfileScreen = () => {
               {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
             </Text>
             <Image
-              source={{
-                uri: user?.profileImageUrl,
-              }}
+              source={
+                user?.profileImageUrl
+                  ? { uri: user?.profileImageUrl }
+                  : require("../../assets/default_user_profile.png")
+              }
               style={globalStyles.profileImage}
             />
             <Text style={styles.userName}>
