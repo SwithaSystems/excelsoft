@@ -96,6 +96,19 @@ export const orderService = {
     }
   },
 
+  getOrderByMongoId: async (orderId: string): Promise<Order> => {
+    try {
+      const response = await jsonAxios.get<Order>(
+        `${API_BASE_URL}/orders/${orderId}`
+      );
+      console.log("orderdata by id", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by orderId:", error);
+      throw error;
+    }
+  },
+
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
     console.log("orderPayload", orderPayload);
     try {

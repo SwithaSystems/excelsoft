@@ -44,7 +44,9 @@ function OrderItem(props) {
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
-            redirectToPage(containers.deliveryTrackingScreenScreen);
+            redirectToPage(containers.deliveryTrackingScreenScreen, {
+              orderId: item._id,
+            });
           }}
         >
           <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>

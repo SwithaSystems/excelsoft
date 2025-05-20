@@ -189,7 +189,7 @@ const orderDetailsScreen = () => {
                     globalStyles.fontWeight500,
                   ]}
                 >
-                  Processed
+                  {orderDetails?.status}
                 </Text>
               </View>
               <View style={styles.orderSummaryItem}>
@@ -238,7 +238,9 @@ const orderDetailsScreen = () => {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    redirectToPage(containers.deliveryTrackingScreenScreen);
+                    redirectToPage(containers.deliveryTrackingScreenScreen, {
+                      orderId: orderDetails?._id,
+                    });
                   }}
                 >
                   <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
