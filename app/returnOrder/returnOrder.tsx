@@ -29,24 +29,24 @@ import { ProductsAPI } from "@/services/productService";
 //     id: 1,
 //     image: require("../../assets/baby-bicycle.png"),
 //     name: "Duck Toys",
-//     price: "$10.00",
-//     originalPrice: "$18.00",
+//     price: "£10.00",
+//     originalPrice: "£18.00",
 //     quantity: 5,
 //   },
 //   {
 //     id: 2,
 //     image: require("../../assets/baby-bicycle.png"),
 //     name: "Orange Juice",
-//     price: "$3.00",
-//     originalPrice: "$5.00",
+//     price: "£3.00",
+//     originalPrice: "£5.00",
 //     quantity: 1,
 //   },
 //   {
 //     id: 3,
 //     image: require("../../assets/baby-bicycle.png"),
 //     name: "Strawberries",
-//     price: "$12.00",
-//     originalPrice: "$18.00",
+//     price: "£12.00",
+//     originalPrice: "£18.00",
 //     quantity: 1,
 //   },
 // ];
@@ -153,60 +153,65 @@ const ReturnOrder = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <Header headerText="Return/Replace Order" />
-      <ScrollView style={{paddingHorizontal:16}}>
-        <ReturnReplaceToggle mode={mode} setMode={setMode} />
-        <View style={styles.returnOrderCategory}>
-          <Text style={styles.returnOrderItemText}>Order Number:</Text>
-          <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
-        </View>
+      <View style={styles.container}>
+        <Header headerText="Return/Replace Order" />
+        <ScrollView style={{ paddingHorizontal: 16 }}>
+          <ReturnReplaceToggle mode={mode} setMode={setMode} />
+          <View style={styles.returnOrderCategory}>
+            <Text style={styles.returnOrderItemText}>Order Number:</Text>
+            <Text style={styles.returnOrderId}>#ORD-2025-1234</Text>
+          </View>
 
-        <View style={styles.cartItemsContainer}>  
-          {cartItemsWithDetails.map((item: any) => (
-            <View style={styles.cartItem} key={item.id}>
-              <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
-                <Text style={styles.itemPrice}>
-                  {item.price}{" "}
-                  <Text style={styles.striked}>{item.originalPrice}</Text>
-                </Text>
-              </View>
-              <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <CheckBox
-                  checked={selectedItems.includes(item.id)}
-                  onPress={() => {
-                    if (selectedItems.includes(item.id)) {
-                      setSelectedItems(
-                        selectedItems.filter((id) => id !== item.id)
-                      );
-                    } else {
-                      setSelectedItems([...selectedItems, item.id]);
-                    }
-                  }}
-                  containerStyle={styles.checkBoxContainer}
-                  textStyle={styles.checkBoxText}
+          <View style={styles.cartItemsContainer}>
+            {cartItemsWithDetails.map((item: any) => (
+              <View style={styles.cartItem} key={item.id}>
+                <Image
+                  source={{ uri: item.image[0] }}
+                  style={styles.itemImage}
                 />
+                <View style={styles.itemDetails}>
+                  <Text style={styles.itemName}>{item.name}</Text>
+                  <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
+                  <Text style={styles.itemPrice}>
+                    {item.price}{" "}
+                    <Text style={styles.striked}>{item.originalPrice}</Text>
+                  </Text>
+                </View>
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <CheckBox
+                    checked={selectedItems.includes(item.id)}
+                    onPress={() => {
+                      if (selectedItems.includes(item.id)) {
+                        setSelectedItems(
+                          selectedItems.filter((id) => id !== item.id)
+                        );
+                      } else {
+                        setSelectedItems([...selectedItems, item.id]);
+                      }
+                    }}
+                    containerStyle={styles.checkBoxContainer}
+                    textStyle={styles.checkBoxText}
+                  />
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-        {mode === "Return" && (
-          <>
-            <View style={styles.returnModeCategory}>
-              <Text style={styles.label}>Return Mode:</Text>
-              <View style={styles.returnSection}>
+            ))}
+          </View>
+          {mode === "Return" && (
+            <>
+              <View style={styles.returnModeCategory}>
+                <Text style={styles.label}>Return Mode:</Text>
+                <View style={styles.returnSection}>
                   {options.map((option) => (
                     <TouchableOpacity
-                        key={option.id}
-                        style={[
-                          styles.option,
-                          selected?.id === option.id && styles.selectedOption,
-                        ]}
-                        onPress={() => setSelected(option)}
-                      >
+                      key={option.id}
+                      style={[
+                        styles.option,
+                        selected?.id === option.id && styles.selectedOption,
+                      ]}
+                      onPress={() => setSelected(option)}
+                    >
                       <View style={styles.returnModes}>
                         <View style={styles.textContainer}>
                           <Text style={styles.optionLabel}>{option.label}</Text>
@@ -222,82 +227,82 @@ const ReturnOrder = () => {
                       </View>
                     </TouchableOpacity>
                   ))}
-              </View>
-            </View>
-            {selected.id === "home" && (
-              <View style={styles.section}>
-                <Text style={styles.sectionHeading}>Address</Text>
-                <View style={globalStyles.pl_3}>
-                  <Text style={styles.addressTextBox}>{pickupAddress}</Text>
                 </View>
               </View>
-            )}
-            <View style={styles.datetimeContainer}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>
-                  Return Date:<Text style={styles.required}>*</Text>
-                </Text>
-                {Platform.OS === "web" ? (
-                  <input
-                    type="date"
-                    style={globalStyles.webDateInput}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                ) : (
-                  <TouchableOpacity
-                    style={globalStyles.dateInput}
-                    onPress={() => setShowDatePicker(true)}
-                  >
-                    <Text>{date}</Text>
-                  </TouchableOpacity>
-                )}
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={new Date(date)}
-                    mode="date"
-                    display="default"
-                    onChange={onDateChange}
-                  />
-                )}
-              </View>
-              <View style={styles.timeSection}>
-              <Text style={styles.label}>
-                Time: <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.timeContainer}>
-                <TextInput
-                  style={[styles.timeInput, styles.hourMinuteInput]}
-                  placeholder="HH"
-                  value={hour}
-                  onChangeText={setHour}
-                  keyboardType="number-pad"
-                />
-                <TextInput
-                  style={[styles.timeInput, styles.hourMinuteInput]}
-                  placeholder="MM"
-                  value={minute}
-                  onChangeText={setMinute}
-                  keyboardType="number-pad"
-                />
-                <View style={styles.amPmSelector}>
-                    <Picker
-                      selectedValue={period}
-                      style={{
-                        width: 110,
-                        color: colors.black,
-                        justifyContent: "flex-end",
-                      }}
-                      onValueChange={(itemValue) => setPeriod(itemValue)}
+              {selected.id === "home" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionHeading}>Address</Text>
+                  <View style={globalStyles.pl_3}>
+                    <Text style={styles.addressTextBox}>{pickupAddress}</Text>
+                  </View>
+                </View>
+              )}
+              <View style={styles.datetimeContainer}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>
+                    Return Date:<Text style={styles.required}>*</Text>
+                  </Text>
+                  {Platform.OS === "web" ? (
+                    <input
+                      type="date"
+                      style={globalStyles.webDateInput}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={globalStyles.dateInput}
+                      onPress={() => setShowDatePicker(true)}
                     >
-                      <Picker.Item label="AM" value="am" />
-                      <Picker.Item label="PM" value="pm" />
-                    </Picker>
+                      <Text>{date}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={new Date(date)}
+                      mode="date"
+                      display="default"
+                      onChange={onDateChange}
+                    />
+                  )}
+                </View>
+                <View style={styles.timeSection}>
+                  <Text style={styles.label}>
+                    Time: <Text style={styles.required}>*</Text>
+                  </Text>
+                  <View style={styles.timeContainer}>
+                    <TextInput
+                      style={[styles.timeInput, styles.hourMinuteInput]}
+                      placeholder="HH"
+                      value={hour}
+                      onChangeText={setHour}
+                      keyboardType="number-pad"
+                    />
+                    <TextInput
+                      style={[styles.timeInput, styles.hourMinuteInput]}
+                      placeholder="MM"
+                      value={minute}
+                      onChangeText={setMinute}
+                      keyboardType="number-pad"
+                    />
+                    <View style={styles.amPmSelector}>
+                      <Picker
+                        selectedValue={period}
+                        style={{
+                          width: 110,
+                          color: colors.black,
+                          justifyContent: "flex-end",
+                        }}
+                        onValueChange={(itemValue) => setPeriod(itemValue)}
+                      >
+                        <Picker.Item label="AM" value="am" />
+                        <Picker.Item label="PM" value="pm" />
+                      </Picker>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </View>
-          </View>
-            {/* <View style={styles.returnReason}>
+              {/* <View style={styles.returnReason}>
               <Text style={styles.label}>Reason for Return</Text>
               <View style={styles.selectReason}>
                 <TextInput
@@ -311,75 +316,77 @@ const ReturnOrder = () => {
                 />
               </View>
             </View> */}
-            <View style={styles.returnReason}>
-              <Text style={styles.label}>Reason for Return</Text>
-              <View
-                style={{
-                  borderColor: colors.primary,
-                  borderWidth: 1,
-                  height: 40,
-                  width: 350,
-                  borderRadius: 8,
-                  justifyContent: "center",
-                }}
-              >
-                <Picker
-                  selectedValue={reason}
-                  onValueChange={(itemValue) => setReason(itemValue)}
-                  style={{ height: 50, color: "#333" }}
+              <View style={styles.returnReason}>
+                <Text style={styles.label}>Reason for Return</Text>
+                <View
+                  style={{
+                    borderColor: colors.primary,
+                    borderWidth: 1,
+                    height: 40,
+                    width: 350,
+                    borderRadius: 8,
+                    justifyContent: "center",
+                  }}
                 >
-                  <Picker.Item label="Tell us why" value="" />
-                  <Picker.Item
-                    label="Wrong product delivered"
-                    value="wrong_product"
-                  />
-                  <Picker.Item label="Product damaged" value="damaged" />
-                  <Picker.Item label="Changed my mind" value="change_mind" />
-                  <Picker.Item label="Other" value="other" />
-                </Picker>
+                  <Picker
+                    selectedValue={reason}
+                    onValueChange={(itemValue) => setReason(itemValue)}
+                    style={{ height: 50, color: "#333" }}
+                  >
+                    <Picker.Item label="Tell us why" value="" />
+                    <Picker.Item
+                      label="Wrong product delivered"
+                      value="wrong_product"
+                    />
+                    <Picker.Item label="Product damaged" value="damaged" />
+                    <Picker.Item label="Changed my mind" value="change_mind" />
+                    <Picker.Item label="Other" value="other" />
+                  </Picker>
+                </View>
               </View>
-            </View>
-            <View style={styles.addComments}>
-              <Text style={styles.label}>Do you want to talk about your experience?</Text>
-              <TextInput
-                style={[styles.commentsText]}
-                placeholder="Add additional comments"
-                multiline
-                numberOfLines={4}
-              />
-            </View>
-          </>
-        )}
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Order Number: </Text>
-          <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
-        </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Return Date: </Text>
-          <Text style={styles.returnOrderDetails}>21-01-2025</Text>
-        </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderDetails}>Items being returned:</Text>
-          <Text style={styles.returnOrderDetails}>1</Text>
-        </View>
-        <View style={styles.returnOrderSummary}>
-          <Text style={styles.returnOrderItemText}>Refund Total:</Text>
-          <Text style={styles.returnOrderItemText}>$25.00</Text>
-        </View>
+              <View style={styles.addComments}>
+                <Text style={styles.label}>
+                  Do you want to talk about your experience?
+                </Text>
+                <TextInput
+                  style={[styles.commentsText]}
+                  placeholder="Add additional comments"
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+            </>
+          )}
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Order Number: </Text>
+            <Text style={styles.returnOrderDetails}>#ORD-2025-1234</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Return Date: </Text>
+            <Text style={styles.returnOrderDetails}>21-01-2025</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderDetails}>Items being returned:</Text>
+            <Text style={styles.returnOrderDetails}>1</Text>
+          </View>
+          <View style={styles.returnOrderSummary}>
+            <Text style={styles.returnOrderItemText}>Refund Total:</Text>
+            <Text style={styles.returnOrderItemText}>£25.00</Text>
+          </View>
 
-        <Text style={styles.noteText}>
-          Note: Refund money would be processed in 3 to 5 business days.{" "}
-        </Text>
-        <TouchableOpacity
-          style={styles.replacementButton}
-          onPress={() => {
-            redirectToPage(containers.replaceOrderScreenScreen);
-          }}
-        >
-          <Text style={styles.buttonText}>{mode}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+          <Text style={styles.noteText}>
+            Note: Refund money would be processed in 3 to 5 business days.{" "}
+          </Text>
+          <TouchableOpacity
+            style={styles.replacementButton}
+            onPress={() => {
+              redirectToPage(containers.replaceOrderScreenScreen);
+            }}
+          >
+            <Text style={styles.buttonText}>{mode}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

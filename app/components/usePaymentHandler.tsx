@@ -6,6 +6,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
+import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 
 type Product = {
   productId: string;
@@ -36,7 +37,7 @@ export const usePaymentHandler = () => {
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
           amount: Math.round(amount * 100),
-          currency: "usd",
+          currency: CURRENCY_CODE,
         }
       );
 

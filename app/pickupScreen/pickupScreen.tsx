@@ -10,7 +10,6 @@ import {
   Alert,
   SafeAreaView,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -23,32 +22,70 @@ import styles from "./pickupScreenStyles";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { PickupMode } from "@/services/orderService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
+import { RootState } from "@/store/store";
+
+// Vehicle type options for dropdown
+const VEHICLE_TYPE_OPTIONS = [
+  { key: 1, label: "Car", value: "Car" },
+  { key: 2, label: "MotorCycle", value: "MotorCycle" },
+  { key: 3, label: "Bike", value: "Bike" },
+  { key: 4, label: "Van", value: "Van" },
+];
+
+// Time period options
+const TIME_PERIOD_OPTIONS = [
+  { key: 1, label: "AM", value: "am" },
+  { key: 2, label: "PM", value: "pm" },
+];
+
+// Minimum pickup time (30 minutes from now)
+const MIN_PICKUP_MINUTES = 30;
+
+// Default pickup time (2 hours from now)
+const DEFAULT_PICKUP_HOURS = 2;
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const isStorePickup = mode === "store";
+  const isCurbsidePickup = mode === "curbside";
+
+  // Date and time state
+  const [date, setDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
+  const [timeError, setTimeError] = useState<any>(null);
+
+  // User state
   const [collector, setCollector] = useState("myself");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<any>(null);
+
+  // Curbside specific state
+  const [vehicleType, setVehicleType] = useState("Car");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
+
+  // Form state
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[] | null>([]);
 
-  // Store user data from Redux
-  const userData_redux = useSelector((state: any) => state.user.user);
-  console.log("userData_redux from pickup screen", userData_redux);
+  // Redux state
+  const userData = useSelector((state: RootState) => state.user.user);
 
-  // Store the original user data to use when toggling between "Myself" and "Someone Else"
+  // Refs
+  const minutesRef = useRef(null);
+
+  // Store original user data for toggling between collectors
   const [originalUserData, setOriginalUserData] = useState({
     firstName: "",
     lastName: "",
@@ -56,72 +93,287 @@ const PickupScreen = () => {
     email: "",
   });
 
-  console.log("Selected mode is:", mode); // store / curbside
+  // Initialize default time values (2 hours ahead from current time)
+  useEffect(() => {
+    // Calculate default time (2 hours from now)
+    const now = new Date();
+    const twoHoursLater = new Date(
+      now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+    );
 
-  // Curbside specific fields
-  const [vehicleType, setVehicleType] = useState("Car");
-  const [vehicleNumber, setVehicleNumber] = useState("");
-  const [additionalDetails, setAdditionalDetails] = useState("");
+    // Format the date for state
+    const formattedDate = twoHoursLater.toISOString().split("T")[0];
+    setDate(formattedDate);
 
-  const vehicleTypeOptions = [
-    { key: 1, label: "Car", value: "Car" },
-    { key: 2, label: "MotorCycle", value: "MotorCycle" },
-    { key: 3, label: "Bike", value: "Bike" },
-    { key: 4, label: "Van", value: "Van" },
-  ];
+    // Set hours in 12-hour format
+    let hoursValue = twoHoursLater.getHours();
+    const periodValue = hoursValue >= 12 ? "pm" : "am";
 
-  const onDateChange = (
-    event: DateTimePickerEvent,
-    selectedDate: Date | undefined
-  ) => {
+    // Convert to 12-hour format
+    if (hoursValue > 12) {
+      hoursValue -= 12;
+    } else if (hoursValue === 0) {
+      hoursValue = 12;
+    }
+
+    // Format minutes to always be two digits
+    const minutesValue = twoHoursLater.getMinutes().toString().padStart(2, "0");
+
+    // Update state with default values
+    setHours(hoursValue.toString());
+    setMinutes(minutesValue);
+    setPeriod(periodValue);
+
+    // Validate the default time
+    validateTime(
+      formattedDate,
+      hoursValue.toString(),
+      minutesValue,
+      periodValue
+    );
+  }, []);
+
+  // Validate form on every field change to enable/disable the submit button
+  useEffect(() => {
+    const errors = [];
+
+    // Check required fields
+    if (!date) errors.push("Date is required");
+    if (!hours) errors.push("Hour is required");
+    if (!minutes) errors.push("Minute is required");
+    if (!firstName) errors.push("First name is required");
+    if (!lastName) errors.push("Last name is required");
+    if (!phone) errors.push("Phone is required");
+    if (!email) errors.push("Email is required");
+
+    // Validate time if all time fields are filled
+    if (date && hours && minutes && period) {
+      const timeValidation = validateTime(date, hours, minutes, period, false);
+      if (!timeValidation.isValid && timeValidation.message) {
+        errors.push(timeValidation.message);
+      }
+    }
+
+    // Validate email if entered
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.push("Email format is invalid");
+        setEmailError("Please enter a valid email address");
+      } else {
+        setEmailError(null);
+      }
+    }
+
+    // Validate curbside-specific fields
+    if (isCurbsidePickup) {
+      if (!vehicleType) errors.push("Vehicle type is required");
+      if (!vehicleNumber) errors.push("Vehicle number is required");
+    }
+
+    setFormErrors(errors);
+    setIsFormValid(errors.length === 0);
+  }, [
+    date,
+    hours,
+    minutes,
+    period,
+    firstName,
+    lastName,
+    phone,
+    email,
+    isCurbsidePickup,
+    vehicleType,
+    vehicleNumber,
+  ]);
+
+  // Load user data from API
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!userData?.phone) return;
+
+      try {
+        const response = await UserAPI.getUserByPhonenumber(userData.phone);
+
+        if (response?.data) {
+          const fetchedUserData = {
+            firstName: response.data.firstName || "",
+            lastName: response.data.lastName || "",
+            phone: response.data.phone || "",
+            email: response.data.email || "",
+          };
+
+          setOriginalUserData(fetchedUserData);
+
+          // Populate fields if collector is "myself"
+          if (collector === "myself") {
+            setFirstName(fetchedUserData.firstName);
+            setLastName(fetchedUserData.lastName);
+            setPhone(fetchedUserData.phone);
+            setEmail(fetchedUserData.email);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userData, collector]);
+
+  // Handle date picker change
+  const handleDateChange = (event: any, selectedDate: any) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
     setDate(currentDate.toISOString().split("T")[0]);
+    validateTime(
+      currentDate.toISOString().split("T")[0],
+      hours,
+      minutes,
+      period
+    );
   };
 
-  const validateForm = () => {
+  // Handle hours input changes with auto-focus to minutes
+  const handleHoursChange = (text: any) => {
+    const numericText = text.replace(/[^0-9]/g, "");
+
+    // Validate hours range (1-12)
     if (
-      !date ||
-      !hours ||
-      !minutes ||
-      !firstName ||
-      !lastName ||
-      !phone ||
-      !email
+      numericText &&
+      (parseInt(numericText) < 1 || parseInt(numericText) > 12)
     ) {
-      Alert.alert("Error", "Please fill in all required fields");
-      return false;
+      setTimeError("Hours must be between 1 and 12");
+    } else {
+      setTimeError(null);
     }
 
-    if (mode === "curbside" && (!vehicleType || !vehicleNumber)) {
-      Alert.alert(
-        "Error",
-        "Please fill in vehicle details for curbside pickup"
-      );
-      return false;
+    setHours(numericText);
+
+    // Auto-focus to minutes field when 2 digits entered
+    if (numericText.length === 2 && minutesRef.current) {
+      (minutesRef.current as any).focus();
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return false;
-    }
-
-    // Basic phone validation (adjust regex based on your requirements)
-    // const phoneRegex = /^\d{10,}$/;
-    // if (!phoneRegex.test(phone)) {
-    //   Alert.alert("Error", "Please enter a valid phone number");
-    //   return false;
-    // }
-
-    return true;
+    validateTime(date, numericText, minutes, period);
   };
 
+  // Handle minutes input changes
+  const handleMinutesChange = (text: any) => {
+    const numericText = text.replace(/[^0-9]/g, "");
+
+    // Validate minutes range (0-59)
+    if (
+      numericText &&
+      (parseInt(numericText) < 0 || parseInt(numericText) > 59)
+    ) {
+      setTimeError("Minutes must be between 0 and 59");
+    } else {
+      setTimeError(null);
+    }
+
+    setMinutes(numericText);
+    validateTime(date, hours, numericText, period);
+  };
+
+  // Validate if selected time is in the future and at least 30 minutes ahead
+  const validateTime = (
+    selectedDate: any,
+    hrs: any,
+    mins: any,
+    per: any,
+    updateErrorState = true
+  ) => {
+    // Return early if any value is missing
+    if (!selectedDate || !hrs || !mins) {
+      if (updateErrorState) setTimeError(null);
+      return { isValid: false, message: "Time is incomplete" };
+    }
+
+    const numHours = parseInt(hrs, 10);
+    const numMinutes = parseInt(mins, 10);
+
+    // Basic validation
+    if (isNaN(numHours) || isNaN(numMinutes)) {
+      const message = "Please enter valid hour and minute values";
+      if (updateErrorState) setTimeError(message);
+      return { isValid: false, message };
+    }
+
+    if (numHours < 1 || numHours > 12) {
+      const message = "Hours must be between 1 and 12";
+      if (updateErrorState) setTimeError(message);
+      return { isValid: false, message };
+    }
+
+    if (numMinutes < 0 || numMinutes > 59) {
+      const message = "Minutes must be between 0 and 59";
+      if (updateErrorState) setTimeError(message);
+      return { isValid: false, message };
+    }
+
+    // Convert to 24-hour format for comparison
+    let hours24 = numHours;
+    if (per === "pm" && numHours !== 12) {
+      hours24 += 12;
+    } else if (per === "am" && numHours === 12) {
+      hours24 = 0;
+    }
+
+    // Create date object for selected date and time
+    const selectedDateTime = new Date(`${selectedDate}T00:00:00`);
+    selectedDateTime.setHours(hours24, numMinutes, 0);
+
+    // Get current date and time
+    const now = new Date();
+
+    // Calculate minimum time (current time + 30 minutes)
+    const minTime = new Date(now.getTime() + MIN_PICKUP_MINUTES * 60 * 1000);
+
+    // Check if selected time is at least 30 minutes in the future
+    if (selectedDateTime < minTime) {
+      const message = `Please select a time at least ${MIN_PICKUP_MINUTES} minutes in the future`;
+      if (updateErrorState) setTimeError(message);
+      return { isValid: false, message };
+    }
+
+    if (updateErrorState) setTimeError(null);
+    return { isValid: true };
+  };
+
+  // Handle collector change (myself vs someone else)
+  const handleCollectorChange = (newCollector: any) => {
+    setCollector(newCollector);
+
+    if (newCollector === "myself") {
+      // Restore original user data
+      setFirstName(originalUserData.firstName);
+      setLastName(originalUserData.lastName);
+      setPhone(originalUserData.phone);
+      setEmail(originalUserData.email);
+    } else {
+      // Clear fields for someone else
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setEmail("");
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async () => {
     try {
-      if (!validateForm()) {
-        return;
+      // If the form isn't valid, show errors and return
+      if (!isFormValid) {
+        // Show alert with all errors
+        if (formErrors) {
+          Alert.alert(
+            "Form Incomplete",
+            `Please fix the following issues:\n${formErrors.join("\n")}`,
+            [{ text: "OK" }]
+          );
+          return;
+        }
       }
 
       setIsLoading(true);
@@ -129,42 +381,24 @@ const PickupScreen = () => {
       // Format time string
       const formattedTime = `${hours}:${minutes} ${period}`;
 
-      // Format pickup details string with user details
+      // Prepare pickup details
       const pickupDetails = {
-        date: date,
+        date,
         time: formattedTime,
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
-        email: email,
-        vehicleType: vehicleType,
-        vehicleNumber: vehicleNumber,
-        additionalDetails: additionalDetails,
+        firstName,
+        lastName,
+        phone,
+        email,
+        vehicleType: isCurbsidePickup ? vehicleType : null,
+        vehicleNumber: isCurbsidePickup ? vehicleNumber : null,
+        additionalDetails: isCurbsidePickup ? additionalDetails : null,
       };
-      const userDetails = `${firstName.padEnd(
-        6
-      )}${lastName}\nPhone: ${phone}\nEmail: ${email}`;
 
-      // Add vehicle details for curbside pickup
-      const vehicleDetails =
-        mode === "curbside"
-          ? `\nVehicle Type: ${vehicleType}\nVehicle Number: ${vehicleNumber}${
-              additionalDetails
-                ? `\nAdditional Details: ${additionalDetails}`
-                : ""
-            }`
-          : "";
-
-      // Complete pickup address combining user and vehicle info
-      const pickupAddress = `${userDetails}${vehicleDetails}`;
-
-      // Navigate to order summary screen with pickup data
+      // Navigate to order summary screen
       redirectToPage(containers.orderSummeryScreenScreen, {
         pickupDetails: JSON.stringify(pickupDetails),
         pickupAddress: JSON.stringify(pickupDetails),
-        // selectedDate: date,
-        // selectedSlot: formattedTime,
-        selectedMode: mode === "store" ? "storePickup" : "curbsidePickup",
+        selectedMode: isStorePickup ? "storePickup" : "curbsidePickup",
       });
     } catch (error) {
       console.error("Error processing pickup request:", error);
@@ -177,202 +411,45 @@ const PickupScreen = () => {
     }
   };
 
+  // Handle email input change with validation
+  const handleEmailChange = (text: any) => {
+    setEmail(text);
+
+    if (!text) {
+      setEmailError("Email is required");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(text)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError(null);
+    }
+  };
+
+  // Reusable text input component
   const renderTextInput = (
-    label: string,
-    value: string,
-    onChangeText: (text: string) => void,
-    props = {}
+    label: any,
+    value: any,
+    onChangeText: any,
+    required = true,
+    props = {},
+    error = null
   ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>
-        {label} <Text style={styles.required}>*</Text>
+        {label} {required && <Text style={styles.required}>*</Text>}
       </Text>
       <TextInput
-        style={inputStyles.textInput}
+        style={[inputStyles.textInput, error && inputStyles.inputError]}
         value={value}
         onChangeText={onChangeText}
         {...props}
       />
+      {error && <Text style={inputStyles.errorText}>{error}</Text>}
     </View>
   );
-
-  // Load user data
-  useEffect(() => {
-    const getUser = async () => {
-      if (userData_redux) {
-        try {
-          const user = await UserAPI.getUserByPhonenumber(
-            userData_redux?.phone
-          );
-          console.log("user", user.data);
-          if (user && user.data) {
-            // Save original user data
-            const userData = {
-              firstName: user.data.firstName || "",
-              lastName: user.data.lastName || "",
-              phone: user.data.phone || "",
-              email: user.data.email || "",
-            };
-
-            setOriginalUserData(userData);
-
-            // If collector is "myself", populate the fields
-            if (collector === "myself") {
-              setFirstName(userData.firstName);
-              setLastName(userData.lastName);
-              setPhone(userData.phone);
-              setEmail(userData.email);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      }
-    };
-    getUser();
-  }, [userData_redux]);
-
-  // Handle collector change
-  const handleCollectorChange = (newCollector: any) => {
-    setCollector(newCollector);
-
-    if (newCollector === "myself") {
-      // Restore original user data when selecting "Myself"
-      setFirstName(originalUserData.firstName);
-      setLastName(originalUserData.lastName);
-      setPhone(originalUserData.phone);
-      setEmail(originalUserData.email);
-    } else {
-      // Clear fields when selecting "Someone Else"
-      setFirstName("");
-      setLastName("");
-      setPhone("");
-      setEmail("");
-    }
-  };
-
-  console.log("user destructured data", firstName, lastName, phone, email);
-
-  // Function to validate if the selected time is in the future
-  const validateFutureTime = (
-    hours: any,
-    minutes: any,
-    period: any,
-    selectedDate: string
-  ) => {
-    // Convert input values to numbers
-    const numHours = parseInt(hours, 10);
-    const numMinutes = parseInt(minutes, 10);
-
-    // Validate the input format first
-    if (isNaN(numHours) || isNaN(numMinutes)) {
-      return {
-        isValid: false,
-        message: "Please enter valid hour and minute values.",
-      };
-    }
-
-    if (numHours < 1 || numHours > 12) {
-      return { isValid: false, message: "Hours must be between 1 and 12." };
-    }
-
-    if (numMinutes < 0 || numMinutes > 59) {
-      return { isValid: false, message: "Minutes must be between 0 and 59." };
-    }
-
-    // Create a date object for the selected time
-    const selectedTime = new Date(selectedDate);
-
-    // Convert 12-hour format to 24-hour format
-    let hours24 = numHours;
-    if (period === "pm" && numHours !== 12) {
-      hours24 += 12;
-    } else if (period === "am" && numHours === 12) {
-      hours24 = 0;
-    }
-
-    // Set hours and minutes for the selected time
-    selectedTime.setHours(hours24);
-    selectedTime.setMinutes(numMinutes);
-    selectedTime.setSeconds(0);
-
-    // Get current date and time
-    const now = new Date();
-
-    // If selected date is today, compare with current time
-    const isSameDay = now.toISOString().split("T")[0] === selectedDate;
-
-    // Compare with current time
-    if (isSameDay && selectedTime <= now) {
-      return {
-        isValid: false,
-        message: "Please select a future time.",
-      };
-    }
-
-    return { isValid: true };
-  };
-  // Use refs to focus between fields
-  const minutesRef = useRef(null);
-
-  // Validate the time whenever any input changes
-  const validateTime = () => {
-    // Only validate if both hours and minutes have values
-    if (hours && minutes) {
-      const validation = validateFutureTime(hours, minutes, period, date);
-
-      if (!validation.isValid) {
-        setError(validation.message?.toString() ?? null);
-        return false;
-      } else {
-        setError("");
-        return true;
-      }
-    }
-    return true; // Don't show error while incomplete
-  };
-
-  // Handle hours input changes
-  const handleHoursChange = (text: any) => {
-    // Only allow numeric input
-    const numericText = text.replace(/[^0-9]/g, "");
-    setHours(numericText);
-
-    // Auto-move to minutes input when 2 digits entered
-    if (numericText.length === 2) {
-      if (minutesRef.current) {
-        (minutesRef.current as any).focus();
-      }
-    }
-  };
-
-  // Handle minutes input changes
-  const handleMinutesChange = (text: any) => {
-    // Only allow numeric input
-    const numericText = text.replace(/[^0-9]/g, "");
-    setMinutes(numericText);
-
-    // Validate when leaving the minutes field
-    if (numericText.length === 2) {
-      setTimeout(() => {
-        validateTime();
-      }, 100);
-    }
-  };
-
-  // Handle period changes
-  const handlePeriodChange = (value: any) => {
-    setPeriod(value);
-    // Validate immediately when period changes
-    setTimeout(() => {
-      validateTime();
-    }, 100);
-  };
-
-  // Handle blur events to validate when leaving a field
-  const handleBlur = () => {
-    validateTime();
-  };
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -380,15 +457,17 @@ const PickupScreen = () => {
         <View style={globalStyles.container}>
           <Header
             headerText={
-              mode === "store"
+              isStorePickup
                 ? PickupMode.STORE_PICKUP
                 : PickupMode.CURBSIDE_PICKUP
             }
           />
+
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              {/* Instructions */}
               <Text style={styles.label}>
-                {mode === "store"
+                {isStorePickup
                   ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
                   : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
               </Text>
@@ -401,7 +480,11 @@ const PickupScreen = () => {
                     type="date"
                     style={globalStyles.webDateInput}
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      validateTime(e.target.value, hours, minutes, period);
+                    }}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 ) : (
                   <TouchableOpacity
@@ -416,7 +499,7 @@ const PickupScreen = () => {
                     value={new Date(date)}
                     mode="date"
                     display="default"
-                    onChange={onDateChange}
+                    onChange={handleDateChange}
                     minimumDate={new Date()}
                   />
                 )}
@@ -425,35 +508,38 @@ const PickupScreen = () => {
               {/* Time Input */}
               <Text style={styles.inputLabel}>Time: *</Text>
               <View style={globalStyles.timeContainer}>
+                {/* Hours */}
                 <TextInput
                   style={[
                     globalStyles.timeInput,
-                    error ? { borderColor: "red" } : {},
+                    timeError ? { borderColor: "red" } : {},
                   ]}
                   placeholder="HH"
                   keyboardType="numeric"
                   maxLength={2}
                   value={hours}
                   onChangeText={handleHoursChange}
-                  onBlur={handleBlur}
+                  accessibilityLabel="Hours"
                 />
                 <Text>:</Text>
+                {/* Minutes */}
                 <TextInput
                   ref={minutesRef}
                   style={[
                     globalStyles.timeInput,
-                    error ? { borderColor: "red" } : {},
+                    timeError ? { borderColor: "red" } : {},
                   ]}
                   placeholder="MM"
                   keyboardType="numeric"
                   maxLength={2}
                   value={minutes}
                   onChangeText={handleMinutesChange}
-                  onBlur={handleBlur}
+                  accessibilityLabel="Minutes"
                 />
+                {/* AM/PM */}
                 <View
                   style={{
-                    borderColor: error ? "red" : colors.primary,
+                    borderColor: timeError ? "red" : colors.primary,
                     borderWidth: 1,
                     height: 40,
                     width: 150,
@@ -462,15 +548,17 @@ const PickupScreen = () => {
                   }}
                 >
                   <ModalSelector
-                    data={[
-                      { key: 1, label: "AM", value: "am" },
-                      { key: 2, label: "PM", value: "pm" },
-                    ]}
+                    data={TIME_PERIOD_OPTIONS}
                     initValue="Select Period"
-                    onChange={(option) => setPeriod(option.value)}
-                    optionTextStyle={{color: colors.primary}}
+                    onChange={(option) => {
+                      setPeriod(option.value);
+                      validateTime(date, hours, minutes, option.value);
+                    }}
+                    optionTextStyle={{ color: colors.primary }}
                     optionContainerStyle={{ backgroundColor: colors.white }}
-                    cancelStyle={{backgroundColor:colors.white}}
+                    cancelStyle={{ backgroundColor: colors.white }}
+                    accessible={true}
+                    accessibilityLabel="Select time period: AM or PM"
                   >
                     <TextInput
                       style={globalStyles.picker_50}
@@ -480,12 +568,14 @@ const PickupScreen = () => {
                   </ModalSelector>
                 </View>
               </View>
-              {error ? (
-                <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+
+              {/* Time validation error message */}
+              {timeError ? (
+                <Text style={inputStyles.errorText}>{timeError}</Text>
               ) : null}
 
               {/* Curbside Specific Fields */}
-              {mode === "curbside" && (
+              {isCurbsidePickup && (
                 <>
                   <View style={styles.inputContainer}>
                     <Text style={styles.inputLabel}>Vehicle Type: *</Text>
@@ -500,12 +590,14 @@ const PickupScreen = () => {
                       }}
                     >
                       <ModalSelector
-                        data={vehicleTypeOptions}
+                        data={VEHICLE_TYPE_OPTIONS}
                         initValue="Select Vehicle Type"
                         onChange={(option) => setVehicleType(option.value)}
-                        optionTextStyle={{color: colors.primary}}
+                        optionTextStyle={{ color: colors.primary }}
                         optionContainerStyle={{ backgroundColor: colors.white }}
-                        cancelStyle={{backgroundColor:colors.white}}
+                        cancelStyle={{ backgroundColor: colors.white }}
+                        accessible={true}
+                        accessibilityLabel="Select vehicle type"
                       >
                         <TextInput
                           style={globalStyles.picker_50}
@@ -515,22 +607,21 @@ const PickupScreen = () => {
                       </ModalSelector>
                     </View>
                   </View>
+
                   {renderTextInput(
                     "Vehicle Number",
                     vehicleNumber,
                     setVehicleNumber
                   )}
+
                   {renderTextInput(
                     "Additional Details",
                     additionalDetails,
                     setAdditionalDetails,
+                    false,
                     {
                       multiline: true,
                       numberOfLines: 3,
-                      style: [
-                        inputStyles.textInput,
-                        inputStyles.multilineInput,
-                      ],
                     }
                   )}
                 </>
@@ -540,10 +631,16 @@ const PickupScreen = () => {
               <Text style={styles.sectionTitle}>
                 Let us know who is collecting?
               </Text>
+
               <View style={styles.collectorOptions}>
+                {/* Myself option */}
                 <TouchableOpacity
                   style={styles.radioOption}
                   onPress={() => handleCollectorChange("myself")}
+                  accessible={true}
+                  accessibilityLabel="Select myself as collector"
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: collector === "myself" }}
                 >
                   <View
                     style={[
@@ -557,9 +654,15 @@ const PickupScreen = () => {
                   </View>
                   <Text style={styles.radioLabel}>Myself</Text>
                 </TouchableOpacity>
+
+                {/* Someone else option */}
                 <TouchableOpacity
                   style={styles.radioOption}
                   onPress={() => handleCollectorChange("someone_else")}
+                  accessible={true}
+                  accessibilityLabel="Select someone else as collector"
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: collector === "someone_else" }}
                 >
                   <View
                     style={[
@@ -580,23 +683,57 @@ const PickupScreen = () => {
                 the order.
               </Text>
 
+              {/* User information fields */}
               {renderTextInput("First Name", firstName, setFirstName)}
               {renderTextInput("Last Name", lastName, setLastName)}
-              {renderTextInput("Phone", phone, setPhone, {
+              {renderTextInput("Phone", phone, setPhone, true, {
                 keyboardType: "phone-pad",
               })}
-              {renderTextInput("Email", email, setEmail, {
-                keyboardType: "email-address",
-              })}
+              {renderTextInput(
+                "Email",
+                email,
+                handleEmailChange,
+                true,
+                {
+                  keyboardType: "email-address",
+                  autoCapitalize: "none",
+                },
+                emailError
+              )}
 
               <Text style={inputStyles.note}>
                 *Please ensure you carry a valid ID Proof
               </Text>
+
+              {/* Submit button - disabled until form is valid */}
               <Button
                 title="Confirm"
                 onPress={handleSubmit}
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid}
+                style={!isFormValid ? inputStyles.disabledButton : {}}
               />
+
+              {/* Show form errors if any */}
+              {formErrors && formErrors.length > 0 && (
+                <TouchableOpacity
+                  style={inputStyles.errorSummary}
+                  onPress={() => {
+                    Alert.alert(
+                      "Form Incomplete",
+                      `Please fix the following issues:\n${formErrors.join(
+                        "\n"
+                      )}`,
+                      [{ text: "OK" }]
+                    );
+                  }}
+                >
+                  <Text style={inputStyles.errorSummaryText}>
+                    {formErrors.length}{" "}
+                    {formErrors.length === 1 ? "error" : "errors"} found. Tap
+                    for details.
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </View>
@@ -622,6 +759,30 @@ const inputStyles = StyleSheet.create({
     color: colors.buttonError,
     fontSize: 14,
     marginBottom: 16,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 5,
+    marginBottom: 5,
+  },
+  inputError: {
+    borderColor: "red",
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  errorSummary: {
+    backgroundColor: "#FFEEEE",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "red",
+  },
+  errorSummaryText: {
+    color: "red",
+    textAlign: "center",
   },
 });
 

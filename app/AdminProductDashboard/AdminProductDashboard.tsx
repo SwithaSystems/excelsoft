@@ -4,7 +4,14 @@ import Header from "@/components/Header";
 import products from "@/data/products";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React from "react";
-import { FlatList, Image, ScrollView, Text, View, SafeAreaView } from "react-native";
+import {
+  FlatList,
+  Image,
+  ScrollView,
+  Text,
+  View,
+  SafeAreaView,
+} from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
 import colors from "../config/colors";
@@ -40,7 +47,7 @@ const AdminProductDashboard = () => {
               <Text style={styles.bold}>In Stock:</Text> {item.stock} units
             </Text>
             <Text style={styles.text}>
-              <Text style={styles.bold}>Price:</Text> ${item.price} per unit
+              <Text style={styles.bold}>Price:</Text> £{item.price} per unit
             </Text>
           </View>
         </View>
@@ -64,28 +71,28 @@ const AdminProductDashboard = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Product Details" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Button
-            onPress={() => {
-              redirectToPage(containers.AdminProductUpdationScreen, {
-                newProduct: true,
-              });
-            }}
-            title="+ Add New Product"
-          />
-          <View style={{ marginTop: 40 }}>
-            <FlatList
-              data={productsList}
-              renderItem={ProductCard}
-              keyExtractor={(item) => item.id}
+      <View style={globalStyles.container}>
+        <Header headerText="Product Details" />
+        <ScrollView>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <Button
+              onPress={() => {
+                redirectToPage(containers.AdminProductUpdationScreen, {
+                  newProduct: true,
+                });
+              }}
+              title="+ Add New Product"
             />
+            <View style={{ marginTop: 40 }}>
+              <FlatList
+                data={productsList}
+                renderItem={ProductCard}
+                keyExtractor={(item) => item.id}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

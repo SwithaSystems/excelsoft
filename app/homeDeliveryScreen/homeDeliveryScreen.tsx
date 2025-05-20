@@ -52,6 +52,29 @@ const HomeDeliveryScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Set default time to 2 hours ahead of current time
+  useEffect(() => {
+    const now = new Date();
+    const twoHoursAhead = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+    // Format hours for 12-hour clock
+    let defaultHours = twoHoursAhead.getHours();
+    const defaultPeriod = defaultHours >= 12 ? "pm" : "am";
+
+    // Convert 24-hour format to 12-hour format
+    if (defaultHours > 12) {
+      defaultHours -= 12;
+    } else if (defaultHours === 0) {
+      defaultHours = 12;
+    }
+
+    // Set default values
+    setHours(defaultHours.toString());
+    setMinutes(twoHoursAhead.getMinutes().toString().padStart(2, "0"));
+    setPeriod(defaultPeriod);
+  }, []);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -66,7 +89,41 @@ const HomeDeliveryScreen = () => {
 
     fetchAddresses();
   }, []);
-  console.log("shipping address saved address", existingShippingAddress);
+
+  // Check form validity whenever any input changes
+  useEffect(() => {
+    validateFormFields();
+  }, [hours, minutes, period, date, selectedAddressId]);
+
+  const validateFormFields = () => {
+    // First check if time is valid
+    if (hours && minutes) {
+      const timeValidation = validateFutureTime(hours, minutes, period, date);
+
+      if (!timeValidation.isValid) {
+        setError(timeValidation.message?.toString() ?? null);
+        setIsFormValid(false);
+        return;
+      } else {
+        setError(null);
+      }
+    } else {
+      // Time not complete yet
+      setIsFormValid(false);
+      return;
+    }
+
+    // Check if all required fields are filled
+    const formValid = Boolean(
+      date &&
+        hours &&
+        minutes &&
+        existingShippingAddress.length > 0 &&
+        selectedAddressId
+    );
+
+    setIsFormValid(formValid);
+  };
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -75,97 +132,58 @@ const HomeDeliveryScreen = () => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
     setDate(currentDate.toISOString().split("T")[0]);
+
+    // Validate time with new date
+    setTimeout(() => {
+      validateTime();
+    }, 100);
   };
 
   const validateForm = () => {
-    if (
-      !date ||
-      !hours ||
-      !minutes
-      // !address ||
-      // !firstName ||
-      // !lastName ||
-      // !phone ||
-      // !email
-    ) {
-      Alert.alert("Error", "Please fill in all required fields");
+    if (!date || !hours || !minutes || !selectedAddressId) {
+      let missingFields = [];
+      if (!date) missingFields.push("Date");
+      if (!hours || !minutes) missingFields.push("Time");
+      if (!selectedAddressId) missingFields.push("Shipping Address");
+
+      Alert.alert(
+        "Error",
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
       return false;
     }
 
-    // Basic email validation
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // if (!emailRegex.test(email)) {
-    //   Alert.alert("Error", "Please enter a valid email address");
-    //   return false;
-    // }
-
-    // Basic phone validation
-    // const phoneRegex = /^\+?[\d\s-]{10,}$/;
-    // if (!phoneRegex.test(phone)) {
-    //   Alert.alert("Error", "Please enter a valid phone number");
-    //   return false;
-    // }
+    // Check if time is valid
+    const timeValidation = validateFutureTime(hours, minutes, period, date);
+    if (!timeValidation.isValid) {
+      Alert.alert(
+        "Error",
+        timeValidation.message || "Please select a valid future time"
+      );
+      return false;
+    }
 
     return true;
   };
 
   const handleSubmit = async () => {
     try {
+      // Final validation check right before submission
       if (!validateForm()) {
         return;
       }
 
+      // Double check time is valid
+      const timeValidation = validateFutureTime(hours, minutes, period, date);
+      if (!timeValidation.isValid) {
+        Alert.alert(
+          "Error",
+          timeValidation.message || "Please select a valid future time"
+        );
+        return;
+      }
+
       setIsLoading(true);
-
-      // const deliveryData = {
-      //   orderId,
-      //   pickupModeId: PICKUP_MODE_IDS.HOME_DELIVERY,
-      //   date: new Date(date),
-      //   time: `${hours}:${minutes} ${period}`,
-      //   firstName,
-      //   lastName,
-      //   phone,
-      //   email,
-      //   address,
-      //   additionalDetails,
-      // };
-
-      // const response = await fetch(`${API_BASE_URL}/pickup-details`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(deliveryData),
-      // });
-
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Failed to submit delivery request');
-      // }
-
-      // Update order status
-      // await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ status: 'processing' }),
-      // });
-
-      // Send notification for order update through the backend
-      // if (!user?.id) {
-      //   throw new Error("User not authenticated");
-      // }
-
-      // Send both a delivery notification and status update
-      // await NotificationService.sendOrderDeliveryUpdate(
-      //   user.id,
-      //   orderId as string,
-      //   date,
-      //   `${hours}:${minutes} ${period}`
-      // );
-
-      // Also trigger a local notification for immediate feedback
 
       await NotificationService.scheduleLocalNotification(
         "Delivery Scheduled",
@@ -173,7 +191,9 @@ const HomeDeliveryScreen = () => {
         { orderId, type: "delivery_scheduled" }
       );
 
-      const shippingAddress = existingShippingAddress;
+      const shippingAddress = existingShippingAddress.find(
+        (addr) => addr._id === selectedAddressId
+      );
       const pickupDetails = {
         date: date,
         time: `${hours}:${minutes} ${period}`,
@@ -184,16 +204,8 @@ const HomeDeliveryScreen = () => {
         additionalDetails: additionalDetails,
       };
       redirectToPage(containers.orderSummeryScreenScreen, {
-        // orderId,
-        // selectedDate: date,
-        // selectedSlot: `${hours}:${minutes} ${period}`,
         pickupAddress: JSON.stringify(address),
         selectedMode: "homeDelivery",
-        // firstName,
-        // lastName,
-        // phone,
-        // email,
-        // additionalDetails,
         shippingAddress: JSON.stringify(shippingAddress),
         pickupDetails: JSON.stringify(pickupDetails),
       });
@@ -208,24 +220,25 @@ const HomeDeliveryScreen = () => {
     }
   };
 
-  const renderTextInput = (
-    label: string,
-    value: string,
-    onChangeText: (text: string) => void,
-    props = {}
-  ) => (
-    <View style={styles.inputContainer}>
-      <Text style={styles.inputLabel}>
-        {label} <Text style={styles.required}>*</Text>
-      </Text>
-      <TextInput
-        style={styles.textInput}
-        value={value}
-        onChangeText={onChangeText}
-        {...props}
-      />
-    </View>
-  );
+  // const renderTextInput = (
+  //   label: string,
+  //   value: string,
+  //   onChangeText: (text: string) => void,
+  //   props = {}
+  // ) => (
+  //   <View style={styles.inputContainer}>
+  //     <Text style={styles.inputLabel}>
+  //       {label} <Text style={styles.required}>*</Text>
+  //     </Text>
+  //     <TextInput
+  //       style={styles.textInput}
+  //       value={value}
+  //       onChangeText={onChangeText}
+  //       {...props}
+  //     />
+  //   </View>
+  // );
+
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
@@ -236,6 +249,12 @@ const HomeDeliveryScreen = () => {
           setExistingSelectedShippingAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
           );
+
+          // If deleted address was selected, clear selection
+          if (selectedAddressId === itemToDelete.id) {
+            setSelectedAddressId(null);
+            setAddress("");
+          }
         } else {
           alert("Failed to delete address.");
         }
@@ -252,14 +271,17 @@ const HomeDeliveryScreen = () => {
     setIsModalVisible(false);
     setItemToDelete(null);
   };
+
   const handleEditAddress = (item: Address) => {
     setSelectedAddressId(item);
     redirectToPage(containers.editAddressScreenScreen);
   };
+
   const handleDeleteAddress = (item: Address) => {
     setItemToDelete({ id: item._id });
     setIsModalVisible(true);
   };
+
   // Function to validate if the selected time is in the future
   const validateFutureTime = (
     hours: any,
@@ -306,19 +328,22 @@ const HomeDeliveryScreen = () => {
     selectedTime.setMinutes(numMinutes);
     selectedTime.setSeconds(0);
 
-    // If selected date is today, compare with current time
+    // Check if selected date is today
     const isSameDay = now.toISOString().split("T")[0] === selectedDate;
 
-    // Compare with current time
-    if (isSameDay && selectedTime <= now) {
+    // Compare with current time - add a buffer of at least 30 minutes in the future
+    const minValidTime = new Date(now.getTime() + 30 * 60 * 1000); // 15 minutes from now
+
+    if (isSameDay && selectedTime <= minValidTime) {
       return {
         isValid: false,
-        message: "Please select a future time.",
+        message: "Please select a time at least 30 minutes in the future.",
       };
     }
 
     return { isValid: true };
   };
+
   // Use refs to focus between fields
   const minutesRef = useRef(null);
 
@@ -330,13 +355,18 @@ const HomeDeliveryScreen = () => {
 
       if (!validation.isValid) {
         setError(validation.message?.toString() ?? null);
+        setIsFormValid(false);
         return false;
       } else {
-        setError("");
+        setError(null);
+        // We need to check other fields too before enabling the button
+        validateFormFields();
         return true;
       }
     }
-    return true; // Don't show error while incomplete
+
+    setIsFormValid(false);
+    return false; // Don't consider valid if incomplete
   };
 
   // Handle hours input changes
@@ -351,6 +381,11 @@ const HomeDeliveryScreen = () => {
         (minutesRef.current as any).focus();
       }
     }
+
+    // Validate time after change
+    setTimeout(() => {
+      validateTime();
+    }, 100);
   };
 
   // Handle minutes input changes
@@ -385,7 +420,6 @@ const HomeDeliveryScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={globalStyles.container}>
         <Header headerText="Home Delivery" />
-        {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={
             <>
@@ -468,8 +502,8 @@ const HomeDeliveryScreen = () => {
                         { key: 1, label: "AM", value: "am" },
                         { key: 2, label: "PM", value: "pm" },
                       ]}
-                      initValue="Select Period"
-                      onChange={(option) => setPeriod(option.value)}
+                      initValue={period.toUpperCase()}
+                      onChange={(option) => handlePeriodChange(option.value)}
                       optionTextStyle={{ color: colors.primary }}
                       optionContainerStyle={{ backgroundColor: colors.white }}
                       cancelStyle={{ backgroundColor: colors.white }}
@@ -485,8 +519,11 @@ const HomeDeliveryScreen = () => {
                 {error ? (
                   <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
                 ) : null}
-                {existingShippingAddress.length == 0 && (
-                  <>
+
+                {/* Shipping Address Section */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Shipping Address: *</Text>
+                  {existingShippingAddress.length === 0 && (
                     <Button
                       title="Add Address"
                       onPress={() => {
@@ -494,10 +531,11 @@ const HomeDeliveryScreen = () => {
                           from: "homeDelivery",
                         });
                       }}
-                    ></Button>
-                  </>
-                )}
-                {/* Address */}
+                    />
+                  )}
+                </View>
+
+                {/* Address List */}
                 <FlatList
                   data={existingShippingAddress}
                   keyExtractor={(item) => item._id}
@@ -510,8 +548,8 @@ const HomeDeliveryScreen = () => {
                         setSelectedAddressId(item._id);
                         setAddress(item);
                       }}
-                      onEdit={handleEditAddress}
-                      onDelete={handleDeleteAddress}
+                      onEdit={() => handleEditAddress(item)}
+                      onDelete={() => handleDeleteAddress(item)}
                     />
                   )}
                 />
@@ -533,7 +571,7 @@ const HomeDeliveryScreen = () => {
                 <Button
                   title="Confirm"
                   onPress={handleSubmit}
-                  disabled={isLoading}
+                  disabled={isLoading || !isFormValid}
                 />
               </View>
               <ConfirmationModal
@@ -552,8 +590,6 @@ const HomeDeliveryScreen = () => {
           data={[]}
           renderItem={null}
         />
-
-        {/* </ScrollView> */}
       </View>
     </SafeAreaView>
   );

@@ -1,18 +1,21 @@
 import colors from "@/app/config/colors";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 function DisplayPrice(props) {
   return (
     <>
       <View style={props?.priceContainerStyle || styles.priceContainerStyle}>
         <Text style={props?.priceStyle || styles.price}>
-          ${props?.price?.toFixed(2)}
+          {CurrencySymbol}
+          {props?.price?.toFixed(2)}
         </Text>
         {props?.originalPrice &&
           props?.price.toFixed(2) - props?.originalPrice.toFixed(2) != 0 && (
             <Text style={props?.strikeOffPriceStyle || styles.originalPrice}>
-              ${props.originalPrice.toFixed(2)}
+              {CurrencySymbol}
+              {props.originalPrice.toFixed(2)}
             </Text>
           )}
       </View>

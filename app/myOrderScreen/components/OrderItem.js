@@ -37,7 +37,8 @@ function OrderItem(props) {
           {item.totalItems}
         </Text>
         <Text style={styles.orderSummaryItems}>
-          <Text style={globalStyles.fontWeight500}>Subtotal:</Text> $
+          <Text style={globalStyles.fontWeight500}>Subtotal:</Text>{" "}
+          {CurrencySymbol}
           {item.subtotal}
         </Text>
         <TouchableOpacity
