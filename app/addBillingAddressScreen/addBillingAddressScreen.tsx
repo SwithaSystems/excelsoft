@@ -34,7 +34,6 @@ const addBillingAddressScreen = () => {
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
 
   // Component state
   const [billingAddress, setBillingAddress] = useState({});
@@ -49,7 +48,6 @@ const addBillingAddressScreen = () => {
       line2: string;
       towncity: string;
       postalcode: string;
-      country: string;
     }>
   >({});
 
@@ -84,7 +82,6 @@ const addBillingAddressScreen = () => {
       setLine2(edit_address.line2 || "");
       setTownCity(edit_address.city || "");
       setPostalCode(edit_address.postalCode || "");
-      setCountry(edit_address.country || "India");
       setInitialDataLoaded(true);
       console.log("Editing address:", edit_address);
     }
@@ -115,7 +112,6 @@ const addBillingAddressScreen = () => {
         line2: line2,
         city: towncity,
         state: "",
-        country: country || "India",
         postalCode: postalcode,
       };
 
@@ -231,20 +227,6 @@ const addBillingAddressScreen = () => {
               {errors.postalcode && (
                 <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
               )}
-              {/* <Text style={styles.fieldLabel}>Country</Text>
-            <View style={styles.countriesdropdown}>
-              <TextInput
-                style={styles.input}
-                value={country}
-                onChangeText={(text) => setCountry(text)}
-                placeholder="Select country"
-              />
-              <Ionicons
-                name="chevron-down-outline"
-                size={24}
-                color={colors.black}
-              />
-            </View> */}
             </View>
             <View style={{ marginHorizontal: 16, marginTop: 20 }}>
               <Button

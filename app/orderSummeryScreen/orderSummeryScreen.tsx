@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+} from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -54,8 +60,7 @@ const orderSummeryScreen = () => {
   const selectedMode = params?.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
   console.log("params", params);
-  const { name, line1, line2, city, state, postalCode, country, phone } =
-    pickupAddress;
+  const { name, line1, line2, city, state, postalCode, phone } = pickupAddress;
 
   console.log("hi", pickupDetails);
   console.log("pickupAddress", pickupAddress);
@@ -68,7 +73,7 @@ const orderSummeryScreen = () => {
   } else if (selectedMode === "homeDelivery") {
     displayMode = "Home Delivery";
   } else {
-    displayMode = selectedMode; 
+    displayMode = selectedMode;
   }
 
   const handlePress = async () => {
@@ -106,139 +111,137 @@ const orderSummeryScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <ScrollView>
-        <Header headerText="Order Summary" />
-        <View
-          style={[
-            globalStyles.sectionContent,
-            globalStyles.pt_0,
-            globalStyles.pb_0,
-            { paddingHorizontal: 26 },
-          ]}
-        >
-          <View style={styles.section}>
-            {selectedMode === "Store Pickup" ||
-            selectedMode === "Curbside Pickup" ? (
-              <Text style={styles.sectionHeading}>User Details</Text>
-            ) : (
-              <Text style={styles.sectionHeading}>Address</Text>
-            )}
-
-            <View style={globalStyles.pl_3}>
-              {pickupAddress.firstName ? (
-                <Text style={styles.addressTextBox}>
-                  {pickupAddress.firstName}
-                  {""}
-                  {pickupAddress?.lastName}
-                  {"\n"}
-                  {pickupAddress.phone}
-                  {"\n"}
-                  {pickupAddress.email}
-                  {pickupAddress.vehicleType
-                    ? `${pickupAddress.vehicleType}\n`
-                    : ""}
-                  {pickupAddress.vehicleNumber
-                    ? `${pickupAddress.vehicleNumber}\n`
-                    : ""}
-                  {pickupAddress.additionalDetails
-                    ? `${pickupAddress.additionalDetails}\n`
-                    : ""}
-                </Text>
+      <View style={globalStyles.container}>
+        <ScrollView>
+          <Header headerText="Order Summary" />
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              globalStyles.pb_0,
+              { paddingHorizontal: 26 },
+            ]}
+          >
+            <View style={styles.section}>
+              {selectedMode === "Store Pickup" ||
+              selectedMode === "Curbside Pickup" ? (
+                <Text style={styles.sectionHeading}>User Details</Text>
               ) : (
-                <Text style={styles.addressTextBox}>
-                  {pickupAddress.name}
-                  {"\n"}
-                  {pickupAddress.line1}
-                  {"\n"}
-                  {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
-                  {pickupAddress.city}
-                  {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
-                  {pickupAddress.postalCode}
-                  {"\n"}
-                  {pickupAddress.country}
-                  {"\n"}
-                  {pickupAddress.phone}
-                </Text>
+                <Text style={styles.sectionHeading}>Address</Text>
               )}
-            </View>
-          </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Your Slot</Text>
-            <View style={globalStyles.pl_3}>
-              <Text>
-                {selectedMode === "homeDelivery"
-                  ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
-                  : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
-              </Text>
+              <View style={globalStyles.pl_3}>
+                {pickupAddress.firstName ? (
+                  <Text style={styles.addressTextBox}>
+                    {pickupAddress.firstName}
+                    {""}
+                    {pickupAddress?.lastName}
+                    {"\n"}
+                    {pickupAddress.phone}
+                    {"\n"}
+                    {pickupAddress.email}
+                    {pickupAddress.vehicleType
+                      ? `${pickupAddress.vehicleType}\n`
+                      : ""}
+                    {pickupAddress.vehicleNumber
+                      ? `${pickupAddress.vehicleNumber}\n`
+                      : ""}
+                    {pickupAddress.additionalDetails
+                      ? `${pickupAddress.additionalDetails}\n`
+                      : ""}
+                  </Text>
+                ) : (
+                  <Text style={styles.addressTextBox}>
+                    {pickupAddress.name}
+                    {"\n"}
+                    {pickupAddress.line1}
+                    {"\n"}
+                    {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
+                    {pickupAddress.city}
+                    {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
+                    {pickupAddress.postalCode}
+                    {"\n"}
+                    {pickupAddress.phone}
+                  </Text>
+                )}
+              </View>
             </View>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.sectionHeading}>Substitutions</Text>
-            <View style={globalStyles.pl_3}>
-              <CheckBox
-                title="Choose Substitutions for my orders."
-                checked={substitutionSelected}
-                onPress={() =>
-                  setSubstitutionSelected(
-                    (substitutionSelected) => !substitutionSelected
-                  )
-                }
-                containerStyle={styles.checkBoxContainer}
-                textStyle={styles.checkBoxText}
+
+            <View style={styles.section}>
+              <Text style={styles.sectionHeading}>Your Slot</Text>
+              <View style={globalStyles.pl_3}>
+                <Text>
+                  {selectedMode === "homeDelivery"
+                    ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
+                    : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionHeading}>Substitutions</Text>
+              <View style={globalStyles.pl_3}>
+                <CheckBox
+                  title="Choose Substitutions for my orders."
+                  checked={substitutionSelected}
+                  onPress={() =>
+                    setSubstitutionSelected(
+                      (substitutionSelected) => !substitutionSelected
+                    )
+                  }
+                  containerStyle={styles.checkBoxContainer}
+                  textStyle={styles.checkBoxText}
+                />
+                <Text style={styles.sectionText}>
+                  If the product you picked is not available a similar product
+                  or brand will be picked.
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.section, globalStyles.mb_0]}>
+              <Text style={styles.sectionHeading}>Order Details</Text>
+              <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
+                {cartItems.map((eachCartItem) => {
+                  return (
+                    <CartItem
+                      itemContainerStyle={styles.cartItemContainerStyle}
+                      handleDelete={handleDelete}
+                      key={eachCartItem.id}
+                      cartItem={eachCartItem}
+                    />
+                  );
+                })}
+              </View>
+              <OrderSummary
+                cartItems={cartItems}
+                sectionHeadingStyle={styles.sectionHeading}
+                hideHeading={true}
+                containerStyle={styles.orderSummaryContainer}
               />
-              <Text style={styles.sectionText}>
-                If the product you picked is not available a similar product or
-                brand will be picked.
-              </Text>
             </View>
           </View>
-          <View style={[styles.section, globalStyles.mb_0]}>
-            <Text style={styles.sectionHeading}>Order Details</Text>
-            <View style={[globalStyles.pl_3, {marginBottom:16}]}>
-              {cartItems.map((eachCartItem) => {
-                return (
-                  <CartItem
-                    itemContainerStyle={styles.cartItemContainerStyle}
-                    handleDelete={handleDelete}
-                    key={eachCartItem.id}
-                    cartItem={eachCartItem}
-                  />
-                );
-              })}
-            </View>
-            <OrderSummary
-              cartItems={cartItems}
-              sectionHeadingStyle={styles.sectionHeading}
-              hideHeading={true}
-              containerStyle={styles.orderSummaryContainer}
-            />
-          </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
-        <Button
-          onPress={() => {
-            handlePress();
-            // redirectToPage(containers.billingAddressScreenScreen);
+        <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
+          <Button
+            onPress={() => {
+              handlePress();
+              // redirectToPage(containers.billingAddressScreenScreen);
+            }}
+            title="Confirm Billing Address"
+          />
+        </View>
+        <ConfirmationModal
+          onClose={() => {
+            setIsModalVisible(false);
           }}
-          title="Confirm Billing Address"
+          isModalVisible={isModalVisible}
+          text="Are you sure you want to delete this? You can save this item for later too."
+          submitText="Delete Item"
+          handleSubmit={confirmDelete}
+          cancelText="Save for Later"
+          handleCancel={cancelDelete}
         />
       </View>
-      <ConfirmationModal
-        onClose={() => {
-          setIsModalVisible(false);
-        }}
-        isModalVisible={isModalVisible}
-        text="Are you sure you want to delete this? You can save this item for later too."
-        submitText="Delete Item"
-        handleSubmit={confirmDelete}
-        cancelText="Save for Later"
-        handleCancel={cancelDelete}
-      />
-    </View>
     </SafeAreaView>
   );
 };

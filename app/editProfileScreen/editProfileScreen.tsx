@@ -62,9 +62,19 @@ const editProfileScreen = () => {
           setFirstName(user.data.firstName);
           setLastName(user.data.lastName);
           setPhone(user.data.phone);
-          setDateOfBirth(user.data.dateOfBirth);
+          // setDateOfBirth(user.data.dateOfBirth);
           setEmail(user.data?.email || "No mail added");
           setProfileImage(user.data.profileImageUrl);
+          if (user.data.dateOfBirth) {
+            const date = new Date(user.data.dateOfBirth);
+            const formatted =
+              String(date.getDate()).padStart(2, "0") +
+              "/" +
+              String(date.getMonth() + 1).padStart(2, "0") +
+              "/" +
+              date.getFullYear();
+            setDateOfBirth(formatted);
+          }
         }
       }
     };
@@ -219,6 +229,14 @@ const editProfileScreen = () => {
       setLoading(false);
     }
   };
+  const formatDateToDDMMYYYY = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
@@ -298,14 +316,14 @@ const editProfileScreen = () => {
                     containerStyle={globalStyles.userInputContainer}
                     TextStyle={globalStyles.input}
                     placeholder="----/--/--"
-                    value={dateOfBirth ? dateOfBirth.split("T")[0] : ""}
+                    value={dateOfBirth ? dateOfBirth : ""}
                     onPress={() => {}}
                     setValue={setDateOfBirth}
                   />
                 </View>
               </View>
 
-              <View style={globalStyles.profileInputContainer}>
+              {/* <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="phone"
                   size={32}
@@ -345,7 +363,7 @@ const editProfileScreen = () => {
                     keyboardType="email-address"
                   />
                 </View>
-              </View>
+              </View> */}
             </View>
           </ScrollView>
           <View style={[globalStyles.p_3]}>

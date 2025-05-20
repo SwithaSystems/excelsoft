@@ -63,7 +63,6 @@ export const usePaymentHandler = () => {
         city: string;
         state: string;
         postalCode: string;
-        country: string;
       };
       shippingAddress?: {
         name: string;
@@ -72,7 +71,6 @@ export const usePaymentHandler = () => {
         city: string;
         state: string;
         postalCode: string;
-        country: string;
       };
       pickupdetails?: {
         time: string;
@@ -134,7 +132,6 @@ export const usePaymentHandler = () => {
           city: params.billingAddress?.city ?? "N/A",
           state: params.billingAddress?.state ?? "N/A",
           postalCode: params.billingAddress?.postalCode ?? "N/A",
-          country: params.billingAddress?.country ?? "N/A",
         },
         shippingAddress: {
           name: params.shippingAddress?.name ?? "N/A",
@@ -143,7 +140,6 @@ export const usePaymentHandler = () => {
           city: params.shippingAddress?.city ?? "N/A",
           state: params.shippingAddress?.state ?? "N/A",
           postalCode: params.shippingAddress?.postalCode ?? "N/A",
-          country: params.shippingAddress?.country ?? "N/A",
         },
         // timeslot: params.selectedSlot
         //   ? new Date(params.selectedSlot)

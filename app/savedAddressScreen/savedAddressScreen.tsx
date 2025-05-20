@@ -79,7 +79,6 @@ const savedAddressScreen = () => {
   //       <Text>{item.line2}</Text>
   //       <Text>{item.city}</Text>
   //       <Text>{item.state}</Text>
-  //       <Text>{item.country}</Text>
   //       <Text>{item.postalCode}</Text>
   //       <Text>Phone No: {item.phone}</Text>
   //     </View>
@@ -121,75 +120,75 @@ const savedAddressScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Saved Address" />
-      {/* <ScrollView> */}
-      <FlatList
-        ListHeaderComponent={
-          <>
-            {addressData.length === 0 ? (
-              <View style={{ flex:1, padding: 16 }}>
-                <NoContentFound message="No saved address found" />
-              </View>
-            ) : (
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-                <Text style={styles.sectionTitle}>Default Address</Text>
-                <FlatList
-                  data={addressData.filter((address) => address.isDefault)}
-                  renderItem={({ item }) => (
-                    <AddressItem
-                      item={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  )}
-                  keyExtractor={(item) => item._id}
-                  contentContainerStyle={styles.addressList}
-                />
+      <View style={globalStyles.container}>
+        <Header headerText="Saved Address" />
+        {/* <ScrollView> */}
+        <FlatList
+          ListHeaderComponent={
+            <>
+              {addressData.length === 0 ? (
+                <View style={{ flex: 1, padding: 16 }}>
+                  <NoContentFound message="No saved address found" />
+                </View>
+              ) : (
+                <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+                  <Text style={styles.sectionTitle}>Default Address</Text>
+                  <FlatList
+                    data={addressData.filter((address) => address.isDefault)}
+                    renderItem={({ item }) => (
+                      <AddressItem
+                        item={item}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    )}
+                    keyExtractor={(item) => item._id}
+                    contentContainerStyle={styles.addressList}
+                  />
 
-                <Text style={styles.sectionTitle}>Address</Text>
-                <FlatList
-                  data={addressData.filter((address) => !address.isDefault)}
-                  renderItem={({ item }) => (
-                    <AddressItem
-                      item={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  )}
-                  keyExtractor={(item) => item._id}
-                  contentContainerStyle={styles.addressList}
-                />
-              </View>
-            )}
-            <ConfirmationModal
-              onClose={() => {
-                setIsModalVisible(false);
+                  <Text style={styles.sectionTitle}>Address</Text>
+                  <FlatList
+                    data={addressData.filter((address) => !address.isDefault)}
+                    renderItem={({ item }) => (
+                      <AddressItem
+                        item={item}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    )}
+                    keyExtractor={(item) => item._id}
+                    contentContainerStyle={styles.addressList}
+                  />
+                </View>
+              )}
+              <ConfirmationModal
+                onClose={() => {
+                  setIsModalVisible(false);
+                }}
+                isModalVisible={isModalVisible}
+                text="Are you sure you want to delete this address?"
+                submitText="Delete Address"
+                handleSubmit={confirmDelete}
+                cancelText="Cancel"
+                handleCancel={cancelDelete}
+              />
+            </>
+          }
+          data={[]} // No actual data here — just to use FlatList as scroll container
+          renderItem={null}
+        />
+        {/* </ScrollView> */}
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <View style={styles.addressList}>
+            <Button
+              title="Add New Address"
+              onPress={() => {
+                redirectToPage(containers.addAddressScreenScreen);
               }}
-              isModalVisible={isModalVisible}
-              text="Are you sure you want to delete this address?"
-              submitText="Delete Address"
-              handleSubmit={confirmDelete}
-              cancelText="Cancel"
-              handleCancel={cancelDelete}
             />
-          </>
-        }
-        data={[]} // No actual data here — just to use FlatList as scroll container
-        renderItem={null}
-      />
-      {/* </ScrollView> */}
-      <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        <View style={styles.addressList}>
-          <Button
-            title="Add New Address"
-            onPress={() => {
-              redirectToPage(containers.addAddressScreenScreen);
-            }}
-          />
+          </View>
         </View>
       </View>
-    </View>
     </SafeAreaView>
   );
 };

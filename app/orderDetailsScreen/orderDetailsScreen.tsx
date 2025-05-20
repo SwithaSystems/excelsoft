@@ -254,7 +254,6 @@ const orderDetailsScreen = () => {
                   Address: {shippingAddress_order?.line1}
                   {shippingAddress_order?.city}, {shippingAddress_order?.state}
                   {shippingAddress_order?.postalCode},{" "}
-                  {shippingAddress_order?.country}
                 </Text>
               )}
               <View>

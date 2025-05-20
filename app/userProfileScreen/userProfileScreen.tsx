@@ -149,8 +149,8 @@ const UserProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("token");
+      // await AsyncStorage.removeItem("user");
+      // await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
       router.replace("/home/home");

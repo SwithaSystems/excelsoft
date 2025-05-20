@@ -30,7 +30,6 @@ const editAddressScreen = () => {
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
   console.log("params from edit page", params);
@@ -46,7 +45,6 @@ const editAddressScreen = () => {
       setLine2(selectedAddress.line2 || "");
       setTownCity(selectedAddress.city || "");
       setPostalCode(selectedAddress.postalCode || "");
-      setCountry(selectedAddress.country || "");
       setPhoneNumber(selectedAddress.phone || "");
       setIsDefault(selectedAddress.isDefault || false);
     }
@@ -60,7 +58,6 @@ const editAddressScreen = () => {
       line2: line2,
       city: towncity,
       state: "",
-      country: country,
       postalCode: postalcode,
       phone: phoneNumber,
       isDefault: isDefault,
@@ -111,16 +108,6 @@ const editAddressScreen = () => {
           onChangeText={setPostalCode}
           keyboardType="email-address"
         />
-        {/* <Text style={styles.fieldLabel}>Country</Text>
-      <View style={styles.countriesdropdown}>
-        <TextInput
-          style={styles.input}
-          value={country}
-          onChangeText={setCountry}
-          keyboardType="email-address"
-        />
-        <Ionicons name="chevron-down-outline" size={24} color={colors.black} />
-      </View> */}
         <Text style={styles.fieldLabel}>Phone Number</Text>
         <TextInput
           style={styles.input}

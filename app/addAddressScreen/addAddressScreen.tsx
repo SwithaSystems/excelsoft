@@ -20,7 +20,6 @@ import { Colors } from "@/constants/Colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
-
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
   const [name, setName] = useState("");
@@ -29,7 +28,6 @@ const addAddressScreen = () => {
   const [towncity, setTownCity] = useState("");
   const [state, setState] = useState("");
   const [postalcode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
   console.log("params", params);
@@ -42,8 +40,7 @@ const addAddressScreen = () => {
         line1: line1,
         line2: line2,
         city: towncity,
-        state: "",
-        country: "India",
+        state: state,
         postalCode: postalcode,
         phone: phoneNumber,
         isDefault: isDefault,
@@ -65,83 +62,77 @@ const addAddressScreen = () => {
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
-    <View style={styles.container}>
-      <Header headerText="Add New Address" />
-      <ScrollView>
-        <Text style={styles.fieldLabel}>Name</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <View style={styles.container}>
+          <Header headerText="Add New Address" />
+          <ScrollView>
+            <Text style={styles.fieldLabel}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
 
-        <Text style={styles.fieldLabel}>Line 1</Text>
-        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+            <Text style={styles.fieldLabel}>Line 1</Text>
+            <TextInput
+              style={styles.input}
+              value={line1}
+              onChangeText={setLine1}
+            />
 
-        <Text style={styles.fieldLabel}>Line 2</Text>
-        <TextInput
-          style={styles.input}
-          value={line2}
-          onChangeText={setLine2}
-          keyboardType="email-address"
-        />
+            <Text style={styles.fieldLabel}>Line 2</Text>
+            <TextInput
+              style={styles.input}
+              value={line2}
+              onChangeText={setLine2}
+              keyboardType="email-address"
+            />
 
-        <Text style={styles.fieldLabel}>Town/City</Text>
-        <TextInput
-          style={styles.input}
-          value={towncity}
-          onChangeText={setTownCity}
-          keyboardType="email-address"
-        />
-        <Text style={styles.fieldLabel}>State</Text>
-        <TextInput
-          style={styles.input}
-          value={state}
-          onChangeText={setState}
-          keyboardType="email-address"
-        />
+            <Text style={styles.fieldLabel}>Town/City</Text>
+            <TextInput
+              style={styles.input}
+              value={towncity}
+              onChangeText={setTownCity}
+              keyboardType="email-address"
+            />
+            <Text style={styles.fieldLabel}>State</Text>
+            <TextInput
+              style={styles.input}
+              value={state}
+              onChangeText={setState}
+              keyboardType="email-address"
+            />
 
-        <Text style={styles.fieldLabel}>Postal Code</Text>
-        <TextInput
-          style={styles.input}
-          value={postalcode}
-          onChangeText={setPostalCode}
-          keyboardType="email-address"
-        />
-        {/* <Text style={styles.fieldLabel}>Country</Text>
-        <View style={styles.countriesdropdown}>
-          <TextInput
-            style={styles.input}
-            value={country}
-            onChangeText={setCountry}
-            keyboardType="email-address"
-          />
-          <Ionicons
-            name="chevron-down-outline"
-            size={24}
-            color={colors.black}
-          />
-        </View> */}
-        <Text style={styles.fieldLabel}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
-        <View style={styles.checkBox}>
-          <CheckBox
-            checked={isDefault}
-            onPress={() => setIsDefault(!isDefault)}
-          />
-          <Text>Mark as default address</Text>
+            <Text style={styles.fieldLabel}>Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              value={postalcode}
+              onChangeText={setPostalCode}
+              keyboardType="email-address"
+            />
+            <Text style={styles.fieldLabel}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
+            <View style={styles.checkBox}>
+              <CheckBox
+                checked={isDefault}
+                onPress={() => setIsDefault(!isDefault)}
+              />
+              <Text>Mark as default address</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleAddAddress}
+            >
+              <Text style={styles.buttonText}>Add Address</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
-
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleAddAddress}
-        >
-          <Text style={styles.buttonText}>Add Address</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
-    </KeyBoardWrapper>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };
