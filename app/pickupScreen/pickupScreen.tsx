@@ -93,45 +93,103 @@ const PickupScreen = () => {
     email: "",
   });
 
-  // Initialize default time values (2 hours ahead from current time)
+  // Initialize default time values based on new business rules
   useEffect(() => {
-    // Calculate default time (2 hours from now)
     const now = new Date();
-    const twoHoursLater = new Date(
-      now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
-    );
+    const currentHour = now.getHours();
+    let targetDate, targetHour, targetMinute;
 
+    // Check if current time is between 7AM (7) and 5PM (17)
+    if (currentHour >= 7 && currentHour < 17) {
+      // Within business hours: add 2 hours
+      const twoHoursLater = new Date(
+        now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+      );
+      targetDate = twoHoursLater;
+      targetHour = twoHoursLater.getHours();
+      targetMinute = twoHoursLater.getMinutes();
+    } else if (currentHour < 7) {
+      // Before business hours: push to next day 7AM
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate());
+      tomorrow.setHours(7, 0, 0, 0); // Set to 7:00:00.000
+      targetDate = tomorrow;
+      targetHour = 7;
+      targetMinute = 0;
+    } else {
+      // Outside business hours: push to next day 10AM
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(10, 0, 0, 0); // Set to 10:00:00.000
+      targetDate = tomorrow;
+      targetHour = 10;
+      targetMinute = 0;
+    }
     // Format the date for state
-    const formattedDate = twoHoursLater.toISOString().split("T")[0];
+    const formattedDate = targetDate.toISOString().split("T")[0];
     setDate(formattedDate);
 
-    // Set hours in 12-hour format
-    let hoursValue = twoHoursLater.getHours();
-    const periodValue = hoursValue >= 12 ? "pm" : "am";
-
-    // Convert to 12-hour format
-    if (hoursValue > 12) {
-      hoursValue -= 12;
-    } else if (hoursValue === 0) {
-      hoursValue = 12;
-    }
+    // Convert target hour to 12-hour format
+    const periodValue = targetHour >= 12 ? "pm" : "am";
+    let displayHour = targetHour % 12;
+    if (displayHour === 0) displayHour = 12;
 
     // Format minutes to always be two digits
-    const minutesValue = twoHoursLater.getMinutes().toString().padStart(2, "0");
+    const minutesValue = targetMinute.toString().padStart(2, "0");
 
-    // Update state with default values
-    setHours(hoursValue.toString());
+    // Update state with calculated values
+    setHours(displayHour.toString());
     setMinutes(minutesValue);
     setPeriod(periodValue);
 
     // Validate the default time
     validateTime(
       formattedDate,
-      hoursValue.toString(),
+      displayHour.toString(),
       minutesValue,
       periodValue
     );
   }, []);
+
+  // Initialize default time values (2 hours ahead from current time)
+  // useEffect(() => {
+  //   // Calculate default time (2 hours from now)
+  //   const now = new Date();
+  //   const twoHoursLater = new Date(
+  //     now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+  //   );
+
+  //   // Format the date for state
+  //   const formattedDate = twoHoursLater.toISOString().split("T")[0];
+  //   setDate(formattedDate);
+
+  //   // Set hours in 12-hour format
+  //   let hoursValue = twoHoursLater.getHours();
+  //   const periodValue = hoursValue >= 12 ? "pm" : "am";
+
+  //   // Convert to 12-hour format
+  //   if (hoursValue > 12) {
+  //     hoursValue -= 12;
+  //   } else if (hoursValue === 0) {
+  //     hoursValue = 12;
+  //   }
+
+  //   // Format minutes to always be two digits
+  //   const minutesValue = twoHoursLater.getMinutes().toString().padStart(2, "0");
+
+  //   // Update state with default values
+  //   setHours(hoursValue.toString());
+  //   setMinutes(minutesValue);
+  //   setPeriod(periodValue);
+
+  //   // Validate the default time
+  //   validateTime(
+  //     formattedDate,
+  //     hoursValue.toString(),
+  //     minutesValue,
+  //     periodValue
+  //   );
+  // }, []);
 
   // Validate form on every field change to enable/disable the submit button
   useEffect(() => {
