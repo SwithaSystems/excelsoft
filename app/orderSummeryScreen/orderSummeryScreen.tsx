@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   FlatList,
+  Animated,
 } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -67,6 +68,9 @@ const orderSummeryScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState<any>(null);
+  const [isDefault, setIsDefault] = useState(false);
+  const [accordionOpen, setAccordionOpen] = useState(false);
+  const rotateAnimation = new Animated.Value(0);
 
   // Extract pickup data from route params or use default values
   const pickupAddress = params?.pickupAddress
@@ -94,6 +98,20 @@ const orderSummeryScreen = () => {
     displayMode = selectedMode;
   }
 
+  const toggleAccordion = () => {
+    setAccordionOpen(!accordionOpen);
+    Animated.timing(rotateAnimation, {
+      toValue: accordionOpen ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const spin = rotateAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg']
+  });
+
   const handlePress = async () => {
     redirectToPage(containers.selectBillingAddressScreenScreen, {
       selectedMode: selectedMode,
@@ -101,17 +119,61 @@ const orderSummeryScreen = () => {
       shippingAddress: params.pickupAddress || "N/A",
     });
   };
-  const handleEdit = (item: Address) => {
-      setSelectedBillingAddress(item);
-      redirectToPage(containers.billingAddressScreenScreen, {
-        edit_address: JSON.stringify(item),
-      });
-    };
-  const handleBillingAddressDelete = (item: Address) => {
-      setIsModalVisible(true);
-      setItemToDelete({ id: item._id });
+  useEffect(() => {
+    const fetchBillingAddresses = async () => {
+      try {
+        const addresses = await addressService.getAllBillingAddress_userId();
+        setAddressData(addresses);
+      } catch (error) {
+        console.error("Failed to fetch billing addresses:", error);
+      }
     };
 
+    fetchBillingAddresses();
+  }, []);
+
+  const handleEdit = (item: Address) => {
+    setSelectedBillingAddress(item);
+    redirectToPage(containers.billingAddressScreenScreen, {
+      edit_address: JSON.stringify(item),
+    });
+  };
+    
+  // const handleBillingAddressDelete = (item: Address) => {
+  //   setIsModalVisible(true);
+  //   setItemToDelete({ id: item._id });
+  // };
+
+  const handleAddBillingAddress = async () => {
+    redirectToPage(containers.billingAddressScreenScreen, {
+      onAddressAdded: async () => {
+        // Refresh addresses when returning from adding a new address
+        try {
+          const addresses = await addressService.getAllBillingAddress_userId();
+          setAddressData(addresses);
+        } catch (error) {
+          console.error("Failed to refresh addresses:", error);
+        }
+      }
+    });
+  };
+
+  const handleBillingAddressDelete = async (item: Address) => {
+  try {
+    const { success } = await addressService.deleteBillingAddress(item._id);
+    if (success) {
+      const addresses = await addressService.getAllBillingAddress_userId();
+      setAddressData(addresses);
+      Alert.alert("Success", "Billing address deleted successfully");
+    } else {
+      Alert.alert("Error", "Failed to delete billing address");
+    }
+  } catch (error) {
+    console.error("Failed to delete billing address:", error);
+    Alert.alert("Error", "Failed to delete billing address");
+  }
+};
+  
   const handleSelectBillingAddress = (item: Address) => {
     setSelectedId(item._id);
     setSelectedBillingAddress(item);
@@ -142,7 +204,6 @@ const orderSummeryScreen = () => {
     setIsModalVisible(false);
     setItemToDelete(null);
   };
-  console.log("cartItems", cartItems);
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -154,7 +215,6 @@ const orderSummeryScreen = () => {
               globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.pb_0,
-              // { paddingHorizontal: 26 },
             ]}
           >
             <View style={styles.section}>
@@ -167,65 +227,95 @@ const orderSummeryScreen = () => {
 
               <View style={[globalStyles.pl_3, styles.deliverAddress]}>
                 <Ionicons 
-                    name = "home"
-                    size = {24}
-                    color ={colors.primary}
-                    style = {{marginRight: 10}}
+                    name="home"
+                    size={24}
+                    color={colors.primary}
+                    style={{marginRight: 10}}
                   />
                 <View style={styles.addressContainer}>
-                  
-                  <Text style = {styles.subheading}>Deliver Address:</Text>
+                  <Text style={styles.subheading}>Deliver Address:</Text>
                   {pickupAddress.firstName ? (
                     <Text style={styles.addressTextBox}>
-                    {`${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}\nVehicle Type: ${pickupAddress.vehicleType ? `${pickupAddress.vehicleType}` : ""}\nVehicle Number: ${pickupAddress.vehicleNumber ? ` ${pickupAddress.vehicleNumber}` : ""}\nAdditional Details:${
-                      pickupAddress.additionalDetails ? `, ${pickupAddress.additionalDetails}` : "None"} \nEmail: ${pickupAddress.email} \nContact Number: ${pickupAddress.phone}`}
-                  </Text>
+                      {`${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}\nVehicle Type: ${pickupAddress.vehicleType ? `${pickupAddress.vehicleType}` : ""}\nVehicle Number: ${pickupAddress.vehicleNumber ? ` ${pickupAddress.vehicleNumber}` : ""}\nAdditional Details:${
+                        pickupAddress.additionalDetails ? `, ${pickupAddress.additionalDetails}` : "None"} \nEmail: ${pickupAddress.email} \nContact Number: ${pickupAddress.phone}`}
+                    </Text>
                   ) : (
                     <Text style={styles.addressTextBox}>
-                     { `${pickupAddress.name}, ${pickupAddress.line1}, ${pickupAddress.line2 ? `${pickupAddress.line2}` : ""},${pickupAddress.city}, ${pickupAddress.postalCode}
-                      Contact Number: ${pickupAddress.phone}` }
+                      {`${pickupAddress.name}, ${pickupAddress.line1}, ${pickupAddress.line2 ? `${pickupAddress.line2}` : ""},${pickupAddress.city}, ${pickupAddress.postalCode}
+                      Contact Number: ${pickupAddress.phone}`}
                     </Text>
                   )}
                 </View>              
               </View>
+              <View style={styles.checkBox}>
+                <CheckBox
+                  checked={isDefault}
+                  onPress={() => setIsDefault(!isDefault)}
+                />
+                <Text>Set Delivery Address as Billing Address?</Text>
+              </View>
               <View style={[globalStyles.pl_3]}>
-                  {/* <Ionicons 
-                    name = "home"
-                    fontsize = {48}
-                    color ={colors.primary}
-                  /> */}
-                  <Text style = {styles.subheading}>Billing Address</Text>
-                  <FlatList
-                    data={addressData.filter((address) => !address.isDefault)}
-                    renderItem={({ item }) => (
-                      <AddressItem
-                        item={item}
-                        onEdit={handleEdit}
-                        onDelete={handleBillingAddressDelete}
-                        showRadio
-                        isSelected={item._id === selectedId}
-                        onSelect={() => handleSelectBillingAddress(item)}
-                      />
-                    )}
-                    keyExtractor={(item, index) =>
-                      item._id?.toString() || `address-${index}`
-                    }
-                    contentContainerStyle={[
-                      styles.addressList,
-                      { paddingLeft: 16 },
-                    ]}
+                <View style={styles.billingAddress}>
+                  <Ionicons 
+                    name="receipt"
+                    size={24}
+                    color={colors.primary}
+                    style={{marginRight: 10}}
                   />
-                  <Button
-                      title="Add New billing Address"
-                      onPress={() => {
-                        redirectToPage(containers.billingAddressScreenScreen, {
-                          pickupDetails: JSON.stringify(pickupDetails),
-                          shippingAddress: JSON.stringify(shippingAddress),
-                          selectedMode: selectedMode,
-                        });
-                      }}
-                    />
+                  <View style={styles.billingAddressAccordian}>
+                    <Text style={styles.subheading}>Billing Address: </Text>
+                    <TouchableOpacity
+                      style={styles.accordian}
+                      onPress={toggleAccordion}
+                    >
+                      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                        <Ionicons 
+                          name="chevron-down-circle"
+                          size={24}
+                          color={colors.primary}
+                          style={styles.accordianIcon}
+                        />
+                      </Animated.View>
+                    </TouchableOpacity>
+                  </View>
                 </View>
+                
+                {accordionOpen && (
+                  <View style={styles.accordionContent}>
+                    {addressData.length > 0 ? (
+                      <FlatList
+                        data={addressData}
+                        renderItem={({ item }) => (
+                          <AddressItem
+                            item={item}
+                            onEdit={handleEdit}
+                            onDelete={handleBillingAddressDelete}
+                            showRadio
+                            isSelected={item._id === selectedId}
+                            onSelect={() => handleSelectBillingAddress(item)}
+                          />
+                        )}
+                        keyExtractor={(item, index) =>
+                          item._id?.toString() || `address-${index}`
+                        }
+                        contentContainerStyle={[
+                          styles.addressList,
+                          { paddingLeft: 16 },
+                        ]}
+                      />
+                    ) : (
+                      <View style={styles.noAddressContainer}>
+                        <Text style={styles.noAddressText}>No billing addresses found</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+              <Button
+                onPress={handleAddBillingAddress}
+                title="Add Billing Address"
+              />             
+            </View>
             </View>
 
             <View style={styles.section}>
@@ -280,17 +370,17 @@ const orderSummeryScreen = () => {
               />
             </View>
           </View>
+
+          <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
+            <Button
+              onPress={() => {
+                handlePress();
+              }}
+              title="Confirm Billing Address"
+            />
+          </View>
         </ScrollView>
 
-        <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
-          <Button
-            onPress={() => {
-              handlePress();
-              // redirectToPage(containers.billingAddressScreenScreen);
-            }}
-            title="Confirm Billing Address"
-          />
-        </View>
         <ConfirmationModal
           onClose={() => {
             setIsModalVisible(false);

@@ -11,6 +11,7 @@ import {
   Text,
   View,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -102,6 +103,12 @@ const AdminProductDashboard = () => {
               }}
               title="+ Add New Product"
             />
+            <TouchableOpacity
+              onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
+              style={{paddingTop:16}}
+            >
+              <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
+            </TouchableOpacity>
             <View style={{ marginTop: 40 }}>
               <FlatList
                 data={productsList}
