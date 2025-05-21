@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  FlatList,
 } from "react-native";
 import styles from "./orderSummeryScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -24,9 +25,12 @@ import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
-import { addressService } from "@/services/addressService";
+import { Address, addressService } from "@/services/addressService";
 import { RootState } from "@/store/store";
 import colors from "../config/colors";
+import { Ionicons } from "@expo/vector-icons";
+import AddressItem from "../components/AddressItem";
+import { useAppContext } from "@/context/AppContext";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -42,8 +46,19 @@ type OrderSummeryScreenParams = {
   additionalDetails?: string;
 };
 
+type shippingAddressDTo = {
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+};
+
 const orderSummeryScreen = () => {
+  const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
+  const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
   const cartItems = useSelector((state: RootState) => [...state.cart.items]);
   // const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -51,6 +66,7 @@ const orderSummeryScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
+  const [selectedId, setSelectedId] = useState<any>(null);
 
   // Extract pickup data from route params or use default values
   const pickupAddress = params?.pickupAddress
@@ -61,6 +77,8 @@ const orderSummeryScreen = () => {
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
   console.log("params", params);
   const { name, line1, line2, city, state, postalCode, phone } = pickupAddress;
+
+  let shippingAddress: shippingAddressDTo | undefined;
 
   console.log("hi", pickupDetails);
   console.log("pickupAddress", pickupAddress);
@@ -83,6 +101,23 @@ const orderSummeryScreen = () => {
       shippingAddress: params.pickupAddress || "N/A",
     });
   };
+  const handleEdit = (item: Address) => {
+      setSelectedBillingAddress(item);
+      redirectToPage(containers.billingAddressScreenScreen, {
+        edit_address: JSON.stringify(item),
+      });
+    };
+  const handleBillingAddressDelete = (item: Address) => {
+      setIsModalVisible(true);
+      setItemToDelete({ id: item._id });
+    };
+
+  const handleSelectBillingAddress = (item: Address) => {
+    setSelectedId(item._id);
+    setSelectedBillingAddress(item);
+    console.log("Selected address:", item);
+  };
+
   const handleDelete = (item: any) => {
     setItemToDelete(item);
     setIsModalVisible(true);
@@ -127,44 +162,57 @@ const orderSummeryScreen = () => {
               selectedMode === "Curbside Pickup" ? (
                 <Text style={styles.sectionHeading}>User Details</Text>
               ) : (
-                <Text style={styles.sectionHeading}>Address</Text>
+                <Text style={styles.sectionHeading}>Order Details:</Text>
               )}
 
-              <View style={globalStyles.pl_3}>
-                {pickupAddress.firstName ? (
-                  <Text style={styles.addressTextBox}>
-                    {pickupAddress.firstName}
-                    {""}
-                    {pickupAddress?.lastName}
-                    {"\n"}
-                    {pickupAddress.phone}
-                    {"\n"}
-                    {pickupAddress.email}
-                    {pickupAddress.vehicleType
-                      ? `${pickupAddress.vehicleType}\n`
-                      : ""}
-                    {pickupAddress.vehicleNumber
-                      ? `${pickupAddress.vehicleNumber}\n`
-                      : ""}
-                    {pickupAddress.additionalDetails
-                      ? `${pickupAddress.additionalDetails}\n`
-                      : ""}
+              {/* <View style={globalStyles.pl_3}> */}
+                <View style={styles.addressContainer}>
+                  {/* <Text>Order Details:</Text> */}
+                  {pickupAddress.firstName ? (
+                    <Text style={styles.addressTextBox}>
+                    {`${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}\nVehicle Type: ${pickupAddress.vehicleType ? `${pickupAddress.vehicleType}` : ""}\nVehicle Number: ${pickupAddress.vehicleNumber ? ` ${pickupAddress.vehicleNumber}` : ""}\nAdditional Details:${
+                      pickupAddress.additionalDetails ? `, ${pickupAddress.additionalDetails}` : "None"} \nEmail: ${pickupAddress.email} \nContact Number: ${pickupAddress.phone}`}
                   </Text>
-                ) : (
-                  <Text style={styles.addressTextBox}>
-                    {pickupAddress.name}
-                    {"\n"}
-                    {pickupAddress.line1}
-                    {"\n"}
-                    {pickupAddress.line2 ? `${pickupAddress.line2}\n` : ""}
-                    {pickupAddress.city}
-                    {pickupAddress.state ? `, ${pickupAddress.state}` : ""}{" "}
-                    {pickupAddress.postalCode}
-                    {"\n"}
-                    {pickupAddress.phone}
-                  </Text>
-                )}
-              </View>
+                  ) : (
+                    <Text style={styles.addressTextBox}>
+                     { `${pickupAddress.name}, ${pickupAddress.line1}, ${pickupAddress.line2 ? `${pickupAddress.line2}` : ""},${pickupAddress.city}, ${pickupAddress.postalCode}
+                      Contact Number: ${pickupAddress.phone}` }
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <FlatList
+                    data={addressData.filter((address) => !address.isDefault)}
+                    renderItem={({ item }) => (
+                      <AddressItem
+                        item={item}
+                        onEdit={handleEdit}
+                        onDelete={handleBillingAddressDelete}
+                        showRadio
+                        isSelected={item._id === selectedId}
+                        onSelect={() => handleSelectBillingAddress(item)}
+                      />
+                    )}
+                    keyExtractor={(item, index) =>
+                      item._id?.toString() || `address-${index}`
+                    }
+                    contentContainerStyle={[
+                      styles.addressList,
+                      { paddingLeft: 16 },
+                    ]}
+                  />
+                  <Button
+                      title="Add New billing Address"
+                      onPress={() => {
+                        redirectToPage(containers.billingAddressScreenScreen, {
+                          pickupDetails: JSON.stringify(pickupDetails),
+                          shippingAddress: JSON.stringify(shippingAddress),
+                          selectedMode: selectedMode,
+                        });
+                      }}
+                    />
+                </View>
+              {/* </View> */}
             </View>
 
             <View style={styles.section}>

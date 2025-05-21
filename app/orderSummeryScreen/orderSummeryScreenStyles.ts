@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
   },
     addressTextBox: {
       height: 150,
-      borderWidth: 1,
-      borderColor: colors.black,
+      // borderWidth: 1,
+      // borderColor: colors.black,
       padding: 10,
       borderRadius: 10,
       textAlignVertical: 'top', 
@@ -46,7 +46,13 @@ const styles = StyleSheet.create({
   },
   cartItemContainerStyle:{
     paddingHorizontal: 0
-  }
+  },
+  addressContainer:{
+    flexDirection: 'column',
+  },
+  addressList: {
+    paddingHorizontal: 26,
+  },
 });
 
 export default styles;

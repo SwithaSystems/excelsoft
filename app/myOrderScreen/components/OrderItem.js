@@ -20,34 +20,34 @@ function OrderItem(props) {
       }}
     >
       <View style={styles.orderContainer}>
-        <View style={[styles.dateTimeContainer]}>
-          <Text style={styles.date}>{item.date}</Text>
-          <Ionicons name="chevron-forward" size={20} color="black" />
-        </View>
-        <View style={styles.statusContainer}>
-          <Ionicons name="bag-check" size={32} color={colors.primary} />
-          <Text style={styles.status}>{item.status}</Text>
-        </View>
+
+        <View style={styles.OrderIdContainer}>
         <Text style={styles.orderSummaryItems}>
-          <Text style={globalStyles.fontWeight500}>Order ID:</Text>{" "}
+          <Text style={styles.prefix}>Order ID:</Text>{" "}
           {item.orderId}
         </Text>
-        <Text style={styles.orderSummaryItems}>
-          <Text style={globalStyles.fontWeight500}>Total Items:</Text>{" "}
-          {item.totalItems}
+        <Text style={styles.navigationText}>
+          Track Order
         </Text>
-        <Text style={styles.orderSummaryItems}>
-          <Text style={globalStyles.fontWeight500}>Subtotal:</Text>{" "}
-          {CurrencySymbol}
-          {item.subtotal}
+        </View>
+        <View style={[styles.dateTimeContainer]}>
+          <Text style={styles.date}>{item.date}</Text>
+        </View>
+        <View style = {styles.OrderStatusContainer}>
+        <View style={styles.statusContainer}>
+          <Ionicons name="bag-check" size={32} color={colors.primary} />
+          <Text style={styles.status}>{item.status}!!</Text>
+        </View>
+        <Text style={styles.navigationText}>
+          See More
         </Text>
+        </View>
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
             redirectToPage(containers.deliveryTrackingScreenScreen);
           }}
         >
-          <Text style={globalStyles.btnSmUnderLine}>Track Order</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -56,6 +56,15 @@ function OrderItem(props) {
 const styles = StyleSheet.create({
   orderContainer: {
     marginBottom: 24,
+    backgroundColor: colors.paleBlue,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: colors.primary,
+  },
+  OrderIdContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   dateTimeContainer: {
     flexDirection: "row",
@@ -65,22 +74,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   date: {
-    fontSize: 16,
-    fontWeight: 500,
+    fontSize: 12,
+    fontWeight: '300',
   },
   statusContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    //marginBottom: 10,
   },
   status: {
     fontSize: 16,
     marginLeft: 8,
-    fontWeight: 500,
+    fontWeight: 'bold',
+  },
+  OrderStatusContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   orderSummaryItems: {
     fontSize: 16,
     marginBottom: 10,
+    fontWeight: 500,
+  },
+  prefix:{
+    fontWeight:'bold',
   },
   itemsSubtotalContainer: {
     flexDirection: "row",
@@ -96,6 +113,10 @@ const styles = StyleSheet.create({
   trackButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  navigationText:{
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });
 
