@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   categoryText: {
-    fontSize: 17,
+    fontSize: 16,
   },
 });
 
