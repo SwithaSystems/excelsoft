@@ -31,6 +31,7 @@ import { categoryService, Category } from "../../services/categoryService";
 import categoriesScreen from "../categoriesScree/categoriesScree";
 import { parentCategoryIDAll } from "@/config/constants";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AdminFooter from "@/components/AdminFooter";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -218,7 +219,7 @@ const HomePage = () => {
         renderItem={null}
       />
       {/* Footer */}
-      <Footer activeTab="home"/>
+      {/* <AdminFooter activeTab="home"/> */}
       {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
     </SafeAreaView>
   );

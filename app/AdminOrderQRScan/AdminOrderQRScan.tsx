@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import colors from '../config/colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
+import { globalStyles } from '@/assets/styles/globalStyles';
 
 
 const AdminOrderQRScan = () => {

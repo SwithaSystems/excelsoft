@@ -69,6 +69,7 @@ const UserProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
+    store: containers.AdminOrderQRScanScreen,
   };
 
   // useEffect(() => {
