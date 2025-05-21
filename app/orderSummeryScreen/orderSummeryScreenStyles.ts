@@ -6,6 +6,10 @@ const styles = StyleSheet.create({
     marginTop: 0,
     paddingHorizontal: 0
   },
+  subheading:{
+    fontWeight:'bold',
+    paddingRight: 12,
+  },
   checkBoxContainer:{
     padding: 0,
     backgroundColor: colors.white,
@@ -49,10 +53,14 @@ const styles = StyleSheet.create({
   },
   addressContainer:{
     flexDirection: 'column',
+    paddingRight: 16,
   },
   addressList: {
     paddingHorizontal: 26,
   },
+  deliverAddress:{
+    flexDirection: 'row'
+  }
 });
 
 export default styles;

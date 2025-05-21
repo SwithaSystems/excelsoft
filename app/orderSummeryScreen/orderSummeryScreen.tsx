@@ -154,7 +154,7 @@ const orderSummeryScreen = () => {
               globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.pb_0,
-              { paddingHorizontal: 26 },
+              // { paddingHorizontal: 26 },
             ]}
           >
             <View style={styles.section}>
@@ -162,12 +162,19 @@ const orderSummeryScreen = () => {
               selectedMode === "Curbside Pickup" ? (
                 <Text style={styles.sectionHeading}>User Details</Text>
               ) : (
-                <Text style={styles.sectionHeading}>Order Details:</Text>
+                <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
-              {/* <View style={globalStyles.pl_3}> */}
+              <View style={[globalStyles.pl_3, styles.deliverAddress]}>
+                <Ionicons 
+                    name = "home"
+                    size = {24}
+                    color ={colors.primary}
+                    style = {{marginRight: 10}}
+                  />
                 <View style={styles.addressContainer}>
-                  {/* <Text>Order Details:</Text> */}
+                  
+                  <Text style = {styles.subheading}>Deliver Address:</Text>
                   {pickupAddress.firstName ? (
                     <Text style={styles.addressTextBox}>
                     {`${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}\nVehicle Type: ${pickupAddress.vehicleType ? `${pickupAddress.vehicleType}` : ""}\nVehicle Number: ${pickupAddress.vehicleNumber ? ` ${pickupAddress.vehicleNumber}` : ""}\nAdditional Details:${
@@ -179,8 +186,15 @@ const orderSummeryScreen = () => {
                       Contact Number: ${pickupAddress.phone}` }
                     </Text>
                   )}
-                </View>
-                <View>
+                </View>              
+              </View>
+              <View style={[globalStyles.pl_3]}>
+                  {/* <Ionicons 
+                    name = "home"
+                    fontsize = {48}
+                    color ={colors.primary}
+                  /> */}
+                  <Text style = {styles.subheading}>Billing Address</Text>
                   <FlatList
                     data={addressData.filter((address) => !address.isDefault)}
                     renderItem={({ item }) => (
@@ -212,7 +226,6 @@ const orderSummeryScreen = () => {
                       }}
                     />
                 </View>
-              {/* </View> */}
             </View>
 
             <View style={styles.section}>
