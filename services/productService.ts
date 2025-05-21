@@ -1,10 +1,12 @@
 import axiosInstance from "./axiosConfig";
-import { jsonAxios } from "./axiosConfig";
+import createAxiosInstance, { jsonAxios } from "./axiosConfig";
 
 export interface Product {
   id: string;
   name: string;
   description: string;
+  title: string;
+  stock: number;
   price: number;
   originalPrice: number;
   image: any;
@@ -12,6 +14,10 @@ export interface Product {
   categoryId: number[];
   rating: number;
   noOfreviews: number;
+  minimumOrderQuantity: number;
+  noOfReviews: number;
+  noOfLikesandDislikes: number;
+  isReturnable: boolean;
   reviews: {
     id: string;
     name: string;
@@ -22,6 +28,23 @@ export interface Product {
 }
 
 export const ProductsAPI = {
+  addProduct: async (data: any): Promise<Product> => {
+    console.log("data in product service", data);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/products/create`, data);
+    return response.data;
+  },
+  updateProduct: async (id: number, data: any): Promise<Product> => {
+    console.log("data in product service", data);
+    console.log("id", id);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.put(
+      `/products/updateProduct/${id}`,
+      data
+    );
+    return response.data;
+  },
+
   getAllProducts: async (): Promise<Product[]> => {
     const response = await jsonAxios.get(`/products`);
     return response.data;

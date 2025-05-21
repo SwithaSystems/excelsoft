@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { Picker } from "@react-native-picker/picker";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Platform,
   ScrollView,
@@ -16,67 +16,87 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  Alert,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../config/colors";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { categoryService } from "@/services/categoryService";
 import { CheckBox } from "react-native-elements";
-import { Ionicons } from "@expo/vector-icons";
+import ModalSelector from "react-native-modal-selector";
 import * as ImagePicker from "expo-image-picker";
-
+import { Ionicons } from "@expo/vector-icons";
+import { ProductsAPI } from "@/services/productService";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
+  const newProduct = props.newProduct;
   const [productName, setProductName] = useState("");
-  const [title, setTitle] = useState("");  
+  const [title, setTitle] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [minimumOrderQunatity, setMinimumOrderQuantity] = useState("");
   const [category, setCategory] = useState("");
+  const [color, setColor] = useState("");
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isDefault, setIsDefault] = useState(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [isChecked, setIsChecked] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [offerPrice, setOfferPrice] = useState([{
-    qty:"", 
-    actualPrice:"",
-     discountPrice:""
-  }])
+  const [offerPrice, setOfferPrice] = useState([
+    {
+      qty: "",
+      actualPrice: "",
+      discountPrice: "",
+    },
+  ]);
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access gallery is required!");
-      return;
+  const [allCategories, setAllCategories] = useState<any>([]);
+  const [productImages, setProductImages] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const MAX_IMAGES = 5;
+
+  // Parse product data only once when component mounts
+  const productData = React.useMemo(() => {
+    return typeof props.item === "string" ? JSON.parse(props.item) : props.item;
+  }, [props.item]);
+
+  console.log("Product data in product updation", productData);
+  async function getallCategories() {
+    try {
+      const categories = await categoryService.getAllCategories(2);
+      if (categories) {
+        setAllCategories(categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-  const product =
-    typeof props.item === "string" ? JSON.parse(props.item) : props.item;
-  console.log("product selected", product);
+  }
+  useEffect(() => {
+    getallCategories();
+  }, []);
 
   useEffect(() => {
-    if (product) {
-      setProductName(product.name || "");
-      setStock(product.stock?.toString() || "");
-      setPrice(product.originalPrice?.toString() || "");
-      setDiscountPrice(product.price?.toString() || "");
-      setCategory(product.categoryId?.[0]?.toString() || "");
+    // Only run once when component mounts
+    if (productData) {
+      setTitle(productData.title || "");
+      setProductDescription(productData.description || "");
+      setProductName(productData.name || "");
+      setStock(productData.stock?.toString() || "");
+      setPrice(productData.originalPrice?.toString() || "");
+      setDiscountPrice(productData.price?.toString() || "");
+      setCategory(productData.categoryId?.[0]?.toString() || "");
+
+      // Set product images if available
+      if (productData.image && Array.isArray(productData.image)) {
+        setProductImages(productData.image.map((img: any) => ({ uri: img })));
+      }
 
       const now = new Date();
       let hrs = now.getHours();
@@ -86,46 +106,285 @@ const AdminProductUpdation = () => {
       setHours(hrs < 10 ? `0${hrs}` : `${hrs}`);
       setMinutes(mins < 10 ? `0${mins}` : `${mins}`);
     }
-  }, [product]);
+  }, [productData]);
 
-  const onDateChange = (
-    event: DateTimePickerEvent,
-    selectedDate: Date | undefined
-  ) => {
-    const currentDate = selectedDate || new Date(date);
-    setShowDatePicker(false);
-    setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
-  };
+  // const onDateChange = (
+  //   event: DateTimePickerEvent,
+  //   selectedDate: Date | undefined
+  // ) => {
+  //   const currentDate = selectedDate || new Date(date);
+  //   setShowDatePicker(false);
+  //   setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+  // };
+  // const addNewPrice = () => {
+  //   const newRow = { qty: "", actualPrice: "", discountPrice: "" };
+  //   const updatedPrices = offerPrice.concat(newRow);
+  //   setOfferPrice(updatedPrices);
+  // };
+  const openImagePickerAsync = useCallback(
+    async (type: "camera" | "gallery") => {
+      try {
+        if (productImages.length >= MAX_IMAGES) {
+          Alert.alert(
+            "Limit Reached",
+            `You can only upload up to ${MAX_IMAGES} images.`
+          );
+          return;
+        }
 
-  const addNewPrice = () => {
-    const newRow = {qty: "", actualPrice:"", discountPrice:""};
-    const updatedPrices = offerPrice.concat(newRow);
-    setOfferPrice(updatedPrices);
-  }
+        let result;
+
+        if (type === "camera") {
+          const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+          if (!cameraPerm.granted) {
+            Alert.alert(
+              "Permission Required",
+              "Permission to access camera is required!"
+            );
+            return;
+          }
+
+          result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+          });
+        } else {
+          const galleryPerm =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!galleryPerm.granted) {
+            Alert.alert(
+              "Permission Required",
+              "Permission to access gallery is required!"
+            );
+            return;
+          }
+
+          result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            selectionLimit: MAX_IMAGES - productImages.length,
+            aspect: [4, 3],
+            quality: 0.8,
+          });
+        }
+
+        if (
+          !result.canceled &&
+          "assets" in result &&
+          result.assets?.length > 0
+        ) {
+          // Add new images to the existing ones, limited to MAX_IMAGES
+          const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
+
+          setProductImages((prev: any) => {
+            const updatedImages = [...prev, ...newImages];
+
+            if (updatedImages.length > MAX_IMAGES) {
+              Alert.alert(
+                "Limit Exceeded",
+                `Only the first ${MAX_IMAGES} images have been added.`
+              );
+              return updatedImages.slice(0, MAX_IMAGES);
+            }
+            return updatedImages;
+          });
+        }
+      } catch (error) {
+        console.error("Error picking image:", error);
+        Alert.alert("Error", "Something went wrong while picking the image.");
+      }
+    },
+    [productImages.length]
+  );
+
+  const showImageOptions = useCallback(() => {
+    Alert.alert("Select Image", "Choose image source", [
+      {
+        text: "Take Photo",
+        onPress: () => openImagePickerAsync("camera"),
+      },
+      {
+        text: "Choose from Gallery",
+        onPress: () => openImagePickerAsync("gallery"),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  }, [openImagePickerAsync]);
+
+  const removeImage = useCallback((index: any) => {
+    Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Remove",
+        onPress: () => {
+          setProductImages((prev: any) => {
+            const updatedImages = [...prev];
+            updatedImages.splice(index, 1);
+            return updatedImages;
+          });
+        },
+        style: "destructive",
+      },
+    ]);
+  }, []);
+
+  const handleUpdateProduct = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // Validate required fields
+      if (!productName.trim()) {
+        Alert.alert("Error", "Product name is required");
+        return;
+      }
+
+      if (!stock || isNaN(parseInt(stock))) {
+        Alert.alert("Error", "Valid stock quantity is required");
+        return;
+      }
+
+      if (!price || isNaN(parseFloat(price))) {
+        Alert.alert("Error", "Valid price is required");
+        return;
+      }
+
+      if (!category) {
+        Alert.alert("Error", "Please select a category");
+        return;
+      }
+
+      // Create FormData for multipart/form-data upload
+      const formData = new FormData();
+
+      // Append regular text fields
+      formData.append("name", productName);
+      formData.append("title", title);
+      formData.append("description", productDescription);
+      formData.append("stock", stock);
+      formData.append("originalPrice", price);
+      formData.append("price", discountPrice || price); // Use original price if no discount
+      formData.append("categoryId", category);
+      formData.append("minimumOrderQuantity", minimumOrderQunatity);
+      // formData.append("productColors", color);
+      formData.append("productColors", JSON.stringify([{ color: color }]));
+
+      formData.append("isReturnable", isChecked ? "true" : "false");
+
+      // // Format date-time information if needed
+      // const dateTimeStr = `${date} ${hours}:${minutes} ${period}`;
+      // formData.append("discountDateTime", dateTimeStr);
+
+      // Process images - append each image to form data
+      productImages.forEach((img: any, index: any) => {
+        // Only append if there's a URI (valid image)
+        if (img.uri) {
+          // Get filename from URI
+          // const uriParts = img.uri.split("/");
+          // const fileName = uriParts[uriParts.length - 1];
+          const uri = img.uri || img.path || img;
+          // const fileType = img.type || 'image/jpeg';
+          const fileName = img.fileName || `image_${index}.jpg`;
+
+          // Determine image type (default to jpeg if can't determine)
+          const fileType = fileName.includes(".png")
+            ? "image/png"
+            : fileName.includes(".jpg") || fileName.includes(".jpeg")
+            ? "image/jpeg"
+            : "image/jpeg";
+
+          // Append image to form data - use a consistent field name for array of images
+          formData.append("image", {
+            uri: img.uri,
+            name: fileName || `product_image_${index}.jpg`,
+            type: fileType,
+          } as any);
+        }
+      });
+
+      console.log("Submitting form data for product update", formData);
+
+      try {
+        const response = newProduct
+          ? await ProductsAPI.addProduct(formData)
+          : await ProductsAPI.updateProduct(productData._id, formData);
+
+        // Simulate API call for now
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        if (!response) {
+          throw new Error("Failed to update product. Please try again.");
+        } else {
+          console.log("Product updated successfully:", response);
+
+          // Show success message
+          Alert.alert(
+            "Success",
+            newProduct
+              ? "Product added successfully!"
+              : "Product updated successfully!",
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  // Navigate back
+                  // router.back();
+                },
+              },
+            ]
+          );
+        }
+      } catch (apiError) {
+        console.error("API Error:", apiError);
+        Alert.alert("Error", "Failed to update product. Server error.");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      Alert.alert("Error", "Failed to update product. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    productName,
+    stock,
+    price,
+    discountPrice,
+    category,
+    color,
+    productImages,
+    // date,
+    // hours,
+    // minutes,
+    // period,
+    router,
+    productData?.id,
+  ]);
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={[
-      globalStyles.container,
-      {paddingTop: 16}
-      ]}>
-      <Header headerText="Add Product" />
-      <ScrollView>
-        <View
-          style={[
-            globalStyles.sectionContent,
-            globalStyles.pt_0,
-            globalStyles.mt_n3,
-          ]}
-        >
-          <View>
+      <View style={[globalStyles.container, { paddingTop: 16 }]}>
+        <Header headerText="Update Product" />
+        <ScrollView>
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              globalStyles.mt_n3,
+            ]}
+          >
             <Text style={styles.label}>Product Name</Text>
-            <TextInput
+            <CustomTextInput
+              setValue={setProductName}
               value={productName}
-              onChangeText={setProductName}
               onPress={() => {}}
               placeholder="Enter product name"
-              style={styles.textboxStyles}
             />
             <Text style={styles.label}>Title</Text>
             <TextInput
@@ -145,246 +404,287 @@ const AdminProductUpdation = () => {
               numberOfLines={6}
               style={styles.multilinetextbox}
             />
-
+            <View style={styles.inputContainer}>
               <Text style={styles.label}>Category</Text>
-              <View style={[styles.categoryStyles, {height:40, justifyContent:'center'}]}>
-                <Picker
-                  style={globalStyles.picker}
-                  selectedValue={category}
-                  onValueChange={(value) => setCategory(value)}
+              <View
+                style={{
+                  borderColor: colors.primary,
+                  borderWidth: 1,
+                  height: 40,
+                  width: 250,
+                  borderRadius: 8,
+                  justifyContent: "center",
+                }}
+              >
+                <ModalSelector
+                  data={allCategories.map((cat: any) => ({
+                    key: cat.id,
+                    label: cat.name,
+                    value: cat.id,
+                  }))}
+                  initValue="Category"
+                  onChange={(option) => setCategory(option.value)}
+                  optionTextStyle={{ color: colors.primary }}
+                  optionContainerStyle={{ backgroundColor: colors.white }}
+                  cancelStyle={{ backgroundColor: colors.white }}
+                  accessible={true}
+                  accessibilityLabel="Select Category"
                 >
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="Select"
-                    value=""
+                  <TextInput
+                    style={globalStyles.picker_50}
+                    editable={false}
+                    value={
+                      allCategories.find((c: any) => c.id == category)?.name ||
+                      ""
+                    }
                   />
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="Category 1"
-                    value="cat1"
-                  />
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="Category 2"
-                    value="cat2"
-                  />
-                </Picker>
+                </ModalSelector>
               </View>
+            </View>
 
-              <Text style={styles.label}>Stock</Text>
-              <TextInput
+            <Text style={styles.label}>Stock</Text>
+            <CustomTextInput
+              setValue={setStock}
               value={stock}
-              onChangeText={setStock}
               onPress={() => {}}
               placeholder="Enter available stock"
               keyboardType="numeric"
+            />
+
+            <Text style={styles.label}>Price</Text>
+            <CustomTextInput
+              setValue={setPrice}
+              value={price}
+              onPress={() => {}}
+              placeholder="Enter price per unit"
+              keyboardType="numeric"
+            />
+
+            {/* <Text style={styles.label}>Discount Price</Text>
+            <CustomTextInput
+              setValue={setDiscountPrice}
+              value={discountPrice}
+              onPress={() => {}}
+              placeholder="Enter the discount price"
+              keyboardType="numeric"
+            /> */}
+            <Text style={styles.label}>Minimum Order Qunatity:</Text>
+            <TextInput
+              value={minimumOrderQunatity}
+              onChangeText={setMinimumOrderQuantity}
+              onPress={() => {}}
+              placeholder="Enter the minimum order quantity"
+              keyboardType="numeric"
               style={styles.textboxStyles}
-             />
-              <Text style={styles.label}>Price</Text>
-              
-              <TextInput
-                value={price}
-                onChangeText={setPrice}
-                onPress={() => {}}
-                placeholder="Enter price per unit"
-                keyboardType="numeric"
-                style={styles.textboxStyles}
-             />
-
-              <Text style={styles.label}>Minimum Order Qunatity:</Text>
-              <TextInput
-                value={minimumOrderQunatity}
-                onChangeText={setMinimumOrderQuantity}
-                onPress={() => {}}
-                placeholder="Enter the minimum order quantity"
-                keyboardType="numeric"
-                style={styles.textboxStyles}
-             />
-             <Text style={styles.label}>Select Color</Text>
-              <View style={[styles.categoryStyles, {height:40, justifyContent:'center'}]}>
-                <Picker
-                  style={globalStyles.picker}
-                  selectedValue={category}
-                  onValueChange={(value) => setCategory(value)}
-                >
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="Select"
-                    value=""
-                  />
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="Black"
-                    value="Black"
-                  />
-                  <Picker.Item
-                    style={globalStyles.pickerValue}
-                    label="White"
-                    value="White"
-                  />
-                </Picker>
-              </View>
-              {/* <View style={[globalStyles.mt_3]}>
-                <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
-                  Pick the date and time when the discount starts and ends.
-                </Text>
-                <View
-                  style={[
-                    globalStyles.flexRow,
-                    globalStyles.justifyContentBetween,
-                  ]}
-                >
-                  <View style={utilitiesStyles.flex_1}>
-                    <Text style={[styles.label, globalStyles.mt_0]}>
-                      Date: *
-                    </Text>
-                    {Platform.OS === "web" ? (
-                      <input
-                        type="date"
-                        style={globalStyles.webDateInput}
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                      />
-                    ) : (
-                      <TouchableOpacity
-                        style={globalStyles.dateInput}
-                        onPress={() => setShowDatePicker(true)}
-                      >
-                        <Text>{date}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {showDatePicker && (
-                      <DateTimePicker
-                        value={new Date(date)}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                      />
-                    )}
-                  </View>
-                  <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
-                    <Text style={[styles.label, globalStyles.mt_0]}>
-                      Time: *
-                    </Text>
-                    <View style={globalStyles.timeContainer}>
-                      <TextInput
-                        style={globalStyles.timeInput}
-                        placeholder="HH"
-                        keyboardType="numeric"
-                        maxLength={2}
-                        value={hours}
-                        onChangeText={setHours}
-                      />
-                      <Text>:</Text>
-                      <TextInput
-                        style={globalStyles.timeInput}
-                        placeholder="MM"
-                        keyboardType="numeric"
-                        maxLength={2}
-                        value={minutes}
-                        onChangeText={setMinutes}
-                      />
-
-                      AM/PM Dropdown
-                      <Picker
-                        selectedValue={period}
-                        style={globalStyles.picker_sm}
-                        onValueChange={(itemValue) => setPeriod(itemValue)}
-                      >
-                        <Picker.Item
-                          style={globalStyles.pickerValue_sm}
-                          label="AM"
-                          value="am"
-                        />
-                        <Picker.Item
-                          style={globalStyles.pickerValue_sm}
-                          label="PM"
-                          value="pm"
-                        />
-                      </Picker>
-                    </View>
-                  </View>
-                </View>
-              </View> */}
-              {/* <View style={styles.imageContainer}>
-                {[1, 2, 3, 4, 5].map((_, index) => (
-                  <TouchableOpacity key={index} style={styles.imagePlaceholder}>
-                    <Text style={styles.plus}>+</Text>
-                  </TouchableOpacity>
-                ))}
-              </View> */}
-              <View style={styles.checkBox}>
-                <CheckBox
-                  checked={isDefault}
-                  onPress={() => setIsDefault(!isDefault)}
-                />
-                <Text>Is returnable?</Text>
-              </View>
-              <Text style={styles.tableHeading}>QTY        Actual Price        Discounted Price</Text>
-              {offerPrice.map((item, index) => (
-                  <View key={index} style={styles.tableRow}>
-                    <TextInput
-                      style={styles.tableInput}
-                      value={item.qty}
-                      //onChangeText={}
-                      placeholder="QTY"
-                    />
-                    <TextInput
-                      style={styles.tableInput}
-                      value={item.actualPrice}
-                      //onChangeText={}
-                      placeholder="Price"
-                    />
-                    <TextInput
-                      style={styles.tableInput}
-                      value={item.discountPrice}
-                      //onChangeText={}
-                      placeholder="Discounted"
-                    />
-                    
-                    {index === offerPrice.length - 1 && (
-                      <TouchableOpacity onPress={addNewPrice}>
-                        <Ionicons name="add" size={24} color="green" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ))}
-              <View style={{marginBottom: 20}}>
-                <Text style={styles.label}>
-                  Would you like to add some pictures for your products?
-                </Text>
-                <TouchableOpacity
-                  style={styles.addImageButton}
-                  onPress={pickImage}
-                  disabled={isSubmitting}
-                >
-                  <Ionicons
-                    name="add"
-                    size={30}
-                    color={isSubmitting ? "#ccc" : "gray"}
-                  />
-                </TouchableOpacity>
-                {image && (
-                  <Image
-                    source={{ uri: image }}
-                    style={{ width: 200, height: 200, marginTop: 10 }}
-                  />
-                )}
-              </View>
-                </View>
-              </View>
-            </ScrollView>
+            />
+            <Text style={styles.label}>Select Color</Text>
             <View
               style={[
-                globalStyles.p_3,
-                globalStyles.flexRow,
-                globalStyles.justifyContentBetween,
+                styles.categoryStyles,
+                {
+                  height: 40,
+                  justifyContent: "center",
+                  borderColor: colors.primary,
+                  borderWidth: 1,
+                  borderRadius: 8,
+                },
               ]}
             >
-              <Button onPress={() => {}} title="Add" />
-              <Button onPress={() => {}} title="Discard" primary={false} />
+              <Picker
+                style={globalStyles.picker}
+                selectedValue={color}
+                onValueChange={(value) => setColor(value)}
+              >
+                <Picker.Item
+                  style={globalStyles.pickerValue}
+                  label="Select"
+                  value=""
+                />
+                <Picker.Item
+                  style={globalStyles.pickerValue}
+                  label="Black"
+                  value="Black"
+                />
+                <Picker.Item
+                  style={globalStyles.pickerValue}
+                  label="White"
+                  value="White"
+                />
+              </Picker>
+            </View>
+            <View style={[globalStyles.mt_3]}>
+              <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
+                Pick the date and time when the discount starts and ends.
+              </Text>
+              <View
+                style={[
+                  globalStyles.flexRow,
+                  globalStyles.justifyContentBetween,
+                ]}
+              >
+                {/* <View style={utilitiesStyles.flex_1}>
+                  <Text style={[styles.label, globalStyles.mt_0]}>Date: *</Text>
+                  {Platform.OS === "web" ? (
+                    <input
+                      type="date"
+                      style={globalStyles.webDateInput}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={globalStyles.dateInput}
+                      onPress={() => setShowDatePicker(true)}
+                    >
+                      <Text>{date}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={new Date(date)}
+                      mode="date"
+                      display="default"
+                      onChange={onDateChange}
+                    />
+                  )}
+                </View>
+
+                <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
+                  <Text style={[styles.label, globalStyles.mt_0]}>Time: *</Text>
+                  <View style={globalStyles.timeContainer}>
+                    <TextInput
+                      style={globalStyles.timeInput}
+                      placeholder="HH"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={hours}
+                      onChangeText={setHours}
+                    />
+                    <Text>:</Text>
+                    <TextInput
+                      style={globalStyles.timeInput}
+                      placeholder="MM"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={minutes}
+                      onChangeText={setMinutes}
+                    />
+
+                    <Picker
+                      selectedValue={period}
+                      style={globalStyles.picker_sm}
+                      onValueChange={(itemValue) => setPeriod(itemValue)}
+                    >
+                      <Picker.Item label="AM" value="am" />
+                      <Picker.Item label="PM" value="pm" />
+                    </Picker>
+                  </View>
+                </View> */}
+              </View>
+            </View>
+            <View style={styles.checkBox}>
+              <CheckBox
+                checked={isChecked}
+                onPress={() => setIsChecked(!isChecked)}
+              />
+              <Text>Is returnable?</Text>
+            </View>
+            {/* <Text style={styles.tableHeading}>
+              QTY Actual Price Discounted Price
+            </Text>
+            {offerPrice.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.qty}
+                  //onChangeText={}
+                  placeholder="QTY"
+                />
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.actualPrice}
+                  //onChangeText={}
+                  placeholder="Price"
+                />
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.discountPrice}
+                  //onChangeText={}
+                  placeholder="Discounted"
+                />
+
+                {index === offerPrice.length - 1 && (
+                  <TouchableOpacity onPress={addNewPrice}>
+                    <Ionicons name="add" size={24} color="green" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))} */}
+            <Text style={[styles.label, globalStyles.mt_4]}>
+              Product Images
+            </Text>
+            <Text style={styles.subLabel}>
+              Upload up to {MAX_IMAGES} images
+            </Text>
+
+            <View style={styles.imageContainer}>
+              {/* Display existing images */}
+              {productImages.map((img: any, index: any) => (
+                <View key={`img-${index}`} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: img.uri }}
+                    style={styles.productImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Ionicons name="close-circle" size={20} color="red" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {/* Add image placeholders */}
+              {Array.from({ length: MAX_IMAGES - productImages.length }).map(
+                (_, index) => (
+                  <TouchableOpacity
+                    key={`placeholder-${index}`}
+                    style={styles.imagePlaceholder}
+                    onPress={showImageOptions}
+                  >
+                    <Text style={styles.plus}>+</Text>
+                  </TouchableOpacity>
+                )
+              )}
             </View>
           </View>
+        </ScrollView>
+
+        <View
+          style={[
+            globalStyles.p_3,
+            globalStyles.flexRow,
+            globalStyles.justifyContentBetween,
+          ]}
+        >
+          <Button
+            onPress={handleUpdateProduct}
+            title={newProduct ? "Add" : "Update"}
+            disabled={isLoading}
+          />
+          <Button
+            onPress={() => router.back()}
+            title="Discard"
+            primary={false}
+            disabled={isLoading}
+          />
+        </View>
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -405,6 +705,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
   },
+  subLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 10,
+  },
   input: {
     backgroundColor: "#fff",
     padding: 10,
@@ -415,16 +720,44 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
     marginVertical: 15,
+    gap: 10,
+  },
+  imageWrapper: {
+    position: "relative",
+    width: 65,
+    height: 65,
+    borderRadius: 5,
+    overflow: "visible",
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 5,
+  },
+  removeButton: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "white",
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
   },
   imagePlaceholder: {
-    width: 60,
-    height: 60,
+    width: 65,
+    height: 65,
     backgroundColor: "#E0E0E0",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#D0D0D0",
+    borderStyle: "dashed",
   },
   plus: {
     fontSize: 24,
@@ -452,64 +785,85 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-   textboxStyles: {
-      backgroundColor: colors.placeholdergrey,
-      borderWidth: 0,
-      borderRadius: 8,
-      padding: 10,
-      textAlignVertical: 'top',  
-    },
-    multilinetextbox:{
-      height: 150,
-      backgroundColor: colors.placeholdergrey,
-      borderWidth: 0,
-      borderRadius: 8,
-      padding: 10,
-      textAlignVertical: 'top', 
-    },
-    categoryStyles:{
-      backgroundColor: colors.placeholdergrey,
-      borderWidth: 0,
-      borderRadius: 8,
-      // padding: 10,
-      // textAlignVertical: 'top', 
-    },
-    checkBox: {
+  inputLabel: {
+    fontSize: 14,
+    marginBottom: 5,
+    color: colors.black,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  textboxStyles: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: colors.primary,
+    padding: 10,
+    textAlignVertical: "top",
+  },
+  multilinetextbox: {
+    height: 150,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: colors.primary,
+    padding: 10,
+    textAlignVertical: "top",
+  },
+  categoryStyles: {
+    backgroundColor: colors.white,
+    borderWidth: 0,
+    borderRadius: 8,
+    // padding: 10,
+    // textAlignVertical: 'top',
+  },
+  checkBox: {
     flexDirection: "row",
     alignItems: "center",
   },
   addImageButton: {
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderRadius: 5,
     padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 60,
     height: 60,
     marginBottom: 10,
   },
   tableHeading: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 12,
-    textAlign: 'left',
+    textAlign: "left",
   },
   tableRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tableInput: {
     flex: 1,
     height: 40,
     marginHorizontal: 4,
     padding: 8,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderWidth: 1,
-    borderColor: '#D1D1D1',
+    borderColor: "#D1D1D1",
     borderRadius: 4,
-    textAlign: 'center',
+    textAlign: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    zIndex: 1000,
   },
 });
 
