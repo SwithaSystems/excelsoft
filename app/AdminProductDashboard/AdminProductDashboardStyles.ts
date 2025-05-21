@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   card: {
@@ -16,11 +16,13 @@ const styles = StyleSheet.create({
     borderColor: colors.black,
   },
   image: {
-    width: 110,
-    maxHeight: 114,
+    width: 100,
+    height: 100,
+    borderRadius: 8,
   },
+
   details: {
-    paddingLeft: 24
+    paddingLeft: 24,
   },
   text: {
     fontSize: 16,

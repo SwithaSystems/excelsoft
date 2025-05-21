@@ -187,10 +187,12 @@ const HomePage = () => {
             </View>
 
             {/* Banner */}
-            <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>{renderBanner()}</View>
+            <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>
+              {renderBanner()}
+            </View>
 
             {/* Recommended Products */}
-            <View style={{marginVertical:16}}>
+            <View style={{ marginVertical: 16 }}>
               <RecommendedProductsSlider
                 recommendedProducts={recommendedProducts}
                 sectionTitleStyle={styles.sectionTitle}
@@ -203,7 +205,7 @@ const HomePage = () => {
             </View>
 
             {/* Best Sellers */}
-            <View style={{marginVertical:16}}>
+            <View style={{ marginVertical: 16 }}>
               <RecommendedProductsSlider
                 recommendedProducts={bestSellers}
                 sectionTitleStyle={styles.sectionTitle}
@@ -219,7 +221,7 @@ const HomePage = () => {
         renderItem={null}
       />
       {/* Footer */}
-      {/* <AdminFooter activeTab="home"/> */}
+      <Footer activeTab="home" />
       {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
     </SafeAreaView>
   );

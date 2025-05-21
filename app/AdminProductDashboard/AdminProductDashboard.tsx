@@ -3,7 +3,7 @@ import Button from "@/components/commonComponents/Button";
 import Header from "@/components/Header";
 import products from "@/data/products";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FlatList,
   Image,
@@ -15,9 +15,26 @@ import {
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
 import colors from "../config/colors";
+import { ProductsAPI } from "@/services/productService";
 
 const AdminProductDashboard = () => {
-  const productsList = products;
+  // const productsList = products;
+
+  const [productsList, setAllProductsList] = React.useState<any>([]);
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const data = await ProductsAPI.getAllProducts();
+        console.log("data in products page", data);
+        setAllProductsList(data);
+      } catch (err) {
+        console.error("Error fetching all products:", err);
+      }
+    };
+    fetchAllProducts();
+  }, []);
+
+  console.log("products list", productsList);
 
   const ProductCard = ({ item }: { item: any }) => {
     return (
@@ -30,11 +47,7 @@ const AdminProductDashboard = () => {
           ]}
         >
           <View>
-            <Image
-              source={item.image}
-              style={styles.image}
-              resizeMode="center"
-            />
+            <Image source={{ uri: item?.image[0] }} style={styles.image} />
           </View>
           <View style={styles.details}>
             <Text style={styles.text}>
@@ -54,7 +67,9 @@ const AdminProductDashboard = () => {
         <View style={styles.buttonContainer}>
           <Button
             onPress={() => {
-              redirectToPage(containers.AdminProductUpdationScreen);
+              redirectToPage(containers.AdminProductUpdationScreen, {
+                item: JSON.stringify(item),
+              });
             }}
             title="Edit Details"
           />

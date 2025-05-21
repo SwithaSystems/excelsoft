@@ -70,6 +70,7 @@ const UserProfileScreen = () => {
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
     store: containers.AdminOrderQRScanScreen,
+    Admin: containers.AdminDashboardScreen,
   };
 
   // useEffect(() => {

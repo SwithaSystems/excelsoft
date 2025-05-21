@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { Picker } from "@react-native-picker/picker";
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -15,12 +15,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../config/colors";
+import { useLocalSearchParams } from "expo-router";
 
 const AdminProductUpdation = () => {
+  const props = useLocalSearchParams();
   const [productName, setProductName] = useState("");
   const [stock, setStock] = useState("");
   const [price, setPrice] = useState("");
@@ -31,6 +33,28 @@ const AdminProductUpdation = () => {
   const [period, setPeriod] = useState("am");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const product =
+    typeof props.item === "string" ? JSON.parse(props.item) : props.item;
+  console.log("product selected", product);
+
+  useEffect(() => {
+    if (product) {
+      setProductName(product.name || "");
+      setStock(product.stock?.toString() || "");
+      setPrice(product.originalPrice?.toString() || "");
+      setDiscountPrice(product.price?.toString() || "");
+      setCategory(product.categoryId?.[0]?.toString() || "");
+
+      const now = new Date();
+      let hrs = now.getHours();
+      const mins = now.getMinutes();
+      setPeriod(hrs >= 12 ? "pm" : "am");
+      hrs = hrs % 12 || 12;
+      setHours(hrs < 10 ? `0${hrs}` : `${hrs}`);
+      setMinutes(mins < 10 ? `0${mins}` : `${mins}`);
+    }
+  }, [product]);
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -43,178 +67,182 @@ const AdminProductUpdation = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Add Product" />
-      <ScrollView>
-        <View
-          style={[
-            globalStyles.sectionContent,
-            globalStyles.pt_0,
-            globalStyles.mt_n3,
-          ]}
-        >
-          <View>
-            <Text style={styles.label}>Product Name</Text>
-            <CustomTextInput
-              setValue={setProductName}
-              value={productName}
-              onPress={() => {}}
-              placeholder="Enter product name"
-            />
-
-            <Text style={styles.label}>Category</Text>
+      <View style={globalStyles.container}>
+        <Header headerText="Add Product" />
+        <ScrollView>
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              globalStyles.mt_n3,
+            ]}
+          >
             <View>
-              <Picker
-                style={globalStyles.picker}
-                selectedValue={category}
-                onValueChange={(value) => setCategory(value)}
-              >
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="Select"
-                  value=""
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="Category 1"
-                  value="cat1"
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="Category 2"
-                  value="cat2"
-                />
-              </Picker>
-            </View>
+              <Text style={styles.label}>Product Name</Text>
+              <CustomTextInput
+                setValue={setProductName}
+                value={productName}
+                onPress={() => {}}
+                placeholder="Enter product name"
+              />
 
-            <Text style={styles.label}>Stock</Text>
-            <CustomTextInput
-              onPress={() => {}}
-              setValue={setStock}
-              value={stock}
-              //style={styles.input}
-              placeholder="Enter available stock"
-              keyboardType="numeric"
-            />
+              <Text style={styles.label}>Category</Text>
+              <View>
+                <Picker
+                  style={globalStyles.picker}
+                  selectedValue={category}
+                  onValueChange={(value) => setCategory(value)}
+                >
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="Select"
+                    value=""
+                  />
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="Category 1"
+                    value="cat1"
+                  />
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="Category 2"
+                    value="cat2"
+                  />
+                </Picker>
+              </View>
 
-            <Text style={styles.label}>Price</Text>
-            <CustomTextInput
-              onPress={() => {}}
-              setValue={setPrice}
-              value={price}
-              //style={styles.input}
-              placeholder="Enter price per unit"
-              keyboardType="numeric"
-            />
+              <Text style={styles.label}>Stock</Text>
+              <CustomTextInput
+                onPress={() => {}}
+                setValue={setStock}
+                value={stock}
+                //style={styles.input}
+                placeholder="Enter available stock"
+                keyboardType="numeric"
+              />
 
-            <Text style={styles.label}>Discount Price</Text>
-            <CustomTextInput
-              //style={styles.input}
-              onPress={() => {}}
-              setValue={setDiscountPrice}
-              value={discountPrice}
-              placeholder="Enter the discount price"
-              keyboardType="numeric"
-            />
-            <View style={[globalStyles.mt_3]}>
-              <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
-                Pick the date and time when the discount starts and ends.
-              </Text>
-              <View
-                style={[
-                  globalStyles.flexRow,
-                  globalStyles.justifyContentBetween,
-                ]}
-              >
-                <View style={utilitiesStyles.flex_1}>
-                  <Text style={[styles.label, globalStyles.mt_0]}>Date: *</Text>
-                  {Platform.OS === "web" ? (
-                    <input
-                      type="date"
-                      style={globalStyles.webDateInput}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  ) : (
-                    <TouchableOpacity
-                      style={globalStyles.dateInput}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text>{date}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={new Date(date)}
-                      mode="date"
-                      display="default"
-                      onChange={onDateChange}
-                    />
-                  )}
-                </View>
-                <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
-                  <Text style={[styles.label, globalStyles.mt_0]}>Time: *</Text>
-                  <View style={globalStyles.timeContainer}>
-                    <TextInput
-                      style={globalStyles.timeInput}
-                      placeholder="HH"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={hours}
-                      onChangeText={setHours}
-                    />
-                    <Text>:</Text>
-                    <TextInput
-                      style={globalStyles.timeInput}
-                      placeholder="MM"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={minutes}
-                      onChangeText={setMinutes}
-                    />
+              <Text style={styles.label}>Price</Text>
+              <CustomTextInput
+                onPress={() => {}}
+                setValue={setPrice}
+                value={price}
+                //style={styles.input}
+                placeholder="Enter price per unit"
+                keyboardType="numeric"
+              />
 
-                    {/* AM/PM Dropdown */}
-                    <Picker
-                      selectedValue={period}
-                      style={globalStyles.picker_sm}
-                      onValueChange={(itemValue) => setPeriod(itemValue)}
-                    >
-                      <Picker.Item
-                        style={globalStyles.pickerValue_sm}
-                        label="AM"
-                        value="am"
+              <Text style={styles.label}>Discount Price</Text>
+              <CustomTextInput
+                //style={styles.input}
+                onPress={() => {}}
+                setValue={setDiscountPrice}
+                value={discountPrice}
+                placeholder="Enter the discount price"
+                keyboardType="numeric"
+              />
+              <View style={[globalStyles.mt_3]}>
+                <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
+                  Pick the date and time when the discount starts and ends.
+                </Text>
+                <View
+                  style={[
+                    globalStyles.flexRow,
+                    globalStyles.justifyContentBetween,
+                  ]}
+                >
+                  <View style={utilitiesStyles.flex_1}>
+                    <Text style={[styles.label, globalStyles.mt_0]}>
+                      Date: *
+                    </Text>
+                    {Platform.OS === "web" ? (
+                      <input
+                        type="date"
+                        style={globalStyles.webDateInput}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
                       />
-                      <Picker.Item
-                        style={globalStyles.pickerValue_sm}
-                        label="PM"
-                        value="pm"
+                    ) : (
+                      <TouchableOpacity
+                        style={globalStyles.dateInput}
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Text>{date}</Text>
+                      </TouchableOpacity>
+                    )}
+                    {showDatePicker && (
+                      <DateTimePicker
+                        value={new Date(date)}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
                       />
-                    </Picker>
+                    )}
+                  </View>
+                  <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
+                    <Text style={[styles.label, globalStyles.mt_0]}>
+                      Time: *
+                    </Text>
+                    <View style={globalStyles.timeContainer}>
+                      <TextInput
+                        style={globalStyles.timeInput}
+                        placeholder="HH"
+                        keyboardType="numeric"
+                        maxLength={2}
+                        value={hours}
+                        onChangeText={setHours}
+                      />
+                      <Text>:</Text>
+                      <TextInput
+                        style={globalStyles.timeInput}
+                        placeholder="MM"
+                        keyboardType="numeric"
+                        maxLength={2}
+                        value={minutes}
+                        onChangeText={setMinutes}
+                      />
+
+                      {/* AM/PM Dropdown */}
+                      <Picker
+                        selectedValue={period}
+                        style={globalStyles.picker_sm}
+                        onValueChange={(itemValue) => setPeriod(itemValue)}
+                      >
+                        <Picker.Item
+                          style={globalStyles.pickerValue_sm}
+                          label="AM"
+                          value="am"
+                        />
+                        <Picker.Item
+                          style={globalStyles.pickerValue_sm}
+                          label="PM"
+                          value="pm"
+                        />
+                      </Picker>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-            <View style={styles.imageContainer}>
-              {[1, 2, 3, 4, 5].map((_, index) => (
-                <TouchableOpacity key={index} style={styles.imagePlaceholder}>
-                  <Text style={styles.plus}>+</Text>
-                </TouchableOpacity>
-              ))}
+              <View style={styles.imageContainer}>
+                {[1, 2, 3, 4, 5].map((_, index) => (
+                  <TouchableOpacity key={index} style={styles.imagePlaceholder}>
+                    <Text style={styles.plus}>+</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
+        </ScrollView>
+        <View
+          style={[
+            globalStyles.p_3,
+            globalStyles.flexRow,
+            globalStyles.justifyContentBetween,
+          ]}
+        >
+          <Button onPress={() => {}} title="Add" />
+          <Button onPress={() => {}} title="Discard" primary={false} />
         </View>
-      </ScrollView>
-      <View
-        style={[
-          globalStyles.p_3,
-          globalStyles.flexRow,
-          globalStyles.justifyContentBetween,
-        ]}
-      >
-        <Button onPress={() => {}} title="Add" />
-        <Button onPress={() => {}} title="Discard" primary={false} />
       </View>
-    </View>
     </SafeAreaView>
   );
 };
