@@ -16,6 +16,7 @@ import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
 import colors from "../config/colors";
 import { ProductsAPI } from "@/services/productService";
+import AdminFooter from "@/components/AdminFooter";
 
 const AdminProductDashboard = () => {
   // const productsList = products;
@@ -86,10 +87,13 @@ const AdminProductDashboard = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={globalStyles.container}>
+      <View style={[
+        globalStyles.container,
+        {paddingBottom:36}
+        ]}>
         <Header headerText="Product Details" />
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0, {paddingTop: 16}]}>
             <Button
               onPress={() => {
                 redirectToPage(containers.AdminProductUpdationScreen, {
@@ -107,6 +111,7 @@ const AdminProductDashboard = () => {
             </View>
           </View>
         </ScrollView>
+        <AdminFooter activeTab = "products"/>
       </View>
     </SafeAreaView>
   );

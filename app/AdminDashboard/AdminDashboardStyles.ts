@@ -2,6 +2,12 @@ import { StyleSheet } from 'react-native';
 import colors from '../config/colors';
 
 const styles = StyleSheet.create({
+  container:{
+    paddingTop: 32,
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingBottom: 32,
+  },
   title: {
     fontSize: 26,
     fontWeight: '400',

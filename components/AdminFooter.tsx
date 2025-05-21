@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import colors from "@/app/config/colors";
 
 const AdminFooter = ({ activeTab = "" }: any) => {
 
@@ -18,10 +19,15 @@ const AdminFooter = ({ activeTab = "" }: any) => {
       >
         <Ionicons
           name="home"
-          size={28}
-          color={isActive("home") ? "#000" : "#222"}
+          size={24}
+          color={activeTab.toLowerCase() === "home" ? colors.primary : "#666"}
         />
-        <Text style={[styles.label, isActive("home") && styles.activeLabel]}>
+        <Text
+          style={{
+            fontSize: 10,
+            color: activeTab.toLowerCase() == "home" ? colors.primary : "#666",
+          }}
+        >
           Home
         </Text>
       </TouchableOpacity>
@@ -33,10 +39,15 @@ const AdminFooter = ({ activeTab = "" }: any) => {
       >
         <Ionicons
           name="clipboard"
-          size={28}
-          color={isActive("orders") ? "#000" : "#222"}
+          size={24}
+          color={activeTab.toLowerCase() === "orders" ? colors.primary : colors.iconBlack}
         />
-        <Text style={[styles.label, isActive("orders") && styles.activeLabel]}>
+        <Text 
+            style={{
+                fontSize:10,
+                color: activeTab.toLowerCase()=="orders"?colors.primary:colors.iconBlack
+            }}
+            >
           Orders
         </Text>
       </TouchableOpacity>
@@ -48,11 +59,16 @@ const AdminFooter = ({ activeTab = "" }: any) => {
       >
         <Ionicons
           name="cube"
-          size={28}
-          color={isActive("product") ? "#000" : "#222"}
+          size={24}
+          color={activeTab.toLowerCase() === "products" ? colors.primary : colors.iconBlack}
         />
-        <Text style={[styles.label, isActive("product") && styles.activeLabel]}>
-          Product
+       <Text 
+            style={{
+                fontSize:10,
+                color: activeTab.toLowerCase()=="products"?colors.primary:colors.iconBlack
+            }}
+            >
+          Products
         </Text>
       </TouchableOpacity>
 
@@ -63,10 +79,15 @@ const AdminFooter = ({ activeTab = "" }: any) => {
       >
         <Ionicons
           name="gift"
-          size={28}
-          color={isActive("scan") ? "#000" : "#222"}
+          size={24}
+          color={activeTab.toLowerCase() === "scan & deliver" ? colors.primary : colors.iconBlack}
         />
-        <Text style={[styles.label, isActive("scan") && styles.activeLabel]}>
+       <Text 
+            style={{
+                fontSize:10,
+                color: activeTab.toLowerCase()=="scan & deliver" ? colors.primary : colors.iconBlack
+            }}
+            >
           Scan & Deliver
         </Text>
       </TouchableOpacity>
@@ -77,13 +98,13 @@ const AdminFooter = ({ activeTab = "" }: any) => {
 
 const styles = StyleSheet.create({
   footer: {
-    flexDirection: "row",
-    backgroundColor: "#CEF1F9",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-    justifyContent: "space-around",
-    alignItems: "center",
+   flexDirection: "row",
+       backgroundColor: colors.white,
+       paddingVertical: 8,
+       borderTopWidth: 1,
+       justifyContent: "space-around",
+       alignItems: "center",
+       borderTopColor: colors.placeholdergrey,
   },
   footerTab: {
     alignItems: "center",

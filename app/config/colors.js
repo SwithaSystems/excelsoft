@@ -15,4 +15,5 @@ export default {
   buttonError: "#EB0A0A",
   lightGreen: "#DCF0E4",
   paleBlue: "#EDFAFD",
+  iconBlack: "#666",
 };

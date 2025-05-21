@@ -45,7 +45,7 @@ const AdminDashboard = () => {
           <View
             style={{
               flexDirection: "column",
-              justifyContent: "space-between",
+              // justifyContent: "space-between",
               height: "100%",
             }}
           >
@@ -74,12 +74,12 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <View style={globalStyles.container}>
-          <BrandHeader hideUserGreeting={true} />
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <Text style={styles.title}>Dashboard</Text>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <View style={styles.container}>
+        <BrandHeader hideUserGreeting={true}/>
+        <ScrollView>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <Text style={styles.title}>Dashboard</Text>
 
               <View style={styles.metricsContainer}>
                 <View style={styles.metricBox}>
@@ -150,25 +150,25 @@ const AdminDashboard = () => {
                 </View>
               </View>
 
-              <View style={styles.ordersHeader}>
-                <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    redirectToPage(containers.AdminSeeAllOrdersScreen);
-                  }}
-                >
-                  <Text style={styles.seeAll}>See All</Text>
-                </TouchableOpacity>
-              </View>
-              <FlatList
-                data={ordersData}
-                renderItem={renderOrder}
-                keyExtractor={(item) => item.id}
-              />
+            <View style={styles.ordersHeader}>
+              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.AdminSeeAllOrdersScreen);
+                }}
+              >
+                <Text style={styles.seeAll}>See All</Text>
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-          <AdminFooter activeTab="home" />
-        </View>
+            <FlatList
+              data={ordersData}
+              renderItem={renderOrder}
+              keyExtractor={(item) => item.id}
+            />
+          </View>
+        </ScrollView>
+        <AdminFooter activeTab="home" />
+      </View>
       </SafeAreaView>
     </>
   );

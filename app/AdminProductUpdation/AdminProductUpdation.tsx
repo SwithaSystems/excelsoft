@@ -16,24 +16,56 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  Image,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../config/colors";
 import { useLocalSearchParams } from "expo-router";
+import { CheckBox } from "react-native-elements";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
   const [productName, setProductName] = useState("");
+  const [title, setTitle] = useState("");  
+  const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
   const [price, setPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
+  const [minimumOrderQunatity, setMinimumOrderQuantity] = useState("");
   const [category, setCategory] = useState("");
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isDefault, setIsDefault] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [offerPrice, setOfferPrice] = useState([{
+    qty:"", 
+    actualPrice:"",
+     discountPrice:""
+  }])
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("Permission to access gallery is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
   const product =
     typeof props.item === "string" ? JSON.parse(props.item) : props.item;
   console.log("product selected", product);
@@ -65,29 +97,57 @@ const AdminProductUpdation = () => {
     setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
   };
 
+  const addNewPrice = () => {
+    const newRow = {qty: "", actualPrice:"", discountPrice:""};
+    const updatedPrices = offerPrice.concat(newRow);
+    setOfferPrice(updatedPrices);
+  }
+
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={globalStyles.container}>
-        <Header headerText="Add Product" />
-        <ScrollView>
-          <View
-            style={[
-              globalStyles.sectionContent,
-              globalStyles.pt_0,
-              globalStyles.mt_n3,
-            ]}
-          >
-            <View>
-              <Text style={styles.label}>Product Name</Text>
-              <CustomTextInput
-                setValue={setProductName}
-                value={productName}
-                onPress={() => {}}
-                placeholder="Enter product name"
-              />
+    <View style={[
+      globalStyles.container,
+      {paddingTop: 16}
+      ]}>
+      <Header headerText="Add Product" />
+      <ScrollView>
+        <View
+          style={[
+            globalStyles.sectionContent,
+            globalStyles.pt_0,
+            globalStyles.mt_n3,
+          ]}
+        >
+          <View>
+            <Text style={styles.label}>Product Name</Text>
+            <TextInput
+              value={productName}
+              onChangeText={setProductName}
+              onPress={() => {}}
+              placeholder="Enter product name"
+              style={styles.textboxStyles}
+            />
+            <Text style={styles.label}>Title</Text>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              onPress={() => {}}
+              placeholder="Enter title"
+              style={styles.textboxStyles}
+            />
+            <Text style={styles.label}>Product Description</Text>
+            <TextInput
+              value={productDescription}
+              onChangeText={setProductDescription}
+              onPress={() => {}}
+              placeholder="Enter Product Description"
+              multiline
+              numberOfLines={6}
+              style={styles.multilinetextbox}
+            />
 
               <Text style={styles.label}>Category</Text>
-              <View>
+              <View style={[styles.categoryStyles, {height:40, justifyContent:'center'}]}>
                 <Picker
                   style={globalStyles.picker}
                   selectedValue={category}
@@ -112,35 +172,59 @@ const AdminProductUpdation = () => {
               </View>
 
               <Text style={styles.label}>Stock</Text>
-              <CustomTextInput
-                onPress={() => {}}
-                setValue={setStock}
-                value={stock}
-                //style={styles.input}
-                placeholder="Enter available stock"
-                keyboardType="numeric"
-              />
-
+              <TextInput
+              value={stock}
+              onChangeText={setStock}
+              onPress={() => {}}
+              placeholder="Enter available stock"
+              keyboardType="numeric"
+              style={styles.textboxStyles}
+             />
               <Text style={styles.label}>Price</Text>
-              <CustomTextInput
-                onPress={() => {}}
-                setValue={setPrice}
+              
+              <TextInput
                 value={price}
-                //style={styles.input}
+                onChangeText={setPrice}
+                onPress={() => {}}
                 placeholder="Enter price per unit"
                 keyboardType="numeric"
-              />
+                style={styles.textboxStyles}
+             />
 
-              <Text style={styles.label}>Discount Price</Text>
-              <CustomTextInput
-                //style={styles.input}
+              <Text style={styles.label}>Minimum Order Qunatity:</Text>
+              <TextInput
+                value={minimumOrderQunatity}
+                onChangeText={setMinimumOrderQuantity}
                 onPress={() => {}}
-                setValue={setDiscountPrice}
-                value={discountPrice}
-                placeholder="Enter the discount price"
+                placeholder="Enter the minimum order quantity"
                 keyboardType="numeric"
-              />
-              <View style={[globalStyles.mt_3]}>
+                style={styles.textboxStyles}
+             />
+             <Text style={styles.label}>Select Color</Text>
+              <View style={[styles.categoryStyles, {height:40, justifyContent:'center'}]}>
+                <Picker
+                  style={globalStyles.picker}
+                  selectedValue={category}
+                  onValueChange={(value) => setCategory(value)}
+                >
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="Select"
+                    value=""
+                  />
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="Black"
+                    value="Black"
+                  />
+                  <Picker.Item
+                    style={globalStyles.pickerValue}
+                    label="White"
+                    value="White"
+                  />
+                </Picker>
+              </View>
+              {/* <View style={[globalStyles.mt_3]}>
                 <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
                   Pick the date and time when the discount starts and ends.
                 </Text>
@@ -201,7 +285,7 @@ const AdminProductUpdation = () => {
                         onChangeText={setMinutes}
                       />
 
-                      {/* AM/PM Dropdown */}
+                      AM/PM Dropdown
                       <Picker
                         selectedValue={period}
                         style={globalStyles.picker_sm}
@@ -221,28 +305,86 @@ const AdminProductUpdation = () => {
                     </View>
                   </View>
                 </View>
-              </View>
-              <View style={styles.imageContainer}>
+              </View> */}
+              {/* <View style={styles.imageContainer}>
                 {[1, 2, 3, 4, 5].map((_, index) => (
                   <TouchableOpacity key={index} style={styles.imagePlaceholder}>
                     <Text style={styles.plus}>+</Text>
                   </TouchableOpacity>
                 ))}
+              </View> */}
+              <View style={styles.checkBox}>
+                <CheckBox
+                  checked={isDefault}
+                  onPress={() => setIsDefault(!isDefault)}
+                />
+                <Text>Is returnable?</Text>
               </View>
+              <Text style={styles.tableHeading}>QTY        Actual Price        Discounted Price</Text>
+              {offerPrice.map((item, index) => (
+                  <View key={index} style={styles.tableRow}>
+                    <TextInput
+                      style={styles.tableInput}
+                      value={item.qty}
+                      //onChangeText={}
+                      placeholder="QTY"
+                    />
+                    <TextInput
+                      style={styles.tableInput}
+                      value={item.actualPrice}
+                      //onChangeText={}
+                      placeholder="Price"
+                    />
+                    <TextInput
+                      style={styles.tableInput}
+                      value={item.discountPrice}
+                      //onChangeText={}
+                      placeholder="Discounted"
+                    />
+                    
+                    {index === offerPrice.length - 1 && (
+                      <TouchableOpacity onPress={addNewPrice}>
+                        <Ionicons name="add" size={24} color="green" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))}
+              <View style={{marginBottom: 20}}>
+                <Text style={styles.label}>
+                  Would you like to add some pictures for your products?
+                </Text>
+                <TouchableOpacity
+                  style={styles.addImageButton}
+                  onPress={pickImage}
+                  disabled={isSubmitting}
+                >
+                  <Ionicons
+                    name="add"
+                    size={30}
+                    color={isSubmitting ? "#ccc" : "gray"}
+                  />
+                </TouchableOpacity>
+                {image && (
+                  <Image
+                    source={{ uri: image }}
+                    style={{ width: 200, height: 200, marginTop: 10 }}
+                  />
+                )}
+              </View>
+                </View>
+              </View>
+            </ScrollView>
+            <View
+              style={[
+                globalStyles.p_3,
+                globalStyles.flexRow,
+                globalStyles.justifyContentBetween,
+              ]}
+            >
+              <Button onPress={() => {}} title="Add" />
+              <Button onPress={() => {}} title="Discard" primary={false} />
             </View>
           </View>
-        </ScrollView>
-        <View
-          style={[
-            globalStyles.p_3,
-            globalStyles.flexRow,
-            globalStyles.justifyContentBetween,
-          ]}
-        >
-          <Button onPress={() => {}} title="Add" />
-          <Button onPress={() => {}} title="Discard" primary={false} />
-        </View>
-      </View>
     </SafeAreaView>
   );
 };
@@ -309,6 +451,65 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
+  },
+   textboxStyles: {
+      backgroundColor: colors.placeholdergrey,
+      borderWidth: 0,
+      borderRadius: 8,
+      padding: 10,
+      textAlignVertical: 'top',  
+    },
+    multilinetextbox:{
+      height: 150,
+      backgroundColor: colors.placeholdergrey,
+      borderWidth: 0,
+      borderRadius: 8,
+      padding: 10,
+      textAlignVertical: 'top', 
+    },
+    categoryStyles:{
+      backgroundColor: colors.placeholdergrey,
+      borderWidth: 0,
+      borderRadius: 8,
+      // padding: 10,
+      // textAlignVertical: 'top', 
+    },
+    checkBox: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addImageButton: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60,
+    height: 60,
+    marginBottom: 10,
+  },
+  tableHeading: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 12,
+    textAlign: 'left',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+  },
+  tableInput: {
+    flex: 1,
+    height: 40,
+    marginHorizontal: 4,
+    padding: 8,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#D1D1D1',
+    borderRadius: 4,
+    textAlign: 'center',
   },
 });
 
