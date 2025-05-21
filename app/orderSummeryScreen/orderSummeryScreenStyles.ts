@@ -85,7 +85,22 @@ const styles = StyleSheet.create({
   },
   accordian:{
     //marginLeft:'auto'
-  }
+  }, 
+  accordionContent: {
+  marginTop: 10,
+  paddingLeft: 10,
+  borderLeftWidth: 1,
+  borderLeftColor: '#e0e0e0',
+},
+noAddressContainer: {
+  padding: 16,
+  alignItems: 'center',
+  justifyContent: 'center'
+},
+noAddressText: {
+  color: colors.placeholdergrey,
+  fontSize: 16
+},
 });
 
 export default styles;
