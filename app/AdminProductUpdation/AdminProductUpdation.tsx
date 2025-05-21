@@ -344,7 +344,10 @@ const AdminProductUpdation = () => {
                     
                     {index === offerPrice.length - 1 && (
                       <TouchableOpacity onPress={addNewPrice}>
-                        <Ionicons name="add" size={24} color="green" />
+                        <Ionicons 
+                        name="add-circle" 
+                        size={36} 
+                        color={colors.primary} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -497,17 +500,18 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    padding: 8,
+    //padding: 8,
     alignItems: 'center',
+    gap:16,
   },
   tableInput: {
     flex: 1,
     height: 40,
     marginHorizontal: 4,
     padding: 8,
-    backgroundColor: 'white',
+    backgroundColor: colors.secondary,
     borderWidth: 1,
-    borderColor: '#D1D1D1',
+    borderColor: colors.primary,
     borderRadius: 4,
     textAlign: 'center',
   },

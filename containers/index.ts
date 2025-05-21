@@ -65,4 +65,5 @@ export default {
   replaceOrderScreenScreen: "replaceOrderScreen/replaceOrderScreen",
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
   selectBillingAddressScreenScreen:"selectBillingAddressScreen/selectBillingAddressScreen",
-  };
+  AdminCategoriesScreen: 'AdminCategories/AdminCategories'
+};

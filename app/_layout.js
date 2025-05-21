@@ -327,7 +327,11 @@ const LayoutContent = () => {
             name={containers.selectBillingAddressScreenScreen}
             options={{ headerShown: false }}
           />
-          </Stack>
+          <Stack.Screen 
+            name={containers.AdminCategoriesScreen} 
+            options={{ headerShown: false }} 
+          />
+</Stack>
       )}
     </>
   );

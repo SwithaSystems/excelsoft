@@ -67,6 +67,7 @@ const orderSummeryScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState<any>(null);
+  const [isDefault, setIsDefault] = useState(false);
 
   // Extract pickup data from route params or use default values
   const pickupAddress = params?.pickupAddress
@@ -188,13 +189,35 @@ const orderSummeryScreen = () => {
                   )}
                 </View>              
               </View>
+              <View style={styles.checkBox}>
+                <CheckBox
+                  checked={isDefault}
+                  onPress={() => setIsDefault(!isDefault)}
+                />
+                  <Text>Set Delivery Address as Billing Address?</Text>
+              </View>
               <View style={[globalStyles.pl_3]}>
-                  {/* <Ionicons 
-                    name = "home"
-                    fontsize = {48}
-                    color ={colors.primary}
-                  /> */}
-                  <Text style = {styles.subheading}>Billing Address</Text>
+                  <View style={styles.billingAddress}>
+                    <Ionicons 
+                      name = "receipt"
+                      size = {24}
+                      color ={colors.primary}
+                      style = {{marginRight: 10}}
+                    />
+                    <View style={styles.billingAddressAccordian}>
+                      <Text style = {styles.subheading}>Billing Address: </Text>
+                      <TouchableOpacity
+                        style = {styles.accordian}
+                      >
+                      <Ionicons 
+                        name = "chevron-down-circle"
+                        size = {24}
+                        color ={colors.primary}
+                        style={styles.accordianIcon}
+                      />
+                    </TouchableOpacity>
+                    </View>
+                  </View>
                   <FlatList
                     data={addressData.filter((address) => !address.isDefault)}
                     renderItem={({ item }) => (
