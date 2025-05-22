@@ -82,35 +82,34 @@ const categoriesScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={{flex:1}}>
-      <Header headerText={category?.name} />
-       <ScrollView style = {styles.categories}> 
-      <FlatList
-        ListHeaderComponent={
-            <View style={[{ backgroundColor: colors.white }]}>
-              <FlatList
-                data={subCategories}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderItem}
-                numColumns={2}
-                columnWrapperStyle={[
-                  styles.row,
-                  { justifyContent: 'space-between', paddingHorizontal: 16 }
-                ]}
-                contentContainerStyle={styles.listContainer}
-                showsVerticalScrollIndicator={false}
-                //nestedScrollEnabled={true}
-              />
-            </View>
-        }
-        data={[]}
-        renderItem={null}
-      />
-
-     </ScrollView> 
-      <Footer navigation={router} activeTab="home" />
-    </View>
-   </SafeAreaView>
+      <View style={{ flex: 1 }}>
+        <Header headerText={category?.name} />
+        <ScrollView style={styles.categories}>
+          <FlatList
+            ListHeaderComponent={
+              <View style={[{ backgroundColor: colors.white }]}>
+                <FlatList
+                  data={subCategories}
+                  keyExtractor={(item: any) => item.id}
+                  renderItem={renderItem}
+                  numColumns={2}
+                  columnWrapperStyle={[
+                    styles.row,
+                    { justifyContent: "space-between", paddingHorizontal: 16 },
+                  ]}
+                  contentContainerStyle={styles.listContainer}
+                  showsVerticalScrollIndicator={false}
+                  //nestedScrollEnabled={true}
+                />
+              </View>
+            }
+            data={[]}
+            renderItem={null}
+          />
+        </ScrollView>
+        <Footer navigation={router} activeTab="home" />
+      </View>
+    </SafeAreaView>
   );
 };
 

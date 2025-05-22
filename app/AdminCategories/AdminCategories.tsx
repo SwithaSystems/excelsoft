@@ -178,6 +178,17 @@ const AdminCategories = () => {
       // Create FormData for multipart/form-data upload
       const formData = new FormData();
 
+      // Find the max id from the category list
+      const maxId = categoryList.reduce((max, category) => {
+        return category.id &&
+          typeof category.id === "number" &&
+          category.id > max
+          ? category.id
+          : max;
+      }, 0);
+
+      const newId = maxId + 1;
+      formData.append("id", newId.toString());
       // Append regular text fields
       formData.append("name", categoryName.trim());
       if (categoryDescription.trim()) {
@@ -284,9 +295,7 @@ const AdminCategories = () => {
                 onPress={showImageOptions}
               >
                 <Ionicons name="camera" size={24} color={colors.primary} />
-                <Text style={styles.imagePickerText}>
-                  Add Images ({categoryImages.length}/{MAX_IMAGES})
-                </Text>
+                <Text style={styles.imagePickerText}>Add Image</Text>
               </TouchableOpacity>
 
               {/* Image Preview */}
@@ -396,8 +405,8 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   input: {
-    backgroundColor: colors.placeholdergrey,
-    borderWidth: 0,
+    backgroundColor: colors.white,
+    borderWidth: 1,
     borderRadius: 8,
     padding: 10,
     textAlignVertical: "top",
@@ -416,7 +425,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.placeholdergrey,
+    backgroundColor: colors.white,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
