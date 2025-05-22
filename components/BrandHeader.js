@@ -33,6 +33,7 @@ function BrandHeader(props) {
 
         if (response?.data) {
           console.log("userdata", response.data);
+          setIsAdmin(response?.data?.isAdmin);
           setUsername(response?.data?.firstName || "User");
           setIsValidUser(true);
         } else {
@@ -82,6 +83,7 @@ function BrandHeader(props) {
       fetchUser_Listener.remove();
     };
   }, [user]);
+  console.log("isAdmin", isAdmin);
 
   return (
     <>
@@ -111,35 +113,35 @@ function BrandHeader(props) {
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               {!props?.hideUserGreeting && (
-              <Text style={{ marginRight: 8 }}>
-                {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
-              </Text>
+                <Text style={{ marginRight: 8 }}>
+                  {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+                </Text>
               )}
               <Ionicons name="person-circle-outline" size={24} color="#000" />
             </View>
           </TouchableOpacity>
-            
+          if(isAdmin) && (
           <TouchableOpacity
-            onPress={()=>{
-              if(props.hideUserGreeting){
-              redirectToPage(containers.homeScreen);
+            onPress={() => {
+              if (props.hideUserGreeting) {
+                redirectToPage(containers.homeScreen);
               } else {
-                redirectToPage(containers.AdminDashboardScreen)
+                redirectToPage(containers.AdminDashboardScreen);
               }
             }}
             style={{
-              marginLeft:14,
-              backgroundColor: isAdmin ? colors.primary : colors.black,
+              marginLeft: 14,
+              backgroundColor: colors.black,
               borderRadius: 16,
               paddingHorizontal: 12,
               paddingVertical: 6,
             }}
           >
-            <Text style={{color:"white", fontSize:12}}>
+            <Text style={{ color: "white", fontSize: 12 }}>
               {props.hideUserGreeting ? "User" : "Admin"}
             </Text>
           </TouchableOpacity>
-
+          )
           <TouchableOpacity style={{ marginLeft: 14 }}>
             <Ionicons name="notifications" size={24} color="#000" />
           </TouchableOpacity>
