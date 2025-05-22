@@ -1,4 +1,4 @@
-import { jsonAxios } from "./axiosConfig";
+import createAxiosInstance, { jsonAxios } from "./axiosConfig";
 
 export interface Category {
   id: number;
@@ -9,6 +9,16 @@ export interface Category {
 }
 
 export const categoryService = {
+  addCategory: async (category: any): Promise<Category> => {
+    try {
+      const formDataAxios = createAxiosInstance("formdata");
+      const response = await formDataAxios.post(`/categories`, category);
+      return response.data;
+    } catch (error) {
+      console.error("Error adding category:", error);
+      throw error;
+    }
+  },
   getAllCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
       const response = await jsonAxios.get(`/categories`, {
