@@ -29,6 +29,7 @@ import ModalSelector from "react-native-modal-selector";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -371,6 +372,7 @@ const AdminProductUpdation = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={[globalStyles.container, { paddingTop: 16 }]}>
         <Header headerText="Update Product" />
+        <KeyBoardWrapper>
         <ScrollView>
           <View
             style={[
@@ -387,12 +389,12 @@ const AdminProductUpdation = () => {
               placeholder="Enter product name"
             />
             <Text style={styles.label}>Title</Text>
-            <TextInput
+            <CustomTextInput
               value={title}
-              onChangeText={setTitle}
+              setValue={setTitle}
               onPress={() => {}}
               placeholder="Enter title"
-              style={styles.textboxStyles}
+              // style={styles.textboxStyles}
             />
             <Text style={styles.label}>Product Description</Text>
             <TextInput
@@ -476,15 +478,15 @@ const AdminProductUpdation = () => {
               placeholder="Enter the minimum order quantity"
               keyboardType="numeric"
             />
-            <Text style={styles.label}>Select Color</Text>
+            <Text style={[styles.label, {paddingBottom:8}]}>Add Color</Text>
             <View
               style={[
                 styles.categoryStyles,
                 {
                   height: 40,
                   justifyContent: "center",
-                  borderColor: colors.primary,
-                  borderWidth: 1,
+                  // borderColor: colors.primary,
+                  // borderWidth: 1,
                   borderRadius: 8,
                 },
               ]}
@@ -669,6 +671,7 @@ const AdminProductUpdation = () => {
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
         )}
+        </KeyBoardWrapper>
       </View>
     </SafeAreaView>
   );
