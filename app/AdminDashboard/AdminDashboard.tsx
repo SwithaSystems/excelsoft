@@ -77,6 +77,7 @@ const AdminDashboard = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={styles.container}>
         <BrandHeader hideUserGreeting={true}/>
+        console.log("hideUserGreeting:", props.hideUserGreeting);
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <Text style={styles.title}>Dashboard</Text>

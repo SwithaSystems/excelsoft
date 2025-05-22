@@ -13,10 +13,12 @@ import containers from "../containers";
 import { UserAPI } from "../services/userService";
 import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import colors from "@/app/config/colors";
 
 function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const [isValidUser, setIsValidUser] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
 
@@ -108,11 +110,34 @@ function BrandHeader(props) {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {!props?.hideUserGreeting && (
               <Text style={{ marginRight: 8 }}>
                 {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
               </Text>
+              )}
               <Ionicons name="person-circle-outline" size={24} color="#000" />
             </View>
+          </TouchableOpacity>
+            
+          <TouchableOpacity
+            onPress={()=>{
+              if(props.hideUserGreeting){
+              redirectToPage(containers.homeScreen);
+              } else {
+                redirectToPage(containers.AdminDashboardScreen)
+              }
+            }}
+            style={{
+              marginLeft:14,
+              backgroundColor: isAdmin ? colors.primary : colors.black,
+              borderRadius: 16,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+            }}
+          >
+            <Text style={{color:"white", fontSize:12}}>
+              {props.hideUserGreeting ? "User" : "Admin"}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={{ marginLeft: 14 }}>
