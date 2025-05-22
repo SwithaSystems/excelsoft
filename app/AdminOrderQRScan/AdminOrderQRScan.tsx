@@ -13,44 +13,48 @@ const AdminOrderQRScan = () => {
   const [qrCode,setQrCode] = useState("");
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <Header headerText="Scan QR Code" />
-      <ScrollView>
-        <View>
-          <View>
-            <Text>Scan the consumer's QR Order</Text>
-            <MaterialIcons
-            name="flashlight-on"
-            size={24}
-            color={colors.primary}
-            />
-          </View>
-          <MaterialIcons
-            name="qr-code-scanner"
-            size={108}
-            color={colors.primary}
-            />
-        </View>
-        <Text>OR</Text>
-        <View>
-          <Text>Enter QR Number</Text>
-          <CustomTextInput 
-            placeholder="Enter 5-Digit QR Code"
-            value={qrCode}
-            setValue={setQrCode} 
-            onPress= {() => {}}          
-            />
-            <TouchableOpacity
-                style={styles.verifyButton}
-                onPress={()=>{}}
-              >
-                <Text style={styles.buttonText}>Verify</Text>
-              </TouchableOpacity>
-        </View>
+  <View style={styles.container}>
+    <Header headerText="Scan QR Code" />
+    <ScrollView>
+      <View style={styles.instructionContainer}>
+        <Text style={styles.instructionText}>Scan the consumer's QR Order</Text>
+        <MaterialIcons
+          name="flashlight-on"
+          size={24}
+          color={colors.primary}
+        />
+      </View>
 
-      </ScrollView>
-    </View>
-    </SafeAreaView>
+      <MaterialIcons
+        name="qr-code-scanner"
+        size={108}
+        color={colors.primary}
+        style={styles.qrIcon}
+      />
+
+      <Text style={styles.orText}>OR</Text>
+
+      <View style={styles.inputSection}>
+        <Text style={styles.inputLabel}>Enter QR Number</Text>
+
+        <CustomTextInput 
+          placeholder="Enter 5-Digit QR Code"
+          value={qrCode}
+          setValue={setQrCode} 
+          onPress={() => {}}          
+        />
+
+        <TouchableOpacity
+          style={styles.verifyButton}
+          onPress={() => {}}
+        >
+          <Text style={styles.buttonText}>Verify</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  </View>
+</SafeAreaView>
+
   );
 };
 
