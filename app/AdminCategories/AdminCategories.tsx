@@ -19,6 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { categoryService } from "@/services/categoryService";
 import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
 
 interface Category {
   id: number;
@@ -238,6 +239,7 @@ const AdminCategories = () => {
         setParentCategory("");
 
         Alert.alert("Success", "Category added successfully");
+        router.back();
       }
     } catch (error) {
       console.error("Error adding category:", error);
@@ -333,7 +335,7 @@ const AdminCategories = () => {
               disabled={loading}
             >
               <Text style={styles.addButtonText}>
-                {loading ? "Adding..." : "Add New Category"}
+                {loading ? "Adding..." : "Add Category"}
               </Text>
             </TouchableOpacity>
           </View>

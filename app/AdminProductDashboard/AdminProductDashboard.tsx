@@ -85,27 +85,36 @@ const AdminProductDashboard = () => {
       </View>
     );
   };
+  const maxId = productsList.reduce((max: any, product: any) => {
+    return product.id && typeof product.id === "number" && product.id > max
+      ? product.id
+      : max;
+  }, 0);
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[
-        globalStyles.container,
-        {paddingBottom:36}
-        ]}>
+      <View style={[globalStyles.container, { paddingBottom: 36 }]}>
         <Header headerText="Product Details" />
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0, {paddingTop: 16}]}>
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              { paddingTop: 16 },
+            ]}
+          >
             <Button
               onPress={() => {
                 redirectToPage(containers.AdminProductUpdationScreen, {
                   newProduct: true,
+                  maxId: maxId + 1,
                 });
               }}
               title="+ Add New Product"
             />
             <TouchableOpacity
               onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
-              style={{paddingTop:16}}
+              style={{ paddingTop: 16 }}
             >
               <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
             </TouchableOpacity>
@@ -118,7 +127,7 @@ const AdminProductDashboard = () => {
             </View>
           </View>
         </ScrollView>
-        <AdminFooter activeTab = "products"/>
+        <AdminFooter activeTab="products" />
       </View>
     </SafeAreaView>
   );

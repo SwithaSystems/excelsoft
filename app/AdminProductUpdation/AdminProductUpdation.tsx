@@ -33,8 +33,10 @@ import { ProductsAPI } from "@/services/productService";
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
   const newProduct = props.newProduct;
+  const maxId = props.maxId;
   const [productName, setProductName] = useState("");
   const [title, setTitle] = useState("");
+  const [id, setId] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
   const [price, setPrice] = useState("");
@@ -85,6 +87,7 @@ const AdminProductUpdation = () => {
   useEffect(() => {
     // Only run once when component mounts
     if (productData) {
+      setId(productData.id || "");
       setTitle(productData.title || "");
       setProductDescription(productData.description || "");
       setProductName(productData.name || "");
@@ -264,8 +267,12 @@ const AdminProductUpdation = () => {
       // Create FormData for multipart/form-data upload
       const formData = new FormData();
 
+      // Find the max id from the category list
+
       // Append regular text fields
+
       formData.append("name", productName);
+      formData.append("id", id ? id : maxId.toString());
       formData.append("title", title);
       formData.append("description", productDescription);
       formData.append("stock", stock);
@@ -335,7 +342,7 @@ const AdminProductUpdation = () => {
                 text: "OK",
                 onPress: () => {
                   // Navigate back
-                  // router.back();
+                  router.back();
                 },
               },
             ]
