@@ -1,20 +1,44 @@
-import React, { Children, ReactNode }  from "react";
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import React, { ReactNode } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  View,
+} from "react-native";
 
-interface props{
-    children: ReactNode;
+interface Props {
+  children: ReactNode;
+  avoidKeyboard?: boolean;
 }
 
-const KeyBoardWrapper = ({children}: props) => {
-    return (
+const KeyBoardWrapper = ({ children, avoidKeyboard = false }: Props) => {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {avoidKeyboard ? (
         <KeyboardAvoidingView
-            style = {{flex:1}}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS==='ios' ? 0 : 20}
+          style={styles.keyboardView}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 100} 
         >
-            {children}
+          {children}
         </KeyboardAvoidingView>
-    );
+      ) : (
+        <View style={styles.keyboardView}>
+          {children}
+        </View>
+      )}
+    </SafeAreaView>
+  );
 };
 
 export default KeyBoardWrapper;
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+});

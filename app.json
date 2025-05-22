@@ -4,7 +4,7 @@
     "slug": "excelsoft-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/shortLogo.png",
+    "icon": "./assets/W.png",
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {

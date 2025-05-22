@@ -1,20 +1,53 @@
 import { StyleSheet } from 'react-native';
 import colors from '../config/colors';
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    backgroundColor: '#fff',
   },
-  text: {
-    fontSize: 12,
-    color: 'black',
+  instructionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 16,
   },
-  verifyButton:{
-
+  instructionText: {
+    fontSize: 14,
+    color: '#000',
+    flex: 1,
   },
-  buttonText:{
-
+  qrIcon: {
+    alignSelf: 'center',
+    marginVertical: 40,
+  },
+  orText: {
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 16,
+    marginVertical: 12,
+  },
+  inputSection: {
+    marginTop: 12,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#000',
+    marginBottom: 6,
+  },
+  verifyButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
-
-export default styles;
