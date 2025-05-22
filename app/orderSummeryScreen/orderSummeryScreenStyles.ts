@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   },
   subheading: {
     fontWeight: "bold",
-    paddingRight: 12,
+    //paddingRight: 12,
   },
   checkBoxContainer: {
     padding: 0,
@@ -49,14 +49,15 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: colors.white,
     borderRadius: 8,
-    marginVertical: 8,
+    // marginVertical: 8,
+     marginRight: 12,
     width: "100%",
   },
   billingAddressAccordian: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginLeft: 10,
+   
   },
   changeSlotText: {
     color: colors.primary,

@@ -337,7 +337,9 @@ const orderSummeryScreen = () => {
                 <Text>Set Delivery Address as Billing Address?</Text>
               </View>
 
-              <View style={[globalStyles.pl_3]}>
+              <View 
+                // style={[globalStyles.pl_3]}
+              >
                 <View style={styles.billingAddress}>
                   <Ionicons
                     name="receipt"

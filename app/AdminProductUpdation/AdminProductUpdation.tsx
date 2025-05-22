@@ -469,13 +469,12 @@ const AdminProductUpdation = () => {
               keyboardType="numeric"
             /> */}
             <Text style={styles.label}>Minimum Order Qunatity:</Text>
-            <TextInput
+            <CustomTextInput
+              setValue={setMinimumOrderQuantity}
               value={minimumOrderQunatity}
-              onChangeText={setMinimumOrderQuantity}
               onPress={() => {}}
               placeholder="Enter the minimum order quantity"
               keyboardType="numeric"
-              style={styles.textboxStyles}
             />
             <Text style={styles.label}>Select Color</Text>
             <View
@@ -490,27 +489,13 @@ const AdminProductUpdation = () => {
                 },
               ]}
             >
-              <Picker
-                style={globalStyles.picker}
-                selectedValue={color}
-                onValueChange={(value) => setColor(value)}
-              >
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="Select"
-                  value=""
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="Black"
-                  value="Black"
-                />
-                <Picker.Item
-                  style={globalStyles.pickerValue}
-                  label="White"
-                  value="White"
-                />
-              </Picker>
+             <CustomTextInput
+              setValue={setColor}
+              value={color}
+              onPress={() => {}}
+              placeholder="Add color"
+              keyboardType="numeric"
+            /> 
             </View>
             <View style={[globalStyles.mt_3]}>
               <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
