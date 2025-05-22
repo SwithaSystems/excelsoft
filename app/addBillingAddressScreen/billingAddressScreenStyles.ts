@@ -58,6 +58,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
+  inputError: {
+    borderColor: "red",
+    borderWidth: 1,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: colors.lightgrey,
+  },
 });
 
 export default styles;
