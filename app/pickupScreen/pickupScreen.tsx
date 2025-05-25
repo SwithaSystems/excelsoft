@@ -535,9 +535,13 @@ const PickupScreen = () => {
       </Text>
       <TextInput
         ref={ref}
-        style={[inputStyles.textInput, error && inputStyles.inputError]}
         value={value}
         onChangeText={onChangeText}
+        style={[
+          inputStyles.textInput,
+          error && inputStyles.inputError,
+          props?.editable === false && { backgroundColor: "#f0f0f0" },
+        ]}
         {...props}
       />
       {error && <Text style={inputStyles.errorText}>{error}</Text>}
@@ -787,7 +791,7 @@ const PickupScreen = () => {
                 firstName,
                 setFirstName,
                 true,
-                {},
+                { editable: collector !== "myself" },
                 null,
                 firstNameRef
               )}
@@ -796,7 +800,7 @@ const PickupScreen = () => {
                 lastName,
                 setLastName,
                 true,
-                {},
+                { editable: collector !== "myself" },
                 null,
                 lastNameRef
               )}
