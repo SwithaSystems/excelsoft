@@ -22,25 +22,44 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Button from "@/components/commonComponents/Button";
 import { useLocalSearchParams } from "expo-router";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { NotificationService } from "@/services/notificationService";
 import colors from "../config/colors";
 import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import ModalSelector from "react-native-modal-selector";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+// Minimum pickup time (30 minutes from now)
+const MIN_PICKUP_MINUTES = 30;
+
+// Default pickup time (2 hours from now)
+const DEFAULT_PICKUP_HOURS = 2;
 const HomeDeliveryScreen = () => {
   const { orderId, mode } = useLocalSearchParams();
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  // Date and time state
+  const [date, setDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
+  // Form state
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[] | null>([]);
+
+  // Redux state
+  const userData = useSelector((state: RootState) => state.user.user);
+
+  // Refs
+  const minutesRef = useRef(null);
+
   const [address, setAddress] = useState<any>("");
   const [additionalDetails, setAdditionalDetails] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -52,29 +71,151 @@ const HomeDeliveryScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
-  const [isFormValid, setIsFormValid] = useState(false);
 
-  // Set default time to 2 hours ahead of current time
+  // Initialize default time values based on new business rules
   useEffect(() => {
     const now = new Date();
-    const twoHoursAhead = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const currentHour = now.getHours();
+    let targetDate, targetHour, targetMinute;
 
-    // Format hours for 12-hour clock
-    let defaultHours = twoHoursAhead.getHours();
-    const defaultPeriod = defaultHours >= 12 ? "pm" : "am";
+    // Check if current time is between 7AM (7) and 5PM (17)
+    if (currentHour >= 7 && currentHour < 17) {
+      // Within business hours: add 2 hours
+      const twoHoursLater = new Date(
+        now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+      );
+      targetDate = twoHoursLater;
+      targetHour = twoHoursLater.getHours();
+      targetMinute = twoHoursLater.getMinutes();
+    } else if (currentHour < 7) {
+      // Before business hours: push to next day 7AM
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate());
+      tomorrow.setHours(7, 0, 0, 0); // Set to 7:00:00.000
+      targetDate = tomorrow;
+      targetHour = 7;
+      targetMinute = 0;
+    } else {
+      // Outside business hours: push to next day 10AM
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(10, 0, 0, 0); // Set to 10:00:00.000
+      targetDate = tomorrow;
+      targetHour = 10;
+      targetMinute = 0;
+    }
+    // Format the date for state
+    const formattedDate = targetDate.toISOString().split("T")[0];
+    setDate(formattedDate);
 
-    // Convert 24-hour format to 12-hour format
-    if (defaultHours > 12) {
-      defaultHours -= 12;
-    } else if (defaultHours === 0) {
-      defaultHours = 12;
+    // Convert target hour to 12-hour format
+    const periodValue = targetHour >= 12 ? "pm" : "am";
+    let displayHour = targetHour % 12;
+    if (displayHour === 0) displayHour = 12;
+
+    // Format minutes to always be two digits
+    const minutesValue = targetMinute.toString().padStart(2, "0");
+
+    // Update state with calculated values
+    setHours(displayHour.toString());
+    setMinutes(minutesValue);
+    setPeriod(periodValue);
+
+    // Validate the default time
+    validateTime(
+      formattedDate,
+      displayHour.toString(),
+      minutesValue,
+      periodValue
+    );
+  }, []);
+
+  // Validate if selected time is in the future and at least 30 minutes ahead
+  const validateTime = (
+    selectedDate: any,
+    hrs: any,
+    mins: any,
+    per: any,
+    updateErrorState = true
+  ) => {
+    // Return early if any value is missing
+    if (!selectedDate || !hrs || !mins) {
+      if (updateErrorState) setError(null);
+      return { isValid: false, message: "Time is incomplete" };
     }
 
-    // Set default values
-    setHours(defaultHours.toString());
-    setMinutes(twoHoursAhead.getMinutes().toString().padStart(2, "0"));
-    setPeriod(defaultPeriod);
-  }, []);
+    const numHours = parseInt(hrs, 10);
+    const numMinutes = parseInt(mins, 10);
+
+    // Basic validation
+    if (isNaN(numHours) || isNaN(numMinutes)) {
+      const message = "Please enter valid hour and minute values";
+      if (updateErrorState) setError(message);
+      return { isValid: false, message };
+    }
+
+    if (numHours < 1 || numHours > 12) {
+      const message = "Hours must be between 1 and 12";
+      if (updateErrorState) setError(message);
+      return { isValid: false, message };
+    }
+
+    if (numMinutes < 0 || numMinutes > 59) {
+      const message = "Minutes must be between 0 and 59";
+      if (updateErrorState) setError(message);
+      return { isValid: false, message };
+    }
+
+    // Convert to 24-hour format for comparison
+    let hours24 = numHours;
+    if (per === "pm" && numHours !== 12) {
+      hours24 += 12;
+    } else if (per === "am" && numHours === 12) {
+      hours24 = 0;
+    }
+
+    // Create date object for selected date and time
+    const selectedDateTime = new Date(`${selectedDate}T00:00:00`);
+    selectedDateTime.setHours(hours24, numMinutes, 0);
+
+    // Get current date and time
+    const now = new Date();
+
+    // Calculate minimum time (current time + 30 minutes)
+    const minTime = new Date(now.getTime() + MIN_PICKUP_MINUTES * 60 * 1000);
+
+    // Check if selected time is at least 30 minutes in the future
+    if (selectedDateTime < minTime) {
+      const message = `Please select a time at least ${MIN_PICKUP_MINUTES} minutes in the future`;
+      if (updateErrorState) setError(message);
+      return { isValid: false, message };
+    }
+
+    if (updateErrorState) setError(null);
+    return { isValid: true };
+  };
+
+  // Set default time to 2 hours ahead of current time
+  // useEffect(() => {
+  //   const now = new Date();
+  //   const twoHoursAhead = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+  //   // Format hours for 12-hour clock
+  //   let defaultHours = twoHoursAhead.getHours();
+  //   const defaultPeriod = defaultHours >= 12 ? "pm" : "am";
+
+  //   // Convert 24-hour format to 12-hour format
+  //   if (defaultHours > 12) {
+  //     defaultHours -= 12;
+  //   } else if (defaultHours === 0) {
+  //     defaultHours = 12;
+  //   }
+
+  //   // Set default values
+  //   setHours(defaultHours.toString());
+  //   setMinutes(twoHoursAhead.getMinutes().toString().padStart(2, "0"));
+  //   setPeriod(defaultPeriod);
+  // }, []);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -135,7 +276,12 @@ const HomeDeliveryScreen = () => {
 
     // Validate time with new date
     setTimeout(() => {
-      validateTime();
+      validateTime(
+        currentDate.toISOString().split("T")[0],
+        hours,
+        minutes,
+        period
+      );
     }, 100);
   };
 
@@ -283,6 +429,7 @@ const HomeDeliveryScreen = () => {
   };
 
   // Function to validate if the selected time is in the future
+  // Function to validate if the selected time is in the future
   const validateFutureTime = (
     hours: any,
     minutes: any,
@@ -312,9 +459,6 @@ const HomeDeliveryScreen = () => {
     // Get current date and time
     const now = new Date();
 
-    // Create a date object for the selected time
-    const selectedTime = new Date(selectedDate);
-
     // Convert 12-hour format to 24-hour format
     let hours24 = numHours;
     if (period === "pm" && numHours !== 12) {
@@ -323,51 +467,58 @@ const HomeDeliveryScreen = () => {
       hours24 = 0;
     }
 
-    // Set hours and minutes for the selected time
-    selectedTime.setHours(hours24);
-    selectedTime.setMinutes(numMinutes);
-    selectedTime.setSeconds(0);
+    // Create a proper date object for the selected date and time
+    // Parse the selectedDate (YYYY-MM-DD format) and create new Date
+    const [year, month, day] = selectedDate
+      .split("-")
+      .map((num) => parseInt(num, 10));
+    const selectedDateTime = new Date(
+      year,
+      month - 1,
+      day,
+      hours24,
+      numMinutes,
+      0,
+      0
+    );
 
-    // Check if selected date is today
-    const isSameDay = now.toISOString().split("T")[0] === selectedDate;
+    // Calculate minimum valid time (current time + 30 minutes)
+    const minValidTime = new Date(
+      now.getTime() + MIN_PICKUP_MINUTES * 60 * 1000
+    );
 
-    // Compare with current time - add a buffer of at least 30 minutes in the future
-    const minValidTime = new Date(now.getTime() + 30 * 60 * 1000); // 15 minutes from now
-
-    if (isSameDay && selectedTime <= minValidTime) {
+    // Check if selected date/time is at least 30 minutes in the future
+    if (selectedDateTime <= minValidTime) {
       return {
         isValid: false,
-        message: "Please select a time at least 30 minutes in the future.",
+        message: `Please select a time at least ${MIN_PICKUP_MINUTES} minutes in the future.`,
       };
     }
 
     return { isValid: true };
   };
 
-  // Use refs to focus between fields
-  const minutesRef = useRef(null);
+  // // Validate the time whenever any input changes
+  // const validateTime = () => {
+  //   // Only validate if both hours and minutes have values
+  //   if (hours && minutes) {
+  //     const validation = validateFutureTime(hours, minutes, period, date);
 
-  // Validate the time whenever any input changes
-  const validateTime = () => {
-    // Only validate if both hours and minutes have values
-    if (hours && minutes) {
-      const validation = validateFutureTime(hours, minutes, period, date);
+  //     if (!validation.isValid) {
+  //       setError(validation.message?.toString() ?? null);
+  //       setIsFormValid(false);
+  //       return false;
+  //     } else {
+  //       setError(null);
+  //       // We need to check other fields too before enabling the button
+  //       validateFormFields();
+  //       return true;
+  //     }
+  //   }
 
-      if (!validation.isValid) {
-        setError(validation.message?.toString() ?? null);
-        setIsFormValid(false);
-        return false;
-      } else {
-        setError(null);
-        // We need to check other fields too before enabling the button
-        validateFormFields();
-        return true;
-      }
-    }
-
-    setIsFormValid(false);
-    return false; // Don't consider valid if incomplete
-  };
+  //   setIsFormValid(false);
+  //   return false; // Don't consider valid if incomplete
+  // };
 
   // Handle hours input changes
   const handleHoursChange = (text: any) => {
@@ -384,7 +535,7 @@ const HomeDeliveryScreen = () => {
 
     // Validate time after change
     setTimeout(() => {
-      validateTime();
+      validateTime(date, hours, numericText, period);
     }, 100);
   };
 
@@ -397,7 +548,7 @@ const HomeDeliveryScreen = () => {
     // Validate when leaving the minutes field
     if (numericText.length === 2) {
       setTimeout(() => {
-        validateTime();
+        validateTime(date, hours, numericText, period);
       }, 100);
     }
   };
@@ -407,13 +558,13 @@ const HomeDeliveryScreen = () => {
     setPeriod(value);
     // Validate immediately when period changes
     setTimeout(() => {
-      validateTime();
+      validateTime(date, hours, minutes, value);
     }, 100);
   };
 
   // Handle blur events to validate when leaving a field
   const handleBlur = () => {
-    validateTime();
+    validateTime(date, hours, minutes, period);
   };
 
   return (

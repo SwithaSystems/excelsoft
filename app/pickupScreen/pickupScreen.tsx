@@ -82,8 +82,15 @@ const PickupScreen = () => {
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
 
-  // Refs
-  const minutesRef = useRef(null);
+  // Refs for focusing fields
+  const hoursRef = useRef<TextInput>(null);
+  const minutesRef = useRef<TextInput>(null);
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const vehicleNumberRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Store original user data for toggling between collectors
   const [originalUserData, setOriginalUserData] = useState({
@@ -150,46 +157,6 @@ const PickupScreen = () => {
       periodValue
     );
   }, []);
-
-  // Initialize default time values (2 hours ahead from current time)
-  // useEffect(() => {
-  //   // Calculate default time (2 hours from now)
-  //   const now = new Date();
-  //   const twoHoursLater = new Date(
-  //     now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
-  //   );
-
-  //   // Format the date for state
-  //   const formattedDate = twoHoursLater.toISOString().split("T")[0];
-  //   setDate(formattedDate);
-
-  //   // Set hours in 12-hour format
-  //   let hoursValue = twoHoursLater.getHours();
-  //   const periodValue = hoursValue >= 12 ? "pm" : "am";
-
-  //   // Convert to 12-hour format
-  //   if (hoursValue > 12) {
-  //     hoursValue -= 12;
-  //   } else if (hoursValue === 0) {
-  //     hoursValue = 12;
-  //   }
-
-  //   // Format minutes to always be two digits
-  //   const minutesValue = twoHoursLater.getMinutes().toString().padStart(2, "0");
-
-  //   // Update state with default values
-  //   setHours(hoursValue.toString());
-  //   setMinutes(minutesValue);
-  //   setPeriod(periodValue);
-
-  //   // Validate the default time
-  //   validateTime(
-  //     formattedDate,
-  //     hoursValue.toString(),
-  //     minutesValue,
-  //     periodValue
-  //   );
-  // }, []);
 
   // Validate form on every field change to enable/disable the submit button
   useEffect(() => {
@@ -279,6 +246,79 @@ const PickupScreen = () => {
     fetchUserData();
   }, [userData, collector]);
 
+  // Function to focus on the first field with error
+  const focusFirstErrorField = () => {
+    // Check each field in order and focus on the first one with an error
+    if (!date) {
+      // For date, we can show date picker or scroll to that section
+      setShowDatePicker(true);
+      return;
+    }
+
+    if (!hours) {
+      hoursRef.current?.focus();
+      return;
+    }
+
+    if (!minutes) {
+      minutesRef.current?.focus();
+      return;
+    }
+
+    // Check for time validation error
+    if (date && hours && minutes && period) {
+      const timeValidation = validateTime(date, hours, minutes, period, false);
+      if (!timeValidation.isValid) {
+        hoursRef.current?.focus();
+        return;
+      }
+    }
+
+    if (!firstName) {
+      firstNameRef.current?.focus();
+      return;
+    }
+
+    if (!lastName) {
+      lastNameRef.current?.focus();
+      return;
+    }
+
+    if (!phone) {
+      phoneRef.current?.focus();
+      return;
+    }
+
+    if (!email) {
+      emailRef.current?.focus();
+      return;
+    }
+
+    // Check email format
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        emailRef.current?.focus();
+        return;
+      }
+    }
+
+    // Check curbside-specific fields
+    if (isCurbsidePickup) {
+      if (!vehicleType) {
+        // For modal selector, we can't focus, but we can scroll to it
+        // You might want to show an alert or highlight the field
+        Alert.alert("Required Field", "Please select a vehicle type");
+        return;
+      }
+
+      if (!vehicleNumber) {
+        vehicleNumberRef.current?.focus();
+        return;
+      }
+    }
+  };
+
   // Handle date picker change
   const handleDateChange = (event: any, selectedDate: any) => {
     const currentDate = selectedDate || new Date(date);
@@ -310,7 +350,7 @@ const PickupScreen = () => {
 
     // Auto-focus to minutes field when 2 digits entered
     if (numericText.length === 2 && minutesRef.current) {
-      (minutesRef.current as any).focus();
+      minutesRef.current.focus();
     }
 
     validateTime(date, numericText, minutes, period);
@@ -421,17 +461,10 @@ const PickupScreen = () => {
   // Handle form submission
   const handleSubmit = async () => {
     try {
-      // If the form isn't valid, show errors and return
+      // If the form isn't valid, focus on first error field and return
       if (!isFormValid) {
-        // Show alert with all errors
-        if (formErrors) {
-          Alert.alert(
-            "Form Incomplete",
-            `Please fix the following issues:\n${formErrors.join("\n")}`,
-            [{ text: "OK" }]
-          );
-          return;
-        }
+        focusFirstErrorField();
+        return;
       }
 
       setIsLoading(true);
@@ -493,13 +526,15 @@ const PickupScreen = () => {
     onChangeText: any,
     required = true,
     props = {},
-    error = null
+    error = null,
+    ref?: React.Ref<TextInput> | null
   ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.inputLabel}>
         {label} {required && <Text style={styles.required}>*</Text>}
       </Text>
       <TextInput
+        ref={ref}
         style={[inputStyles.textInput, error && inputStyles.inputError]}
         value={value}
         onChangeText={onChangeText}
@@ -521,7 +556,7 @@ const PickupScreen = () => {
             }
           />
 
-          <ScrollView>
+          <ScrollView ref={scrollViewRef}>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Instructions */}
               <Text style={styles.label}>
@@ -568,6 +603,7 @@ const PickupScreen = () => {
               <View style={globalStyles.timeContainer}>
                 {/* Hours */}
                 <TextInput
+                  ref={hoursRef}
                   style={[
                     globalStyles.timeInput,
                     timeError ? { borderColor: "red" } : {},
@@ -669,7 +705,11 @@ const PickupScreen = () => {
                   {renderTextInput(
                     "Vehicle Number",
                     vehicleNumber,
-                    setVehicleNumber
+                    setVehicleNumber,
+                    true,
+                    {},
+                    null,
+                    vehicleNumberRef
                   )}
 
                   {renderTextInput(
@@ -742,11 +782,35 @@ const PickupScreen = () => {
               </Text>
 
               {/* User information fields */}
-              {renderTextInput("First Name", firstName, setFirstName)}
-              {renderTextInput("Last Name", lastName, setLastName)}
-              {renderTextInput("Phone", phone, setPhone, true, {
-                keyboardType: "phone-pad",
-              })}
+              {renderTextInput(
+                "First Name",
+                firstName,
+                setFirstName,
+                true,
+                {},
+                null,
+                firstNameRef
+              )}
+              {renderTextInput(
+                "Last Name",
+                lastName,
+                setLastName,
+                true,
+                {},
+                null,
+                lastNameRef
+              )}
+              {renderTextInput(
+                "Phone",
+                phone,
+                setPhone,
+                true,
+                {
+                  keyboardType: "phone-pad",
+                },
+                null,
+                phoneRef
+              )}
               {renderTextInput(
                 "Email",
                 email,
@@ -756,42 +820,21 @@ const PickupScreen = () => {
                   keyboardType: "email-address",
                   autoCapitalize: "none",
                 },
-                emailError
+                emailError,
+                emailRef
               )}
 
               <Text style={inputStyles.note}>
                 *Please ensure you carry a valid ID Proof
               </Text>
 
-              {/* Submit button - disabled until form is valid */}
+              {/* Submit button */}
               <Button
                 title="Confirm"
                 onPress={handleSubmit}
-                disabled={isLoading || !isFormValid}
-                style={!isFormValid ? inputStyles.disabledButton : {}}
+                disabled={isLoading}
+                style={isLoading ? inputStyles.disabledButton : {}}
               />
-
-              {/* Show form errors if any */}
-              {formErrors && formErrors.length > 0 && (
-                <TouchableOpacity
-                  style={inputStyles.errorSummary}
-                  onPress={() => {
-                    Alert.alert(
-                      "Form Incomplete",
-                      `Please fix the following issues:\n${formErrors.join(
-                        "\n"
-                      )}`,
-                      [{ text: "OK" }]
-                    );
-                  }}
-                >
-                  <Text style={inputStyles.errorSummaryText}>
-                    {formErrors.length}{" "}
-                    {formErrors.length === 1 ? "error" : "errors"} found. Tap
-                    for details.
-                  </Text>
-                </TouchableOpacity>
-              )}
             </View>
           </ScrollView>
         </View>
@@ -829,18 +872,6 @@ const inputStyles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
-  },
-  errorSummary: {
-    backgroundColor: "#FFEEEE",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "red",
-  },
-  errorSummaryText: {
-    color: "red",
-    textAlign: "center",
   },
 });
 

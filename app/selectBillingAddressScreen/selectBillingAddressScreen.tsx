@@ -19,10 +19,10 @@ import { Address, addressService } from "@/services/addressService";
 import { useAppContext } from "@/context/AppContext";
 import OrderSummary from "@/components/OrderSummary";
 import { useSelector } from "react-redux";
-import { usePaymentHandler } from "../components/usePaymentHandler";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import { usePaymentHandler } from "../components/usePaymentHandler";
 
 type PickupDetailsDto = {
   time: string;
