@@ -1,9 +1,10 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import Header from "@/components/Header";
 import products from "@/data/products";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React, { useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   FlatList,
   Image,
@@ -12,6 +13,8 @@ import {
   View,
   SafeAreaView,
   TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -20,23 +23,39 @@ import { ProductsAPI } from "@/services/productService";
 import AdminFooter from "@/components/AdminFooter";
 
 const AdminProductDashboard = () => {
-  // const productsList = products;
+  const [productsList, setAllProductsList] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [productsList, setAllProductsList] = React.useState<any>([]);
+  const fetchAllProducts = async () => {
+    try {
+      const data = await ProductsAPI.getAllProducts();
+      console.log("Fetched products:", data);
+      setAllProductsList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error fetching all products:", err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        const data = await ProductsAPI.getAllProducts();
-        console.log("data in products page", data);
-        setAllProductsList(data);
-      } catch (err) {
-        console.error("Error fetching all products:", err);
-      }
-    };
     fetchAllProducts();
   }, []);
 
-  console.log("products list", productsList);
+  // Refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAllProducts();
+    }, [])
+  );
+
+  const onRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    fetchAllProducts();
+  }, []);
 
   const ProductCard = ({ item }: { item: any }) => {
     return (

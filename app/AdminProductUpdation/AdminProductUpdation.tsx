@@ -220,139 +220,106 @@ const AdminProductUpdation = () => {
     ]);
   }, [openImagePickerAsync]);
 
-  const removeImage = useCallback((index: any) => {
+  const removeImage = useCallback((index: number) => {
     Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
       {
         text: "Cancel",
-        style: "cancel",
+        style: "cancel"
       },
       {
         text: "Remove",
-        onPress: () => {
-          setProductImages((prev: any) => {
-            const updatedImages = [...prev];
-            updatedImages.splice(index, 1);
-            return updatedImages;
-          });
-        },
         style: "destructive",
-      },
+        onPress: () => {
+          setProductImages((prev: any[]) => {
+            const newImages = [...prev];
+            newImages.splice(index, 1);
+            return newImages;
+          });
+        }
+      }
     ]);
   }, []);
+
+  console.log("Images in product page", productImages);
 
   const handleUpdateProduct = useCallback(async () => {
     try {
       setIsLoading(true);
-
-      // Validate required fields
+  
       if (!productName.trim()) {
         Alert.alert("Error", "Product name is required");
         return;
       }
-
+  
       if (!stock || isNaN(parseInt(stock))) {
         Alert.alert("Error", "Valid stock quantity is required");
         return;
       }
-
+  
       if (!price || isNaN(parseFloat(price))) {
         Alert.alert("Error", "Valid price is required");
         return;
       }
-
+  
       if (!category) {
         Alert.alert("Error", "Please select a category");
         return;
       }
-
-      // Create FormData for multipart/form-data upload
+  
       const formData = new FormData();
-
-      // Find the max id from the category list
-
+  
       // Append regular text fields
-
       formData.append("name", productName);
       formData.append("id", id ? id : maxId.toString());
       formData.append("title", title);
       formData.append("description", productDescription);
       formData.append("stock", stock);
       formData.append("originalPrice", price);
-      formData.append("price", discountPrice || price); // Use original price if no discount
+      formData.append("price", discountPrice || price);
       formData.append("categoryId", category);
-      formData.append("minimumOrderQuantity", minimumOrderQunatity);
-      // formData.append("productColors", color);
-      formData.append("productColors", JSON.stringify([{ color: color }]));
-
+      formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
+      formData.append("productColors", JSON.stringify([{ color }]));
       formData.append("isReturnable", isChecked ? "true" : "false");
-
-      // // Format date-time information if needed
-      // const dateTimeStr = `${date} ${hours}:${minutes} ${period}`;
-      // formData.append("discountDateTime", dateTimeStr);
-
-      // Process images - append each image to form data
-      productImages.forEach((img: any, index: any) => {
-        // Only append if there's a URI (valid image)
-        if (img.uri) {
-          // Get filename from URI
-          // const uriParts = img.uri.split("/");
-          // const fileName = uriParts[uriParts.length - 1];
-          const uri = img.uri || img.path || img;
-          // const fileType = img.type || 'image/jpeg';
-          const fileName = img.fileName || `image_${index}.jpg`;
-
-          // Determine image type (default to jpeg if can't determine)
-          const fileType = fileName.includes(".png")
-            ? "image/png"
-            : fileName.includes(".jpg") || fileName.includes(".jpeg")
-            ? "image/jpeg"
-            : "image/jpeg";
-
-          // Append image to form data - use a consistent field name for array of images
-          formData.append("image", {
-            uri: img.uri,
-            name: fileName || `product_image_${index}.jpg`,
-            type: fileType,
-          } as any);
-        }
+  
+      // ✅ Separate existing image URLs and new local image files
+      const existingImageUrls = productImages
+        .filter((img: any) => !img.uri.startsWith("file://"))
+        .map((img: any) => img.uri);
+  
+      const newImageFiles = productImages
+        .filter((img: any) => img.uri.startsWith("file://"));
+  
+      // ✅ Send existing Cloudinary URLs to the server
+      formData.append("images", JSON.stringify(existingImageUrls));
+  
+      // ✅ Send new image files (to upload)
+      newImageFiles.forEach((img: any, index: number) => {
+        const uri = img.uri;
+        const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
+        const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
+  
+        formData.append("imageFiles", {
+          uri,
+          name: fileName,
+          type: fileType,
+        } as any);
       });
-
-      console.log("Submitting form data for product update", formData);
-
-      try {
-        const response = newProduct
-          ? await ProductsAPI.addProduct(formData)
-          : await ProductsAPI.updateProduct(productData._id, formData);
-
-        // Simulate API call for now
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        if (!response) {
-          throw new Error("Failed to update product. Please try again.");
-        } else {
-          console.log("Product updated successfully:", response);
-
-          // Show success message
-          Alert.alert(
-            "Success",
-            newProduct
-              ? "Product added successfully!"
-              : "Product updated successfully!",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  // Navigate back
-                  router.back();
-                },
-              },
-            ]
-          );
-        }
-      } catch (apiError) {
-        console.error("API Error:", apiError);
-        Alert.alert("Error", "Failed to update product. Server error.");
+  
+      console.log("Submitting form data for product update");
+  
+      const response = newProduct
+        ? await ProductsAPI.addProduct(formData)
+        : await ProductsAPI.updateProduct(productData._id, formData);
+  
+      if (!response) {
+        throw new Error("Failed to update product.");
       }
+  
+      Alert.alert(
+        "Success",
+        newProduct ? "Product added successfully!" : "Product updated successfully!",
+        [{ text: "OK", onPress: () => router.back() }]
+      );
     } catch (error) {
       console.error("Error updating product:", error);
       Alert.alert("Error", "Failed to update product. Please try again.");
@@ -367,13 +334,16 @@ const AdminProductUpdation = () => {
     category,
     color,
     productImages,
-    // date,
-    // hours,
-    // minutes,
-    // period,
+    id,
+    title,
+    productDescription,
+    minimumOrderQunatity,
+    isChecked,
     router,
-    productData?.id,
+    newProduct,
+    productData?._id,
   ]);
+  
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
