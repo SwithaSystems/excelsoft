@@ -393,10 +393,13 @@ Contact Number: ${pickupAddress.phone}`}
               {/* Checkbox logic */}
               <View style={styles.checkBox}>
                 <CheckBox
+                  title="Set Delivery Address as Billing Address?"
                   checked={useSameAddress}
                   onPress={handleSameAddressToggle}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.primary}
+                  containerStyle={styles.checkBoxContainer}
                 />
-                <Text>Set Delivery Address as Billing Address?</Text>
               </View>
               {!useSameAddress && (
                 <>
@@ -545,7 +548,6 @@ Contact Number: ${pickupAddress.phone}`}
               onPress={() =>
                 handlePayment(cartItems, {
                   billingAddress: selectedBillingAddress,
-                  // FIXED: Use the same address for both shipping and billing when checkbox is checked
                   shippingAddress: useSameAddress
                     ? selectedBillingAddress
                     : shippingAddress,

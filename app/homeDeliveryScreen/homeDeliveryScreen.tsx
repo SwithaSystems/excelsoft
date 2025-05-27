@@ -31,6 +31,7 @@ import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import ModalSelector from "react-native-modal-selector";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 

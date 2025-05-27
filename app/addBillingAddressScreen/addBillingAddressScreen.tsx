@@ -240,7 +240,7 @@ const addBillingAddressScreen = () => {
             }
           />
           <ScrollView style={{ padding: 16 }}>
-            <View>
+            <View style={{marginBottom: 16}}>
               <Text style={styles.fieldLabel}>
                 Address Name
                 <Text style={{ color: "red" }}>*</Text>
@@ -270,12 +270,12 @@ const addBillingAddressScreen = () => {
                 <Text style={globalStyles.errorText}>{errors.line1}</Text>
               )}
 
-              <Text style={styles.fieldLabel}>Line 2</Text>
+              <Text style={styles.fieldLabel}>Line 2 (optional)</Text>
               <TextInput
                 style={[styles.input, errors.line2 && styles.inputError]}
                 value={line2}
                 onChangeText={(text) => handleInputChange("line2", text)}
-                placeholder="Apartment, suite, unit, building, floor, etc. (Optional)"
+                placeholder="Apartment, suite, unit, building, floor, etc."
                 maxLength={100}
               />
               {errors.line2 && (
@@ -316,11 +316,11 @@ const addBillingAddressScreen = () => {
 
             <View
               style={[
-                { marginHorizontal: 16, marginTop: 20 },
-                styles.submitButton,
+                // styles.submitButton,
                 isSubmitting && styles.submitButtonDisabled,
               ]}
             >
+              {/* <View style={globalStyles.p_3}> */}
               <Button
                 title={
                   isSubmitting
@@ -333,11 +333,12 @@ const addBillingAddressScreen = () => {
                 }
                 onPress={handleSaveAddress}
                 disabled={isSubmitting}
-                // style={[
+                //  style={[
                 //   styles.submitButton,
-                //   isSubmitting && styles.submitButtonDisabled,
-                // ]}
+                // //  isSubmitting && styles.submitButtonDisabled,
+                //  ]}
               />
+              {/* </View> */}
             </View>
           </ScrollView>
         </View>

@@ -80,6 +80,14 @@ const styles = StyleSheet.create({
   checkBox: {
     flexDirection: "row",
     alignItems: "center",
+    paddingLeft: 16,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  setAddressText:{
+    // fontSize: 16,
+    // fontWeight: 'normal',
+    marginRight: 10,  
   },
   accordianIcon: {
     marginLeft: "auto",
