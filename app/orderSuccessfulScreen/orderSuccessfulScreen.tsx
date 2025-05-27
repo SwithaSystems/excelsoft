@@ -19,7 +19,7 @@ const orderSuccessfulScreen = () => {
   console.log("orderData", orderData);
   const isOrderPlacedSuccess = true;
   const successCartImg = require("../../assets/checkmark.png");
-  const failedCartImg = require("../../assets/cancel.png");
+  const failedCartImg = require("../../assets/CancelOrder.png");
 
   function redirectToOrderDetails() {
     // router.replace({
