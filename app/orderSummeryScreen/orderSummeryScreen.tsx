@@ -68,8 +68,8 @@ const orderSummeryScreen = () => {
   const dispatch = useDispatch();
   const [selectedId, setSelectedId] = useState<any>(null);
 
-  // FIXED: Renamed to better reflect its purpose
-  const [useSameAddress, setUseSameAddress] = useState(false);
+  // FIXED: Default to true so checkbox is checked on page load
+  const [useSameAddress, setUseSameAddress] = useState(true);
   const [accordionOpen, setAccordionOpen] = useState(false);
   const rotateAnimation = new Animated.Value(0);
   const { handlePayment } = usePaymentHandler();
@@ -82,7 +82,7 @@ const orderSummeryScreen = () => {
   const selectedMode = params?.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-  // FIXED: Create shipping address object properly
+  // Create shipping address object properly
   const shippingAddress: shippingAddressDTo | undefined = pickupAddress
     ? {
         name:
@@ -127,7 +127,7 @@ const orderSummeryScreen = () => {
         const addresses = await addressService.getAllBillingAddress_userId();
         setAddressData(addresses);
 
-        // FIXED: Set initial selected ID if billing address exists
+        // Set initial selected ID if billing address exists
         if (selectedBillingAddress && selectedBillingAddress._id) {
           setSelectedId(selectedBillingAddress._id);
         }
@@ -139,7 +139,25 @@ const orderSummeryScreen = () => {
     fetchBillingAddresses();
   }, [selectedBillingAddress]);
 
-  // FIXED: Handle checkbox toggle for same address
+  // FIXED: Initialize billing address from shipping address on component mount
+  useEffect(() => {
+    if (shippingAddress && useSameAddress && !selectedBillingAddress) {
+      // Convert shipping address to billing address format
+      const billingFromShipping: any = {
+        name: shippingAddress.name,
+        line1: shippingAddress.line1,
+        line2: shippingAddress.line2 || "",
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postalCode: shippingAddress.postalCode,
+      };
+
+      setSelectedBillingAddress(billingFromShipping);
+      setSelectedId("temp-shipping-as-billing");
+    }
+  }, [shippingAddress, useSameAddress]);
+
+  // Handle checkbox toggle for same address
   const handleSameAddressToggle = () => {
     const newValue = !useSameAddress;
     setUseSameAddress(newValue);
@@ -147,17 +165,12 @@ const orderSummeryScreen = () => {
     if (newValue && shippingAddress) {
       // Convert shipping address to billing address format
       const billingFromShipping: any = {
-        // _id: "temp-shipping-as-billing", // Temporary ID
         name: shippingAddress.name,
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
         state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
-        // phone: pickupAddress?.phone || "",
-        // email: pickupAddress?.email || "",
-        // createdAt: new Date().toISOString(),
-        // updatedAt: new Date().toISOString(),
       };
 
       setSelectedBillingAddress(billingFromShipping);
@@ -206,7 +219,7 @@ const orderSummeryScreen = () => {
         const addresses = await addressService.getAllBillingAddress_userId();
         setAddressData(addresses);
 
-        // FIXED: Clear selection if deleted address was selected
+        // Clear selection if deleted address was selected
         if (selectedId === item._id) {
           setSelectedId(null);
           setSelectedBillingAddress(null);
@@ -222,7 +235,7 @@ const orderSummeryScreen = () => {
     }
   };
 
-  // FIXED: Handle billing address selection
+  // Handle billing address selection
   const handleSelectBillingAddress = (item: Address) => {
     // Clear the "same address" checkbox when manually selecting
     setUseSameAddress(false);
@@ -281,23 +294,72 @@ const orderSummeryScreen = () => {
             ]}
           >
             <View style={styles.section}>
-              {selectedMode === "Store Pickup" ||
-              selectedMode === "Curbside Pickup" ? (
+              {selectedMode === "storePickup" ||
+              selectedMode === "curbsidePickup" ? (
                 <Text style={styles.sectionHeading}>User Details</Text>
               ) : (
                 <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
               <View style={[globalStyles.pl_3, styles.deliverAddress]}>
-                <Ionicons
-                  name="home"
-                  size={24}
-                  color={colors.primary}
-                  style={{ marginRight: 10 }}
-                />
+                {selectedMode === "storePickup" ? (
+                  <Ionicons
+                    name="storefront"
+                    size={24}
+                    color={colors.primary}
+                    style={{ marginRight: 10 }}
+                  />
+                ) : selectedMode === "curbsidePickup" ? (
+                  <Ionicons
+                    name="car"
+                    size={24}
+                    color={colors.primary}
+                    style={{ marginRight: 10 }}
+                  />
+                ) : (
+                  <Ionicons
+                    name="home"
+                    size={24}
+                    color={colors.primary}
+                    style={{ marginRight: 10 }}
+                  />
+                )}
+
                 <View style={styles.addressContainer}>
-                  <Text style={styles.subheading}>Deliver Address:</Text>
-                  {pickupAddress.firstName ? (
+                  {selectedMode === "storePickup" ||
+                  selectedMode === "curbsidePickup" ? (
+                    <Text style={styles.subheading}>Pickup Details:</Text>
+                  ) : (
+                    <Text style={styles.subheading}>Delivery Address:</Text>
+                  )}
+                  {selectedMode === "storePickup" ? (
+                    <Text style={styles.addressTextBox}>
+                      {`${pickupAddress.firstName || ""} ${
+                        pickupAddress.lastName || ""
+                      }
+Email: ${pickupAddress.email}
+Contact Number: ${pickupAddress.phone}`}
+                    </Text>
+                  ) : selectedMode === "curbsidePickup" ? (
+                    <Text style={styles.addressTextBox}>
+                      {`${pickupAddress.firstName || ""} ${
+                        pickupAddress.lastName || ""
+                      }
+Vehicle Type: ${pickupAddress.vehicleType || ""}
+Vehicle Number: ${pickupAddress.vehicleNumber || ""}
+Additional Details: ${pickupAddress.additionalDetails || "None"}
+Email: ${pickupAddress.email}
+Contact Number: ${pickupAddress.phone}`}
+                    </Text>
+                  ) : (
+                    <Text style={styles.addressTextBox}>
+                      {`${pickupAddress.name}, ${pickupAddress.line1}${
+                        pickupAddress.line2 ? `, ${pickupAddress.line2}` : ""
+                      }, ${pickupAddress.city}, ${pickupAddress.postalCode}
+Contact Number: ${pickupAddress.phone}`}
+                    </Text>
+                  )}
+                  {/* {pickupAddress.firstName ? (
                     <Text style={styles.addressTextBox}>
                       {`${pickupAddress.firstName || ""} ${
                         pickupAddress.lastName || ""
@@ -324,11 +386,11 @@ const orderSummeryScreen = () => {
                       },${pickupAddress.city}, ${pickupAddress.postalCode}
                       Contact Number: ${pickupAddress.phone}`}
                     </Text>
-                  )}
+                  )} */}
                 </View>
               </View>
 
-              {/* FIXED: Checkbox logic */}
+              {/* Checkbox logic */}
               <View style={styles.checkBox}>
                 <CheckBox
                   checked={useSameAddress}
@@ -336,87 +398,91 @@ const orderSummeryScreen = () => {
                 />
                 <Text>Set Delivery Address as Billing Address?</Text>
               </View>
-
-              <View 
-                // style={[globalStyles.pl_3]}
-              >
-                <View style={styles.billingAddress}>
-                  <Ionicons
-                    name="receipt"
-                    size={24}
-                    color={colors.primary}
-                    style={{ marginRight: 10 }}
-                  />
-                  <View style={styles.billingAddressAccordian}>
-                    <Text style={styles.subheading}>Billing Address: </Text>
-                    {/* FIXED: Show selected billing address */}
-                    {selectedBillingAddress && (
-                      <Text>
-                        {useSameAddress
-                          ? "Same as delivery address"
-                          : `${selectedBillingAddress.name}, ${selectedBillingAddress.city}`}
-                      </Text>
-                    )}
-                    <TouchableOpacity
-                      style={styles.accordian}
-                      onPress={toggleAccordion}
-                      disabled={useSameAddress} // Disable when using same address
-                    >
-                      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                        <Ionicons
-                          name="chevron-down-circle"
-                          size={24}
-                          color={
-                            useSameAddress
-                              ? colors.placeholdergrey
-                              : colors.primary
-                          }
-                          style={styles.accordianIcon}
-                        />
-                      </Animated.View>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {accordionOpen && !useSameAddress && (
-                  <View style={styles.accordionContent}>
-                    {addressData.length > 0 ? (
-                      <FlatList
-                        data={addressData}
-                        renderItem={({ item }) => (
-                          <AddressItem
-                            item={item}
-                            onEdit={handleEdit}
-                            onDelete={handleBillingAddressDelete}
-                            showRadio
-                            isSelected={item._id === selectedId}
-                            onSelect={() => handleSelectBillingAddress(item)}
-                          />
-                        )}
-                        keyExtractor={(item, index) =>
-                          item._id?.toString() || `address-${index}`
-                        }
-                        contentContainerStyle={[
-                          styles.addressList,
-                          { paddingLeft: 16 },
-                        ]}
+              {!useSameAddress && (
+                <>
+                  <View>
+                    <View style={styles.billingAddress}>
+                      <Ionicons
+                        name="receipt"
+                        size={24}
+                        color={colors.primary}
+                        style={{ marginRight: 10 }}
                       />
-                    ) : (
-                      <View style={styles.noAddressContainer}>
-                        <Text style={styles.noAddressText}>
-                          No billing addresses found
-                        </Text>
+                      <View style={styles.billingAddressAccordian}>
+                        <Text style={styles.subheading}>Billing Address: </Text>
+                        {/* Show selected billing address */}
+                        {selectedBillingAddress && (
+                          <Text>
+                            {useSameAddress
+                              ? "Same as delivery address"
+                              : `${selectedBillingAddress.name}, ${selectedBillingAddress.city}`}
+                          </Text>
+                        )}
+                        <TouchableOpacity
+                          style={styles.accordian}
+                          onPress={toggleAccordion}
+                          disabled={useSameAddress}
+                        >
+                          <Animated.View
+                            style={{ transform: [{ rotate: spin }] }}
+                          >
+                            <Ionicons
+                              name="chevron-down-circle"
+                              size={24}
+                              color={
+                                useSameAddress
+                                  ? colors.placeholdergrey
+                                  : colors.primary
+                              }
+                              style={styles.accordianIcon}
+                            />
+                          </Animated.View>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {accordionOpen && !useSameAddress && (
+                      <View style={styles.accordionContent}>
+                        {addressData.length > 0 ? (
+                          <FlatList
+                            data={addressData}
+                            renderItem={({ item }) => (
+                              <AddressItem
+                                item={item}
+                                onEdit={handleEdit}
+                                onDelete={handleBillingAddressDelete}
+                                showRadio
+                                isSelected={item._id === selectedId}
+                                onSelect={() =>
+                                  handleSelectBillingAddress(item)
+                                }
+                              />
+                            )}
+                            keyExtractor={(item, index) =>
+                              item._id?.toString() || `address-${index}`
+                            }
+                            contentContainerStyle={[
+                              styles.addressList,
+                              { paddingLeft: 16 },
+                            ]}
+                          />
+                        ) : (
+                          <View style={styles.noAddressContainer}>
+                            <Text style={styles.noAddressText}>
+                              No billing addresses found
+                            </Text>
+                          </View>
+                        )}
+                        <Button
+                          onPress={handleAddBillingAddress}
+                          title="Add Billing Address"
+                          disabled={useSameAddress}
+                        />
                       </View>
                     )}
                   </View>
-                )}
-
-                <Button
-                  onPress={handleAddBillingAddress}
-                  title="Add Billing Address"
-                  disabled={useSameAddress}
-                />
-              </View>
+                </>
+              )}
             </View>
 
             <View style={styles.section}>
@@ -479,7 +545,10 @@ const orderSummeryScreen = () => {
               onPress={() =>
                 handlePayment(cartItems, {
                   billingAddress: selectedBillingAddress,
-                  shippingAddress: shippingAddress,
+                  // FIXED: Use the same address for both shipping and billing when checkbox is checked
+                  shippingAddress: useSameAddress
+                    ? selectedBillingAddress
+                    : shippingAddress,
                   pickupdetails: pickupDetails,
                   deliveryDate: pickupDetails?.date,
                   deliveryTime: pickupDetails?.time,
