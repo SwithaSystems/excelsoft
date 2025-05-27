@@ -17,6 +17,7 @@ import { Product, ProductsAPI } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
 import NoContentFound from "@/components/NoContentFound";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
@@ -296,6 +297,7 @@ const SearchResultsScreen = () => {
       // [styles.container, { backgroundColor: colors.white }]
       globalStyles.safeAreaContainer
     }>
+      <KeyBoardWrapper>
       <Header headerText={headerTitle} />
 
       {!isLoading && !error && (
@@ -315,6 +317,7 @@ const SearchResultsScreen = () => {
       </View>
 
       <Footer navigation={router} activeTab="home" />
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

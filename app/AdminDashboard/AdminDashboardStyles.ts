@@ -3,10 +3,10 @@ import colors from '../config/colors';
 
 const styles = StyleSheet.create({
   container:{
-    paddingTop: 32,
+    // paddingTop: 32,
     flex: 1,
     backgroundColor: colors.white,
-    paddingBottom: 32,
+    // paddingBottom: 32,
   },
   title: {
     fontSize: 26,

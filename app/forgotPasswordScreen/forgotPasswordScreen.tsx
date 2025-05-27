@@ -17,6 +17,7 @@ import { TwilioApi } from "@/services/twilioService";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { UserAPI } from "@/services/userService";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const forgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
@@ -61,6 +62,7 @@ const forgotPasswordScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={styles.container}>
         <Header headerText={"Forgot Password"} />
         <View style={styles.sectionContainer}>
@@ -170,6 +172,7 @@ const forgotPasswordScreen = () => {
           }}
         />
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

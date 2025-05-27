@@ -29,6 +29,7 @@ import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../components/AddressItem";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import ModalSelector from "react-native-modal-selector";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const HomeDeliveryScreen = () => {
@@ -418,6 +419,7 @@ const HomeDeliveryScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={globalStyles.container}>
         <Header headerText="Home Delivery" />
         <FlatList
@@ -591,6 +593,7 @@ const HomeDeliveryScreen = () => {
           renderItem={null}
         />
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

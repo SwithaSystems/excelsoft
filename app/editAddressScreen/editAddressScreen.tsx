@@ -22,6 +22,7 @@ import { useAppContext } from "../../context/AppContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const editAddressScreen = () => {
   const { params } = useLocalSearchParams();
@@ -72,6 +73,7 @@ const editAddressScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={styles.container}>
         <Header headerText="Edit Address" />
 
@@ -127,6 +129,7 @@ const editAddressScreen = () => {
           <Text style={styles.buttonText}>Update Address</Text>
         </TouchableOpacity>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

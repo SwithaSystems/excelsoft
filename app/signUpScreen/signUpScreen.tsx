@@ -18,6 +18,7 @@ import { TwilioApi } from "@/services/twilioService";
 import { authService } from "@/services/auth.service";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -166,6 +167,7 @@ const signUpScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={styles.container}>
         <Header headerText={"Sign Up"} />
 
@@ -310,6 +312,7 @@ const signUpScreen = () => {
           </Text>
         </View>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

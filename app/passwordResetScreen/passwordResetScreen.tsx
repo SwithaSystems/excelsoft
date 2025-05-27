@@ -17,6 +17,7 @@ import axios from "axios";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -70,6 +71,7 @@ const passwordResetScreen = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={styles.container}>
         <Header headerText={" Reset Your Password"} />
         <View style={styles.sectionContainer}>
@@ -108,6 +110,7 @@ const passwordResetScreen = () => {
           />
         </View>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

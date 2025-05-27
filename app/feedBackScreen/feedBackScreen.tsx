@@ -26,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -95,6 +96,7 @@ const feedBackScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header
         headerText="Add Your Review"
@@ -165,6 +167,7 @@ const feedBackScreen = () => {
         onClose={() => setShowReviewconfirmationModal(false)}
       />
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

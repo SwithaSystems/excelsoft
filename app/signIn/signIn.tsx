@@ -16,6 +16,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const signIn = () => {
   const [inputValue, setInputValue] = useState(""); // Combined input field value
@@ -123,6 +124,7 @@ const signIn = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={styles.container}>
         <Header headerText={"Sign In"} needResetNavigation={true} />
 
@@ -256,6 +258,7 @@ const signIn = () => {
           </TouchableOpacity>
         </View>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

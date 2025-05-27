@@ -8,7 +8,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
     top: 55,
-    right: 'calc(50% - 45px)',
+    left: '50%',
+    marginLeft: -45,
   },
   changePictureText: {
     fontSize: 16,

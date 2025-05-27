@@ -11,6 +11,7 @@ import { Picker } from '@react-native-picker/picker';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 import OrderCollectionDetails from '@/components/OrderCollectionDetails';
 import colors from '../config/colors';
+import KeyBoardWrapper from '@/components/commonComponents/KeyBoardWrapper';
 
 
 const curbsidePickupScreen = () => {
@@ -43,6 +44,7 @@ const curbsidePickupScreen = () => {
   return (
     <>
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header headerText="Curbside Pickup"/>
       <ScrollView>
@@ -172,6 +174,7 @@ const curbsidePickupScreen = () => {
           <Button onPress={()=>{redirectToPage(containers.orderSummeryScreenScreen)}} title='Confirm'/>
         </View>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
     </>
   );

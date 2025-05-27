@@ -377,6 +377,7 @@ const AdminProductUpdation = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
       <View style={[globalStyles.container, { paddingTop: 16 }]}>
         <Header headerText="Update Product" />
         <KeyBoardWrapper>
@@ -680,6 +681,7 @@ const AdminProductUpdation = () => {
         )}
         </KeyBoardWrapper>
       </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

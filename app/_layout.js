@@ -344,7 +344,6 @@ export default function Layout() {
         <PersistGate loading={null} persistor={persistor}>
           <AppProvider>
             <AuthProvider>
-              <KeyBoardWrapper>
               <NotificationsHandler />
               <LayoutContent />
               <Toast 
@@ -354,7 +353,6 @@ export default function Layout() {
                   ),
                 }}  
               />
-              </KeyBoardWrapper>
             </AuthProvider>
           </AppProvider>
         </PersistGate>

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import styles from './userReviewScreenStyles';
 import colors from '../config/colors';
+import { globalStyles } from '@/assets/styles/globalStyles';
 
 const userReviewScreen = () => {
   return (
