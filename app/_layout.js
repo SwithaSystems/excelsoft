@@ -331,6 +331,10 @@ const LayoutContent = () => {
             name={containers.AdminCategoriesScreen} 
             options={{ headerShown: false }} 
           />
+          <Stack.Screen 
+            name={containers.UserNotificationsScreen} 
+            options={{ headerShown: false }} 
+          />
 </Stack>
       )}
     </>

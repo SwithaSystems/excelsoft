@@ -141,6 +141,7 @@ const HomePage = () => {
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       {/* <ScrollView> */}
+      
       <BrandHeader />
       <FlatList
         ListHeaderComponent={
@@ -217,10 +218,13 @@ const HomePage = () => {
             {/* </ScrollView> */}
           </>
         }
-        data={[]} // No actual data here — just to use FlatList as scroll container
+        data={[]} 
         renderItem={null}
+        contentContainerStyle={{flexGrow:1}}
+        
       />
       {/* Footer */}
+      
       <Footer activeTab="home" />
       {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
     </SafeAreaView>

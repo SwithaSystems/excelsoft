@@ -120,29 +120,36 @@ function BrandHeader(props) {
               <Ionicons name="person-circle-outline" size={24} color="#000" />
             </View>
           </TouchableOpacity>
-          if(isAdmin) && (
-          <TouchableOpacity
+          
+          {isAdmin && (
+            <TouchableOpacity
+              onPress={() => {
+                if (props.hideUserGreeting) {
+                  redirectToPage(containers.homeScreen);
+                } else {
+                  redirectToPage(containers.AdminDashboardScreen);
+                }
+              }}
+              style={{
+                marginLeft: 14,
+                backgroundColor: colors.black,
+                borderRadius: 16,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 12 }}>
+                {props.hideUserGreeting ? "User" : "Admin"}
+              </Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity 
+            style={{ marginLeft: 14 }}
             onPress={() => {
-              if (props.hideUserGreeting) {
-                redirectToPage(containers.homeScreen);
-              } else {
-                redirectToPage(containers.AdminDashboardScreen);
-              }
-            }}
-            style={{
-              marginLeft: 14,
-              backgroundColor: colors.black,
-              borderRadius: 16,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
+              redirectToPage(containers.UserNotificationsScreen);
             }}
           >
-            <Text style={{ color: "white", fontSize: 12 }}>
-              {props.hideUserGreeting ? "User" : "Admin"}
-            </Text>
-          </TouchableOpacity>
-          )
-          <TouchableOpacity style={{ marginLeft: 14 }}>
             <Ionicons name="notifications" size={24} color="#000" />
           </TouchableOpacity>
         </View>

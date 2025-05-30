@@ -112,13 +112,26 @@ const CartScreen = () => {
         <Header headerText="Cart" />
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           {cartItems.length === 0 ? (
-            <View>
-              <NoContentFound
-                message="Your cart is empty"
-                buttonText="Go to Shop"
-                onPress={() => redirectToPage(containers.homeScreen)}
-              />
-            </View>
+              <View style={styles.emptyCartContainer}>
+                <Ionicons
+                  name="cart"
+                  size={98}
+                  color={colors.placeholdergrey}
+                  style={styles.cartIcon}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.emptyTitle}>Your page is empty</Text>
+                  <Text style={styles.emptySubtitle}>
+                    No worries! You can check our products{' '}
+                    <Text 
+                      style={styles.hereText}
+                      onPress={() => redirectToPage(containers.homeScreen)}
+                    >
+                      here
+                    </Text>.
+                  </Text>
+                </View>
+              </View>
           ) : (
             <>
               {cartItems.map((eachCartItem: any) => (
@@ -192,8 +205,8 @@ const CartScreen = () => {
           handleCancel={cancelDelete}
         />
       </ScrollView>
-      <Footer navigation={router} activeTab="cart" />
     </View>
+    <Footer navigation={router} activeTab="cart" />
     </SafeAreaView>
   );
 };

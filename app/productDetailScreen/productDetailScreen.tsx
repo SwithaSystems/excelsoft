@@ -28,6 +28,7 @@ import { useAppContext } from "@/context/AppContext";
 import Toast from "react-native-toast-message"; 
 import { globalStyles } from "@/assets/styles/globalStyles";
 import CustomToastAlert from "@/components/commonComponents/CustomToastAlert";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();

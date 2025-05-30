@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import styles from "./savedItemScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -18,6 +18,9 @@ import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from "@expo/vector-icons";
+
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -57,43 +60,40 @@ const savedItemScreen = () => {
           })}
           {savedItems.length === 0 && (
             <>
-              <View
-                style={[
-                  styles.container,
-                  globalStyles.container,
-                  { paddingHorizontal: 20 },
-                ]}
-              ></View>
-              <Image 
-                source={require("../../assets/emptycart.png")} 
-                style = {styles.emptyImage}
-              />
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginTop: 48,
-                  fontSize: 24,
-                  fontWeight: "600",
-                  paddingBottom: 16,
-                }}
-              >
-                Uh-oh! You have no saved Items! Would you like to explore some
-                products?
-              </Text>
-              <Button
+              <View style={styles.emptyCartContainer}>
+                <Ionicons
+                  name="cart"
+                  size={98}
+                  color={colors.placeholdergrey}
+                  style={styles.cartIcon}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.emptyTitle}>Your page is empty</Text>
+                  <Text style={styles.emptySubtitle}>
+                    No worries! You can check our products{' '}
+                    <Text 
+                      style={styles.hereText}
+                      onPress={() => redirectToPage(containers.homeScreen)}
+                    >
+                      here
+                    </Text>.
+                  </Text>
+                </View>
+              </View>
+              {/* <Button
                 title="Start Shopping"
                 onPress={() => {
                    redirectToPage(containers.homeScreen);
                 }}                
                 style={styles.button}
                 textStyle={styles.text}
-              ></Button>
+              ></Button> */}
             </>
           )}
         </View>
       </ScrollView>
-      <Footer navigation={router} activeTab="saved" />
     </View>
+    <Footer navigation={router} activeTab="saved" />
     </SafeAreaView>
   );
 };

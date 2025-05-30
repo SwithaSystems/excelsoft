@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   SafeAreaView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import styles from "./AdminDashboardStyles";
 import BrandHeader from "@/components/BrandHeader";
@@ -19,6 +21,7 @@ import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 
 const AdminDashboard = () => {
+  const paddingTop = Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
   const getStatusBadgeStyle = (status: String) => {
     switch (status) {
       case "Completed":
@@ -75,7 +78,7 @@ const AdminDashboard = () => {
   return (
     <>
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop }]}>
         <BrandHeader hideUserGreeting={true}/>
         console.log("hideUserGreeting:", props.hideUserGreeting);
         <ScrollView>
