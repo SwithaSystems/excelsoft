@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import containers from "@/containers";
 import { jsonAxios } from "./axiosConfig";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 export const authService = {
   async login(phone: string, password: string) {
@@ -40,7 +41,8 @@ export const authService = {
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("user");
-      router.replace("/(auth)/signIn" as any);
+      // router.replace("/auth/signIn" as any);
+      redirectToPage(containers.signInScreen);
     } catch (error) {
       throw error;
     }
