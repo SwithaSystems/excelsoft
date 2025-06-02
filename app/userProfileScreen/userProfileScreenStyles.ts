@@ -50,7 +50,8 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   settingsContainer: {
-    paddingHorizontal: 30
+    paddingHorizontal: 30,
+    flex:0,
   },
   settingOption: {
     flexDirection: "row",

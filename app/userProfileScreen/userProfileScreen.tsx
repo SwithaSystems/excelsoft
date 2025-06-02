@@ -69,7 +69,7 @@ const UserProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
-    // Admin: containers.AdminDashboardScreen,
+    Admin: containers.AdminDashboardScreen,
   };
 
   // useEffect(() => {
@@ -164,7 +164,7 @@ const UserProfileScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={globalStyles.container}>
         <Header headerText="User Profile" needResetNavigation={true} />
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <Text style={styles.greeting}>
               {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
