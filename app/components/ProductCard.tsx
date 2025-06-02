@@ -5,6 +5,7 @@ import colors from "../../app/config/colors";
 import Star from "../../components/Star";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 interface ProductCardProps {
   id: string;
@@ -37,7 +38,7 @@ const ProductCard = ({
   image,
 }: ProductCardProps) => {
   const router = useRouter();
-  const isRemoteImage = typeof image === 'string';
+  const isRemoteImage = typeof image === "string";
   return (
     <TouchableOpacity
       style={styles.container}
@@ -45,7 +46,10 @@ const ProductCard = ({
         redirectToPage(containers.productDetailScreenScreen, { productId: id })
       }
     >
-      <Image source={isRemoteImage ? { uri: image } : image} style={styles.image} />
+      <Image
+        source={isRemoteImage ? { uri: image } : image}
+        style={styles.image}
+      />
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>
           {name}
@@ -57,19 +61,25 @@ const ProductCard = ({
         </View>
         <View style={styles.saleContainer}>
           <View style={styles.saleTimeBox}>
-              <View style={styles.saleTag}>
-                <Text style={styles.saleText}>Sale</Text>
-              </View>
-                <Text style={styles.time}>02:48:26</Text>
+            <View style={styles.saleTag}>
+              <Text style={styles.saleText}>Sale</Text>
+            </View>
+            <Text style={styles.time}>02:48:26</Text>
           </View>
           <Text style={styles.discount}>
             {Math.round(((originalPrice - price) / originalPrice) * 100)}%
           </Text>
         </View>
-          <View style={styles.priceContainer}>
-            <Text style={styles.price}>${price}</Text>
-            <Text style={styles.originalPrice}>${originalPrice}</Text>
-          </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>
+            {CurrencySymbol}
+            {price}
+          </Text>
+          <Text style={styles.originalPrice}>
+            {CurrencySymbol}
+            {originalPrice}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -107,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginRight: 4,
-    color:"#6E6F76",
+    color: "#6E6F76",
   },
   reviews: {
     margin: 4,
@@ -120,20 +130,20 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     padding: 4,
   },
-  saleContainer:{
-      flexDirection: "row",
+  saleContainer: {
+    flexDirection: "row",
   },
   saleTimeBox: {
     flexDirection: "row",
-    backgroundColor:colors.lightSkyBlue,
+    backgroundColor: colors.lightSkyBlue,
     //borderRadius: 5,
     alignItems: "center",
   },
-   saleText: {
-      color: colors.white,
-      fontSize: 14,
-      fontWeight: "500",
-    },
+  saleText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "500",
+  },
   saleTag: {
     backgroundColor: colors.primary,
     color: colors.white,
@@ -163,7 +173,7 @@ const styles = StyleSheet.create({
     //backgroundColor: colors.secondary,
     borderRadius: 5,
     paddingRight: 6,
-    marginTop:2,
+    marginTop: 2,
     marginRight: 8,
   },
   discount: {

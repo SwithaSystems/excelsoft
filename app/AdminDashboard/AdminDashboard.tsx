@@ -21,7 +21,8 @@ import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 
 const AdminDashboard = () => {
-  const paddingTop = Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
+  const paddingTop =
+    Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
   const getStatusBadgeStyle = (status: String) => {
     switch (status) {
       case "Completed":
@@ -77,13 +78,13 @@ const AdminDashboard = () => {
 
   return (
     <>
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[styles.container, { paddingTop }]}>
-        <BrandHeader hideUserGreeting={true}/>
-        console.log("hideUserGreeting:", props.hideUserGreeting);
-        <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <Text style={styles.title}>Dashboard</Text>
+      <SafeAreaView style={globalStyles.safeAreaContainer}>
+        <View style={[styles.container, { paddingTop }]}>
+          <BrandHeader hideUserGreeting={true} />
+          console.log("hideUserGreeting:", props.hideUserGreeting);
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <Text style={styles.title}>Dashboard</Text>
 
               <View style={styles.metricsContainer}>
                 <View style={styles.metricBox}>
@@ -154,25 +155,25 @@ const AdminDashboard = () => {
                 </View>
               </View>
 
-            <View style={styles.ordersHeader}>
-              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  redirectToPage(containers.AdminSeeAllOrdersScreen);
-                }}
-              >
-                <Text style={styles.seeAll}>See All</Text>
-              </TouchableOpacity>
+              <View style={styles.ordersHeader}>
+                <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    redirectToPage(containers.AdminSeeAllOrdersScreen);
+                  }}
+                >
+                  <Text style={styles.seeAll}>See All</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={ordersData}
+                renderItem={renderOrder}
+                keyExtractor={(item) => item.id}
+              />
             </View>
-            <FlatList
-              data={ordersData}
-              renderItem={renderOrder}
-              keyExtractor={(item) => item.id}
-            />
-          </View>
-        </ScrollView>
-        <AdminFooter activeTab="home" />
-      </View>
+          </ScrollView>
+          <AdminFooter activeTab="home" />
+        </View>
       </SafeAreaView>
     </>
   );

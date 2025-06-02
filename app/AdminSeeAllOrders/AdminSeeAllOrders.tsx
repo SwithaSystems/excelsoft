@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  SafeAreaView,
+} from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -12,7 +19,7 @@ import containers from "@/containers";
 import colors from "../config/colors";
 
 const AdminSeeAllOrders = () => {
-  const renderOrderItem = ({ item }) => {
+  const renderOrderItem = ({ item }: any) => {
     return (
       <>
         <View style={styles.eachOrderItem}>
@@ -76,30 +83,30 @@ const AdminSeeAllOrders = () => {
   };
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Orders" />
-      <ScrollView>
-        <View
-          style={[
-            globalStyles.sectionContent,
-            globalStyles.pt_0,
-            globalStyles.pb_0,
-          ]}
-        >
-          <Text style={styles.heading}>
-            WELCOME, Let's go through the orders details!
-          </Text>
-          <View style={styles.ordersContainer}>
-            <FlatList
-              data={[...ordersData]}
-              renderItem={renderOrderItem}
-              keyExtractor={(item) => item.id}
-            />
+      <View style={globalStyles.container}>
+        <Header headerText="Orders" />
+        <ScrollView>
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              globalStyles.pb_0,
+            ]}
+          >
+            <Text style={styles.heading}>
+              WELCOME, Let's go through the orders details!
+            </Text>
+            <View style={styles.ordersContainer}>
+              <FlatList
+                data={[...ordersData]}
+                renderItem={renderOrderItem}
+                keyExtractor={(item) => item.id}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-      <Footer />
-    </View>
+        </ScrollView>
+        <Footer />
+      </View>
     </SafeAreaView>
   );
 };

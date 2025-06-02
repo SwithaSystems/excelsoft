@@ -48,7 +48,7 @@ function BrandHeader(props) {
 
             //  clear Redux store
             if (dispatch && typeof dispatch === "function") {
-              dispatch({ type: "user/clearUser" });
+              dispatch({ type: "user/clearUserData" });
             }
           } catch (error) {
             console.error("Error clearing user data:", error);
@@ -120,7 +120,7 @@ function BrandHeader(props) {
               <Ionicons name="person-circle-outline" size={24} color="#000" />
             </View>
           </TouchableOpacity>
-          
+
           {isAdmin && (
             <TouchableOpacity
               onPress={() => {
@@ -143,8 +143,8 @@ function BrandHeader(props) {
               </Text>
             </TouchableOpacity>
           )}
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={{ marginLeft: 14 }}
             onPress={() => {
               redirectToPage(containers.UserNotificationsScreen);
