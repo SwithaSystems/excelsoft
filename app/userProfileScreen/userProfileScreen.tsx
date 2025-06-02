@@ -23,7 +23,7 @@ import {
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../services/notificationService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import { deviceType } from "expo-device";
 // import axiosInstance from "@/services/axiosConfig";

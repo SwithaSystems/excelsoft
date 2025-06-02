@@ -37,7 +37,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           setIsValidUser(true);
         } else {
           await AsyncStorage.removeItem("user");
-          dispatch({ type: "user/clearUser" });
+          dispatch({ type: "user/clearUserData" });
           setIsValidUser(false);
         }
       } else {
@@ -54,15 +54,21 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   }, [userData_redux]);
 
   const handleMenuPress = () => {
-    redirectToPage(isValidUser ? containers.userProfileScreenScreen : containers.signInScreen);
+    redirectToPage(
+      isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
+    );
   };
 
   const handleSavedItems = () => {
-    redirectToPage(isValidUser ? containers.savedItemScreenScreen : containers.signInScreen);
+    redirectToPage(
+      isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
+    );
   };
 
   return (
-    <View style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}>
+    <View
+      style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}
+    >
       <View style={styles.footer}>
         <FooterButton
           icon="home"

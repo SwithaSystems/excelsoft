@@ -48,13 +48,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAuthenticated(true);
 
         // Update AsyncStorage with fresh data
-        await AsyncStorage.setItem("user", JSON.stringify(currentUser));
+        // await AsyncStorage.setItem("user", JSON.stringify(currentUser));
 
         // Update Redux store
         dispatch(setUserData(currentUser));
       } else if (storedUser) {
         // Clear stale data if server says not authenticated
-        await AsyncStorage.removeItem("user");
+        // await AsyncStorage.removeItem("user");
         dispatch(clearUserData());
         setIsAuthenticated(false);
         setUser(null);
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(response.user);
 
       // Save to AsyncStorage
-      await AsyncStorage.setItem("user", JSON.stringify(response.user));
+      // await AsyncStorage.setItem("user", JSON.stringify(response.user));
 
       // Update Redux
       dispatch(setUserData(response.user));
@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(response.user);
 
       // Save to AsyncStorage
-      await AsyncStorage.setItem("user", JSON.stringify(response.user));
+      // await AsyncStorage.setItem("user", JSON.stringify(response.user));
 
       // Update Redux
       dispatch(setUserData(response.user));

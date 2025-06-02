@@ -1,5 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const EXCLUDED_APIS = [
@@ -29,6 +32,8 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       try {
         const token = await AsyncStorage.getItem("token");
         console.log("Token", token);
+        // const refreshToken = await AsyncStorage.getItem("refreshtoken");
+        // console.log("refreshtoken", refreshToken);
         const isExcluded = EXCLUDED_APIS.some((url) =>
           config.url?.includes(url)
         );
@@ -59,16 +64,33 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       // Handle 401 Unauthorized errors
       if (error.response?.status === 401 && originalRequest) {
         try {
-          // Remove token and user data
+          const refreshToken = await AsyncStorage.getItem("refreshtoken");
+          if (!refreshToken) {
+            throw new Error("Refresh token not available.");
+          }
+          const refreshResponse = await axios.post(
+            `${API_BASE_URL}/auth/refresh-token`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${refreshToken}` },
+            }
+          );
+
+          const newAccessToken = refreshResponse.data.token;
+          console.log("newAccessToken", newAccessToken);
+
+          await AsyncStorage.setItem("token", newAccessToken);
+
+          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          // Token refresh failed → logout
           await AsyncStorage.removeItem("token");
+          await AsyncStorage.removeItem("refresh_token");
           await AsyncStorage.removeItem("user");
-
-          // Redirect to login (you'll need to implement this based on your navigation setup)
-          // For example: router.replace('/signIn');
-
-          return Promise.reject(error);
-        } catch (e) {
-          return Promise.reject(e);
+          redirectToPage(containers.signInScreen);
+          // router.replace("../auth/signIn");
+          return Promise.reject(refreshError);
         }
       }
 

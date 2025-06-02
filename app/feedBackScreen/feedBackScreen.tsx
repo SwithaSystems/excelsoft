@@ -22,7 +22,7 @@ import { useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
@@ -96,78 +96,78 @@ const feedBackScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <KeyBoardWrapper>
-    <View style={globalStyles.container}>
-      <Header
-        headerText="Add Your Review"
-        secondaryBtnText="Discard"
-        secondaryBtnCallBack={() => {
-          redirectToPage(containers.productDetailScreenScreen, {
-            productId: productId,
-          });
-        }}
-      />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={styles.ratingContainer}>
-            <Text style={styles.ratingTitle}>What is your Rating?</Text>
-            <ProductStars
-              starsContainer={{ justifyContent: "space-between" }}
-              rating={rating}
-              needAction={true}
-              size={60}
-              onChangeRating={setRating}
+      <KeyBoardWrapper>
+        <View style={globalStyles.container}>
+          <Header
+            headerText="Add Your Review"
+            secondaryBtnText="Discard"
+            secondaryBtnCallBack={() => {
+              redirectToPage(containers.productDetailScreenScreen, {
+                productId: productId,
+              });
+            }}
+          />
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.ratingTitle}>What is your Rating?</Text>
+                <ProductStars
+                  starsContainer={{ justifyContent: "space-between" }}
+                  rating={rating}
+                  needAction={true}
+                  size={60}
+                  onChangeRating={setRating}
+                />
+              </View>
+              <View style={styles.reviewInputContainer}>
+                <TextInput
+                  style={[styles.reviewInput, { height: 333 }]}
+                  placeholder="Add Your Review"
+                  multiline
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  editable={!isSubmitting}
+                />
+              </View>
+              <View style={styles.imagePickerContainer}>
+                <Text style={styles.ratingTitle}>
+                  Would you like to add some pictures?
+                </Text>
+                <TouchableOpacity
+                  style={styles.addImageButton}
+                  onPress={pickImage}
+                  disabled={isSubmitting}
+                >
+                  <Ionicons
+                    name="add"
+                    size={30}
+                    color={isSubmitting ? "#ccc" : "gray"}
+                  />
+                </TouchableOpacity>
+                {image && (
+                  <Image
+                    source={{ uri: image }}
+                    style={{ width: 200, height: 200, marginTop: 10 }}
+                  />
+                )}
+              </View>
+            </View>
+          </ScrollView>
+          <View style={globalStyles.p_3}>
+            <Button
+              title={isSubmitting ? "Submitting..." : "Submit Review"}
+              onPress={handleAddReview}
+              disabled={isSubmitting || !rating || reviewText.trim() === ""}
+              loading={isSubmitting}
             />
           </View>
-          <View style={styles.reviewInputContainer}>
-            <TextInput
-              style={[styles.reviewInput, { height: 333 }]}
-              placeholder="Add Your Review"
-              multiline
-              value={reviewText}
-              onChangeText={setReviewText}
-              editable={!isSubmitting}
-            />
-          </View>
-          <View style={styles.imagePickerContainer}>
-            <Text style={styles.ratingTitle}>
-              Would you like to add some pictures?
-            </Text>
-            <TouchableOpacity
-              style={styles.addImageButton}
-              onPress={pickImage}
-              disabled={isSubmitting}
-            >
-              <Ionicons
-                name="add"
-                size={30}
-                color={isSubmitting ? "#ccc" : "gray"}
-              />
-            </TouchableOpacity>
-            {image && (
-              <Image
-                source={{ uri: image }}
-                style={{ width: 200, height: 200, marginTop: 10 }}
-              />
-            )}
-          </View>
+          <ConfirmationModal
+            visible={showReviewconfirmationModal}
+            message="Review Added Successfully"
+            onClose={() => setShowReviewconfirmationModal(false)}
+          />
         </View>
-      </ScrollView>
-      <View style={globalStyles.p_3}>
-        <Button
-          title={isSubmitting ? "Submitting..." : "Submit Review"}
-          onPress={handleAddReview}
-          disabled={isSubmitting || !rating || reviewText.trim() === ""}
-          loading={isSubmitting}
-        />
-      </View>
-      <ConfirmationModal
-        visible={showReviewconfirmationModal}
-        message="Review Added Successfully"
-        onClose={() => setShowReviewconfirmationModal(false)}
-      />
-    </View>
-    </KeyBoardWrapper>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

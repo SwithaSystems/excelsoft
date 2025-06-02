@@ -45,6 +45,11 @@ export const ProductsAPI = {
     return response.data;
   },
 
+  deleteProduct: async (id: number): Promise<Product> => {
+    const response = await jsonAxios.delete(`/products/${id}`);
+    return response.data;
+  },
+
   getAllProducts: async (): Promise<Product[]> => {
     const response = await jsonAxios.get(`/products`);
     return response.data;
