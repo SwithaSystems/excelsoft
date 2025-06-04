@@ -67,54 +67,38 @@ const AdminProductDashboard = () => {
     fetchAllProducts();
   }, []);
 
-  const ProductCard = ({ item }: { item: any }) => {
-    return (
-      <View style={styles.card}>
-        <View
-          style={[
-            globalStyles.flexRow,
-            globalStyles.alignItemsCenter,
-            globalStyles.mb_3,
-          ]}
-        >
-          <View>
-            <Image source={{ uri: item?.image[0] }} style={styles.image} />
-          </View>
-          <View style={styles.details}>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>Product Name:</Text> {item.name}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>Category:</Text> {item.category}
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>In Stock:</Text> {item.stock} units
-            </Text>
-            <Text style={styles.text}>
-              <Text style={styles.bold}>Price:</Text> £{item.price} per unit
-            </Text>
-          </View>
+const ProductCard = ({ item }: { item: any }) => {
+  return (
+    <View style={styles.card}>
+      <View
+        style={[
+          globalStyles.flexRow,
+          globalStyles.alignItemsCenter,
+          globalStyles.mb_3,
+          {marginTop:12}
+        ]}
+      >
+        <View>
+          <Image source={{ uri: item?.image[0] }} style={styles.image} />
         </View>
-        <View style={styles.buttonContainer}>
-          <Button
-            onPress={() => {
-              redirectToPage(containers.AdminProductUpdationScreen, {
-                item: JSON.stringify(item),
-              });
-            }}
-            title="Edit Details"
-          />
-          <Button
-            onPress={() => {
-              setItemToDelete(item);
-              setIsModalVisible(true);
-            }}
-            title="Delete Product"
-          />
+        <View style={styles.details}>
+          <Text style={[styles.text, styles.bold]}>
+            {item.name}
+          </Text>
+          <Text style={styles.text}>
+            Category: {item.category}
+          </Text>
+          <Text style={styles.text}>
+            £{item.price} per unit
+          </Text>
+          <Text style={styles.text}>
+            In Stock: {item.stock} units
+          </Text>
         </View>
       </View>
-    );
-  };
+    </View>
+  );
+};
   const maxId = productsList.reduce((max: any, product: any) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id

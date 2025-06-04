@@ -16,6 +16,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 16,
   },
+  idContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
   searchBarContainer: {
   flexDirection: "row",
   alignItems: "center",
@@ -25,7 +31,13 @@ const styles = StyleSheet.create({
   paddingHorizontal: 16,
   marginBottom: 20,
 },
-
+statusContainer:{
+  // paddingTop: 24,
+},
+trackOrderText:{
+  color: colors.primary,
+  textDecorationLine: "underline",
+},
 searchInput: {
   flex: 1,
   fontSize: 16,

@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
   cartItem: {
     //paddingHorizontal: 16,
     //marginBottom: 8,
+    paddingBottom:16,
   },
   cartItemContent: {
     borderRadius: 10,

@@ -46,38 +46,53 @@ const AdminSeeAllOrders = () => {
             <Text style={globalStyles.size_16}>{item.id}</Text>
             <Text style={globalStyles.size_16}>{item.time} ago</Text>
           </View>
-          <View
-            style={[
-              globalStyles.flexRow,
-              globalStyles.justifyContentBetween,
-              globalStyles.mb_3,
-            ]}
-          >
-            <View>
-              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                {item.customer}
-              </Text>
-              <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
-                {CurrencySymbol} {item.amount}
-              </Text>
+        <View
+          style={[
+            globalStyles.flexRow,
+            globalStyles.justifyContentBetween,
+            globalStyles.mb_3,
+          ]}
+        >
+          <View style={{ flex: 1 }}>
+            <View style={styles.idContainer}>
+              <View style={{ flex: 1 }}>
+                <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                  {item.customer}
+                </Text>
+              </View>
+              <TouchableOpacity>
+                <Text style={styles.trackOrderText}>
+                  Track Order
+                </Text>
+              </TouchableOpacity>
             </View>
-            <Text style={globalStyles.size_16}>
-              Status:
-              <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.ml_1,
-                ]}
-              >
-                {item.status}
-              </Text>
+          </View>
+        </View>
+      <View  style={{flexDirection:"row", justifyContent:"space-between"}}>
+          <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
+            Total: {CurrencySymbol} {item.amount}
+          </Text>
+          <View style={styles.statusContainer}>
+            <Text
+              style={[
+                localStyles.statusPill,
+                item.status === "Pending"
+                  ? localStyles.pending
+                  : item.status === "Cancelled"
+                  ? localStyles.cancelled
+                  : item.status === "Delivered"
+                  ? localStyles.delivered
+                  : localStyles.defaultStatus,
+              ]}
+            >
+              {item.status}
             </Text>
           </View>
-          <View
+        </View>
+          {/* <View
             style={[globalStyles.flexRow, globalStyles.justifyContentBetween]}
           >
-            {/* <Button
+            <Button
               onPress={() => {
                 redirectToPage(containers.AdminOrderDetailScreen);
               }}
@@ -88,8 +103,8 @@ const AdminSeeAllOrders = () => {
                 redirectToPage(containers.deliveryTrackingScreenScreen);
               }}
               title="Track Order"
-            /> */}
-          </View>
+            />
+          </View> */}
         </View>
       </TouchableOpacity>
       </>
@@ -164,6 +179,32 @@ const AdminSeeAllOrders = () => {
 export default AdminSeeAllOrders;
 
 const localStyles = StyleSheet.create({
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  pending: {
+    backgroundColor: "#FFE6A7",
+    color: "#6D4C00",
+  },
+  cancelled: {
+    backgroundColor: "#FFD6D9",
+    color: "#B00020",
+  },
+  delivered: {
+    backgroundColor: colors.lightGreen,
+    color: "#006D3C",
+  },
+  defaultStatus: {
+    backgroundColor: "#E0E0E0",
+    color: "#333",
+  },
   badgeContainer: {
     flexDirection: "row",
     marginTop: 10,

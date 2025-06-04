@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
@@ -16,7 +16,7 @@ const AdminOrderDetail = () => {
   const cartItems = [
     {
       id: 1,
-      image: require("../../assets/baby-bicycle.png"), // Replace with your image paths
+      image: require("assets/DuckToys.png"), // Replace with your image paths
       name: "Duck Toys",
       price: 10.0,
       originalPrice: 6.99,
@@ -24,7 +24,7 @@ const AdminOrderDetail = () => {
     },
     {
       id: 2,
-      image: require("../../assets/baby-bicycle.png"),
+      image: require("../../assets/OrangeJuice.png"),
       name: "Orange Juice",
       price: 3.0,
       quantity: 2,
@@ -41,10 +41,15 @@ const AdminOrderDetail = () => {
   return (
     <>
       <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <View style={globalStyles.container}>
+        <View style={[globalStyles.container, { flex: 1 }]}>
           <Header headerText="Order Details" />
-          <SafeAreaView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0, { flex: 1 }]}>
+            <ScrollView 
+              style={{ flex: 1 }} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+            >
               {cartItems.map((eachCartItem) => {
                 return (
                   <CartItem
@@ -118,32 +123,37 @@ const AdminOrderDetail = () => {
                   H.No: 1-123, xyz street, That Town, Near Mellinda Cafe, UK,
                   3123456
                 </Text>
-                <View
+                
+                {/* FIXED: Status section - simple approach */}
+                <Text
                   style={[
-                    globalStyles.flexRow,
-                    globalStyles.alignItemsCenter,
+                    globalStyles.size_16,
+                    globalStyles.fontWeight500,
                     globalStyles.mt_2,
+                    globalStyles.mb_1,
                   ]}
                 >
-                  <Text
-                    style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                  >
-                    Status
-                  </Text>
+                  Status:
+                </Text>
+                <View style={{
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  backgroundColor: '#fff',
+                  height: 50,
+                  justifyContent: 'center',
+                }}>
                   <Picker
                     selectedValue={status}
-                    style={[
-                      globalStyles.picker,
-                      utilitiesStyles.w_100,
-                      globalStyles.ml_2,
-                    ]}
+                    style={{
+                      height: 50,
+                    }}
                     onValueChange={(itemValue) => setStatus(itemValue)}
                   >
                     {orderStatuses.map((each, index) => {
                       return (
                         <Picker.Item
                           key={index}
-                          style={[globalStyles.pickerValue]}
                           label={each}
                           value={each}
                         />
@@ -152,9 +162,10 @@ const AdminOrderDetail = () => {
                   </Picker>
                 </View>
               </View>
-              <View style={[globalStyles.mt_4]}>
+              <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
                 <Button onPress={() => {}} title="Update Details" />
               </View>
+            </ScrollView>
             </View>
           </SafeAreaView>
         </View>
