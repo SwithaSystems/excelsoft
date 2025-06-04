@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   eachOrderItem:{
-    borderColor: colors.primary,
+    borderColor: colors.placeholdergrey,
     borderRadius: 10,
     borderWidth: 2,
     marginBottom: 24,

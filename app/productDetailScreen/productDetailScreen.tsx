@@ -173,7 +173,17 @@ const ProductDetailScreen = () => {
 
         <View style={styles.contentContainer}>
           <View style={styles.exclusiveDetails}>
+            <View style={globalStyles.savedContainer}>
             <Text style={styles.productTitle}>{product.name}</Text>
+             <Ionicons
+                  name="heart-outline"
+                  size={20}
+                  color={colors.black}
+                  style = {{
+                    paddingTop: 4,
+                  }}
+                />
+              </View>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>{product.rating}</Text>
               <Text style={styles.starIcon}> ★ </Text>

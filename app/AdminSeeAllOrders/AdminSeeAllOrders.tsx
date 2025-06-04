@@ -30,6 +30,11 @@ const AdminSeeAllOrders = () => {
   const renderOrderItem = ({ item }: any) => {
     return (
       <>
+        <TouchableOpacity
+          onPress={() => {
+          redirectToPage(containers.AdminOrderDetailScreen);
+        }}
+        >
         <View style={styles.eachOrderItem}>
           <View
             style={[
@@ -72,7 +77,7 @@ const AdminSeeAllOrders = () => {
           <View
             style={[globalStyles.flexRow, globalStyles.justifyContentBetween]}
           >
-            <Button
+            {/* <Button
               onPress={() => {
                 redirectToPage(containers.AdminOrderDetailScreen);
               }}
@@ -83,9 +88,10 @@ const AdminSeeAllOrders = () => {
                 redirectToPage(containers.deliveryTrackingScreenScreen);
               }}
               title="Track Order"
-            />
+            /> */}
           </View>
         </View>
+      </TouchableOpacity>
       </>
     );
   };
