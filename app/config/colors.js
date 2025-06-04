@@ -16,4 +16,5 @@ export default {
   lightGreen: "#DCF0E4",
   paleBlue: "#EDFAFD",
   iconBlack: "#666",
+  red: "#e74c3c",
 };

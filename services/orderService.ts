@@ -123,4 +123,18 @@ export const orderService = {
       throw error;
     }
   },
+
+  getOrdersByOrderDate: async (orderDate: string): Promise<Order[]> => {
+    console.log("todayorderDate", orderDate);
+    try {
+      const response = await jsonAxios.get<Order[]>(
+        `${API_BASE_URL}/orders/by_date/${orderDate}`
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching orders by orderDate:", error);
+      throw error;
+    }
+  },
 };

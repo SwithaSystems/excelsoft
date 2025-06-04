@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import styles from "./savedItemScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -18,9 +24,9 @@ import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-
+import ProductCard from "../components/ProductCard";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -42,45 +48,44 @@ const savedItemScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Saved Items" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {savedItems.map((eachItem: any) => {
-            return (
-              <CartItem
-                footerBtnText="Move to Cart"
-                handleDelete={() => handleDelete(eachItem)}
-                onFooterAction={() => handleMoveToCart(eachItem)}
-                key={eachItem.id}
-                cartItem={eachItem}
-                isSavedItem="true"
-              />
-            );
-          })}
-          {savedItems.length === 0 && (
-            <>
-              <View style={styles.emptyCartContainer}>
-                <Ionicons
-                  name="cart"
-                  size={98}
-                  color={colors.placeholdergrey}
-                  style={styles.cartIcon}
+      <View style={globalStyles.container}>
+        <Header headerText="Saved Items" />
+        <ScrollView>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            {savedItems.map((item: any) => {
+              return (
+                <CartItem
+                  footerBtnText="Move to Cart"
+                  handleDelete={() => handleDelete(item)}
+                  onFooterAction={() => handleMoveToCart(item)}
+                  key={item.id}
+                  cartItem={item}
+                  isSavedItem="true"
                 />
-                <View style={styles.textContainer}>
-                  <Text style={styles.emptyTitle}>Your page is empty</Text>
-                  <Text style={styles.emptySubtitle}>
-                    No worries! You can check our products{' '}
-                    <Text 
-                      style={styles.hereText}
-                      onPress={() => redirectToPage(containers.homeScreen)}
-                    >
-                      here
-                    </Text>.
-                  </Text>
+              );
+            })}
+            {savedItems.length === 0 && (
+              <>
+                <View style={styles.emptyCartContainer}>
+                  <Ionicons
+                    name="cart"
+                    size={98}
+                    color={colors.placeholdergrey}
+                    style={styles.cartIcon}
+                  />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.emptyTitle}>Your page is empty</Text>
+                    <Text style={styles.emptySubtitle}>
+                      No worries! You can check our products{" "}
+                      <TouchableOpacity
+                        onPress={() => redirectToPage(containers.homeScreen)}
+                      >
+                        <Text style={styles.hereText}>here.</Text>
+                      </TouchableOpacity>
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              {/* <Button
+                {/* <Button
                 title="Start Shopping"
                 onPress={() => {
                    redirectToPage(containers.homeScreen);
@@ -88,12 +93,12 @@ const savedItemScreen = () => {
                 style={styles.button}
                 textStyle={styles.text}
               ></Button> */}
-            </>
-          )}
-        </View>
-      </ScrollView>
-    </View>
-    <Footer navigation={router} activeTab="saved" />
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+      <Footer navigation={router} activeTab="saved" />
     </SafeAreaView>
   );
 };

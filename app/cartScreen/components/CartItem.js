@@ -7,9 +7,10 @@ import Button from "@/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  addToSavedItems,
-  updateSavedItemQuantity,
-} from "../../../store/slices/savedItemsSlice";
+  addToSavedForLaterItems,
+  updateSavedForLaterItemQuantity,
+  removeFromSavedForLaterItems,
+} from "../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../store/slices/cartSlice";
 
@@ -17,14 +18,40 @@ function CartItem(props) {
   const item = props.cartItem;
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => [...state.cart.items]);
-  const savedItems = useSelector((state) => state.savedItems.items);
+  const savedForLaterItems = useSelector(
+    (state) => state.savedForLaterItems.items
+  );
   console.log("props", props);
+
+  const getImageSource = () => {
+    // Check if item has image as a string (direct URL)
+    if (item.image && typeof item.image === "string") {
+      return { uri: item.image };
+    }
+    // Check if item has image array (from cart items)
+    else if (item.image && Array.isArray(item.image) && item.image.length > 0) {
+      return { uri: item.image[0] };
+    }
+    // Check if item has imageUrl (from other screens)
+    else if (item.imageUrl) {
+      // Handle both require() numbers and URL strings
+      return typeof item.imageUrl === "number"
+        ? item.imageUrl // require() asset
+        : { uri: item.imageUrl }; // URL string
+    }
+    // Fallback
+    return null;
+  };
+
+  const getItemName = () => {
+    return item.name || item.title || "Unknown Item";
+  };
 
   const handleSaveItem = (saveItem) => {
     if (saveItem) {
       const itemToSave = cartItems.find((item) => item.id === saveItem.id);
       if (itemToSave) {
-        dispatch(addToSavedItems(itemToSave));
+        dispatch(addToSavedForLaterItems(itemToSave));
         dispatch(removeFromCart(itemToSave.id));
       }
     }
@@ -32,7 +59,10 @@ function CartItem(props) {
   const increaseQuantity = (itemId, currentQuantity) => {
     if (props.isSavedItem) {
       dispatch(
-        updateSavedItemQuantity({ id: itemId, quantity: currentQuantity + 1 })
+        updateSavedForLaterItemQuantity({
+          id: itemId,
+          quantity: currentQuantity + 1,
+        })
       );
     } else {
       dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
@@ -43,14 +73,17 @@ function CartItem(props) {
     if (currentQuantity > 1) {
       if (props.isSavedItem) {
         dispatch(
-          updateSavedItemQuantity({ id: itemId, quantity: currentQuantity - 1 })
+          updateSavedForLaterItemQuantity({
+            id: itemId,
+            quantity: currentQuantity - 1,
+          })
         );
       } else {
         dispatch(updateQuantity({ id: itemId, quantity: currentQuantity - 1 }));
       }
     } else {
       if (props.isSavedItem) {
-        dispatch(removeFromSavedItems(itemId));
+        dispatch(removeFromSavedForLaterItems(itemId));
       } else {
         dispatch(removeFromCart(itemId));
       }
@@ -59,7 +92,7 @@ function CartItem(props) {
 
   const handleAdd = (itemId) => {
     if (props.isSavedItem) {
-      dispatch(updateSavedItemQuantity({ id: itemId, quantity: 1 }));
+      dispatch(updateSavedForLaterItemQuantity({ id: itemId, quantity: 1 }));
     } else {
       dispatch(updateQuantity({ id: itemId, quantity: 1 }));
     }
@@ -67,26 +100,20 @@ function CartItem(props) {
 
   return (
     <>
-      <View style={[styles.cartItem, /*props?.itemContainerStyle*/]}>
+      <View style={[styles.cartItem /*props?.itemContainerStyle*/]}>
         <View style={styles.cartItemContent}>
           <View style={styles.cartItemImageContainer}>
-            {/* Handle both URL strings and require'd assets */}
-            {item.image?.[0] ? (
-              <Image source={{ uri: item.image[0] }} style={styles.itemImage} />
+            {getImageSource() ? (
+              <Image source={getImageSource()} style={styles.itemImage} />
             ) : (
               <View style={[styles.itemImage, { backgroundColor: "#ccc" }]} />
             )}
           </View>
           {props?.hideActions ? (
             <>
-              <View
-                style={[
-                  globalStyles.pl_3,
-                  { justifyContent: "center" },
-                ]}
-              >
+              <View style={[globalStyles.pl_3, { justifyContent: "center" }]}>
                 <Text style={globalStyles.h6}>
-                  {item.name}
+                  {getItemName()}
                   {props.showStockStatus && (
                     <Text style={styles.stockStatus}>
                       {props.stockAvailable ? "In Stock" : "No Stock"}
@@ -109,7 +136,7 @@ function CartItem(props) {
                 originalPrice={item.originalPrice}
               />
               <Text style={styles.itemName}>
-                {item.name}
+                {getItemName()}
                 {props.showStockStatus && (
                   <Text style={styles.stockStatus}>
                     {props.stockAvailable ? "In Stock" : "No Stock"}
@@ -279,7 +306,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textDecorationLine: "underline",
     fontSize: 12,
-    marginBottom:4,
+    marginBottom: 4,
   },
 });
 export default CartItem;

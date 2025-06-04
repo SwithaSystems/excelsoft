@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -15,9 +14,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AdminFooter = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();
-  
+
   return (
-    <View style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}>
+    <View
+      style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}
+    >
       <View style={styles.footer}>
         <FooterButton
           icon="home"
@@ -112,4 +113,3 @@ const styles = StyleSheet.create({
 });
 
 export default AdminFooter;
-

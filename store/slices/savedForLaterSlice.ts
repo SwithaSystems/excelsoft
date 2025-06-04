@@ -1,37 +1,41 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CartItemInterface } from "./cartSlice";
 
-interface SavedItemsState {
+interface savedForLaterItems {
   items: CartItemInterface[];
 }
 
-const initialState: SavedItemsState = {
+const initialState: savedForLaterItems = {
   items: [],
 };
 
-const savedItemsSlice = createSlice({
-  name: "savedItems",
+const savedforLaterItemsSlice = createSlice({
+  name: "savedforLaterItems",
   initialState,
   reducers: {
-    addToSavedItems: (state, action: PayloadAction<CartItemInterface>) => {
+    addToSavedForLaterItems: (
+      state,
+      action: PayloadAction<CartItemInterface>
+    ) => {
       console.log("Reducer received:", action.payload);
 
       const existingItem = state.items.find(
         (item) => item.id === action.payload.id
       );
       if (!existingItem) {
+        // state.items = [...state.items, action.payload];
         state.items.push(action.payload);
       }
 
       console.log("Updated state after saving:", state.items);
     },
-    removeFromSavedItems: (state, action) => {
+    removeFromSavedForLaterItems: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
     moveToCart: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
-    updateSavedItemQuantity: (state, action) => {
+    updateSavedForLaterItemQuantity: (state, action) => {
       console.log("Reducer received:", action.payload);
       const { id, quantity } = action.payload;
       const item = state.items.find((item) => item.id === id);
@@ -43,9 +47,9 @@ const savedItemsSlice = createSlice({
 });
 
 export const {
-  addToSavedItems,
-  removeFromSavedItems,
+  addToSavedForLaterItems,
+  removeFromSavedForLaterItems,
   moveToCart,
-  updateSavedItemQuantity,
-} = savedItemsSlice.actions;
-export default savedItemsSlice.reducer;
+  updateSavedForLaterItemQuantity,
+} = savedforLaterItemsSlice.actions;
+export default savedforLaterItemsSlice.reducer;

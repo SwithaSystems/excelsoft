@@ -21,7 +21,8 @@ import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const verifcationScreen = () => {
-  const { userData, from, phoneNumber_forgetPwd } = useLocalSearchParams();
+  const { userData, from, phoneNumber_forgetPwd, phoneNumber_editAccount } =
+    useLocalSearchParams();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [parsedUserData, setParsedUserData] = useState(null);
@@ -33,6 +34,7 @@ const verifcationScreen = () => {
     console.log("Source:", from);
     console.log("Raw userData:", userData);
     console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
+    console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
 
     // Set phone number based on source
     if (from === "signup" && userData) {
@@ -64,8 +66,22 @@ const verifcationScreen = () => {
           phoneNumber_forgetPwd
         );
       }
+    } else if (from === "verify" && phoneNumber_editAccount) {
+      if (Array.isArray(phoneNumber_editAccount)) {
+        setPhoneNumber(phoneNumber_editAccount[0]);
+        console.log(
+          "Set phone number (from array) for password reset:",
+          phoneNumber_editAccount[0]
+        );
+      } else {
+        setPhoneNumber(phoneNumber_editAccount);
+        console.log(
+          "Set phone number (from string) for password reset:",
+          phoneNumber_editAccount
+        );
+      }
     }
-  }, [from, userData, phoneNumber_forgetPwd]);
+  }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount]);
 
   // let parsedUserData: any;
   // if (typeof userData === "string") {
@@ -112,6 +128,10 @@ const verifcationScreen = () => {
           redirectToPage(containers.passwordResetScreenScreen, {
             phoneNumber,
           });
+          return;
+        }
+        if (from === "verify") {
+          redirectToPage(containers.editAccountInformationscreenScreen);
           return;
         }
 

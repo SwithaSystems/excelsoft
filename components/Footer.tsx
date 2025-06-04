@@ -54,15 +54,32 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   }, [userData_redux]);
 
   const handleMenuPress = () => {
+    if (activeTab === "menu") return; // Prevent reload if already active
     redirectToPage(
       isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
     );
   };
 
   const handleSavedItems = () => {
+    if (activeTab === "saved") return; // Prevent reload if already active
     redirectToPage(
       isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
     );
+  };
+
+  const handleHomePress = () => {
+    if (activeTab === "home") return; // Prevent reload if already active
+    redirectToPage(containers.homeScreen);
+  };
+
+  const handleSearchPress = () => {
+    if (activeTab === "search") return; // Prevent reload if already active
+    redirectToPage(containers.searchScreen);
+  };
+
+  const handleCartPress = () => {
+    if (activeTab === "cart") return; // Prevent reload if already active
+    redirectToPage(containers.cartScreenScreen);
   };
 
   return (
@@ -83,7 +100,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           icon="home"
           label="Home"
           isActive={activeTab === "home"}
-          onPress={() => redirectToPage(containers.homeScreen)}
+          onPress={handleHomePress}
         />
         <FooterButton
           icon="heart"
@@ -95,13 +112,13 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
           icon="search"
           label="Search"
           isActive={activeTab === "search"}
-          onPress={() => redirectToPage(containers.searchScreen)}
+          onPress={handleSearchPress}
         />
         <FooterButton
           icon="cart"
           label="Cart"
           isActive={activeTab === "cart"}
-          onPress={() => redirectToPage(containers.cartScreenScreen)}
+          onPress={handleCartPress}
           badge={cartItemCount}
         />
         <FooterButton
