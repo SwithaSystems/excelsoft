@@ -8,6 +8,11 @@ import containers from "@/containers";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import { Ionicons } from "@expo/vector-icons";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToSavedItems,
+  removeFromSavedItems,
+} from "@/store/slices/savedItemsSlice";
 
 interface ProductCardProps {
   id: string;
@@ -41,6 +46,37 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const router = useRouter();
   const isRemoteImage = typeof image === "string";
+
+  const dispatch = useDispatch();
+  const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const isItemSaved = (itemId: any) => {
+    return savedItems.some((savedItem: any) => savedItem.id === itemId);
+  };
+  const handleHeartPress = (e: any) => {
+    e.stopPropagation();
+
+    // Create the item object from the props
+    const currentItem = {
+      id,
+      name,
+      description,
+      rating,
+      noOfreviews,
+      price,
+      originalPrice,
+      image,
+      discount: 0,
+      quantity: 1,
+    };
+
+    console.log("saved item", currentItem);
+
+    if (isItemSaved(id)) {
+      dispatch(removeFromSavedItems(id));
+    } else {
+      dispatch(addToSavedItems(currentItem));
+    }
+  };
   return (
     <TouchableOpacity
       style={styles.container}
@@ -54,17 +90,16 @@ const ProductCard = ({
       />
       <View style={styles.content}>
         <View style={globalStyles.savedContainer}>
-        <Text style={styles.title} numberOfLines={1}>
-          {name}
-        </Text>
-        <Ionicons
-          name="heart-outline"
-          size={20}
-          color={colors.black}
-          style ={{
-            paddingTop: 4,
-          }}
-        />
+          <Text style={styles.title} numberOfLines={1}>
+            {name}
+          </Text>
+          <TouchableOpacity onPress={handleHeartPress}>
+            <Ionicons
+              name={isItemSaved(id) ? "heart" : "heart-outline"}
+              size={20}
+              color={isItemSaved(id) ? colors.red : colors.black}
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>{rating}</Text>

@@ -19,8 +19,37 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
+import { orderService } from "@/services/orderService";
 
 const AdminDashboard = () => {
+  const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
+  const today = new Date();
+  const dateOnly = today.toISOString().split("T")[0];
+
+  const getOrdersByOrderDate = async () => {
+    const allTodayOrders = await orderService.getOrdersByOrderDate(dateOnly);
+    setAllTodayOrders(allTodayOrders);
+  };
+
+  React.useEffect(() => {
+    getOrdersByOrderDate();
+  }, []);
+
+  console.log("allTodayOrders", allTodayOrders);
+
+  const totalOrders = allTodayOrders.length;
+  const pendingOrders = allTodayOrders.filter(
+    (order: any) => order.status !== "Order Delivered Successfully"
+  );
+  const recentOrders = allTodayOrders
+    .slice()
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+    )
+    .slice(0, 3);
+  console.log("recentOrders", recentOrders);
+
   const paddingTop =
     Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
   const getStatusBadgeStyle = (status: String) => {
@@ -33,7 +62,16 @@ const AdminDashboard = () => {
         return globalStyles.orderCanceledBadge;
     }
   };
+
   const renderOrder = ({ item }: any) => {
+    const orderTime = new Date(item.orderDate).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    console.log("orderTime", orderTime);
+
     return (
       <TouchableOpacity
         onPress={() => {
@@ -42,9 +80,9 @@ const AdminDashboard = () => {
       >
         <View style={styles.orderContainer}>
           <View>
-            <Text style={styles.orderId}>{item.id}</Text>
-            <Text style={styles.customerName}>{item.customer}</Text>
-            <Text style={styles.orderTime}>{item.time}</Text>
+            <Text style={styles.orderId}>{item.orderNumber}</Text>
+            {/* <Text style={styles.customerName}>{item.customer}</Text> */}
+            <Text style={styles.orderTime}>{orderTime}</Text>
           </View>
           <View
             style={{
@@ -97,7 +135,7 @@ const AdminDashboard = () => {
                     <Text style={styles.metricTitle}>Total Orders</Text>
                   </View>
                   <View>
-                    <Text style={styles.metricValue}>1,248</Text>
+                    <Text style={styles.metricValue}>{totalOrders}</Text>
                     <View style={styles.salesRaiseSection}>
                       <Ionicons
                         name="trending-up-outline"
@@ -119,7 +157,9 @@ const AdminDashboard = () => {
                     <Text style={styles.metricTitle}>Pending Orders</Text>
                   </View>
                   <View>
-                    <Text style={styles.metricValue}>26</Text>
+                    <Text style={styles.metricValue}>
+                      {pendingOrders.length}
+                    </Text>
                     <View style={styles.salesRaiseSection}>
                       <Ionicons
                         name="trending-up-outline"
@@ -166,7 +206,7 @@ const AdminDashboard = () => {
                 </TouchableOpacity>
               </View>
               <FlatList
-                data={ordersData}
+                data={recentOrders}
                 renderItem={renderOrder}
                 keyExtractor={(item) => item.id}
               />

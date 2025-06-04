@@ -20,28 +20,47 @@ import styles from "./productDetailScreenStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { Product, ProductsAPI } from "@/services/productService";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/slices/cartSlice";
 import DisplayPrice from "@/components/DisplayPrice";
 const { width } = Dimensions.get("window");
 import { useAppContext } from "@/context/AppContext";
-import Toast from "react-native-toast-message"; 
+import Toast from "react-native-toast-message";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import CustomToastAlert from "@/components/commonComponents/CustomToastAlert";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  addToSavedItems,
+  removeFromSavedItems,
+} from "@/store/slices/savedItemsSlice";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  // const [loading, setLoading] = useState(true);
   const { isLoading, setIsLoading } = useAppContext();
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
-  const [toast, setToast] = useState<{text1: String; text2?:string} | null>(null);
+  const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
+    null
+  );
 
   const dispatch = useDispatch();
+  const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const isItemSaved = (itemId: any) => {
+    return savedItems.some((savedItem: any) => savedItem.id === itemId);
+  };
+  const handleHeartPress = (e: any, item: any) => {
+    e.stopPropagation();
+    console.log("saved item", item);
+
+    if (isItemSaved(item.id)) {
+      dispatch(removeFromSavedItems(item.id));
+    } else {
+      dispatch(addToSavedItems(item));
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -59,13 +78,11 @@ const ProductDetailScreen = () => {
     }
   };
 
-  // Fetch product when component mounts
   useEffect(() => {
     if (!productId) return;
     fetchProduct();
   }, [productId]);
 
-  // Refresh product data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (productId) {
@@ -110,217 +127,217 @@ const ProductDetailScreen = () => {
     );
   }
 
-  const showToast = (text1: string, text2?:string)=>{
-    setToast({text1, text2});
+  const showToast = (text1: string, text2?: string) => {
+    setToast({ text1, text2 });
 
-    setTimeout(()=>{
+    setTimeout(() => {
       setToast(null);
     }, 3000);
   };
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <ScrollView style={{ flex: 1 }}>
-        <Header headerText={"About the Product"} />
-        <View style={{ position: "relative" }}>
-          <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            // onScroll={(event) => {
-            //   const index = Math.floor(event.nativeEvent.contentOffset.x / width);
-            //   setCurrentIndex(index);
-            // }}
-            onScroll={(event) => {
-              const index = Math.floor(
-                event.nativeEvent.contentOffset.x / width
-              );
-              setCurrentIndex(index);
-            }}
-            onMomentumScrollEnd={(event) => {
-              const index = Math.floor(
-                event.nativeEvent.contentOffset.x / width
-              );
-              setCurrentIndex(index);
-            }}
-          >
-            {product.image.map((imageUrl: any, index: any) => (
-              <View
-                key={index}
-                style={{
-                  width: width,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 20,
-                }}
-              >
-                <Image source={{ uri: imageUrl }} style={styles.productImage} />
-              </View>
-            ))}
-          </ScrollView>
-          <View style={styles.dotContainer}>
-            {product.image.map((_: any, index: number) => (
-              <View
-                key={index}
-                style={[styles.dot, currentIndex === index && styles.activeDot]}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.contentContainer}>
-          <View style={styles.exclusiveDetails}>
-            <View style={globalStyles.savedContainer}>
-            <Text style={styles.productTitle}>{product.name}</Text>
-             <Ionicons
-                  name="heart-outline"
-                  size={20}
-                  color={colors.black}
-                  style = {{
-                    paddingTop: 4,
+      <View style={styles.container}>
+        <ScrollView style={{ flex: 1 }}>
+          <Header headerText={"About the Product"} />
+          <View style={{ position: "relative" }}>
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              scrollEventThrottle={16}
+              onScroll={(event) => {
+                const index = Math.floor(
+                  event.nativeEvent.contentOffset.x / width
+                );
+                setCurrentIndex(index);
+              }}
+              onMomentumScrollEnd={(event) => {
+                const index = Math.floor(
+                  event.nativeEvent.contentOffset.x / width
+                );
+                setCurrentIndex(index);
+              }}
+            >
+              {product.image.map((imageUrl: any, index: any) => (
+                <View
+                  key={index}
+                  style={{
+                    width: width,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 20,
                   }}
-                />
-              </View>
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>{product.rating}</Text>
-              <Text style={styles.starIcon}> ★ </Text>
-              <Text style={styles.reviewsText}>({product.reviews.length})</Text>
-            </View>
-            <View style={styles.saleContainer}>
-              <View style={styles.saleTimeBox}>
-                <View style={styles.saleTag}>
-                  <Text style={styles.saleText}>Sale</Text>
+                >
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.productImage}
+                  />
                 </View>
-                <Text style={styles.saleTime}>02:48:26</Text>
+              ))}
+            </ScrollView>
+            <View style={styles.dotContainer}>
+              {product.image.map((_: any, index: number) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    currentIndex === index && styles.activeDot,
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.contentContainer}>
+            <View style={styles.exclusiveDetails}>
+              <View style={globalStyles.savedContainer}>
+                <Text style={styles.productTitle}>{product.name}</Text>
+                <TouchableOpacity onPress={(e) => handleHeartPress(e, product)}>
+                  <Ionicons
+                    name={isItemSaved(product.id) ? "heart" : "heart-outline"}
+                    size={20}
+                    color={isItemSaved(product.id) ? colors.red : colors.black}
+                  />
+                </TouchableOpacity>
               </View>
-              <View style={styles.discountTag}>
-                <Text style={styles.discountText}>
-                  {(product.originalPrice - product.price).toFixed(0) + "%" ||
-                    "20%"}
+              <View style={styles.ratingContainer}>
+                <Text style={styles.ratingText}>{product.rating}</Text>
+                <Text style={styles.starIcon}> ★ </Text>
+                <Text style={styles.reviewsText}>
+                  ({product.reviews.length})
                 </Text>
               </View>
-            </View>
-            <View style={styles.priceContainer}>
-              <DisplayPrice
-                price={product.price}
-                originalPrice={product.originalPrice}
-              />
-            </View>
-          </View>
-
-          <Text style={styles.infoTitle}>Product Information</Text>
-          <Text style={styles.infoText}>{product.description}</Text>
-
-          {product.productColors && product.productColors.length > 0 && (
-            <>
-              <View style={styles.colorSection}>
-                <Text style={styles.colorTitle}>Select Color</Text>
-                <View style={styles.colorOptions}>
-                  {product.productColors.map((color: any) => (
-                    <TouchableOpacity
-                      key={color}
-                      onPress={() => setSelectedColor(color)}
-                      style={[
-                        styles.colorOption,
-                        { backgroundColor: color },
-                        selectedColor === color && styles.selectedColorOption,
-                      ]}
-                    />
-                  ))}
+              <View style={styles.saleContainer}>
+                <View style={styles.saleTimeBox}>
+                  <View style={styles.saleTag}>
+                    <Text style={styles.saleText}>Sale</Text>
+                  </View>
+                  <Text style={styles.saleTime}>02:48:26</Text>
                 </View>
-              </View>{" "}
-            </>
-          )}
-
-          <View style={styles.quantitySection}>
-            <View style={styles.quantityContainer}>
-              <Text style={styles.quantityTitle}>Quantity</Text>
-              {/* <TouchableOpacity>
-                <Text style={styles.selectQuantityText}>select quantity</Text>
-              </TouchableOpacity> */}
+                <View style={styles.discountTag}>
+                  <Text style={styles.discountText}>
+                    {(product.originalPrice - product.price).toFixed(0) + "%" ||
+                      "20%"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.priceContainer}>
+                <DisplayPrice
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                />
+              </View>
             </View>
-            <View style={styles.quantityControl}>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => quantity > 1 && setQuantity(quantity - 1)}
-              >
-                <Ionicons name="remove" size={20} color={colors.black} />
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{quantity}</Text>
-              <TouchableOpacity
-                style={styles.quantityButton}
-                onPress={() => setQuantity(quantity + 1)}
-              >
-                <Ionicons name="add" size={20} color={colors.black} />
-              </TouchableOpacity>
+
+            <Text style={styles.infoTitle}>Product Information</Text>
+            <Text style={styles.infoText}>{product.description}</Text>
+
+            {product.productColors && product.productColors.length > 0 && (
+              <>
+                <View style={styles.colorSection}>
+                  <Text style={styles.colorTitle}>Select Color</Text>
+                  <View style={styles.colorOptions}>
+                    {product.productColors.map((color: any) => (
+                      <TouchableOpacity
+                        key={color}
+                        onPress={() => setSelectedColor(color)}
+                        style={[
+                          styles.colorOption,
+                          { backgroundColor: color },
+                          selectedColor === color && styles.selectedColorOption,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>{" "}
+              </>
+            )}
+
+            <View style={styles.quantitySection}>
+              <View style={styles.quantityContainer}>
+                <Text style={styles.quantityTitle}>Quantity</Text>
+              </View>
+              <View style={styles.quantityControl}>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => quantity > 1 && setQuantity(quantity - 1)}
+                >
+                  <Ionicons name="remove" size={20} color={colors.black} />
+                </TouchableOpacity>
+                <Text style={styles.quantityText}>{quantity}</Text>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => setQuantity(quantity + 1)}
+                >
+                  <Ionicons name="add" size={20} color={colors.black} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.buttonsContainer}>
-            <Button
-              title="Add To Cart"
-              onPress={() => {
-                if (product) {
-                  dispatch(
-                    addToCart({
-                      id: product.id,
-                      name: product.name,
-                      price: product.price,
-                      quantity: quantity,
-                      image: product.image,
-                      originalPrice: product.originalPrice,
-                      discount: product.originalPrice - product.price,
-                    })
-                  );
-                  Toast.show({
-                    type: "customToast",
-                    text1: "Product added successfully!",
-                    text2: `${product.name} - ${product.price}`,
-                    onPress: () => {
-                      redirectToPage(containers.cartScreenScreen);
-                    },
-                  });
-                  
-                }
-              }}
-              style={styles.button}
-            />
-            {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
-          </View>
-        </View>
-
-        <View style={styles.reviewsSection}>
-          <Text style={styles.reviewsTitle}>What do Customers say?</Text>
-          {[...product.reviews]
-            .sort((a, b) => Number(b.id) - Number(a.id))
-            .slice(0, 5)
-            .map((review: any, index: number) => (
-              <ProductRating
-                key={`${review.id ?? "review"}-${index}`}
-                review={review}
+            <View style={styles.buttonsContainer}>
+              <Button
+                title="Add To Cart"
+                onPress={() => {
+                  if (product) {
+                    dispatch(
+                      addToCart({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        quantity: quantity,
+                        image: product.image,
+                        originalPrice: product.originalPrice,
+                        discount: product.originalPrice - product.price,
+                      })
+                    );
+                    // Toast.show({
+                    //   type: "customToast",
+                    //   text1: "Product added successfully!",
+                    //   text2: `${product.name} - ${product.price}`,
+                    //   onPress: () => {
+                    //     redirectToPage(containers.cartScreenScreen);
+                    //   },
+                    // });
+                  }
+                }}
+                style={styles.button}
               />
-            ))}
+              {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
+            </View>
+          </View>
 
-          <TouchableOpacity
-            style={styles.seeMoreButton}
-            onPress={() =>
-              redirectToPage(containers.reviewsScreenScreen, {
-                productId: productId,
-                totalReviews: JSON.stringify(product.reviews),
-                productRating: JSON.stringify(product.rating) || product.rating,
-              })
-            }
-          >
-            <Text style={styles.seeMoreText}>See More Reviews</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+          <View style={styles.reviewsSection}>
+            <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+            {[...product.reviews]
+              .sort((a, b) => Number(b.id) - Number(a.id))
+              .slice(0, 5)
+              .map((review: any, index: number) => (
+                <ProductRating
+                  key={`${review.id ?? "review"}-${index}`}
+                  review={review}
+                />
+              ))}
 
-      <Footer navigation={router} activeTab="home" />
-    </View>
+            <TouchableOpacity
+              style={styles.seeMoreButton}
+              onPress={() =>
+                redirectToPage(containers.reviewsScreenScreen, {
+                  productId: productId,
+                  totalReviews: JSON.stringify(product.reviews),
+                  productRating:
+                    JSON.stringify(product.rating) || product.rating,
+                })
+              }
+            >
+              <Text style={styles.seeMoreText}>See More Reviews</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <Footer navigation={router} activeTab="home" />
+      </View>
     </SafeAreaView>
   );
 };

@@ -18,6 +18,7 @@ function SavedLaterItem(props) {
               cartItem={eactItem}
               handleDelete={props.handleDelete}
               footerBtnText="Move to Cart"
+              onFooterAction={() => props.handleMoveToCart(eactItem)}
             />
           );
         })}
