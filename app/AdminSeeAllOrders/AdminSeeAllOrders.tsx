@@ -6,6 +6,8 @@ import {
   ScrollView,
   FlatList,
   SafeAreaView,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -17,6 +19,8 @@ import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
+import AdminFooter from "@/components/AdminFooter";
+import { Ionicons } from "@expo/vector-icons";
 
 const AdminSeeAllOrders = () => {
   const renderOrderItem = ({ item }: any) => {
@@ -93,6 +97,17 @@ const AdminSeeAllOrders = () => {
               globalStyles.pb_0,
             ]}
           >
+            <View style={styles.searchBarContainer}>
+            <TextInput
+              placeholder="Search orders..."
+              placeholderTextColor={colors.placeholdergrey}
+              style={styles.searchInput}
+            />
+            <TouchableOpacity style={styles.searchIcon}>
+              <Ionicons name="search" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+
             <Text style={styles.heading}>
               WELCOME, Let's go through the orders details!
             </Text>
@@ -105,7 +120,7 @@ const AdminSeeAllOrders = () => {
             </View>
           </View>
         </ScrollView>
-        <Footer />
+      <AdminFooter />
       </View>
     </SafeAreaView>
   );

@@ -164,7 +164,7 @@ const UserProfileScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={globalStyles.container}>
         <Header headerText="User Profile" needResetNavigation={true} />
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1}}>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             <Text style={styles.greeting}>
               {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}

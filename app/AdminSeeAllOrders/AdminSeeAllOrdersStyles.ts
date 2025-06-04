@@ -16,6 +16,25 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 16,
   },
+  searchBarContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: colors.primary,
+  borderRadius: 20,
+  paddingHorizontal: 16,
+  marginBottom: 20,
+},
+
+searchInput: {
+  flex: 1,
+  fontSize: 16,
+},
+
+searchIcon: {
+  marginLeft: 10,
+},
+
 });
 
 export default styles;

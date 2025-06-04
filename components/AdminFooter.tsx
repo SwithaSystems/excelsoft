@@ -38,7 +38,7 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
           onPress={() => redirectToPage(containers.AdminProductDashboardScreen)}
         />
         <FooterButton
-          icon="gify"
+          icon="gift"
           label="Scan & Deliver"
           isActive={activeTab === "cart"}
           onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
@@ -70,7 +70,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
 
 const styles = StyleSheet.create({
   absoluteFooter: {
-    position: "absolute",
+    position: "relative",
     left: 0,
     right: 0,
     bottom: 0,

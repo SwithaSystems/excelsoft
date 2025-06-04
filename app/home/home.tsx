@@ -143,6 +143,7 @@ const HomePage = () => {
       {/* <ScrollView> */}
       
       <BrandHeader />
+      <View style={{ flex: 1 }}>
       <FlatList
         ListHeaderComponent={
           <>
@@ -218,15 +219,15 @@ const HomePage = () => {
             {/* </ScrollView> */}
           </>
         }
+        
         data={[]} 
         renderItem={null}
-        contentContainerStyle={{flexGrow:1}}
-        
+        contentContainerStyle={{paddingBottom:16}}
       />
       {/* Footer */}
-      
       <Footer activeTab="home" />
       {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
+      </View>
     </SafeAreaView>
   );
 };
@@ -297,8 +298,6 @@ const styles = StyleSheet.create({
     color: colors.reviewsColor,
     marginHorizontal: 16,
     paddingBottom: 8,
-    //marginBottom:10,
-    //lineHeight:18,
   },
   featuredDescriptionText: {
     fontSize: 14,
