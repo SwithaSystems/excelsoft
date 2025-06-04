@@ -6,6 +6,8 @@ import Star from "../../components/Star";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+import { Ionicons } from "@expo/vector-icons";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 interface ProductCardProps {
   id: string;
@@ -51,9 +53,19 @@ const ProductCard = ({
         style={styles.image}
       />
       <View style={styles.content}>
+        <View style={globalStyles.savedContainer}>
         <Text style={styles.title} numberOfLines={1}>
           {name}
         </Text>
+        <Ionicons
+          name="heart-outline"
+          size={20}
+          color={colors.black}
+          style ={{
+            paddingTop: 4,
+          }}
+        />
+        </View>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>{rating}</Text>
           <Star filled={false} size={16} />

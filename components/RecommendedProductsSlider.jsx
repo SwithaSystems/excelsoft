@@ -13,6 +13,8 @@ import DisplayPrice from "./DisplayPrice";
 import Button from "./commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { Ionicons } from "@expo/vector-icons";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 function RecommendedProductsSlider(props) {
   const recommendedProducts = props?.recommendedProducts;

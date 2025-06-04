@@ -13,6 +13,7 @@ import DisplayPrice from "./DisplayPrice";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { Ionicons } from "@expo/vector-icons";
 
 function ExclusiveOffers(props) {
   const exclusiveOffers = props.exclusiveOffers || [];
@@ -38,7 +39,14 @@ function ExclusiveOffers(props) {
                 resizeMode="cover"
               />
               <View style={styles.exclusiveDetails}>
+                <View style={styles.savedContainer}>
                 <Text style={styles.exclusiveTitle}>{item.title}</Text>
+                <Ionicons
+                   name="heart-outline"
+                   size={20}
+                  color={colors.black}
+                />
+                </View>
                 <View style={styles.ratingContainer}>
                   <Text style={styles.ratingText}>{item.rating}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
@@ -170,6 +178,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
     overflow: "hidden",
+  },
+  savedContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   /* sectionTitle: {
     fontSize: 18,

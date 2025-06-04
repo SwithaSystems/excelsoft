@@ -67,8 +67,17 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 
   return (
     <View
-      style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}
+      style={[
+        styles.absoluteFooter,
+        {
+          paddingBottom:
+            Platform.OS === "ios"
+              ? insets.bottom
+              : 10,
+        },
+      ]}
     >
+
       <View style={styles.footer}>
         <FooterButton
           icon="home"
@@ -128,7 +137,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
 
 const styles = StyleSheet.create({
   absoluteFooter: {
-    position: "relative",
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,

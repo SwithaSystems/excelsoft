@@ -34,13 +34,13 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="cube"
           label="Products"
-          isActive={activeTab === "search"}
+          isActive={activeTab === "products"}
           onPress={() => redirectToPage(containers.AdminProductDashboardScreen)}
         />
         <FooterButton
           icon="gift"
           label="Scan & Deliver"
-          isActive={activeTab === "cart"}
+          isActive={activeTab === "scan&deliver"}
           onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
         />
       </View>

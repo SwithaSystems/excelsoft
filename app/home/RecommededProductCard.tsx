@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import colors from "../config/colors";
 import { router } from "expo-router";
 import products from "@/data/products";
+import { Ionicons } from "@expo/vector-icons";
 
 const RecommededProductCard = () => {
   const recommendedProducts = products
@@ -39,7 +40,18 @@ const RecommededProductCard = () => {
               resizeMode="cover"
             />
             <View style={styles.recommendedDetails}>
+              <View style={styles.savedContainer}>
               <Text style={styles.recommendedTitle}>{item.title}</Text>
+              <Ionicons
+                name="heart-outline"
+                size={20}
+                color={colors.black}
+                style = {{
+                  paddingRight: 4,
+                  paddingTop: 5,
+                }}
+              />
+              </View>
               <View style={styles.ratingContainer}>
                 <Text style={styles.ratingText}>{item.rating} ★</Text>
                 <Text style={styles.reviewsText}>({item.reviews})</Text>
@@ -72,6 +84,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.reviewsColor,
     marginLeft: 16,
+  },
+   savedContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   recommendedCard: {
     width: 160,

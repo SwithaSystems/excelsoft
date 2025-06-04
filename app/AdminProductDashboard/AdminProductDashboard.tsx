@@ -140,7 +140,7 @@ const AdminProductDashboard = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[globalStyles.container, { paddingBottom: 36 }]}>
+      <View style={[globalStyles.container]}>
         <Header headerText="Product Details" />
         <ScrollView>
           <View

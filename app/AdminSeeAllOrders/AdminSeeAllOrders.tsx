@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react"; // <-- Added useState import
 import {
   View,
   Text,
@@ -23,6 +23,10 @@ import AdminFooter from "@/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
 
 const AdminSeeAllOrders = () => {
+  const [activeFilter, setActiveFilter] = useState("All Orders");
+
+  const statusFilters = ["All Orders", "Cancelled", "Replaced", "Returned"];
+
   const renderOrderItem = ({ item }: any) => {
     return (
       <>
@@ -85,6 +89,7 @@ const AdminSeeAllOrders = () => {
       </>
     );
   };
+
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={globalStyles.container}>
@@ -98,32 +103,75 @@ const AdminSeeAllOrders = () => {
             ]}
           >
             <View style={styles.searchBarContainer}>
-            <TextInput
-              placeholder="Search orders..."
-              placeholderTextColor={colors.placeholdergrey}
-              style={styles.searchInput}
-            />
-            <TouchableOpacity style={styles.searchIcon}>
-              <Ionicons name="search" size={20} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
+              <TextInput
+                placeholder="Search orders..."
+                placeholderTextColor={colors.placeholdergrey}
+                style={styles.searchInput}
+              />
+              <TouchableOpacity style={styles.searchIcon}>
+                <Ionicons name="search" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={localStyles.badgeContainer}>
+              {statusFilters.map((status) => (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => setActiveFilter(status)}
+                  style={[
+                    localStyles.badge,
+                    {
+                      backgroundColor:
+                        activeFilter === status
+                          ? colors.primary
+                          : colors.secondary,
+                    },
+                  ]}
+                >
+                  <Text style={localStyles.badgeText}>{status}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <Text style={styles.heading}>
               WELCOME, Let's go through the orders details!
             </Text>
             <View style={styles.ordersContainer}>
               <FlatList
-                data={[...ordersData]}
+                data={
+                  activeFilter === "All Orders"
+                    ? ordersData
+                    : ordersData.filter((item) => item.status === activeFilter)
+                }
                 renderItem={renderOrderItem}
                 keyExtractor={(item) => item.id}
               />
             </View>
           </View>
         </ScrollView>
-      <AdminFooter />
+        <AdminFooter activeTab="orders"/>
       </View>
     </SafeAreaView>
   );
 };
 
 export default AdminSeeAllOrders;
+
+const localStyles = StyleSheet.create({
+  badgeContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    marginBottom: 16,
+    gap: 10,
+  },
+  badge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  badgeText: {
+    color: colors.black,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});

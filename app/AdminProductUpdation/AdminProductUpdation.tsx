@@ -397,14 +397,7 @@ const AdminProductUpdation = () => {
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Category</Text>
                   <View
-                    style={{
-                      borderColor: colors.primary,
-                      borderWidth: 1,
-                      height: 40,
-                      width: 250,
-                      borderRadius: 8,
-                      justifyContent: "center",
-                    }}
+                    style={styles.categoryContainer}
                   >
                     <ModalSelector
                       data={allCategories.map((cat: any) => ({
@@ -715,6 +708,16 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 5,
   },
+  categoryContainer: {
+    backgroundColor: colors.white,
+    borderColor: colors.primary,
+    borderWidth: 1,
+    borderRadius: 8,
+    justifyContent: "center",
+    height: 60,
+    width: "100%",
+  },
+  
   removeButton: {
     position: "absolute",
     top: -8,
@@ -770,7 +773,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   inputContainer: {
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   textboxStyles: {
     backgroundColor: colors.white,

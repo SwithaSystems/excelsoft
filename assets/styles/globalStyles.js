@@ -28,6 +28,10 @@ export const globalStyles = StyleSheet.create({
   alignItemsCenter: {
     alignItems: "center",
   },
+  savedContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   input: {
     height: 48,
     borderColor: "#EBEDED",

@@ -7,6 +7,7 @@ import colors from '../config/colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { CustomTextInput } from '@/components/commonComponents/CustomTextInput';
 import { globalStyles } from '@/assets/styles/globalStyles';
+import AdminFooter from '@/components/AdminFooter';
 
 
 const AdminOrderQRScan = () => {
@@ -53,6 +54,7 @@ const AdminOrderQRScan = () => {
       </View>
     </ScrollView>
   </View>
+  <AdminFooter activeTab="scan&deliver"/>
 </SafeAreaView>
 
   );
