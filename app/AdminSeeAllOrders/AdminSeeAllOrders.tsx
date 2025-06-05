@@ -32,64 +32,70 @@ const AdminSeeAllOrders = () => {
       <>
         <TouchableOpacity
           onPress={() => {
-          redirectToPage(containers.AdminOrderDetailScreen);
-        }}
+            redirectToPage(containers.AdminOrderDetailScreen);
+          }}
         >
-        <View style={styles.eachOrderItem}>
-          <View
-            style={[
-              globalStyles.flexRow,
-              globalStyles.justifyContentBetween,
-              globalStyles.mb_1,
-            ]}
-          >
-            <Text style={globalStyles.size_16}>{item.id}</Text>
-            <Text style={globalStyles.size_16}>{item.time} ago</Text>
-          </View>
-        <View
-          style={[
-            globalStyles.flexRow,
-            globalStyles.justifyContentBetween,
-            globalStyles.mb_3,
-          ]}
-        >
-          <View style={{ flex: 1 }}>
-            <View style={styles.idContainer}>
-              <View style={{ flex: 1 }}>
-                <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                  {item.customer}
-                </Text>
-              </View>
-              <TouchableOpacity>
-                <Text style={styles.trackOrderText}>
-                  Track Order
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      <View  style={{flexDirection:"row", justifyContent:"space-between"}}>
-          <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
-            Total: {CurrencySymbol} {item.amount}
-          </Text>
-          <View style={styles.statusContainer}>
-            <Text
+          <View style={styles.eachOrderItem}>
+            <View
               style={[
-                localStyles.statusPill,
-                item.status === "Pending"
-                  ? localStyles.pending
-                  : item.status === "Cancelled"
-                  ? localStyles.cancelled
-                  : item.status === "Delivered"
-                  ? localStyles.delivered
-                  : localStyles.defaultStatus,
+                globalStyles.flexRow,
+                globalStyles.justifyContentBetween,
+                globalStyles.mb_1,
               ]}
             >
-              {item.status}
-            </Text>
-          </View>
-        </View>
-          {/* <View
+              <Text style={globalStyles.size_16}>{item.id}</Text>
+              <Text style={globalStyles.size_16}>{item.time} ago</Text>
+            </View>
+            <View
+              style={[
+                globalStyles.flexRow,
+                globalStyles.justifyContentBetween,
+                globalStyles.mb_3,
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <View style={styles.idContainer}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                      {item.customer}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      redirectToPage(containers.deliveryTrackingScreenScreen, {
+                        from: "admin",
+                      });
+                    }}
+                  >
+                    <Text style={styles.trackOrderText}>Track Order</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
+                Total: {CurrencySymbol} {item.amount}
+              </Text>
+              <View style={styles.statusContainer}>
+                <Text
+                  style={[
+                    localStyles.statusPill,
+                    item.status === "Pending"
+                      ? localStyles.pending
+                      : item.status === "Cancelled"
+                      ? localStyles.cancelled
+                      : item.status === "Delivered"
+                      ? localStyles.delivered
+                      : localStyles.defaultStatus,
+                  ]}
+                >
+                  {item.status}
+                </Text>
+              </View>
+            </View>
+            {/* <View
             style={[globalStyles.flexRow, globalStyles.justifyContentBetween]}
           >
             <Button
@@ -105,8 +111,8 @@ const AdminSeeAllOrders = () => {
               title="Track Order"
             />
           </View> */}
-        </View>
-      </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       </>
     );
   };
@@ -170,7 +176,7 @@ const AdminSeeAllOrders = () => {
             </View>
           </View>
         </ScrollView>
-        <AdminFooter activeTab="orders"/>
+        <AdminFooter activeTab="orders" />
       </View>
     </SafeAreaView>
   );

@@ -23,6 +23,7 @@ import { ProductsAPI } from "@/services/productService";
 import AdminFooter from "@/components/AdminFooter";
 import { router, useLocalSearchParams } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const AdminProductDashboard = () => {
   const [productsList, setAllProductsList] = useState<any[]>([]);
@@ -68,6 +69,18 @@ const AdminProductDashboard = () => {
   }, []);
 
   const ProductCard = ({ item }: { item: any }) => {
+    const getStockBadge = (stock: number) => {
+      if (stock === 0) {
+        return { text: "Out of Stock", backgroundColor: colors.red };
+      } else if (stock < 10) {
+        return { text: "Low on Stock", backgroundColor: colors.paleyellow };
+      } else {
+        return { text: "In Stock", backgroundColor: colors.green };
+      }
+    };
+
+    const badge = getStockBadge(item.stock);
+
     return (
       <View style={styles.card}>
         <View
@@ -81,11 +94,83 @@ const AdminProductDashboard = () => {
           <View>
             <Image source={{ uri: item?.image[0] }} style={styles.image} />
           </View>
-          <View style={styles.details}>
-            <Text style={[styles.text, styles.bold]}>{item.name}</Text>
+          <View style={[styles.details, { flex: 1, paddingRight: 4 }]}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={[styles.text, styles.bold, { flex: 1, marginRight: 16 }]}
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+              <View style={{ flexDirection: "row", gap: 4 }}>
+                <TouchableOpacity
+                  onPress={() =>
+                    redirectToPage(containers.AdminProductUpdationScreen, {
+                      productId: item.id,
+                      edit: true,
+                    })
+                  }
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={20}
+                    color={colors.primary}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsModalVisible(true);
+                    setItemToDelete(item);
+                  }}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={20}
+                    color={colors.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <Text style={styles.text}>Category: {item.category}</Text>
             <Text style={styles.text}>£{item.price} per unit</Text>
-            <Text style={styles.text}>In Stock: {item.stock} units</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <Text style={styles.text}>{item.stock} units</Text>
+              <View
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 16,
+                  backgroundColor: badge.backgroundColor,
+                  marginLeft: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      badge.backgroundColor === "yellow" ? "black" : "white",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {badge.text}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -142,7 +227,7 @@ const AdminProductDashboard = () => {
             >
               <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
             </TouchableOpacity> */}
-            <View style={{ marginTop: 40 }}>
+            <View style={{ marginTop: 16 }}>
               <FlatList
                 data={productsList}
                 renderItem={ProductCard}

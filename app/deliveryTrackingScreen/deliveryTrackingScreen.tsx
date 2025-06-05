@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { orderService } from "@/services/orderService";
+import AdminFooter from "@/components/AdminFooter";
 
 const deliveryTrackingScreen = () => {
   const orderStatus = [
@@ -17,6 +18,8 @@ const deliveryTrackingScreen = () => {
     "Reached the Location",
     "Order Delivered Successully!!",
   ];
+  const props = useLocalSearchParams();
+  const from = props.from;
   const orderId = useLocalSearchParams();
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   console.log("orderId", orderId.orderId);
@@ -49,7 +52,7 @@ const deliveryTrackingScreen = () => {
             </View>
           </View>
         </ScrollView>
-        <Footer navigation={router} />
+        {from === "admin" ? <AdminFooter /> : <Footer navigation={router} />}
       </View>
     </SafeAreaView>
   );
