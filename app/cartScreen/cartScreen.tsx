@@ -129,7 +129,7 @@ const CartScreen = () => {
                     <TouchableOpacity
                       onPress={() => redirectToPage(containers.homeScreen)}
                     >
-                      <Text style={styles.hereText}>here .</Text>
+                      <Text style={styles.hereText}>here.</Text>
                     </TouchableOpacity>
                   </Text>
                 </View>

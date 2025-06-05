@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   billingAddress: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    paddingHorizontal: 12,
     backgroundColor: colors.white,
     borderRadius: 8,
     // marginVertical: 8,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingLeft: 16,
     marginTop: 10,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   setAddressText:{
     // fontSize: 16,

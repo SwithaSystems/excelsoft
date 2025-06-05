@@ -69,6 +69,7 @@ const UserProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
+    // Admin: containers.AdminDashboardScreen,
   };
 
   // useEffect(() => {
@@ -253,7 +254,7 @@ const UserProfileScreen = () => {
                   }}
                 >
                   <Text style={styles.settingText}>{eachSetting}</Text>
-                  <Ionicons name="chevron-forward" size={18} color="black" />
+                  <Ionicons name="chevron-forward" size={18} color= {colors.placeholdergrey} />
                 </TouchableOpacity>
               ))}
             </View>

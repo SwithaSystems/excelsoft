@@ -57,6 +57,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     top: 3.5,
   },
+  footer: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.white,
+      borderTopColor: colors.placeholdergrey,
+      borderTopWidth: 1,
+    },
 });
 
 export default styles;
