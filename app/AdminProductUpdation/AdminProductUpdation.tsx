@@ -393,38 +393,39 @@ const AdminProductUpdation = () => {
                   multiline
                   numberOfLines={6}
                   style={styles.multilinetextbox}
-                />
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Category</Text>
-                  <View
-                    style={styles.categoryContainer}
-                  >
-                    <ModalSelector
-                      data={allCategories.map((cat: any) => ({
-                        key: cat.id,
-                        label: cat.name,
-                        value: cat.id,
-                      }))}
-                      initValue="Category"
-                      onChange={(option) => setCategory(option.value)}
-                      optionTextStyle={{ color: colors.primary }}
-                      optionContainerStyle={{ backgroundColor: colors.white }}
-                      cancelStyle={{ backgroundColor: colors.white }}
-                      accessible={true}
-                      accessibilityLabel="Select Category"
-                    >
-                      <TextInput
-                        style={globalStyles.picker_50}
-                        editable={false}
-                        value={
-                          allCategories.find((c: any) => c.id == category)
-                            ?.name || ""
-                        }
-                      />
-                    </ModalSelector>
+                />         
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Category</Text>
+                    <View style={styles.categoryContainer}>
+                      <ModalSelector
+                        data={allCategories.map((cat: any) => ({
+                          key: cat.id,
+                          label: cat.name,
+                          value: cat.id,
+                        }))}
+                        initValue="Category"
+                        onChange={(option) => setCategory(option.value)}
+                        optionTextStyle={{ color: colors.primary }}
+                        optionContainerStyle={{ backgroundColor: colors.white }}
+                        cancelStyle={{ backgroundColor: colors.white }}
+                        accessible={true}
+                        accessibilityLabel="Select Category"
+                      >
+                        <View style={styles.categorySelector}>
+                          <Text style={[styles.categoryText, { color: category ? "#000" : "#888" }]}>
+                            {category
+                              ? allCategories.find((c: any) => c.id == category)?.name
+                              : "Select category"}
+                          </Text>
+                          <Ionicons 
+                            name="chevron-down-outline" 
+                            size={20} 
+                            color={colors.primary} 
+                          />
+                        </View>
+                      </ModalSelector>
+                    </View>
                   </View>
-                </View>
-
                 <Text style={styles.label}>Stock</Text>
                 <CustomTextInput
                   setValue={setStock}
@@ -713,9 +714,21 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 1,
     borderRadius: 8,
-    justifyContent: "center",
     height: 60,
     width: "100%",
+  },
+  
+  categorySelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: "100%",
+    paddingHorizontal: 12,
+  },
+  
+  categoryText: {
+    flex: 1,
+    fontSize: 16,
   },
   
   removeButton: {
