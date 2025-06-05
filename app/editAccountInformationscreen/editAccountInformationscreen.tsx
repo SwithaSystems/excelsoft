@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  DeviceEventEmitter,
 } from "react-native";
 import styles from "./editAccountInformationscreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -19,14 +20,19 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setUserData } from "@/store/slices/userSlice";
 
 const editAccountInformationscreen = () => {
+  const dispatch = useDispatch();
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
+  const [profileImage, setProfileImage] = useState("");
   const userData = useSelector((state: RootState) => state.user.user);
   console.log("userData in edit account information", userData);
 
@@ -37,8 +43,10 @@ const editAccountInformationscreen = () => {
         const user = await UserAPI.getUserByPhonenumber(userData?.phone);
         console.log("user", user.data);
         if (user) {
+          setId(user.data._id);
           setPhone(user.data.phone);
           setEmail(user.data?.email || "No mail added");
+          setProfileImage(user.data.profileImageUrl);
         }
       }
     };
@@ -68,21 +76,48 @@ const editAccountInformationscreen = () => {
       Alert.alert("Error", "Something went wrong during registration.");
     }
   };
+  const handleSave = async () => {
+    const formData = new FormData();
+    formData.append("phone", phone);
+    formData.append("email", email);
+    try {
+      const response = await UserAPI.userEditContact(id, formData);
+      console.log("response in edit contact", response.data);
+      if (response?.data) {
+        console.log("Inside");
+        DeviceEventEmitter.emit("fetchUser");
+        await AsyncStorage.setItem("user", JSON.stringify(response.data));
+        dispatch(setUserData(response.data.user));
+        Alert.alert("Message", "Profile updated successfully.", [
+          {
+            text: "OK",
+            onPress: () => {
+              redirectToPage(containers.userProfileScreenScreen);
+            },
+          },
+        ]);
+      }
+      return response?.data;
+    } catch (error) {
+      console.error("Registration error:", error);
+      Alert.alert("Error", "Something went wrong during registration.");
+    }
+  };
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
         <View style={globalStyles.container}>
-          <Header headerText="Edit Account Information" />
+          <Header headerText="Edit Contact Information" />
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               <View style={globalStyles.profilePictureContainer}>
                 <Image
-                  source={{
-                    uri: userData?.profileImageUrl
-                      ? userData?.profileImageUrl
-                      : "",
-                  }}
+                  source={
+                    profileImage
+                      ? { uri: profileImage }
+                      : require("../../assets/default_user_profile.png")
+                  }
                   style={globalStyles.profileImage}
                 />
               </View>
@@ -95,7 +130,7 @@ const editAccountInformationscreen = () => {
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <View style={globalStyles.deviceHeading}>
                     <Text style={globalStyles.userInputLabel}>Phone</Text>
-                    <TouchableOpacity>
+                    {/* <TouchableOpacity>
                       <Text
                         style={globalStyles.verify}
                         onPress={() => {
@@ -104,7 +139,7 @@ const editAccountInformationscreen = () => {
                       >
                         verify
                       </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                   </View>
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
@@ -127,9 +162,9 @@ const editAccountInformationscreen = () => {
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <View style={globalStyles.deviceHeading}>
                     <Text style={globalStyles.userInputLabel}>Email</Text>
-                    <TouchableOpacity>
+                    {/* <TouchableOpacity>
                       <Text style={globalStyles.verify}>verify</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                   </View>
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
@@ -147,7 +182,8 @@ const editAccountInformationscreen = () => {
           <View style={globalStyles.p_3}>
             <Button
               onPress={() => {
-                redirectToPage(containers.userProfileScreenScreen);
+                handleSave();
+                // redirectToPage(containers.userProfileScreenScreen);
               }}
               title="Save"
             />

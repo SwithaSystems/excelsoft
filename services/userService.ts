@@ -32,6 +32,25 @@ export const UserAPI = {
       throw error;
     }
   },
+  userEditContact: async (id: any, body: any) => {
+    console.log("Sending body to API:", body);
+    const formDataAxios = createAxiosInstance("formdata");
+
+    try {
+      const response = await formDataAxios.put(
+        `/users/updateContact/${id}`,
+        body
+      );
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log("API error:", error.response?.data || error.message);
+      } else {
+        console.log("Unknown error:", error);
+      }
+      throw error;
+    }
+  },
 
   getUserByPhonenumber: async (phoneNumber: any) => {
     console.log("phoneNumber", phoneNumber);
