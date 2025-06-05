@@ -69,7 +69,7 @@ const myOrderScreen = () => {
                 <FlatList
                   data={orders.map((order) => ({
                     orderId: `#ORD-${order.orderNumber}`,
-                    date: new Date(order.createdAt).toLocaleString(), 
+                    date: new Date(order.createdAt).toLocaleString(),
                     status: order?.status,
                     totalItems: order.products?.length ?? 0,
                     subtotal: order.totalAmount.toFixed(2),

@@ -315,7 +315,7 @@ const editProfileScreen = () => {
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
                     TextStyle={globalStyles.input}
-                    placeholder="----/--/--"
+                    placeholder="--/--/----"
                     value={dateOfBirth ? dateOfBirth : ""}
                     onPress={() => {}}
                     setValue={setDateOfBirth}

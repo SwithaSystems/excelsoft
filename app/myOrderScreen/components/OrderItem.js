@@ -20,37 +20,40 @@ function OrderItem(props) {
       }}
     >
       <View style={styles.orderContainer}>
-
         <View style={styles.OrderIdContainer}>
-        <Text style={styles.orderSummaryItems}>
-          <Text style={styles.prefix}>Order ID:</Text>{" "}
-          {item.orderId}
-        </Text>
-        <Text style={styles.navigationText}>
-          Track Order
-        </Text>
+          <Text style={styles.orderSummaryItems}>
+            <Text style={styles.prefix}>Order ID:</Text> {item.orderId}
+          </Text>
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              redirectToPage(containers.deliveryTrackingScreenScreen, {
+                orderId: item._id,
+              });
+            }}
+          >
+            <Text style={styles.navigationText}>Track Order</Text>
+          </TouchableOpacity>
         </View>
         <View style={[styles.dateTimeContainer]}>
           <Text style={styles.date}>{item.date}</Text>
         </View>
-        <View style = {styles.OrderStatusContainer}>
-        <View style={styles.statusContainer}>
-          <Ionicons name="bag-check" size={32} color={colors.primary} />
-          <Text style={styles.status}>{item.status}!!</Text>
+        <View style={styles.OrderStatusContainer}>
+          <View style={styles.statusContainer}>
+            <Ionicons name="bag-check" size={32} color={colors.primary} />
+            <Text style={styles.status}>{item.status}!!</Text>
+          </View>
+          <Text style={styles.navigationText}>See More</Text>
         </View>
-        <Text style={styles.navigationText}>
-          See More
-        </Text>
-        </View>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
             redirectToPage(containers.deliveryTrackingScreenScreen, {
               orderId: item._id,
             });
           }}
-        >
-        </TouchableOpacity>
+        ></TouchableOpacity> */}
       </View>
     </TouchableOpacity>
   );
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.primary,
   },
-  OrderIdContainer:{
+  OrderIdContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -77,7 +80,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
-    fontWeight: '300',
+    fontWeight: "300",
   },
   statusContainer: {
     flexDirection: "row",
@@ -87,9 +90,9 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 16,
     marginLeft: 8,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-  OrderStatusContainer:{
+  OrderStatusContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -98,8 +101,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: 500,
   },
-  prefix:{
-    fontWeight:'bold',
+  prefix: {
+    fontWeight: "bold",
   },
   itemsSubtotalContainer: {
     flexDirection: "row",
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  navigationText:{
+  navigationText: {
     color: colors.primary,
     textDecorationLine: 'underline',
     fontWeight: "bold"
