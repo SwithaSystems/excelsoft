@@ -27,6 +27,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../components/ProductCard";
+import SaveItemFav from "../cartScreen/components/saveItem_fav";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -54,10 +55,10 @@ const savedItemScreen = () => {
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {savedItems.map((item: any) => {
               return (
-                <CartItem
-                  footerBtnText="Move to Cart"
+                <SaveItemFav
+                  // footerBtnText="Move to Cart"
                   handleDelete={() => handleDelete(item)}
-                  onFooterAction={() => handleMoveToCart(item)}
+                  // onFooterAction={() => handleMoveToCart(item)}
                   key={item.id}
                   cartItem={item}
                   isSavedItem="true"
@@ -85,14 +86,6 @@ const savedItemScreen = () => {
                     </Text>
                   </View>
                 </View>
-                {/* <Button
-                title="Start Shopping"
-                onPress={() => {
-                   redirectToPage(containers.homeScreen);
-                }}                
-                style={styles.button}
-                textStyle={styles.text}
-              ></Button> */}
               </>
             )}
           </View>
