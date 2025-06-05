@@ -387,8 +387,8 @@ const AdminCategories = () => {
             </ScrollView>
           </View>
         </ScrollView>
-        <AdminFooter activeTab="categories" />
       </View>
+       <AdminFooter activeTab="categories" />
     </SafeAreaView>
   );
 };
@@ -396,7 +396,7 @@ const AdminCategories = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    padding: 16,
+    paddingHorizontal: 16,
     flex: 1,
   },
   formContainer: {
