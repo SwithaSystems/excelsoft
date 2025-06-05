@@ -444,6 +444,15 @@ const AdminProductUpdation = () => {
                   keyboardType="numeric"
                 />
 
+                <Text style={styles.label}>Discount Price</Text>
+                <CustomTextInput
+                  setValue={setDiscountPrice}
+                  value={discountPrice}
+                  onPress={() => {}}
+                  placeholder="Enter the Discount Price"
+                  keyboardType="numeric"
+                />
+
                 {/* <Text style={styles.label}>Discount Price</Text>
             <CustomTextInput
               setValue={setDiscountPrice}
