@@ -57,7 +57,8 @@ function RecommendedProductsSlider(props) {
                       title="Add"
                       onPress={() => {
                         console.log("item to be added in cart", item);
-                        props.handleAdd(item);
+                        const itemWithQuantity = { ...item, quantity: 1 };
+                        props.handleAdd(itemWithQuantity);
                       }}
                     />
                   </View>

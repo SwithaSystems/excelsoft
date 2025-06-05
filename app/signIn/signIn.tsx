@@ -111,7 +111,7 @@ const signIn = () => {
 
       await login(loginId, password);
 
-      Alert.alert("Success", "You have successfully signed in.");
+      // Alert.alert("Success", "You have successfully signed in.");
       redirectToPage(containers.homeScreen);
     } catch (error) {
       Alert.alert("Error", "Invalid credentials. Please try again.");
@@ -125,139 +125,139 @@ const signIn = () => {
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
-      <View style={styles.container}>
-        <Header headerText={"Sign In"} needResetNavigation={true} />
+        <View style={styles.container}>
+          <Header headerText={"Sign In"} needResetNavigation={true} />
 
-        <View style={styles.sectionContainer}>
-          <View style={styles.toggleContainer}>
-            {/* <Text style={styles.label}>Email Address/Phone Number</Text> */}
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                mode === "phone" && styles.activeToggle,
-              ]}
-              onPress={() => toggleMode("phone")}
-            >
-              <Text
-                style={
-                  mode === "phone" ? styles.activeText : styles.inactiveText
-                }
+          <View style={styles.sectionContainer}>
+            <View style={styles.toggleContainer}>
+              {/* <Text style={styles.label}>Email Address/Phone Number</Text> */}
+              <TouchableOpacity
+                style={[
+                  styles.toggleButton,
+                  mode === "phone" && styles.activeToggle,
+                ]}
+                onPress={() => toggleMode("phone")}
               >
-                Phone
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                mode === "email" && styles.activeToggle,
-              ]}
-              onPress={() => toggleMode("email")}
-            >
-              <Text
-                style={
-                  mode === "email" ? styles.activeText : styles.inactiveText
-                }
+                <Text
+                  style={
+                    mode === "phone" ? styles.activeText : styles.inactiveText
+                  }
+                >
+                  Phone
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.toggleButton,
+                  mode === "email" && styles.activeToggle,
+                ]}
+                onPress={() => toggleMode("email")}
               >
-                Email
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {mode === "email" ? (
-            <>
-              <View style={styles.emailContainer}>
-                <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text); // Fallback for other text entries
-                    setPhoneNumber("");
-                  }}
-                />
-                {errors.input && (
-                  <Text style={globalStyles.errorText}>{errors.input}</Text>
-                )}
-              </View>
-            </>
-          ) : (
-            <>
-              <Text style={styles.label}> Phone</Text>
-              <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
-                  <CountryPicker
-                    countryCode={countryCode}
-                    withFilter
-                    withFlag={false}
-                    withCallingCode
-                    onSelect={(country) => {
-                      setCountryCode(country.cca2 || "GB");
-                      setCallingCode(country.callingCode[0] || "44");
+                <Text
+                  style={
+                    mode === "email" ? styles.activeText : styles.inactiveText
+                  }
+                >
+                  Email
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {mode === "email" ? (
+              <>
+                <View style={styles.emailContainer}>
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text); // Fallback for other text entries
+                      setPhoneNumber("");
                     }}
-                    containerButtonStyle={styles.countryPickerButton}
                   />
-                  <Text style={styles.callingCode}>+{callingCode}</Text>
+                  {errors.input && (
+                    <Text style={globalStyles.errorText}>{errors.input}</Text>
+                  )}
                 </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.label}> Phone</Text>
+                <View style={styles.phoneInputContainer}>
+                  <View style={styles.countryPickerContainer}>
+                    <CountryPicker
+                      countryCode={countryCode}
+                      withFilter
+                      withFlag={false}
+                      withCallingCode
+                      onSelect={(country) => {
+                        setCountryCode(country.cca2 || "GB");
+                        setCallingCode(country.callingCode[0] || "44");
+                      }}
+                      containerButtonStyle={styles.countryPickerButton}
+                    />
+                    <Text style={styles.callingCode}>+{callingCode}</Text>
+                  </View>
 
-                <TextInput
-                  style={styles.phoneInput}
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChangeText={(text) => {
-                    setPhoneNumber(text);
-                    setEmail("");
-                  }}
-                  maxLength={11}
-                  keyboardType="phone-pad"
-                />
-                {errors.input && (
-                  <Text style={globalStyles.errorText}>{errors.input}</Text>
-                )}
-              </View>
-            </>
-          )}
-
-          <View style = {styles.passwordContainer}>
-            <Text style={styles.label}>Enter your Password</Text>
-            <TextInput
-              style={[
-                globalStyles.input,
-                errors.password && globalStyles.errorInput,
-              ]}
-              placeholder="Enter your password"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              onBlur={handleBlur}
-            />
-            {errors.password && (
-              <Text style={globalStyles.errorText}>{errors.password}</Text>
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="Enter your phone number"
+                    value={phone}
+                    onChangeText={(text) => {
+                      setPhoneNumber(text);
+                      setEmail("");
+                    }}
+                    maxLength={11}
+                    keyboardType="phone-pad"
+                  />
+                  {errors.input && (
+                    <Text style={globalStyles.errorText}>{errors.input}</Text>
+                  )}
+                </View>
+              </>
             )}
+
+            <View style={styles.passwordContainer}>
+              <Text style={styles.label}>Enter your Password</Text>
+              <TextInput
+                style={[
+                  globalStyles.input,
+                  errors.password && globalStyles.errorInput,
+                ]}
+                placeholder="Enter your password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                onBlur={handleBlur}
+              />
+              {errors.password && (
+                <Text style={globalStyles.errorText}>{errors.password}</Text>
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={() =>
+                redirectToPage(containers.forgotPasswordScreenScreen)
+              }
+            >
+              <Text style={styles.forgotPassword}>Forgot Password?</Text>
+            </TouchableOpacity>
+
+            <Button
+              title="Sign In"
+              style={styles.signInButton}
+              onPress={handleSignIn}
+            />
+
+            <TouchableOpacity
+              onPress={() => redirectToPage(containers.signUpScreenScreen)}
+            >
+              <Text style={styles.signUpText}>
+                Don't have an account?{" "}
+                <Text style={styles.signUpLink}>Sign Up</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() =>
-              redirectToPage(containers.forgotPasswordScreenScreen)
-            }
-          >
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <Button
-            title="Sign In"
-            style={styles.signInButton}
-            onPress={handleSignIn}
-          />
-
-          <TouchableOpacity
-            onPress={() => redirectToPage(containers.signUpScreenScreen)}
-          >
-            <Text style={styles.signUpText}>
-              Don't have an account?{" "}
-              <Text style={styles.signUpLink}>Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
         </View>
-      </View>
       </KeyBoardWrapper>
     </SafeAreaView>
   );

@@ -15,6 +15,27 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const AdminFooter = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();
 
+  const handleHomePress = () => {
+    if (activeTab === "home") return;
+    redirectToPage(containers.AdminDashboardScreen);
+  };
+  const handleOrdersPress = () => {
+    if (activeTab === "orders") return;
+    redirectToPage(containers.AdminSeeAllOrdersScreen);
+  };
+  const handleProductsPress = () => {
+    if (activeTab === "products") return;
+    redirectToPage(containers.AdminProductDashboardScreen);
+  };
+  const handleCategoryPress = () => {
+    if (activeTab === "categories") return;
+    redirectToPage(containers.AdminCategoriesScreen);
+  };
+  const handleScanPress = () => {
+    if (activeTab === "scan&deliver") return;
+    redirectToPage(containers.AdminOrderQRScanScreen);
+  };
+
   return (
     <View
       style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}
@@ -24,25 +45,40 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
           icon="home"
           label="Home"
           isActive={activeTab === "home"}
-          onPress={() => redirectToPage(containers.AdminDashboardScreen)}
+          onPress={handleHomePress}
+          // onPress={() => redirectToPage(containers.AdminDashboardScreen)}
         />
         <FooterButton
           icon="clipboard"
           label="Orders"
           isActive={activeTab === "orders"}
-          onPress={() => redirectToPage(containers.AdminSeeAllOrdersScreen)}
+          onPress={handleOrdersPress}
+
+          // onPress={() => redirectToPage(containers.AdminSeeAllOrdersScreen)}
         />
         <FooterButton
           icon="cube"
           label="Products"
           isActive={activeTab === "products"}
-          onPress={() => redirectToPage(containers.AdminProductDashboardScreen)}
+          onPress={handleProductsPress}
+
+          // onPress={() => redirectToPage(containers.AdminProductDashboardScreen)}
+        />
+        <FooterButton
+          icon="list-circle"
+          label="Categories"
+          isActive={activeTab === "categories"}
+          onPress={handleCategoryPress}
+
+          // onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
         />
         <FooterButton
           icon="gift"
           label="Scan & Deliver"
           isActive={activeTab === "scan&deliver"}
-          onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
+          onPress={handleScanPress}
+
+          // onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
         />
       </View>
     </View>

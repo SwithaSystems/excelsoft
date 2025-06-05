@@ -212,7 +212,7 @@ const ProductCard = ({ item }: { item: any }) => {
               }}
               title="+ Add New Product"
             />
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
               style={{ paddingTop: 16 }}
             >
