@@ -20,6 +20,7 @@ import containers from "@/containers";
 import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 import { orderService } from "@/services/orderService";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 const AdminDashboard = () => {
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
@@ -58,6 +59,10 @@ const AdminDashboard = () => {
     )
     .slice(0, 3);
   console.log("recentOrders", recentOrders);
+
+  const today_Revenue = allOrders
+    .filter((order: any) => order.status === "Order Delivered Successfully")
+    .reduce((total: number, order: any) => total + order.totalAmount, 0);
 
   const paddingTop =
     Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
@@ -169,7 +174,7 @@ const AdminDashboard = () => {
                     <Text style={styles.metricValue}>
                       {pendingOrders.length}
                     </Text>
-                    <View style={styles.salesRaiseSection}>
+                    {/* <View style={styles.salesRaiseSection}>
                       <Ionicons
                         name="trending-up-outline"
                         size={24}
@@ -177,7 +182,7 @@ const AdminDashboard = () => {
                         style={{ paddingRight: 8 }}
                       />
                       <Text style={styles.metricChange}>5 new</Text>
-                    </View>
+                    </View> */}
                   </View>
                 </View>
                 <View style={styles.metricBox}>
@@ -190,7 +195,10 @@ const AdminDashboard = () => {
                     <Text style={styles.metricTitle}>Today's Revenue</Text>
                   </View>
                   <View>
-                    <Text style={styles.metricValue}>8,459</Text>
+                    <Text style={styles.metricValue}>
+                      {CurrencySymbol}
+                      {today_Revenue.toFixed(2)}
+                    </Text>
                     <View style={styles.salesRaiseSection}>
                       <Ionicons
                         name="trending-up-outline"

@@ -12,9 +12,7 @@ import {
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import ordersData from "@/data/ordersData";
-import Button from "@/components/commonComponents/Button";
 import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -95,22 +93,6 @@ const AdminSeeAllOrders = () => {
                 </Text>
               </View>
             </View>
-            {/* <View
-            style={[globalStyles.flexRow, globalStyles.justifyContentBetween]}
-          >
-            <Button
-              onPress={() => {
-                redirectToPage(containers.AdminOrderDetailScreen);
-              }}
-              title="View Details"
-            />
-            <Button
-              onPress={() => {
-                redirectToPage(containers.deliveryTrackingScreenScreen);
-              }}
-              title="Track Order"
-            />
-          </View> */}
           </View>
         </TouchableOpacity>
       </>
