@@ -1,4 +1,5 @@
 import colors from "@/app/config/colors";
+import { Colors } from "@/constants/Colors";
 import { Platform, StatusBar, StyleSheet } from "react-native";
 
 export const globalStyles = StyleSheet.create({
@@ -28,7 +29,7 @@ export const globalStyles = StyleSheet.create({
   alignItemsCenter: {
     alignItems: "center",
   },
-  savedContainer:{
+  savedContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -238,6 +239,10 @@ export const globalStyles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  orderPlacedBadge: {
+    backgroundColor: colors.primary,
+    color: colors.black,
   },
   orderCompletedBadge: {
     backgroundColor: "#C3FED9",

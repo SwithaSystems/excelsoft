@@ -68,7 +68,9 @@ const AdminDashboard = () => {
     Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
   const getStatusBadgeStyle = (status: String) => {
     switch (status) {
-      case "Completed":
+      case "Order Placed":
+        return globalStyles.orderPlacedBadge;
+      case "Order Delivered Successfully":
         return globalStyles.orderCompletedBadge;
       case "Pending":
         return globalStyles.orderPendingBadge;
@@ -94,7 +96,7 @@ const AdminDashboard = () => {
       >
         <View style={styles.orderContainer}>
           <View>
-            <Text style={styles.orderId}>{item.orderNumber}</Text>
+            <Text style={styles.orderId}>{`#ORD-${item.orderNumber}`}</Text>
             {/* <Text style={styles.customerName}>{item.customer}</Text> */}
             <Text style={styles.orderTime}>{orderTime}</Text>
           </View>
