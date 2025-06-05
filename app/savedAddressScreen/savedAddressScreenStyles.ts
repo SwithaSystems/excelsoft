@@ -34,7 +34,13 @@ const styles = StyleSheet.create({
   addressList:{
     paddingHorizontal: 16,
     //alignItems:"center",
-  }
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    width: "100%"
+  },
 });
 
 export default styles;

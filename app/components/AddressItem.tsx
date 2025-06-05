@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   addressContainer: {
-    width: "100%",
+    width: "90%",
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 10,

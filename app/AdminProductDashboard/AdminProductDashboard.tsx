@@ -217,7 +217,7 @@ const ProductCard = ({ item }: { item: any }) => {
               style={{ paddingTop: 16 }}
             >
               <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
-            </TouchableOpacity>
+            </TouchableOpacity>*/}
             <View style={{ marginTop: 16 }}>
               <FlatList
                 data={productsList}

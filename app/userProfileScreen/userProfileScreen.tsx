@@ -254,7 +254,7 @@ const UserProfileScreen = () => {
                   }}
                 >
                   <Text style={styles.settingText}>{eachSetting}</Text>
-                  <Ionicons name="chevron-forward" size={18} color="black" />
+                  <Ionicons name="chevron-forward" size={18} color= {colors.placeholdergrey} />
                 </TouchableOpacity>
               ))}
             </View>

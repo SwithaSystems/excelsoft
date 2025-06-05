@@ -41,7 +41,7 @@ const bannerImages = [
   { imageUrl: require("../../assets/banner3.png") },
 ];
 
- const androidStatusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
+const androidStatusBarHeight = Platform.OS === "android" ? StatusBar.currentHeight : 0;
 
 const recommendedProducts = products
   .filter((p) =>
@@ -126,9 +126,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await categoryService.getAllCategories(
-          parentCategoryIDAll
-        );
+        const data = await categoryService.getAllCategories(parentCategoryIDAll);
         console.log(data);
         const sortedData = data.sort((a, b) => a.id - b.id);
         setCategories(sortedData);
@@ -142,26 +140,27 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
-  
-  const insets = useSafeAreaInsets();
-  const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : 10);
- 
+ const insets = useSafeAreaInsets();
+const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
+
 
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <BrandHeader />
-        
-        <ScrollView 
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: footerHeight + 10 } 
+            {
+              paddingBottom: footerHeight,
+            },
           ]}
           showsVerticalScrollIndicator={false}
         >
           <Header />
-          
+
           {/* Categories */}
           <View style={styles.categoriesContainer}>
             {loading ? (
@@ -182,14 +181,11 @@ const HomePage = () => {
                             category: item.name,
                             categoryId: item.id,
                           })
-                        : redirectToPage(
-                            containers.searchResultsScreenScreen,
-                            {
-                              fromSearch: true,
-                              category: item.name,
-                              categoryId: item.id,
-                            }
-                          )
+                        : redirectToPage(containers.searchResultsScreenScreen, {
+                            fromSearch: true,
+                            category: item.name,
+                            categoryId: item.id,
+                          })
                     }
                   />
                 )}
@@ -210,7 +206,7 @@ const HomePage = () => {
               title="Recommended for You"
             />
           </View>
-          
+
           {/* Exclusive Offers */}
           <View style={globalStyles.px_3}>
             <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
@@ -224,13 +220,22 @@ const HomePage = () => {
               title="Best Sellers"
             />
           </View>
-          
+
           {/* Featured Products */}
           {renderFeaturedProducts()}
         </ScrollView>
-        
-        {/* Footer */}
+
+       <View
+        style={[
+          styles.footer,
+          {
+            height: footerHeight,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  
+          },
+        ]}
+      >
         <Footer activeTab="home" />
+      </View>
       </SafeAreaView>
     </View>
   );
@@ -239,7 +244,7 @@ const HomePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white || '#fff',
+    backgroundColor: colors.white || "#fff",
   },
   safeArea: {
     flex: 1,
@@ -251,6 +256,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
+
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+    borderTopColor: colors.placeholdergrey,
+    borderTopWidth: 1,
+  },
+
   recommendedCard: {
     width: 160,
     height: 180,

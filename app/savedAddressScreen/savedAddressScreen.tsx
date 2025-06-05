@@ -131,7 +131,8 @@ const savedAddressScreen = () => {
                   <NoContentFound message="No saved address found" />
                 </View>
               ) : (
-                <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+                <View style={styles.centeredContainer}>
+                <View style={[globalStyles.sectionContent, globalStyles.pt_0, { width: 350, paddingLeft: 32 }]}>
                   <Text style={styles.sectionTitle}>Default Address</Text>
                   <FlatList
                     data={addressData.filter((address) => address.isDefault)}
@@ -159,6 +160,7 @@ const savedAddressScreen = () => {
                     keyExtractor={(item) => item._id}
                     contentContainerStyle={styles.addressList}
                   />
+                </View>
                 </View>
               )}
               <ConfirmationModal

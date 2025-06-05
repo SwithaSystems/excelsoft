@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   navigationText:{
     color: colors.primary,
     textDecorationLine: 'underline',
+    fontWeight: "bold"
   },
 });
 

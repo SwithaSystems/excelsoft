@@ -127,7 +127,6 @@ const orderSummeryScreen = () => {
         const addresses = await addressService.getAllBillingAddress_userId();
         setAddressData(addresses);
 
-        // Set initial selected ID if billing address exists
         if (selectedBillingAddress && selectedBillingAddress._id) {
           setSelectedId(selectedBillingAddress._id);
         }
@@ -139,10 +138,8 @@ const orderSummeryScreen = () => {
     fetchBillingAddresses();
   }, [selectedBillingAddress]);
 
-  // FIXED: Initialize billing address from shipping address on component mount
   useEffect(() => {
     if (shippingAddress && useSameAddress && !selectedBillingAddress) {
-      // Convert shipping address to billing address format
       const billingFromShipping: any = {
         name: shippingAddress.name,
         line1: shippingAddress.line1,
@@ -157,13 +154,11 @@ const orderSummeryScreen = () => {
     }
   }, [shippingAddress, useSameAddress]);
 
-  // Handle checkbox toggle for same address
   const handleSameAddressToggle = () => {
     const newValue = !useSameAddress;
     setUseSameAddress(newValue);
 
     if (newValue && shippingAddress) {
-      // Convert shipping address to billing address format
       const billingFromShipping: any = {
         name: shippingAddress.name,
         line1: shippingAddress.line1,
@@ -176,7 +171,6 @@ const orderSummeryScreen = () => {
       setSelectedBillingAddress(billingFromShipping);
       setSelectedId("temp-shipping-as-billing");
 
-      // Close accordion if open
       if (accordionOpen) {
         setAccordionOpen(false);
         Animated.timing(rotateAnimation, {
@@ -186,7 +180,6 @@ const orderSummeryScreen = () => {
         }).start();
       }
     } else {
-      // Clear selection when unchecked
       setSelectedBillingAddress(null);
       setSelectedId(null);
     }
@@ -413,7 +406,6 @@ Contact Number: ${pickupAddress.phone}`}
                       />
                       <View style={styles.billingAddressAccordian}>
                         <Text style={styles.subheading}>Billing Address: </Text>
-                        {/* Show selected billing address */}
                         {selectedBillingAddress && (
                           <Text>
                             {useSameAddress

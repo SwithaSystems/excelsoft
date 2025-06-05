@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   Platform,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
@@ -26,6 +27,10 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   const userData_redux = useSelector((state: any) => state.user.user);
   const dispatch = useDispatch();
   const [isValidUser, setIsValidUser] = useState(false);
+
+  // Check if device has navigation buttons (Android only)
+  const hasNavigationButtons = Platform.OS === 'android' && insets.bottom === 0;
+  const androidBottomPadding = hasNavigationButtons ? 20 : Math.max(insets.bottom, 10);
 
   const validateAndFetchUser = async () => {
     try {
@@ -54,31 +59,31 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   }, [userData_redux]);
 
   const handleMenuPress = () => {
-    if (activeTab === "menu") return; // Prevent reload if already active
+    if (activeTab === "menu") return;
     redirectToPage(
       isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
     );
   };
 
   const handleSavedItems = () => {
-    if (activeTab === "saved") return; // Prevent reload if already active
+    if (activeTab === "saved") return;
     redirectToPage(
       isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
     );
   };
 
   const handleHomePress = () => {
-    if (activeTab === "home") return; // Prevent reload if already active
+    if (activeTab === "home") return;
     redirectToPage(containers.homeScreen);
   };
 
   const handleSearchPress = () => {
-    if (activeTab === "search") return; // Prevent reload if already active
+    if (activeTab === "search") return;
     redirectToPage(containers.searchScreen);
   };
 
   const handleCartPress = () => {
-    if (activeTab === "cart") return; // Prevent reload if already active
+    if (activeTab === "cart") return;
     redirectToPage(containers.cartScreenScreen);
   };
 
@@ -89,12 +94,11 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         {
           paddingBottom:
             Platform.OS === "ios"
-              ? insets.bottom
-              : 10,
+              ? insets.bottom > 0 ? insets.bottom : 10
+              : androidBottomPadding,
         },
       ]}
     >
-
       <View style={styles.footer}>
         <FooterButton
           icon="home"
@@ -154,13 +158,22 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
 
 const styles = StyleSheet.create({
   absoluteFooter: {
-    position: "absolute",
+    position: "relative",
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: colors.white,
     borderTopColor: colors.placeholdergrey,
     borderTopWidth: 1,
+    // // Add shadow for better visual separation
+    // shadowColor: "#000",
+    // shadowOffset: {
+    //   width: 0,
+    //   height: -2,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 3,
+    // elevation: 5, // Android shadow
   },
   footer: {
     flexDirection: "row",

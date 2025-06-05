@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import styles from "./savedItemScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -24,7 +25,7 @@ import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../components/ProductCard";
 import SaveItemFav from "../cartScreen/components/saveItem_fav";
@@ -46,9 +47,10 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
-
+  const insets = useSafeAreaInsets();
+  const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <SafeAreaView style={[globalStyles.safeAreaContainer,{ paddingTop: 0 }]}>
       <View style={globalStyles.container}>
         <Header headerText="Saved Items" />
         <ScrollView>
@@ -91,8 +93,17 @@ const savedItemScreen = () => {
           </View>
         </ScrollView>
       </View>
-      <Footer navigation={router} activeTab="saved" />
-    </SafeAreaView>
+      <View
+        style={[
+          styles.footer,
+          {
+            height: footerHeight,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  
+          },
+        ]}
+      >
+        <Footer activeTab="home" />
+      </View>    </SafeAreaView>
   );
 };
 

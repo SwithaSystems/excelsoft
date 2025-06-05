@@ -200,7 +200,7 @@ const verifcationScreen = () => {
             <Header headerText="Verify Your Account" />
             <Image
               style={styles.image}
-              source={require("../../assets/images/verification.png")}
+              source={require("assets/UserVerificationSuccessful.png")}
             />
             <Text style={styles.description}>
               We have sent a verification code to your mobile.Please enter code
