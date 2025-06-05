@@ -68,16 +68,16 @@ const AdminProductDashboard = () => {
     fetchAllProducts();
   }, []);
 
-const ProductCard = ({ item }: { item: any }) => {
-  const getStockBadge = (stock: number) => {
-  if (stock === 0) {
-    return { text: "Out of Stock", backgroundColor: colors.error };
-  } else if (stock < 10) {
-    return { text: "Low on Stock", backgroundColor: colors.paleyellow };
-  } else {
-    return { text: "In Stock", backgroundColor: colors.green };
-  }
-};
+  const ProductCard = ({ item }: { item: any }) => {
+    const getStockBadge = (stock: number) => {
+      if (stock === 0) {
+        return { text: "Out of Stock", backgroundColor: colors.red };
+      } else if (stock < 10) {
+        return { text: "Low on Stock", backgroundColor: colors.paleyellow };
+      } else {
+        return { text: "In Stock", backgroundColor: colors.green };
+      }
+    };
 
     const badge = getStockBadge(item.stock);
 
@@ -139,43 +139,43 @@ const ProductCard = ({ item }: { item: any }) => {
               </View>
             </View>
 
-          <Text style={styles.text}>Category: {item.category}</Text>
-          <Text style={styles.text}>£{item.price} per unit</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: 4,
-              
-            }}
-          >
-            <Text style={styles.text}>{item.stock} units</Text>
+            <Text style={styles.text}>Category: {item.category}</Text>
+            <Text style={styles.text}>£{item.price} per unit</Text>
             <View
               style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 16,
-                backgroundColor: badge.backgroundColor,
-                marginLeft: 16
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
               }}
             >
-              <Text
+              <Text style={styles.text}>{item.stock} units</Text>
+              <View
                 style={{
-                  color: badge.backgroundColor === "yellow" ? "black" : "white",
-                  fontSize: 12,
-                  fontWeight: "bold",
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 16,
+                  backgroundColor: badge.backgroundColor,
+                  marginLeft: 16,
                 }}
               >
-                {badge.text}
-              </Text>
+                <Text
+                  style={{
+                    color:
+                      badge.backgroundColor === "yellow" ? "black" : "white",
+                    fontSize: 12,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {badge.text}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
   const maxId = productsList.reduce((max: any, product: any) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
