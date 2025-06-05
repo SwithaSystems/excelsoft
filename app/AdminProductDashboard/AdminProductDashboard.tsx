@@ -67,38 +67,30 @@ const AdminProductDashboard = () => {
     fetchAllProducts();
   }, []);
 
-const ProductCard = ({ item }: { item: any }) => {
-  return (
-    <View style={styles.card}>
-      <View
-        style={[
-          globalStyles.flexRow,
-          globalStyles.alignItemsCenter,
-          globalStyles.mb_3,
-          {marginTop:12}
-        ]}
-      >
-        <View>
-          <Image source={{ uri: item?.image[0] }} style={styles.image} />
-        </View>
-        <View style={styles.details}>
-          <Text style={[styles.text, styles.bold]}>
-            {item.name}
-          </Text>
-          <Text style={styles.text}>
-            Category: {item.category}
-          </Text>
-          <Text style={styles.text}>
-            £{item.price} per unit
-          </Text>
-          <Text style={styles.text}>
-            In Stock: {item.stock} units
-          </Text>
+  const ProductCard = ({ item }: { item: any }) => {
+    return (
+      <View style={styles.card}>
+        <View
+          style={[
+            globalStyles.flexRow,
+            globalStyles.alignItemsCenter,
+            globalStyles.mb_3,
+            { marginTop: 12 },
+          ]}
+        >
+          <View>
+            <Image source={{ uri: item?.image[0] }} style={styles.image} />
+          </View>
+          <View style={styles.details}>
+            <Text style={[styles.text, styles.bold]}>{item.name}</Text>
+            <Text style={styles.text}>Category: {item.category}</Text>
+            <Text style={styles.text}>£{item.price} per unit</Text>
+            <Text style={styles.text}>In Stock: {item.stock} units</Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
   const maxId = productsList.reduce((max: any, product: any) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
@@ -144,12 +136,12 @@ const ProductCard = ({ item }: { item: any }) => {
               }}
               title="+ Add New Product"
             />
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
               style={{ paddingTop: 16 }}
             >
               <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <View style={{ marginTop: 40 }}>
               <FlatList
                 data={productsList}

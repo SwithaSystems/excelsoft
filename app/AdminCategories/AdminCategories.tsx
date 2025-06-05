@@ -20,6 +20,7 @@ import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { categoryService } from "@/services/categoryService";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import AdminFooter from "@/components/AdminFooter";
 
 interface Category {
   id: number;
@@ -386,6 +387,7 @@ const AdminCategories = () => {
             </ScrollView>
           </View>
         </ScrollView>
+        <AdminFooter activeTab="categories" />
       </View>
     </SafeAreaView>
   );
