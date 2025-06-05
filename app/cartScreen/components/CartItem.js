@@ -27,6 +27,8 @@ function CartItem(props) {
     // Check if item has image as a string (direct URL)
     if (item.image && typeof item.image === "string") {
       return { uri: item.image };
+    } else if (item.image && typeof item.image === "number") {
+      return item.image;
     }
     // Check if item has image array (from cart items)
     else if (item.image && Array.isArray(item.image) && item.image.length > 0) {
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
   cartItem: {
     //paddingHorizontal: 16,
     //marginBottom: 8,
-    paddingBottom:16,
+    paddingBottom: 16,
   },
   cartItemContent: {
     borderRadius: 10,

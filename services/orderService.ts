@@ -61,8 +61,9 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
     try {
+      console.log("API_BASE_URL", `${API_BASE_URL}/orders`);
       const response = await jsonAxios.get<Order[]>(`${API_BASE_URL}/orders`);
-      console.log(response.data);
+      console.log("AllOrders", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);

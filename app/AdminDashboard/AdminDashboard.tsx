@@ -23,6 +23,8 @@ import { orderService } from "@/services/orderService";
 
 const AdminDashboard = () => {
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
+  const [allOrders, setAllOrders] = React.useState<any>([]);
+
   const today = new Date();
   const dateOnly = today.toISOString().split("T")[0];
 
@@ -30,18 +32,25 @@ const AdminDashboard = () => {
     const allTodayOrders = await orderService.getOrdersByOrderDate(dateOnly);
     setAllTodayOrders(allTodayOrders);
   };
+  const getAllOrders = async () => {
+    const allOrders = await orderService.getAllOrders();
+    setAllOrders(allOrders);
+  };
 
   React.useEffect(() => {
     getOrdersByOrderDate();
+    getAllOrders();
   }, []);
 
   console.log("allTodayOrders", allTodayOrders);
 
-  const totalOrders = allTodayOrders.length;
-  const pendingOrders = allTodayOrders.filter(
+  console.log("allOrders", allOrders);
+
+  // const totalOrders = allTodayOrders.length;
+  const pendingOrders = allOrders.filter(
     (order: any) => order.status !== "Order Delivered Successfully"
   );
-  const recentOrders = allTodayOrders
+  const recentOrders = allOrders
     .slice()
     .sort(
       (a: any, b: any) =>
@@ -135,7 +144,7 @@ const AdminDashboard = () => {
                     <Text style={styles.metricTitle}>Total Orders</Text>
                   </View>
                   <View>
-                    <Text style={styles.metricValue}>{totalOrders}</Text>
+                    <Text style={styles.metricValue}>{allOrders.length}</Text>
                     <View style={styles.salesRaiseSection}>
                       <Ionicons
                         name="trending-up-outline"
