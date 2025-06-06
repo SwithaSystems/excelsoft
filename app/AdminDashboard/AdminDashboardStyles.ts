@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     // paddingTop: 32,
     flex: 1,
     backgroundColor: colors.white,
-    // paddingBottom: 32,
+    // paddingHorizontal: 16,
   },
   title: {
     fontSize: 26,
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     color: '#00BFFF',
   },
   metricsContainer: {
-    paddingHorizontal: 48,
+    paddingHorizontal: 8,
   },
   metricBox: {
     backgroundColor: colors.secondary,
@@ -24,7 +24,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    width: '100%',
+    alignSelf: 'stretch'
   },
   metricIconContainer:{
     flexDirection: "row",

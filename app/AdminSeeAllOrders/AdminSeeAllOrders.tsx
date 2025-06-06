@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // <-- Added useState import
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -111,13 +112,13 @@ const AdminSeeAllOrders = () => {
               globalStyles.pb_0,
             ]}
           >
-            <View style={styles.searchBarContainer}>
+            <View style={localStyles.searchBarContainer}>
               <TextInput
                 placeholder="Search orders..."
                 placeholderTextColor={colors.placeholdergrey}
-                style={styles.searchInput}
+                style={localStyles.searchInput}
               />
-              <TouchableOpacity style={styles.searchIcon}>
+              <TouchableOpacity style={localStyles.searchIcon}>
                 <Ionicons name="search" size={20} color={colors.primary} />
               </TouchableOpacity>
             </View>
@@ -167,6 +168,47 @@ const AdminSeeAllOrders = () => {
 export default AdminSeeAllOrders;
 
 const localStyles = StyleSheet.create({
+  // Cross-platform search bar styles
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.white || "#FFFFFF",
+    borderRadius: 25,
+    marginHorizontal: 16,
+    marginVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    borderWidth: Platform.OS === 'ios' ? 1 : 0,
+    borderColor: colors.lightgrey || "#E0E0E0",
+    minHeight: Platform.OS === 'ios' ? 50 : 44,
+  },
+
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.black || "#000000",
+    paddingVertical: Platform.OS === 'ios' ? 8 : 4,
+    paddingHorizontal: 0,
+    minHeight: Platform.OS === 'ios' ? 40 : 36,
+    textAlignVertical: "center",
+    lineHeight: Platform.OS === 'ios' ? 20 : undefined,
+  },
+
+  searchIcon: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
+  },
+
   statusPill: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -193,11 +235,14 @@ const localStyles = StyleSheet.create({
     backgroundColor: "#E0E0E0",
     color: "#333",
   },
+
+ 
   badgeContainer: {
     flexDirection: "row",
     marginTop: 10,
     marginBottom: 16,
     gap: 10,
+    paddingHorizontal: 16,
   },
   badge: {
     paddingHorizontal: 12,

@@ -102,7 +102,7 @@ const savedItemScreen = () => {
           },
         ]}
       >
-        <Footer activeTab="home" />
+        <Footer activeTab="saved" />
       </View>    </SafeAreaView>
   );
 };

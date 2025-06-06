@@ -1,7 +1,8 @@
 import colors from "@/app/config/colors";
-import { Colors } from "@/constants/Colors";
 import { Platform, StatusBar, StyleSheet } from "react-native";
+
 const androidStatusBarHeight = Platform.OS === "android" ? StatusBar.currentHeight : 0;
+
 export const globalStyles = StyleSheet.create({
   safeAreaContainer: {
     // flex: 1,
