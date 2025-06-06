@@ -359,7 +359,11 @@ const AdminProductUpdation = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
         <View style={[globalStyles.container, { paddingTop: 16 }]}>
-          <Header headerText="Update Product" />
+          {newProduct ? (
+            <Header headerText="Add Product" />
+          ) : (
+            <Header headerText="Update Product" />
+          )}
           <KeyBoardWrapper>
             <ScrollView>
               <View
@@ -393,39 +397,45 @@ const AdminProductUpdation = () => {
                   multiline
                   numberOfLines={6}
                   style={styles.multilinetextbox}
-                />         
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Category</Text>
-                    <View style={styles.categoryContainer}>
-                      <ModalSelector
-                        data={allCategories.map((cat: any) => ({
-                          key: cat.id,
-                          label: cat.name,
-                          value: cat.id,
-                        }))}
-                        initValue="Category"
-                        onChange={(option) => setCategory(option.value)}
-                        optionTextStyle={{ color: colors.primary }}
-                        optionContainerStyle={{ backgroundColor: colors.white }}
-                        cancelStyle={{ backgroundColor: colors.white }}
-                        accessible={true}
-                        accessibilityLabel="Select Category"
-                      >
-                        <View style={styles.categorySelector}>
-                          <Text style={[styles.categoryText, { color: category ? "#000" : "#888" }]}>
-                            {category
-                              ? allCategories.find((c: any) => c.id == category)?.name
-                              : "Select category"}
-                          </Text>
-                          <Ionicons 
-                            name="chevron-down-outline" 
-                            size={20} 
-                            color={colors.primary} 
-                          />
-                        </View>
-                      </ModalSelector>
-                    </View>
+                />
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Category</Text>
+                  <View style={styles.categoryContainer}>
+                    <ModalSelector
+                      data={allCategories.map((cat: any) => ({
+                        key: cat.id,
+                        label: cat.name,
+                        value: cat.id,
+                      }))}
+                      initValue="Category"
+                      onChange={(option) => setCategory(option.value)}
+                      optionTextStyle={{ color: colors.primary }}
+                      optionContainerStyle={{ backgroundColor: colors.white }}
+                      cancelStyle={{ backgroundColor: colors.white }}
+                      accessible={true}
+                      accessibilityLabel="Select Category"
+                    >
+                      <View style={styles.categorySelector}>
+                        <Text
+                          style={[
+                            styles.categoryText,
+                            { color: category ? "#000" : "#888" },
+                          ]}
+                        >
+                          {category
+                            ? allCategories.find((c: any) => c.id == category)
+                                ?.name
+                            : "Select category"}
+                        </Text>
+                        <Ionicons
+                          name="chevron-down-outline"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      </View>
+                    </ModalSelector>
                   </View>
+                </View>
                 <Text style={styles.label}>Stock</Text>
                 <CustomTextInput
                   setValue={setStock}
@@ -726,7 +736,7 @@ const styles = StyleSheet.create({
     height: 60,
     width: "100%",
   },
-  
+
   categorySelector: {
     flexDirection: "row",
     alignItems: "center",
@@ -734,12 +744,12 @@ const styles = StyleSheet.create({
     height: "100%",
     paddingHorizontal: 12,
   },
-  
+
   categoryText: {
     flex: 1,
     fontSize: 16,
   },
-  
+
   removeButton: {
     position: "absolute",
     top: -8,

@@ -112,8 +112,7 @@ const AdminProductDashboard = () => {
                 <TouchableOpacity
                   onPress={() =>
                     redirectToPage(containers.AdminProductUpdationScreen, {
-                      productId: item.id,
-                      edit: true,
+                      item: JSON.stringify(item),
                     })
                   }
                 >
