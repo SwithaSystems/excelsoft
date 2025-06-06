@@ -374,6 +374,15 @@ const PickupScreen = () => {
     validateTime(date, hours, numericText, period);
   };
 
+  // Handle period changes
+  const handlePeriodChange = (value: any) => {
+    setPeriod(value);
+    // Validate immediately when period changes
+    setTimeout(() => {
+      validateTime(date, hours, minutes, value);
+    }, 100);
+  };
+
   // Validate if selected time is in the future and at least 30 minutes ahead
   const validateTime = (
     selectedDate: any,
@@ -635,7 +644,7 @@ const PickupScreen = () => {
                   accessibilityLabel="Minutes"
                 />
                 {/* AM/PM */}
-                <View
+                {/* <View
                   style={{
                     borderColor: timeError ? "red" : colors.primary,
                     borderWidth: 1,
@@ -664,6 +673,41 @@ const PickupScreen = () => {
                       value={period?.toUpperCase() || ""}
                     />
                   </ModalSelector>
+                </View> */}
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.toggleButton,
+                      period === "am" && styles.activeToggle,
+                    ]}
+                    onPress={() => handlePeriodChange("am")}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        period === "am" && styles.activeText,
+                      ]}
+                    >
+                      AM
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.toggleButton,
+                      period === "pm" && styles.activeToggle,
+                    ]}
+                    onPress={() => handlePeriodChange("pm")}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        period === "pm" && styles.activeText,
+                      ]}
+                    >
+                      PM
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 

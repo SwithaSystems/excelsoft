@@ -56,7 +56,7 @@ const CartScreen = () => {
     )
     .map((product) => ({
       id: product.id,
-      title: product.name,
+      name: product.name,
       rating: product.rating,
       reviews: product.noOfreviews,
       imageUrl: product.image,

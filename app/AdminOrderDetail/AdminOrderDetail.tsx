@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -10,34 +10,99 @@ import Button from "@/components/commonComponents/Button";
 import Footer from "@/components/Footer";
 import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
+import { useLocalSearchParams } from "expo-router";
+import { orderService } from "@/services/orderService";
+import { addressService } from "@/services/addressService";
+import { ProductsAPI } from "@/services/productService";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
   const orderStatuses = ["Pending", "Processed", "Delivered", "Cancel"];
-  const cartItems = [
-    {
-      id: 1,
-      image: require("assets/DuckToys.png"),
-      name: "Duck Toys",
-      price: 10.0,
-      originalPrice: 6.99,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      image: require("../../assets/OrangeJuice.png"),
-      name: "Orange Juice",
-      price: 3.0,
-      quantity: 2,
-    },
-    {
-      id: 3,
-      image: require("../../assets/baby-bicycle.png"),
-      name: "Whole Wheat Bread",
-      price: 12.0,
-      quantity: 1,
-    },
-  ];
+  const props = useLocalSearchParams();
+  const orderId = props.orderId;
+  const [orderDetails, setOrderDetails] = useState<any>({});
+  const [shippingAddress_order, setShippingAddress_order] =
+    React.useState<any>(null);
+  const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
+  console.log("orderId", orderId);
+
+  const getOrderdetails = async () => {
+    const response = await orderService.getOrderByMongoId(String(orderId));
+    console.log("response", response);
+    setOrderDetails(response);
+  };
+
+  useEffect(() => {
+    getOrderdetails();
+  }, []);
+
+  console.log("orderDetails in admin", orderDetails);
+  const products = orderDetails?.products || [];
+
+  useEffect(() => {
+    const fetchShippingAddress = async () => {
+      if (!orderDetails?.shippingAddress) return;
+      try {
+        const response = await addressService.getShippingAddressById(
+          orderDetails?.shippingAddress
+        );
+        console.log("response shipping address", response);
+        setShippingAddress_order(response);
+      } catch (err) {
+        console.error("Failed to fetch order details:", err);
+      }
+    };
+    fetchShippingAddress();
+  }, [orderDetails?.shippingAddress]);
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (!orderDetails?.products?.length) return;
+
+      try {
+        const detailedCartItems = await Promise.all(
+          orderDetails.products.map(async (item: any) => {
+            const productDetails = await ProductsAPI.getProductBYID(
+              item.productId
+            );
+            return {
+              ...item,
+              image: productDetails.image,
+            };
+          })
+        );
+        setCartItemsWithDetails(detailedCartItems);
+      } catch (err) {
+        console.error("Failed to fetch product details:", err);
+      }
+    };
+
+    fetchProductDetails();
+  }, [orderDetails]);
+  // const cartItems = [
+  //   {
+  //     id: 1,
+  //     image: require("assets/DuckToys.png"),
+  //     name: "Duck Toys",
+  //     price: 10.0,
+  //     originalPrice: 6.99,
+  //     quantity: 1,
+  //   },
+  //   {
+  //     id: 2,
+  //     image: require("../../assets/OrangeJuice.png"),
+  //     name: "Orange Juice",
+  //     price: 3.0,
+  //     quantity: 2,
+  //   },
+  //   {
+  //     id: 3,
+  //     image: require("../../assets/baby-bicycle.png"),
+  //     name: "Whole Wheat Bread",
+  //     price: 12.0,
+  //     quantity: 1,
+  //   },
+  // ];
 
   return (
     <>
@@ -57,13 +122,13 @@ const AdminOrderDetail = () => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 100 }}
               >
-                {cartItems.map((eachCartItem) => {
+                {cartItemsWithDetails.map((eachCartItem: any) => {
                   console.log("eachCartItem", eachCartItem);
                   return (
                     <CartItem
                       hideActions={true}
                       itemContainerStyle={{ paddingHorizontal: 0 }}
-                      key={eachCartItem.id}
+                      key={eachCartItem._id}
                       cartItem={eachCartItem}
                       showStockStatus={true}
                       stockAvailable={true}
@@ -78,7 +143,7 @@ const AdminOrderDetail = () => {
                       globalStyles.mb_1,
                     ]}
                   >
-                    Total: £156.99
+                    Total: {orderDetails?.totalAmount}
                   </Text>
                   <Text
                     style={[
@@ -87,7 +152,7 @@ const AdminOrderDetail = () => {
                       globalStyles.mb_1,
                     ]}
                   >
-                    Payment: DONE
+                    Payment: {orderDetails?.paymentStatus}
                   </Text>
                   <Text
                     style={[
@@ -128,8 +193,14 @@ const AdminOrderDetail = () => {
                     >
                       Address:&nbsp;
                     </Text>
-                    H.No: 1-123, xyz street, That Town, Near Mellinda Cafe, UK,
-                    3123456
+                    {orderDetails?.pickupMode === "homeDelivery" && (
+                      <Text style={[globalStyles.mb_3, styles.addressText]}>
+                        {shippingAddress_order?.line1}
+                        {shippingAddress_order?.city},{" "}
+                        {shippingAddress_order?.state}
+                        {shippingAddress_order?.postalCode},{" "}
+                      </Text>
+                    )}
                   </Text>
 
                   {/* FIXED: Status section - simple approach */}
