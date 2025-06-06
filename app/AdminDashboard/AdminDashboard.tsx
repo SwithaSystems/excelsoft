@@ -91,7 +91,9 @@ const AdminDashboard = () => {
     return (
       <TouchableOpacity
         onPress={() => {
-          redirectToPage(containers.AdminOrderDetailScreen);
+          redirectToPage(containers.AdminOrderDetailScreen, {
+            orderId: item._id,
+          });
         }}
       >
         <View style={styles.orderContainer}>

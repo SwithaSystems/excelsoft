@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   label: {
@@ -21,19 +21,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginTop: 20,
     marginBottom: 15,
     color: colors.black,
   },
   collectorOptions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
     gap: 20,
   },
   radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   radio: {
     width: 20,
@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   radioSelected: {
     borderColor: colors.primary,
@@ -62,6 +62,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.black,
     marginBottom: 20,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    padding: 2,
+    width: 120,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 30,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  activeToggle: {
+    backgroundColor: colors.primary,
+  },
+  toggleText: {
+    color: colors.black,
+  },
+  activeText: {
+    color: colors.white,
   },
 });
 
