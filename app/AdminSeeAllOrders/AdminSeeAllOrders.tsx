@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // <-- Added useState import
+import React, { use, useEffect, useState } from "react"; // <-- Added useState import
 import {
   View,
   Text,
@@ -12,25 +12,56 @@ import {
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import ordersData from "@/data/ordersData";
+// import ordersData from "@/data/ordersData"; // Commented out static data
 import CurrencySymbol from "../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
+import { orderService } from "@/services/orderService";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
+  const [allOrders, setAllOrders] = useState<any>([]);
 
   const statusFilters = ["All Orders", "Cancelled", "Replaced", "Returned"];
+
+  const getAllOrders = async () => {
+    const allorders = await orderService.getAllOrders();
+    setAllOrders(allorders);
+  };
+
+  useEffect(() => {
+    getAllOrders();
+  }, []);
+
+  // Helper function to format date/time ago
+  const getTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const orderDate = new Date(dateString);
+    const diffInMs = now.getTime() - orderDate.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""}`;
+    } else {
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""}`;
+    }
+  };
 
   const renderOrderItem = ({ item }: any) => {
     return (
       <>
         <TouchableOpacity
           onPress={() => {
-            redirectToPage(containers.AdminOrderDetailScreen);
+            redirectToPage(containers.AdminOrderDetailScreen, {
+              orderId: item._id,
+            });
           }}
         >
           <View style={styles.eachOrderItem}>
@@ -41,8 +72,12 @@ const AdminSeeAllOrders = () => {
                 globalStyles.mb_1,
               ]}
             >
-              <Text style={globalStyles.size_16}>{item.id}</Text>
-              <Text style={globalStyles.size_16}>{item.time} ago</Text>
+              <Text style={globalStyles.size_16}>
+                #ORD-{item.orderNumber || item._id || "N/A"}
+              </Text>
+              <Text style={globalStyles.size_16}>
+                {getTimeAgo(item.createdAt)} ago
+              </Text>
             </View>
             <View
               style={[
@@ -55,13 +90,18 @@ const AdminSeeAllOrders = () => {
                 <View style={styles.idContainer}>
                   <View style={{ flex: 1 }}>
                     <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                      {item.customer}
+                      {typeof item.userId === "object" && item.userId?.firstName
+                        ? `${item.userId.firstName} ${
+                            item.userId.lastName || ""
+                          }`.trim()
+                        : ""}
                     </Text>
                   </View>
                   <TouchableOpacity
                     onPress={() => {
                       redirectToPage(containers.deliveryTrackingScreenScreen, {
                         from: "admin",
+                        orderId: item._id,
                       });
                     }}
                   >
@@ -74,18 +114,21 @@ const AdminSeeAllOrders = () => {
               style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
               <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
-                Total: {CurrencySymbol} {item.amount}
+                Total: {CurrencySymbol}{" "}
+                {typeof item.totalAmount === "number"
+                  ? item.totalAmount.toFixed(2)
+                  : "0.00"}
               </Text>
               <View style={styles.statusContainer}>
                 <Text
                   style={[
                     localStyles.statusPill,
-                    item.status === "Pending"
-                      ? localStyles.pending
-                      : item.status === "Cancelled"
+                    item.status === "Cancelled"
                       ? localStyles.cancelled
-                      : item.status === "Delivered"
-                      ? localStyles.delivered
+                      : item.status === "Replaced"
+                      ? localStyles.replaced
+                      : item.status === "Returned"
+                      ? localStyles.returned
                       : localStyles.defaultStatus,
                   ]}
                 >
@@ -97,6 +140,14 @@ const AdminSeeAllOrders = () => {
         </TouchableOpacity>
       </>
     );
+  };
+
+  // Filter orders based on active filter
+  const getFilteredOrders = () => {
+    if (activeFilter === "All Orders") {
+      return allOrders;
+    }
+    return allOrders.filter((order: any) => order.status === activeFilter);
   };
 
   return (
@@ -147,13 +198,16 @@ const AdminSeeAllOrders = () => {
             </Text>
             <View style={styles.ordersContainer}>
               <FlatList
-                data={
-                  activeFilter === "All Orders"
-                    ? ordersData
-                    : ordersData.filter((item) => item.status === activeFilter)
-                }
+                data={getFilteredOrders()}
                 renderItem={renderOrderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
+                ListEmptyComponent={
+                  <View style={localStyles.emptyContainer}>
+                    <Text style={localStyles.emptyText}>
+                      No orders found for "{activeFilter}"
+                    </Text>
+                  </View>
+                }
               />
             </View>
           </View>
@@ -177,17 +231,21 @@ const localStyles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 4,
   },
-  pending: {
-    backgroundColor: "#FFE6A7",
-    color: "#6D4C00",
+  orderPlaced: {
+    backgroundColor: "#E3F2FD",
+    color: "#1565C0",
   },
   cancelled: {
     backgroundColor: "#FFD6D9",
     color: "#B00020",
   },
-  delivered: {
-    backgroundColor: colors.lightGreen,
-    color: "#006D3C",
+  replaced: {
+    backgroundColor: "#FFF3E0",
+    color: "#E65100",
+  },
+  returned: {
+    backgroundColor: "#F3E5F5",
+    color: "#7B1FA2",
   },
   defaultStatus: {
     backgroundColor: "#E0E0E0",
@@ -198,6 +256,7 @@ const localStyles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 16,
     gap: 10,
+    flexWrap: "wrap",
   },
   badge: {
     paddingHorizontal: 12,
@@ -208,5 +267,16 @@ const localStyles = StyleSheet.create({
     color: colors.black,
     fontSize: 14,
     fontWeight: "500",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.placeholdergrey,
+    textAlign: "center",
   },
 });

@@ -336,7 +336,7 @@ const ProductDetailScreen = () => {
           </View>
         </ScrollView>
 
-        <Footer navigation={router} activeTab="home" />
+        <Footer navigation={router} />
       </View>
     </SafeAreaView>
   );

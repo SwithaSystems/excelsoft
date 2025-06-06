@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -25,48 +25,77 @@ import CurrencySymbol from "@/constants/CurrencySymbol";
 const AdminDashboard = () => {
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
   const [allOrders, setAllOrders] = React.useState<any>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const today = new Date();
-  const dateOnly = today.toISOString().split("T")[0];
-
-  const getOrdersByOrderDate = async () => {
-    const allTodayOrders = await orderService.getOrdersByOrderDate(dateOnly);
-    setAllTodayOrders(allTodayOrders);
-  };
-  const getAllOrders = async () => {
-    const allOrders = await orderService.getAllOrders();
-    setAllOrders(allOrders);
-  };
-
-  React.useEffect(() => {
-    getOrdersByOrderDate();
-    getAllOrders();
+  // Memoize date calculation
+  const dateOnly = useMemo(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
   }, []);
 
-  console.log("allTodayOrders", allTodayOrders);
+  // Optimize API calls with error handling and loading states
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [todayOrders, orders] = await Promise.all([
+        orderService.getOrdersByOrderDate(dateOnly),
+        orderService.getAllOrders(),
+      ]);
 
-  console.log("allOrders", allOrders);
+      setAllTodayOrders(todayOrders);
+      setAllOrders(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [dateOnly]);
 
-  // const totalOrders = allTodayOrders.length;
-  const pendingOrders = allOrders.filter(
-    (order: any) => order.status !== "Order Delivered Successfully"
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Memoize expensive calculations
+  const dashboardMetrics = useMemo(() => {
+    if (!allOrders.length) {
+      return {
+        totalOrders: 0,
+        pendingOrders: [],
+        recentOrders: [],
+        todayRevenue: 0,
+      };
+    }
+
+    const pendingOrders = allOrders.filter(
+      (order: any) => order.status !== "Order Delivered Successfully"
+    );
+
+    const recentOrders = allOrders
+      .slice()
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+      )
+      .slice(0, 3);
+
+    const todayRevenue = allOrders
+      .filter((order: any) => order.status === "Order Delivered Successfully")
+      .reduce((total: number, order: any) => total + order.totalAmount, 0);
+
+    return {
+      totalOrders: allOrders.length,
+      pendingOrders,
+      recentOrders,
+      todayRevenue,
+    };
+  }, [allOrders]);
+
+  const paddingTop = useMemo(
+    () => (Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0),
+    []
   );
-  const recentOrders = allOrders
-    .slice()
-    .sort(
-      (a: any, b: any) =>
-        new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
-    )
-    .slice(0, 3);
-  console.log("recentOrders", recentOrders);
 
-  const today_Revenue = allOrders
-    .filter((order: any) => order.status === "Order Delivered Successfully")
-    .reduce((total: number, order: any) => total + order.totalAmount, 0);
-
-  const paddingTop =
-    Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
-  const getStatusBadgeStyle = (status: String) => {
+  const getStatusBadgeStyle = useCallback((status: String) => {
     switch (status) {
       case "Order Placed":
         return globalStyles.orderPlacedBadge;
@@ -76,36 +105,39 @@ const AdminDashboard = () => {
         return globalStyles.orderPendingBadge;
       case "Canceled":
         return globalStyles.orderCanceledBadge;
+      default:
+        return {};
     }
-  };
+  }, []);
 
-  const renderOrder = ({ item }: any) => {
-    const orderTime = new Date(item.orderDate).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+  // Memoize order item component
+  const OrderItem = React.memo(({ item }: any) => {
+    const orderTime = useMemo(
+      () =>
+        new Date(item.orderDate).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      [item.orderDate]
+    );
 
-    console.log("orderTime", orderTime);
+    const handlePress = useCallback(() => {
+      redirectToPage(containers.AdminOrderDetailScreen, {
+        orderId: item._id,
+      });
+    }, [item._id]);
 
     return (
-      <TouchableOpacity
-        onPress={() => {
-          redirectToPage(containers.AdminOrderDetailScreen, {
-            orderId: item._id,
-          });
-        }}
-      >
+      <TouchableOpacity onPress={handlePress}>
         <View style={styles.orderContainer}>
           <View>
             <Text style={styles.orderId}>{`#ORD-${item.orderNumber}`}</Text>
-            {/* <Text style={styles.customerName}>{item.customer}</Text> */}
             <Text style={styles.orderTime}>{orderTime}</Text>
           </View>
           <View
             style={{
               flexDirection: "column",
-              // justifyContent: "space-between",
               height: "100%",
             }}
           >
@@ -130,113 +162,230 @@ const AdminDashboard = () => {
         </View>
       </TouchableOpacity>
     );
+  });
+
+  const renderOrder = useCallback(
+    ({ item }: any) => <OrderItem item={item} />,
+    []
+  );
+
+  const handleSeeAllPress = useCallback(() => {
+    redirectToPage(containers.AdminSeeAllOrdersScreen);
+  }, []);
+
+  const keyExtractor = useCallback((item: any) => item.id || item._id, []);
+  // Helper function to format date/time ago
+  const getTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const orderDate = new Date(dateString);
+    const diffInMs = now.getTime() - orderDate.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} hour${diffInHours > 1 ? "s" : ""}`;
+    } else {
+      return `${diffInDays} day${diffInDays > 1 ? "s" : ""}`;
+    }
+  };
+  const renderOrderItem = ({ item }: any) => {
+    return (
+      <>
+        <TouchableOpacity
+          onPress={() => {
+            redirectToPage(containers.AdminOrderDetailScreen, {
+              orderId: item._id,
+            });
+          }}
+        >
+          <View style={styles.eachOrderItem}>
+            <View
+              style={[
+                globalStyles.flexRow,
+                globalStyles.justifyContentBetween,
+                globalStyles.mb_1,
+              ]}
+            >
+              <Text style={globalStyles.size_16}>
+                #ORD-{item.orderNumber || item._id || "N/A"}
+              </Text>
+              <Text style={globalStyles.size_16}>
+                {getTimeAgo(item.createdAt)} ago
+              </Text>
+            </View>
+            <View
+              style={[
+                globalStyles.flexRow,
+                globalStyles.justifyContentBetween,
+                globalStyles.mb_3,
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <View style={styles.idContainer}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                      {typeof item.userId === "object" && item.userId?.firstName
+                        ? `${item.userId.firstName} ${
+                            item.userId.lastName || ""
+                          }`.trim()
+                        : `User ID: ${
+                            typeof item.userId === "string"
+                              ? item.userId
+                              : item.userId?._id || "N/A"
+                          }`}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      redirectToPage(containers.deliveryTrackingScreenScreen, {
+                        from: "admin",
+                        orderId: item._id,
+                      });
+                    }}
+                  >
+                    <Text style={styles.trackOrderText}>Track Order</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={[globalStyles.size_16, globalStyles.fontWeight500]}>
+                Total: {CurrencySymbol}{" "}
+                {typeof item.totalAmount === "number"
+                  ? item.totalAmount.toFixed(2)
+                  : "0.00"}
+              </Text>
+              <View>
+                <Text
+                  style={[
+                    styles.statusPill,
+                    item.status === "Cancelled"
+                      ? styles.cancelled
+                      : item.status === "Replaced"
+                      ? styles.replaced
+                      : item.status === "Returned"
+                      ? styles.returned
+                      : styles.defaultStatus,
+                  ]}
+                >
+                  {item.status}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </>
+    );
   };
 
   return (
-    <>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <View style={[styles.container, { paddingTop }]}>
-          <BrandHeader hideUserGreeting={true} />
-          console.log("hideUserGreeting:", props.hideUserGreeting);
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <Text style={styles.title}>Dashboard</Text>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <View style={[styles.container, { paddingTop }]}>
+        <BrandHeader hideUserGreeting={true} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <Text style={styles.title}>Dashboard</Text>
 
-              <View style={styles.metricsContainer}>
-                <View style={styles.metricBox}>
-                  <View style={styles.metricIconContainer}>
-                    <MaterialIcons
-                      name="work-outline"
-                      size={24}
-                      color="#2563EB"
-                    />
-                    <Text style={styles.metricTitle}>Total Orders</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.metricValue}>{allOrders.length}</Text>
-                    <View style={styles.salesRaiseSection}>
-                      <Ionicons
-                        name="trending-up-outline"
-                        size={24}
-                        color={colors.primary}
-                        style={{ paddingRight: 8 }}
-                      />
-                      <Text style={styles.metricChange}>+12.5%</Text>
-                    </View>
-                  </View>
+            <View style={styles.metricsContainer}>
+              <View style={styles.metricBox}>
+                <View style={styles.metricIconContainer}>
+                  <MaterialIcons
+                    name="work-outline"
+                    size={24}
+                    color="#2563EB"
+                  />
+                  <Text style={styles.metricTitle}>Total Orders</Text>
                 </View>
-                <View style={styles.metricBox}>
-                  <View style={styles.metricIconContainer}>
-                    <MaterialIcons
-                      name="work-outline"
+                <View>
+                  <Text style={styles.metricValue}>
+                    {dashboardMetrics.totalOrders}
+                  </Text>
+                  <View style={styles.salesRaiseSection}>
+                    <Ionicons
+                      name="trending-up-outline"
                       size={24}
-                      color="#2563EB"
+                      color={colors.primary}
+                      style={{ paddingRight: 8 }}
                     />
-                    <Text style={styles.metricTitle}>Pending Orders</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.metricValue}>
-                      {pendingOrders.length}
-                    </Text>
-                    {/* <View style={styles.salesRaiseSection}>
-                      <Ionicons
-                        name="trending-up-outline"
-                        size={24}
-                        color={colors.primary}
-                        style={{ paddingRight: 8 }}
-                      />
-                      <Text style={styles.metricChange}>5 new</Text>
-                    </View> */}
-                  </View>
-                </View>
-                <View style={styles.metricBox}>
-                  <View style={styles.metricIconContainer}>
-                    <MaterialIcons
-                      name="work-outline"
-                      size={24}
-                      color="#2563EB"
-                    />
-                    <Text style={styles.metricTitle}>Today's Revenue</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.metricValue}>
-                      {CurrencySymbol}
-                      {today_Revenue.toFixed(2)}
-                    </Text>
-                    <View style={styles.salesRaiseSection}>
-                      <Ionicons
-                        name="trending-up-outline"
-                        size={24}
-                        color={colors.primary}
-                        style={{ paddingRight: 8 }}
-                      />
-                      <Text style={styles.metricChange}>+14.5%</Text>
-                    </View>
+                    <Text style={styles.metricChange}>+12.5%</Text>
                   </View>
                 </View>
               </View>
 
-              <View style={styles.ordersHeader}>
-                <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    redirectToPage(containers.AdminSeeAllOrdersScreen);
-                  }}
-                >
-                  <Text style={styles.seeAll}>See All</Text>
-                </TouchableOpacity>
+              <View style={styles.metricBox}>
+                <View style={styles.metricIconContainer}>
+                  <MaterialIcons
+                    name="work-outline"
+                    size={24}
+                    color="#2563EB"
+                  />
+                  <Text style={styles.metricTitle}>Pending Orders</Text>
+                </View>
+                <View>
+                  <Text style={styles.metricValue}>
+                    {dashboardMetrics.pendingOrders.length}
+                  </Text>
+                </View>
               </View>
-              <FlatList
-                data={recentOrders}
-                renderItem={renderOrder}
-                keyExtractor={(item) => item.id}
-              />
+
+              <View style={styles.metricBox}>
+                <View style={styles.metricIconContainer}>
+                  <MaterialIcons
+                    name="work-outline"
+                    size={24}
+                    color="#2563EB"
+                  />
+                  <Text style={styles.metricTitle}>Today's Revenue</Text>
+                </View>
+                <View>
+                  <Text style={styles.metricValue}>
+                    {CurrencySymbol}
+                    {dashboardMetrics.todayRevenue.toFixed(2)}
+                  </Text>
+                  <View style={styles.salesRaiseSection}>
+                    <Ionicons
+                      name="trending-up-outline"
+                      size={24}
+                      color={colors.primary}
+                      style={{ paddingRight: 8 }}
+                    />
+                    <Text style={styles.metricChange}>+14.5%</Text>
+                  </View>
+                </View>
+              </View>
             </View>
-          </ScrollView>
-          <AdminFooter activeTab="home" />
-        </View>
-      </SafeAreaView>
-    </>
+
+            <View style={styles.ordersHeader}>
+              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+              <TouchableOpacity onPress={handleSeeAllPress}>
+                <Text style={styles.seeAll}>See All</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={dashboardMetrics.recentOrders}
+              renderItem={renderOrderItem}
+              keyExtractor={keyExtractor}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={5}
+              windowSize={10}
+              initialNumToRender={3}
+              getItemLayout={(data, index) => ({
+                length: 80, // Approximate height of each order item
+                offset: 80 * index,
+                index,
+              })}
+            />
+          </View>
+        </ScrollView>
+        <AdminFooter activeTab="home" />
+      </View>
+    </SafeAreaView>
   );
 };
 

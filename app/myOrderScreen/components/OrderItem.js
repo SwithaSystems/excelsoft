@@ -42,7 +42,7 @@ function OrderItem(props) {
         <View style={styles.OrderStatusContainer}>
           <View style={styles.statusContainer}>
             <Ionicons name="bag-check" size={32} color={colors.primary} />
-            <Text style={styles.status}>{item.status}!!</Text>
+            <Text style={styles.status}>{item.status}</Text>
           </View>
           <Text style={styles.navigationText}>See More</Text>
         </View>
@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
   },
   navigationText: {
     color: colors.primary,
-    textDecorationLine: 'underline',
-    fontWeight: "bold"
+    textDecorationLine: "underline",
+    fontWeight: "bold",
   },
 });
 

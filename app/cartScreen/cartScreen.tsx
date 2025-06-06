@@ -177,13 +177,7 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
           </View>*/}
-            <RecommendedProductsSlider
-              recommendedProducts={recommendedProducts}
-              sectionTitleStyle={styles.sectionHeading}
-              title="Similar products to your cart"
-              showAddToCart={true}
-              handleAdd={(item: any) => dispatch(addToCart(item))}
-            />
+
             {savedForLaterItems.length > 0 && (
               <SavedLaterItem
                 savedForLaterItems={savedForLaterItems}
@@ -197,6 +191,13 @@ const CartScreen = () => {
                 }}
               />
             )}
+            <RecommendedProductsSlider
+              recommendedProducts={recommendedProducts}
+              sectionTitleStyle={styles.sectionHeading}
+              title="Similar products to your cart"
+              showAddToCart={true}
+              handleAdd={(item: any) => dispatch(addToCart(item))}
+            />
           </View>
 
           {/* Delete Item Modal */}

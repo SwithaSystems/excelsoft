@@ -157,7 +157,7 @@ const AdminCategories = () => {
 
   async function getAllCategories() {
     try {
-      const categories = await categoryService.getAllCategories(2);
+      const categories = await categoryService.getAllCategories();
       if (categories) {
         setCategoryList(categories);
       }
@@ -255,6 +255,13 @@ const AdminCategories = () => {
   }, []);
 
   console.log("categoryList", categoryList);
+
+  const getParentCategoryName = (parentCategoryId: any, categories: any) => {
+    const parentCategory = categories.find(
+      (cat: any) => cat.id === parentCategoryId
+    );
+    return parentCategory ? parentCategory.name : "No Parent";
+  };
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -367,16 +374,20 @@ const AdminCategories = () => {
                         </Text>
                       )}
                       <Text style={styles.categoryId}>
-                        ID: {categoryItem.id}
+                        ID: {categoryItem.id} Parent:{" "}
+                        {getParentCategoryName(
+                          categoryItem.parentCategory,
+                          categoryList
+                        )}
                       </Text>
-                      {categoryItem.parentCategory && (
+                      {/* {categoryItem.parentCategory && (
                         <Text style={styles.parentCategory}>
                           Parent: {categoryItem.parentCategory}
                         </Text>
-                      )}
+                      )} */}
                     </View>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#C8C8C8" />
+                  {/* <Ionicons name="chevron-forward" size={20} color="#C8C8C8" /> */}
                 </TouchableOpacity>
               ))}
               {categoryList.length === 0 && (
@@ -388,7 +399,7 @@ const AdminCategories = () => {
           </View>
         </ScrollView>
       </View>
-       <AdminFooter activeTab="categories" />
+      <AdminFooter activeTab="categories" />
     </SafeAreaView>
   );
 };

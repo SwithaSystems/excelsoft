@@ -25,7 +25,10 @@ import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../components/ProductCard";
 import SaveItemFav from "../cartScreen/components/saveItem_fav";
@@ -48,9 +51,15 @@ const savedItemScreen = () => {
     dispatch(removeFromSavedItems(item.id));
   };
   const insets = useSafeAreaInsets();
-  const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
+  const footerHeight =
+    60 +
+    (Platform.OS === "ios"
+      ? insets.bottom
+      : insets.bottom > 0
+      ? insets.bottom
+      : 10);
   return (
-    <SafeAreaView style={[globalStyles.safeAreaContainer,{ paddingTop: 0 }]}>
+    <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
       <View style={globalStyles.container}>
         <Header headerText="Saved Items" />
         <ScrollView>
@@ -98,12 +107,13 @@ const savedItemScreen = () => {
           styles.footer,
           {
             height: footerHeight,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           },
         ]}
       >
-        <Footer activeTab="home" />
-      </View>    </SafeAreaView>
+        <Footer activeTab="saved" />
+      </View>{" "}
+    </SafeAreaView>
   );
 };
 

@@ -143,7 +143,7 @@ const AdminOrderDetail = () => {
                       globalStyles.mb_1,
                     ]}
                   >
-                    Total: {orderDetails?.totalAmount}
+                    Total: {orderDetails?.totalAmount?.toFixed(2)}
                   </Text>
                   <Text
                     style={[
