@@ -28,9 +28,9 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   const dispatch = useDispatch();
   const [isValidUser, setIsValidUser] = useState(false);
 
-  // Check if device has navigation buttons (Android only)
   const hasNavigationButtons = Platform.OS === 'android' && insets.bottom === 0;
   const androidBottomPadding = hasNavigationButtons ? 20 : Math.max(insets.bottom, 10);
+    const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
 
   const validateAndFetchUser = async () => {
     try {
@@ -96,7 +96,8 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
             Platform.OS === "ios"
               ? insets.bottom > 0 ? insets.bottom : 10
               : androidBottomPadding,
-        },
+        }, {height: footerHeight,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  }
       ]}
     >
       <View style={styles.footer}>
@@ -165,15 +166,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopColor: colors.placeholdergrey,
     borderTopWidth: 1,
-    // // Add shadow for better visual separation
-    // shadowColor: "#000",
-    // shadowOffset: {
-    //   width: 0,
-    //   height: -2,
-    // },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 3,
-    // elevation: 5, // Android shadow
   },
   footer: {
     flexDirection: "row",

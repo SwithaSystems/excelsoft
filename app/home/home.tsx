@@ -41,7 +41,7 @@ const bannerImages = [
   { imageUrl: require("../../assets/banner3.png") },
 ];
 
-const androidStatusBarHeight = Platform.OS === "android" ? StatusBar.currentHeight : 0;
+
 
 const recommendedProducts = products
   .filter((p) =>
@@ -140,13 +140,13 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
- const insets = useSafeAreaInsets();
-const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
+  const insets = useSafeAreaInsets();
+  const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
 
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={globalStyles.safeAreaContainer}>
         <BrandHeader />
 
         <ScrollView
@@ -246,10 +246,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white || "#fff",
   },
-  safeArea: {
-    flex: 1,
-    paddingTop: androidStatusBarHeight,
-  },
+  
   scrollView: {
     flex: 1,
   },
