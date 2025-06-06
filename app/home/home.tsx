@@ -32,7 +32,10 @@ import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
 import categoriesScreen from "../categoriesScree/categoriesScree";
 import { parentCategoryIDAll } from "@/config/constants";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import AdminFooter from "@/components/AdminFooter";
 
 const bannerImages = [
@@ -40,8 +43,6 @@ const bannerImages = [
   { imageUrl: require("../../assets/banner2.png") },
   { imageUrl: require("../../assets/banner3.png") },
 ];
-
-
 
 const recommendedProducts = products
   .filter((p) =>
@@ -126,7 +127,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await categoryService.getAllCategories(parentCategoryIDAll);
+        const data = await categoryService.getAllCategories();
         console.log(data);
         const sortedData = data.sort((a, b) => a.id - b.id);
         setCategories(sortedData);
@@ -141,8 +142,13 @@ const HomePage = () => {
   }, []);
 
   const insets = useSafeAreaInsets();
-  const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
-
+  const footerHeight =
+    60 +
+    (Platform.OS === "ios"
+      ? insets.bottom
+      : insets.bottom > 0
+      ? insets.bottom
+      : 10);
 
   return (
     <View style={styles.container}>
@@ -225,17 +231,17 @@ const HomePage = () => {
           {renderFeaturedProducts()}
         </ScrollView>
 
-       <View
-        style={[
-          styles.footer,
-          {
-            height: footerHeight,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  
-          },
-        ]}
-      >
-        <Footer activeTab="home" />
-      </View>
+        <View
+          style={[
+            styles.footer,
+            {
+              height: footerHeight,
+              paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+            },
+          ]}
+        >
+          <Footer activeTab="home" />
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -246,7 +252,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white || "#fff",
   },
-  
+
   scrollView: {
     flex: 1,
   },
