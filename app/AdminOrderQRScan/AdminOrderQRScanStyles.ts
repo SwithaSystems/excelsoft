@@ -4,8 +4,6 @@ import colors from '../config/colors';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
     backgroundColor: '#fff',
   },
   instructionContainer: {
@@ -14,6 +12,7 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   instructionText: {
     fontSize: 14,
@@ -32,6 +31,7 @@ export default StyleSheet.create({
   },
   inputSection: {
     marginTop: 12,
+    paddingHorizontal: 16,
   },
   inputLabel: {
     fontSize: 14,

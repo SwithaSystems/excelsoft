@@ -407,11 +407,11 @@ const AdminCategories = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    paddingHorizontal: 16,
     flex: 1,
   },
   formContainer: {
     marginBottom: 24,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -491,6 +491,7 @@ const styles = StyleSheet.create({
   },
   listSection: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   listContainer: {
     paddingBottom: 20,
