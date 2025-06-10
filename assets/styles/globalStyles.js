@@ -1,15 +1,51 @@
 import colors from "@/app/config/colors";
-import { Platform, StatusBar, StyleSheet } from "react-native";
+import { Platform, StatusBar, StyleSheet, Dimensions } from "react-native";
 
-const androidStatusBarHeight = Platform.OS === "android" ? StatusBar.currentHeight : 0;
+const statusBarHeight = StatusBar.currentHeight;
+console.log("Status bar height:", statusBarHeight);
+
+// Get device dimensions for responsive calculations
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+// Platform-specific status bar height calculation
+const getStatusBarHeightSafe = () => {
+  if (Platform.OS === "android") {
+    return StatusBar.currentHeight || 24; // Fallback to 24 if undefined
+  }
+  return 0; // iOS safe area is handled by SafeAreaView
+};
+
+// Check if device has notch/dynamic island (rough estimation)
+const hasNotch = () => {
+  if (Platform.OS === "ios") {
+    // iPhone X and later have height >= 812
+    return screenHeight >= 812;
+  }
+  return false;
+};
 
 export const globalStyles = StyleSheet.create({
   safeAreaContainer: {
-    // flex: 1,
-    // backgroundColor: colors.white,
-    // paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     flex: 1,
-    paddingTop: androidStatusBarHeight,
+    backgroundColor: colors.white,
+    paddingTop: Platform.select({
+      android: 0,
+      ios: 0,
+      default: 0,
+    }),
+  },
+  // Alternative container for screens not using SafeAreaView
+  containerWithStatusBar: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingTop: getStatusBarHeightSafe(),
+  },
+  safeAreaBottom: {
+    paddingBottom: Platform.select({
+      ios: hasNotch() ? 34 : 0, // Home indicator area
+      android: 0,
+      default: 0,
+    }),
   },
   textCenter: {
     textAlign: "center",
@@ -37,12 +73,20 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "space-between",
   },
   input: {
-    height: 48,
+    height: Platform.select({
+      ios: 48,
+      android: 52, // Slightly taller for Android
+      default: 48,
+    }),
     borderColor: "#EBEDED",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 8,
-    paddingVertical: 0,
+    paddingVertical: Platform.select({
+      ios: 0,
+      android: 8, // Android needs vertical padding
+      default: 0,
+    }),
     marginBottom: 16,
     backgroundColor: "#F8F8F8",
   },
@@ -89,6 +133,9 @@ export const globalStyles = StyleSheet.create({
   pb_0: {
     paddingBottom: 0,
   },
+  px_4: {
+    paddingHorizontal: 8,
+  },
   px_3: {
     paddingHorizontal: 16,
   },
@@ -115,15 +162,28 @@ export const globalStyles = StyleSheet.create({
   },
   h6: {
     fontSize: 16,
-    fontWeight: 500,
+    fontWeight: Platform.select({
+      ios: "600",
+      android: "bold",
+      default: "500",
+    }),
     marginBottom: 8,
   },
   sectionHeading: {
     fontSize: 20,
+    fontWeight: Platform.select({
+      ios: "700",
+      android: "bold",
+      default: "600",
+    }),
     marginBottom: 16,
   },
   fontWeight500: {
-    fontWeight: 500,
+    fontWeight: Platform.select({
+      ios: "500",
+      android: "normal",
+      default: "500",
+    }),
   },
   btnSmUnderLine: {
     fontSize: 12,

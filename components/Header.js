@@ -11,33 +11,38 @@ function Header(props) {
   const handleSearchSubmit = () => {
     redirectToPage(containers.searchScreen);
   };
+
   return (
-    <>
+    <View style={styles.headerWrapper}>
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
-          <View style={{ position: "absolute", left: 16, top: 16, zIndex: 1 }}>
-            <BackArrow needResetNavigation={props.needResetNavigation}/>
+          <View style={styles.leftContainer}>
+            <BackArrow needResetNavigation={props.needResetNavigation} />
           </View>
-          <Text style={styles.headerTitle}>{props.headerText}</Text>
-          {props.secondaryBtnText && (
-            <View
-              style={{ position: "absolute", right: 16, top: 16, zIndex: 1 }}
-            >
+
+          <View style={styles.centerContainer}>
+            <Text style={styles.headerTitle}>{props.headerText}</Text>
+          </View>
+
+          <View style={styles.rightContainer}>
+            {props.secondaryBtnText && (
               <TouchableOpacity
                 onPress={() => {
-                  props?.secondaryBtnCallBack();
+                  props?.secondaryBtnCallBack?.();
                 }}
+                style={styles.secondaryButton}
               >
-                <Text style={{ fontSize: 16, color: colors.primary }}>
+                <Text style={styles.secondaryButtonText}>
                   {props.secondaryBtnText}
                 </Text>
               </TouchableOpacity>
-            </View>
-          )}
+            )}
+          </View>
         </View>
       )}
+
       {props?.searchBarNeeded && (
-        <View>
+        <View style={styles.searchContainer}>
           <SearchBar
             placeholder="Search..."
             onFocus={handleSearchSubmit}
@@ -45,28 +50,57 @@ function Header(props) {
           />
         </View>
       )}
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  headerWrapper: {
     backgroundColor: colors.white,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    paddingHorizontal: 40,
-    position: "relative",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 10, // Standard header height
+    backgroundColor: colors.white,
+  },
+  leftContainer: {
+    flex: 0,
+    minWidth: 40,
+    alignItems: "flex-start",
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rightContainer: {
+    flex: 0,
+    minWidth: 40,
+    alignItems: "flex-end",
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: colors.black,
-    width: "100%",
     textAlign: "center",
   },
+  secondaryButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: "500",
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
 });
+
 export default Header;

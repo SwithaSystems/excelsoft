@@ -1,29 +1,35 @@
-import React, {useState} from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import colors from "../app/config/colors"
+import React, { useState } from "react";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import colors from "../app/config/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import Carousel from 'react-native-reanimated-carousel';
+import Carousel from "react-native-reanimated-carousel";
 
-const {width} = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const bannerData = [
   {
     title: "New Year Eve Special discount!",
     discount: "40-60% Discount",
-    description:"Limited time offers on all products",
+    description: "Limited time offers on all products",
     backgroundColor: "#2E2A5C",
   },
   {
     title: "Flash Sale This Weekend!",
     discount: "Up to 70% Off!",
-    description:"Don't miss out on hot deals!",
+    description: "Don't miss out on hot deals!",
     backgroundColor: colors.starColor,
   },
   {
     title: "Clearance Sale!",
     discount: "upto 50% Discount",
-    description:"Stock Clearance on selected items!",
+    description: "Stock Clearance on selected items!",
     backgroundColor: colors.black,
   },
 ];
@@ -32,26 +38,28 @@ function HeroBanner(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   return (
     <>
-      <Carousel 
-        width={width-16}
+      <Carousel
+        width={width - 32}
         height={230}
         data={bannerData}
         onSnapToItem={(index) => setCurrentIndex(index)}
         scrollAnimationDuration={300}
-        renderItem={({item}) => (
-          <View style = {[styles.banner, {backgroundColor: item.backgroundColor}]}>
-                <Text style={styles.bannerTitle}>{item.title}</Text>
-                <Text style={styles.bannerDiscount}>{item.discount}</Text>
-                <Text style={styles.bannerText}>{item.description}</Text>
-                <TouchableOpacity
-                  style={styles.shopNowButton}
-                  onPress={() => redirectToPage(containers.offersScreenScreen)}
-                >
-                    <Text style={styles.shopNowText}>Shop Now</Text>
-                </TouchableOpacity>
+        renderItem={({ item }) => (
+          <View
+            style={[styles.banner, { backgroundColor: item.backgroundColor }]}
+          >
+            <Text style={styles.bannerTitle}>{item.title}</Text>
+            <Text style={styles.bannerDiscount}>{item.discount}</Text>
+            <Text style={styles.bannerText}>{item.description}</Text>
+            <TouchableOpacity
+              style={styles.shopNowButton}
+              onPress={() => redirectToPage(containers.offersScreenScreen)}
+            >
+              <Text style={styles.shopNowText}>Shop Now</Text>
+            </TouchableOpacity>
           </View>
         )}
-        loop 
+        loop
         autoPlayInterval={5000}
         autoPlay
       />
@@ -67,20 +75,16 @@ function HeroBanner(props) {
         </TouchableOpacity>
       </View> */}
       <View style={styles.indicatorContainer}>
-          {bannerData.map((banner, index) => {
-            const isActive = currentIndex === index; 
-            return (
-              <View
-                key={index}
-                style={[
-                  styles.indicator,  
-                  isActive && styles.activeIndicator,  
-                ]}
-              />
-            );
-          })}
-        </View>
-
+        {bannerData.map((banner, index) => {
+          const isActive = currentIndex === index;
+          return (
+            <View
+              key={index}
+              style={[styles.indicator, isActive && styles.activeIndicator]}
+            />
+          );
+        })}
+      </View>
     </>
   );
 }
@@ -124,7 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  indicatorContainer:{
+  indicatorContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 12,
@@ -136,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#989B9C",
     marginHorizontal: 5,
   },
-  activeIndicator:{
+  activeIndicator: {
     backgroundColor: colors.black,
   },
 });

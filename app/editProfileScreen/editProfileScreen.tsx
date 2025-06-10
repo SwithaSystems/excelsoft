@@ -28,6 +28,7 @@ import { RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 interface User {
   id: string;
@@ -238,10 +239,16 @@ const editProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      scrollable={false}
+      hasHeader
+      hasFooter={false}
+      headerComponent={<Header headerText="Edit Profile" />}
+    >
       <KeyBoardWrapper>
         <View style={globalStyles.container as ViewStyle}>
-          <Header headerText="Edit Profile" />
+          {/* <Header headerText="Edit Profile" /> */}
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Profile Picture */}
@@ -375,7 +382,8 @@ const editProfileScreen = () => {
           </View>
         </View>
       </KeyBoardWrapper>
-    </SafeAreaView>
+    </PageLayout>
+    // </SafeAreaView>
   );
 };
 
