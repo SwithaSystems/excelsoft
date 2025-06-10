@@ -1,5 +1,6 @@
 import colors from "@/app/config/colors";
 import { Platform, StatusBar, StyleSheet, Dimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const statusBarHeight = StatusBar.currentHeight;
 console.log("Status bar height:", statusBarHeight);
@@ -177,6 +178,11 @@ export const globalStyles = StyleSheet.create({
       default: "600",
     }),
     marginBottom: 16,
+  },
+  sectionTitleStyle: {
+    fontSize: 20,
+    marginVertical: 10,
+    marginLeft: 10,
   },
   fontWeight500: {
     fontWeight: Platform.select({
@@ -366,4 +372,5 @@ export const globalStyles = StyleSheet.create({
   deviceHeading: {
     flexDirection: "row",
   },
+  bottom_btn: {},
 });

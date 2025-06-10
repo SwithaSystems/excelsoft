@@ -102,7 +102,7 @@ const HomePage = () => {
 
   const renderFeaturedProducts = () => (
     <View>
-      <Text style={styles.sectionTitle}>Featured Products</Text>
+      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
       <FlatList
         horizontal
         data={featuredProducts}
@@ -144,14 +144,14 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
-  const insets = useSafeAreaInsets();
-  const footerHeight =
-    60 +
-    (Platform.OS === "ios"
-      ? insets.bottom
-      : insets.bottom > 0
-      ? insets.bottom
-      : 10);
+  // const insets = useSafeAreaInsets();
+  // const footerHeight =
+  //   60 +
+  //   (Platform.OS === "ios"
+  //     ? insets.bottom
+  //     : insets.bottom > 0
+  //     ? insets.bottom
+  //     : 10);
 
   return (
     <PageLayout
@@ -209,7 +209,7 @@ const HomePage = () => {
         >
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
-            sectionTitleStyle={styles.sectionTitle}
+            sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Recommended for You"
           />
         </View>
@@ -227,7 +227,7 @@ const HomePage = () => {
         >
           <RecommendedProductsSlider
             recommendedProducts={bestSellers}
-            sectionTitleStyle={styles.sectionTitle}
+            sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Best Sellers"
           />
         </View>
@@ -242,8 +242,9 @@ const HomePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white || "#fff",
+    backgroundColor: colors.white,
     marginVertical: 8,
+    // paddingHorizontal: 8,
   },
 
   scrollView: {
@@ -335,15 +336,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   productsList: {
-    padding: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 20,
-    marginVertical: 10,
-    marginLeft: 10,
-  },
+
+  // sectionTitle: {
+  //   fontSize: 20,
+  //   marginVertical: 10,
+  //   marginLeft: 10,
+  // },
   categoriesContainer: {
     paddingTop: 8,
+    paddingBottom: 8,
   },
 });
 

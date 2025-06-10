@@ -37,7 +37,7 @@ function ExclusiveOffers(props) {
   return exclusiveOffers.length > 0 ? (
     <>
       <View>
-        <Text style={globalStyles.sectionHeading}>Exclusive Offers</Text>
+        <Text style={globalStyles.sectionTitleStyle}>Exclusive Offers</Text>
         <FlatList
           horizontal
           data={exclusiveOffers}

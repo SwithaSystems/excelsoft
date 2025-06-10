@@ -39,6 +39,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/components/NoContentFound";
+import PageLayout from "../pageLayoutProps";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -109,10 +110,16 @@ const CartScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasHeader
+      hasFooter
+      headerComponent={<Header headerText="Cart" />}
+      footerComponent={<Footer activeTab="cart" />}
+    >
       <View style={[globalStyles.container]}>
         <ScrollView>
-          <Header headerText="Cart" />
+          {/* <Header headerText="Cart" /> */}
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
@@ -214,8 +221,9 @@ const CartScreen = () => {
           />
         </ScrollView>
       </View>
-      <Footer navigation={router} activeTab="cart" />
-    </SafeAreaView>
+    </PageLayout>
+    /* <Footer navigation={router} activeTab="cart" />
+    </SafeAreaView> */
   );
 };
 

@@ -155,7 +155,7 @@ const UserProfileScreen = () => {
       headerComponent={
         <Header headerText="User Profile" needResetNavigation={true} />
       }
-      footerComponent={<Footer action="menu" />}
+      footerComponent={<Footer activeTab="menu" />}
       scrollable={true}
       contentPadding={true}
     >

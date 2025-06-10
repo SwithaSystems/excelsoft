@@ -14,6 +14,7 @@ import {
   ViewStyle,
   SafeAreaView,
   DeviceEventEmitter,
+  Platform,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./editProfileScreenStyles";
@@ -29,6 +30,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface User {
   id: string;
@@ -52,6 +54,8 @@ const editProfileScreen = () => {
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const getUser = async () => {
@@ -373,13 +377,23 @@ const editProfileScreen = () => {
               </View> */}
             </View>
           </ScrollView>
-          <View style={[globalStyles.p_3]}>
-            <Button
-              title="Save"
-              onPress={handleEditProfile}
-              disabled={loading}
-            />
-          </View>
+          {/* <View style={[globalStyles.p_3]}> */}
+          <Button
+            title="Save"
+            onPress={handleEditProfile}
+            disabled={loading}
+            style={{
+              position: "absolute",
+              bottom: Platform.OS === "ios" ? 60 : 76,
+              left: 16,
+              right: 16,
+              marginBottom: Math.max(
+                insets.bottom,
+                Platform.OS === "ios" ? 10 : 16
+              ),
+            }}
+          />
+          {/* </View> */}
         </View>
       </KeyBoardWrapper>
     </PageLayout>

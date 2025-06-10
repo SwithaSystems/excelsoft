@@ -16,11 +16,6 @@ interface PageLayoutProps {
   scrollable?: boolean;
   backgroundColor?: string;
   contentPadding?: boolean;
-  // New props for better safe area control
-  ignoreSafeAreaTop?: boolean;
-  ignoreSafeAreaBottom?: boolean;
-  customTopPadding?: number;
-  customBottomPadding?: number;
 }
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
@@ -32,111 +27,68 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   scrollable = true,
   backgroundColor = colors.white,
   contentPadding = true,
-  ignoreSafeAreaTop = false,
-  ignoreSafeAreaBottom = false,
-  customTopPadding,
-  customBottomPadding,
 }) => {
   const insets = useSafeAreaInsets();
 
-  // Calculate safe area paddings based on platform and props
-  const topPadding = ignoreSafeAreaTop
-    ? customTopPadding ?? 0
-    : Math.max(insets.top, customTopPadding ?? 0);
-
-  const bottomPadding = ignoreSafeAreaBottom
-    ? customBottomPadding ?? 0
-    : Math.max(insets.bottom, customBottomPadding ?? 0);
-
-  // Footer height calculation with better platform handling
+  // Footer height calculation - keep it simple
   const footerHeight = hasFooter
-    ? 60 +
-      (Platform.OS === "ios"
-        ? Math.max(bottomPadding, 10)
-        : Math.max(bottomPadding, 16)) // Android typically needs a bit more padding
+    ? 60 + Math.max(insets.bottom, Platform.OS === "ios" ? 0 : 16)
     : 0;
 
   const Container = scrollable ? ScrollView : View;
 
-  // Dynamic styles based on platform and safe area insets
-  const containerStyle = [
-    globalStyles.safeAreaContainer,
-    {
-      backgroundColor,
-      paddingTop: hasHeader ? 0 : topPadding, // Only add top padding if no header
-    },
-  ];
-
   return (
-    <SafeAreaView style={containerStyle} edges={[]}>
-      {/* Header with platform-specific safe area handling */}
+    <SafeAreaView
+      style={[globalStyles.safeAreaContainer, { backgroundColor }]}
+      edges={["top", "left", "right"]} // Let SafeAreaView handle top, left, right
+    >
+      {/* Header - No additional padding needed, SafeAreaView handles it */}
       {hasHeader && (
-        <View
-          style={[
-            styles.headerContainer,
-            {
-              // paddingTop: topPadding,
-              // Add extra padding on Android for status bar if needed
-              paddingTop:
-                Platform.OS === "android"
-                  ? Math.max(topPadding, 8)
-                  : topPadding,
-            },
-          ]}
-        >
-          {headerComponent}
-        </View>
+        <View style={styles.headerContainer}>{headerComponent}</View>
       )}
 
       {/* Main Content Area */}
       <Container
-        style={[
-          styles.content,
-          // Add top padding if no header to account for safe area
-          !hasHeader && { paddingTop: Platform.OS === "android" ? 8 : 0 },
-        ]}
+        style={styles.content}
         contentContainerStyle={
           scrollable
             ? [
                 contentPadding && styles.contentPadding,
                 {
-                  paddingBottom:
-                    footerHeight + (Platform.OS === "ios" ? 20 : 24),
+                  paddingBottom: footerHeight + 20,
                   flexGrow: 1,
-                  // Minimum height to ensure content fills screen
-                  minHeight: "100%",
                 },
               ]
             : [
                 { flex: 1 },
                 contentPadding && styles.contentPadding,
                 {
-                  paddingBottom: hasFooter ? footerHeight : bottomPadding,
+                  paddingBottom: hasFooter
+                    ? footerHeight
+                    : Math.max(insets.bottom, 16),
                 },
               ]
         }
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        bounces={Platform.OS === "ios"} // Only bounce on iOS
+        bounces={Platform.OS === "ios"}
       >
         {children}
       </Container>
 
-      {/* Footer - Fixed at bottom with platform-specific safe area */}
+      {/* Footer - Fixed at bottom */}
       {hasFooter && (
         <View
           style={[
             styles.footer,
             {
               height: footerHeight,
-              paddingBottom: Platform.select({
-                ios: Math.max(bottomPadding, 10),
-                android: Math.max(bottomPadding, 16),
-                default: bottomPadding,
-              }),
-              // Add left/right safe area padding if device has it (e.g., iPhone X+ landscape)
-              paddingLeft: Math.max(insets.left, 0),
-              paddingRight: Math.max(insets.right, 0),
+              paddingBottom: Math.max(
+                insets.bottom,
+                Platform.OS === "ios" ? 10 : 16
+              ),
+              paddingLeft: insets.left,
+              paddingRight: insets.right,
             },
           ]}
         >
@@ -165,24 +117,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: colors.white,
-    // Platform-specific shadow styling
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: -2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-    // Optional border for better visual separation
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.placeholdergrey || "#e0e0e0",
   },
 });
 
