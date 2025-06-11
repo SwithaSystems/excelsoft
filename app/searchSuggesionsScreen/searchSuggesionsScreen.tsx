@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import SearchBar from "../components/searchBar";
 import colors from "../config/colors";
@@ -8,6 +14,7 @@ import Header from "@/components/Header";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import PageLayout from "../pageLayoutProps";
 
 const suggestions = [
   "baby toys",
@@ -53,10 +60,15 @@ const SearchSuggestionsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <Header headerText={"Search Page"} />
-
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <View style={styles.container}>
+    //   <Header headerText={"Search Page"} />
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText={"Search Page"} />}
+      hasFooter={false}
+      scrollable
+    >
       <View style={styles.searchContainer}>
         <SearchBar
           placeholder="Search..."
@@ -80,8 +92,9 @@ const SearchSuggestionsScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
-    </View>
-    </SafeAreaView>
+      {/* </View>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

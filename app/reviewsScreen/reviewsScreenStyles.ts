@@ -23,9 +23,9 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   addReviewContainer: {
-    flexDirection: "row-reverse",
-    flexWrap: "nowrap",
-    paddingHorizontal: 16,
+    // flexDirection: "row-reverse",
+    // flexWrap: "nowrap",
+    // paddingHorizontal: 16,
     paddingBottom: 16,
   },
   addReviewBtn: {

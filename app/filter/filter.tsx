@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
 import colors from "../config/colors";
@@ -17,6 +17,7 @@ import { useLocalSearchParams, useNavigation } from "expo-router";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { categoryService } from "@/services/categoryService";
+import PageLayout from "../pageLayoutProps";
 
 const Filter = () => {
   const props = useLocalSearchParams();
@@ -75,9 +76,15 @@ const Filter = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <Header headerText={"Filter"} headerStyle={styles.header} />
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <View style={styles.container}>
+    // <Header headerText={"Filter"} headerStyle={styles.header} />
+    <PageLayout
+      hasHeader
+      hasFooter={false}
+      scrollable
+      headerComponent={<Header headerText={"Filter"} />}
+    >
       <View style={globalStyles.sectionContent}>
         <ScrollView style={styles.scrollContainer}>
           <View style={[styles.section, { marginBottom: 0 }]}>
@@ -122,8 +129,9 @@ const Filter = () => {
           />
         </View>
       </View>
-    </View>
-    </SafeAreaView>
+      {/* </View> */}
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
@@ -144,17 +152,17 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "400",
     marginBottom: 16,
-    color: colors.black, // Use black from your palette
+    color: colors.black,
   },
   applyButton: {
-    backgroundColor: colors.primary, // Use primary from your palette
+    backgroundColor: colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
-    position: "absolute",
-    bottom: 0, // At the bottom
-    left: 0, // Full width
-    right: 0,
+    // position: "absolute",
+    // bottom: 0,
+    // left: 0,
+    // right: 0,
   },
   checkBoxContainer: {
     backgroundColor: colors.white,
