@@ -28,9 +28,17 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   const dispatch = useDispatch();
   const [isValidUser, setIsValidUser] = useState(false);
 
-  const hasNavigationButtons = Platform.OS === 'android' && insets.bottom === 0;
-  const androidBottomPadding = hasNavigationButtons ? 20 : Math.max(insets.bottom, 10);
-    const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
+  const hasNavigationButtons = Platform.OS === "android" && insets.bottom === 0;
+  const androidBottomPadding = hasNavigationButtons
+    ? 20
+    : Math.max(insets.bottom, 10);
+  const footerHeight =
+    60 +
+    (Platform.OS === "ios"
+      ? insets.bottom
+      : insets.bottom > 0
+      ? insets.bottom
+      : 10);
 
   const validateAndFetchUser = async () => {
     try {
@@ -89,16 +97,21 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 
   return (
     <View
-      style={[
-        styles.absoluteFooter,
-        {
-          paddingBottom:
-            Platform.OS === "ios"
-              ? insets.bottom > 0 ? insets.bottom : 10
-              : androidBottomPadding,
-        }, {height: footerHeight,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  }
-      ]}
+    // style={[
+    //   // styles.absoluteFooter,
+    //   // {
+    //   //   paddingBottom:
+    //   //     Platform.OS === "ios"
+    //   //       ? insets.bottom > 0
+    //   //         ? insets.bottom
+    //   //         : 10
+    //   //       : androidBottomPadding,
+    //   // },
+    //   {
+    //     height: footerHeight,
+    //     paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+    //   },
+    // ]}
     >
       <View style={styles.footer}>
         <FooterButton
@@ -158,15 +171,15 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
 );
 
 const styles = StyleSheet.create({
-  absoluteFooter: {
-    position: "relative",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.white,
-    borderTopColor: colors.placeholdergrey,
-    borderTopWidth: 1,
-  },
+  // absoluteFooter: {
+  //   position: "relative",
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   backgroundColor: colors.white,
+  //   borderTopColor: colors.placeholdergrey,
+  //   borderTopWidth: 1,
+  // },
   footer: {
     flexDirection: "row",
     justifyContent: "space-around",

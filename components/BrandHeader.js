@@ -94,7 +94,7 @@ function BrandHeader(props) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          bottom: Platform.OS === "android" ? 20 : 0,
+          //   bottom: Platform.OS === "android" ? 20 : 0,
         }}
       >
         <Image

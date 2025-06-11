@@ -37,6 +37,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import AdminFooter from "@/components/AdminFooter";
+import { PageLayout } from "../pageLayoutProps";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -71,7 +72,7 @@ const exclusiveOffers = products
   }));
 
 const bestSellers = products
-  .filter((p) => ["Bananas", "Chicken Breast"].includes(p.name))
+  .filter((p) => ["Bananas", "Chicken Breast", "Baby Bicycle"].includes(p.name))
   .map((product) => ({
     id: product.id,
     title: product.name,
@@ -81,7 +82,9 @@ const bestSellers = products
   }));
 
 const featuredProducts = products
-  .filter((p) => ["Brown Teddy Bear", "Anchovies"].includes(p.name))
+  .filter((p) =>
+    ["Brown Teddy Bear", "Anchovies", "Baby Crib"].includes(p.name)
+  )
   .map((product) => ({
     id: product.id,
     title: product.name,
@@ -99,7 +102,7 @@ const HomePage = () => {
 
   const renderFeaturedProducts = () => (
     <View>
-      <Text style={styles.sectionTitle}>Featured Products</Text>
+      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
       <FlatList
         horizontal
         data={featuredProducts}
@@ -141,116 +144,107 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
-  const insets = useSafeAreaInsets();
-  const footerHeight =
-    60 +
-    (Platform.OS === "ios"
-      ? insets.bottom
-      : insets.bottom > 0
-      ? insets.bottom
-      : 10);
+  // const insets = useSafeAreaInsets();
+  // const footerHeight =
+  //   60 +
+  //   (Platform.OS === "ios"
+  //     ? insets.bottom
+  //     : insets.bottom > 0
+  //     ? insets.bottom
+  //     : 10);
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <BrandHeader />
+    <PageLayout
+      hasHeader
+      hasFooter
+      headerComponent={<BrandHeader />}
+      footerComponent={<Footer activeTab="home" />}
+      scrollable
+    >
+      <View style={styles.container}>
+        <Header />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={[
-            styles.scrollContent,
-            {
-              paddingBottom: footerHeight,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-        >
-          <Header />
-
-          {/* Categories */}
-          <View style={styles.categoriesContainer}>
-            {loading ? (
-              <ActivityIndicator size="large" color={colors.primary} />
-            ) : (
-              <FlatList
-                data={categories}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item: any) => item.id}
-                renderItem={({ item }) => (
-                  <CategoryItem
-                    name={item.name}
-                    imageUrl={item.images?.[0] || ""}
-                    onPress={() =>
-                      item.id === 2
-                        ? redirectToPage(containers.categoriesScreeScreen, {
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                        : redirectToPage(containers.searchResultsScreenScreen, {
-                            fromSearch: true,
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                    }
-                  />
-                )}
-              />
-            )}
-          </View>
-
-          {/* Banner */}
-          <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>
-            {renderBanner()}
-          </View>
-
-          {/* Recommended Products */}
-          <View style={{ marginVertical: 16 }}>
-            <RecommendedProductsSlider
-              recommendedProducts={recommendedProducts}
-              sectionTitleStyle={styles.sectionTitle}
-              title="Recommended for You"
+        {/* Categories */}
+        <View style={styles.categoriesContainer}>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : (
+            <FlatList
+              data={categories}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item: any) => item.id}
+              renderItem={({ item }) => (
+                <CategoryItem
+                  name={item.name}
+                  imageUrl={item.images?.[0] || ""}
+                  onPress={() =>
+                    item.id === 2
+                      ? redirectToPage(containers.categoriesScreeScreen, {
+                          category: item.name,
+                          categoryId: item.id,
+                        })
+                      : redirectToPage(containers.searchResultsScreenScreen, {
+                          fromSearch: true,
+                          category: item.name,
+                          categoryId: item.id,
+                        })
+                  }
+                />
+              )}
             />
-          </View>
-
-          {/* Exclusive Offers */}
-          <View style={globalStyles.px_3}>
-            <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-          </View>
-
-          {/* Best Sellers */}
-          <View style={{ marginVertical: 16 }}>
-            <RecommendedProductsSlider
-              recommendedProducts={bestSellers}
-              sectionTitleStyle={styles.sectionTitle}
-              title="Best Sellers"
-            />
-          </View>
-
-          {/* Featured Products */}
-          {renderFeaturedProducts()}
-        </ScrollView>
-
-        <View
-          style={[
-            styles.footer,
-            {
-              height: footerHeight,
-              paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-            },
-          ]}
-        >
-          <Footer activeTab="home" />
+          )}
         </View>
-      </SafeAreaView>
-    </View>
+
+        {/* Banner */}
+        <View
+        //  style={{ marginVertical: 8 }}
+        >
+          {renderBanner()}
+        </View>
+
+        {/* Recommended Products */}
+        <View
+        // style={{ marginVertical: 8 }}
+        >
+          <RecommendedProductsSlider
+            recommendedProducts={recommendedProducts}
+            sectionTitleStyle={globalStyles.sectionTitleStyle}
+            title="Recommended for You"
+          />
+        </View>
+
+        {/* Exclusive Offers */}
+        <View
+        //  style={globalStyles.px_4}
+        >
+          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+        </View>
+
+        {/* Best Sellers */}
+        <View
+        // style={{ marginVertical: 8 }}
+        >
+          <RecommendedProductsSlider
+            recommendedProducts={bestSellers}
+            sectionTitleStyle={globalStyles.sectionTitleStyle}
+            title="Best Sellers"
+          />
+        </View>
+
+        {/* Featured Products */}
+        {renderFeaturedProducts()}
+      </View>
+    </PageLayout>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white || "#fff",
+    backgroundColor: colors.white,
+    marginVertical: 8,
+    // paddingHorizontal: 8,
   },
 
   scrollView: {
@@ -342,15 +336,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   productsList: {
-    padding: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 20,
-    marginVertical: 10,
-    marginLeft: 10,
-  },
+
+  // sectionTitle: {
+  //   fontSize: 20,
+  //   marginVertical: 10,
+  //   marginLeft: 10,
+  // },
   categoriesContainer: {
-    padding: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
 });
 

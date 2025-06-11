@@ -33,12 +33,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 14,
     fontWeight: "500",
+    paddingLeft: 15,
   },
   trendingGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     justifyContent: "space-between",
   },
   categoriesGrid: {

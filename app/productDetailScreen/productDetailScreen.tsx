@@ -33,6 +33,7 @@ import {
   addToSavedItems,
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
+import PageLayout from "../pageLayoutProps";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -136,10 +137,17 @@ const ProductDetailScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      scrollable
+      hasHeader
+      hasFooter
+      headerComponent={<Header headerText={"About the Product"} />}
+      footerComponent={<Footer />}
+    >
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
-          <Header headerText={"About the Product"} />
+          {/* <Header headerText={"About the Product"} /> */}
           <View style={{ position: "relative" }}>
             <ScrollView
               ref={scrollViewRef}
@@ -335,10 +343,12 @@ const ProductDetailScreen = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
-
-        <Footer navigation={router} />
       </View>
-    </SafeAreaView>
+    </PageLayout>
+
+    /* <Footer navigation={router} />
+      </View>
+    </SafeAreaView> */
   );
 };
 

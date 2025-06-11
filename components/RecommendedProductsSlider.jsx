@@ -73,7 +73,7 @@ function RecommendedProductsSlider(props) {
       />
     </View>
   );
-  return <>{renderRecommendedProducts()}</>;
+  return renderRecommendedProducts();
 }
 const styles = StyleSheet.create({
   addToCArtBtn: {

@@ -32,6 +32,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../components/ProductCard";
 import SaveItemFav from "../cartScreen/components/saveItem_fav";
+import PageLayout from "../pageLayoutProps";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -59,9 +60,16 @@ const savedItemScreen = () => {
       ? insets.bottom
       : 10);
   return (
-    <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
+    // <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
+    <PageLayout
+      scrollable
+      hasFooter
+      hasHeader
+      footerComponent={<Footer activeTab="saved" />}
+      headerComponent={<Header headerText="Saved Items" />}
+    >
       <View style={globalStyles.container}>
-        <Header headerText="Saved Items" />
+        {/* <Header headerText="Saved Items" /> */}
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {savedItems.map((item: any) => {
@@ -110,10 +118,11 @@ const savedItemScreen = () => {
             paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           },
         ]}
-      >
-        <Footer activeTab="saved" />
+      ></View>
+    </PageLayout>
+    /* <Footer activeTab="saved" /> 
       </View>{" "}
-    </SafeAreaView>
+    </SafeAreaView> */
   );
 };
 

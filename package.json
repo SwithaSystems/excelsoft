@@ -22,7 +22,7 @@
     "@sendgrid/mail": "^8.1.4",
     "@stripe/stripe-react-native": "0.45.0",
     "axios": "^1.8.4",
-    "expo": "53.0.10",
+    "expo": "53.0.11",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.6",
     "expo-device": "~7.1.4",

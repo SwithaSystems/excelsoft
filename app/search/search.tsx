@@ -8,7 +8,7 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import colors from "../config/colors";
 import SearchHistoryItem from "../components/SearchHistoryItem";
@@ -24,6 +24,7 @@ import axios from "axios";
 import styles from "./searchStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/components/Footer";
+import PageLayout from "../pageLayoutProps";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
@@ -68,7 +69,7 @@ const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [recentSearches, setRecentSearches] = useState([]);
+  const [recentSearches, setRecentSearches] = useState<any>([]);
   const debouncedQuery = useDebounce(searchQuery, 300);
 
   // Load recent searches from AsyncStorage on component mount
@@ -80,8 +81,11 @@ const SearchScreen = () => {
   const loadRecentSearches = async () => {
     try {
       const storedSearches = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      console.log("Loaded searches from storage:", storedSearches); // Debug log
       if (storedSearches !== null) {
-        setRecentSearches(JSON.parse(storedSearches));
+        const parsed = JSON.parse(storedSearches);
+        setRecentSearches(parsed);
+        console.log("Recent searches set to:", parsed); // Debug log
       }
     } catch (error) {
       console.error("Error loading recent searches:", error);
@@ -93,31 +97,65 @@ const SearchScreen = () => {
     try {
       if (!query.trim()) return;
 
-      // Create new array with the current search at the beginning
-      setRecentSearches((prevSearches) => {
-        let updatedSearches = [...prevSearches];
-        updatedSearches = updatedSearches.filter(
-          (item: any) => item.toLowerCase() !== query.toLowerCase()
-        );
-        (updatedSearches as string[]).unshift(query);
-        updatedSearches = updatedSearches.slice(0, MAX_RECENT_SEARCHES);
+      // Get current searches
+      const currentSearches = [...recentSearches];
 
-        // Save to storage
-        AsyncStorage.setItem(
-          RECENT_SEARCHES_KEY,
-          JSON.stringify(updatedSearches)
-        );
-        return updatedSearches;
-      });
+      // Remove duplicates and add new search at beginning
+      const filteredSearches = currentSearches.filter(
+        (item: any) => item.toLowerCase() !== query.toLowerCase()
+      );
+      const updatedSearches = [query, ...filteredSearches].slice(
+        0,
+        MAX_RECENT_SEARCHES
+      );
+
+      // Update state
+      setRecentSearches(updatedSearches);
+
+      // Save to AsyncStorage separately
+      await AsyncStorage.setItem(
+        RECENT_SEARCHES_KEY,
+        JSON.stringify(updatedSearches)
+      );
+
+      console.log("Search saved to history:", query); // Add for debugging
     } catch (error) {
       console.error("Error saving recent search:", error);
     }
   };
+
+  // Fix 2: Update handleSelectSuggestion to save to history
+  const handleSelectSuggestion = async (text: any) => {
+    setSearchQuery(text);
+
+    // Save to recent searches when user selects a suggestion
+    await saveSearchToHistory(text);
+
+    redirectToPage(containers.searchResultsScreenScreen, { query: text });
+  };
+
+  // Fix 3: Make handleSearch async and add error handling
+  const handleSearch = useCallback(async () => {
+    if (searchQuery.trim()) {
+      try {
+        // Save to recent searches
+        await saveSearchToHistory(searchQuery);
+
+        // Navigate to results screen
+        redirectToPage(containers.searchResultsScreenScreen, {
+          query: searchQuery,
+        });
+      } catch (error) {
+        console.error("Error in handleSearch:", error);
+      }
+    }
+  }, [searchQuery, recentSearches]); // Add recentSearches to dependencies
+
   // Remove search from history
   const removeSearchFromHistory = async (searchText: any) => {
     try {
       const updatedSearches = recentSearches.filter(
-        (item) => item !== searchText
+        (item: any) => item !== searchText
       );
       setRecentSearches(updatedSearches);
       await AsyncStorage.setItem(
@@ -181,23 +219,6 @@ const SearchScreen = () => {
     fetchSuggestions();
   }, [debouncedQuery]);
 
-  const handleSearch = useCallback(() => {
-    if (searchQuery.trim()) {
-      // Save to recent searches
-      saveSearchToHistory(searchQuery);
-
-      // Navigate to results screen
-      redirectToPage(containers.searchResultsScreenScreen, {
-        query: searchQuery,
-      });
-    }
-  }, [searchQuery]);
-
-  const handleSelectSuggestion = (text: any) => {
-    setSearchQuery(text);
-    redirectToPage(containers.searchResultsScreenScreen, { query: text });
-  };
-
   const handleSelectRecentSearch = (text: any) => {
     setSearchQuery(text);
     setSuggestions([]); // Clear suggestions when selecting from history
@@ -217,7 +238,7 @@ const SearchScreen = () => {
 
     return (
       <>
-        {recentSearches.map((search, index) => (
+        {recentSearches.map((search: any, index: any) => (
           <SearchHistoryItem
             key={index}
             searchText={search}
@@ -278,7 +299,9 @@ const SearchScreen = () => {
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         {/* Recent Searches */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+          <View
+          // style={styles.sectionHeader}
+          >
             <Text style={styles.sectionTitle}>Recent Searches</Text>
             {recentSearches.length > 0 && (
               <TouchableOpacity onPress={clearAllRecentSearches}>
@@ -310,24 +333,32 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={styles.container}>
-      <Header headerText={"Search"} />
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      scrollable
+      hasHeader
+      hasFooter
+      headerComponent={<Header headerText={"Search"} />}
+      footerComponent={<Footer activeTab="search" />}
+    >
+      <View style={styles.container}>
+        {/* <Header headerText={"Search"} /> */}
 
-      <View style={styles.searchBarContainer}>
-        <SearchBar
-          placeholder="Search..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearch}
-          onPress={handleSearch}
-        />
+        <View style={styles.searchBarContainer}>
+          <SearchBar
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            onPress={handleSearch}
+          />
+        </View>
+
+        {renderMainContent()}
       </View>
-
-      {renderMainContent()}
-    </View>
-    <Footer activeTab = "search"/>
-    </SafeAreaView>
+    </PageLayout>
+    /*  <Footer activeTab = "search"/>
+     </SafeAreaView> */
   );
 };
 
