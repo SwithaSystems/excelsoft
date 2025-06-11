@@ -12,6 +12,7 @@ import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -85,75 +86,79 @@ const changePasswordScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container}>
-      <Header headerText="Change Password" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View style={globalStyles.profilePictureContainer}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
+        <View style={globalStyles.container}>
+          <Header headerText="Change Password" />
+          <ScrollView>
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              {/* <View style={globalStyles.profilePictureContainer}>
             <Image
               source={{ uri: "https://picsum.photos/100" }}
               style={globalStyles.profileImage}
             />
-          </View>
-          <View style={globalStyles.profileInputContainer}>
-            <View style={{ flex: 1 }}>
-              <Text style={globalStyles.userInputLabel}>Current Password</Text>
-              <CustomTextInput
-                secureTextEntry={true}
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="Enter your current Password"
-                value={currPassword}
-                onPress={() => {}}
-                setValue={setCurrPassword}
-                onblur={() => {
-                  handleBlur(currPassword);
-                }}
-              />
+          </View> */}
+              <View style={globalStyles.profileInputContainer}>
+                <View style={{ flex: 1 }}>
+                  <Text style={globalStyles.userInputLabel}>
+                    Current Password
+                  </Text>
+                  <CustomTextInput
+                    secureTextEntry={true}
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="Enter your current Password"
+                    value={currPassword}
+                    onPress={() => {}}
+                    setValue={setCurrPassword}
+                    onblur={() => {
+                      handleBlur(currPassword);
+                    }}
+                  />
+                </View>
+              </View>
+              <View style={globalStyles.profileInputContainer}>
+                <View style={{ flex: 1 }}>
+                  <Text style={globalStyles.userInputLabel}>New Password</Text>
+                  <CustomTextInput
+                    secureTextEntry={true}
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="Enter your new Password"
+                    value={newPassword}
+                    onPress={() => {}}
+                    setValue={setNewPassword}
+                  />
+                </View>
+              </View>
+              <View style={globalStyles.profileInputContainer}>
+                <View style={{ flex: 1 }}>
+                  <Text style={globalStyles.userInputLabel}>
+                    Confirm New Password
+                  </Text>
+                  <CustomTextInput
+                    secureTextEntry={true}
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="Re-enter your new Password"
+                    value={confirmPassword}
+                    onPress={() => {}}
+                    setValue={setConfirmPassword}
+                  />
+                </View>
+              </View>
             </View>
-          </View>
-          <View style={globalStyles.profileInputContainer}>
-            <View style={{ flex: 1 }}>
-              <Text style={globalStyles.userInputLabel}>New Password</Text>
-              <CustomTextInput
-                secureTextEntry={true}
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="Enter your new Password"
-                value={newPassword}
-                onPress={() => {}}
-                setValue={setNewPassword}
-              />
-            </View>
-          </View>
-          <View style={globalStyles.profileInputContainer}>
-            <View style={{ flex: 1 }}>
-              <Text style={globalStyles.userInputLabel}>
-                Confirm New Password
-              </Text>
-              <CustomTextInput
-                secureTextEntry={true}
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
-                placeholder="Re-enter your new Password"
-                value={confirmPassword}
-                onPress={() => {}}
-                setValue={setConfirmPassword}
-              />
-            </View>
+          </ScrollView>
+          <View style={globalStyles.p_3}>
+            <Button
+              onPress={() => {
+                handleChangePassword();
+              }}
+              title="Save Password"
+            />
           </View>
         </View>
-      </ScrollView>
-      <View style={globalStyles.p_3}>
-        <Button
-          onPress={() => {
-            handleChangePassword();
-          }}
-          title="Save Password"
-        />
-      </View>
-    </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

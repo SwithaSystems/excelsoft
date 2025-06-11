@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import styles from "./editAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
@@ -22,6 +22,7 @@ import { useAppContext } from "../../context/AppContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const editAddressScreen = () => {
   const { params } = useLocalSearchParams();
@@ -30,7 +31,6 @@ const editAddressScreen = () => {
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
   console.log("params from edit page", params);
@@ -46,7 +46,6 @@ const editAddressScreen = () => {
       setLine2(selectedAddress.line2 || "");
       setTownCity(selectedAddress.city || "");
       setPostalCode(selectedAddress.postalCode || "");
-      setCountry(selectedAddress.country || "");
       setPhoneNumber(selectedAddress.phone || "");
       setIsDefault(selectedAddress.isDefault || false);
     }
@@ -60,7 +59,6 @@ const editAddressScreen = () => {
       line2: line2,
       city: towncity,
       state: "",
-      country: country,
       postalCode: postalcode,
       phone: phoneNumber,
       isDefault: isDefault,
@@ -74,72 +72,64 @@ const editAddressScreen = () => {
     redirectToPage(containers.savedAddressScreenScreen);
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={styles.container}>
-      <Header headerText="Edit Address" />
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
+      <View style={styles.container}>
+        <Header headerText="Edit Address" />
 
-      <Text style={styles.fieldLabel}>Address</Text>
-      <TextInput
-        style={styles.input}
-        value={address}
-        onChangeText={setAddress}
-      />
-
-      <Text style={styles.fieldLabel}>Line 1</Text>
-      <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
-
-      <Text style={styles.fieldLabel}>Line 2</Text>
-      <TextInput
-        style={styles.input}
-        value={line2}
-        onChangeText={setLine2}
-        keyboardType="email-address"
-      />
-
-      <Text style={styles.fieldLabel}>Town/City</Text>
-      <TextInput
-        style={styles.input}
-        value={towncity}
-        onChangeText={setTownCity}
-        keyboardType="email-address"
-      />
-
-      <Text style={styles.fieldLabel}>Postal Code</Text>
-      <TextInput
-        style={styles.input}
-        value={postalcode}
-        onChangeText={setPostalCode}
-        keyboardType="email-address"
-      />
-      {/* <Text style={styles.fieldLabel}>Country</Text>
-      <View style={styles.countriesdropdown}>
+        <Text style={styles.fieldLabel}>Address</Text>
         <TextInput
           style={styles.input}
-          value={country}
-          onChangeText={setCountry}
+          value={address}
+          onChangeText={setAddress}
+        />
+
+        <Text style={styles.fieldLabel}>Line 1</Text>
+        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+
+        <Text style={styles.fieldLabel}>Line 2</Text>
+        <TextInput
+          style={styles.input}
+          value={line2}
+          onChangeText={setLine2}
           keyboardType="email-address"
         />
-        <Ionicons name="chevron-down-outline" size={24} color={colors.black} />
-      </View> */}
-      <Text style={styles.fieldLabel}>Phone Number</Text>
-      <TextInput
-        style={styles.input}
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-      />
-      <View style={styles.checkBox}>
-        <CheckBox
-          checked={isDefault}
-          onPress={() => setIsDefault(!isDefault)}
-        />
-        <Text>Mark as default address</Text>
-      </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Update Address</Text>
-      </TouchableOpacity>
-    </View>
+        <Text style={styles.fieldLabel}>Town/City</Text>
+        <TextInput
+          style={styles.input}
+          value={towncity}
+          onChangeText={setTownCity}
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.fieldLabel}>Postal Code</Text>
+        <TextInput
+          style={styles.input}
+          value={postalcode}
+          onChangeText={setPostalCode}
+          keyboardType="email-address"
+        />
+        <Text style={styles.fieldLabel}>Phone Number</Text>
+        <TextInput
+          style={styles.input}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
+        <View style={styles.checkBox}>
+          <CheckBox
+            checked={isDefault}
+            onPress={() => setIsDefault(!isDefault)}
+          />
+          <Text>Mark as default address</Text>
+        </View>
+
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Update Address</Text>
+        </TouchableOpacity>
+      </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

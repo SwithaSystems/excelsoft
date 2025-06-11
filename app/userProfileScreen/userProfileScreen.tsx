@@ -10,27 +10,36 @@ import {
   View,
   Button,
   Platform,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import colors from "../config/colors";
 import styles from "./userProfileScreenStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import {
+  clearNavigationStack,
+  redirectToPage,
+} from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../services/notificationService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
 import { deviceType } from "expo-device";
-import axiosInstance from "@/services/axiosConfig";
+// import axiosInstance from "@/services/axiosConfig";
 import { useSelector } from "react-redux";
+import { jsonAxios } from "@/services/axiosConfig";
+import { RootState } from "@/store/store";
+import { UserAPI } from "@/services/userService";
+import Footer from "@/components/Footer";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true, // Add this property
+    shouldShowList: true, // Add this property
   }),
 });
 
@@ -47,32 +56,56 @@ const UserProfileScreen = () => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [user, setUser] = useState<{
     id: number;
+    _id: string;
     firstName: string;
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const userData_redux = useSelector((state: RootState) => state.user.user);
 
-  const userData_redux = useSelector((state: any) => state.user.user);
   const settingsMenu = {
     "Edit Account Information": containers.editAccountInformationscreenScreen,
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
-    "Feedback": containers.AppReviewScreenScreen,
-    "Store Information": containers.billingAddressScreenScreen,
+    Feedback: containers.AppReviewScreenScreen,
+    // Admin: containers.AdminDashboardScreen,
   };
 
+  // useEffect(() => {
+  //   const getUser = async () => {
+  //     console.log("userData", userData);
+  //     if (userData) {
+  //       const user = await UserAPI.getUserByPhonenumber(userData?.phone);
+  //       console.log("user", user.data);
+  //       if (user) {
+  //         setFirstName(user.data.firstName);
+  //         setLastName(user.data.lastName);
+  //         setPhone(user.data.phone);
+  //         setDateOfBirth(user.data.dateOfBirth);
+  //         setEmail(user.data?.email || "No mail added");
+  //         setProfileImage(user.data.profileImageUrl);
+  //       }
+  //     }
+  //   };
+  //   getUser();
+  // }, [userData]);
+  console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
     const fetchUser = async () => {
-      // const userData = await AsyncStorage.getItem("user");
+      if (!userData_redux?.id) return;
 
-      if (userData_redux) {
-        // const user = JSON.parse(userData);
-        // console.log("userData", user);
-        const response = await axiosInstance.get("/users/" + userData_redux.id);
-        console.log("response", response.data);
-
-        setUser(response.data || "User");
+      try {
+        const response = await UserAPI.getUserByPhonenumber(
+          userData_redux?.phone
+        );
+        if (response?.data) {
+          setUser(response.data);
+        } else {
+          console.warn("No user data received");
+        }
+      } catch (err) {
+        console.error("User fetch failed", err);
       }
     };
 
@@ -117,168 +150,165 @@ const UserProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("token");
+      // await AsyncStorage.removeItem("user");
+      // await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
-      redirectToPage(containers.signInScreen);
+      router.replace("/home/home");
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container}>
-      <Header headerText="User Profile" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <Text style={styles.greeting}>
-            Hello, {user?.firstName || "User"}
-          </Text>
-          <Image
-            source={{
-              uri: user ? user.profileImageUrl : "https://picsum.photos/100",
-            }}
-            style={globalStyles.profileImage}
-          />
-          <Text style={styles.userName}>
-            {user?.firstName || ""} {user?.lastName || ""}
-          </Text>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <View style={globalStyles.container}>
+        <Header headerText="User Profile" needResetNavigation={true} />
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <Text style={styles.greeting}>
+              {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
+            </Text>
+            <Image
+              source={
+                user?.profileImageUrl
+                  ? { uri: user?.profileImageUrl }
+                  : require("../../assets/default_user_profile.png")
+              }
+              style={globalStyles.profileImage}
+            />
+            <Text style={styles.userName}>
+              {user?.firstName || ""} {user?.lastName || ""}
+            </Text>
 
-          <TouchableOpacity
-            style={styles.editProfile}
-            onPress={() => {
-              redirectToPage(containers.editProfileScreenScreen);
-            }}
-          >
-            <Text style={styles.editText}>Edit Profile</Text>
-            <MaterialIcons name="edit" size={24} color={colors.primary} />
-          </TouchableOpacity>
-
-          <View style={styles.quickActions}>
-            {/*<Button
-              title="Send Test Notification"
-              onPress={async () => {
-                await Notifications.cancelAllScheduledNotificationsAsync();
-
-                await Notifications.scheduleNotificationAsync({
-                  content: {
-                    title: "🚀 Notification Test",
-                    body: "This is a push notification test!",
-                  },
-                  trigger: {
-                    seconds: 2,
-                    repeats: false,
-                    type: "timeInterval",
-                  } as Notifications.TimeIntervalTriggerInput,
-                });
-              }}
-            /> */}
             <TouchableOpacity
-              style={styles.actionButton}
+              style={styles.editProfile}
               onPress={() => {
-                redirectToPage(containers.myOrderScreenScreen);
+                redirectToPage(containers.editProfileScreenScreen);
               }}
             >
-              <FontAwesome name="briefcase" size={32} color={colors.primary} />
-              <Text style={styles.actionText}>Your Orders</Text>
+              <Text style={styles.editText}>Edit Profile</Text>
+              <MaterialIcons name="edit" size={24} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => {
-                redirectToPage(containers.savedItemScreenScreen);
-              }}
-            >
-              <FontAwesome name="heart" size={32} color={colors.primary} />
-              <Text style={styles.actionText}>Saved Items</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => {
-                redirectToPage(containers.savedAddressScreenScreen);
-              }}
-            >
-              <FontAwesome name="map-marker" size={32} color={colors.primary} />
-              <Text style={styles.actionText}>Saved Address</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <FontAwesome
-                name="credit-card"
-                size={32}
-                color={colors.primary}
-              />
-              <Text style={styles.actionText}>Payments</Text>
-            </TouchableOpacity>
-          </View>
 
-          <Text style={styles.settingsTitle}>Settings</Text>
-          <View style={styles.settingsContainer}>
-            {Object.keys(settingsMenu).map((eachSetting, index) => (
+            <View style={styles.quickActions}>
               <TouchableOpacity
-                key={index}
-                style={styles.settingOption}
+                style={styles.actionButton}
                 onPress={() => {
-                  redirectToPage(
-                    settingsMenu[eachSetting as keyof typeof settingsMenu]
-                  );
+                  redirectToPage(containers.myOrderScreenScreen, {
+                    userId: userData_redux?._id
+                      ? userData_redux?._id
+                      : userData_redux?.id,
+                  });
                 }}
               >
-                <Text style={styles.settingText}>{eachSetting}</Text>
-                <Ionicons name="chevron-forward" size={18} color="black" />
+                <FontAwesome
+                  name="briefcase"
+                  size={32}
+                  color={colors.primary}
+                />
+                <Text style={styles.actionText}>Your Orders</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  redirectToPage(containers.savedItemScreenScreen);
+                }}
+              >
+                <FontAwesome name="heart" size={32} color={colors.primary} />
+                <Text style={styles.actionText}>Saved Items</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  redirectToPage(containers.savedAddressScreenScreen);
+                }}
+              >
+                <FontAwesome
+                  name="map-marker"
+                  size={32}
+                  color={colors.primary}
+                />
+                <Text style={styles.actionText}>Saved Address</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton}>
+                <FontAwesome
+                  name="credit-card"
+                  size={32}
+                  color={colors.primary}
+                />
+                <Text style={styles.actionText}>Payments</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.footerButtons}>
-            <TouchableOpacity
-              style={styles.footerButton}
-              onPress={() => {
-                setLogOutModalOpen(true);
-              }}
-            >
-              <Ionicons name="log-out-outline" size={24} color="black" />
-              <Text style={styles.footerText}>Sign Out</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.footerButton}
-              onPress={() => {
-                setDeleteAccountModalOpen(true);
-              }}
-            >
-              <MaterialIcons name="delete" size={24} color="black" />
-              <Text style={styles.footerText}>Close Account</Text>
-            </TouchableOpacity>
+            <Text style={styles.settingsTitle}>Settings</Text>
+            <View style={styles.settingsContainer}>
+              {Object.keys(settingsMenu).map((eachSetting, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.settingOption}
+                  onPress={() => {
+                    redirectToPage(
+                      settingsMenu[eachSetting as keyof typeof settingsMenu]
+                    );
+                  }}
+                >
+                  <Text style={styles.settingText}>{eachSetting}</Text>
+                  <Ionicons name="chevron-forward" size={18} color= {colors.placeholdergrey} />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.footerButtons}>
+              <TouchableOpacity
+                style={styles.footerButton}
+                onPress={() => {
+                  setLogOutModalOpen(true);
+                }}
+              >
+                <Ionicons name="log-out-outline" size={24} color="black" />
+                <Text style={styles.footerText}>Sign Out</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.footerButton}
+                onPress={() => {
+                  setDeleteAccountModalOpen(true);
+                }}
+              >
+                <MaterialIcons name="delete" size={24} color="black" />
+                <Text style={styles.footerText}>Close Account</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-      <ConfirmationModal
-        onClose={() => {
-          setLogOutModalOpen(false);
-        }}
-        isModalVisible={logOutModalOpen}
-        text="Are you sure you want to Log out?"
-        submitText="Yes"
-        handleSubmit={handleLogout}
-        cancelText="No"
-        handleCancel={() => {
-          setLogOutModalOpen(false);
-        }}
-      />
-      <ConfirmationModal
-        onClose={() => {
-          setDeleteAccountModalOpen(false);
-        }}
-        isModalVisible={deleteAccountModalOpen}
-        text="Are you sure you want to delete your account? Do you want to reconsider your choice?"
-        submitText="Yes"
-        handleSubmit={() => {}}
-        cancelText="No"
-        handleCancel={() => {
-          setDeleteAccountModalOpen(false);
-        }}
-      />
-    </View>
+        </ScrollView>
+        <ConfirmationModal
+          onClose={() => {
+            setLogOutModalOpen(false);
+          }}
+          isModalVisible={logOutModalOpen}
+          text="Are you sure you want to Log out?"
+          submitText="Yes"
+          handleSubmit={handleLogout}
+          cancelText="No"
+          handleCancel={() => {
+            setLogOutModalOpen(false);
+          }}
+        />
+        <ConfirmationModal
+          onClose={() => {
+            setDeleteAccountModalOpen(false);
+          }}
+          isModalVisible={deleteAccountModalOpen}
+          text="Are you sure you want to delete your account? Do you want to reconsider your choice?"
+          submitText="Yes"
+          handleSubmit={() => {}}
+          cancelText="No"
+          handleCancel={() => {
+            setDeleteAccountModalOpen(false);
+          }}
+        />
+      </View>
+      <Footer activeTab="menu" />
     </SafeAreaView>
   );
 };

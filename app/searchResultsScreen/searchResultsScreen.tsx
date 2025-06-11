@@ -16,6 +16,8 @@ import CategoryBadges from "./Components/CategoryBadges";
 import { Product, ProductsAPI } from "@/services/productService";
 import { categoryService } from "@/services/categoryService";
 import NoContentFound from "@/components/NoContentFound";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
@@ -270,7 +272,11 @@ const SearchResultsScreen = () => {
     }
 
     if (!displayProducts.length) {
-      return <NoContentFound message="No products found" />;
+        return (
+          <View style={{ flex:1, padding: 16 }}>
+            <NoContentFound message="No products found" />
+          </View>
+        );
     }
 
     return (
@@ -287,7 +293,11 @@ const SearchResultsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.white }]}>
+    <SafeAreaView style={
+      // [styles.container, { backgroundColor: colors.white }]
+      globalStyles.safeAreaContainer
+    }>
+      <KeyBoardWrapper>
       <Header headerText={headerTitle} />
 
       {!isLoading && !error && (
@@ -307,6 +317,7 @@ const SearchResultsScreen = () => {
       </View>
 
       <Footer navigation={router} activeTab="home" />
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

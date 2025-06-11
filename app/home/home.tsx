@@ -9,6 +9,8 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  Platform,
+  StatusBar,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,7 +32,11 @@ import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
 import categoriesScreen from "../categoriesScree/categoriesScree";
 import { parentCategoryIDAll } from "@/config/constants";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import AdminFooter from "@/components/AdminFooter";
 
 const bannerImages = [
   { imageUrl: require("../../assets/banner1.png") },
@@ -79,7 +85,7 @@ const featuredProducts = products
   .map((product) => ({
     id: product.id,
     title: product.name,
-    description: product.description.slice(0, 50) + "...",
+    description: product.description.slice(0, 20) + "...",
     imageUrl: product.image,
   }));
 
@@ -121,9 +127,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await categoryService.getAllCategories(
-          parentCategoryIDAll
-        );
+        const data = await categoryService.getAllCategories();
         console.log(data);
         const sortedData = data.sort((a, b) => a.id - b.id);
         setCategories(sortedData);
@@ -137,96 +141,135 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
+  const insets = useSafeAreaInsets();
+  const footerHeight =
+    60 +
+    (Platform.OS === "ios"
+      ? insets.bottom
+      : insets.bottom > 0
+      ? insets.bottom
+      : 10);
+
   return (
-    <SafeAreaView style={homeStyles.container}>
-      {/* <ScrollView> */}
-      <FlatList
-        ListHeaderComponent={
-          <>
-            <BrandHeader />
+    <View style={styles.container}>
+      <SafeAreaView style={globalStyles.safeAreaContainer}>
+        <BrandHeader />
 
-            {/* Search Bar */}
-            <Header />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingBottom: footerHeight,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <Header />
 
-            {/* Categories */}
-            <View style={styles.categoriesContainer}>
-              {/* <Text style={styles.sectionTitle}>Categories</Text> */}
-              {loading ? (
-                <ActivityIndicator size="large" color={colors.primary} />
-              ) : (
-                <FlatList
-                  data={categories}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(item: any) => item.id}
-                  renderItem={({ item }) => (
-                    <CategoryItem
-                      name={item.name}
-                      imageUrl={item.images?.[0] || ""}
-                      onPress={() =>
-                        item.id === 2
-                          ? redirectToPage(containers.categoriesScreeScreen, {
-                              category: item.name,
-                              categoryId: item.id,
-                            })
-                          : redirectToPage(
-                              containers.searchResultsScreenScreen,
-                              {
-                                fromSearch: true,
-                                category: item.name,
-                                categoryId: item.id,
-                              }
-                            )
-                      }
-                      // onPress={() =>
-                      //   router.push("/categoriesScree/categoriesScree")
-                      // }
-                    />
-                  )}
-                />
-              )}
-            </View>
-
-            {/* Banner */}
-            <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>{renderBanner()}</View>
-
-            {/* Recommended Products */}
-            <View style={{marginVertical:16}}>
-              <RecommendedProductsSlider
-                recommendedProducts={recommendedProducts}
-                sectionTitleStyle={styles.sectionTitle}
-                title="Recommended for You"
+          {/* Categories */}
+          <View style={styles.categoriesContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <FlatList
+                data={categories}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }) => (
+                  <CategoryItem
+                    name={item.name}
+                    imageUrl={item.images?.[0] || ""}
+                    onPress={() =>
+                      item.id === 2
+                        ? redirectToPage(containers.categoriesScreeScreen, {
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                        : redirectToPage(containers.searchResultsScreenScreen, {
+                            fromSearch: true,
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                    }
+                  />
+                )}
               />
-            </View>
-            {/* Exclusive Offers */}
-            <View style={globalStyles.px_3}>
-              <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-            </View>
+            )}
+          </View>
 
-            {/* Best Sellers */}
-            <View style={{marginVertical:16}}>
-              <RecommendedProductsSlider
-                recommendedProducts={bestSellers}
-                sectionTitleStyle={styles.sectionTitle}
-                title="Best Sellers"
-              />
-            </View>
-            {/* Featured Products */}
-            {renderFeaturedProducts()}
-            {/* </ScrollView> */}
-          </>
-        }
-        data={[]} // No actual data here — just to use FlatList as scroll container
-        renderItem={null}
-      />
-      {/* Footer */}
-      <Footer />
-      {/* ListFooterComponent={<Footer navigation={router} activeTab="home" />} */}
-    </SafeAreaView>
+          {/* Banner */}
+          <View style={{ paddingHorizontal: 10, marginVertical: 16 }}>
+            {renderBanner()}
+          </View>
+
+          {/* Recommended Products */}
+          <View style={{ marginVertical: 16 }}>
+            <RecommendedProductsSlider
+              recommendedProducts={recommendedProducts}
+              sectionTitleStyle={styles.sectionTitle}
+              title="Recommended for You"
+            />
+          </View>
+
+          {/* Exclusive Offers */}
+          <View style={globalStyles.px_3}>
+            <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
+          </View>
+
+          {/* Best Sellers */}
+          <View style={{ marginVertical: 16 }}>
+            <RecommendedProductsSlider
+              recommendedProducts={bestSellers}
+              sectionTitleStyle={styles.sectionTitle}
+              title="Best Sellers"
+            />
+          </View>
+
+          {/* Featured Products */}
+          {renderFeaturedProducts()}
+        </ScrollView>
+
+        <View
+          style={[
+            styles.footer,
+            {
+              height: footerHeight,
+              paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+            },
+          ]}
+        >
+          <Footer activeTab="home" />
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white || "#fff",
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+    borderTopColor: colors.placeholdergrey,
+    borderTopWidth: 1,
+  },
+
   recommendedCard: {
     width: 160,
     height: 180,
@@ -249,7 +292,6 @@ const styles = StyleSheet.create({
   recommendedDetails: {
     marginLeft: 16,
   },
-
   bestSellerCard: {
     width: 160,
     marginRight: 15,
@@ -289,10 +331,9 @@ const styles = StyleSheet.create({
   },
   featuredDescription: {
     fontSize: 12,
-    color: colors.lightgrey,
+    color: colors.reviewsColor,
     marginHorizontal: 16,
-    //marginBottom:10,
-    //lineHeight:18,
+    paddingBottom: 8,
   },
   featuredDescriptionText: {
     fontSize: 14,

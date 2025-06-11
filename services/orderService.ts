@@ -1,4 +1,6 @@
-import axiosInstance from "./axiosConfig";
+// import axiosInstance from "./axiosConfig";
+import { get } from "axios";
+import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {
   HOME_DELIVERY = "Home Delivery",
@@ -20,7 +22,6 @@ export interface ShippingAddress {
   city: string;
   state: string;
   postalCode: string;
-  country: string;
 }
 
 export interface PickupDetails {
@@ -60,10 +61,9 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
     try {
-      const response = await axiosInstance.get<Order[]>(
-        `${API_BASE_URL}/orders`
-      );
-      console.log(response.data);
+      console.log("API_BASE_URL", `${API_BASE_URL}/orders`);
+      const response = await jsonAxios.get<Order[]>(`${API_BASE_URL}/orders`);
+      console.log("AllOrders", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -71,10 +71,36 @@ export const orderService = {
     }
   },
 
+  getOrdersByUserId: async (userId: string): Promise<Order[]> => {
+    try {
+      const response = await jsonAxios.get<Order[]>(
+        `${API_BASE_URL}/orders/user/${userId}`
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching orders by userId:", error);
+      throw error;
+    }
+  },
+
   getOrderById: async (orderId: string): Promise<Order> => {
     try {
-      const response = await axiosInstance.get<Order>(
+      const response = await jsonAxios.get<Order>(
         `${API_BASE_URL}/orders/getById/${orderId}`
+      );
+      console.log("orderdata by id", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by orderId:", error);
+      throw error;
+    }
+  },
+
+  getOrderByMongoId: async (orderId: string): Promise<Order> => {
+    try {
+      const response = await jsonAxios.get<Order>(
+        `${API_BASE_URL}/orders/${orderId}`
       );
       console.log("orderdata by id", response.data);
       return response.data;
@@ -87,7 +113,7 @@ export const orderService = {
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
     console.log("orderPayload", orderPayload);
     try {
-      const response = await axiosInstance.post<Order>(
+      const response = await jsonAxios.post<Order>(
         `${API_BASE_URL}/orders`,
         orderPayload
       );
@@ -95,6 +121,20 @@ export const orderService = {
       return response.data;
     } catch (error) {
       console.error("Error create orders:", error);
+      throw error;
+    }
+  },
+
+  getOrdersByOrderDate: async (orderDate: string): Promise<Order[]> => {
+    console.log("todayorderDate", orderDate);
+    try {
+      const response = await jsonAxios.get<Order[]>(
+        `${API_BASE_URL}/orders/by_date/${orderDate}`
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching orders by orderDate:", error);
       throw error;
     }
   },

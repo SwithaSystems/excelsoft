@@ -13,9 +13,27 @@ import DisplayPrice from "./DisplayPrice";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { Ionicons } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 
 function ExclusiveOffers(props) {
   const exclusiveOffers = props.exclusiveOffers || [];
+  const dispatch = useDispatch();
+  const savedItems = useSelector((state) => state.savedItems?.items || []);
+  const isItemSaved = (itemId) => {
+    return savedItems.some((savedItem) => savedItem.id === itemId);
+  };
+  const handleHeartPress = (e, item) => {
+    e.stopPropagation();
+    console.log("saved item", item);
+
+    if (isItemSaved(item.id)) {
+      dispatch(removeFromSavedItems(item.id));
+    } else {
+      dispatch(addToSavedItems(item));
+    }
+  };
   return exclusiveOffers.length > 0 ? (
     <>
       <View>
@@ -38,19 +56,28 @@ function ExclusiveOffers(props) {
                 resizeMode="cover"
               />
               <View style={styles.exclusiveDetails}>
-                <Text style={styles.exclusiveTitle}>{item.title}</Text>
+                <View style={styles.savedContainer}>
+                  <Text style={styles.exclusiveTitle}>{item.title}</Text>
+                  <TouchableOpacity onPress={(e) => handleHeartPress(e, item)}>
+                    <Ionicons
+                      name={isItemSaved(item.id) ? "heart" : "heart-outline"}
+                      size={20}
+                      color={isItemSaved(item.id) ? colors.red : colors.black}
+                    />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.ratingContainer}>
                   <Text style={styles.ratingText}>{item.rating}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>
                 <View style={styles.saleContainer}>
-                <View style = {styles.saleTimeBox}>
-                  <View style={styles.saleTag}>
-                    <Text style={styles.saleText}>Sale</Text>
-                  </View>
-                    <Text style={styles.saleTime}>02:48:26</Text>
+                  <View style={styles.saleTimeBox}>
+                    <View style={styles.saleTag}>
+                      <Text style={styles.saleText}>Sale</Text>
                     </View>
+                    <Text style={styles.saleTime}>02:48:26</Text>
+                  </View>
                   <View style={styles.discountTag}>
                     <Text style={styles.discountText}>{item.discount}</Text>
                   </View>
@@ -110,25 +137,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-  saleTimeBox:{
-    backgroundColor:"#E9F3F6",
+  saleTimeBox: {
+    backgroundColor: "#E9F3F6",
     flexDirection: "row",
   },
   saleTime: {
     color: colors.primary,
     fontSize: 14,
-    marginTop:2,
+    marginTop: 2,
     marginRight: 8,
   },
   discountTag: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.lightSkyBlue,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     marginLeft: 8,
   },
   discountText: {
-    color: colors.white,
+    color: colors.primary,
     fontSize: 12,
     fontWeight: "500",
   },
@@ -170,6 +197,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
     overflow: "hidden",
+  },
+  savedContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   /* sectionTitle: {
     fontSize: 18,

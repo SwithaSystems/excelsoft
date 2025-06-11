@@ -1,20 +1,50 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
-  heading:{
+  heading: {
     fontSize: 20,
     marginBottom: 24,
   },
-  ordersContainer:{
+  ordersContainer: {
     paddingHorizontal: 24,
   },
-  eachOrderItem:{
-    borderColor: colors.primary,
+  eachOrderItem: {
+    borderColor: colors.placeholdergrey,
     borderRadius: 10,
     borderWidth: 2,
     marginBottom: 24,
     padding: 16,
+  },
+  idContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  statusContainer: {
+    // paddingTop: 24,
+  },
+  trackOrderText: {
+    color: colors.primary,
+    textDecorationLine: "underline",
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+  },
+
+  searchIcon: {
+    marginLeft: 10,
   },
 });
 

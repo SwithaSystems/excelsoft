@@ -13,6 +13,8 @@ import DisplayPrice from "./DisplayPrice";
 import Button from "./commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { Ionicons } from "@expo/vector-icons";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 function RecommendedProductsSlider(props) {
   const recommendedProducts = props?.recommendedProducts;
@@ -54,7 +56,9 @@ function RecommendedProductsSlider(props) {
                       textStyle={styles.addToCArtBtnText}
                       title="Add"
                       onPress={() => {
-                        alert("add");
+                        console.log("item to be added in cart", item);
+                        const itemWithQuantity = { ...item, quantity: 1 };
+                        props.handleAdd(itemWithQuantity);
                       }}
                     />
                   </View>

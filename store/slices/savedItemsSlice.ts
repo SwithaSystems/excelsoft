@@ -20,7 +20,6 @@ const savedItemsSlice = createSlice({
         (item) => item.id === action.payload.id
       );
       if (!existingItem) {
-        // state.items = [...state.items, action.payload];
         state.items.push(action.payload);
       }
 

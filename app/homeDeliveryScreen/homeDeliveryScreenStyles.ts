@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   label: {
@@ -15,6 +15,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 20,
+    paddingTop: 16,
   },
   required: {
     color: colors.error,
@@ -29,19 +30,40 @@ const styles = StyleSheet.create({
   },
   multilineInput: {
     height: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
-  note:{
-    color: colors.buttonError, 
+  note: {
+    color: colors.buttonError,
     fontSize: 14,
-    marginBottom:16,
+    marginBottom: 16,
   },
-  savedAddressContainer:{
-
+  savedAddressContainer: {},
+  addressTitle: {},
+  toggleContainer: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    padding: 2,
+    width: 120,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 30,
   },
-  addressTitle:{
-    
-  }
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  activeToggle: {
+    backgroundColor: colors.primary,
+  },
+  toggleText: {
+    color: colors.black,
+  },
+  activeText: {
+    color: colors.white,
+  },
 });
 
 export default styles;

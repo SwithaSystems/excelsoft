@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Alert, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Alert,
+  SafeAreaView,
+} from "react-native";
 import styles from "./passwordResetScreenStyles";
 import Header from "@/components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -10,6 +17,7 @@ import axios from "axios";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -45,55 +53,64 @@ const passwordResetScreen = () => {
 
   const handlePress = async () => {
     if (validateFields()) {
-      const response = await UserAPI.changePassword({ newPassword: password });
-      Alert.alert("Message", response.data.message, [
-        {
-          text: "OK",
-          onPress: () => redirectToPage(containers.signInScreen),
-        },
-      ]);
+      if (typeof phoneNumber === "string") {
+        const response = await UserAPI.resetPassword({
+          newPassword: password,
+          phoneNumber: phoneNumber,
+        });
+        Alert.alert("Message", response.data.message, [
+          {
+            text: "OK",
+            onPress: () => redirectToPage(containers.signInScreen),
+          },
+        ]);
+      } else {
+        console.error("phoneNumber is not a string");
+      }
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={styles.container}>
-      <Header headerText={" Reset Your Password"} />
-      <View style={styles.sectionContainer}>
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={[
-            globalStyles.input,
-            errors.password && globalStyles.errorInput,
-          ]}
-          placeholder="Enter your password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {errors.password && (
-          <Text style={globalStyles.errorText}>{errors.password}</Text>
-        )}
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          style={[
-            globalStyles.input,
-            errors.confirmPassword && globalStyles.errorInput,
-          ]}
-          placeholder="Confirm Password"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        {errors.password && (
-          <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
-        )}
-        <Button
-          title="Reset Password"
-          style={styles.signInButton}
-          onPress={handlePress}
-        />
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
+      <View style={styles.container}>
+        <Header headerText={" Reset Your Password"} />
+        <View style={styles.sectionContainer}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={[
+              globalStyles.input,
+              errors.password && globalStyles.errorInput,
+            ]}
+            placeholder="Enter your password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          {errors.password && (
+            <Text style={globalStyles.errorText}>{errors.password}</Text>
+          )}
+          <Text style={styles.label}>Confirm Password</Text>
+          <TextInput
+            style={[
+              globalStyles.input,
+              errors.confirmPassword && globalStyles.errorInput,
+            ]}
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          {errors.confirmPassword && (
+            <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
+          )}
+          <Button
+            title="Reset Password"
+            style={styles.signInButton}
+            onPress={handlePress}
+          />
+        </View>
       </View>
-    </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

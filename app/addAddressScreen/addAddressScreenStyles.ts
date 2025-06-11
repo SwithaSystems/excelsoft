@@ -5,6 +5,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: colors.white,
+    marginBottom: 16
   },
   text: {
     fontSize: 12,
@@ -53,9 +54,11 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     alignItems: "center",
     marginTop: 20,
+    paddingBottom: 16,
   },
   buttonText: {
     color: colors.white,
+    fontSize: 16,
     alignContent: "center",
   },
   checkBox: {

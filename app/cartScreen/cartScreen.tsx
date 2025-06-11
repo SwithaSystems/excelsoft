@@ -11,15 +11,16 @@ import {
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import {
+  addToCart,
   CartItemInterface,
   removeFromCart,
 } from "../../store/slices/cartSlice";
-import { removeFromSavedItems } from "../../store/slices/savedItemsSlice";
-import { addToSavedItems } from "../../store/slices/savedItemsSlice";
+import { removeFromSavedForLaterItems } from "../../store/slices/savedForLaterSlice";
+import { addToSavedForLaterItems } from "../../store/slices/savedForLaterSlice";
 import colors from "../config/colors";
 import SpecialOffersBanner from "./components/SpecialOffersBanner";
 import CartItem from "./components/CartItem";
@@ -42,7 +43,9 @@ import NoContentFound from "@/components/NoContentFound";
 const CartScreen = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
-  const savedItems = useSelector((state: RootState) => state.savedItems.items);
+  const savedForLaterItems = useSelector(
+    (state: RootState) => state.savedForLaterItems.items
+  );
   const user = useSelector((state: RootState) => state.user.user);
 
   console.log("user in cart screen", user);
@@ -53,7 +56,7 @@ const CartScreen = () => {
     )
     .map((product) => ({
       id: product.id,
-      title: product.name,
+      name: product.name,
       rating: product.rating,
       reviews: product.noOfreviews,
       imageUrl: product.image,
@@ -84,7 +87,7 @@ const CartScreen = () => {
         (item: any) => item.id === itemToDelete.id
       );
       if (itemtoSave) {
-        dispatch(addToSavedItems(itemtoSave));
+        dispatch(addToSavedForLaterItems(itemtoSave));
         dispatch(removeFromCart(itemToDelete.id));
       }
     }
@@ -106,47 +109,59 @@ const CartScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={[globalStyles.container]}>
-      <ScrollView>
-        <Header headerText="Cart" />
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {cartItems.length === 0 ? (
-            <View>
-              <NoContentFound
-                message="Your cart is empty"
-                buttonText="Go to Shop"
-                onPress={() => redirectToPage(containers.homeScreen)}
-              />
-            </View>
-          ) : (
-            <>
-              {cartItems.map((eachCartItem: any) => (
-                <CartItem
-                  handleDelete={handleDelete}
-                  key={eachCartItem.id}
-                  cartItem={eachCartItem}
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <View style={[globalStyles.container]}>
+        <ScrollView>
+          <Header headerText="Cart" />
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            {cartItems.length === 0 ? (
+              <View style={styles.emptyCartContainer}>
+                <Ionicons
+                  name="cart"
+                  size={98}
+                  color={colors.placeholdergrey}
+                  style={styles.cartIcon}
                 />
-              ))}
-              <View style={{ margin: 16 }} />
-              <SpecialOffersBanner />
-              <OrderSummary
-                cartItems={cartItems}
-                sectionHeadingStyle={styles.sectionHeading}
-              />
-              <View
-                style={{
-                  width: "50%",
-                  marginHorizontal: "auto",
-                  marginTop: 4,
-                  marginBottom: 16,
-                }}
-              >
-                <Button title="Place Order" onPress={handlePlaceOrder} />
+                <View style={styles.textContainer}>
+                  <Text style={styles.emptyTitle}>Your page is empty</Text>
+                  <Text style={styles.emptySubtitle}>
+                    No worries! You can check our products{" "}
+                    <TouchableOpacity
+                      onPress={() => redirectToPage(containers.homeScreen)}
+                    >
+                      <Text style={styles.hereText}>here.</Text>
+                    </TouchableOpacity>
+                  </Text>
+                </View>
               </View>
-            </>
-          )}
-          {/*<Text>Have a Discount Code?</Text>
+            ) : (
+              <>
+                {cartItems.map((eachCartItem: any) => (
+                  <CartItem
+                    handleDelete={handleDelete}
+                    key={eachCartItem.id}
+                    cartItem={eachCartItem}
+                  />
+                ))}
+                <View style={{ margin: 16 }} />
+                <SpecialOffersBanner />
+                <OrderSummary
+                  cartItems={cartItems}
+                  sectionHeadingStyle={styles.sectionHeading}
+                />
+                <View
+                  style={{
+                    width: "50%",
+                    marginHorizontal: "auto",
+                    marginTop: 4,
+                    marginBottom: 16,
+                  }}
+                >
+                  <Button title="Place Order" onPress={handlePlaceOrder} />
+                </View>
+              </>
+            )}
+            {/*<Text>Have a Discount Code?</Text>
           <View style={globalStyles.discountSection}>
             <View style={globalStyles.discountTextInput}>
               <TextInput
@@ -162,38 +177,44 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
           </View>*/}
-          <RecommendedProductsSlider
-            recommendedProducts={recommendedProducts}
-            sectionTitleStyle={styles.sectionHeading}
-            title="Similar products to your cart"
-            showAddToCart={true}
-          />
-          {savedItems.length > 0 && (
-            <SavedLaterItem
-              savedForLaterItems={savedItems}
-              sectionHeadingStyle={styles.sectionHeading}
-              handleDelete={(item: any) => {
-                dispatch(removeFromSavedItems(item.id));
-              }}
-            />
-          )}
-        </View>
 
-        {/* Delete Item Modal */}
-        <ConfirmationModal
-          onClose={() => {
-            setIsModalVisible(false);
-          }}
-          isModalVisible={isModalVisible}
-          text="Are you sure you want to delete this? You can save this item for later too."
-          submitText="Delete Item"
-          handleSubmit={confirmDelete}
-          cancelText="Save for Later"
-          handleCancel={cancelDelete}
-        />
-      </ScrollView>
+            {savedForLaterItems.length > 0 && (
+              <SavedLaterItem
+                savedForLaterItems={savedForLaterItems}
+                sectionHeadingStyle={styles.sectionHeading}
+                handleDelete={(item: any) => {
+                  dispatch(removeFromSavedForLaterItems(item.id));
+                }}
+                handleMoveToCart={(item: any) => {
+                  dispatch(addToCart(item));
+                  dispatch(removeFromSavedForLaterItems(item.id));
+                }}
+              />
+            )}
+            <RecommendedProductsSlider
+              recommendedProducts={recommendedProducts}
+              sectionTitleStyle={styles.sectionHeading}
+              title="Similar products to your cart"
+              showAddToCart={true}
+              handleAdd={(item: any) => dispatch(addToCart(item))}
+            />
+          </View>
+
+          {/* Delete Item Modal */}
+          <ConfirmationModal
+            onClose={() => {
+              setIsModalVisible(false);
+            }}
+            isModalVisible={isModalVisible}
+            text="Are you sure you want to delete this? You can save this item for later too."
+            submitText="Delete Item"
+            handleSubmit={confirmDelete}
+            cancelText="Save for Later"
+            handleCancel={cancelDelete}
+          />
+        </ScrollView>
+      </View>
       <Footer navigation={router} activeTab="cart" />
-    </View>
     </SafeAreaView>
   );
 };

@@ -1,14 +1,11 @@
-import axiosInstance from "./axiosConfig";
+import { jsonAxios } from "./axiosConfig";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const ReturnOrderService = {
   createReturnOrder: async (payload: any): Promise<any> => {
     try {
-      const response = axiosInstance.post(
-        `${API_BASE_URL}/returnOrders`,
-        payload
-      );
+      const response = jsonAxios.post(`${API_BASE_URL}/returnOrders`, payload);
       console.log(response);
       return response;
     } catch (error) {

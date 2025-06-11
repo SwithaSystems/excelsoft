@@ -1,9 +1,12 @@
 import axiosInstance from "./axiosConfig";
+import createAxiosInstance, { jsonAxios } from "./axiosConfig";
 
 export interface Product {
   id: string;
   name: string;
   description: string;
+  title: string;
+  stock: number;
   price: number;
   originalPrice: number;
   image: any;
@@ -11,6 +14,10 @@ export interface Product {
   categoryId: number[];
   rating: number;
   noOfreviews: number;
+  minimumOrderQuantity: number;
+  noOfReviews: number;
+  noOfLikesandDislikes: number;
+  isReturnable: boolean;
   reviews: {
     id: string;
     name: string;
@@ -21,32 +28,54 @@ export interface Product {
 }
 
 export const ProductsAPI = {
+  addProduct: async (data: any): Promise<Product> => {
+    console.log("data in product service", data);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/products/create`, data);
+    return response.data;
+  },
+  updateProduct: async (id: number, data: any): Promise<Product> => {
+    console.log("data in product service", data);
+    console.log("id", id);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.put(
+      `/products/updateProduct/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  deleteProduct: async (id: number): Promise<Product> => {
+    const response = await jsonAxios.delete(`/products/${id}`);
+    return response.data;
+  },
+
   getAllProducts: async (): Promise<Product[]> => {
-    const response = await axiosInstance.get(`/products`);
+    const response = await jsonAxios.get(`/products`);
     return response.data;
   },
 
   getProductByCategoryID: async (id: number): Promise<Product[]> => {
     console.log(id);
-    const response = await axiosInstance.get(`/products/category/${id}`);
+    const response = await jsonAxios.get(`/products/category/${id}`);
     console.log("AllProducts", response.data);
     return response.data;
   },
 
   getProductBYID: async (id: number): Promise<Product> => {
-    const response = await axiosInstance.get(`/products/${id}`);
+    const response = await jsonAxios.get(`/products/${id}`);
     return response.data;
   },
 
   searchProducts: async (query: string): Promise<Product[]> => {
-    const response = await axiosInstance.get(`/products/search?q=${query}`);
+    const response = await jsonAxios.get(`/products/search?q=${query}`);
     return response.data;
   },
 
   getAllSubCategoriesProducts: async (
     categoryIds: number[]
   ): Promise<Product[]> => {
-    const response = await axiosInstance.post(`/products/subCategories`, {
+    const response = await jsonAxios.post(`/products/subCategories`, {
       categoryIds: categoryIds,
     });
     return response.data;
@@ -55,6 +84,6 @@ export const ProductsAPI = {
   addReview: async (productId: Number, review: any): Promise<void> => {
     console.log("productId", productId);
     console.log("review", review);
-    await axiosInstance.post(`/products/${productId}/reviews`, review);
+    await jsonAxios.post(`/products/${productId}/reviews`, review);
   },
 };

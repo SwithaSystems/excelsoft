@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import styles from "./savedItemScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -16,6 +23,15 @@ import { selectSavedItems } from "@/store/selectors/savedItemsSelectors";
 import { Image } from "react-native-elements";
 import Button from "@/components/commonComponents/Button";
 import colors from "../config/colors";
+import containers from "@/containers";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import ProductCard from "../components/ProductCard";
+import SaveItemFav from "../cartScreen/components/saveItem_fav";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -34,58 +50,69 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
+  const insets = useSafeAreaInsets();
+  const footerHeight =
+    60 +
+    (Platform.OS === "ios"
+      ? insets.bottom
+      : insets.bottom > 0
+      ? insets.bottom
+      : 10);
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container}>
-      <Header headerText="Saved Items" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          {savedItems.map((eachItem: any) => {
-            return (
-              <CartItem
-                footerBtnText="Move to Cart"
-                handleDelete={() => handleDelete(eachItem)}
-                onFooterAction={() => handleMoveToCart(eachItem)}
-                key={eachItem.id}
-                cartItem={eachItem}
-                isSavedItem="true"
-              />
-            );
-          })}
-          {savedItems.length === 0 && (
-            <>
-              <View
-                style={[
-                  styles.container,
-                  globalStyles.container,
-                  { paddingHorizontal: 20 },
-                ]}
-              ></View>
-              <Image source={require("../../assets/emptycart.png")} />
-              <Text
-                style={{
-                  textAlign: "center",
-                  marginTop: 48,
-                  fontSize: 24,
-                  fontWeight: "600",
-                  paddingBottom: 16,
-                }}
-              >
-                Uh-oh! You have no saved Items! Would you like to explore some
-                products?
-              </Text>
-              <Button
-                title="Start Shopping"
-                onPress={() => router.back()}
-                style={styles.button}
-                textStyle={styles.text}
-              ></Button>
-            </>
-          )}
-        </View>
-      </ScrollView>
-      <Footer navigation={router} activeTab="saved" />
-    </View>
+    <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
+      <View style={globalStyles.container}>
+        <Header headerText="Saved Items" />
+        <ScrollView>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            {savedItems.map((item: any) => {
+              return (
+                <SaveItemFav
+                  // footerBtnText="Move to Cart"
+                  handleDelete={() => handleDelete(item)}
+                  // onFooterAction={() => handleMoveToCart(item)}
+                  key={item.id}
+                  cartItem={item}
+                  isSavedItem="true"
+                />
+              );
+            })}
+            {savedItems.length === 0 && (
+              <>
+                <View style={styles.emptyCartContainer}>
+                  <Ionicons
+                    name="cart"
+                    size={98}
+                    color={colors.placeholdergrey}
+                    style={styles.cartIcon}
+                  />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.emptyTitle}>Your page is empty</Text>
+                    <Text style={styles.emptySubtitle}>
+                      No worries! You can check our products{" "}
+                      <TouchableOpacity
+                        onPress={() => redirectToPage(containers.homeScreen)}
+                      >
+                        <Text style={styles.hereText}>here.</Text>
+                      </TouchableOpacity>
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+      <View
+        style={[
+          styles.footer,
+          {
+            height: footerHeight,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+          },
+        ]}
+      >
+        <Footer activeTab="saved" />
+      </View>{" "}
     </SafeAreaView>
   );
 };

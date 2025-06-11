@@ -1,167 +1,182 @@
 import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
-import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import colors from "@/app/config/colors";
+import { UserAPI } from "@/services/userService";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
+  const insets = useSafeAreaInsets();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
     (total: any, item: any) => total + item.quantity,
     0
   );
-  const [user, setUser] = useState(null);
   const userData_redux = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch();
+  const [isValidUser, setIsValidUser] = useState(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      // const user = await AsyncStorage.getItem("user");
-      console.log("userData_redux", userData_redux);
-      if (userData_redux) {
-        setUser(userData_redux);
+  const hasNavigationButtons = Platform.OS === 'android' && insets.bottom === 0;
+  const androidBottomPadding = hasNavigationButtons ? 20 : Math.max(insets.bottom, 10);
+    const footerHeight = 60 + (Platform.OS === "ios" ? insets.bottom : insets.bottom > 0 ? insets.bottom : 10);
+
+  const validateAndFetchUser = async () => {
+    try {
+      if (userData_redux?.phone) {
+        const response = await UserAPI.getUserByPhonenumber(
+          userData_redux.phone
+        );
+        if (response?.data) {
+          setIsValidUser(true);
+        } else {
+          await AsyncStorage.removeItem("user");
+          dispatch({ type: "user/clearUserData" });
+          setIsValidUser(false);
+        }
+      } else {
+        setIsValidUser(false);
       }
-    };
-    fetchUser();
-  }, []);
-
-  const handleMenuPress = async () => {
-    if (user) {
-      redirectToPage(containers.userProfileScreenScreen);
-    } else {
-      redirectToPage(containers.signInScreen);
+    } catch (error) {
+      console.error("User validation failed:", error);
+      setIsValidUser(false);
     }
   };
-  const handleSavedItems = async () => {
-    if (user) {
-      redirectToPage(containers.savedItemScreenScreen);
-    } else {
-      redirectToPage(containers.signInScreen);
-    }
+
+  useEffect(() => {
+    validateAndFetchUser();
+  }, [userData_redux]);
+
+  const handleMenuPress = () => {
+    if (activeTab === "menu") return;
+    redirectToPage(
+      isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
+    );
+  };
+
+  const handleSavedItems = () => {
+    if (activeTab === "saved") return;
+    redirectToPage(
+      isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
+    );
+  };
+
+  const handleHomePress = () => {
+    if (activeTab === "home") return;
+    redirectToPage(containers.homeScreen);
+  };
+
+  const handleSearchPress = () => {
+    if (activeTab === "search") return;
+    redirectToPage(containers.searchScreen);
+  };
+
+  const handleCartPress = () => {
+    if (activeTab === "cart") return;
+    redirectToPage(containers.cartScreenScreen);
   };
 
   return (
-    <View style={styles.footer}>
-      {/* Home Button */}
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.homeScreen)}
-      >
-        <Ionicons
-          name="home"
-          size={24}
-          color={activeTab.toLowerCase() === "home" ? "#17C6ED" : "#666"}
+    <View
+      style={[
+        styles.absoluteFooter,
+        {
+          paddingBottom:
+            Platform.OS === "ios"
+              ? insets.bottom > 0 ? insets.bottom : 10
+              : androidBottomPadding,
+        }, {height: footerHeight,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,  }
+      ]}
+    >
+      <View style={styles.footer}>
+        <FooterButton
+          icon="home"
+          label="Home"
+          isActive={activeTab === "home"}
+          onPress={handleHomePress}
         />
-        <Text
-          style={{
-            fontSize: 10,
-            color: activeTab.toLowerCase() == "home" ? "#17C6ED" : "#666",
-          }}
-        >
-          Home
-        </Text>
-      </TouchableOpacity>
-
-      {/* Saved Button */}
-      <TouchableOpacity style={styles.footerTab} onPress={handleSavedItems}>
-        <Ionicons
-          name="heart"
-          size={24}
-          color={activeTab.toLowerCase() === "saved" ? "#17C6ED" : "#666"}
+        <FooterButton
+          icon="heart"
+          label="Saved"
+          isActive={activeTab === "saved"}
+          onPress={handleSavedItems}
         />
-        <Text
-          style={{
-            fontSize: 10,
-            color: activeTab.toLowerCase() == "saved" ? "#17C6ED" : "#666",
-          }}
-        >
-          Saved
-        </Text>
-      </TouchableOpacity>
-
-      {/* Search Button */}
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.searchScreen)}
-      >
-        <Ionicons
-          name="search"
-          size={24}
-          color={activeTab.toLowerCase() === "search" ? "#17C6ED" : "#666"}
+        <FooterButton
+          icon="search"
+          label="Search"
+          isActive={activeTab === "search"}
+          onPress={handleSearchPress}
         />
-        <Text
-          style={{
-            fontSize: 10,
-            color: activeTab.toLowerCase() == "search" ? "#17C6ED" : "#666",
-          }}
-        >
-          Search
-        </Text>
-      </TouchableOpacity>
-
-      {/* Cart Button */}
-      <TouchableOpacity
-        style={styles.footerTab}
-        onPress={() => redirectToPage(containers.cartScreenScreen)}
-      >
-        <View style={styles.iconContainer}>
-          <Ionicons
-            name="cart"
-            size={24}
-            color={activeTab.toLowerCase() === "cart" ? "#17C6ED" : "#666"}
-          />
-          {cartItemCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {cartItemCount > 99 ? "99+" : cartItemCount}
-              </Text>
-            </View>
-          )}
-        </View>
-        <Text
-          style={{
-            fontSize: 10,
-            color: activeTab.toLowerCase() == "cart" ? "#17C6ED" : "#666",
-          }}
-        >
-          Cart
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.footerTab} onPress={handleMenuPress}>
-        <Ionicons
-          name="menu"
-          size={24}
-          color={activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666"}
+        <FooterButton
+          icon="cart"
+          label="Cart"
+          isActive={activeTab === "cart"}
+          onPress={handleCartPress}
+          badge={cartItemCount}
         />
-        <Text
-          style={{
-            fontSize: 10,
-            color: activeTab.toLowerCase() == "menu" ? "#17C6ED" : "#666",
-          }}
-        >
-          Menu
-        </Text>
-      </TouchableOpacity>
+        <FooterButton
+          icon="menu"
+          label="Menu"
+          isActive={activeTab === "menu"}
+          onPress={handleMenuPress}
+        />
+      </View>
     </View>
   );
 };
 
+const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
+  <TouchableOpacity style={styles.footerTab} onPress={onPress}>
+    <View style={styles.iconContainer}>
+      <Ionicons
+        name={icon}
+        size={24}
+        color={isActive ? colors.primary : "#666"}
+      />
+      {badge > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badge > 99 ? "99+" : badge}</Text>
+        </View>
+      )}
+    </View>
+    <Text style={{ fontSize: 10, color: isActive ? colors.primary : "#666" }}>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
+  absoluteFooter: {
+    position: "relative",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+    borderTopColor: colors.placeholdergrey,
+    borderTopWidth: 1,
+  },
   footer: {
     flexDirection: "row",
-    backgroundColor: "#CEF1F9",
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
     justifyContent: "space-around",
     alignItems: "center",
+    height: 60,
+    paddingTop: 8,
   },
   footerTab: {
-    alignItems: "center",
     flex: 1,
+    alignItems: "center",
   },
   iconContainer: {
     position: "relative",

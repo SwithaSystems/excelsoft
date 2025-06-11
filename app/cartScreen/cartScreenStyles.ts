@@ -127,6 +127,41 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 16,
   },
+  emptyCartContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 20,
+    paddingTop: 40,
+  },
+  cartIcon: {
+    marginBottom: 24,
+    opacity: 0.6,
+  },
+  textContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+    color: "#333",
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  hereText: {
+    color: colors.primary,
+    textDecorationLine: "underline",
+    fontWeight: "500",
+    top: 3.5,
+  },
 });
 
 export default styles;

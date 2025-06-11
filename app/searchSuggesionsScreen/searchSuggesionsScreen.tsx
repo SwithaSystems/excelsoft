@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Header from "@/components/Header";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { globalStyles } from "@/assets/styles/globalStyles";
 
 const suggestions = [
   "baby toys",
@@ -52,7 +53,7 @@ const SearchSuggestionsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Search Page"} />
 

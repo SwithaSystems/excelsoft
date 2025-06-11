@@ -38,6 +38,12 @@ const styles = StyleSheet.create({
     width: 80,
     justifyContent: 'space-between',
   },
+  dateInput: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+  },
   amPmText: {
     fontSize: 16,
   },

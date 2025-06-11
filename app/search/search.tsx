@@ -22,6 +22,8 @@ import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import styles from "./searchStyles";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import Footer from "@/components/Footer";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
@@ -203,7 +205,7 @@ const SearchScreen = () => {
   const handleSelectCategories = (category: any) => {
     redirectToPage(containers.searchResultsScreenScreen, {
       fromSearch: true,
-      category: category.name,
+      category: category.title,
       categoryId: category.id,
     });
   };
@@ -308,7 +310,7 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={styles.container}>
       <Header headerText={"Search"} />
 
@@ -324,6 +326,7 @@ const SearchScreen = () => {
 
       {renderMainContent()}
     </View>
+    <Footer activeTab = "search"/>
     </SafeAreaView>
   );
 };

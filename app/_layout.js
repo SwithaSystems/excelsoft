@@ -12,6 +12,7 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
 import Toast from "react-native-toast-message";
 import CustomToastAlert from "../components/commonComponents/CustomToastAlert";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -326,7 +327,15 @@ const LayoutContent = () => {
             name={containers.selectBillingAddressScreenScreen}
             options={{ headerShown: false }}
           />
-          </Stack>
+          <Stack.Screen
+            name={containers.AdminCategoriesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name={containers.UserNotificationsScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack>
       )}
     </>
   );
@@ -341,12 +350,16 @@ export default function Layout() {
             <AuthProvider>
               <NotificationsHandler />
               <LayoutContent />
-              <Toast 
+              <Toast
                 config={{
-                  customToast: ({text1,text2, onPress}) => (
-                      <CustomToastAlert text1={text1} text2={text2} onPress={onPress}/>
+                  customToast: ({ text1, text2, onPress }) => (
+                    <CustomToastAlert
+                      text1={text1}
+                      text2={text2}
+                      onPress={onPress}
+                    />
                   ),
-                }}  
+                }}
               />
             </AuthProvider>
           </AppProvider>

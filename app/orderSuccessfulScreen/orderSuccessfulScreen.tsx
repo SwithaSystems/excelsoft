@@ -18,8 +18,8 @@ const orderSuccessfulScreen = () => {
   const { orderData } = useLocalSearchParams();
   console.log("orderData", orderData);
   const isOrderPlacedSuccess = true;
-  const successCartImg = require("../../assets/images/successCartImg.png");
-  const failedCartImg = require("../../assets/images/failedCartImg.png");
+  const successCartImg = require("../../assets/checkmark.png");
+  const failedCartImg = require("../../assets/CancelOrder.png");
 
   function redirectToOrderDetails() {
     // router.replace({
@@ -29,6 +29,7 @@ const orderSuccessfulScreen = () => {
 
     redirectToPage(containers.orderDetailsScreenScreen, {
       orderData: orderData,
+      //from: 'cart',
     });
   }
 
@@ -38,7 +39,7 @@ const orderSuccessfulScreen = () => {
   }, []);
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <TouchableWithoutFeedback onPress={redirectToOrderDetails}>
       <View
         style={[
@@ -49,6 +50,7 @@ const orderSuccessfulScreen = () => {
       >
         <Image
           source={isOrderPlacedSuccess ? successCartImg : failedCartImg}
+          style={{height:325, width: 325}}
           alt={
             isOrderPlacedSuccess
               ? "Order placed successfull"
@@ -65,7 +67,7 @@ const orderSuccessfulScreen = () => {
         >
           {isOrderPlacedSuccess
             ? "Order Placed Successfully!!!"
-            : "Uh-oh. Something went wrong. Let’s go back and re-place the order"}
+            : "Sorry, something went wrong. Please go back and try placing your order again"}
         </Text>
       </View>
     </TouchableWithoutFeedback>

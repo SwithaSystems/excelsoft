@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, FlatList, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  SafeAreaView,
+} from "react-native";
 import styles from "./selectBillingAddressScreenStyles";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import Button from "@/components/commonComponents/Button";
@@ -12,9 +19,10 @@ import { Address, addressService } from "@/services/addressService";
 import { useAppContext } from "@/context/AppContext";
 import OrderSummary from "@/components/OrderSummary";
 import { useSelector } from "react-redux";
-import { usePaymentHandler } from "../components/usePaymentHandler";
 import { useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import { usePaymentHandler } from "../components/usePaymentHandler";
 
 type PickupDetailsDto = {
   time: string;
@@ -34,7 +42,6 @@ type shippingAddressDTo = {
   city: string;
   state: string;
   postalCode: string;
-  country: string;
 };
 
 const selectBillingAddressScreen = () => {
@@ -99,21 +106,20 @@ const selectBillingAddressScreen = () => {
         // Set initial selected address if one exists in context
         if (selectedBillingAddress?._id) {
           setSelectedId(selectedBillingAddress._id);
-          // } else if (response.length > 0) {
-          //   // If no address is selected yet, select the first one by default
-          //   setSelectedBillingAddress(response[0]);
-          //   setSelectedId(response[0]._id);
+        } else if (response.length > 0) {
+          setSelectedBillingAddress(response[0]);
+          setSelectedId(response[0]._id);
         }
       } catch (err) {
         console.error("Error fetching billing addresses:", err);
       }
     };
-
     fetchAddresses();
   }, []);
   console.log("Billingaddress saved address", addressData);
   console.log("Selected address ID:", selectedId);
-  const confirmDelete = async () => {
+  const confirmDelete = async (itemToDelete: any) => {
+    console.log("Item to delete:", itemToDelete);
     if (itemToDelete) {
       try {
         const response = await addressService.deleteBillingAddress(
@@ -141,7 +147,9 @@ const selectBillingAddressScreen = () => {
   };
   const handleEdit = (item: Address) => {
     setSelectedBillingAddress(item);
-    redirectToPage(containers.editAddressScreenScreen);
+    redirectToPage(containers.billingAddressScreenScreen, {
+      edit_address: JSON.stringify(item),
+    });
   };
 
   const handleDelete = (item: Address) => {
@@ -153,109 +161,129 @@ const selectBillingAddressScreen = () => {
     setSelectedBillingAddress(item);
     console.log("Selected address:", item);
   };
+  console.log("isPaymentEnabled Breakdown:", {
+    cartItemsCount: cartItems.length,
+    billingAddressExists: !!selectedBillingAddress,
+    shippingAddressExists: !!shippingAddress,
+    pickupDate: pickupDetails?.date,
+    pickupTime: pickupDetails?.time,
+    selectedMode: selectedMode,
+  });
+
+  const isPickupMode =
+    selectedMode === "curbsidePickup" || selectedMode === "storePickup";
   const isPaymentEnabled =
     cartItems.length > 0 &&
     selectedBillingAddress &&
-    shippingAddress &&
+    (isPickupMode || shippingAddress) &&
     pickupDetails?.date &&
     pickupDetails?.time &&
     selectedMode &&
     (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container}>
-      <Header headerText="Billing Address" />
-      {/* <ScrollView> */}
-      <FlatList
-        ListHeaderComponent={
-          <>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <Text style={styles.sectionTitle}>Address</Text>
-              <FlatList
-                data={addressData.filter((address) => !address.isDefault)}
-                renderItem={({ item }) => (
-                  <AddressItem
-                    item={item}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    showRadio
-                    isSelected={item._id === selectedId}
-                    onSelect={() => handleSelectBillingAddress(item)}
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
+        <View style={globalStyles.container}>
+          <Header headerText="Billing Address" />
+          {/* <ScrollView> */}
+          <FlatList
+            ListHeaderComponent={
+              <>
+                <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+                  <Text style={styles.sectionTitle}>Address</Text>
+                  <FlatList
+                    data={addressData.filter((address) => !address.isDefault)}
+                    renderItem={({ item }) => (
+                      <AddressItem
+                        item={item}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        showRadio
+                        isSelected={item._id === selectedId}
+                        onSelect={() => handleSelectBillingAddress(item)}
+                      />
+                    )}
+                    keyExtractor={(item, index) =>
+                      item._id?.toString() || `address-${index}`
+                    }
+                    contentContainerStyle={[
+                      styles.addressList,
+                      { paddingLeft: 16 },
+                    ]}
                   />
-                )}
-                keyExtractor={(item, index) =>
-                  item._id?.toString() || `address-${index}`
-                }
-                contentContainerStyle={[styles.addressList, {paddingLeft: 16}]}
-              />
-            </View>
-            <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-              <View style={styles.addressList}>
-                <Button
-                  title="Add New Address"
-                  onPress={() => {
-                    redirectToPage(containers.billingAddressScreenScreen);
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                  <View style={styles.addressList}>
+                    <Button
+                      title="Add New Address"
+                      onPress={() => {
+                        redirectToPage(containers.billingAddressScreenScreen, {
+                          pickupDetails: JSON.stringify(pickupDetails),
+                          shippingAddress: JSON.stringify(shippingAddress),
+                          selectedMode: selectedMode,
+                        });
+                      }}
+                    />
+                  </View>
+                </View>
+                <View style={[styles.section, globalStyles.mb_0]}>
+                  <Text style={styles.sectionHeading}>Order Details</Text>
+                  <View style={globalStyles.pl_3}></View>
+                  <OrderSummary
+                    cartItems={cartItems}
+                    sectionHeadingStyle={styles.sectionHeading}
+                    hideHeading={true}
+                    hideItems={true}
+                    containerStyle={styles.orderSummaryContainer}
+                  />
+                </View>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                  <View style={styles.addressList}>
+                    <Button
+                      title="Proceed for Payment"
+                      disabled={!isPaymentEnabled}
+                      onPress={() =>
+                        handlePayment(cartItems, {
+                          billingAddress: selectedBillingAddress,
+                          shippingAddress: shippingAddress,
+                          pickupdetails: pickupDetails,
+                          deliveryDate: pickupDetails?.date,
+                          deliveryTime: pickupDetails?.time,
+                          selectedSlot: Array.isArray(selectedMode)
+                            ? selectedMode[0]
+                            : selectedMode,
+                          selectedMode: Array.isArray(selectedMode)
+                            ? selectedMode[0]
+                            : selectedMode,
+                        })
+                      }
+                      style={
+                        isPaymentEnabled ? styles.activeBtn : styles.disabledBtn
+                      }
+                      textStyle={styles.buttonText}
+                    />
+                  </View>
+                </View>
+                <ConfirmationModal
+                  onClose={() => {
+                    setIsModalVisible(false);
                   }}
+                  isModalVisible={isModalVisible}
+                  text="Are you sure you want to delete this address?"
+                  submitText="Delete Address"
+                  handleSubmit={() => confirmDelete(itemToDelete!)}
+                  cancelText="Cancel"
+                  handleCancel={cancelDelete}
                 />
-              </View>
-            </View>
-            <View style={[styles.section, globalStyles.mb_0]}>
-              <Text style={styles.sectionHeading}>Order Details</Text>
-              <View style={globalStyles.pl_3}></View>
-              <OrderSummary
-                cartItems={cartItems}
-                sectionHeadingStyle={styles.sectionHeading}
-                hideHeading={true}
-                hideItems={true}
-                containerStyle={styles.orderSummaryContainer}
-              />
-            </View>
-            <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-              <View style={styles.addressList}>
-                <Button
-                  title="Proceed for Payment"
-                  disabled={!isPaymentEnabled}
-                  onPress={() =>
-                    handlePayment(cartItems, {
-                      billingAddress: selectedBillingAddress,
-                      shippingAddress: shippingAddress,
-                      pickupdetails: pickupDetails,
-                      deliveryDate: pickupDetails?.date,
-                      deliveryTime: pickupDetails?.time,
-                      selectedSlot: Array.isArray(selectedMode)
-                        ? selectedMode[0]
-                        : selectedMode,
-                      selectedMode: Array.isArray(selectedMode)
-                        ? selectedMode[0]
-                        : selectedMode,
-                    })
-                  }
-                  style={
-                    isPaymentEnabled ? styles.activeBtn : styles.disabledBtn
-                  }
-                  textStyle={styles.buttonText}
-                />
-              </View>
-            </View>
-            <ConfirmationModal
-              onClose={() => {
-                setIsModalVisible(false);
-              }}
-              isModalVisible={isModalVisible}
-              text="Are you sure you want to delete this address?"
-              submitText="Delete Address"
-              handleSubmit={confirmDelete}
-              cancelText="Cancel"
-              handleCancel={cancelDelete}
-            />
-          </>
-        }
-        data={[]}
-        renderItem={() => null}
-      />
-      {/* </ScrollView> */}
-    </View>
+              </>
+            }
+            data={[]}
+            renderItem={() => null}
+          />
+          {/* </ScrollView> */}
+        </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

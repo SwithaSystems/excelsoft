@@ -1,7 +1,7 @@
 import { AnimateStyle } from "react-native-reanimated";
-import axiosInstance from "./axiosConfig";
 import { AnimationType } from "expo-symbols";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { jsonAxios } from "./axiosConfig";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -12,7 +12,6 @@ export interface Address {
   line2: string;
   city: string;
   state: string;
-  country: string;
   postalCode: string;
   phone: string;
   isDefault: boolean;
@@ -23,7 +22,7 @@ export const addressService = {
     shippingAddressData: Address
   ): Promise<{ data: Address; status: number }> => {
     try {
-      const response = await axiosInstance.put(
+      const response = await jsonAxios.put(
         `${API_BASE_URL}/shippingAddress/${shippingAddressData._id}`,
         shippingAddressData
       );
@@ -38,7 +37,7 @@ export const addressService = {
 
   deleteShippingAddress: async (id: string): Promise<{ success: boolean }> => {
     try {
-      const response = await axiosInstance.delete(
+      const response = await jsonAxios.delete(
         `${API_BASE_URL}/shippingAddress/${id}`
       );
       return { success: response.status === 200 };
@@ -52,7 +51,7 @@ export const addressService = {
   ): Promise<{ data: Address; status: number }> => {
     console.log("AddressData ADDED", shippingAddressData);
     try {
-      const response = await axiosInstance.post(
+      const response = await jsonAxios.post(
         `${API_BASE_URL}/shippingAddress`,
         shippingAddressData
       );
@@ -68,7 +67,7 @@ export const addressService = {
   getShippingAddressById: async (id: string): Promise<Address> => {
     try {
       console.log("id", id);
-      const response = await axiosInstance.get<Address>(
+      const response = await jsonAxios.get<Address>(
         `${API_BASE_URL}/shippingAddress/${id}`
       );
       return response.data;
@@ -81,7 +80,7 @@ export const addressService = {
     billingAddressData: any
   ): Promise<{ data: Address; status: number }> => {
     try {
-      const response = await axiosInstance.post(
+      const response = await jsonAxios.post(
         `${API_BASE_URL}/billingAddress`,
         billingAddressData
       );
@@ -97,7 +96,7 @@ export const addressService = {
 
   getAllShppingAddress_userId: async (): Promise<Address[]> => {
     try {
-      const response = await axiosInstance.get<Address[]>(
+      const response = await jsonAxios.get<Address[]>(
         `${API_BASE_URL}/shippingAddress`
       );
       console.log(response.data);
@@ -109,7 +108,7 @@ export const addressService = {
   },
   getAllBillingAddress_userId: async (): Promise<Address[]> => {
     try {
-      const response = await axiosInstance.get<Address[]>(
+      const response = await jsonAxios.get<Address[]>(
         `${API_BASE_URL}/billingAddress`
       );
       console.log(response.data);
@@ -121,13 +120,29 @@ export const addressService = {
   },
   deleteBillingAddress: async (id: string): Promise<{ success: boolean }> => {
     try {
-      const response = await axiosInstance.delete(
+      const response = await jsonAxios.delete(
         `${API_BASE_URL}/billingAddress/${id}`
       );
       return { success: response.status === 200 };
     } catch (error) {
       console.error("Delete address error:", error);
       return { success: false };
+    }
+  },
+  updateBillingAddress: async (
+    billingAddressData: any
+  ): Promise<{ data: any; status: number }> => {
+    try {
+      const response = await jsonAxios.put(
+        `${API_BASE_URL}/billingAddress/${billingAddressData._id}`,
+        billingAddressData
+      );
+      return {
+        data: response.data,
+        status: response.status,
+      };
+    } catch (error) {
+      throw error;
     }
   },
 };

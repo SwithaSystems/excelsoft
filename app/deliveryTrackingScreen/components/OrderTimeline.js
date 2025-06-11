@@ -3,7 +3,11 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 
-const OrderTimeline = ({ statusList }) => {
+const OrderTimeline = (props) => {
+  const statusList = props.statusList;
+  const currentStatus = statusList.indexOf(props?.actualStatus);
+  console.log("currentStatus", currentStatus);
+  console.log("statusList", statusList);
 
   const icons = [
     "document-text-outline",
@@ -13,7 +17,6 @@ const OrderTimeline = ({ statusList }) => {
     "checkmark-circle-outline",
   ];
 
-  const currentStatus = 2;
   return (
     <View style={styles.container}>
       <FlatList
@@ -22,32 +25,43 @@ const OrderTimeline = ({ statusList }) => {
         renderItem={({ item, index }) => (
           <View style={styles.itemContainer}>
             {/* Timeline Circle */}
-            <View style={[styles.circle,
-                  {backgroundColor: index <= currentStatus ? "#17C6ED":"#7E8A8C"}
-              ]}>
-                {/*Icon for each status */}
-                <Ionicons 
-                  name={icons[index]}
-                  size={22}
-                  color={index <= currentStatus ? "white" : "white"}
-                />
-          </View>
+            <View
+              style={[
+                styles.circle,
+                {
+                  backgroundColor:
+                    index <= currentStatus ? "#17C6ED" : "#7E8A8C",
+                },
+              ]}
+            >
+              {/*Icon for each status */}
+              <Ionicons
+                name={icons[index]}
+                size={22}
+                color={index <= currentStatus ? "white" : "white"}
+              />
+            </View>
             {/* Status Text */}
-            <Text 
+            <Text
               style={[
                 styles.statusText,
-                {color: index <= currentStatus ? "#17C6ED":"#7E8A8C"}
+                { color: index <= currentStatus ? "#17C6ED" : "#7E8A8C" },
               ]}
-            >{item}
+            >
+              {item}
             </Text>
             {/* Connecting Line */}
-            {index !== statusList.length && 
-              <View style={[
-                styles.line,
-                {backgroundColor: index < currentStatus ? "#17C6ED":"#7E8A8C"}
-              ]} 
+            {index !== statusList.length && (
+              <View
+                style={[
+                  styles.line,
+                  {
+                    backgroundColor:
+                      index < currentStatus ? "#17C6ED" : "#7E8A8C",
+                  },
+                ]}
               />
-            }
+            )}
           </View>
         )}
       />

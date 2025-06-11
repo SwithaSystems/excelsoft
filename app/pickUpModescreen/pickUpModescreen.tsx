@@ -42,14 +42,14 @@ const options = [
     redirectionScreen: containers.homeDeliveryScreenScreen,
     params: { mode: "home" },
   },
-];
+] as const;
 const pickUpModescreen = () => {
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
 
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={globalStyles.container}>
       <ScrollView>
         <Header headerText="Pick up Options" />

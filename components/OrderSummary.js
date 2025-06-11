@@ -1,6 +1,7 @@
 import colors from "@/app/config/colors";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 function OrderSummary(props) {
   const calculateTotal = () => {
@@ -34,6 +35,7 @@ function OrderSummary(props) {
               <Text style={styles.summaryName}>{item.name}</Text>
               <Text style={styles.summaryQuantity}>{item.quantity}</Text>
               <Text style={styles.summaryPrice}>
+                {CurrencySymbol}
                 {(item.price * item.quantity).toFixed(2)}
               </Text>
             </View>
@@ -45,7 +47,8 @@ function OrderSummary(props) {
           </Text>
           <Text style={styles.summaryQuantity}></Text>
           <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            ${total.toFixed(2)}
+            {CurrencySymbol}
+            {total.toFixed(2)}
           </Text>
         </View>
 
@@ -56,7 +59,8 @@ function OrderSummary(props) {
             </Text>
             <Text style={styles.summaryQuantity}></Text>
             <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-              -${discount.toFixed(2)}
+              -{CurrencySymbol}
+              {discount.toFixed(2)}
             </Text>
           </View>
         )}
@@ -67,7 +71,8 @@ function OrderSummary(props) {
           </Text>
           <Text style={styles.summaryQuantity}></Text>
           <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            +${shipping.toFixed(2)}
+            +{CurrencySymbol}
+            {shipping.toFixed(2)}
           </Text>
         </View>
 
@@ -77,7 +82,8 @@ function OrderSummary(props) {
           </Text>
           <Text style={styles.summaryQuantity}></Text>
           <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            ${subTotal.toFixed(2)}
+            {CurrencySymbol}
+            {subTotal.toFixed(2)}
           </Text>
         </View>
       </View>

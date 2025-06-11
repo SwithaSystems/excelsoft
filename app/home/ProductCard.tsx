@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Image, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import  HomeStyles  from '../home/Homestyles';
+import React from "react";
+import { View, Image, Text, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import HomeStyles from "../home/Homestyles";
+import CurrencySymbol from "../../constants/CurrencySymbol";
 
 interface ProductCardProps {
   title: string;
@@ -24,13 +25,14 @@ const ProductCard = ({
   imageUrl,
   onPress,
 }: ProductCardProps) => {
-  const isRemoteImage = typeof imageUrl === 'string';
+  const isRemoteImage = typeof imageUrl === "string";
 
   return (
     <TouchableOpacity style={HomeStyles.productCard} onPress={onPress}>
-      <Image 
-       source={isRemoteImage ? { uri: imageUrl } : imageUrl} 
-      style={HomeStyles.productImage} />
+      <Image
+        source={isRemoteImage ? { uri: imageUrl } : imageUrl}
+        style={HomeStyles.productImage}
+      />
       <View style={HomeStyles.productInfo}>
         <Text style={HomeStyles.productTitle} numberOfLines={2}>
           {title}
@@ -42,9 +44,15 @@ const ProductCard = ({
           </Text>
         </View>
         <View style={HomeStyles.discountContainer}>
-          <Text style={HomeStyles.discountPrice}>${price}</Text>
+          <Text style={HomeStyles.discountPrice}>
+            {CurrencySymbol}
+            {price}
+          </Text>
           {originalPrice && (
-            <Text style={HomeStyles.originalPrice}>${originalPrice}</Text>
+            <Text style={HomeStyles.originalPrice}>
+              {CurrencySymbol}
+              {originalPrice}
+            </Text>
           )}
         </View>
       </View>

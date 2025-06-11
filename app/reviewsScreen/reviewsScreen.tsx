@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import styles from "./reviewsScreenStyles";
 import { ScrollView, SafeAreaView } from "react-native";
 import Header from "@/components/Header";
@@ -15,6 +15,8 @@ import containers from "@/containers";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
 import colors from "../config/colors";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {
@@ -34,7 +36,6 @@ const reviewsScreen = () => {
     }
   }, [productId]);
   const fetchProductDetails = async () => {
-    //setIsLoading(true)
     const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
     setProduct(response.data);
     setIsLoading(false);
@@ -45,42 +46,66 @@ const reviewsScreen = () => {
   );
   console.log("soretedReviews", soretedReviews);
 
+  const user = useSelector((state: RootState) => state.user.user);
+
+  const handleAddReviews = () => {
+    if (!user) {
+      Alert.alert("Login Required", "You need to log in to submit a review.", [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => redirectToPage(containers.signInScreen),
+        },
+      ]);
+      return;
+    }
+
+    redirectToPage(containers.feedBackScreenScreen, {
+      productId: productId,
+      reviewsArrayLength: reviewsArray.length,
+    });
+  };
+
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
-    <View style={globalStyles.container}>
-      <ScrollView>
-        <Header headerText={"Product Reviews"} />
-        <View style={[globalStyles.sectionContent, { paddingTop: 0 }]}>
-          <Text style={styles.heading}>Overall Ratings</Text>
-          <View style={styles.overAllRatingContainer}>
-            <Text style={styles.rating}>{productRating}</Text>
-            <ProductStars
-              starsContainer={styles.starsContainer}
-              rating={productRating}
-              size={32}
-            />
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <View style={globalStyles.container}>
+        <ScrollView>
+          <Header headerText={"Product Reviews"} />
+          <View style={[globalStyles.sectionContent, { paddingTop: 0 }]}>
+            <Text style={styles.heading}>Overall Ratings</Text>
+            <View style={styles.overAllRatingContainer}>
+              <Text style={styles.rating}>{productRating}</Text>
+              <ProductStars
+                starsContainer={styles.starsContainer}
+                rating={productRating}
+                size={32}
+              />
+            </View>
+            <View style={styles.reviewsContainer}>
+              <Text style={styles.reviewContainerHeading}>Reviews</Text>
+              {soretedReviews?.map((review: any, index: number) => (
+                <ProductRating key={`${review.id}-${index}`} review={review} />
+              ))}
+            </View>
           </View>
-          <View style={styles.reviewsContainer}>
-            <Text style={styles.reviewContainerHeading}>Reviews</Text>
-            {soretedReviews?.map((review: any, index: number) => (
-              <ProductRating key={`${review.id}-${index}`} review={review} />
-            ))}
-          </View>
+        </ScrollView>
+        <View style={styles.addReviewContainer}>
+          <Button
+            title="Add your Review"
+            onPress={
+              handleAddReviews
+              // redirectToPage(containers.feedBackScreenScreen, {
+              //   productId: productId,
+              //   reviewsArrayLength: reviewsArray.length,
+              // })
+            }
+            style={styles.addReviewBtn}
+          />
         </View>
-      </ScrollView>
-      <View style={styles.addReviewContainer}>
-        <Button
-          title="Add your Review"
-          onPress={() =>
-            redirectToPage(containers.feedBackScreenScreen, {
-              productId: productId,
-              reviewsArrayLength: reviewsArray.length,
-            })
-          }
-          style={styles.addReviewBtn}
-        />
       </View>
-    </View>
     </SafeAreaView>
   );
 };

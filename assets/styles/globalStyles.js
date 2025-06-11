@@ -1,7 +1,16 @@
 import colors from "@/app/config/colors";
-import { StyleSheet } from "react-native";
+import { Platform, StatusBar, StyleSheet } from "react-native";
+
+const androidStatusBarHeight = Platform.OS === "android" ? StatusBar.currentHeight : 0;
 
 export const globalStyles = StyleSheet.create({
+  safeAreaContainer: {
+    // flex: 1,
+    // backgroundColor: colors.white,
+    // paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    flex: 1,
+    paddingTop: androidStatusBarHeight,
+  },
   textCenter: {
     textAlign: "center",
   },
@@ -22,6 +31,10 @@ export const globalStyles = StyleSheet.create({
   },
   alignItemsCenter: {
     alignItems: "center",
+  },
+  savedContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   input: {
     height: 48,
@@ -230,6 +243,10 @@ export const globalStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
+  orderPlacedBadge: {
+    backgroundColor: colors.primary,
+    color: colors.black,
+  },
   orderCompletedBadge: {
     backgroundColor: "#C3FED9",
     color: "#16A34A",
@@ -249,45 +266,44 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 40,
     textAlign: "center",
   },
-  discountSection:{
+  discountSection: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  discountTextInput:{
+  discountTextInput: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor:"#CEF1F9",
+    backgroundColor: "#CEF1F9",
     height: 48,
-    flex:1,
+    flex: 1,
     borderRadius: 8,
     marginTop: 4,
     justifyContent: "space-between",
   },
-  discountText:{
+  discountText: {
     margin: 8,
   },
-  discountClearIcon:{
-   marginRight: 8,
-   fontSize: 24,
-   color:"#17C6ED",
+  discountClearIcon: {
+    marginRight: 8,
+    fontSize: 24,
+    color: "#17C6ED",
   },
-  redeemButton:{
-    backgroundColor:"#17C6ED",
+  redeemButton: {
+    backgroundColor: "#17C6ED",
     color: colors.white,
     margin: 8,
     borderRadius: 4,
     paddingVertical: 12,
-    paddingHorizontal: 16,  
-    
+    paddingHorizontal: 16,
   },
-  verify:{
-    fontSize:11,
+  verify: {
+    fontSize: 11,
     color: "#17C6ED",
     textDecorationLine: "underline",
     marginLeft: 4,
     marginTop: 5,
   },
-  deviceHeading:{
+  deviceHeading: {
     flexDirection: "row",
   },
 });

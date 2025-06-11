@@ -1,7 +1,8 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
-import axiosInstance from "./axiosConfig";
+// import axiosInstance from "./axiosConfig";
+import { jsonAxios } from "./axiosConfig";
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -45,7 +46,7 @@ export class NotificationService {
       // Register token with backend
       if (token) {
         try {
-          await axiosInstance.post(`/notifications/pushToken`, {
+          await jsonAxios.post(`/notifications/pushToken`, {
             userId,
             token,
           });
@@ -62,7 +63,7 @@ export class NotificationService {
 
   static async unregisterPushNotifications(userId: string) {
     try {
-      await axiosInstance.delete(`/notifications/pushToken/${userId}`);
+      await jsonAxios.delete(`/notifications/pushToken/${userId}`);
       return true;
     } catch (error) {
       console.error("Error removing push token:", error);
@@ -76,7 +77,7 @@ export class NotificationService {
     status: string
   ) {
     try {
-      await axiosInstance.post(`/notifications/orders/${userId}/status`, {
+      await jsonAxios.post(`/notifications/orders/${userId}/status`, {
         orderId,
         status,
       });
@@ -94,7 +95,7 @@ export class NotificationService {
     timeSlot: string
   ) {
     try {
-      await axiosInstance.post(`/notifications/orders/${userId}/delivery`, {
+      await jsonAxios.post(`/notifications/orders/${userId}/delivery`, {
         orderId,
         deliveryDate,
         timeSlot,

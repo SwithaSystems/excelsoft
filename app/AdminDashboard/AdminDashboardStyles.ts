@@ -1,15 +1,21 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
+  container: {
+    // paddingTop: 32,
+    flex: 1,
+    backgroundColor: colors.white,
+    // paddingHorizontal: 16,
+  },
   title: {
     fontSize: 26,
-    fontWeight: '400',
+    fontWeight: "400",
     marginBottom: 35,
-    color: '#00BFFF',
+    color: "#00BFFF",
   },
   metricsContainer: {
-    paddingHorizontal: 48,
+    paddingHorizontal: 8,
   },
   metricBox: {
     backgroundColor: colors.secondary,
@@ -18,35 +24,37 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    width: "100%",
+    alignSelf: "stretch",
   },
-  metricIconContainer:{
+  metricIconContainer: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
   },
   metricTitle: {
     fontSize: 14,
     marginLeft: 16,
-    color: '#475569',
+    color: "#475569",
     fontWeight: 600,
   },
   metricValue: {
     fontSize: 18,
     marginBottom: 8,
-    textAlign: "center"
+    textAlign: "center",
   },
-  salesRaiseSection:{
-    flexDirection:"row",
+  salesRaiseSection: {
+    flexDirection: "row",
   },
   metricChange: {
     fontSize: 14,
     color: colors.primary,
     fontWeight: 600,
-    textAlign: "center"
+    textAlign: "center",
   },
   ordersHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginVertical: 16,
   },
   recentOrdersTitle: {
@@ -55,7 +63,7 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 14,
-    fontWeight: 600
+    fontWeight: 600,
   },
   orderContainer: {
     backgroundColor: colors.white,
@@ -63,38 +71,84 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#000000',
+    borderColor: "#000000",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   orderId: {
     fontSize: 16,
-    marginBottom: 8
+    marginBottom: 8,
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 10,
   },
-  
+
   customerName: {
     fontSize: 14,
-    marginBottom: 8
+    marginBottom: 8,
   },
   orderTime: {
     fontSize: 14,
-    color: '#64748B',
+    color: "#64748B",
   },
   orderAmount: {
     fontSize: 16,
     flexDirection: "row",
     alignItems: "center",
-    display: "flex"
+    display: "flex",
+  },
+  eachOrderItem: {
+    borderColor: colors.placeholdergrey,
+    borderRadius: 10,
+    borderWidth: 2,
+    marginBottom: 24,
+    padding: 16,
+  },
+  idContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  trackOrderText: {
+    color: colors.primary,
+    textDecorationLine: "underline",
+  },
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  orderPlaced: {
+    backgroundColor: "#E3F2FD",
+    color: "#1565C0",
+  },
+  cancelled: {
+    backgroundColor: "#FFD6D9",
+    color: "#B00020",
+  },
+  replaced: {
+    backgroundColor: "#FFF3E0",
+    color: "#E65100",
+  },
+  returned: {
+    backgroundColor: "#F3E5F5",
+    color: "#7B1FA2",
+  },
+  defaultStatus: {
+    backgroundColor: "#E0E0E0",
+    color: "#333",
   },
 });
 

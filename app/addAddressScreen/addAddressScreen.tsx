@@ -17,6 +17,8 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import { Colors } from "@/constants/Colors";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -26,7 +28,6 @@ const addAddressScreen = () => {
   const [towncity, setTownCity] = useState("");
   const [state, setState] = useState("");
   const [postalcode, setPostalCode] = useState("");
-  const [country, setCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
   console.log("params", params);
@@ -39,8 +40,7 @@ const addAddressScreen = () => {
         line1: line1,
         line2: line2,
         city: towncity,
-        state: "",
-        country: "India",
+        state: state,
         postalCode: postalcode,
         phone: phoneNumber,
         isDefault: isDefault,
@@ -60,17 +60,26 @@ const addAddressScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
     <View style={styles.container}>
       <Header headerText="Add New Address" />
       <ScrollView>
-        <Text style={styles.fieldLabel}>Name</Text>
+        <Text style={styles.fieldLabel}>Recipient Name</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-        <Text style={styles.fieldLabel}>Line 1</Text>
+        <Text style={styles.fieldLabel}>Postcode</Text>
+        <TextInput
+          style={styles.input}
+          value={postalcode}
+          onChangeText={setPostalCode}
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.fieldLabel}>Address Line 1</Text>
         <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
 
-        <Text style={styles.fieldLabel}>Line 2</Text>
+        <Text style={styles.fieldLabel}>Address Line 2</Text>
         <TextInput
           style={styles.input}
           value={line2}
@@ -85,21 +94,15 @@ const addAddressScreen = () => {
           onChangeText={setTownCity}
           keyboardType="email-address"
         />
-        <Text style={styles.fieldLabel}>State</Text>
+        {/* <Text style={styles.fieldLabel}>State</Text>
         <TextInput
           style={styles.input}
           value={state}
           onChangeText={setState}
           keyboardType="email-address"
-        />
+        /> */}
 
-        <Text style={styles.fieldLabel}>Postal Code</Text>
-        <TextInput
-          style={styles.input}
-          value={postalcode}
-          onChangeText={setPostalCode}
-          keyboardType="email-address"
-        />
+        
         {/* <Text style={styles.fieldLabel}>Country</Text>
         <View style={styles.countriesdropdown}>
           <TextInput
@@ -129,14 +132,15 @@ const addAddressScreen = () => {
           <Text>Mark as default address</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleAddAddress}
-        >
-          <Text style={styles.buttonText}>Add Address</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleAddAddress}
+            >
+              <Text style={styles.buttonText}>Add Address</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

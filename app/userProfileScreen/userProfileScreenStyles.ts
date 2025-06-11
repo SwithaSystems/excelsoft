@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: "48%",
     flexDirection: "row",
     alignItems: "center",
-    borderColor: colors.black,
+    borderColor: colors.placeholdergrey,
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 16,
@@ -50,7 +50,8 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   settingsContainer: {
-    paddingHorizontal: 30
+    paddingHorizontal: 30,
+    flex:0,
   },
   settingOption: {
     flexDirection: "row",
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: colors.black,
+    borderColor: colors.placeholdergrey,
     marginBottom: 16,
     borderRadius: 10,
   },

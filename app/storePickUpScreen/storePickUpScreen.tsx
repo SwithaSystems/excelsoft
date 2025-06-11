@@ -8,7 +8,7 @@ import {
   Alert,
   Platform,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
@@ -23,9 +23,11 @@ import containers from "@/containers";
 import styles from "./storePickUpScreenStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { PickupMode } from "@/services/orderService";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const storePickupScreen = () => {
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [date, setDate] = useState(selectedDate.toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
@@ -43,14 +45,29 @@ const storePickupScreen = () => {
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [orderId, setOrderId] = useState("");
 
+ 
   // Handle date change
   const onDateChange = (
     event: DateTimePickerEvent,
     selectedDate: Date | undefined
   ) => {
-    const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+    if(selectedDate){
+      setSelectedDate(selectedDate);
+      setDate(selectedDate.toISOString().split("T")[0]);
+    }
+    //const currentDate = selectedDate || new Date(date);
+    //setShowDatePicker(false);
+    //setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+  };
+
+  const formatDisplayDate = (dateString: string) => {
+    const options = {
+      year: 'numeric' as const, 
+      month: 'numeric' as const, 
+      day: 'numeric' as const 
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
   const validateForm = () => {
     if (
@@ -112,7 +129,8 @@ const storePickupScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <KeyBoardWrapper>
     <View style={globalStyles.container}>
       <Header headerText="Store Pickup" />
       <ScrollView>
@@ -130,22 +148,31 @@ const storePickupScreen = () => {
                 type="date"
                 style={globalStyles.webDateInput}
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setSelectedDate(new Date(e.target.value));
+                }}
               />
             ) : (
               <TouchableOpacity
-                style={globalStyles.dateInput}
+                style={[globalStyles.dateInput, styles.dateInput]}
                 onPress={() => setShowDatePicker(true)}
               >
-                <Text>{date}</Text>
+                <Text>{formatDisplayDate(date)}</Text>
+                <Ionicons 
+                  name="calendar-outline" 
+                  size={20} 
+                  color={colors.primary} 
+                />
               </TouchableOpacity>
             )}
             {showDatePicker && (
               <DateTimePicker
-                value={new Date(date)}
+                value={selectedDate}
                 mode="date"
-                display="default"
+                display={Platform.OS=='ios'?'inline':'default'}
                 onChange={onDateChange}
+                minimumDate={new Date()}
               />
             )}
           </View>
@@ -266,6 +293,7 @@ const storePickupScreen = () => {
         />
       </View>
     </View>
+    </KeyBoardWrapper>
     </SafeAreaView>
   );
 };

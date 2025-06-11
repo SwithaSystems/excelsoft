@@ -1,5 +1,6 @@
 import colors from '@/app/config/colors';
 import containers from '@/containers';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 
@@ -15,6 +16,12 @@ const CustomToastAlert = (props: MessageProps) => {
     return (
         <TouchableOpacity style={styles.toastContainer} onPress={props.onPress}>
         <View style={styles.container}>
+            <Ionicons 
+                name= "checkmark-circle"
+                color= {colors.primary}
+                style= {styles.Icon}
+                size = {36}
+            />
             <View style={styles.textContainer}>
                 <Text style={styles.Text1}>{props.text1}</Text>   
                 {props.text2 ? <Text style={styles.Text2}>{props.text2}</Text>: null}
@@ -36,13 +43,23 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     container:{
-        backgroundColor: colors.lightgrey,
+        backgroundColor: colors.white,
         padding: 10,
         borderRadius: 50,
-        width: '90%',
+        width: '70%',
+        paddingLeft: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: colors.primary,
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        elevation: 5,
     },
     textContainer:{
-        alignItems: 'center'
+        alignItems: 'flex-start',
+        marginLeft: 12,
     },
     Text1:{
         fontSize: 14,
@@ -54,6 +71,8 @@ const styles = StyleSheet.create({
         fontWeight: '300',
         color: colors.primary,
         paddingTop: 4,
-        textDecorationLine: 'underline',
     },
+    Icon:{
+
+    }
 });

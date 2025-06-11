@@ -55,8 +55,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 8,
     marginBottom: 32,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
+  },
+  inputError: {
+    borderColor: "red",
+    borderWidth: 1,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+    backgroundColor: colors.lightgrey,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

@@ -5,6 +5,14 @@ import colors from "../../app/config/colors";
 import Star from "../../components/Star";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import CurrencySymbol from "@/constants/CurrencySymbol";
+import { Ionicons } from "@expo/vector-icons";
+import { globalStyles } from "@/assets/styles/globalStyles";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToSavedItems,
+  removeFromSavedItems,
+} from "@/store/slices/savedItemsSlice";
 
 interface ProductCardProps {
   id: string;
@@ -37,7 +45,38 @@ const ProductCard = ({
   image,
 }: ProductCardProps) => {
   const router = useRouter();
-  const isRemoteImage = typeof image === 'string';
+  const isRemoteImage = typeof image === "string";
+
+  const dispatch = useDispatch();
+  const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const isItemSaved = (itemId: any) => {
+    return savedItems.some((savedItem: any) => savedItem.id === itemId);
+  };
+  const handleHeartPress = (e: any) => {
+    e.stopPropagation();
+
+    // Create the item object from the props
+    const currentItem = {
+      id,
+      name,
+      description,
+      rating,
+      noOfreviews,
+      price,
+      originalPrice,
+      image,
+      discount: 0,
+      quantity: 1,
+    };
+
+    console.log("saved item", currentItem);
+
+    if (isItemSaved(id)) {
+      dispatch(removeFromSavedItems(id));
+    } else {
+      dispatch(addToSavedItems(currentItem));
+    }
+  };
   return (
     <TouchableOpacity
       style={styles.container}
@@ -45,31 +84,49 @@ const ProductCard = ({
         redirectToPage(containers.productDetailScreenScreen, { productId: id })
       }
     >
-      <Image source={isRemoteImage ? { uri: image } : image} style={styles.image} />
+      <Image
+        source={isRemoteImage ? { uri: image } : image}
+        style={styles.image}
+      />
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>
-          {name}
-        </Text>
+        <View style={globalStyles.savedContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {name}
+          </Text>
+          <TouchableOpacity onPress={handleHeartPress}>
+            <Ionicons
+              name={isItemSaved(id) ? "heart" : "heart-outline"}
+              size={20}
+              color={isItemSaved(id) ? colors.red : colors.black}
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>{rating}</Text>
-          <Star filled={true} size={16} />
+          <Star filled={false} size={16} />
           <Text style={styles.reviews}>({noOfreviews})</Text>
         </View>
         <View style={styles.saleContainer}>
           <View style={styles.saleTimeBox}>
-              <View style={styles.saleTag}>
-                <Text style={styles.saleText}>Sale</Text>
-              </View>
-                <Text style={styles.time}>02:48:26</Text>
+            <View style={styles.saleTag}>
+              <Text style={styles.saleText}>Sale</Text>
+            </View>
+            <Text style={styles.time}>02:48:26</Text>
           </View>
           <Text style={styles.discount}>
             {Math.round(((originalPrice - price) / originalPrice) * 100)}%
           </Text>
         </View>
-          <View style={styles.priceContainer}>
-            <Text style={styles.price}>${price}</Text>
-            <Text style={styles.originalPrice}>${originalPrice}</Text>
-          </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>
+            {CurrencySymbol}
+            {price}
+          </Text>
+          <Text style={styles.originalPrice}>
+            {CurrencySymbol}
+            {originalPrice}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -107,7 +164,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginRight: 4,
-    color:"#6E6F76",
+    color: "#6E6F76",
   },
   reviews: {
     margin: 4,
@@ -120,26 +177,26 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     padding: 4,
   },
-  saleContainer:{
-      flexDirection: "row",
+  saleContainer: {
+    flexDirection: "row",
   },
   saleTimeBox: {
     flexDirection: "row",
-    backgroundColor:colors.secondary,
-    borderRadius: 5,
+    backgroundColor: colors.lightSkyBlue,
+    //borderRadius: 5,
     alignItems: "center",
   },
-   saleText: {
-      color: colors.white,
-      fontSize: 14,
-      fontWeight: "500",
-    },
+  saleText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "500",
+  },
   saleTag: {
     backgroundColor: colors.primary,
     color: colors.white,
     paddingHorizontal: 6,
     paddingVertical: 4,
-    borderRadius: 4,
+    //borderRadius: 4,
     marginRight: 6,
   },
   price: {
@@ -151,7 +208,7 @@ const styles = StyleSheet.create({
   },
   originalPrice: {
     fontSize: 14,
-    color: colors.primary,
+    color: colors.secondaryText,
     textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,
@@ -160,17 +217,17 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 14,
     color: colors.primary,
-    backgroundColor: colors.secondary,
+    //backgroundColor: colors.secondary,
     borderRadius: 5,
     paddingRight: 6,
-    marginTop:2,
+    marginTop: 2,
     marginRight: 8,
   },
   discount: {
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.lightSkyBlue,
     padding: 4,
     borderRadius: 5,
   },

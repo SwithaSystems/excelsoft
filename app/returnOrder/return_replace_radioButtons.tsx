@@ -5,7 +5,7 @@ import colors from "../config/colors";
 
 const ReturnReplaceToggle = ({ mode, setMode }: any) => {
   return (
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
     <View style={{ flexDirection: "row", marginVertical: 10 }}>
       {["return", "replace"].map((option) => (
         <TouchableOpacity

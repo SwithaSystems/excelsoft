@@ -17,12 +17,14 @@ import ProductStars from "@/components/ProductStars";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import colors from "../config/colors";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const appReviewScreen = () => {
     const [rating, setRating] = useState(0);
     
     return(
-    <SafeAreaView style={{flex:1, backgroundColor: colors.white}}>
+    <SafeAreaView style={globalStyles.safeAreaContainer}>
+        <KeyBoardWrapper>
         <View style={styles.container}>
         <Header
             headerText="Feedback"
@@ -92,6 +94,7 @@ const appReviewScreen = () => {
         </TouchableOpacity>
         </ScrollView>        
         </View>
+        </KeyBoardWrapper>
         </SafeAreaView>
     );
 };

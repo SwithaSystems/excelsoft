@@ -1,16 +1,21 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axiosInstance from "./axiosConfig";
 import { router } from "expo-router";
 import containers from "@/containers";
+import { jsonAxios } from "./axiosConfig";
+import { redirectToPage } from "@/utilities/redirectionHelper";
 
 export const authService = {
   async login(phone: string, password: string) {
     try {
-      const response = await axiosInstance.post("/auth/login", {
+      const response = await jsonAxios.post("/auth/login", {
         phone,
         password,
       });
       await AsyncStorage.setItem("token", response.data.access_token);
+      await AsyncStorage.setItem(
+        "refreshtoken",
+        JSON.stringify(response.data.refresh_token)
+      );
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
@@ -18,9 +23,11 @@ export const authService = {
     }
   },
 
-  async register(userData: { phone: string; email: string; password: string }) {
+  async register(payload: {
+    userData: { phone: string; email: string; password: string };
+  }) {
     try {
-      const response = await axiosInstance.post("/auth/register", userData);
+      const response = await jsonAxios.post("/auth/register", payload);
       console.log("response", response.data);
       await AsyncStorage.setItem("token", response.data.access_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
@@ -34,7 +41,8 @@ export const authService = {
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("user");
-      router.replace("/(auth)/signIn" as any);
+      // router.replace("/auth/signIn" as any);
+      redirectToPage(containers.signInScreen);
     } catch (error) {
       throw error;
     }
