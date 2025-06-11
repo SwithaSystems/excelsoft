@@ -15,6 +15,7 @@ import Footer from "@/components/Footer";
 import { Order, orderService } from "@/services/orderService";
 import colors from "../config/colors";
 import { useLocalSearchParams } from "expo-router";
+import PageLayout from "../pageLayoutProps";
 
 const myOrderScreen = () => {
   // const orderData = [
@@ -56,9 +57,16 @@ const myOrderScreen = () => {
     fetchOrders();
   }, []);
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText="Your Orders" />}
+      footerComponent={<Footer />}
+    >
       <View style={globalStyles.container}>
-        <Header headerText="Your Orders" />
+        {/* <Header headerText="Your Orders" /> */}
         {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={
@@ -87,10 +95,12 @@ const myOrderScreen = () => {
           data={[]}
           renderItem={() => null}
         />
-        {/* </ScrollView> */}
+      </View>
+    </PageLayout>
+    /* </ScrollView> 
         <Footer />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */
   );
 };
 
