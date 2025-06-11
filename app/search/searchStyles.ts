@@ -7,8 +7,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   searchBarContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    // paddingHorizontal: 16,
+    // marginBottom: 8,
   },
   content: {
     flex: 1,
@@ -17,10 +17,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "600",
-    marginBottom: 15,
-    marginHorizontal: 15,
+    marginBottom: 16,
+    // marginHorizontal: 15,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -39,21 +39,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    paddingHorizontal: 10,
+    // paddingHorizontal: 10,
     justifyContent: "space-between",
   },
   categoriesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
   },
   suggestionsContainer: {
     flex: 1,
     backgroundColor: colors.white,
   },
   suggestionItem: {
-    padding: 16,
+    // padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loadingContainer: {
-    padding: 20,
+    // padding: 20,
     alignItems: "center",
   },
   emptyStateText: {

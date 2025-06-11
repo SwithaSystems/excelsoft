@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignSelf: "center",
     alignItems: "center",
-    marginTop: 8,
+    // marginTop: 8,
   },
   editText: {
     fontSize: 16,
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   settingsContainer: {
-    paddingHorizontal: 30,
+    // paddingHorizontal: 30,
     flex:0,
   },
   settingOption: {

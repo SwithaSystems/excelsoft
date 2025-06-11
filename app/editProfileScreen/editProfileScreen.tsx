@@ -281,7 +281,9 @@ const editProfileScreen = () => {
                   size={32}
                   style={globalStyles.userInputLabelIcon}
                 />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
+                <View style={{ flex: 1, 
+                  paddingLeft: 14
+               }}>
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
@@ -378,21 +380,26 @@ const editProfileScreen = () => {
             </View>
           </ScrollView>
           {/* <View style={[globalStyles.p_3]}> */}
-          <Button
+          {/* <Button
             title="Save"
             onPress={handleEditProfile}
             disabled={loading}
-            style={{
-              position: "absolute",
-              bottom: Platform.OS === "ios" ? 60 : 76,
-              left: 16,
-              right: 16,
-              marginBottom: Math.max(
-                insets.bottom,
-                Platform.OS === "ios" ? 10 : 16
-              ),
-            }}
-          />
+            // style={{
+            //   // position: "absolute",
+            //   bottom: Platform.OS === "ios" ? 60 : 76,
+            //   left: 16,
+            //   right: 16,
+            //   marginBottom: Math.max(
+            //     insets.bottom,
+            //     Platform.OS === "ios" ? 10 : 16
+            //   ),
+            // }}
+          /> */}
+          <Button
+              title="Save"
+              // style={styles.signInButton}
+              onPress={handleEditProfile}
+            />
           {/* </View> */}
         </View>
       </KeyBoardWrapper>

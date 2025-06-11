@@ -51,14 +51,14 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
-  const insets = useSafeAreaInsets();
-  const footerHeight =
-    60 +
-    (Platform.OS === "ios"
-      ? insets.bottom
-      : insets.bottom > 0
-      ? insets.bottom
-      : 10);
+  // const insets = useSafeAreaInsets();
+  // const footerHeight =
+  //   60 +
+  //   (Platform.OS === "ios"
+  //     ? insets.bottom
+  //     : insets.bottom > 0
+  //     ? insets.bottom
+  //     : 10);
   return (
     // <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
     <PageLayout
@@ -71,7 +71,9 @@ const savedItemScreen = () => {
       <View style={globalStyles.container}>
         {/* <Header headerText="Saved Items" /> */}
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent,
+             globalStyles.pt_0]}>
             {savedItems.map((item: any) => {
               return (
                 <SaveItemFav
@@ -110,7 +112,7 @@ const savedItemScreen = () => {
           </View>
         </ScrollView>
       </View>
-      <View
+      {/* <View
         style={[
           styles.footer,
           {
@@ -118,7 +120,7 @@ const savedItemScreen = () => {
             paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           },
         ]}
-      ></View>
+      ></View> */}
     </PageLayout>
     /* <Footer activeTab="saved" /> 
       </View>{" "}

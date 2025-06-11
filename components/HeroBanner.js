@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: colors.white,
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
