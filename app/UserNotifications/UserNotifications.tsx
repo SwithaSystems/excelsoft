@@ -1,18 +1,12 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import colors from "../config/colors";
 import styles from "./UserNotificationsStyles";
-
+import PageLayout from "../pageLayoutProps";
 
 const notifications = [
   {
@@ -47,43 +41,49 @@ const getIconName = (type: string) => {
 
 const UserNotifications = () => {
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={globalStyles.container}>
-        <Header headerText="Notifications" />
-
-        <ScrollView contentContainerStyle={styles.contentContainer}>
-          {notifications.length === 0 ? (
-            <View style={styles.emptyNotifContainer}>
-              <Ionicons
-                name="notifications-off-outline"
-                size={80}
-                color={colors.secondary}
-              />
-              <Text style={styles.noNotificationText}>No Notifications yet</Text>
-              <Text style={styles.subText}>
-                You are all caught up! Check back some other time!
-              </Text>
-            </View>
-          ) : (
-            notifications.map(function (item) {
-              return (
-                <View key={item.id} style={styles.notificationBox}>
-                  <View style={styles.iconWrapper}>
-                    <Ionicons
-                      name={getIconName(item.type)}
-                      size={24}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <Text style={styles.notificationText}>{item.message}</Text>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={globalStyles.container}>
+    //     <Header headerText="Notifications" />
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable={false}
+      headerComponent={<Header headerText="Notifications" />}
+    >
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {notifications.length === 0 ? (
+          <View style={styles.emptyNotifContainer}>
+            <Ionicons
+              name="notifications-off-outline"
+              size={80}
+              color={colors.secondary}
+            />
+            <Text style={styles.noNotificationText}>No Notifications yet</Text>
+            <Text style={styles.subText}>
+              You are all caught up! Check back some other time!
+            </Text>
+          </View>
+        ) : (
+          notifications.map(function (item) {
+            return (
+              <View key={item.id} style={styles.notificationBox}>
+                <View style={styles.iconWrapper}>
+                  <Ionicons
+                    name={getIconName(item.type)}
+                    size={24}
+                    color={colors.primary}
+                  />
                 </View>
-              );
-            })
-          )}
-        </ScrollView>
-      </View>
+                <Text style={styles.notificationText}>{item.message}</Text>
+              </View>
+            );
+          })
+        )}
+      </ScrollView>
+      {/* </View>
       <Footer />
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

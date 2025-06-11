@@ -27,6 +27,7 @@ import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -95,9 +96,25 @@ const feedBackScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      scrollable
+      headerComponent={
+        <Header
+          headerText="Add Your Review"
+          secondaryBtnText="Discard"
+          secondaryBtnCallBack={() => {
+            redirectToPage(containers.productDetailScreenScreen, {
+              productId: productId,
+            });
+          }}
+        />
+      }
+    >
       <KeyBoardWrapper>
-        <View style={globalStyles.container}>
+        {/* <View style={globalStyles.container}>
           <Header
             headerText="Add Your Review"
             secondaryBtnText="Discard"
@@ -107,68 +124,69 @@ const feedBackScreen = () => {
               });
             }}
           />
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingTitle}>What is your Rating?</Text>
-                <ProductStars
-                  starsContainer={{ justifyContent: "space-between" }}
-                  rating={rating}
-                  needAction={true}
-                  size={60}
-                  onChangeRating={setRating}
-                />
-              </View>
-              <View style={styles.reviewInputContainer}>
-                <TextInput
-                  style={[styles.reviewInput, { height: 333 }]}
-                  placeholder="Add Your Review"
-                  multiline
-                  value={reviewText}
-                  onChangeText={setReviewText}
-                  editable={!isSubmitting}
-                />
-              </View>
-              <View style={styles.imagePickerContainer}>
-                <Text style={styles.ratingTitle}>
-                  Would you like to add some pictures?
-                </Text>
-                <TouchableOpacity
-                  style={styles.addImageButton}
-                  onPress={pickImage}
-                  disabled={isSubmitting}
-                >
-                  <Ionicons
-                    name="add"
-                    size={30}
-                    color={isSubmitting ? "#ccc" : "gray"}
-                  />
-                </TouchableOpacity>
-                {image && (
-                  <Image
-                    source={{ uri: image }}
-                    style={{ width: 200, height: 200, marginTop: 10 }}
-                  />
-                )}
-              </View>
-            </View>
-          </ScrollView>
-          <View style={globalStyles.p_3}>
-            <Button
-              title={isSubmitting ? "Submitting..." : "Submit Review"}
-              onPress={handleAddReview}
-              disabled={isSubmitting || !rating || reviewText.trim() === ""}
-              loading={isSubmitting}
+          <ScrollView> */}
+        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={styles.ratingContainer}>
+            <Text style={styles.ratingTitle}>What is your Rating?</Text>
+            <ProductStars
+              starsContainer={{ justifyContent: "space-between" }}
+              rating={rating}
+              needAction={true}
+              size={60}
+              onChangeRating={setRating}
             />
           </View>
-          <ConfirmationModal
-            visible={showReviewconfirmationModal}
-            message="Review Added Successfully"
-            onClose={() => setShowReviewconfirmationModal(false)}
+          <View style={styles.reviewInputContainer}>
+            <TextInput
+              style={[styles.reviewInput, { height: 333 }]}
+              placeholder="Add Your Review"
+              multiline
+              value={reviewText}
+              onChangeText={setReviewText}
+              editable={!isSubmitting}
+            />
+          </View>
+          <View style={styles.imagePickerContainer}>
+            <Text style={styles.ratingTitle}>
+              Would you like to add some pictures?
+            </Text>
+            <TouchableOpacity
+              style={styles.addImageButton}
+              onPress={pickImage}
+              disabled={isSubmitting}
+            >
+              <Ionicons
+                name="add"
+                size={30}
+                color={isSubmitting ? "#ccc" : "gray"}
+              />
+            </TouchableOpacity>
+            {image && (
+              <Image
+                source={{ uri: image }}
+                style={{ width: 200, height: 200, marginTop: 10 }}
+              />
+            )}
+          </View>
+        </View>
+        {/* </ScrollView> */}
+        <View style={globalStyles.p_3}>
+          <Button
+            title={isSubmitting ? "Submitting..." : "Submit Review"}
+            onPress={handleAddReview}
+            disabled={isSubmitting || !rating || reviewText.trim() === ""}
+            loading={isSubmitting}
           />
         </View>
+        <ConfirmationModal
+          visible={showReviewconfirmationModal}
+          message="Review Added Successfully"
+          onClose={() => setShowReviewconfirmationModal(false)}
+        />
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
