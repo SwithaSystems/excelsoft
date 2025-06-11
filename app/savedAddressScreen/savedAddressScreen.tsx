@@ -133,16 +133,22 @@ const savedAddressScreen = () => {
             ListHeaderComponent={
               <>
                 {addressData.length === 0 ? (
-                  <View style={{ flex: 1, padding: 16 }}>
+                  <View style={{ 
+                    flex: 1, 
+                    padding: 16 
+                }}>
                     <NoContentFound message="No saved address found" />
                   </View>
                 ) : (
                   <View style={styles.centeredContainer}>
                     <View
                       style={[
-                        globalStyles.sectionContent,
+                        // globalStyles.sectionContent,
                         globalStyles.pt_0,
-                        { width: 350, paddingLeft: 32 },
+                        { 
+                          width: 350, 
+                          // paddingLeft: 32 
+                        },
                       ]}
                     >
                       <Text style={styles.sectionTitle}>Default Address</Text>
@@ -196,7 +202,10 @@ const savedAddressScreen = () => {
             renderItem={null}
           />
         </ScrollView>
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+        <View style={{ 
+          // paddingHorizontal: 16, 
+          // paddingBottom: 16 
+        }}>
           <View style={styles.addressList}>
             <Button
               title="Add New Address"

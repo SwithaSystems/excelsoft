@@ -49,7 +49,9 @@ const deliveryTrackingScreen = () => {
       <View style={[globalStyles.container]}>
         {/* <Header headerText="Order Tracking" /> */}
         {/* <ScrollView> */}
-        <View style={[globalStyles.sectionContent]}>
+        <View style={[
+            // globalStyles.sectionContent
+          ]}>
           <Text style={styles.headingNote}>
             Your Order packed Successfully!! Let’s see the Progress!
           </Text>
