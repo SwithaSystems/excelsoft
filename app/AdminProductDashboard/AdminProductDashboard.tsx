@@ -24,6 +24,7 @@ import AdminFooter from "@/components/AdminFooter";
 import { router, useLocalSearchParams } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import PageLayout from "../pageLayoutProps";
 
 const AdminProductDashboard = () => {
   const [productsList, setAllProductsList] = useState<any[]>([]);
@@ -199,55 +200,63 @@ const AdminProductDashboard = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[globalStyles.container]}>
-        <Header headerText="Product Details" />
-        <ScrollView>
-          <View
-            style={[
-              globalStyles.sectionContent,
-              globalStyles.pt_0,
-              { paddingTop: 16 },
-            ]}
-          >
-            <Button
-              onPress={() => {
-                redirectToPage(containers.AdminProductUpdationScreen, {
-                  newProduct: true,
-                  maxId: maxId + 1,
-                  onGoBack: () => setRefreshTrigger((prev) => prev + 1),
-                });
-              }}
-              title="+ Add New Product"
-            />
-            {/* <TouchableOpacity
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={[globalStyles.container]}>
+    //     <Header headerText="Product Details" />
+    //     <ScrollView>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText="Product Details" />}
+      footerComponent={<AdminFooter activeTab="products" />}
+    >
+      <View
+        style={[
+          globalStyles.sectionContent,
+          globalStyles.pt_0,
+          { paddingTop: 16 },
+        ]}
+      >
+        <Button
+          onPress={() => {
+            redirectToPage(containers.AdminProductUpdationScreen, {
+              newProduct: true,
+              maxId: maxId + 1,
+              onGoBack: () => setRefreshTrigger((prev) => prev + 1),
+            });
+          }}
+          title="+ Add New Product"
+        />
+        {/* <TouchableOpacity
               onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
               style={{ paddingTop: 16 }}
             >
               <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
             </TouchableOpacity>*/}
-            <View style={{ marginTop: 16 }}>
-              <FlatList
-                data={productsList}
-                renderItem={ProductCard}
-                keyExtractor={(item) => item.id}
-              />
-            </View>
-            <ConfirmationModal
-              onClose={() => {
-                setIsModalVisible(false);
-              }}
-              isModalVisible={isModalVisible}
-              text="Are you sure you want to delete this? You can save this item for later too."
-              submitText="Delete Item"
-              handleSubmit={confirmDelete}
-              handleCancel={cancelDelete}
-            />
-          </View>
-        </ScrollView>
+        <View style={{ marginTop: 16 }}>
+          <FlatList
+            data={productsList}
+            renderItem={ProductCard}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
+        <ConfirmationModal
+          onClose={() => {
+            setIsModalVisible(false);
+          }}
+          isModalVisible={isModalVisible}
+          text="Are you sure you want to delete this? You can save this item for later too."
+          submitText="Delete Item"
+          handleSubmit={confirmDelete}
+          handleCancel={cancelDelete}
+        />
+      </View>
+      {/* </ScrollView>
         <AdminFooter activeTab="products" />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

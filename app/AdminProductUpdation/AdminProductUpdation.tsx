@@ -30,6 +30,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -356,114 +357,119 @@ const AdminProductUpdation = () => {
   ]);
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <KeyBoardWrapper>
+    //     <View style={[globalStyles.container, { paddingTop: 16 }]}>
+    //       {newProduct ? (
+    //         <Header headerText="Add Product" />
+    //       ) : (
+    //         <Header headerText="Update Product" />
+    //       )}
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      headerComponent={<Header headerText="Update Product" />}
+      scrollable
+    >
       <KeyBoardWrapper>
-        <View style={[globalStyles.container, { paddingTop: 16 }]}>
-          {newProduct ? (
-            <Header headerText="Add Product" />
-          ) : (
-            <Header headerText="Update Product" />
-          )}
-          <KeyBoardWrapper>
-            <ScrollView>
-              <View
-                style={[
-                  globalStyles.sectionContent,
-                  globalStyles.pt_0,
-                  globalStyles.mt_n3,
-                ]}
-              >
-                <Text style={styles.label}>Product Name</Text>
-                <CustomTextInput
-                  setValue={setProductName}
-                  value={productName}
-                  onPress={() => {}}
-                  placeholder="Enter product name"
-                />
-                <Text style={styles.label}>Title</Text>
-                <CustomTextInput
-                  value={title}
-                  setValue={setTitle}
-                  onPress={() => {}}
-                  placeholder="Enter title"
-                  // style={styles.textboxStyles}
-                />
-                <Text style={styles.label}>Product Description</Text>
-                <TextInput
-                  value={productDescription}
-                  onChangeText={setProductDescription}
-                  onPress={() => {}}
-                  placeholder="Enter Product Description"
-                  multiline
-                  numberOfLines={6}
-                  style={styles.multilinetextbox}
-                />
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Category</Text>
-                  <View style={styles.categoryContainer}>
-                    <ModalSelector
-                      data={allCategories.map((cat: any) => ({
-                        key: cat.id,
-                        label: cat.name,
-                        value: cat.id,
-                      }))}
-                      initValue="Category"
-                      onChange={(option) => setCategory(option.value)}
-                      optionTextStyle={{ color: colors.primary }}
-                      optionContainerStyle={{ backgroundColor: colors.white }}
-                      cancelStyle={{ backgroundColor: colors.white }}
-                      accessible={true}
-                      accessibilityLabel="Select Category"
+        <ScrollView>
+          <View
+            style={[
+              globalStyles.sectionContent,
+              globalStyles.pt_0,
+              globalStyles.mt_n3,
+            ]}
+          >
+            <Text style={styles.label}>Product Name</Text>
+            <CustomTextInput
+              setValue={setProductName}
+              value={productName}
+              onPress={() => {}}
+              placeholder="Enter product name"
+            />
+            <Text style={styles.label}>Title</Text>
+            <CustomTextInput
+              value={title}
+              setValue={setTitle}
+              onPress={() => {}}
+              placeholder="Enter title"
+              // style={styles.textboxStyles}
+            />
+            <Text style={styles.label}>Product Description</Text>
+            <TextInput
+              value={productDescription}
+              onChangeText={setProductDescription}
+              onPress={() => {}}
+              placeholder="Enter Product Description"
+              multiline
+              numberOfLines={6}
+              style={styles.multilinetextbox}
+            />
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Category</Text>
+              <View style={styles.categoryContainer}>
+                <ModalSelector
+                  data={allCategories.map((cat: any) => ({
+                    key: cat.id,
+                    label: cat.name,
+                    value: cat.id,
+                  }))}
+                  initValue="Category"
+                  onChange={(option) => setCategory(option.value)}
+                  optionTextStyle={{ color: colors.primary }}
+                  optionContainerStyle={{ backgroundColor: colors.white }}
+                  cancelStyle={{ backgroundColor: colors.white }}
+                  accessible={true}
+                  accessibilityLabel="Select Category"
+                >
+                  <View style={styles.categorySelector}>
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        { color: category ? "#000" : "#888" },
+                      ]}
                     >
-                      <View style={styles.categorySelector}>
-                        <Text
-                          style={[
-                            styles.categoryText,
-                            { color: category ? "#000" : "#888" },
-                          ]}
-                        >
-                          {category
-                            ? allCategories.find((c: any) => c.id == category)
-                                ?.name
-                            : "Select category"}
-                        </Text>
-                        <Ionicons
-                          name="chevron-down-outline"
-                          size={20}
-                          color={colors.primary}
-                        />
-                      </View>
-                    </ModalSelector>
+                      {category
+                        ? allCategories.find((c: any) => c.id == category)?.name
+                        : "Select category"}
+                    </Text>
+                    <Ionicons
+                      name="chevron-down-outline"
+                      size={20}
+                      color={colors.primary}
+                    />
                   </View>
-                </View>
-                <Text style={styles.label}>Stock</Text>
-                <CustomTextInput
-                  setValue={setStock}
-                  value={stock}
-                  onPress={() => {}}
-                  placeholder="Enter available stock"
-                  keyboardType="numeric"
-                />
+                </ModalSelector>
+              </View>
+            </View>
+            <Text style={styles.label}>Stock</Text>
+            <CustomTextInput
+              setValue={setStock}
+              value={stock}
+              onPress={() => {}}
+              placeholder="Enter available stock"
+              keyboardType="numeric"
+            />
 
-                <Text style={styles.label}>Price</Text>
-                <CustomTextInput
-                  setValue={setPrice}
-                  value={price}
-                  onPress={() => {}}
-                  placeholder="Enter price per unit"
-                  keyboardType="numeric"
-                />
+            <Text style={styles.label}>Price</Text>
+            <CustomTextInput
+              setValue={setPrice}
+              value={price}
+              onPress={() => {}}
+              placeholder="Enter price per unit"
+              keyboardType="numeric"
+            />
 
-                <Text style={styles.label}>Discount Price</Text>
-                <CustomTextInput
-                  setValue={setDiscountPrice}
-                  value={discountPrice}
-                  onPress={() => {}}
-                  placeholder="Enter the Discount Price"
-                  keyboardType="numeric"
-                />
+            <Text style={styles.label}>Discount Price</Text>
+            <CustomTextInput
+              setValue={setDiscountPrice}
+              value={discountPrice}
+              onPress={() => {}}
+              placeholder="Enter the Discount Price"
+              keyboardType="numeric"
+            />
 
-                {/* <Text style={styles.label}>Discount Price</Text>
+            {/* <Text style={styles.label}>Discount Price</Text>
             <CustomTextInput
               setValue={setDiscountPrice}
               value={discountPrice}
@@ -471,48 +477,46 @@ const AdminProductUpdation = () => {
               placeholder="Enter the discount price"
               keyboardType="numeric"
             /> */}
-                <Text style={styles.label}>Minimum Order Qunatity:</Text>
-                <CustomTextInput
-                  setValue={setMinimumOrderQuantity}
-                  value={minimumOrderQunatity}
-                  onPress={() => {}}
-                  placeholder="Enter the minimum order quantity"
-                  keyboardType="numeric"
-                />
-                <Text style={[styles.label, { paddingBottom: 8 }]}>
-                  Add Color
-                </Text>
-                <View
-                  style={[
-                    styles.categoryStyles,
-                    {
-                      height: 40,
-                      justifyContent: "center",
-                      // borderColor: colors.primary,
-                      // borderWidth: 1,
-                      borderRadius: 8,
-                    },
-                  ]}
-                >
-                  <CustomTextInput
-                    setValue={setColor}
-                    value={color}
-                    onPress={() => {}}
-                    placeholder="Add color"
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={[globalStyles.mt_3]}>
-                  <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
-                    Pick the date and time when the discount starts and ends.
-                  </Text>
-                  <View
-                    style={[
-                      globalStyles.flexRow,
-                      globalStyles.justifyContentBetween,
-                    ]}
-                  >
-                    {/* <View style={utilitiesStyles.flex_1}>
+            <Text style={styles.label}>Minimum Order Qunatity:</Text>
+            <CustomTextInput
+              setValue={setMinimumOrderQuantity}
+              value={minimumOrderQunatity}
+              onPress={() => {}}
+              placeholder="Enter the minimum order quantity"
+              keyboardType="numeric"
+            />
+            <Text style={[styles.label, { paddingBottom: 8 }]}>Add Color</Text>
+            <View
+              style={[
+                styles.categoryStyles,
+                {
+                  height: 40,
+                  justifyContent: "center",
+                  // borderColor: colors.primary,
+                  // borderWidth: 1,
+                  borderRadius: 8,
+                },
+              ]}
+            >
+              <CustomTextInput
+                setValue={setColor}
+                value={color}
+                onPress={() => {}}
+                placeholder="Add color"
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[globalStyles.mt_3]}>
+              <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
+                Pick the date and time when the discount starts and ends.
+              </Text>
+              <View
+                style={[
+                  globalStyles.flexRow,
+                  globalStyles.justifyContentBetween,
+                ]}
+              >
+                {/* <View style={utilitiesStyles.flex_1}>
                   <Text style={[styles.label, globalStyles.mt_0]}>Date: *</Text>
                   {Platform.OS === "web" ? (
                     <input
@@ -570,16 +574,16 @@ const AdminProductUpdation = () => {
                     </Picker>
                   </View>
                 </View> */}
-                  </View>
-                </View>
-                <View style={styles.checkBox}>
-                  <CheckBox
-                    checked={isChecked}
-                    onPress={() => setIsChecked(!isChecked)}
-                  />
-                  <Text>Is returnable?</Text>
-                </View>
-                {/* <Text style={styles.tableHeading}>
+              </View>
+            </View>
+            <View style={styles.checkBox}>
+              <CheckBox
+                checked={isChecked}
+                onPress={() => setIsChecked(!isChecked)}
+              />
+              <Text>Is returnable?</Text>
+            </View>
+            {/* <Text style={styles.tableHeading}>
               QTY Actual Price Discounted Price
             </Text>
             {offerPrice.map((item, index) => (
@@ -610,74 +614,74 @@ const AdminProductUpdation = () => {
                 )}
               </View>
             ))} */}
-                <Text style={[styles.label, globalStyles.mt_4]}>
-                  Product Images
-                </Text>
-                <Text style={styles.subLabel}>
-                  Upload up to {MAX_IMAGES} images
-                </Text>
+            <Text style={[styles.label, globalStyles.mt_4]}>
+              Product Images
+            </Text>
+            <Text style={styles.subLabel}>
+              Upload up to {MAX_IMAGES} images
+            </Text>
 
-                <View style={styles.imageContainer}>
-                  {/* Display existing images */}
-                  {productImages.map((img: any, index: any) => (
-                    <View key={`img-${index}`} style={styles.imageWrapper}>
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={styles.productImage}
-                      />
-                      <TouchableOpacity
-                        style={styles.removeButton}
-                        onPress={() => removeImage(index)}
-                      >
-                        <Ionicons name="close-circle" size={20} color="red" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-
-                  {/* Add image placeholders */}
-                  {Array.from({
-                    length: MAX_IMAGES - productImages.length,
-                  }).map((_, index) => (
-                    <TouchableOpacity
-                      key={`placeholder-${index}`}
-                      style={styles.imagePlaceholder}
-                      onPress={showImageOptions}
-                    >
-                      <Text style={styles.plus}>+</Text>
-                    </TouchableOpacity>
-                  ))}
+            <View style={styles.imageContainer}>
+              {/* Display existing images */}
+              {productImages.map((img: any, index: any) => (
+                <View key={`img-${index}`} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: img.uri }}
+                    style={styles.productImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Ionicons name="close-circle" size={20} color="red" />
+                  </TouchableOpacity>
                 </View>
-              </View>
-            </ScrollView>
+              ))}
 
-            <View
-              style={[
-                globalStyles.p_3,
-                globalStyles.flexRow,
-                globalStyles.justifyContentBetween,
-              ]}
-            >
-              <Button
-                onPress={handleUpdateProduct}
-                title={newProduct ? "Add" : "Update"}
-                disabled={isLoading}
-              />
-              <Button
-                onPress={() => router.back()}
-                title="Discard"
-                primary={false}
-                disabled={isLoading}
-              />
+              {/* Add image placeholders */}
+              {Array.from({
+                length: MAX_IMAGES - productImages.length,
+              }).map((_, index) => (
+                <TouchableOpacity
+                  key={`placeholder-${index}`}
+                  style={styles.imagePlaceholder}
+                  onPress={showImageOptions}
+                >
+                  <Text style={styles.plus}>+</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            {isLoading && (
-              <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color={colors.primary} />
-              </View>
-            )}
-          </KeyBoardWrapper>
+          </View>
+        </ScrollView>
+
+        <View
+          style={[
+            globalStyles.p_3,
+            globalStyles.flexRow,
+            globalStyles.justifyContentBetween,
+          ]}
+        >
+          <Button
+            onPress={handleUpdateProduct}
+            title={newProduct ? "Add" : "Update"}
+            disabled={isLoading}
+          />
+          <Button
+            onPress={() => router.back()}
+            title="Discard"
+            primary={false}
+            disabled={isLoading}
+          />
         </View>
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        )}
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

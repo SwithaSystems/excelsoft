@@ -21,6 +21,7 @@ import { categoryService } from "@/services/categoryService";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import AdminFooter from "@/components/AdminFooter";
+import PageLayout from "../pageLayoutProps";
 
 interface Category {
   id: number;
@@ -264,143 +265,145 @@ const AdminCategories = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={styles.container}>
-        <Header headerText="Categories" />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.formContainer}>
-            <Text style={styles.sectionTitle}>Add New Category</Text>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={styles.container}>
+    //     <Header headerText="Categories" />
+    <PageLayout
+      hasHeader
+      hasFooter
+      headerComponent={<Header headerText="Categories" />}
+      footerComponent={<AdminFooter activeTab="categories" />}
+      scrollable
+    >
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.formContainer}>
+          <Text style={styles.sectionTitle}>Add New Category</Text>
 
-            <CustomTextInput
-              value={categoryName}
-              setValue={setCategoryName}
-              placeholder="Enter Category name *"
-              containerStyle={styles.input}
-              onPress={() => {}}
-            />
+          <CustomTextInput
+            value={categoryName}
+            setValue={setCategoryName}
+            placeholder="Enter Category name *"
+            containerStyle={styles.input}
+            onPress={() => {}}
+          />
 
-            <CustomTextInput
-              value={categoryDescription}
-              setValue={setCategoryDescription}
-              placeholder="Enter Category description (optional)"
-              containerStyle={styles.input}
-              onPress={() => {}}
-            />
+          <CustomTextInput
+            value={categoryDescription}
+            setValue={setCategoryDescription}
+            placeholder="Enter Category description (optional)"
+            containerStyle={styles.input}
+            onPress={() => {}}
+          />
 
-            <CustomTextInput
-              value={parentCategory}
-              setValue={setParentCategory}
-              placeholder="Enter parent category ID (optional)"
-              containerStyle={styles.input}
-              keyboardType="numeric"
-              onPress={() => {}}
-            />
+          <CustomTextInput
+            value={parentCategory}
+            setValue={setParentCategory}
+            placeholder="Enter parent category ID (optional)"
+            containerStyle={styles.input}
+            keyboardType="numeric"
+            onPress={() => {}}
+          />
 
-            {/* Image Selection Section */}
-            <View style={styles.imageSection}>
-              <Text style={styles.imageLabel}>Category Images</Text>
-
-              <TouchableOpacity
-                style={styles.imagePickerButton}
-                onPress={showImageOptions}
-              >
-                <Ionicons name="camera" size={24} color={colors.primary} />
-                <Text style={styles.imagePickerText}>Add Image</Text>
-              </TouchableOpacity>
-
-              {/* Image Preview */}
-              {categoryImages.length > 0 && (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.imagePreviewContainer}
-                >
-                  {categoryImages.map((image, index) => (
-                    <View key={index} style={styles.imagePreviewItem}>
-                      <Image
-                        source={{ uri: image.uri }}
-                        style={styles.previewImage}
-                      />
-                      <TouchableOpacity
-                        style={styles.removeImageButton}
-                        onPress={() => removeImage(index)}
-                      >
-                        <Ionicons
-                          name="close-circle"
-                          size={24}
-                          color="#ff4444"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
+          {/* Image Selection Section */}
+          <View style={styles.imageSection}>
+            <Text style={styles.imageLabel}>Category Images</Text>
 
             <TouchableOpacity
-              style={[styles.addButton, loading && styles.disabledButton]}
-              onPress={handleAddCategory}
-              disabled={loading}
+              style={styles.imagePickerButton}
+              onPress={showImageOptions}
             >
-              <Text style={styles.addButtonText}>
-                {loading ? "Adding..." : "Add Category"}
-              </Text>
+              <Ionicons name="camera" size={24} color={colors.primary} />
+              <Text style={styles.imagePickerText}>Add Image</Text>
             </TouchableOpacity>
+
+            {/* Image Preview */}
+            {categoryImages.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imagePreviewContainer}
+              >
+                {categoryImages.map((image, index) => (
+                  <View key={index} style={styles.imagePreviewItem}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={styles.previewImage}
+                    />
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#ff4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
 
-          <View style={styles.listSection}>
-            <Text style={styles.sectionTitle}>Existing Categories</Text>
-            <ScrollView style={styles.listContainer}>
-              {categoryList.map((categoryItem: Category, index: number) => (
-                <TouchableOpacity
-                  key={categoryItem.id || index}
-                  style={styles.categoryItem}
-                >
-                  <View style={styles.categoryContent}>
-                    {categoryItem.images && categoryItem.images.length > 0 && (
-                      <Image
-                        source={{ uri: categoryItem.images[0] }}
-                        style={styles.categoryImage}
-                        resizeMode="cover"
-                      />
+          <TouchableOpacity
+            style={[styles.addButton, loading && styles.disabledButton]}
+            onPress={handleAddCategory}
+            disabled={loading}
+          >
+            <Text style={styles.addButtonText}>
+              {loading ? "Adding..." : "Add Category"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.listSection}>
+          <Text style={styles.sectionTitle}>Existing Categories</Text>
+          <ScrollView style={styles.listContainer}>
+            {categoryList.map((categoryItem: Category, index: number) => (
+              <TouchableOpacity
+                key={categoryItem.id || index}
+                style={styles.categoryItem}
+              >
+                <View style={styles.categoryContent}>
+                  {categoryItem.images && categoryItem.images.length > 0 && (
+                    <Image
+                      source={{ uri: categoryItem.images[0] }}
+                      style={styles.categoryImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <View style={styles.categoryInfo}>
+                    <Text style={styles.categoryName}>{categoryItem.name}</Text>
+                    {categoryItem.description && (
+                      <Text style={styles.categoryDescription}>
+                        {categoryItem.description}
+                      </Text>
                     )}
-                    <View style={styles.categoryInfo}>
-                      <Text style={styles.categoryName}>
-                        {categoryItem.name}
-                      </Text>
-                      {categoryItem.description && (
-                        <Text style={styles.categoryDescription}>
-                          {categoryItem.description}
-                        </Text>
+                    <Text style={styles.categoryId}>
+                      ID: {categoryItem.id} Parent:{" "}
+                      {getParentCategoryName(
+                        categoryItem.parentCategory,
+                        categoryList
                       )}
-                      <Text style={styles.categoryId}>
-                        ID: {categoryItem.id} Parent:{" "}
-                        {getParentCategoryName(
-                          categoryItem.parentCategory,
-                          categoryList
-                        )}
-                      </Text>
-                      {/* {categoryItem.parentCategory && (
+                    </Text>
+                    {/* {categoryItem.parentCategory && (
                         <Text style={styles.parentCategory}>
                           Parent: {categoryItem.parentCategory}
                         </Text>
                       )} */}
-                    </View>
                   </View>
-                  {/* <Ionicons name="chevron-forward" size={20} color="#C8C8C8" /> */}
-                </TouchableOpacity>
-              ))}
-              {categoryList.length === 0 && (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyText}>No categories found</Text>
                 </View>
-              )}
-            </ScrollView>
-          </View>
-        </ScrollView>
-      </View>
+                {/* <Ionicons name="chevron-forward" size={20} color="#C8C8C8" /> */}
+              </TouchableOpacity>
+            ))}
+            {categoryList.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>No categories found</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </ScrollView>
+      {/* </View>
       <AdminFooter activeTab="categories" />
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

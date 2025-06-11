@@ -21,6 +21,7 @@ import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 import { orderService } from "@/services/orderService";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+import PageLayout from "../pageLayoutProps";
 
 const AdminDashboard = () => {
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
@@ -284,108 +285,104 @@ const AdminDashboard = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[styles.container, { paddingTop }]}>
-        <BrandHeader hideUserGreeting={true} />
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-            <Text style={styles.title}>Dashboard</Text>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={[styles.container, { paddingTop }]}>
+    //     <BrandHeader hideUserGreeting={true} />
+    <PageLayout
+      hasHeader
+      headerComponent={<BrandHeader hideUserGreeting={true} />}
+      hasFooter
+      footerComponent={<AdminFooter activeTab="home" />}
+      scrollable
+    >
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <Text style={styles.title}>Dashboard</Text>
 
-            <View style={styles.metricsContainer}>
-              <View style={styles.metricBox}>
-                <View style={styles.metricIconContainer}>
-                  <MaterialIcons
-                    name="work-outline"
-                    size={24}
-                    color="#2563EB"
-                  />
-                  <Text style={styles.metricTitle}>Total Orders</Text>
-                </View>
-                <View>
-                  <Text style={styles.metricValue}>
-                    {dashboardMetrics.totalOrders}
-                  </Text>
-                  <View style={styles.salesRaiseSection}>
-                    <Ionicons
-                      name="trending-up-outline"
-                      size={24}
-                      color={colors.primary}
-                      style={{ paddingRight: 8 }}
-                    />
-                    <Text style={styles.metricChange}>+12.5%</Text>
-                  </View>
-                </View>
+          <View style={styles.metricsContainer}>
+            <View style={styles.metricBox}>
+              <View style={styles.metricIconContainer}>
+                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <Text style={styles.metricTitle}>Total Orders</Text>
               </View>
-
-              <View style={styles.metricBox}>
-                <View style={styles.metricIconContainer}>
-                  <MaterialIcons
-                    name="work-outline"
+              <View>
+                <Text style={styles.metricValue}>
+                  {dashboardMetrics.totalOrders}
+                </Text>
+                <View style={styles.salesRaiseSection}>
+                  <Ionicons
+                    name="trending-up-outline"
                     size={24}
-                    color="#2563EB"
+                    color={colors.primary}
+                    style={{ paddingRight: 8 }}
                   />
-                  <Text style={styles.metricTitle}>Pending Orders</Text>
-                </View>
-                <View>
-                  <Text style={styles.metricValue}>
-                    {dashboardMetrics.pendingOrders.length}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.metricBox}>
-                <View style={styles.metricIconContainer}>
-                  <MaterialIcons
-                    name="work-outline"
-                    size={24}
-                    color="#2563EB"
-                  />
-                  <Text style={styles.metricTitle}>Today's Revenue</Text>
-                </View>
-                <View>
-                  <Text style={styles.metricValue}>
-                    {CurrencySymbol}
-                    {dashboardMetrics.todayRevenue.toFixed(2)}
-                  </Text>
-                  <View style={styles.salesRaiseSection}>
-                    <Ionicons
-                      name="trending-up-outline"
-                      size={24}
-                      color={colors.primary}
-                      style={{ paddingRight: 8 }}
-                    />
-                    <Text style={styles.metricChange}>+14.5%</Text>
-                  </View>
+                  <Text style={styles.metricChange}>+12.5%</Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.ordersHeader}>
-              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-              <TouchableOpacity onPress={handleSeeAllPress}>
-                <Text style={styles.seeAll}>See All</Text>
-              </TouchableOpacity>
+            <View style={styles.metricBox}>
+              <View style={styles.metricIconContainer}>
+                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <Text style={styles.metricTitle}>Pending Orders</Text>
+              </View>
+              <View>
+                <Text style={styles.metricValue}>
+                  {dashboardMetrics.pendingOrders.length}
+                </Text>
+              </View>
             </View>
 
-            <FlatList
-              data={dashboardMetrics.recentOrders}
-              renderItem={renderOrderItem}
-              keyExtractor={keyExtractor}
-              removeClippedSubviews={true}
-              maxToRenderPerBatch={5}
-              windowSize={10}
-              initialNumToRender={3}
-              getItemLayout={(data, index) => ({
-                length: 80, // Approximate height of each order item
-                offset: 80 * index,
-                index,
-              })}
-            />
+            <View style={styles.metricBox}>
+              <View style={styles.metricIconContainer}>
+                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <Text style={styles.metricTitle}>Today's Revenue</Text>
+              </View>
+              <View>
+                <Text style={styles.metricValue}>
+                  {CurrencySymbol}
+                  {dashboardMetrics.todayRevenue.toFixed(2)}
+                </Text>
+                <View style={styles.salesRaiseSection}>
+                  <Ionicons
+                    name="trending-up-outline"
+                    size={24}
+                    color={colors.primary}
+                    style={{ paddingRight: 8 }}
+                  />
+                  <Text style={styles.metricChange}>+14.5%</Text>
+                </View>
+              </View>
+            </View>
           </View>
-        </ScrollView>
-        <AdminFooter activeTab="home" />
+
+          <View style={styles.ordersHeader}>
+            <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+            <TouchableOpacity onPress={handleSeeAllPress}>
+              <Text style={styles.seeAll}>See All</Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={dashboardMetrics.recentOrders}
+            renderItem={renderOrderItem}
+            keyExtractor={keyExtractor}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={5}
+            windowSize={10}
+            initialNumToRender={3}
+            getItemLayout={(data, index) => ({
+              length: 80, // Approximate height of each order item
+              offset: 80 * index,
+              index,
+            })}
+          />
+        </View>
+      </ScrollView>
+      {/* <AdminFooter activeTab="home" />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

@@ -21,6 +21,7 @@ import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { orderService } from "@/services/orderService";
+import PageLayout from "../pageLayoutProps";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -152,70 +153,76 @@ const AdminSeeAllOrders = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={globalStyles.container}>
-        <Header headerText="Orders" />
-        <ScrollView>
-          <View
-            style={[
-              globalStyles.sectionContent,
-              globalStyles.pt_0,
-              globalStyles.pb_0,
-            ]}
-          >
-            <View style={localStyles.searchBarContainer}>
-              <TextInput
-                placeholder="Search orders..."
-                placeholderTextColor={colors.placeholdergrey}
-                style={localStyles.searchInput}
-              />
-              <TouchableOpacity style={localStyles.searchIcon}>
-                <Ionicons name="search" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={globalStyles.container}>
+    //     <Header headerText="Orders" />
+    //     <ScrollView>
+    <PageLayout
+      hasHeader
+      hasFooter
+      scrollable
+      headerComponent={<Header headerText="Orders" />}
+      footerComponent={<AdminFooter activeTab="orders" />}
+    >
+      <View
+        style={[
+          globalStyles.sectionContent,
+          globalStyles.pt_0,
+          globalStyles.pb_0,
+        ]}
+      >
+        <View style={localStyles.searchBarContainer}>
+          <TextInput
+            placeholder="Search orders..."
+            placeholderTextColor={colors.placeholdergrey}
+            style={localStyles.searchInput}
+          />
+          <TouchableOpacity style={localStyles.searchIcon}>
+            <Ionicons name="search" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-            <View style={localStyles.badgeContainer}>
-              {statusFilters.map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setActiveFilter(status)}
-                  style={[
-                    localStyles.badge,
-                    {
-                      backgroundColor:
-                        activeFilter === status
-                          ? colors.primary
-                          : colors.secondary,
-                    },
-                  ]}
-                >
-                  <Text style={localStyles.badgeText}>{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+        <View style={localStyles.badgeContainer}>
+          {statusFilters.map((status) => (
+            <TouchableOpacity
+              key={status}
+              onPress={() => setActiveFilter(status)}
+              style={[
+                localStyles.badge,
+                {
+                  backgroundColor:
+                    activeFilter === status ? colors.primary : colors.secondary,
+                },
+              ]}
+            >
+              <Text style={localStyles.badgeText}>{status}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-            <Text style={styles.heading}>
-              WELCOME, Let's go through the orders details!
-            </Text>
-            <View style={styles.ordersContainer}>
-              <FlatList
-                data={getFilteredOrders()}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => item._id}
-                ListEmptyComponent={
-                  <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>
-                      No orders found for "{activeFilter}"
-                    </Text>
-                  </View>
-                }
-              />
-            </View>
-          </View>
-        </ScrollView>
+        <Text style={styles.heading}>
+          WELCOME, Let's go through the orders details!
+        </Text>
+        <View style={styles.ordersContainer}>
+          <FlatList
+            data={getFilteredOrders()}
+            renderItem={renderOrderItem}
+            keyExtractor={(item) => item._id}
+            ListEmptyComponent={
+              <View style={localStyles.emptyContainer}>
+                <Text style={localStyles.emptyText}>
+                  No orders found for "{activeFilter}"
+                </Text>
+              </View>
+            }
+          />
+        </View>
+      </View>
+      {/* </ScrollView>
         <AdminFooter activeTab="orders" />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
