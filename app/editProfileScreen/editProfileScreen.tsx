@@ -395,12 +395,22 @@ const editProfileScreen = () => {
             //   ),
             // }}
           /> */}
-          <Button
+          {/* <Button
               title="Save"
               // style={styles.signInButton}
               onPress={handleEditProfile}
-            />
+            /> */}
           {/* </View> */}
+        </View>
+        <View 
+        // style={
+        //   // globalStyles.p_3
+        // }
+        >
+          <Button
+            onPress={handleEditProfile}
+            title="Save"
+          />
         </View>
       </KeyBoardWrapper>
     </PageLayout>

@@ -9,10 +9,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ratingCategory:{
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   selectCategory: {
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   chooseCategory: {
     flexDirection: 'row',
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 8,
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
     //paddingVertical: 10,
     backgroundColor: '#fff',
     marginTop: 10,
@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
     color: colors.placeholdergrey,
   },
   radioContainer: {
-    marginVertical: 16,
-    //marginBottom: 16,
+    // marginVertical: 8,
+    // marginBottom: 8,
   },
   radioOption: {
     flexDirection: 'row',
@@ -47,14 +47,14 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   addYourReview: {
-    marginVertical: 16,
+    // marginVertical: 16,
   },
   reviewText: {
     height: 150,
     backgroundColor: colors.placeholdergrey,
     borderWidth: 0,
     borderRadius: 8,
-    padding: 10,
+    // padding: 10,
     textAlignVertical: 'top',  
   },
   submitButton: {

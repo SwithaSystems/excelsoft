@@ -25,20 +25,20 @@ const styles = StyleSheet.create({
   resultsCount: {
     fontSize: 14,
     color: colors.reviewsColor,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingVertical: 12,
   },
   divider: {
     flex: 1,
   },
   listContainer: {
-    padding: 8,
+    // padding: 8,
     paddingTop: 0,
     
   },
   row: {
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
   },
   productItem: {
     width: itemWidth,

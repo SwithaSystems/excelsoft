@@ -116,7 +116,10 @@ const editAccountInformationscreen = () => {
         {/* <View style={globalStyles.container}> */}
         {/* <Header headerText="Edit Contact Information" /> */}
         {/* <ScrollView> */}
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+        <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
           <View style={globalStyles.profilePictureContainer}>
             <Image
               source={
@@ -165,7 +168,10 @@ const editAccountInformationscreen = () => {
               size={32}
               style={globalStyles.userInputLabelIcon}
             />
-            <View style={{ flex: 1, paddingLeft: 14 }}>
+            <View style={{ 
+              flex: 1, 
+              paddingLeft: 14 
+            }}>
               <View style={globalStyles.deviceHeading}>
                 <Text style={globalStyles.userInputLabel}>Email</Text>
                 {/* <TouchableOpacity>
@@ -185,7 +191,11 @@ const editAccountInformationscreen = () => {
           </View>
         </View>
         {/* </ScrollView> */}
-        <View style={globalStyles.p_3}>
+        <View 
+        // style={
+        //   // globalStyles.p_3
+        // }
+        >
           <Button
             onPress={() => {
               handleSave();

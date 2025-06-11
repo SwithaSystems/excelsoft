@@ -63,7 +63,11 @@ const NotificationListing = () => {
       <FlatList
         ListHeaderComponent={
           <>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <View style={[
+              // globalStyles.sectionContent, 
+              globalStyles.pt_0
+              ]}
+            >
               <View style={[globalStyles.flexRowReverse, globalStyles.mb_3]}>
                 <TouchableOpacity onPress={() => {}}>
                   <Text style={globalStyles.btnSmUnderLine}>Clear all</Text>

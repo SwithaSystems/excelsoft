@@ -103,7 +103,10 @@ const categoriesScreen = () => {
               numColumns={2}
               columnWrapperStyle={[
                 styles.row,
-                { justifyContent: "space-between", paddingHorizontal: 16 },
+                { 
+                  justifyContent: "space-between", 
+                  // paddingHorizontal: 16 
+                },
               ]}
               contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}

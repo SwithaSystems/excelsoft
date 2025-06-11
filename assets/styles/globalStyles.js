@@ -271,7 +271,7 @@ export const globalStyles = StyleSheet.create({
   profileInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    // marginBottom: 16,
     backgroundColor: colors.white,
   },
   profileImage: {
@@ -285,7 +285,7 @@ export const globalStyles = StyleSheet.create({
   },
   profilePictureContainer: {
     alignItems: "center",
-    marginVertical: 24,
+    // marginVertical: 24,
     position: "relative",
   },
   userInputLabelIcon: {},

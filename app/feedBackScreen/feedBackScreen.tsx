@@ -125,7 +125,11 @@ const feedBackScreen = () => {
             }}
           />
           <ScrollView> */}
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+        <View style={[
+          // globalStyles.sectionContent, 
+          globalStyles.pt_0
+          ]}
+        >
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingTitle}>What is your Rating?</Text>
             <ProductStars
@@ -170,7 +174,9 @@ const feedBackScreen = () => {
           </View>
         </View>
         {/* </ScrollView> */}
-        <View style={globalStyles.p_3}>
+        <View 
+          // style={globalStyles.p_3}
+        >
           <Button
             title={isSubmitting ? "Submitting..." : "Submit Review"}
             onPress={handleAddReview}

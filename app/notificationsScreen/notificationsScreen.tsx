@@ -123,9 +123,18 @@ const notificationsScreen: React.FC = () => {
       scrollable
       headerComponent={<Header headerText="Notification Settings" />}
     >
-      <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-        <View style={[globalStyles.mb_2]}>
-          <View style={[globalStyles.mb_2, styles.eachNotificationSection]}>
+      <View style={[
+        // globalStyles.sectionContent, 
+        globalStyles.pt_0
+        ]}
+      >
+        <View style={[
+          // globalStyles.mb_2
+        ]}>
+          <View style={[
+            // globalStyles.mb_2, 
+            styles.eachNotificationSection
+          ]}>
             <Text style={styles.sectionTitle}>Push Notifications</Text>
             <Switch
               trackColor={{
@@ -163,8 +172,14 @@ const notificationsScreen: React.FC = () => {
         </View>
 
         {/* Email Notifications */}
-        <View style={[globalStyles.mb_2]}>
-          <View style={[globalStyles.mb_2, styles.eachNotificationSection]}>
+        <View 
+          // style={[globalStyles.mb_2]}
+        >
+          <View style={[
+            // globalStyles.mb_2, 
+            styles.eachNotificationSection
+            ]}
+          >
             <Text style={styles.sectionTitle}>Email Notifications</Text>
             <Switch
               trackColor={{
@@ -232,7 +247,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    // marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
@@ -242,7 +257,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 8,
+    // paddingVertical: 8,
   },
   switchLabel: {
     fontSize: 16,

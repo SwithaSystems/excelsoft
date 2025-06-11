@@ -36,7 +36,10 @@ const customerSupportScreen = () => {
       headerComponent={<Header headerText="Customer Support" />}
       footerComponent={<Footer />}
     >
-      <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+      <View style={[
+        // globalStyles.sectionContent, 
+        globalStyles.pt_0
+      ]}>
         <View>
           <Text style={styles.subtitle}>Please contact us at</Text>
 
