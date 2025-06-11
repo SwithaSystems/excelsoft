@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
-    paddingTop: 40,
+    // padding: 20,
+    // paddingTop: 40,
   },
   cartIcon: {
     marginBottom: 24,

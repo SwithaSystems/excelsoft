@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   cartIcon: {
-    marginBottom: 24,
+    // marginBottom: 24,
     opacity: 0.6,
   },
   textContainer: {
