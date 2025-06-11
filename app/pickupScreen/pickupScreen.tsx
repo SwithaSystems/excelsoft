@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
+import PageLayout from "../pageLayoutProps";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -558,93 +559,105 @@ const PickupScreen = () => {
   );
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      scrollable={false}
+      headerComponent={
+        <Header
+          headerText={
+            isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP
+          }
+        />
+      }
+    >
       <KeyBoardWrapper>
-        <View style={globalStyles.container}>
+        {/* <View style={globalStyles.container}>
           <Header
             headerText={
               isStorePickup
                 ? PickupMode.STORE_PICKUP
                 : PickupMode.CURBSIDE_PICKUP
             }
-          />
+          /> */}
 
-          <ScrollView ref={scrollViewRef}>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              {/* Instructions */}
-              <Text style={styles.label}>
-                {isStorePickup
-                  ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
-                  : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
-              </Text>
+        <ScrollView ref={scrollViewRef}>
+          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            {/* Instructions */}
+            <Text style={styles.label}>
+              {isStorePickup
+                ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
+                : "Do you like curb side pick up? Let us know the date and time that suits you for Curbside pickup."}
+            </Text>
 
-              {/* Date Picker */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Date: *</Text>
-                {Platform.OS === "web" ? (
-                  <input
-                    type="date"
-                    style={globalStyles.webDateInput}
-                    value={date}
-                    onChange={(e) => {
-                      setDate(e.target.value);
-                      validateTime(e.target.value, hours, minutes, period);
-                    }}
-                    min={new Date().toISOString().split("T")[0]}
-                  />
-                ) : (
-                  <TouchableOpacity
-                    style={globalStyles.dateInput}
-                    onPress={() => setShowDatePicker(true)}
-                  >
-                    <Text>{date}</Text>
-                  </TouchableOpacity>
-                )}
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={new Date(date)}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                    minimumDate={new Date()}
-                  />
-                )}
-              </View>
-
-              {/* Time Input */}
-              <Text style={styles.inputLabel}>Time: *</Text>
-              <View style={globalStyles.timeContainer}>
-                {/* Hours */}
-                <TextInput
-                  ref={hoursRef}
-                  style={[
-                    globalStyles.timeInput,
-                    timeError ? { borderColor: "red" } : {},
-                  ]}
-                  placeholder="HH"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  value={hours}
-                  onChangeText={handleHoursChange}
-                  accessibilityLabel="Hours"
+            {/* Date Picker */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Date: *</Text>
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  style={globalStyles.webDateInput}
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    validateTime(e.target.value, hours, minutes, period);
+                  }}
+                  min={new Date().toISOString().split("T")[0]}
                 />
-                <Text>:</Text>
-                {/* Minutes */}
-                <TextInput
-                  ref={minutesRef}
-                  style={[
-                    globalStyles.timeInput,
-                    timeError ? { borderColor: "red" } : {},
-                  ]}
-                  placeholder="MM"
-                  keyboardType="numeric"
-                  maxLength={2}
-                  value={minutes}
-                  onChangeText={handleMinutesChange}
-                  accessibilityLabel="Minutes"
+              ) : (
+                <TouchableOpacity
+                  style={globalStyles.dateInput}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text>{date}</Text>
+                </TouchableOpacity>
+              )}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={new Date(date)}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  minimumDate={new Date()}
                 />
-                {/* AM/PM */}
-                {/* <View
+              )}
+            </View>
+
+            {/* Time Input */}
+            <Text style={styles.inputLabel}>Time: *</Text>
+            <View style={globalStyles.timeContainer}>
+              {/* Hours */}
+              <TextInput
+                ref={hoursRef}
+                style={[
+                  globalStyles.timeInput,
+                  timeError ? { borderColor: "red" } : {},
+                ]}
+                placeholder="HH"
+                keyboardType="numeric"
+                maxLength={2}
+                value={hours}
+                onChangeText={handleHoursChange}
+                accessibilityLabel="Hours"
+              />
+              <Text>:</Text>
+              {/* Minutes */}
+              <TextInput
+                ref={minutesRef}
+                style={[
+                  globalStyles.timeInput,
+                  timeError ? { borderColor: "red" } : {},
+                ]}
+                placeholder="MM"
+                keyboardType="numeric"
+                maxLength={2}
+                value={minutes}
+                onChangeText={handleMinutesChange}
+                accessibilityLabel="Minutes"
+              />
+              {/* AM/PM */}
+              {/* <View
                   style={{
                     borderColor: timeError ? "red" : colors.primary,
                     borderWidth: 1,
@@ -674,220 +687,219 @@ const PickupScreen = () => {
                     />
                   </ModalSelector>
                 </View> */}
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      period === "am" && styles.activeToggle,
-                    ]}
-                    onPress={() => handlePeriodChange("am")}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        period === "am" && styles.activeText,
-                      ]}
-                    >
-                      AM
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      period === "pm" && styles.activeToggle,
-                    ]}
-                    onPress={() => handlePeriodChange("pm")}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        period === "pm" && styles.activeText,
-                      ]}
-                    >
-                      PM
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Time validation error message */}
-              {timeError ? (
-                <Text style={inputStyles.errorText}>{timeError}</Text>
-              ) : null}
-
-              {/* Curbside Specific Fields */}
-              {isCurbsidePickup && (
-                <>
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Vehicle Type: *</Text>
-                    <View
-                      style={{
-                        borderColor: colors.primary,
-                        borderWidth: 1,
-                        height: 40,
-                        width: 250,
-                        borderRadius: 8,
-                        justifyContent: "center",
-                      }}
-                    >
-                      <ModalSelector
-                        data={VEHICLE_TYPE_OPTIONS}
-                        initValue="Select Vehicle Type"
-                        onChange={(option) => setVehicleType(option.value)}
-                        optionTextStyle={{ color: colors.primary }}
-                        optionContainerStyle={{ backgroundColor: colors.white }}
-                        cancelStyle={{ backgroundColor: colors.white }}
-                        accessible={true}
-                        accessibilityLabel="Select vehicle type"
-                      >
-                        <TextInput
-                          style={globalStyles.picker_50}
-                          editable={false}
-                          value={vehicleType}
-                        />
-                      </ModalSelector>
-                    </View>
-                  </View>
-
-                  {renderTextInput(
-                    "Vehicle Number",
-                    vehicleNumber,
-                    setVehicleNumber,
-                    true,
-                    {},
-                    null,
-                    vehicleNumberRef
-                  )}
-
-                  {renderTextInput(
-                    "Additional Details",
-                    additionalDetails,
-                    setAdditionalDetails,
-                    false,
-                    {
-                      multiline: true,
-                      numberOfLines: 3,
-                    }
-                  )}
-                </>
-              )}
-
-              {/* Collector Information */}
-              <Text style={styles.sectionTitle}>
-                Let us know who is collecting?
-              </Text>
-
-              <View style={styles.collectorOptions}>
-                {/* Myself option */}
+              <View style={styles.toggleContainer}>
                 <TouchableOpacity
-                  style={styles.radioOption}
-                  onPress={() => handleCollectorChange("myself")}
-                  accessible={true}
-                  accessibilityLabel="Select myself as collector"
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: collector === "myself" }}
+                  style={[
+                    styles.toggleButton,
+                    period === "am" && styles.activeToggle,
+                  ]}
+                  onPress={() => handlePeriodChange("am")}
                 >
-                  <View
+                  <Text
                     style={[
-                      styles.radio,
-                      collector === "myself" && styles.radioSelected,
+                      styles.toggleText,
+                      period === "am" && styles.activeText,
                     ]}
                   >
-                    {collector === "myself" && (
-                      <View style={styles.radioInner} />
-                    )}
-                  </View>
-                  <Text style={styles.radioLabel}>Myself</Text>
+                    AM
+                  </Text>
                 </TouchableOpacity>
 
-                {/* Someone else option */}
                 <TouchableOpacity
-                  style={styles.radioOption}
-                  onPress={() => handleCollectorChange("someone_else")}
-                  accessible={true}
-                  accessibilityLabel="Select someone else as collector"
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: collector === "someone_else" }}
+                  style={[
+                    styles.toggleButton,
+                    period === "pm" && styles.activeToggle,
+                  ]}
+                  onPress={() => handlePeriodChange("pm")}
                 >
-                  <View
+                  <Text
                     style={[
-                      styles.radio,
-                      collector === "someone_else" && styles.radioSelected,
+                      styles.toggleText,
+                      period === "pm" && styles.activeText,
                     ]}
                   >
-                    {collector === "someone_else" && (
-                      <View style={styles.radioInner} />
-                    )}
-                  </View>
-                  <Text style={styles.radioLabel}>Someone Else</Text>
+                    PM
+                  </Text>
                 </TouchableOpacity>
               </View>
-
-              <Text style={styles.helperText}>
-                Fill some basic details of the person who is going to receive
-                the order.
-              </Text>
-
-              {/* User information fields */}
-              {renderTextInput(
-                "First Name",
-                firstName,
-                setFirstName,
-                true,
-                { editable: collector !== "myself" },
-                null,
-                firstNameRef
-              )}
-              {renderTextInput(
-                "Last Name",
-                lastName,
-                setLastName,
-                true,
-                { editable: collector !== "myself" },
-                null,
-                lastNameRef
-              )}
-              {renderTextInput(
-                "Phone",
-                phone,
-                setPhone,
-                true,
-                {
-                  keyboardType: "phone-pad",
-                },
-                null,
-                phoneRef
-              )}
-              {renderTextInput(
-                "Email",
-                email,
-                handleEmailChange,
-                true,
-                {
-                  keyboardType: "email-address",
-                  autoCapitalize: "none",
-                },
-                emailError,
-                emailRef
-              )}
-
-              <Text style={inputStyles.note}>
-                *Please ensure you carry a valid ID Proof
-              </Text>
-
-              {/* Submit button */}
-              <Button
-                title="Confirm"
-                onPress={handleSubmit}
-                disabled={isLoading}
-                style={isLoading ? inputStyles.disabledButton : {}}
-              />
             </View>
-          </ScrollView>
-        </View>
+
+            {/* Time validation error message */}
+            {timeError ? (
+              <Text style={inputStyles.errorText}>{timeError}</Text>
+            ) : null}
+
+            {/* Curbside Specific Fields */}
+            {isCurbsidePickup && (
+              <>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Vehicle Type: *</Text>
+                  <View
+                    style={{
+                      borderColor: colors.primary,
+                      borderWidth: 1,
+                      height: 40,
+                      width: 250,
+                      borderRadius: 8,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ModalSelector
+                      data={VEHICLE_TYPE_OPTIONS}
+                      initValue="Select Vehicle Type"
+                      onChange={(option) => setVehicleType(option.value)}
+                      optionTextStyle={{ color: colors.primary }}
+                      optionContainerStyle={{ backgroundColor: colors.white }}
+                      cancelStyle={{ backgroundColor: colors.white }}
+                      accessible={true}
+                      accessibilityLabel="Select vehicle type"
+                    >
+                      <TextInput
+                        style={globalStyles.picker_50}
+                        editable={false}
+                        value={vehicleType}
+                      />
+                    </ModalSelector>
+                  </View>
+                </View>
+
+                {renderTextInput(
+                  "Vehicle Number",
+                  vehicleNumber,
+                  setVehicleNumber,
+                  true,
+                  {},
+                  null,
+                  vehicleNumberRef
+                )}
+
+                {renderTextInput(
+                  "Additional Details",
+                  additionalDetails,
+                  setAdditionalDetails,
+                  false,
+                  {
+                    multiline: true,
+                    numberOfLines: 3,
+                  }
+                )}
+              </>
+            )}
+
+            {/* Collector Information */}
+            <Text style={styles.sectionTitle}>
+              Let us know who is collecting?
+            </Text>
+
+            <View style={styles.collectorOptions}>
+              {/* Myself option */}
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => handleCollectorChange("myself")}
+                accessible={true}
+                accessibilityLabel="Select myself as collector"
+                accessibilityRole="radio"
+                accessibilityState={{ checked: collector === "myself" }}
+              >
+                <View
+                  style={[
+                    styles.radio,
+                    collector === "myself" && styles.radioSelected,
+                  ]}
+                >
+                  {collector === "myself" && <View style={styles.radioInner} />}
+                </View>
+                <Text style={styles.radioLabel}>Myself</Text>
+              </TouchableOpacity>
+
+              {/* Someone else option */}
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => handleCollectorChange("someone_else")}
+                accessible={true}
+                accessibilityLabel="Select someone else as collector"
+                accessibilityRole="radio"
+                accessibilityState={{ checked: collector === "someone_else" }}
+              >
+                <View
+                  style={[
+                    styles.radio,
+                    collector === "someone_else" && styles.radioSelected,
+                  ]}
+                >
+                  {collector === "someone_else" && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>Someone Else</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.helperText}>
+              Fill some basic details of the person who is going to receive the
+              order.
+            </Text>
+
+            {/* User information fields */}
+            {renderTextInput(
+              "First Name",
+              firstName,
+              setFirstName,
+              true,
+              { editable: collector !== "myself" },
+              null,
+              firstNameRef
+            )}
+            {renderTextInput(
+              "Last Name",
+              lastName,
+              setLastName,
+              true,
+              { editable: collector !== "myself" },
+              null,
+              lastNameRef
+            )}
+            {renderTextInput(
+              "Phone",
+              phone,
+              setPhone,
+              true,
+              {
+                keyboardType: "phone-pad",
+              },
+              null,
+              phoneRef
+            )}
+            {renderTextInput(
+              "Email",
+              email,
+              handleEmailChange,
+              true,
+              {
+                keyboardType: "email-address",
+                autoCapitalize: "none",
+              },
+              emailError,
+              emailRef
+            )}
+
+            <Text style={inputStyles.note}>
+              *Please ensure you carry a valid ID Proof
+            </Text>
+
+            {/* Submit button */}
+            <Button
+              title="Confirm"
+              onPress={handleSubmit}
+              disabled={isLoading}
+              style={isLoading ? inputStyles.disabledButton : {}}
+            />
+          </View>
+        </ScrollView>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
