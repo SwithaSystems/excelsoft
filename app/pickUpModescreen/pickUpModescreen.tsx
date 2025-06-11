@@ -16,6 +16,7 @@ import Button from "@/components/commonComponents/Button";
 import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import PageLayout from "../pageLayoutProps";
 
 const options = [
   {
@@ -49,62 +50,67 @@ const pickUpModescreen = () => {
   >({});
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <ScrollView>
-        <Header headerText="Pick up Options" />
-        <View
-          style={[
-            globalStyles.sectionContent,
-            globalStyles.pt_0,
-            { paddingHorizontal: 40 },
-          ]}
-        >
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.option,
-                selected?.id == option.id && styles.selectedOption,
-              ]}
-              onPress={() => setSelected(option)}
-            >
-              <View style={styles.iconContainer}>
-                <Ionicons
-                  name={option.icon}
-                  size={24}
-                  color={colors.black}
-                  // style={styles.icon}
-                />
-              </View>
-              <View style={styles.textContainer}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
-                <Text style={styles.optionDescription}>
-                  {option.description}
-                </Text>
-              </View>
-              <View style={styles.radioCircle}>
-                {selected.id === option.id && (
-                  <View style={styles.selectedRadio} />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
-          <Button
-            title="Continue"
-            onPress={() => {
-              if (selected?.id) {
-                redirectToPage(selected?.redirectionScreen, selected?.params);
-              }
-            }}
-            disabled={!selected?.id}
-            style={!selected?.id ? styles.disabledButton : {}}
-            textStyle={!selected?.id ? styles.buttonText_disabled : {}}
-          />
-        </View>
-      </ScrollView>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <View style={globalStyles.container}>
+    //   <ScrollView>
+    //     <Header headerText="Pick up Options" />
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText="Pick up Options" />}
+      hasFooter={false}
+      scrollable={false}
+    >
+      <View
+        style={[
+          globalStyles.sectionContent,
+          globalStyles.pt_0,
+          { paddingHorizontal: 40 },
+        ]}
+      >
+        {options.map((option) => (
+          <TouchableOpacity
+            key={option.id}
+            style={[
+              styles.option,
+              selected?.id == option.id && styles.selectedOption,
+            ]}
+            onPress={() => setSelected(option)}
+          >
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name={option.icon}
+                size={24}
+                color={colors.black}
+                // style={styles.icon}
+              />
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.optionLabel}>{option.label}</Text>
+              <Text style={styles.optionDescription}>{option.description}</Text>
+            </View>
+            <View style={styles.radioCircle}>
+              {selected.id === option.id && (
+                <View style={styles.selectedRadio} />
+              )}
+            </View>
+          </TouchableOpacity>
+        ))}
+        <Button
+          title="Continue"
+          onPress={() => {
+            if (selected?.id) {
+              redirectToPage(selected?.redirectionScreen, selected?.params);
+            }
+          }}
+          disabled={!selected?.id}
+          style={!selected?.id ? styles.disabledButton : {}}
+          textStyle={!selected?.id ? styles.buttonText_disabled : {}}
+        />
+      </View>
+      {/* </ScrollView>
     </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
