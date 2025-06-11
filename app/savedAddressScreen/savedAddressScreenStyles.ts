@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   addressList:{
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     //alignItems:"center",
   },
   centeredContainer: {

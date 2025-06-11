@@ -180,7 +180,10 @@ const orderDetailsScreen = () => {
             needResetNavigation={from !== "myOrders"}
           />
           <ScrollView> */}
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
             <View style={{}}>
               <QRCodeDisplay
                 qrValue={orderDetails?.orderNumber}

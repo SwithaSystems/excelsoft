@@ -71,7 +71,10 @@ const myOrderScreen = () => {
         <FlatList
           ListHeaderComponent={
             <>
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={[
+                // globalStyles.sectionContent, 
+                globalStyles.pt_0
+              ]}>
                 <Text style={styles.yourLastOrders}>Your last orders</Text>
 
                 <FlatList
