@@ -26,6 +26,7 @@ import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setUserData } from "@/store/slices/userSlice";
+import PageLayout from "../pageLayoutProps";
 
 const editAccountInformationscreen = () => {
   const dispatch = useDispatch();
@@ -105,32 +106,38 @@ const editAccountInformationscreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText="Edit Contact Information" />}
+    >
       <KeyBoardWrapper>
-        <View style={globalStyles.container}>
-          <Header headerText="Edit Contact Information" />
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <View style={globalStyles.profilePictureContainer}>
-                <Image
-                  source={
-                    profileImage
-                      ? { uri: profileImage }
-                      : require("../../assets/default_user_profile.png")
-                  }
-                  style={globalStyles.profileImage}
-                />
-              </View>
-              <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="phone"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <View style={globalStyles.deviceHeading}>
-                    <Text style={globalStyles.userInputLabel}>Phone</Text>
-                    {/* <TouchableOpacity>
+        {/* <View style={globalStyles.container}> */}
+        {/* <Header headerText="Edit Contact Information" /> */}
+        {/* <ScrollView> */}
+        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={globalStyles.profilePictureContainer}>
+            <Image
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : require("../../assets/default_user_profile.png")
+              }
+              style={globalStyles.profileImage}
+            />
+          </View>
+          <View style={globalStyles.profileInputContainer}>
+            <FontAwesome
+              name="phone"
+              size={32}
+              style={globalStyles.userInputLabelIcon}
+            />
+            <View style={{ flex: 1, paddingLeft: 14 }}>
+              <View style={globalStyles.deviceHeading}>
+                <Text style={globalStyles.userInputLabel}>Phone</Text>
+                {/* <TouchableOpacity>
                       <Text
                         style={globalStyles.verify}
                         onPress={() => {
@@ -140,57 +147,58 @@ const editAccountInformationscreen = () => {
                         verify
                       </Text>
                     </TouchableOpacity> */}
-                  </View>
-                  <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="phone number"
-                    value={phone}
-                    onPress={() => {}}
-                    setValue={setPhone}
-                    keyboardType="phone-pad"
-                  />
-                </View>
               </View>
+              <CustomTextInput
+                containerStyle={globalStyles.userInputContainer}
+                TextStyle={globalStyles.input}
+                placeholder="phone number"
+                value={phone}
+                onPress={() => {}}
+                setValue={setPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
 
-              <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="envelope-o"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <View style={globalStyles.deviceHeading}>
-                    <Text style={globalStyles.userInputLabel}>Email</Text>
-                    {/* <TouchableOpacity>
+          <View style={globalStyles.profileInputContainer}>
+            <FontAwesome
+              name="envelope-o"
+              size={32}
+              style={globalStyles.userInputLabelIcon}
+            />
+            <View style={{ flex: 1, paddingLeft: 14 }}>
+              <View style={globalStyles.deviceHeading}>
+                <Text style={globalStyles.userInputLabel}>Email</Text>
+                {/* <TouchableOpacity>
                       <Text style={globalStyles.verify}>verify</Text>
                     </TouchableOpacity> */}
-                  </View>
-                  <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="email"
-                    value={email}
-                    onPress={() => {}}
-                    setValue={setEmail}
-                    keyboardType="email-address"
-                  />
-                </View>
               </View>
+              <CustomTextInput
+                containerStyle={globalStyles.userInputContainer}
+                TextStyle={globalStyles.input}
+                placeholder="email"
+                value={email}
+                onPress={() => {}}
+                setValue={setEmail}
+                keyboardType="email-address"
+              />
             </View>
-          </ScrollView>
-          <View style={globalStyles.p_3}>
-            <Button
-              onPress={() => {
-                handleSave();
-                // redirectToPage(containers.userProfileScreenScreen);
-              }}
-              title="Save"
-            />
           </View>
         </View>
+        {/* </ScrollView> */}
+        <View style={globalStyles.p_3}>
+          <Button
+            onPress={() => {
+              handleSave();
+              // redirectToPage(containers.userProfileScreenScreen);
+            }}
+            title="Save"
+          />
+        </View>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+    </PageLayout>
+    /* </SafeAreaView> */
   );
 };
 
