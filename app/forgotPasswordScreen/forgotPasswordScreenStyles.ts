@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    // paddingHorizontal: 10,
     marginTop: 10,
   },
   toggleContainer: {
