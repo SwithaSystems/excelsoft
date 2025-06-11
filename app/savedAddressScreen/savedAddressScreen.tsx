@@ -20,6 +20,7 @@ import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import AddressItem from "../components/AddressItem";
 import NoContentFound from "@/components/NoContentFound";
 import colors from "../config/colors";
+import PageLayout from "../pageLayoutProps";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -119,67 +120,82 @@ const savedAddressScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasHeader
+      scrollable={false}
+      headerComponent={<Header headerText="Saved Address" />}
+    >
       <View style={globalStyles.container}>
-        <Header headerText="Saved Address" />
-        {/* <ScrollView> */}
-        <FlatList
-          ListHeaderComponent={
-            <>
-              {addressData.length === 0 ? (
-                <View style={{ flex: 1, padding: 16 }}>
-                  <NoContentFound message="No saved address found" />
-                </View>
-              ) : (
-                <View style={styles.centeredContainer}>
-                <View style={[globalStyles.sectionContent, globalStyles.pt_0, { width: 350, paddingLeft: 32 }]}>
-                  <Text style={styles.sectionTitle}>Default Address</Text>
-                  <FlatList
-                    data={addressData.filter((address) => address.isDefault)}
-                    renderItem={({ item }) => (
-                      <AddressItem
-                        item={item}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+        {/* <Header headerText="Saved Address" /> */}
+        <ScrollView>
+          <FlatList
+            ListHeaderComponent={
+              <>
+                {addressData.length === 0 ? (
+                  <View style={{ flex: 1, padding: 16 }}>
+                    <NoContentFound message="No saved address found" />
+                  </View>
+                ) : (
+                  <View style={styles.centeredContainer}>
+                    <View
+                      style={[
+                        globalStyles.sectionContent,
+                        globalStyles.pt_0,
+                        { width: 350, paddingLeft: 32 },
+                      ]}
+                    >
+                      <Text style={styles.sectionTitle}>Default Address</Text>
+                      <FlatList
+                        data={addressData.filter(
+                          (address) => address.isDefault
+                        )}
+                        renderItem={({ item }) => (
+                          <AddressItem
+                            item={item}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                          />
+                        )}
+                        keyExtractor={(item) => item._id}
+                        contentContainerStyle={styles.addressList}
                       />
-                    )}
-                    keyExtractor={(item) => item._id}
-                    contentContainerStyle={styles.addressList}
-                  />
 
-                  <Text style={styles.sectionTitle}>Address</Text>
-                  <FlatList
-                    data={addressData.filter((address) => !address.isDefault)}
-                    renderItem={({ item }) => (
-                      <AddressItem
-                        item={item}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                      <Text style={styles.sectionTitle}>Address</Text>
+                      <FlatList
+                        data={addressData.filter(
+                          (address) => !address.isDefault
+                        )}
+                        renderItem={({ item }) => (
+                          <AddressItem
+                            item={item}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                          />
+                        )}
+                        keyExtractor={(item) => item._id}
+                        contentContainerStyle={styles.addressList}
                       />
-                    )}
-                    keyExtractor={(item) => item._id}
-                    contentContainerStyle={styles.addressList}
-                  />
-                </View>
-                </View>
-              )}
-              <ConfirmationModal
-                onClose={() => {
-                  setIsModalVisible(false);
-                }}
-                isModalVisible={isModalVisible}
-                text="Are you sure you want to delete this address?"
-                submitText="Delete Address"
-                handleSubmit={confirmDelete}
-                cancelText="Cancel"
-                handleCancel={cancelDelete}
-              />
-            </>
-          }
-          data={[]} // No actual data here — just to use FlatList as scroll container
-          renderItem={null}
-        />
-        {/* </ScrollView> */}
+                    </View>
+                  </View>
+                )}
+                <ConfirmationModal
+                  onClose={() => {
+                    setIsModalVisible(false);
+                  }}
+                  isModalVisible={isModalVisible}
+                  text="Are you sure you want to delete this address?"
+                  submitText="Delete Address"
+                  handleSubmit={confirmDelete}
+                  cancelText="Cancel"
+                  handleCancel={cancelDelete}
+                />
+              </>
+            }
+            data={[]} // No actual data here — just to use FlatList as scroll container
+            renderItem={null}
+          />
+        </ScrollView>
         <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
           <View style={styles.addressList}>
             <Button
@@ -191,7 +207,8 @@ const savedAddressScreen = () => {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </PageLayout>
+    // </SafeAreaView>
   );
 };
 
