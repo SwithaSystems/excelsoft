@@ -33,6 +33,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AddressItem from "../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../components/usePaymentHandler";
+import PageLayout from "../pageLayoutProps";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -275,10 +276,18 @@ const orderSummeryScreen = () => {
     (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={globalStyles.container}>
+    //     <ScrollView>
+    //       <Header headerText="Order Summary" />
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText="Order Summary" />}
+      hasFooter={false}
+      scrollable={false}
+    >
       <View style={globalStyles.container}>
         <ScrollView>
-          <Header headerText="Order Summary" />
           <View
             style={[
               globalStyles.sectionContent,
@@ -456,10 +465,8 @@ Contact Number: ${pickupAddress.phone}`}
                             keyExtractor={(item, index) =>
                               item._id?.toString() || `address-${index}`
                             }
-                            contentContainerStyle={[
-                              styles.addressList,
-                              { paddingLeft: 16 },
-                            ]}
+                            contentContainerStyle={styles.addressList}
+                            showsVerticalScrollIndicator={false}
                           />
                         ) : (
                           <View style={styles.noAddressContainer}>
@@ -572,7 +579,8 @@ Contact Number: ${pickupAddress.phone}`}
           handleCancel={cancelDelete}
         />
       </View>
-    </SafeAreaView>
+      {/*</SafeAreaView> */}
+    </PageLayout>
   );
 };
 
