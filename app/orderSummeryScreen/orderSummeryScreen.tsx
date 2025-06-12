@@ -290,7 +290,7 @@ const orderSummeryScreen = () => {
         <ScrollView>
           <View
             style={[
-              globalStyles.sectionContent,
+              // globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.pb_0,
             ]}
@@ -303,7 +303,10 @@ const orderSummeryScreen = () => {
                 <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
-              <View style={[globalStyles.pl_3, styles.deliverAddress]}>
+              <View style={[
+                globalStyles.pl_3, 
+                styles.deliverAddress]}
+              >
                 {selectedMode === "storePickup" ? (
                   <Ionicons
                     name="storefront"
@@ -540,7 +543,10 @@ Contact Number: ${pickupAddress.phone}`}
             </View>
           </View>
 
-          <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
+          <View style={{ 
+            paddingHorizontal: 24, 
+            // paddingBottom: 14 
+          }}>
             <Button
               title="Proceed for Payment"
               disabled={!isPaymentEnabled}

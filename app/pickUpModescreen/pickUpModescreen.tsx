@@ -62,9 +62,9 @@ const pickUpModescreen = () => {
     >
       <View
         style={[
-          globalStyles.sectionContent,
+          // globalStyles.sectionContent,
           globalStyles.pt_0,
-          { paddingHorizontal: 40 },
+          { paddingHorizontal: 20 },
         ]}
       >
         {options.map((option) => (

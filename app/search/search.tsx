@@ -249,6 +249,7 @@ const SearchScreen = () => {
       </>
     );
   }, [recentSearches, handleSelectRecentSearch]);
+  
   const renderTrendingSearches = () => {
     return (
       <View style={styles.section}>

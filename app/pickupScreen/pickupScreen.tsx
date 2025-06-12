@@ -583,7 +583,11 @@ const PickupScreen = () => {
           /> */}
 
         <ScrollView ref={scrollViewRef}>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+           ]}
+          >
             {/* Instructions */}
             <Text style={styles.label}>
               {isStorePickup

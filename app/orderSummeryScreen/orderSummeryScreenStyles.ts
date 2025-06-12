@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 16,
     fontWeight: 600,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   addressTextBox: {
     // height: 150,

@@ -14,8 +14,8 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   inputContainer: {
-    marginBottom: 20,
-    paddingTop: 16,
+     marginBottom: 16,
+    // paddingTop: 16,
   },
   required: {
     color: colors.error,
@@ -42,17 +42,16 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: "row",
     backgroundColor: colors.white,
-    padding: 2,
     width: 120,
     borderWidth: 1,
     borderColor: colors.primary,
-    borderRadius: 30,
+    borderRadius: 10,
   },
   toggleButton: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 30,
+    paddingVertical: 8,
+    // paddingHorizontal: 16,
+    borderRadius: 10,
     alignItems: "center",
   },
   activeToggle: {

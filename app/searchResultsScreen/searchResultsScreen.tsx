@@ -274,7 +274,9 @@ const SearchResultsScreen = () => {
 
     if (!displayProducts.length) {
       return (
-        <View style={{ flex: 1, padding: 16 }}>
+        <View style={{ flex: 1, 
+          // padding: 16 
+        }}>
           <NoContentFound message="No products found" />
         </View>
       );

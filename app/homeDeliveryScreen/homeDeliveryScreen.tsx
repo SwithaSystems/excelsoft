@@ -583,7 +583,10 @@ const HomeDeliveryScreen = () => {
         <FlatList
           ListHeaderComponent={
             <>
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={[
+                // globalStyles.sectionContent, 
+                globalStyles.pt_0]}
+              >
                 <Text style={styles.label}>
                   Do you prefer home delivery? Let us know your available day
                   and time.

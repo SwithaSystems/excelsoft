@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 14,
     fontWeight: "500",
-    paddingLeft: 15,
+    // paddingLeft: 15,
   },
   trendingGrid: {
     flexDirection: "row",
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   emptyStateText: {
     color: colors.black,
     textAlign: "center",
-    paddingRight: 15,
+    // paddingRight: 15,
     paddingBottom: 16,
     fontSize: 14,
     fontWeight: "600",
