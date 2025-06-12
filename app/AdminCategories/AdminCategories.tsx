@@ -333,7 +333,11 @@ const AdminCategories = () => {
                       style={styles.removeImageButton}
                       onPress={() => removeImage(index)}
                     >
-                      <Ionicons name="close-circle" size={24} color="#ff4444" />
+                      <Ionicons
+                        name="close-circle"
+                        size={24}
+                        color={colors.saturatedRed}
+                      />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -436,7 +440,7 @@ const styles = StyleSheet.create({
   imageLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: colors.darkCharcoal,
     marginBottom: 8,
   },
   imagePickerButton: {
@@ -505,11 +509,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.lightSkyBlue,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderColor: colors.shadeOfBlueGray,
   },
   categoryContent: {
     flexDirection: "row",
@@ -528,22 +532,22 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: colors.darkCharcoal,
     marginBottom: 2,
   },
   categoryDescription: {
     fontSize: 14,
-    color: "#666",
+    color: colors.darkGray,
     marginBottom: 2,
   },
   categoryId: {
     fontSize: 12,
-    color: "#888",
+    color: colors.lightgrey,
     marginBottom: 1,
   },
   parentCategory: {
     fontSize: 12,
-    color: "#888",
+    color: colors.lightgrey,
   },
   emptyState: {
     padding: 20,
@@ -551,7 +555,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#888",
+    color: colors.lightgrey,
   },
 });
 

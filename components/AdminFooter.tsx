@@ -91,7 +91,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
       <Ionicons
         name={icon}
         size={24}
-        color={isActive ? colors.primary : "#666"}
+        color={isActive ? colors.primary : colors.iconBlack}
       />
       {badge > 0 && (
         <View style={styles.badge}>
@@ -99,7 +99,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
         </View>
       )}
     </View>
-    <Text style={{ fontSize: 10, color: isActive ? colors.primary : "#666" }}>
+    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.iconBlack }}>
       {label}
     </Text>
   </TouchableOpacity>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: "#FF4B4B",
+    backgroundColor: colors.alertRed,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 12,
     fontWeight: "bold",
   },

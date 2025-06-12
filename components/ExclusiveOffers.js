@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   saleTimeBox: {
-    backgroundColor: "#E9F3F6",
+    backgroundColor: colors.lightSkyBlue,
     flexDirection: "row",
   },
   saleTime: {

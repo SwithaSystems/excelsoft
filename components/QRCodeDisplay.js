@@ -23,12 +23,12 @@ const styles = StyleSheet.create({
     //flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   noteText:{
     fontWeight: 500,
     fontSize: 14,
-    color: "#FF0101",
+    color: colors.hardError,
     marginBottom: 16,
   },
 });

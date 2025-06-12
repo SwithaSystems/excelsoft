@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: colors.borderGrey,
     paddingTop: 10,
   },
 });

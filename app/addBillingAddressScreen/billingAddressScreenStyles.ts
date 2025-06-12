@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: colors.lightgrey,
     borderRadius: 8,
     padding: 15,
     fontSize: 16,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 8,
     marginBottom: 32,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   inputError: {
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
   },
   submitButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

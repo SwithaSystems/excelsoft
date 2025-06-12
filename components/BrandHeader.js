@@ -117,7 +117,7 @@ function BrandHeader(props) {
                   {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
                 </Text>
               )}
-              <Ionicons name="person-circle-outline" size={24} color="#000" />
+              <Ionicons name="person-circle-outline" size={24} color={colors.black} />
             </View>
           </TouchableOpacity>
 
@@ -150,7 +150,7 @@ function BrandHeader(props) {
               redirectToPage(containers.UserNotificationsScreen);
             }}
           >
-            <Ionicons name="notifications" size={24} color="#000" />
+            <Ionicons name="notifications" size={24} color={colors.black} />
           </TouchableOpacity>
         </View>
       </View>
