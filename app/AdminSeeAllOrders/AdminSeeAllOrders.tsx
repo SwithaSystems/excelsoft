@@ -166,7 +166,7 @@ const AdminSeeAllOrders = () => {
     >
       <View
         style={[
-          globalStyles.sectionContent,
+          // globalStyles.sectionContent,
           globalStyles.pt_0,
           globalStyles.pb_0,
         ]}
@@ -235,10 +235,10 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.white || "#FFFFFF",
     borderRadius: 25,
-    marginHorizontal: 16,
+    // marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+    paddingVertical: Platform.OS === "ios" ? 4 : 8,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -305,7 +305,7 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 10,
     marginBottom: 16,
-    gap: 10,
+    gap: 4,
     flexWrap: "wrap",
   },
   badge: {

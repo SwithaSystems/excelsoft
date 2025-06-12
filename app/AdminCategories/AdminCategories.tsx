@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginBottom: 24,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
   },
   listSection: {
     flex: 1,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
   },
   listContainer: {
     paddingBottom: 20,

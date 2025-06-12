@@ -11,11 +11,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "400",
-    marginBottom: 35,
+    marginVertical: 16,
     color: "#00BFFF",
   },
   metricsContainer: {
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
   },
   metricBox: {
     backgroundColor: colors.secondary,
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   ordersHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 16,
+    marginBottom: 16,
   },
   recentOrdersTitle: {
     fontSize: 20,

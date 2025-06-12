@@ -375,7 +375,7 @@ const AdminProductUpdation = () => {
         <ScrollView>
           <View
             style={[
-              globalStyles.sectionContent,
+              // globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.mt_n3,
             ]}

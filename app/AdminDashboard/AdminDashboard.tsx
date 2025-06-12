@@ -296,7 +296,10 @@ const AdminDashboard = () => {
       scrollable
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+        <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
           <Text style={styles.title}>Dashboard</Text>
 
           <View style={styles.metricsContainer}>

@@ -213,7 +213,7 @@ const AdminProductDashboard = () => {
     >
       <View
         style={[
-          globalStyles.sectionContent,
+          // globalStyles.sectionContent,
           globalStyles.pt_0,
           { paddingTop: 16 },
         ]}

@@ -89,16 +89,19 @@ const changePasswordScreen = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
+      scrollable={false}
       hasHeader
       hasFooter={false}
       headerComponent={<Header headerText="Change Password" />}
-      scrollable={false}
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
         {/* <Header headerText="Change Password" /> */}
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
             {/* <View style={globalStyles.profilePictureContainer}>
             <Image
               source={{ uri: "https://picsum.photos/100" }}
@@ -153,17 +156,23 @@ const changePasswordScreen = () => {
                   setValue={setConfirmPassword}
                 />
               </View>
+              
             </View>
+              <Button onPress={handleChangePassword} title="Save Password" />
           </View>
         </ScrollView>
-        <View style={globalStyles.p_3}>
+         {/* <Button
+            onPress={handleChangePassword}
+            title="Save"
+          /> */}
+        {/* <View style={globalStyles.p_3}>
           <Button
             onPress={() => {
               handleChangePassword();
             }}
             title="Save Password"
           />
-        </View>
+        </View> */}
         {/* </View> */}
       </KeyBoardWrapper>
     </PageLayout>

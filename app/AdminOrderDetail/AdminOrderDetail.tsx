@@ -15,6 +15,7 @@ import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import PageLayout from "../pageLayoutProps";
+import ModalSelector from "react-native-modal-selector";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -119,12 +120,16 @@ const AdminOrderDetail = () => {
       >
         {/* <SafeAreaView style={{ flex: 1 }}> */}
         <View
-          style={[globalStyles.sectionContent, globalStyles.pt_0, { flex: 1 }]}
+          style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0, 
+            { flex: 1 }
+          ]}
         >
           <ScrollView
             style={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 100 }}
+            // contentContainerStyle={{ paddingBottom: 100 }}
           >
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
@@ -218,17 +223,39 @@ const AdminOrderDetail = () => {
               >
                 Status:
               </Text>
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ddd",
-                  borderRadius: 8,
-                  backgroundColor: "#fff",
-                  height: 50,
-                  justifyContent: "center",
-                }}
-              >
-                <Picker
+
+              <ModalSelector
+                  data={orderStatuses.map((item, index) => ({
+                    key: index,
+                    label: item,
+                    value: item,
+                  }))}
+                  initValue = "" 
+                  onChange={(option) => setStatus(option.value)}
+                  optionTextStyle={{ color: colors.primary }}
+                  optionContainerStyle={{ backgroundColor: colors.white }}
+                  cancelStyle={{ backgroundColor: colors.white }}
+                  accessible={true}
+                  accessibilityLabel="Select order status"
+                >
+                  <View
+                    style={{
+                      borderWidth: 1,
+                      borderColor: "#ddd",
+                      borderRadius: 8,
+                      backgroundColor: "#fff",
+                      height: 50,
+                      justifyContent: "center",
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, color: "#000" }}>
+                      {status}
+                    </Text>
+                  </View>
+                </ModalSelector>
+
+                {/* <Picker
                   selectedValue={status}
                   style={{
                     height: 50,
@@ -240,8 +267,7 @@ const AdminOrderDetail = () => {
                       <Picker.Item key={index} label={each} value={each} />
                     );
                   })}
-                </Picker>
-              </View>
+                </Picker> */}
             </View>
             <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
               <Button onPress={() => {}} title="Update Details" />
