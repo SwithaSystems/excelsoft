@@ -120,7 +120,10 @@ const CartScreen = () => {
       <View style={[globalStyles.container]}>
         <ScrollView>
           {/* <Header headerText="Cart" /> */}
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+            ]}>
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
                 <Ionicons
@@ -150,18 +153,20 @@ const CartScreen = () => {
                     cartItem={eachCartItem}
                   />
                 ))}
-                <View style={{ margin: 16 }} />
+                {/* <View style={{ margin: 16 }} /> */}
                 <SpecialOffersBanner />
                 <OrderSummary
                   cartItems={cartItems}
-                  sectionHeadingStyle={styles.sectionHeading}
+                  // sectionHeadingStyle={
+                  //   // styles.sectionHeading
+                  // }
                 />
                 <View
                   style={{
                     width: "50%",
                     marginHorizontal: "auto",
-                    marginTop: 4,
-                    marginBottom: 16,
+                    // marginTop: 4,
+                     paddingBottom: 16,
                   }}
                 >
                   <Button title="Place Order" onPress={handlePlaceOrder} />

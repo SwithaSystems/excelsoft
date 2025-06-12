@@ -236,16 +236,18 @@ const verifcationScreen = () => {
               />
             ))}
           </View>
-          <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
-            <Text style={styles.buttonText}>Verify</Text>
-          </TouchableOpacity>
+          <View style={{alignItems: "center"}}>
+            <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
+              <Text style={styles.buttonText}>Verify</Text>
+            </TouchableOpacity>
 
-          <Text style={styles.resendText}>
-            Didn't receive the code?{" "}
-            <Text style={styles.resendLink} onPress={handleResend}>
-              Resend
+            <Text style={styles.resendText}>
+              Didn't receive the code?{" "}
+              <Text style={styles.resendLink} onPress={handleResend}>
+                Resend
+              </Text>
             </Text>
-          </Text>
+          </View>
           {/* </View> */}
         </KeyBoardWrapper>
         {/* </SafeAreaView> */}

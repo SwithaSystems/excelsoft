@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginTop: 10,
   },
   label: {

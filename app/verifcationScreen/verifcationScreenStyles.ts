@@ -14,6 +14,7 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: "contain",
     marginBottom: 20,
+    alignSelf: "center",
   },
   description: {
     textAlign: "center",
@@ -37,9 +38,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   verifyButton: {
-    backgroundColor: "#00BFFF",
+    backgroundColor: colors.primary,
     borderRadius: 8,
-    width: "80%",
+    width: "100%",
     paddingVertical: 12,
     alignItems: "center",
   },
@@ -51,6 +52,7 @@ const styles = StyleSheet.create({
   resendText: {
     marginTop: 20,
     color: "#555",
+    textAlign:"center",
   },
   resendLink: {
     color: "#00BFFF",
