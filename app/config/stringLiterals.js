@@ -50,8 +50,35 @@ const DELIVERY_MODE_CURBSIDE = "Curbside Pickup";
 const ORDER_PLACED_SUCCESS = "Your order has been placed successfully";
 const ORDER_PLACED_FAILED = "Your order has been failed to place";
 
+//Footer
+const FOOTER_HOME = "home";
+const FOOTER_CART = "cart";
+const FOOTER_MENU = "menu";
+const FOOTER_SAVED = "saved";
+const FOOTER_SEARCH = "search";
+
+//ADMIN FOOTER
+const ADMINFOOTER_HOME = "home";
+const ADMINFOOTER_CATEGORIES = "categories";
+const ADMINFOOTER_ORDERS = "orders";
+const ADMINFOOTER_PRODUCTS = "products";
+const ADMINFOOTER_SCAN = "scan&deliver";
+
 // Export all constants
 export {
+  ADMINFOOTER_CATEGORIES,
+  ADMINFOOTER_HOME,
+  ADMINFOOTER_ORDERS,
+  ADMINFOOTER_PRODUCTS,
+  ADMINFOOTER_SCAN,
+  DELIVERY_MODE_HOME,
+  DELIVERY_MODE_STORE,
+  DELIVERY_MODE_CURBSIDE,
+  FOOTER_HOME,
+  FOOTER_CART,
+  FOOTER_MENU,
+  FOOTER_SAVED,
+  FOOTER_SEARCH,
   ORDER_PLACED_FAILED,
   ORDER_PLACED_SUCCESS,
   FEEDBACK_SCREEN2_TITLE,

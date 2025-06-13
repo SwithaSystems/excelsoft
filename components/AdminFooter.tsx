@@ -11,28 +11,35 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import colors from "@/app/config/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  ADMINFOOTER_CATEGORIES,
+  ADMINFOOTER_HOME,
+  ADMINFOOTER_ORDERS,
+  ADMINFOOTER_PRODUCTS,
+  ADMINFOOTER_SCAN,
+} from "@/app/config/stringLiterals";
 
 const AdminFooter = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();
 
   const handleHomePress = () => {
-    if (activeTab === "home") return;
+    if (activeTab === ADMINFOOTER_HOME) return;
     redirectToPage(containers.AdminDashboardScreen);
   };
   const handleOrdersPress = () => {
-    if (activeTab === "orders") return;
+    if (activeTab === ADMINFOOTER_ORDERS) return;
     redirectToPage(containers.AdminSeeAllOrdersScreen);
   };
   const handleProductsPress = () => {
-    if (activeTab === "products") return;
+    if (activeTab === ADMINFOOTER_PRODUCTS) return;
     redirectToPage(containers.AdminProductDashboardScreen);
   };
   const handleCategoryPress = () => {
-    if (activeTab === "categories") return;
+    if (activeTab === ADMINFOOTER_CATEGORIES) return;
     redirectToPage(containers.AdminCategoriesScreen);
   };
   const handleScanPress = () => {
-    if (activeTab === "scan&deliver") return;
+    if (activeTab === ADMINFOOTER_SCAN) return;
     redirectToPage(containers.AdminOrderQRScanScreen);
   };
 
@@ -44,14 +51,14 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="home"
           label="Home"
-          isActive={activeTab === "home"}
+          isActive={activeTab === ADMINFOOTER_HOME}
           onPress={handleHomePress}
           // onPress={() => redirectToPage(containers.AdminDashboardScreen)}
         />
         <FooterButton
           icon="clipboard"
           label="Orders"
-          isActive={activeTab === "orders"}
+          isActive={activeTab === ADMINFOOTER_ORDERS}
           onPress={handleOrdersPress}
 
           // onPress={() => redirectToPage(containers.AdminSeeAllOrdersScreen)}
@@ -59,7 +66,7 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="cube"
           label="Products"
-          isActive={activeTab === "products"}
+          isActive={activeTab === ADMINFOOTER_PRODUCTS}
           onPress={handleProductsPress}
 
           // onPress={() => redirectToPage(containers.AdminProductDashboardScreen)}
@@ -67,7 +74,7 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="list-circle"
           label="Categories"
-          isActive={activeTab === "categories"}
+          isActive={activeTab === ADMINFOOTER_CATEGORIES}
           onPress={handleCategoryPress}
 
           // onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
@@ -75,7 +82,7 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="gift"
           label="Scan & Deliver"
-          isActive={activeTab === "scan&deliver"}
+          isActive={activeTab === ADMINFOOTER_SCAN}
           onPress={handleScanPress}
 
           // onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
@@ -99,7 +106,9 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
         </View>
       )}
     </View>
-    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.black }}>
+    <Text
+      style={{ fontSize: 10, color: isActive ? colors.primary : colors.black }}
+    >
       {label}
     </Text>
   </TouchableOpacity>
