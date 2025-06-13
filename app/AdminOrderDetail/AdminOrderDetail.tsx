@@ -221,9 +221,9 @@ const AdminOrderDetail = () => {
               <View
                 style={{
                   borderWidth: 1,
-                  borderColor: "#ddd",
+                  borderColor: colors.slateGrey,
                   borderRadius: 8,
-                  backgroundColor: "#fff",
+                  backgroundColor: colors.white,
                   height: 50,
                   justifyContent: "center",
                 }}

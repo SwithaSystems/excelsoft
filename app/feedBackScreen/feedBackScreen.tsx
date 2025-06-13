@@ -125,9 +125,10 @@ const feedBackScreen = () => {
             }}
           />
           <ScrollView> */}
-        <View style={[
-          // globalStyles.sectionContent, 
-          globalStyles.pt_0
+        <View
+          style={[
+            // globalStyles.sectionContent,
+            globalStyles.pt_0,
           ]}
         >
           <View style={styles.ratingContainer}>
@@ -162,7 +163,7 @@ const feedBackScreen = () => {
               <Ionicons
                 name="add"
                 size={30}
-                color={isSubmitting ? "#ccc" : "gray"}
+                color={isSubmitting ? colors.borderGrey : colors.darkGray}
               />
             </TouchableOpacity>
             {image && (
@@ -174,8 +175,8 @@ const feedBackScreen = () => {
           </View>
         </View>
         {/* </ScrollView> */}
-        <View 
-          // style={globalStyles.p_3}
+        <View
+        // style={globalStyles.p_3}
         >
           <Button
             title={isSubmitting ? "Submitting..." : "Submit Review"}

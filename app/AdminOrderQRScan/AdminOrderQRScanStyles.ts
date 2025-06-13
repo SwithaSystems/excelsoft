@@ -1,31 +1,31 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
   },
   instructionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 24,
     marginBottom: 16,
     paddingHorizontal: 16,
   },
   instructionText: {
     fontSize: 14,
-    color: '#000',
+    color: colors.black,
     flex: 1,
   },
   qrIcon: {
-    alignSelf: 'center',
+    alignSelf: "center",
     marginVertical: 40,
   },
   orText: {
-    textAlign: 'center',
-    fontWeight: '600',
+    textAlign: "center",
+    fontWeight: "600",
     fontSize: 16,
     marginVertical: 12,
   },
@@ -35,7 +35,7 @@ export default StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: '#000',
+    color: colors.black,
     marginBottom: 6,
   },
   verifyButton: {
@@ -43,11 +43,11 @@ export default StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 8,
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.white,
+    fontWeight: "600",
     fontSize: 16,
   },
 });

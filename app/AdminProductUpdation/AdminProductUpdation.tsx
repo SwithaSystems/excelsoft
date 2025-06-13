@@ -426,7 +426,7 @@ const AdminProductUpdation = () => {
                     <Text
                       style={[
                         styles.categoryText,
-                        { color: category ? "#000" : "#888" },
+                        { color: category ? colors.black : colors.slateGrey },
                       ]}
                     >
                       {category
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: colors.offWhite,
   },
   header: {
     fontSize: 18,
@@ -703,15 +703,15 @@ const styles = StyleSheet.create({
   },
   subLabel: {
     fontSize: 12,
-    color: "#666",
+    color: colors.darkGray,
     marginBottom: 10,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     padding: 10,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: "#D1D1D1",
+    borderColor: colors.primary,
     marginTop: 5,
   },
   imageContainer: {
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 10,
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.5,
@@ -769,17 +769,17 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: 65,
     height: 65,
-    backgroundColor: "#E0E0E0",
+    backgroundColor: colors.Gray88,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: "#D0D0D0",
+    borderColor: colors.darkGray,
     borderStyle: "dashed",
   },
   plus: {
     fontSize: 24,
-    color: "#555",
+    color: colors.darkGray,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -787,19 +787,19 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   addButton: {
-    backgroundColor: "#00AEEF",
+    backgroundColor: colors.secondary,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 5,
   },
   discardButton: {
-    backgroundColor: "#6C757D",
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 5,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "bold",
     textAlign: "center",
   },

@@ -1,29 +1,29 @@
-import { StyleSheet } from 'react-native';
-import colors from '../config/colors';
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
   },
-  secondaryText:{
+  secondaryText: {
     marginBottom: 16,
   },
-  ratingCategory:{
+  ratingCategory: {
     // marginBottom: 16,
   },
   selectCategory: {
     // marginBottom: 16,
   },
   chooseCategory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 8,
     // paddingHorizontal: 12,
     //paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     marginTop: 10,
   },
   categoryText: {
@@ -36,8 +36,8 @@ const styles = StyleSheet.create({
     // marginBottom: 8,
   },
   radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 8,
     color: colors.primary,
   },
@@ -55,29 +55,29 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 8,
     // padding: 10,
-    textAlignVertical: 'top',  
+    textAlignVertical: "top",
   },
   submitButton: {
     backgroundColor: colors.primary,
     paddingVertical: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   submitText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-  reviewContainer:{
-    padding:16,
-    marginBottom:64,
+  reviewContainer: {
+    padding: 16,
+    marginBottom: 64,
   },
-  label:{
+  label: {
     fontSize: 16,
     color: colors.black,
-    marginBottom:4,
-  }
+    marginBottom: 4,
+  },
 });
 
 export default styles;

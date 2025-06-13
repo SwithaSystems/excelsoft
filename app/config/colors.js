@@ -15,7 +15,6 @@ export default {
   buttonError: "#EB0A0A",
   lightGreen: "#DCF0E4",
   paleBlue: "#EDFAFD",
-  iconBlack: "#666",
   red: "#e74c3c",
   paleyellow: "#B5990C",
   palegreen: "#C3FED9",
@@ -28,6 +27,8 @@ export default {
   darkBackground: "#151718",
   darkCharcoal: "#333",
   darkGray: "#666",
+  Gray88: "#E0E0E0",
+  deepSkyBlue: "00BFFF",
   shadeOfBlueGray: "e9ecef",
   iconInactive: "#9BA1A6",
   hardError: "#FF0101",
@@ -50,4 +51,5 @@ export default {
   slateGrey: "#475569",
   slateGrey2: "#64748B",
   alertRed: "#FF4B4B",
+  mutedBlue: "#475569",
 };

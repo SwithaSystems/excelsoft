@@ -233,13 +233,13 @@ const localStyles = StyleSheet.create({
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white || "#FFFFFF",
+    backgroundColor: colors.white,
     borderRadius: 25,
     marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === "ios" ? 12 : 8,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -248,14 +248,14 @@ const localStyles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
     borderWidth: Platform.OS === "ios" ? 1 : 0,
-    borderColor: colors.lightgrey || "#E0E0E0",
+    borderColor: colors.lightgrey,
     minHeight: Platform.OS === "ios" ? 50 : 44,
   },
 
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: colors.black || "#000000",
+    color: colors.black,
     paddingVertical: Platform.OS === "ios" ? 8 : 4,
     paddingHorizontal: 0,
     minHeight: Platform.OS === "ios" ? 40 : 36,
@@ -281,24 +281,24 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   orderPlaced: {
-    backgroundColor: "#E3F2FD",
-    color: "#1565C0",
+    backgroundColor: colors.infoBg,
+    color: colors.infoText,
   },
   cancelled: {
-    backgroundColor: "#FFD6D9",
-    color: "#B00020",
+    backgroundColor: colors.errorBg,
+    color: colors.errorText,
   },
   replaced: {
-    backgroundColor: "#FFF3E0",
-    color: "#E65100",
+    backgroundColor: colors.warningBg,
+    color: colors.warningText,
   },
   returned: {
-    backgroundColor: "#F3E5F5",
-    color: "#7B1FA2",
+    backgroundColor: colors.subtlePurpleBg,
+    color: colors.subtlePurpleText,
   },
   defaultStatus: {
-    backgroundColor: "#E0E0E0",
-    color: "#333",
+    backgroundColor: colors.Gray88,
+    color: colors.darkCharcoal,
   },
 
   badgeContainer: {

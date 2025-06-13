@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 20,
     marginTop: 20,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.offWhite,
     borderRadius: 30,
     overflow: "hidden",
   },
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   activeText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "600",
   },
   inactiveText: {
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   callingCode: {
     marginHorizontal: 8,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: colors.borderGrey,
     borderRadius: 5,
     overflow: "hidden",
     marginBottom: 16,
@@ -64,10 +64,10 @@ const styles = StyleSheet.create({
   countryPickerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.offWhite,
     paddingHorizontal: 10,
     borderRightWidth: 1,
-    borderRightColor: "#ccc",
+    borderRightColor: colors.borderGrey,
   },
   countryPickerButton: {
     paddingVertical: 8,

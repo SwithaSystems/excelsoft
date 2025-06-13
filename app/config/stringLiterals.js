@@ -1,0 +1,6 @@
+//Screen titles
+const HOME_SCREEN_TITLE = "Home";
+const PRODUCT_DETAIL_SCREEN_TITLE = "Product Detail";
+const CART_SCREEN_TITLE = "Cart";
+
+export { HOME_SCREEN_TITLE, PRODUCT_DETAIL_SCREEN_TITLE, CART_SCREEN_TITLE };

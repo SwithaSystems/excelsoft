@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "400",
     marginBottom: 35,
-    color: "#00BFFF",
+    color: colors.deepSkyBlue,
   },
   metricsContainer: {
     paddingHorizontal: 8,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   metricTitle: {
     fontSize: 14,
     marginLeft: 16,
-    color: "#475569",
+    color: colors.mutedBlue,
     fontWeight: 600,
   },
   metricValue: {
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: "#000000",
+    borderColor: colors.pureBlack,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   orderTime: {
     fontSize: 14,
-    color: "#64748B",
+    color: colors.slateGrey2,
   },
   orderAmount: {
     fontSize: 16,
@@ -131,24 +131,24 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   orderPlaced: {
-    backgroundColor: "#E3F2FD",
-    color: "#1565C0",
+    backgroundColor: colors.infoBg,
+    color: colors.infoText,
   },
   cancelled: {
-    backgroundColor: "#FFD6D9",
-    color: "#B00020",
+    backgroundColor: colors.errorBg,
+    color: colors.errorText,
   },
   replaced: {
-    backgroundColor: "#FFF3E0",
-    color: "#E65100",
+    backgroundColor: colors.warningBg,
+    color: colors.warningText,
   },
   returned: {
-    backgroundColor: "#F3E5F5",
-    color: "#7B1FA2",
+    backgroundColor: colors.subtlePurpleBg,
+    color: colors.subtlePurpleText,
   },
   defaultStatus: {
-    backgroundColor: "#E0E0E0",
-    color: "#333",
+    backgroundColor: colors.Gray88,
+    color: colors.darkCharcoal,
   },
 });
 
