@@ -16,6 +16,7 @@ import * as Device from "expo-device";
 import { useEffect } from "react";
 import { Alert } from "react-native";
 import PageLayout from "../pageLayoutProps";
+import { NOTIFICATIONS_SCREEN_TITLE } from "../config/stringLiterals";
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
@@ -121,20 +122,27 @@ const notificationsScreen: React.FC = () => {
       hasFooter={false}
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Notification Settings" />}
+      headerComponent={<Header headerText={NOTIFICATIONS_SCREEN_TITLE} />}
     >
-      <View style={[
-        // globalStyles.sectionContent, 
-        globalStyles.pt_0
+      <View
+        style={[
+          // globalStyles.sectionContent,
+          globalStyles.pt_0,
         ]}
       >
-        <View style={[
-          // globalStyles.mb_2
-        ]}>
-          <View style={[
-            // globalStyles.mb_2, 
-            styles.eachNotificationSection
-          ]}>
+        <View
+          style={
+            [
+              // globalStyles.mb_2
+            ]
+          }
+        >
+          <View
+            style={[
+              // globalStyles.mb_2,
+              styles.eachNotificationSection,
+            ]}
+          >
             <Text style={styles.sectionTitle}>Push Notifications</Text>
             <Switch
               trackColor={{
@@ -172,12 +180,13 @@ const notificationsScreen: React.FC = () => {
         </View>
 
         {/* Email Notifications */}
-        <View 
-          // style={[globalStyles.mb_2]}
+        <View
+        // style={[globalStyles.mb_2]}
         >
-          <View style={[
-            // globalStyles.mb_2, 
-            styles.eachNotificationSection
+          <View
+            style={[
+              // globalStyles.mb_2,
+              styles.eachNotificationSection,
             ]}
           >
             <Text style={styles.sectionTitle}>Email Notifications</Text>

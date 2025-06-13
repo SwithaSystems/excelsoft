@@ -1,3 +1,4 @@
+import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -52,13 +53,13 @@ const NotificationListing = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     // <View style={globalStyles.container}>
-    //   <Header headerText="Notifications" />
+    //   <Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />
     //   <ScrollView>
     <PageLayout
       hasFooter={false}
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText="Notifications" />}
+      headerComponent={<Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />}
     >
       <FlatList
         ListHeaderComponent={

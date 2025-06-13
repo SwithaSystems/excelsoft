@@ -17,6 +17,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import PageLayout from "../pageLayoutProps";
+import { PICKUP_MODE_SCREEN_TITLE } from "../config/stringLiterals";
 
 const options = [
   {
@@ -56,7 +57,7 @@ const pickUpModescreen = () => {
     //     <Header headerText="Pick up Options" />
     <PageLayout
       hasHeader
-      headerComponent={<Header headerText="Pick up Options" />}
+      headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
       hasFooter={false}
       scrollable={false}
     >

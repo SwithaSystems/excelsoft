@@ -1,3 +1,4 @@
+import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from './../config/stringLiterals';
 // import { useFocusEffect } from "@react-navigation/native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
@@ -202,13 +203,13 @@ const AdminProductDashboard = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //   <View style={[globalStyles.container]}>
-    //     <Header headerText="Product Details" />
+    //     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
     //     <ScrollView>
     <PageLayout
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Product Details" />}
+      headerComponent={<Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />}
       footerComponent={<AdminFooter activeTab="products" />}
     >
       <View

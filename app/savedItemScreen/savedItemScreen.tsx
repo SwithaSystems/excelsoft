@@ -1,3 +1,4 @@
+import { SAVED_ITEMS_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -66,10 +67,10 @@ const savedItemScreen = () => {
       hasFooter
       hasHeader
       footerComponent={<Footer activeTab="saved" />}
-      headerComponent={<Header headerText="Saved Items" />}
+      headerComponent={<Header headerText={SAVED_ITEMS_SCREEN_TITLE} />}
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText="Saved Items" /> */}
+        {/* <Header headerText={SAVED_ITEMS_SCREEN_TITLE} /> */}
         <ScrollView>
           <View style={[
             // globalStyles.sectionContent,

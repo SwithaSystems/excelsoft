@@ -1,3 +1,4 @@
+import { SELECT_BILLING_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -185,7 +186,7 @@ const selectBillingAddressScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
         <View style={globalStyles.container}>
-          <Header headerText="Billing Address" />
+          <Header headerText={SELECT_BILLING_ADDRESS_SCREEN_TITLE} />
           {/* <ScrollView> */}
           <FlatList
             ListHeaderComponent={

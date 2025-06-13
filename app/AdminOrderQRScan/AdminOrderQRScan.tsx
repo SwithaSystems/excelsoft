@@ -1,3 +1,4 @@
+import { ADMIN_ORDER_QR_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useState } from "react";
 import {
   View,
@@ -22,13 +23,13 @@ const AdminOrderQRScan = () => {
   return (
     //   <SafeAreaView style={globalStyles.safeAreaContainer}>
     // <View style={styles.container}>
-    //   <Header headerText="Scan QR Code" />
+    //   <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
     //   <ScrollView>
     <PageLayout
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Scan QR Code" />}
+      headerComponent={<Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />}
       footerComponent={<AdminFooter activeTab="scan&deliver" />}
     >
       <View style={styles.instructionContainer}>

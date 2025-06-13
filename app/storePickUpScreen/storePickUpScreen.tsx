@@ -1,3 +1,4 @@
+import { DELIVERY_MODE_STORE } from './../config/stringLiterals';
 import React, { useState } from "react";
 import {
   View,
@@ -132,7 +133,7 @@ const storePickupScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <KeyBoardWrapper>
     <View style={globalStyles.container}>
-      <Header headerText="Store Pickup" />
+      <Header headerText={DELIVERY_MODE_STORE} />
       <ScrollView>
         <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
           <Text style={styles.label}>

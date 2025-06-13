@@ -1,3 +1,4 @@
+import { DELIVERY_MODE_HOME } from './../config/stringLiterals';
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -573,13 +574,13 @@ const HomeDeliveryScreen = () => {
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
-      headerComponent={<Header headerText="Home Delivery" />}
+      headerComponent={<Header headerText={DELIVERY_MODE_HOME} />}
       hasFooter={false}
       scrollable
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText="Home Delivery" /> */}
+        {/* <Header headerText={DELIVERY_MODE_HOME} /> */}
         <FlatList
           ListHeaderComponent={
             <>

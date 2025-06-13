@@ -1,3 +1,4 @@
+import { MY_ORDERS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -62,11 +63,11 @@ const myOrderScreen = () => {
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Your Orders" />}
+      headerComponent={<Header headerText={MY_ORDERS_SCREEN_TITLE} />}
       footerComponent={<Footer />}
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText="Your Orders" /> */}
+        {/* <Header headerText={MY_ORDERS_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={

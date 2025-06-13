@@ -1,3 +1,4 @@
+import { CART_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
@@ -114,16 +115,18 @@ const CartScreen = () => {
     <PageLayout
       hasHeader
       hasFooter
-      headerComponent={<Header headerText="Cart" />}
+      headerComponent={<Header headerText={CART_SCREEN_TITLE} />}
       footerComponent={<Footer activeTab="cart" />}
     >
       <View style={[globalStyles.container]}>
         <ScrollView>
-          {/* <Header headerText="Cart" /> */}
-          <View style={[
-            // globalStyles.sectionContent, 
-            globalStyles.pt_0
-            ]}>
+          {/* <Header headerText={CART_SCREEN_TITLE} /> */}
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
                 <Ionicons
@@ -166,7 +169,7 @@ const CartScreen = () => {
                     width: "50%",
                     marginHorizontal: "auto",
                     // marginTop: 4,
-                     paddingBottom: 16,
+                    paddingBottom: 16,
                   }}
                 >
                   <Button title="Place Order" onPress={handlePlaceOrder} />

@@ -1,3 +1,4 @@
+import { CUSTOMER_SUPPORT_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -27,13 +28,13 @@ const customerSupportScreen = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     // <View style={globalStyles.container}>
-    //   <Header headerText="Customer Support" />
+    //   <Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />
     // <ScrollView>
     <PageLayout
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Customer Support" />}
+      headerComponent={<Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />}
       footerComponent={<Footer />}
     >
       <View style={[

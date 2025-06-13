@@ -1,3 +1,4 @@
+import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -110,11 +111,11 @@ const editAccountInformationscreen = () => {
       hasFooter={false}
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Edit Contact Information" />}
+      headerComponent={<Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText="Edit Contact Information" /> */}
+        {/* <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
         <View style={[
             // globalStyles.sectionContent, 

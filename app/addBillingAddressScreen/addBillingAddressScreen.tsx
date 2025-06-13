@@ -26,6 +26,10 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import { useAppContext } from "@/context/AppContext";
 import PageLayout from "../pageLayoutProps";
+import {
+  ADD_BILLING_ADDRESS_SCREEN_TITLE,
+  UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
+} from "../config/stringLiterals";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -246,7 +250,9 @@ const addBillingAddressScreen = () => {
       headerComponent={
         <Header
           headerText={
-            isEditMode ? "Edit Billing Address" : "Add Billing Address"
+            isEditMode
+              ? { UPDATE_BILLING_ADDRESS_SCREEN_TITLE }
+              : { ADD_BILLING_ADDRESS_SCREEN_TITLE }
           }
         />
       }

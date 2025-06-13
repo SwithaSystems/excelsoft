@@ -91,7 +91,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
       <Ionicons
         name={icon}
         size={24}
-        color={isActive ? colors.primary : colors.iconBlack}
+        color={isActive ? colors.primary : colors.black}
       />
       {badge > 0 && (
         <View style={styles.badge}>
@@ -99,7 +99,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
         </View>
       )}
     </View>
-    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.iconBlack }}>
+    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.black }}>
       {label}
     </Text>
   </TouchableOpacity>

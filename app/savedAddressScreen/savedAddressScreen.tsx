@@ -1,3 +1,4 @@
+import { SAVED_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
@@ -124,10 +125,10 @@ const savedAddressScreen = () => {
     <PageLayout
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText="Saved Address" />}
+      headerComponent={<Header headerText={SAVED_ADDRESS_SCREEN_TITLE} />}
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText="Saved Address" /> */}
+        {/* <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} /> */}
         <ScrollView>
           <FlatList
             ListHeaderComponent={

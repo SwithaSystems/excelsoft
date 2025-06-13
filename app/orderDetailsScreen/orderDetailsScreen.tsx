@@ -29,6 +29,7 @@ import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import colors from "../config/colors";
 import PageLayout from "../pageLayoutProps";
+import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
@@ -168,7 +169,7 @@ const orderDetailsScreen = () => {
         scrollable
         headerComponent={
           <Header
-            headerText="Order Details"
+            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
             needResetNavigation={from !== "myOrders"}
           />
         }
@@ -180,10 +181,12 @@ const orderDetailsScreen = () => {
             needResetNavigation={from !== "myOrders"}
           />
           <ScrollView> */}
-          <View style={[
-            // globalStyles.sectionContent, 
-            globalStyles.pt_0
-          ]}>
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
             <View style={{}}>
               <QRCodeDisplay
                 qrValue={orderDetails?.orderNumber}

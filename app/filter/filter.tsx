@@ -18,6 +18,7 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { categoryService } from "@/services/categoryService";
 import PageLayout from "../pageLayoutProps";
+import { FILTER_SCREEN_TITLE } from "../config/stringLiterals";
 
 const Filter = () => {
   const props = useLocalSearchParams();
@@ -83,7 +84,7 @@ const Filter = () => {
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText={"Filter"} />}
+      headerComponent={<Header headerText={FILTER_SCREEN_TITLE} />}
     >
       <View style={globalStyles.sectionContent}>
         <ScrollView style={styles.scrollContainer}>

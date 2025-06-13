@@ -1,3 +1,4 @@
+import { ORDER_SUMMARY_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -279,10 +280,10 @@ const orderSummeryScreen = () => {
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //   <View style={globalStyles.container}>
     //     <ScrollView>
-    //       <Header headerText="Order Summary" />
+    //       <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
     <PageLayout
       hasHeader
-      headerComponent={<Header headerText="Order Summary" />}
+      headerComponent={<Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />}
       hasFooter={false}
       scrollable={false}
     >

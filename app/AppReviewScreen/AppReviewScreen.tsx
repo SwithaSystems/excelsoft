@@ -1,3 +1,4 @@
+import { APP_REVIEW_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useState } from "react";
 import {
   View,
@@ -29,7 +30,7 @@ const appReviewScreen = () => {
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText="Feedback" />}
+      headerComponent={<Header headerText={APP_REVIEW_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         {/* <View style={styles.container}>

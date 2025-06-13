@@ -22,6 +22,7 @@ import AdminFooter from "@/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { orderService } from "@/services/orderService";
 import PageLayout from "../pageLayoutProps";
+import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../config/stringLiterals";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -161,7 +162,9 @@ const AdminSeeAllOrders = () => {
       hasHeader
       hasFooter
       scrollable
-      headerComponent={<Header headerText="Orders" />}
+      headerComponent={
+        <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
+      }
       footerComponent={<AdminFooter activeTab="orders" />}
     >
       <View
