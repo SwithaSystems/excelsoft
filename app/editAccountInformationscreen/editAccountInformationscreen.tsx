@@ -166,7 +166,7 @@ const editAccountInformationscreen = () => {
           <View style={globalStyles.profileInputContainer}>
             <FontAwesome
               name="envelope-o"
-              size={32}
+              size={28}
               style={globalStyles.userInputLabelIcon}
             />
             <View style={{ 

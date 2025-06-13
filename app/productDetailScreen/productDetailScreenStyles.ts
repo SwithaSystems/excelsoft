@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   contentContainer: {
-    padding: 16,
+    // padding: 16,
   },
   productTitle: {
     fontSize: 20,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   reviewsSection: {
     marginTop: 24,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
   },
   reviewsTitle: {
     fontSize: 18,

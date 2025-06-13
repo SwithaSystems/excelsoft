@@ -99,7 +99,10 @@ const changePasswordScreen = () => {
         {/* <View style={globalStyles.container}> */}
         {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
             {/* <View style={globalStyles.profilePictureContainer}>
             <Image
               source={{ uri: "https://picsum.photos/100" }}
