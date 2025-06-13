@@ -1,3 +1,4 @@
+import { SIGN_UP_SCREEN_TITLE } from './../config/stringLiterals';
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
@@ -172,7 +173,7 @@ const signUpScreen = () => {
       hasHeader
       hasFooter={false}
       scrollable={false}
-      headerComponent={<Header headerText="Sign Up" />}
+      headerComponent={<Header headerText={SIGN_UP_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         {/* <View style={styles.container}> */}

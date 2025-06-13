@@ -19,6 +19,7 @@ import containers from "@/containers";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "../config/stringLiterals";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -76,7 +77,7 @@ const passwordResetScreen = () => {
       hasFooter={false}
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText="Reset Your Password" />}
+      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
     >
       {" "}
       <KeyBoardWrapper>

@@ -34,6 +34,7 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import PageLayout from "../pageLayoutProps";
+import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -142,7 +143,7 @@ const ProductDetailScreen = () => {
       scrollable
       hasHeader
       hasFooter
-      headerComponent={<Header headerText={"About the Product"} />}
+      headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
       footerComponent={<Footer />}
     >
       <View style={styles.container}>

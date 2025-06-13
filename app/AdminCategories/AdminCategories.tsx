@@ -22,6 +22,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import AdminFooter from "@/components/AdminFooter";
 import PageLayout from "../pageLayoutProps";
+import { ADMIN_CATEGORIES_SCREEN_TITLE } from './../config/stringLiterals';
 
 interface Category {
   id: number;
@@ -267,11 +268,11 @@ const AdminCategories = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //   <View style={styles.container}>
-    //     <Header headerText="Categories" />
+    //     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
     <PageLayout
       hasHeader
       hasFooter
-      headerComponent={<Header headerText="Categories" />}
+      headerComponent={<Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />}
       footerComponent={<AdminFooter activeTab="categories" />}
       scrollable
     >

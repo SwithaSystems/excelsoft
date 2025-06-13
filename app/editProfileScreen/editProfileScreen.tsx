@@ -1,3 +1,4 @@
+import { EDIT_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -248,11 +249,11 @@ const editProfileScreen = () => {
       scrollable={false}
       hasHeader
       hasFooter={false}
-      headerComponent={<Header headerText="Edit Profile" />}
+      headerComponent={<Header headerText={EDIT_PROFILE_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         <View style={globalStyles.container as ViewStyle}>
-          {/* <Header headerText="Edit Profile" /> */}
+          {/* <Header headerText={EDIT_PROFILE_SCREEN_TITLE} /> */}
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Profile Picture */}

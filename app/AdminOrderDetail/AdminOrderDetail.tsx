@@ -15,6 +15,7 @@ import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import PageLayout from "../pageLayoutProps";
+import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -112,7 +113,9 @@ const AdminOrderDetail = () => {
           <Header headerText="Order Details" /> */}
       <PageLayout
         hasHeader
-        headerComponent={<Header headerText="Order Details" />}
+        headerComponent={
+          <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
+        }
         hasFooter
         footerComponent={<AdminFooter />}
         scrollable

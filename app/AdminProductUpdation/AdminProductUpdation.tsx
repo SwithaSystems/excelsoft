@@ -1,3 +1,4 @@
+import { ADMIN_PRODUCT_UPDATE_SCREEN_TITLE } from './../config/stringLiterals';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -363,12 +364,12 @@ const AdminProductUpdation = () => {
     //       {newProduct ? (
     //         <Header headerText="Add Product" />
     //       ) : (
-    //         <Header headerText="Update Product" />
+    //         <Header headerText={ADMIN_PRODUCT_UPDATE_SCREEN_TITLE} />
     //       )}
     <PageLayout
       hasFooter={false}
       hasHeader
-      headerComponent={<Header headerText="Update Product" />}
+      headerComponent={<Header headerText={ADMIN_PRODUCT_UPDATE_SCREEN_TITLE} />}
       scrollable
     >
       <KeyBoardWrapper>

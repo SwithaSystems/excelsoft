@@ -19,6 +19,7 @@ import { UserAPI } from "@/services/userService";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { FORGOT_PASSWORD_SCREEN_TITLE } from "../config/stringLiterals";
 
 const forgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
@@ -69,7 +70,7 @@ const forgotPasswordScreen = () => {
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText={"Forgot Password"} />}
+      headerComponent={<Header headerText={FORGOT_PASSWORD_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         <View style={styles.sectionContainer}>

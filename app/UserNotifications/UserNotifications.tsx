@@ -1,3 +1,4 @@
+import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -43,12 +44,12 @@ const UserNotifications = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //   <View style={globalStyles.container}>
-    //     <Header headerText="Notifications" />
+    //     <Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />
     <PageLayout
       hasFooter
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText="Notifications" />}
+      headerComponent={<Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />}
     >
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {notifications.length === 0 ? (

@@ -1,3 +1,4 @@
+import { EDIT_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -76,13 +77,13 @@ const editAddressScreen = () => {
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
-      headerComponent={<Header headerText="Edit Address" />}
+      headerComponent={<Header headerText={EDIT_ADDRESS_SCREEN_TITLE} />}
       hasFooter={false}
       scrollable
     >
       <KeyBoardWrapper>
         {/* <View style={styles.container}>
-        <Header headerText="Edit Address" /> */}
+        <Header headerText={EDIT_ADDRESS_SCREEN_TITLE} /> */}
 
         <Text style={styles.fieldLabel}>Address</Text>
         <TextInput

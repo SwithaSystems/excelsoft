@@ -1,3 +1,9 @@
+import {
+  DEFAULT_PICKUP_HOURS,
+  DELIVERY_MODE_HOME,
+  STORE_CLOSING_TIMINGS,
+  STORE_OPENING_TIMINGS,
+} from "./../config/stringLiterals";
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -39,8 +45,6 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 // Minimum pickup time (30 minutes from now)
 const MIN_PICKUP_MINUTES = 30;
 
-// Default pickup time (2 hours from now)
-const DEFAULT_PICKUP_HOURS = 2;
 const HomeDeliveryScreen = () => {
   const { orderId, mode } = useLocalSearchParams();
   // Date and time state
@@ -81,7 +85,10 @@ const HomeDeliveryScreen = () => {
     let targetDate, targetHour, targetMinute;
 
     // Check if current time is between 7AM (7) and 5PM (17)
-    if (currentHour >= 7 && currentHour < 17) {
+    if (
+      currentHour >= STORE_OPENING_TIMINGS &&
+      currentHour < STORE_CLOSING_TIMINGS
+    ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
         now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
@@ -89,13 +96,13 @@ const HomeDeliveryScreen = () => {
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < 7) {
+    } else if (currentHour < STORE_OPENING_TIMINGS) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(7, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = 7;
+      targetHour = STORE_OPENING_TIMINGS;
       targetMinute = 0;
     } else {
       // Outside business hours: push to next day 10AM
@@ -573,19 +580,21 @@ const HomeDeliveryScreen = () => {
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
-      headerComponent={<Header headerText="Home Delivery" />}
+      headerComponent={<Header headerText={DELIVERY_MODE_HOME} />}
       hasFooter={false}
       scrollable
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText="Home Delivery" /> */}
+        {/* <Header headerText={DELIVERY_MODE_HOME} /> */}
         <FlatList
           ListHeaderComponent={
             <>
-              <View style={[
-                // globalStyles.sectionContent, 
-                globalStyles.pt_0]}
+              <View
+                style={[
+                  // globalStyles.sectionContent,
+                  globalStyles.pt_0,
+                ]}
               >
                 <Text style={styles.label}>
                   Do you prefer home delivery? Let us know your available day

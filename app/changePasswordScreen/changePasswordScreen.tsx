@@ -1,3 +1,4 @@
+import { CHANGE_PASSWORD_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -91,12 +92,12 @@ const changePasswordScreen = () => {
     <PageLayout
       hasHeader
       hasFooter={false}
-      headerComponent={<Header headerText="Change Password" />}
+      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
       scrollable={false}
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText="Change Password" /> */}
+        {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
         <ScrollView>
           <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
             {/* <View style={globalStyles.profilePictureContainer}>

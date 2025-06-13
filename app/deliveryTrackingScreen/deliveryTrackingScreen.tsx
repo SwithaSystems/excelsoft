@@ -1,3 +1,4 @@
+import { DELIVERY_TRACKING_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { use, useEffect } from "react";
@@ -41,13 +42,13 @@ const deliveryTrackingScreen = () => {
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText="Order Tracking" />}
+      headerComponent={<Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} />}
       footerComponent={
         from === "admin" ? <AdminFooter /> : <Footer navigation={router} />
       }
     >
       <View style={[globalStyles.container]}>
-        {/* <Header headerText="Order Tracking" /> */}
+        {/* <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
         <View style={[
             // globalStyles.sectionContent

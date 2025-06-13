@@ -16,6 +16,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from "@/app/config/colors";
 import { UserAPI } from "@/services/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  FOOTER_CART,
+  FOOTER_HOME,
+  FOOTER_MENU,
+  FOOTER_SAVED,
+  FOOTER_SEARCH,
+} from "@/app/config/stringLiterals";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();
@@ -67,31 +74,31 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   }, [userData_redux]);
 
   const handleMenuPress = () => {
-    if (activeTab === "menu") return;
+    if (activeTab === FOOTER_MENU) return;
     redirectToPage(
       isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
     );
   };
 
   const handleSavedItems = () => {
-    if (activeTab === "saved") return;
+    if (activeTab === FOOTER_SAVED) return;
     redirectToPage(
       isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
     );
   };
 
   const handleHomePress = () => {
-    if (activeTab === "home") return;
+    if (activeTab === FOOTER_HOME) return;
     redirectToPage(containers.homeScreen);
   };
 
   const handleSearchPress = () => {
-    if (activeTab === "search") return;
+    if (activeTab === FOOTER_SEARCH) return;
     redirectToPage(containers.searchScreen);
   };
 
   const handleCartPress = () => {
-    if (activeTab === "cart") return;
+    if (activeTab === FOOTER_CART) return;
     redirectToPage(containers.cartScreenScreen);
   };
 
@@ -117,32 +124,32 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         <FooterButton
           icon="home"
           label="Home"
-          isActive={activeTab === "home"}
+          isActive={activeTab === FOOTER_HOME}
           onPress={handleHomePress}
         />
         <FooterButton
           icon="heart"
           label="Saved"
-          isActive={activeTab === "saved"}
+          isActive={activeTab === FOOTER_SAVED}
           onPress={handleSavedItems}
         />
         <FooterButton
           icon="search"
           label="Search"
-          isActive={activeTab === "search"}
+          isActive={activeTab === FOOTER_SEARCH}
           onPress={handleSearchPress}
         />
         <FooterButton
           icon="cart"
           label="Cart"
-          isActive={activeTab === "cart"}
+          isActive={activeTab === FOOTER_CART}
           onPress={handleCartPress}
           badge={cartItemCount}
         />
         <FooterButton
           icon="menu"
           label="Menu"
-          isActive={activeTab === "menu"}
+          isActive={activeTab === FOOTER_MENU}
           onPress={handleMenuPress}
         />
       </View>
@@ -156,7 +163,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
       <Ionicons
         name={icon}
         size={24}
-        color={isActive ? colors.primary : colors.iconBlack}
+        color={isActive ? colors.primary : colors.black}
       />
       {badge > 0 && (
         <View style={styles.badge}>
@@ -167,7 +174,7 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
     <Text
       style={{
         fontSize: 10,
-        color: isActive ? colors.primary : colors.iconBlack,
+        color: isActive ? colors.primary : colors.black,
       }}
     >
       {label}

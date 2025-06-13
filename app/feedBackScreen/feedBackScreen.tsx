@@ -28,6 +28,7 @@ import { useSelector } from "react-redux";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { FEEDBACK_SCREEN2_TITLE } from "../config/stringLiterals";
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
@@ -103,7 +104,7 @@ const feedBackScreen = () => {
       scrollable
       headerComponent={
         <Header
-          headerText="Add Your Review"
+          headerText={FEEDBACK_SCREEN2_TITLE}
           secondaryBtnText="Discard"
           secondaryBtnCallBack={() => {
             redirectToPage(containers.productDetailScreenScreen, {

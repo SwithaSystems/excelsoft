@@ -20,6 +20,7 @@ import { Colors } from "@/constants/Colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { ADD_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -64,12 +65,12 @@ const addAddressScreen = () => {
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //
     // <View style={styles.container}>
-    //   <Header headerText="Add New Address" />
+    //   <Header headerText={ADD_ADDRESS_SCREEN_TITLE} />
     <PageLayout
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText="Add New Address" />}
+      headerComponent={<Header headerText={ADD_ADDRESS_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
         <ScrollView>

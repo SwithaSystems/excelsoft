@@ -20,6 +20,7 @@ import colors from "../config/colors";
 import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { VERIFICATION_SCREEN_TITLE } from './../config/stringLiterals';
 
 const verifcationScreen = () => {
   const { userData, from, phoneNumber_forgetPwd, phoneNumber_editAccount } =
@@ -199,11 +200,11 @@ const verifcationScreen = () => {
       <PageLayout
         hasFooter={false}
         hasHeader
-        headerComponent={<Header headerText="Verify Your Account" />}
+        headerComponent={<Header headerText={VERIFICATION_SCREEN_TITLE} />}
       >
         <KeyBoardWrapper>
           {/* <View style={styles.container}> */}
-          {/* <Header headerText="Verify Your Account" /> */}
+          {/* <Header headerText={VERIFICATION_SCREEN_TITLE} /> */}
           <Image
             style={styles.image}
             source={require("assets/UserVerificationSuccessful.png")}
@@ -236,8 +237,11 @@ const verifcationScreen = () => {
               />
             ))}
           </View>
-          <View style={{alignItems: "center"}}>
-            <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
+          <View style={{ alignItems: "center" }}>
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={handleVerify}
+            >
               <Text style={styles.buttonText}>Verify</Text>
             </TouchableOpacity>
 
