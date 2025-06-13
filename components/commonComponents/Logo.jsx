@@ -1,6 +1,7 @@
 import { StyleSheet, Text } from 'react-native';
 import React from 'react';
 import { View } from 'react-native';
+import colors from './config/colors';
 
 function Logo(props) {
     return (
@@ -22,12 +23,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#00BFFF",
+    backgroundColor: colors.deepSkyBlue,
     justifyContent: "center",
     alignItems: "center",
   },
   logoText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   },

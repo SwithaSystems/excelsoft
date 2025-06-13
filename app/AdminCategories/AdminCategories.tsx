@@ -393,7 +393,7 @@ const AdminCategories = () => {
                       )} */}
                   </View>
                 </View>
-                {/* <Ionicons name="chevron-forward" size={20} color="#C8C8C8" /> */}
+                {/* <Ionicons name="chevron-forward" size={20} color={colors.lightgrey} /> */}
               </TouchableOpacity>
             ))}
             {categoryList.length === 0 && (

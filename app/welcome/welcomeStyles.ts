@@ -15,13 +15,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
     marginTop: 20,
-    color: "#193238"
+    color: colors.oceanGreen
   },
   subtitle: {
     fontSize: 14,
     textAlign: "center",
     marginBottom: 20,
-    color: "#193238"
+    color: colors.oceanGreen
   },
   signInButton: {
     width: "100%",

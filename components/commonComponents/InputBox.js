@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TextInput, View, StyleSheet } from "react-native";
+import colors from './config/colors';
 
 const InputBox = ({ placeholder }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -19,22 +20,22 @@ const InputBox = ({ placeholder }) => {
 const styles = StyleSheet.create({
   container: {
     borderWidth: 2,
-    borderColor: "#ccc",
+    borderColor: colors.Gray88,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     margin: 10,
   },
   focusedContainer: {
-    borderColor: "#007BFF",
-    backgroundColor: "#EAF4FF",
+    borderColor: colors.linkBlue,
+    backgroundColor: colors.linkBlueBg,
   },
   input: {
     height: 40,
     fontSize: 16,
   },
   focusedInput: {
-    color: "#007BFF",
+    color: colors.linkBlue,
   },
 });
 

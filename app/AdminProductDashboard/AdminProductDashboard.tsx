@@ -74,7 +74,7 @@ const AdminProductDashboard = () => {
       if (stock === 0) {
         return { text: "Out of Stock", backgroundColor: colors.red };
       } else if (stock < 10) {
-        return { text: "Low on Stock", backgroundColor: colors.paleyellow };
+        return { text: "Low on Stock", backgroundColor: colors.mustardYellow };
       } else {
         return { text: "In Stock", backgroundColor: colors.green };
       }

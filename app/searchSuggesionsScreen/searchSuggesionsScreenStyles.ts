@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import colors from '../config/colors';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.offWhite,
   },
   searchHeader: {
     flexDirection: 'row',
@@ -11,17 +12,17 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.darkGray,
   },
   backButton: {
     fontSize: 24,
     marginRight: 10,
-    color: '#333',
+    color: colors.darkCharcoal,
   },
   searchInput: {
     flex: 1,
     height: 40,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.offWhite,
     borderRadius: 20,
     paddingHorizontal: 15,
     fontSize: 16,
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   suggestion: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.darkGray,
     backgroundColor: 'white',
     fontSize: 16,
   }

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import colors from "../config/colors";
+import { color } from "react-native-elements/dist/helpers";
 
 const styles = StyleSheet.create({
   container: {
@@ -19,11 +20,11 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderColor: "#EBEDED",
+    borderColor: colors.zircon,
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 0,
-    backgroundColor: "#F8F8F8",
+    backgroundColor: colors.lightgrey,
   },
   forgotPassword: {
     color: colors.primary,
@@ -33,13 +34,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   signInText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   },
   signUpText: {
     textAlign: "center",
-    color: "#6E6F76",
+    color: colors.reviewsColor,
   },
   signUpLink: {
     color: colors.primary,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: "row",
     marginBottom: 20,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.paleWhite,
     borderRadius: 30,
     overflow: "hidden",
   },
@@ -61,11 +62,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   activeText: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "600",
   },
   inactiveText: {
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   callingCode: {
     marginHorizontal: 8,
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#EBEDED",
+    borderColor: colors.zircon,
     borderRadius: 5,
     overflow: "hidden",
     height: 48,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     paddingHorizontal: 10,
     borderRightWidth: 1,
-    borderRightColor: "#EBEDED",
+    borderRightColor: colors.zircon,
   },
   countryPickerButton: {
     paddingVertical: 8,

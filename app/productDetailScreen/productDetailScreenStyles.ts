@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   selectQuantityText: {
     fontSize: 11,
-    color: "#17C6ED",
+    color: colors.primary,
     textDecorationLine: "underline",
     marginLeft: 4,
     marginTop: 5,
@@ -236,11 +236,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ccc",
+    backgroundColor: colors.Gray88,
     margin: 4,
   },
   activeDot: {
-    backgroundColor: "#000",
+    backgroundColor: colors.black,
     width: 10,
     height: 10,
   },

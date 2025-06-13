@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: colors.ghostWhite,
   },
   backButton: {
     position: "absolute",
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    color: "#333",
+    color: colors.darkCharcoal,
   },
 });
 

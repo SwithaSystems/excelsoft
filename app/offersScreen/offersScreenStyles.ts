@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   offerBanner: {
-      backgroundColor: "#2E2A5C",
+      backgroundColor: colors.bannerPurple,
       borderRadius: 20,
       padding: 20,
       alignItems: "center",
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
       marginTop: 20,
       fontSize: 18,
       fontWeight:"bold",
-      color: "#F0EC05",
+      color: colors.bannerYellow,
     },
     tagsRow:{
       flexDirection: 'row',

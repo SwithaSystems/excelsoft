@@ -155,7 +155,7 @@ const AdminDashboard = () => {
               <Ionicons
                 style={{ marginLeft: 8 }}
                 name="chevron-forward"
-                color={"#94A3B8"}
+                color={colors.dirtyBlue}
                 size={20}
               />
             </Text>
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
           <View style={styles.metricsContainer}>
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Total Orders</Text>
               </View>
               <View>
@@ -323,7 +323,7 @@ const AdminDashboard = () => {
 
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Pending Orders</Text>
               </View>
               <View>
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
 
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons name="work-outline" size={24} color="#2563EB" />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Today's Revenue</Text>
               </View>
               <View>

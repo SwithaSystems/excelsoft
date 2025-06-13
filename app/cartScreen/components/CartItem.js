@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: colors.black,
     borderRadius: 4,
-    backgroundColor: "#EDEDED",
+    backgroundColor: colors.shadeOfBlueGray,
     shadowOffset: {
       width: 0,
       height: 0,
