@@ -28,6 +28,11 @@ import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import PageLayout from "../pageLayoutProps";
+import {
+  DEFAULT_PICKUP_HOURS,
+  STORE_CLOSING_TIMINGS,
+  STORE_OPENING_TIMINGS,
+} from "../config/stringLiterals";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -45,9 +50,6 @@ const TIME_PERIOD_OPTIONS = [
 
 // Minimum pickup time (30 minutes from now)
 const MIN_PICKUP_MINUTES = 30;
-
-// Default pickup time (2 hours from now)
-const DEFAULT_PICKUP_HOURS = 2;
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
@@ -108,7 +110,10 @@ const PickupScreen = () => {
     let targetDate, targetHour, targetMinute;
 
     // Check if current time is between 7AM (7) and 5PM (17)
-    if (currentHour >= 7 && currentHour < 17) {
+    if (
+      currentHour >= STORE_OPENING_TIMINGS &&
+      currentHour < STORE_CLOSING_TIMINGS
+    ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
         now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
@@ -116,13 +121,13 @@ const PickupScreen = () => {
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < 7) {
+    } else if (currentHour < STORE_OPENING_TIMINGS) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(7, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = 7;
+      targetHour = STORE_OPENING_TIMINGS;
       targetMinute = 0;
     } else {
       // Outside business hours: push to next day 10AM
@@ -583,10 +588,11 @@ const PickupScreen = () => {
           /> */}
 
         <ScrollView ref={scrollViewRef}>
-          <View style={[
-            // globalStyles.sectionContent, 
-            globalStyles.pt_0
-           ]}
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
           >
             {/* Instructions */}
             <Text style={styles.label}>
