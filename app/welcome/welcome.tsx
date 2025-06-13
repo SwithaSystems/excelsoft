@@ -6,7 +6,6 @@ import styles from "./welcomeStyles";
 import { useRouter } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import colors from "../config/colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
 const welcome = () => {

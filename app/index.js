@@ -7,23 +7,22 @@ import {
   SafeAreaView,
 } from "react-native";
 import HomePage from "./home/home";
-import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.offWhite,
+    backgroundColor: "#f5f5f5",
   },
   display: {
     flex: 2,
     justifyContent: "flex-end",
     alignItems: "flex-end",
     padding: 20,
-    backgroundColor: colors.white,
+    backgroundColor: "#fff",
   },
   displayText: {
     fontSize: 48,
-    color: colors.darkCharcoal,
+    color: "#333",
   },
   buttons: {
     flex: 3,
@@ -39,10 +38,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.white,
+    backgroundColor: "#fff",
     margin: 5,
     borderRadius: 10,
-    shadowColor: colors.black,
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -51,14 +50,14 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   operatorButton: {
-    backgroundColor: colors.sparkleBlue,
+    backgroundColor: "#007AFF",
   },
   equalsButton: {
-    backgroundColor: colors.seaGreen,
+    backgroundColor: "#34C759",
   },
   buttonText: {
     fontSize: 24,
-    color: colors.darkCharcoal,
+    color: "#333",
   },
 });
 
