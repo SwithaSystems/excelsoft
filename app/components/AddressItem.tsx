@@ -23,51 +23,48 @@ const AddressItem = ({
   isSelected = false,
 }: AddressItemProps) => {
   return (
-    <>
-      <View style={styles.addressSection}>
-        <TouchableOpacity onPress={onSelect} style={{ top: -90 }}>
-          {showRadio && (
-            <Ionicons
-              name={isSelected ? "radio-button-on" : "radio-button-off"}
-              size={20}
-              color={isSelected ? colors.primary : "gray"}
-              style={{ marginRight: 8, marginTop: 3 }}
-            />
-          )}
+    <View style={styles.addressSection}>
+      {showRadio && (
+        <TouchableOpacity onPress={onSelect} style={styles.radioButton}>
+          <Ionicons
+            name={isSelected ? "radio-button-on" : "radio-button-off"}
+            size={20}
+            color={isSelected ? colors.primary : "gray"}
+          />
         </TouchableOpacity>
-        <View style={styles.addressContainer}>
-          <View style={styles.addressDetails}>
-            <View style={styles.nameRow}>
-              <Text style={styles.name}>{item.name}</Text>
-            </View>
-            <Text>{item.line1}</Text>
-            <Text>{item.line2}</Text>
-            <Text>{item.city}</Text>
-            <Text>{item.state}</Text>
-            <Text>{item.postalCode}</Text>
-            <Text>Phone No: {item.phone}</Text>
+      )}
+      <View style={styles.addressContainer}>
+        <View style={styles.addressDetails}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{item.name}</Text>
           </View>
-          <View style={styles.iconRow}>
-            {onEdit && (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => onEdit(item)}
-              >
-                <Ionicons name="create-outline" size={24} color="black" />
-              </TouchableOpacity>
-            )}
-            {onDelete && (
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => onDelete(item)}
-              >
-                <Ionicons name="trash-outline" size={24} color="red" />
-              </TouchableOpacity>
-            )}
-          </View>
+          <Text>{item.line1}</Text>
+          <Text>{item.line2}</Text>
+          <Text>{item.city}</Text>
+          <Text>{item.state}</Text>
+          <Text>{item.postalCode}</Text>
+          <Text>Phone No: {item.phone}</Text>
+        </View>
+        <View style={styles.iconRow}>
+          {onEdit && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => onEdit(item)}
+            >
+              <Ionicons name="create-outline" size={24} color="black" />
+            </TouchableOpacity>
+          )}
+          {onDelete && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => onDelete(item)}
+            >
+              <Ionicons name="trash-outline" size={24} color="red" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </>
+    </View>
   );
 };
 
@@ -76,14 +73,18 @@ export default AddressItem;
 const styles = StyleSheet.create({
   addressSection: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  radioButton: {
+    paddingRight: 8,
+    paddingTop: 16,
   },
   addressContainer: {
-    width: "90%",
+    flex: 1,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 10,
-    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
     flexDirection: "row",

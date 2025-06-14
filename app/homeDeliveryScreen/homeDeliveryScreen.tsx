@@ -1,3 +1,9 @@
+import {
+  DEFAULT_PICKUP_HOURS,
+  DELIVERY_MODE_HOME,
+  STORE_CLOSING_TIMINGS,
+  STORE_OPENING_TIMINGS,
+} from "./../config/stringLiterals";
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -32,14 +38,13 @@ import ModalSelector from "react-native-modal-selector";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // Minimum pickup time (30 minutes from now)
 const MIN_PICKUP_MINUTES = 30;
 
-// Default pickup time (2 hours from now)
-const DEFAULT_PICKUP_HOURS = 2;
 const HomeDeliveryScreen = () => {
   const { orderId, mode } = useLocalSearchParams();
   // Date and time state
@@ -80,7 +85,10 @@ const HomeDeliveryScreen = () => {
     let targetDate, targetHour, targetMinute;
 
     // Check if current time is between 7AM (7) and 5PM (17)
-    if (currentHour >= 7 && currentHour < 17) {
+    if (
+      currentHour >= STORE_OPENING_TIMINGS &&
+      currentHour < STORE_CLOSING_TIMINGS
+    ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
         now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
@@ -88,13 +96,13 @@ const HomeDeliveryScreen = () => {
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < 7) {
+    } else if (currentHour < STORE_OPENING_TIMINGS) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(7, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = 7;
+      targetHour = STORE_OPENING_TIMINGS;
       targetMinute = 0;
     } else {
       // Outside business hours: push to next day 10AM
@@ -569,219 +577,202 @@ const HomeDeliveryScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText={DELIVERY_MODE_HOME} />}
+      hasFooter={false}
+      scrollable
+    >
       <KeyBoardWrapper>
-        <View style={globalStyles.container}>
-          <Header headerText="Home Delivery" />
-          <FlatList
-            ListHeaderComponent={
-              <>
-                <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-                  <Text style={styles.label}>
-                    Do you prefer home delivery? Let us know your available day
-                    and time.
-                  </Text>
+        {/* <View style={globalStyles.container}> */}
+        {/* <Header headerText={DELIVERY_MODE_HOME} /> */}
+        <FlatList
+          ListHeaderComponent={
+            <>
+              <View
+                style={[
+                  // globalStyles.sectionContent,
+                  globalStyles.pt_0,
+                ]}
+              >
+                <Text style={styles.label}>
+                  Do you prefer home delivery? Let us know your available day
+                  and time.
+                </Text>
 
-                  {/* Date Picker */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Date: *</Text>
-                    {Platform.OS === "web" ? (
-                      <input
-                        type="date"
-                        style={globalStyles.webDateInput}
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                      />
-                    ) : (
-                      <TouchableOpacity
-                        style={globalStyles.dateInput}
-                        onPress={() => setShowDatePicker(true)}
-                      >
-                        <Text>{date}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {showDatePicker && (
-                      <DateTimePicker
-                        value={new Date(date)}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                        minimumDate={new Date()}
-                      />
-                    )}
-                  </View>
-
-                  {/* Time Input */}
-                  <Text style={styles.inputLabel}>Time: *</Text>
-                  <View style={globalStyles.timeContainer}>
-                    <TextInput
-                      style={[
-                        globalStyles.timeInput,
-                        error ? { borderColor: "red" } : {},
-                      ]}
-                      placeholder="HH"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={hours}
-                      onChangeText={handleHoursChange}
-                      onBlur={handleBlur}
+                {/* Date Picker */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Date: *</Text>
+                  {Platform.OS === "web" ? (
+                    <input
+                      type="date"
+                      style={globalStyles.webDateInput}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
                     />
-                    <Text>:</Text>
-                    <TextInput
-                      ref={minutesRef}
-                      style={[
-                        globalStyles.timeInput,
-                        error ? { borderColor: "red" } : {},
-                      ]}
-                      placeholder="MM"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={minutes}
-                      onChangeText={handleMinutesChange}
-                      onBlur={handleBlur}
-                    />
-                    {/* <View
-                      style={{
-                        borderColor: error ? "red" : colors.primary,
-                        borderWidth: 1,
-                        height: 40,
-                        width: 150,
-                        borderRadius: 8,
-                        justifyContent: "center",
-                      }}
-                    > 
-                     <ModalSelector
-                      data={[
-                        { key: 1, label: "AM", value: "am" },
-                        { key: 2, label: "PM", value: "pm" },
-                      ]}
-                      initValue={period.toUpperCase()}
-                      onChange={(option) => handlePeriodChange(option.value)}
-                      optionTextStyle={{ color: colors.primary }}
-                      optionContainerStyle={{ backgroundColor: colors.white }}
-                      cancelStyle={{ backgroundColor: colors.white }}
+                  ) : (
+                    <TouchableOpacity
+                      style={globalStyles.dateInput}
+                      onPress={() => setShowDatePicker(true)}
                     >
-                      <TextInput
-                        style={globalStyles.picker_50}
-                        editable={false}
-                        value={period?.toUpperCase() || ""}
-                      />
-                    </ModalSelector> 
-
-                     </View> */}
-                    <View style={styles.toggleContainer}>
-                      <TouchableOpacity
-                        style={[
-                          styles.toggleButton,
-                          period === "am" && styles.activeToggle,
-                        ]}
-                        onPress={() => handlePeriodChange("am")}
-                      >
-                        <Text
-                          style={[
-                            styles.toggleText,
-                            period === "am" && styles.activeText,
-                          ]}
-                        >
-                          AM
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[
-                          styles.toggleButton,
-                          period === "pm" && styles.activeToggle,
-                        ]}
-                        onPress={() => handlePeriodChange("pm")}
-                      >
-                        <Text
-                          style={[
-                            styles.toggleText,
-                            period === "pm" && styles.activeText,
-                          ]}
-                        >
-                          PM
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  {error ? (
-                    <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
-                  ) : null}
-
-                  {/* Shipping Address Section */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>Shipping Address: *</Text>
-                    {existingShippingAddress.length === 0 && (
-                      <Button
-                        title="Add Address"
-                        onPress={() => {
-                          redirectToPage(containers.addAddressScreenScreen, {
-                            from: "homeDelivery",
-                          });
-                        }}
-                      />
-                    )}
-                  </View>
-
-                  {/* Address List */}
-                  <FlatList
-                    data={existingShippingAddress}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                      <AddressItem
-                        item={item}
-                        showRadio={true}
-                        isSelected={item._id === selectedAddressId}
-                        onSelect={() => {
-                          setSelectedAddressId(item._id);
-                          setAddress(item);
-                        }}
-                        onEdit={() => handleEditAddress(item)}
-                        onDelete={() => handleDeleteAddress(item)}
-                      />
-                    )}
-                  />
-
-                  {/* Additional Instructions */}
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputLabel}>
-                      Additional Instructions for delivery partner:
-                    </Text>
-                    <TextInput
-                      style={[styles.textInput, styles.multilineInput]}
-                      value={additionalDetails}
-                      onChangeText={setAdditionalDetails}
-                      multiline
-                      numberOfLines={3}
-                      placeholder="E.g., Landmark, preferred delivery time, etc."
+                      <Text>{date}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={new Date(date)}
+                      mode="date"
+                      display="default"
+                      onChange={onDateChange}
+                      minimumDate={new Date()}
                     />
+                  )}
+                </View>
+
+                {/* Time Input */}
+                <Text style={styles.inputLabel}>Time: *</Text>
+                <View style={globalStyles.timeContainer}>
+                  <TextInput
+                    style={[
+                      globalStyles.timeInput,
+                      error ? { borderColor: "red" } : {},
+                    ]}
+                    placeholder="HH"
+                    keyboardType="numeric"
+                    maxLength={2}
+                    value={hours}
+                    onChangeText={handleHoursChange}
+                    onBlur={handleBlur}
+                  />
+                  <Text>:</Text>
+                  <TextInput
+                    ref={minutesRef}
+                    style={[
+                      globalStyles.timeInput,
+                      error ? { borderColor: "red" } : {},
+                    ]}
+                    placeholder="MM"
+                    keyboardType="numeric"
+                    maxLength={2}
+                    value={minutes}
+                    onChangeText={handleMinutesChange}
+                    onBlur={handleBlur}
+                  />
+                  <View style={styles.toggleContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        period === "am" && styles.activeToggle,
+                      ]}
+                      onPress={() => handlePeriodChange("am")}
+                    >
+                      <Text
+                        style={[
+                          styles.toggleText,
+                          period === "am" && styles.activeText,
+                        ]}
+                      >
+                        AM
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        period === "pm" && styles.activeToggle,
+                      ]}
+                      onPress={() => handlePeriodChange("pm")}
+                    >
+                      <Text
+                        style={[
+                          styles.toggleText,
+                          period === "pm" && styles.activeText,
+                        ]}
+                      >
+                        PM
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  <Button
-                    title="Confirm"
-                    onPress={handleSubmit}
-                    disabled={isLoading || !isFormValid}
+                </View>
+                {error ? (
+                  <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+                ) : null}
+
+                {/* Shipping Address Section */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>Shipping Address: *</Text>
+                  {existingShippingAddress.length === 0 && (
+                    <Button
+                      title="Add Address"
+                      onPress={() => {
+                        redirectToPage(containers.addAddressScreenScreen, {
+                          from: "homeDelivery",
+                        });
+                      }}
+                    />
+                  )}
+                </View>
+
+                {/* Address List */}
+                <FlatList
+                  data={existingShippingAddress}
+                  keyExtractor={(item) => item._id}
+                  renderItem={({ item }) => (
+                    <AddressItem
+                      item={item}
+                      showRadio={true}
+                      isSelected={item._id === selectedAddressId}
+                      onSelect={() => {
+                        setSelectedAddressId(item._id);
+                        setAddress(item);
+                      }}
+                      onEdit={() => handleEditAddress(item)}
+                      onDelete={() => handleDeleteAddress(item)}
+                    />
+                  )}
+                />
+
+                {/* Additional Instructions */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputLabel}>
+                    Additional Instructions for delivery partner:
+                  </Text>
+                  <TextInput
+                    style={[styles.textInput, styles.multilineInput]}
+                    value={additionalDetails}
+                    onChangeText={setAdditionalDetails}
+                    multiline
+                    numberOfLines={3}
+                    placeholder="E.g., Landmark, preferred delivery time, etc."
                   />
                 </View>
-                <ConfirmationModal
-                  onClose={() => {
-                    setIsModalVisible(false);
-                  }}
-                  isModalVisible={isModalVisible}
-                  text="Are you sure you want to delete this address?"
-                  submitText="Delete Address"
-                  handleSubmit={confirmDelete}
-                  cancelText="Cancel"
-                  handleCancel={cancelDelete}
+                <Button
+                  title="Confirm"
+                  onPress={handleSubmit}
+                  disabled={isLoading || !isFormValid}
                 />
-              </>
-            }
-            data={[]}
-            renderItem={null}
-          />
-        </View>
+              </View>
+              <ConfirmationModal
+                onClose={() => {
+                  setIsModalVisible(false);
+                }}
+                isModalVisible={isModalVisible}
+                text="Are you sure you want to delete this address?"
+                submitText="Delete Address"
+                handleSubmit={confirmDelete}
+                cancelText="Cancel"
+                handleCancel={cancelDelete}
+              />
+            </>
+          }
+          data={[]}
+          renderItem={null}
+        />
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

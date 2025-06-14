@@ -1,3 +1,4 @@
+import { CANCEL_ORDER_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useState } from "react";
 import {
   View,
@@ -97,7 +98,7 @@ const cancelOrder = () => {
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
       <View style={styles.container}>
-        <Header headerText="Cancel Order" />
+        <Header headerText={CANCEL_ORDER_SCREEN_TITLE} />
         <ScrollView>
           <View style={styles.returnOrderCategory}>
             <Text style={styles.returnOrderItemText}>Order Number:</Text>

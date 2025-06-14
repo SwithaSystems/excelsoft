@@ -25,6 +25,11 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import { useAppContext } from "@/context/AppContext";
+import PageLayout from "../pageLayoutProps";
+import {
+  ADD_BILLING_ADDRESS_SCREEN_TITLE,
+  UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
+} from "../config/stringLiterals";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -231,119 +236,134 @@ const addBillingAddressScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <KeyBoardWrapper>
+    //     <View style={styles.container}>
+    //       <Header
+    //         headerText={
+    //           isEditMode ? "Edit Billing Address" : "Add Billing Address"
+    //         }
+    //       />
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      headerComponent={
+        <Header
+          headerText={
+            isEditMode
+              ? UPDATE_BILLING_ADDRESS_SCREEN_TITLE
+              : ADD_BILLING_ADDRESS_SCREEN_TITLE 
+          }
+        />
+      }
+    >
       <KeyBoardWrapper>
-        <View style={styles.container}>
-          <Header
-            headerText={
-              isEditMode ? "Edit Billing Address" : "Add Billing Address"
-            }
-          />
-          <ScrollView style={{ padding: 16 }}>
-            <View style={{marginBottom: 16}}>
-              <Text style={styles.fieldLabel}>
-                Address Name
-                <Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TextInput
-                style={[styles.input, errors.address && styles.inputError]}
-                value={address}
-                onChangeText={(text) => handleInputChange("address", text)}
-                placeholder="Enter address name (e.g., Home, Office)"
-                maxLength={50}
-              />
-              {errors.address && (
-                <Text style={globalStyles.errorText}>{errors.address}</Text>
-              )}
+        <ScrollView>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={styles.fieldLabel}>
+              Address Name
+              <Text style={{ color: "red" }}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, errors.address && styles.inputError]}
+              value={address}
+              onChangeText={(text) => handleInputChange("address", text)}
+              placeholder="Enter address name (e.g., Home, Office)"
+              maxLength={50}
+            />
+            {errors.address && (
+              <Text style={globalStyles.errorText}>{errors.address}</Text>
+            )}
 
-              <Text style={styles.fieldLabel}>
-                Line 1<Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TextInput
-                style={[styles.input, errors.line1 && styles.inputError]}
-                value={line1}
-                onChangeText={(text) => handleInputChange("line1", text)}
-                placeholder="Street address, P.O. box"
-                maxLength={100}
-              />
-              {errors.line1 && (
-                <Text style={globalStyles.errorText}>{errors.line1}</Text>
-              )}
+            <Text style={styles.fieldLabel}>
+              Line 1<Text style={{ color: "red" }}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, errors.line1 && styles.inputError]}
+              value={line1}
+              onChangeText={(text) => handleInputChange("line1", text)}
+              placeholder="Street address, P.O. box"
+              maxLength={100}
+            />
+            {errors.line1 && (
+              <Text style={globalStyles.errorText}>{errors.line1}</Text>
+            )}
 
-              <Text style={styles.fieldLabel}>Line 2 (optional)</Text>
-              <TextInput
-                style={[styles.input, errors.line2 && styles.inputError]}
-                value={line2}
-                onChangeText={(text) => handleInputChange("line2", text)}
-                placeholder="Apartment, suite, unit, building, floor, etc."
-                maxLength={100}
-              />
-              {errors.line2 && (
-                <Text style={globalStyles.errorText}>{errors.line2}</Text>
-              )}
+            <Text style={styles.fieldLabel}>Line 2 (optional)</Text>
+            <TextInput
+              style={[styles.input, errors.line2 && styles.inputError]}
+              value={line2}
+              onChangeText={(text) => handleInputChange("line2", text)}
+              placeholder="Apartment, suite, unit, building, floor, etc."
+              maxLength={100}
+            />
+            {errors.line2 && (
+              <Text style={globalStyles.errorText}>{errors.line2}</Text>
+            )}
 
-              <Text style={styles.fieldLabel}>
-                Town/City
-                <Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TextInput
-                style={[styles.input, errors.towncity && styles.inputError]}
-                value={towncity}
-                onChangeText={(text) => handleInputChange("towncity", text)}
-                placeholder="Enter town or city"
-                maxLength={50}
-              />
-              {errors.towncity && (
-                <Text style={globalStyles.errorText}>{errors.towncity}</Text>
-              )}
+            <Text style={styles.fieldLabel}>
+              Town/City
+              <Text style={{ color: "red" }}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, errors.towncity && styles.inputError]}
+              value={towncity}
+              onChangeText={(text) => handleInputChange("towncity", text)}
+              placeholder="Enter town or city"
+              maxLength={50}
+            />
+            {errors.towncity && (
+              <Text style={globalStyles.errorText}>{errors.towncity}</Text>
+            )}
 
-              <Text style={styles.fieldLabel}>
-                Postal Code
-                <Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TextInput
-                style={[styles.input, errors.postalcode && styles.inputError]}
-                value={postalcode}
-                onChangeText={(text) => handleInputChange("postalcode", text)}
-                placeholder="Enter postal code"
-                keyboardType="numeric"
-                maxLength={6}
-              />
-              {errors.postalcode && (
-                <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
-              )}
-            </View>
+            <Text style={styles.fieldLabel}>
+              Postal Code
+              <Text style={{ color: "red" }}>*</Text>
+            </Text>
+            <TextInput
+              style={[styles.input, errors.postalcode && styles.inputError]}
+              value={postalcode}
+              onChangeText={(text) => handleInputChange("postalcode", text)}
+              placeholder="Enter postal code"
+              keyboardType="numeric"
+              maxLength={6}
+            />
+            {errors.postalcode && (
+              <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
+            )}
+          </View>
 
-            <View
-              style={[
-                // styles.submitButton,
-                isSubmitting && styles.submitButtonDisabled,
-              ]}
-            >
-              {/* <View style={globalStyles.p_3}> */}
-              <Button
-                title={
-                  isSubmitting
-                    ? isEditMode
-                      ? "Updating..."
-                      : "Saving..."
-                    : isEditMode
-                    ? "Save Edited Address"
-                    : "Save Address"
-                }
-                onPress={handleSaveAddress}
-                disabled={isSubmitting}
-                //  style={[
-                //   styles.submitButton,
-                // //  isSubmitting && styles.submitButtonDisabled,
-                //  ]}
-              />
-              {/* </View> */}
-            </View>
-          </ScrollView>
-        </View>
+          <View
+            style={[
+              // styles.submitButton,
+              isSubmitting && styles.submitButtonDisabled,
+            ]}
+          >
+            {/* <View style={globalStyles.p_3}> */}
+            <Button
+              title={
+                isSubmitting
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Saving..."
+                  : isEditMode
+                  ? "Save Edited Address"
+                  : "Save Address"
+              }
+              onPress={handleSaveAddress}
+              disabled={isSubmitting}
+              //  style={[
+              //   styles.submitButton,
+              // //  isSubmitting && styles.submitButtonDisabled,
+              //  ]}
+            />
+            {/* </View> */}
+          </View>
+        </ScrollView>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

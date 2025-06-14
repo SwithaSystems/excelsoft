@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     width: 60,
   },
   amPmSelector: {
-    // backgroundColor: '#f8f8f8',
+    // backgroundColor: colors.lightgrey,
     borderRadius: 8,
     padding: 15,
     flexDirection: 'row',
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#00b0ff',
+    borderColor: colors.black,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#00b0ff',
+    backgroundColor: colors.black,
   },
   radioText: {
     fontSize: 15,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },  input: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.lightgrey,
     borderRadius: 8,
     padding: 15,
     fontSize: 16,

@@ -1,3 +1,4 @@
+import { SAVED_ITEMS_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -51,14 +52,14 @@ const savedItemScreen = () => {
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
-  const insets = useSafeAreaInsets();
-  const footerHeight =
-    60 +
-    (Platform.OS === "ios"
-      ? insets.bottom
-      : insets.bottom > 0
-      ? insets.bottom
-      : 10);
+  // const insets = useSafeAreaInsets();
+  // const footerHeight =
+  //   60 +
+  //   (Platform.OS === "ios"
+  //     ? insets.bottom
+  //     : insets.bottom > 0
+  //     ? insets.bottom
+  //     : 10);
   return (
     // <SafeAreaView style={[globalStyles.safeAreaContainer, { paddingTop: 0 }]}>
     <PageLayout
@@ -66,12 +67,14 @@ const savedItemScreen = () => {
       hasFooter
       hasHeader
       footerComponent={<Footer activeTab="saved" />}
-      headerComponent={<Header headerText="Saved Items" />}
+      headerComponent={<Header headerText={SAVED_ITEMS_SCREEN_TITLE} />}
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText="Saved Items" /> */}
+        {/* <Header headerText={SAVED_ITEMS_SCREEN_TITLE} /> */}
         <ScrollView>
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          <View style={[
+            // globalStyles.sectionContent,
+             globalStyles.pt_0]}>
             {savedItems.map((item: any) => {
               return (
                 <SaveItemFav
@@ -110,7 +113,7 @@ const savedItemScreen = () => {
           </View>
         </ScrollView>
       </View>
-      <View
+      {/* <View
         style={[
           styles.footer,
           {
@@ -118,7 +121,7 @@ const savedItemScreen = () => {
             paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           },
         ]}
-      ></View>
+      ></View> */}
     </PageLayout>
     /* <Footer activeTab="saved" /> 
       </View>{" "}

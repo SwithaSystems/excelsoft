@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lightSkyBlue,
     elevation: 4,
-    shadowColor: "#DEF7FC",
+    shadowColor: colors.secondary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1.0,
     shadowRadius: 4,

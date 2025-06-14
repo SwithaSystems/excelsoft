@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   productsList: {
-    padding: 10,
+    // padding: 10,
   },
   reviewsText: {
     fontSize: 14,
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   recommendedCard: {
     width: 160,
     paddingBottom: 4,
-    marginRight: 15,
+    marginRight: 16,
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
   },

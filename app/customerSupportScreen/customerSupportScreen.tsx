@@ -1,3 +1,4 @@
+import { CUSTOMER_SUPPORT_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -5,7 +6,7 @@ import {
   StyleSheet,
   Linking,
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import styles from "./customerSupportScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -14,6 +15,7 @@ import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../config/colors";
 import Footer from "@/components/Footer";
+import PageLayout from "../pageLayoutProps";
 
 const customerSupportScreen = () => {
   const handlePhonePress = () => {
@@ -24,17 +26,25 @@ const customerSupportScreen = () => {
     Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Customer Support" />
-      <ScrollView>
-        <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-          <View>
-            <Text style={styles.subtitle}>
-              Please contact us at
-            </Text>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <View style={globalStyles.container}>
+    //   <Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />
+    // <ScrollView>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />}
+      footerComponent={<Footer />}
+    >
+      <View style={[
+        // globalStyles.sectionContent, 
+        globalStyles.pt_0
+      ]}>
+        <View>
+          <Text style={styles.subtitle}>Please contact us at</Text>
 
-            {/*<TouchableOpacity
+          {/*<TouchableOpacity
               style={styles.contactOption}
               onPress={handlePhonePress}
             >
@@ -67,31 +77,28 @@ const customerSupportScreen = () => {
               </View>
             </TouchableOpacity>*/}
 
-            <TouchableOpacity
-              style={styles.contactOption}
-              onPress={handleEmailPress}
-            >
-              <View style={styles.textContainer}>
-                <View style={{ flexDirection: "row" }}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name="mail-outline" size={24} color="black" />
-                  </View>
-                  <Text style={styles.optionTitle}>Mail Us</Text>
+          <TouchableOpacity
+            style={styles.contactOption}
+            onPress={handleEmailPress}
+          >
+            <View style={styles.textContainer}>
+              <View style={{ flexDirection: "row" }}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="mail-outline" size={24} color="black" />
                 </View>
-                <Text style={styles.optionDescription}>
-                  Write to us here...
-                </Text>
-                <Text style={styles.optionDescription}>
-                  excelsoft@gmail.com
-                </Text>
+                <Text style={styles.optionTitle}>Mail Us</Text>
               </View>
-            </TouchableOpacity>
-          </View>
+              <Text style={styles.optionDescription}>Write to us here...</Text>
+              <Text style={styles.optionDescription}>excelsoft@gmail.com</Text>
+            </View>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
+      {/* </ScrollView>
       <Footer />
     </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

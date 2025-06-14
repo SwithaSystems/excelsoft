@@ -1,3 +1,4 @@
+import { DELIVERY_MODE_CURBSIDE } from './../config/stringLiterals';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
 import styles from './curbsidePickupScreenStyles';
@@ -46,7 +47,7 @@ const curbsidePickupScreen = () => {
     <SafeAreaView style={globalStyles.safeAreaContainer}>
     <KeyBoardWrapper>
     <View style={globalStyles.container}>
-      <Header headerText="Curbside Pickup"/>
+      <Header headerText={DELIVERY_MODE_CURBSIDE}/>
       <ScrollView>
     <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
 

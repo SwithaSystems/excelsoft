@@ -35,7 +35,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     ? 60 + Math.max(insets.bottom, Platform.OS === "ios" ? 0 : 16)
     : 0;
 
-  const Container = scrollable ? ScrollView : View;
+  // const Container = scrollable ? ScrollView : View;
 
   return (
     <SafeAreaView
@@ -47,34 +47,37 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
         <View style={styles.headerContainer}>{headerComponent}</View>
       )}
 
-      {/* Main Content Area */}
-      <Container
-        style={styles.content}
-        contentContainerStyle={
-          scrollable
-            ? [
-                contentPadding && styles.contentPadding,
-                {
-                  paddingBottom: footerHeight + 20,
-                  flexGrow: 1,
-                },
-              ]
-            : [
-                { flex: 1 },
-                contentPadding && styles.contentPadding,
-                {
-                  paddingBottom: hasFooter
-                    ? footerHeight
-                    : Math.max(insets.bottom, 16),
-                },
-              ]
-        }
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={Platform.OS === "ios"}
-      >
-        {children}
-      </Container>
+      {/* Content - Explicit component rendering */}
+      {scrollable ? (
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={[
+            contentPadding && styles.contentPadding,
+            {
+              paddingBottom: footerHeight + 20,
+              flexGrow: 1,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={Platform.OS === "ios"}
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View
+          style={[
+            styles.content,
+            { flex: 1 },
+            contentPadding && styles.contentPadding,
+            {
+              paddingBottom: footerHeight || Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
+          {children}
+        </View>
+      )}
 
       {/* Footer - Fixed at bottom */}
       {hasFooter && (

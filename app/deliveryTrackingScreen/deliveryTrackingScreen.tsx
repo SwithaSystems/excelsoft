@@ -1,7 +1,8 @@
+import { DELIVERY_TRACKING_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { use, useEffect } from "react";
-import { ScrollView, Text, View, SafeAreaView } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
 import Footer from "@/components/Footer";
@@ -9,6 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { orderService } from "@/services/orderService";
 import AdminFooter from "@/components/AdminFooter";
+import PageLayout from "../pageLayoutProps";
 
 const deliveryTrackingScreen = () => {
   const orderStatus = [
@@ -36,25 +38,34 @@ const deliveryTrackingScreen = () => {
   console.log("orderDetails in tracking order", orderDetails?.status);
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} />}
+      footerComponent={
+        from === "admin" ? <AdminFooter /> : <Footer navigation={router} />
+      }
+    >
       <View style={[globalStyles.container]}>
-        <Header headerText="Order Tracking" />
-        <ScrollView>
-          <View style={[globalStyles.sectionContent]}>
-            <Text style={styles.headingNote}>
-              Your Order packed Successfully!! Let’s see the Progress!
-            </Text>
-            <View style={styles.trackingContainer}>
-              <OrderTimeline
-                statusList={orderStatus}
-                actualStatus={orderDetails?.status}
-              />
-            </View>
+        {/* <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} /> */}
+        {/* <ScrollView> */}
+        <View style={[
+            // globalStyles.sectionContent
+          ]}>
+          <Text style={styles.headingNote}>
+            Your Order packed Successfully!! Let’s see the Progress!
+          </Text>
+          <View style={styles.trackingContainer}>
+            <OrderTimeline
+              statusList={orderStatus}
+              actualStatus={orderDetails?.status}
+            />
           </View>
-        </ScrollView>
-        {from === "admin" ? <AdminFooter /> : <Footer navigation={router} />}
+        </View>
       </View>
-    </SafeAreaView>
+    </PageLayout>
+    /* </ScrollView>*/
   );
 };
 

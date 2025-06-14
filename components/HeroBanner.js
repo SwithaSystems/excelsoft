@@ -18,7 +18,7 @@ const bannerData = [
     title: "New Year Eve Special discount!",
     discount: "40-60% Discount",
     description: "Limited time offers on all products",
-    backgroundColor: "#2E2A5C",
+    backgroundColor: colors.bannerPurple,
   },
   {
     title: "Flash Sale This Weekend!",
@@ -90,7 +90,6 @@ function HeroBanner(props) {
 }
 const styles = StyleSheet.create({
   banner: {
-    //backgroundColor: "#2E2A5C",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: colors.white,
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 10,
@@ -137,7 +136,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 5,
     borderRadius: 5,
-    backgroundColor: "#989B9C",
+    backgroundColor: colors.neutralGrey2,
     marginHorizontal: 5,
   },
   activeIndicator: {

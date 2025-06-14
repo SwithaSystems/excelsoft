@@ -4,7 +4,7 @@ import colors from "../config/colors";
 const styles = StyleSheet.create({
   label: {
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 16,
     color: colors.black,
     lineHeight: 24,
   },
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   required: {
     color: colors.error,
@@ -22,13 +22,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "500",
-    marginTop: 20,
-    marginBottom: 15,
+    // marginTop: 20,
+    marginBottom: 16,
     color: colors.black,
   },
   collectorOptions: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 16,
     gap: 20,
   },
   radioOption: {
@@ -66,17 +66,16 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: "row",
     backgroundColor: colors.white,
-    padding: 2,
     width: 120,
     borderWidth: 1,
     borderColor: colors.primary,
-    borderRadius: 30,
+    borderRadius: 5,
   },
   toggleButton: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 30,
+    paddingVertical: 8,
+    // paddingHorizontal: 16,
+    borderRadius: 5,
     alignItems: "center",
   },
   activeToggle: {

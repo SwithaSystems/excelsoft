@@ -1,3 +1,4 @@
+import { ORDER_SUMMARY_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -33,6 +34,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AddressItem from "../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../components/usePaymentHandler";
+import PageLayout from "../pageLayoutProps";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -275,13 +277,21 @@ const orderSummeryScreen = () => {
     (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={globalStyles.container}>
+    //     <ScrollView>
+    //       <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />}
+      hasFooter={false}
+      scrollable={false}
+    >
       <View style={globalStyles.container}>
         <ScrollView>
-          <Header headerText="Order Summary" />
           <View
             style={[
-              globalStyles.sectionContent,
+              // globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.pb_0,
             ]}
@@ -294,7 +304,10 @@ const orderSummeryScreen = () => {
                 <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
-              <View style={[globalStyles.pl_3, styles.deliverAddress]}>
+              <View style={[
+                globalStyles.pl_3, 
+                styles.deliverAddress]}
+              >
                 {selectedMode === "storePickup" ? (
                   <Ionicons
                     name="storefront"
@@ -456,10 +469,8 @@ Contact Number: ${pickupAddress.phone}`}
                             keyExtractor={(item, index) =>
                               item._id?.toString() || `address-${index}`
                             }
-                            contentContainerStyle={[
-                              styles.addressList,
-                              { paddingLeft: 16 },
-                            ]}
+                            contentContainerStyle={styles.addressList}
+                            showsVerticalScrollIndicator={false}
                           />
                         ) : (
                           <View style={styles.noAddressContainer}>
@@ -533,7 +544,10 @@ Contact Number: ${pickupAddress.phone}`}
             </View>
           </View>
 
-          <View style={{ paddingHorizontal: 24, paddingBottom: 14 }}>
+          <View style={{ 
+            paddingHorizontal: 24, 
+            // paddingBottom: 14 
+          }}>
             <Button
               title="Proceed for Payment"
               disabled={!isPaymentEnabled}
@@ -572,7 +586,8 @@ Contact Number: ${pickupAddress.phone}`}
           handleCancel={cancelDelete}
         />
       </View>
-    </SafeAreaView>
+      {/*</SafeAreaView> */}
+    </PageLayout>
   );
 };
 

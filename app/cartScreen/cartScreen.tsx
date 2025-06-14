@@ -1,3 +1,4 @@
+import { CART_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
@@ -114,13 +115,18 @@ const CartScreen = () => {
     <PageLayout
       hasHeader
       hasFooter
-      headerComponent={<Header headerText="Cart" />}
+      headerComponent={<Header headerText={CART_SCREEN_TITLE} />}
       footerComponent={<Footer activeTab="cart" />}
     >
       <View style={[globalStyles.container]}>
         <ScrollView>
-          {/* <Header headerText="Cart" /> */}
-          <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+          {/* <Header headerText={CART_SCREEN_TITLE} /> */}
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
                 <Ionicons
@@ -150,18 +156,20 @@ const CartScreen = () => {
                     cartItem={eachCartItem}
                   />
                 ))}
-                <View style={{ margin: 16 }} />
+                {/* <View style={{ margin: 16 }} /> */}
                 <SpecialOffersBanner />
                 <OrderSummary
                   cartItems={cartItems}
-                  sectionHeadingStyle={styles.sectionHeading}
+                  // sectionHeadingStyle={
+                  //   // styles.sectionHeading
+                  // }
                 />
                 <View
                   style={{
                     width: "50%",
                     marginHorizontal: "auto",
-                    marginTop: 4,
-                    marginBottom: 16,
+                    // marginTop: 4,
+                    paddingBottom: 16,
                   }}
                 >
                   <Button title="Place Order" onPress={handlePlaceOrder} />
@@ -174,7 +182,7 @@ const CartScreen = () => {
               <TextInput
                 style={globalStyles.discountText}
                 placeholder="Enter your discount code"
-                placeholderTextColor="#17C6ED"
+                placeholderTextColor=colors.primary
               />
               <Ionicons name="close" style={globalStyles.discountClearIcon} />
             </View>

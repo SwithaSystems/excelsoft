@@ -28,7 +28,9 @@ function OrderSummary(props) {
         <Text style={styles.summaryQuantity}>Total Items</Text>
         <Text style={styles.summaryPrice}>Price</Text>
       </View>
-      <View style={{ paddingHorizontal: 5 }}>
+      <View style={{ 
+          // paddingHorizontal: 5 
+        }}>
         {!props.hideItems &&
           cartItems.map((item) => (
             <View key={item.id} style={styles.summaryItem}>
@@ -104,10 +106,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   orderSummary: {
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
     backgroundColor: "white",
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 16,
   },
   summaryText: {
     fontSize: 24,
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: colors.borderGrey,
     paddingTop: 10,
   },
 });

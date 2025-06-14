@@ -10,7 +10,7 @@ interface TrendingSearchItemProps {
 
 const TrendingSearchItem = ({ text, onPress }: TrendingSearchItemProps) => {
   const { width } = Dimensions.get("window");
-  const itemWidth = (width - 60) / 2 - 8; // calculating the width of each item by screen size
+  const itemWidth = (width - 30) / 2 - 8; // calculating the width of each item by screen size
   return (
     <TouchableOpacity
       style={[styles.container, { width: itemWidth }]}

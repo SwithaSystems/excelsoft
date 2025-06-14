@@ -18,6 +18,8 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "../config/stringLiterals";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -70,10 +72,17 @@ const passwordResetScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      scrollable={false}
+      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
+    >
+      {" "}
       <KeyBoardWrapper>
-      <View style={styles.container}>
-        <Header headerText={" Reset Your Password"} />
+        {/* <View style={styles.container}> */}
+        {/* <Header headerText={" Reset Your Password"} /> */}
         <View style={styles.sectionContainer}>
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -109,9 +118,10 @@ const passwordResetScreen = () => {
             onPress={handlePress}
           />
         </View>
-      </View>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

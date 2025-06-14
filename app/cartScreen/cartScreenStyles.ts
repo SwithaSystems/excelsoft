@@ -4,7 +4,7 @@ import colors from "../config/colors";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f0", // Light background color
+    backgroundColor: colors.offWhite, // Light background color
     padding: 20,
   },
   header: {
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: colors.placeholdergrey,
     paddingTop: 10,
   },
   placeOrderButton: {
@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
-    paddingTop: 40,
+    // padding: 20,
+    // paddingTop: 40,
   },
   cartIcon: {
     marginBottom: 24,
@@ -147,11 +147,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
     textAlign: "center",
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: "#666",
+    color: colors.darkGray,
     textAlign: "center",
     lineHeight: 24,
     paddingHorizontal: 20,

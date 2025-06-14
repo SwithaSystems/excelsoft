@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.offWhite,
   },
   text: {
     fontSize: 16,
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   cartIcon: {
-    marginBottom: 24,
+    // marginBottom: 24,
     opacity: 0.6,
   },
   textContainer: {
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
     textAlign: "center",
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: "#666",
+    color: colors.darkGray,
     textAlign: "center",
     lineHeight: 24,
     paddingHorizontal: 20,

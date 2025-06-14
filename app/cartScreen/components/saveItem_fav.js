@@ -115,7 +115,7 @@ const SaveItemFav = (props) => {
               {getImageSource() ? (
                 <Image source={getImageSource()} style={styles.itemImage} />
               ) : (
-                <View style={[styles.itemImage, { backgroundColor: "#ccc" }]} />
+                <View style={[styles.itemImage, { backgroundColor: colors.Gray88 }]} />
               )}
             </View>
             {props?.hideActions ? (
@@ -164,7 +164,11 @@ const SaveItemFav = (props) => {
                           <View
                             style={[styles.quantityActionBtn, styles.minusBtn]}
                           >
-                            <Feather name="minus" size={14} color={"#646464"} />
+                            <Feather
+                              name="minus"
+                              size={14}
+                              color={colors.darkGray}
+                            />
                           </View>
                         </TouchableOpacity>
                         <View style={styles.quantityText}>
@@ -178,7 +182,11 @@ const SaveItemFav = (props) => {
                           <View
                             style={[styles.quantityActionBtn, styles.plusBtn]}
                           >
-                            <Feather name="plus" size={14} color={"#646464"} />
+                            <Feather
+                              name="plus"
+                              size={14}
+                              color={colors.darkGray}
+                            />
                           </View>
                         </TouchableOpacity>
                       </>
@@ -278,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: colors.black,
     borderRadius: 4,
-    backgroundColor: "#EDEDED",
+    backgroundColor: colors.lightgrey,
     shadowOffset: {
       width: 0,
       height: 0,
@@ -294,7 +302,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     display: "flex",
-    color: "#646464",
+    color: colors.darkGray,
     backgroundColor: colors.white,
   },
   plusBtn: {

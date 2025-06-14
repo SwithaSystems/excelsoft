@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: colors.white,
-    marginBottom: 16
+    marginBottom: 16,
   },
   text: {
     fontSize: 12,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: colors.lightgrey,
     borderRadius: 8,
     padding: 15,
     fontSize: 16,

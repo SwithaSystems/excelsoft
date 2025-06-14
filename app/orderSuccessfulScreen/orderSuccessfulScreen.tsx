@@ -13,6 +13,10 @@ import { useLocalSearchParams, router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "../config/colors";
+import {
+  ORDER_PLACED_FAILED,
+  ORDER_PLACED_SUCCESS,
+} from "../config/stringLiterals";
 
 const orderSuccessfulScreen = () => {
   const { orderData } = useLocalSearchParams();
@@ -40,37 +44,35 @@ const orderSuccessfulScreen = () => {
 
   return (
     <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <TouchableWithoutFeedback onPress={redirectToOrderDetails}>
-      <View
-        style={[
-          styles.container,
-          globalStyles.container,
-          { paddingHorizontal: 20 },
-        ]}
-      >
-        <Image
-          source={isOrderPlacedSuccess ? successCartImg : failedCartImg}
-          style={{height:325, width: 325}}
-          alt={
-            isOrderPlacedSuccess
-              ? "Order placed successfull"
-              : "Order placement failed"
-          }
-        />
-        <Text
-          style={{
-            textAlign: "center",
-            marginTop: 48,
-            fontSize: 24,
-            fontWeight: "600",
-          }}
+      <TouchableWithoutFeedback onPress={redirectToOrderDetails}>
+        <View
+          style={[
+            styles.container,
+            globalStyles.container,
+            { paddingHorizontal: 20 },
+          ]}
         >
-          {isOrderPlacedSuccess
-            ? "Order Placed Successfully!!!"
-            : "Sorry, something went wrong. Please go back and try placing your order again"}
-        </Text>
-      </View>
-    </TouchableWithoutFeedback>
+          <Image
+            source={isOrderPlacedSuccess ? successCartImg : failedCartImg}
+            style={{ height: 325, width: 325 }}
+            alt={
+              isOrderPlacedSuccess ? ORDER_PLACED_SUCCESS : ORDER_PLACED_FAILED
+            }
+          />
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 48,
+              fontSize: 24,
+              fontWeight: "600",
+            }}
+          >
+            {isOrderPlacedSuccess
+              ? ORDER_PLACED_SUCCESS
+              : "Sorry, something went wrong. Please go back and try placing your order again"}
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };

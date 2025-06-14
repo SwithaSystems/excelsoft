@@ -3,6 +3,7 @@ import { View, Image, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import HomeStyles from "../home/Homestyles";
 import CurrencySymbol from "../../constants/CurrencySymbol";
+import colors from "../config/colors";
 
 interface ProductCardProps {
   title: string;
@@ -38,7 +39,7 @@ const ProductCard = ({
           {title}
         </Text>
         <View style={HomeStyles.productRating}>
-          <Ionicons name="star" size={14} color="#FFD700" />
+          <Ionicons name="star" size={14} color={colors.lightgrey} />
           <Text style={HomeStyles.ratingText}>
             {rating} ({reviews})
           </Text>

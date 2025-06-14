@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginRight: 4,
-    color: "#6E6F76",
+    color: colors.reviewsColor,
   },
   reviews: {
     margin: 4,

@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     width: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#333",
+    borderColor: colors.darkCharcoal,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     height: 10,
     width: 10,
     borderRadius: 5,
-    backgroundColor: "#333",
+    backgroundColor: colors.darkCharcoal,
   },
   radioLabel: {
     fontSize: 16,

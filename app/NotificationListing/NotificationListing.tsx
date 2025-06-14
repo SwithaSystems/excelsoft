@@ -1,3 +1,4 @@
+import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from './../config/stringLiterals';
 import React from "react";
 import {
   View,
@@ -6,7 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
-  SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import styles from "./NotificationListingStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -14,6 +15,7 @@ import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../config/colors";
+import PageLayout from "../pageLayoutProps";
 
 const NotificationListing = () => {
   const notifications = [
@@ -49,14 +51,24 @@ const NotificationListing = () => {
     </View>
   );
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <View style={globalStyles.container}>
-      <Header headerText="Notifications" />
-      {/* <ScrollView> */}
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <View style={globalStyles.container}>
+    //   <Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />
+    //   <ScrollView>
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      scrollable={false}
+      headerComponent={<Header headerText={NOTIFICATIONS_LISTING_SCREEN_TITLE} />}
+    >
       <FlatList
         ListHeaderComponent={
           <>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <View style={[
+              // globalStyles.sectionContent, 
+              globalStyles.pt_0
+              ]}
+            >
               <View style={[globalStyles.flexRowReverse, globalStyles.mb_3]}>
                 <TouchableOpacity onPress={() => {}}>
                   <Text style={globalStyles.btnSmUnderLine}>Clear all</Text>
@@ -77,9 +89,10 @@ const NotificationListing = () => {
         data={[]}
         renderItem={() => null}
       />
-      {/* </ScrollView> */}
+      {/* </ScrollView>
     </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

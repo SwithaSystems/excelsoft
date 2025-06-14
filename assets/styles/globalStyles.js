@@ -79,7 +79,7 @@ export const globalStyles = StyleSheet.create({
       android: 52, // Slightly taller for Android
       default: 48,
     }),
-    borderColor: "#EBEDED",
+    borderColor: colors.zircon,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 8,
@@ -89,7 +89,7 @@ export const globalStyles = StyleSheet.create({
       default: 0,
     }),
     marginBottom: 16,
-    backgroundColor: "#F8F8F8",
+    backgroundColor: colors.lightgrey,
   },
   errorInput: {
     borderColor: "red",
@@ -271,7 +271,7 @@ export const globalStyles = StyleSheet.create({
   profileInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    // marginBottom: 16,
     backgroundColor: colors.white,
   },
   profileImage: {
@@ -285,7 +285,7 @@ export const globalStyles = StyleSheet.create({
   },
   profilePictureContainer: {
     alignItems: "center",
-    marginVertical: 24,
+    // marginVertical: 24,
     position: "relative",
   },
   userInputLabelIcon: {},
@@ -296,7 +296,7 @@ export const globalStyles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: "#FF4B4B",
+    backgroundColor: colors.alertRed,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -305,7 +305,7 @@ export const globalStyles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 12,
     fontWeight: "bold",
   },
@@ -314,16 +314,16 @@ export const globalStyles = StyleSheet.create({
     color: colors.black,
   },
   orderCompletedBadge: {
-    backgroundColor: "#C3FED9",
-    color: "#16A34A",
+    backgroundColor: colors.palegreen,
+    color: colors.green,
   },
   orderPendingBadge: {
-    backgroundColor: "#F1E29B",
-    color: "#B5990C",
+    backgroundColor: colors.paleYellow,
+    color: colors.mustardYellow,
   },
   orderCanceledBadge: {
-    backgroundColor: "#EAA9A9",
-    color: "#FC1B1B",
+    backgroundColor: colors.paleRed,
+    color: colors.crimsonRed,
   },
   OrderStatusText: {
     fontSize: 12,
@@ -339,7 +339,7 @@ export const globalStyles = StyleSheet.create({
   discountTextInput: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#CEF1F9",
+    backgroundColor: colors.secondary,
     height: 48,
     flex: 1,
     borderRadius: 8,
@@ -352,10 +352,10 @@ export const globalStyles = StyleSheet.create({
   discountClearIcon: {
     marginRight: 8,
     fontSize: 24,
-    color: "#17C6ED",
+    color: colors.primary,
   },
   redeemButton: {
-    backgroundColor: "#17C6ED",
+    backgroundColor: colors.primary,
     color: colors.white,
     margin: 8,
     borderRadius: 4,
@@ -364,7 +364,7 @@ export const globalStyles = StyleSheet.create({
   },
   verify: {
     fontSize: 11,
-    color: "#17C6ED",
+    color: colors.primary,
     textDecorationLine: "underline",
     marginLeft: 4,
     marginTop: 5,

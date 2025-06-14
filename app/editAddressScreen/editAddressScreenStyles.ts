@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: colors.lightgrey,
     borderRadius: 8,
     padding: 15,
     fontSize: 16,

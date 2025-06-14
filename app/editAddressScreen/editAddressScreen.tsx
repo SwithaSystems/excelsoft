@@ -1,3 +1,4 @@
+import { EDIT_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -23,6 +24,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const editAddressScreen = () => {
   const { params } = useLocalSearchParams();
@@ -72,10 +74,16 @@ const editAddressScreen = () => {
     redirectToPage(containers.savedAddressScreenScreen);
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasHeader
+      headerComponent={<Header headerText={EDIT_ADDRESS_SCREEN_TITLE} />}
+      hasFooter={false}
+      scrollable
+    >
       <KeyBoardWrapper>
-      <View style={styles.container}>
-        <Header headerText="Edit Address" />
+        {/* <View style={styles.container}>
+        <Header headerText={EDIT_ADDRESS_SCREEN_TITLE} /> */}
 
         <Text style={styles.fieldLabel}>Address</Text>
         <TextInput
@@ -128,9 +136,10 @@ const editAddressScreen = () => {
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.buttonText}>Update Address</Text>
         </TouchableOpacity>
-      </View>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

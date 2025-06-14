@@ -18,6 +18,8 @@ import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { UserAPI } from "@/services/userService";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
+import { FORGOT_PASSWORD_SCREEN_TITLE } from "../config/stringLiterals";
 
 const forgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
@@ -61,10 +63,16 @@ const forgotPasswordScreen = () => {
   }, [phoneNumber]);
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={styles.container}>
+    //     <Header headerText={"Forgot Password"} />
+    <PageLayout
+      hasHeader
+      hasFooter={false}
+      scrollable
+      headerComponent={<Header headerText={FORGOT_PASSWORD_SCREEN_TITLE} />}
+    >
       <KeyBoardWrapper>
-      <View style={styles.container}>
-        <Header headerText={"Forgot Password"} />
         <View style={styles.sectionContainer}>
           <Text>
             Please enter your email/phone number to reset your password.
@@ -171,9 +179,10 @@ const forgotPasswordScreen = () => {
             setModalOpen(false);
           }}
         />
-      </View>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

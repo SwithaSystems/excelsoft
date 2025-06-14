@@ -1,3 +1,4 @@
+import { SIGN_UP_SCREEN_TITLE } from './../config/stringLiterals';
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
@@ -19,6 +20,7 @@ import { authService } from "@/services/auth.service";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -166,10 +168,16 @@ const signUpScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasHeader
+      hasFooter={false}
+      scrollable={false}
+      headerComponent={<Header headerText={SIGN_UP_SCREEN_TITLE} />}
+    >
       <KeyBoardWrapper>
-      <View style={styles.container}>
-        <Header headerText={"Sign Up"} />
+        {/* <View style={styles.container}> */}
+        {/* <Header headerText={"Sign Up"} /> */}
 
         <View style={styles.sectionContainer}>
           <View style={styles.toggleContainer}>
@@ -177,7 +185,7 @@ const signUpScreen = () => {
             <TouchableOpacity
               style={[
                 styles.toggleButton,
-                mode === "phone" && {backgroundColor: colors.primary},
+                mode === "phone" && { backgroundColor: colors.primary },
               ]}
               onPress={() => toggleMode("phone")}
             >
@@ -262,35 +270,37 @@ const signUpScreen = () => {
           )}
 
           <View style={styles.passwordContainer}>
-          <Text style={styles.label}> Password</Text>
-          <TextInput
-            style={[
-              globalStyles.input,
-              errors.password && globalStyles.errorInput,
-            ]}
-            placeholder="Enter your password"
-            secureTextEntry
-            value={password}
-            onFocus={checkIfUserExists}
-            onChangeText={setPassword}
-          />
-          {errors.password && (
-            <Text style={globalStyles.errorText}>{errors.password}</Text>
-          )}
-          <Text style={styles.label}> Confirm Password</Text>
-          <TextInput
-            style={[
-              globalStyles.input,
-              errors.confirmPassword && globalStyles.errorInput,
-            ]}
-            placeholder="Confirm Password"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          {errors.password && (
-            <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
-          )}
+            <Text style={styles.label}> Password</Text>
+            <TextInput
+              style={[
+                globalStyles.input,
+                errors.password && globalStyles.errorInput,
+              ]}
+              placeholder="Enter your password"
+              secureTextEntry
+              value={password}
+              onFocus={checkIfUserExists}
+              onChangeText={setPassword}
+            />
+            {errors.password && (
+              <Text style={globalStyles.errorText}>{errors.password}</Text>
+            )}
+            <Text style={styles.label}> Confirm Password</Text>
+            <TextInput
+              style={[
+                globalStyles.input,
+                errors.confirmPassword && globalStyles.errorInput,
+              ]}
+              placeholder="Confirm Password"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            {errors.password && (
+              <Text style={globalStyles.errorText}>
+                {errors.confirmPassword}
+              </Text>
+            )}
           </View>
 
           <Button
@@ -311,9 +321,10 @@ const signUpScreen = () => {
             </Text>
           </Text>
         </View>
-      </View>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

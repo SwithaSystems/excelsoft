@@ -21,6 +21,8 @@ import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { orderService } from "@/services/orderService";
+import PageLayout from "../pageLayoutProps";
+import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../config/stringLiterals";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -152,70 +154,78 @@ const AdminSeeAllOrders = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={globalStyles.container}>
-        <Header headerText="Orders" />
-        <ScrollView>
-          <View
-            style={[
-              globalStyles.sectionContent,
-              globalStyles.pt_0,
-              globalStyles.pb_0,
-            ]}
-          >
-            <View style={localStyles.searchBarContainer}>
-              <TextInput
-                placeholder="Search orders..."
-                placeholderTextColor={colors.placeholdergrey}
-                style={localStyles.searchInput}
-              />
-              <TouchableOpacity style={localStyles.searchIcon}>
-                <Ionicons name="search" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={globalStyles.container}>
+    //     <Header headerText="Orders" />
+    //     <ScrollView>
+    <PageLayout
+      hasHeader
+      hasFooter
+      scrollable
+      headerComponent={
+        <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
+      }
+      footerComponent={<AdminFooter activeTab="orders" />}
+    >
+      <View
+        style={[
+          // globalStyles.sectionContent,
+          globalStyles.pt_0,
+          globalStyles.pb_0,
+        ]}
+      >
+        <View style={localStyles.searchBarContainer}>
+          <TextInput
+            placeholder="Search orders..."
+            placeholderTextColor={colors.placeholdergrey}
+            style={localStyles.searchInput}
+          />
+          <TouchableOpacity style={localStyles.searchIcon}>
+            <Ionicons name="search" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-            <View style={localStyles.badgeContainer}>
-              {statusFilters.map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setActiveFilter(status)}
-                  style={[
-                    localStyles.badge,
-                    {
-                      backgroundColor:
-                        activeFilter === status
-                          ? colors.primary
-                          : colors.secondary,
-                    },
-                  ]}
-                >
-                  <Text style={localStyles.badgeText}>{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+        <View style={localStyles.badgeContainer}>
+          {statusFilters.map((status) => (
+            <TouchableOpacity
+              key={status}
+              onPress={() => setActiveFilter(status)}
+              style={[
+                localStyles.badge,
+                {
+                  backgroundColor:
+                    activeFilter === status ? colors.primary : colors.secondary,
+                },
+              ]}
+            >
+              <Text style={localStyles.badgeText}>{status}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-            <Text style={styles.heading}>
-              WELCOME, Let's go through the orders details!
-            </Text>
-            <View style={styles.ordersContainer}>
-              <FlatList
-                data={getFilteredOrders()}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => item._id}
-                ListEmptyComponent={
-                  <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>
-                      No orders found for "{activeFilter}"
-                    </Text>
-                  </View>
-                }
-              />
-            </View>
-          </View>
-        </ScrollView>
+        <Text style={styles.heading}>
+          WELCOME, Let's go through the orders details!
+        </Text>
+        <View style={styles.ordersContainer}>
+          <FlatList
+            data={getFilteredOrders()}
+            renderItem={renderOrderItem}
+            keyExtractor={(item) => item._id}
+            ListEmptyComponent={
+              <View style={localStyles.emptyContainer}>
+                <Text style={localStyles.emptyText}>
+                  No orders found for "{activeFilter}"
+                </Text>
+              </View>
+            }
+          />
+        </View>
+      </View>
+      {/* </ScrollView>
         <AdminFooter activeTab="orders" />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 
@@ -226,13 +236,13 @@ const localStyles = StyleSheet.create({
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white || "#FFFFFF",
+    backgroundColor: colors.white,
     borderRadius: 25,
-    marginHorizontal: 16,
+    // marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === "ios" ? 12 : 8,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -241,14 +251,14 @@ const localStyles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
     borderWidth: Platform.OS === "ios" ? 1 : 0,
-    borderColor: colors.lightgrey || "#E0E0E0",
+    borderColor: colors.lightgrey,
     minHeight: Platform.OS === "ios" ? 50 : 44,
   },
 
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: colors.black || "#000000",
+    color: colors.black,
     paddingVertical: Platform.OS === "ios" ? 8 : 4,
     paddingHorizontal: 0,
     minHeight: Platform.OS === "ios" ? 40 : 36,
@@ -274,31 +284,31 @@ const localStyles = StyleSheet.create({
     marginTop: 4,
   },
   orderPlaced: {
-    backgroundColor: "#E3F2FD",
-    color: "#1565C0",
+    backgroundColor: colors.infoBg,
+    color: colors.infoText,
   },
   cancelled: {
-    backgroundColor: "#FFD6D9",
-    color: "#B00020",
+    backgroundColor: colors.errorBg,
+    color: colors.errorText,
   },
   replaced: {
-    backgroundColor: "#FFF3E0",
-    color: "#E65100",
+    backgroundColor: colors.warningBg,
+    color: colors.warningText,
   },
   returned: {
-    backgroundColor: "#F3E5F5",
-    color: "#7B1FA2",
+    backgroundColor: colors.subtlePurpleBg,
+    color: colors.subtlePurpleText,
   },
   defaultStatus: {
-    backgroundColor: "#E0E0E0",
-    color: "#333",
+    backgroundColor: colors.Gray88,
+    color: colors.darkCharcoal,
   },
 
   badgeContainer: {
     flexDirection: "row",
     marginTop: 10,
     marginBottom: 16,
-    gap: 10,
+    gap: 4,
     flexWrap: "wrap",
   },
   badge: {

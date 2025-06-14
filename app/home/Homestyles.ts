@@ -1,8 +1,7 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from "react-native";
 import colors from "../config/colors";
 
-
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default StyleSheet.create({
   container: {
@@ -10,21 +9,21 @@ export default StyleSheet.create({
     backgroundColor: colors.white,
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
   },
-  logo:{
-    width:24,
-    height:24,
+  logo: {
+    width: 24,
+    height: 24,
   },
-  welcomeText:{
-alignSelf:'flex-end'
+  welcomeText: {
+    alignSelf: "flex-end",
   },
   categoriesContainer: {
     paddingVertical: 16,
   },
   categoryItem: {
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 8,
   },
   categoryImage: {
@@ -32,50 +31,50 @@ alignSelf:'flex-end'
     height: 65,
     borderRadius: 32.5,
     borderWidth: 2,
-    borderColor: "#17C6ED",
+    borderColor: colors.primary,
   },
   categoryText: {
     marginTop: 4,
     fontSize: 12,
-    textAlign:'center',
-    maxWidth:80,
+    textAlign: "center",
+    maxWidth: 80,
     //flexWrap:'wrap',
   },
   banner: {
     height: 150,
-    backgroundColor: '#3B4FB8',
+    backgroundColor: colors.white,
     borderRadius: 12,
     margin: 16,
     padding: 16,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   bannerText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   bannerSubText: {
-    color: '#fff',
+    color: colors.white,
     marginTop: 8,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     margin: 16,
   },
   productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 8,
   },
   productCard: {
     width: (width - 48) / 2,
     margin: 8,
     backgroundColor: colors.lightgrey,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   productImage: {
-    width: '100%',
+    width: "100%",
     height: 150,
   },
   productInfo: {
@@ -83,32 +82,32 @@ alignSelf:'flex-end'
   },
   productTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   productRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
   ratingText: {
     fontSize: 12,
-    color: '#666',
+    color: colors.darkGray,
     marginLeft: 4,
   },
   discountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
   discountPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: colors.black,
   },
   originalPrice: {
     fontSize: 14,
-    color: '#666',
-    textDecorationLine: 'line-through',
+    color: colors.darkGray,
+    textDecorationLine: "line-through",
     marginLeft: 8,
   },
 });

@@ -331,7 +331,7 @@ const ReturnOrder = () => {
                   <Picker
                     selectedValue={reason}
                     onValueChange={(itemValue) => setReason(itemValue)}
-                    style={{ height: 50, color: "#333" }}
+                    style={{ height: 50, color: colors.darkCharcoal }}
                   >
                     <Picker.Item label="Tell us why" value="" />
                     <Picker.Item

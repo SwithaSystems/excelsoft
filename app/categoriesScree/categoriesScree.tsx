@@ -18,6 +18,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import styles from "./categoriesScreeStyles";
 import { categoryService, Category } from "@/services/categoryService";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import PageLayout from "../pageLayoutProps";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -62,7 +63,7 @@ const categoriesScreen = () => {
         style={[
           styles.categoryItem,
           isEven ? styles.leftItem : styles.rightItem,
-          { width: (screenWidth - 48) / 2 },
+          { width: (screenWidth - 80) / 2 },
         ]}
       >
         <CategoryItem
@@ -81,35 +82,46 @@ const categoriesScreen = () => {
     );
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={{ flex: 1 }}>
-        <Header headerText={category?.name} />
-        <ScrollView style={styles.categories}>
-          <FlatList
-            ListHeaderComponent={
-              <View style={[{ backgroundColor: colors.white }]}>
-                <FlatList
-                  data={subCategories}
-                  keyExtractor={(item: any) => item.id}
-                  renderItem={renderItem}
-                  numColumns={2}
-                  columnWrapperStyle={[
-                    styles.row,
-                    { justifyContent: "space-between", paddingHorizontal: 16 },
-                  ]}
-                  contentContainerStyle={styles.listContainer}
-                  showsVerticalScrollIndicator={false}
-                  //nestedScrollEnabled={true}
-                />
-              </View>
-            }
-            data={[]}
-            renderItem={null}
-          />
-        </ScrollView>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={{ flex: 1 }}>
+    //     <Header headerText={category?.name} />
+    //     <ScrollView style={styles.categories}>
+    <PageLayout
+      scrollable
+      hasHeader
+      hasFooter
+      headerComponent={<Header headerText={category?.name} />}
+      footerComponent={<Footer />}
+    >
+      <FlatList
+        ListHeaderComponent={
+          <View style={[{ backgroundColor: colors.white }]}>
+            <FlatList
+              data={subCategories}
+              keyExtractor={(item: any) => item.id}
+              renderItem={renderItem}
+              numColumns={2}
+              columnWrapperStyle={[
+                styles.row,
+                { 
+                  justifyContent: "space-between", 
+                  // paddingHorizontal: 16 
+                },
+              ]}
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={false}
+              //nestedScrollEnabled={true}
+            />
+          </View>
+        }
+        data={[]}
+        renderItem={null}
+      />
+      {/* </ScrollView>
         <Footer navigation={router} activeTab="home" />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

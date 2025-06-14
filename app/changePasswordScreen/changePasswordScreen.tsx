@@ -1,3 +1,4 @@
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -13,6 +14,7 @@ import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -86,80 +88,98 @@ const changePasswordScreen = () => {
   };
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      scrollable={false}
+      hasHeader
+      hasFooter={false}
+      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
+      scrollable={false}
+    >
       <KeyBoardWrapper>
-        <View style={globalStyles.container}>
-          <Header headerText="Change Password" />
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              {/* <View style={globalStyles.profilePictureContainer}>
+        {/* <View style={globalStyles.container}> */}
+        {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
+        <ScrollView>
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
+            {/* <View style={globalStyles.profilePictureContainer}>
             <Image
               source={{ uri: "https://picsum.photos/100" }}
               style={globalStyles.profileImage}
             />
           </View> */}
-              <View style={globalStyles.profileInputContainer}>
-                <View style={{ flex: 1 }}>
-                  <Text style={globalStyles.userInputLabel}>
-                    Current Password
-                  </Text>
-                  <CustomTextInput
-                    secureTextEntry={true}
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="Enter your current Password"
-                    value={currPassword}
-                    onPress={() => {}}
-                    setValue={setCurrPassword}
-                    onblur={() => {
-                      handleBlur(currPassword);
-                    }}
-                  />
-                </View>
-              </View>
-              <View style={globalStyles.profileInputContainer}>
-                <View style={{ flex: 1 }}>
-                  <Text style={globalStyles.userInputLabel}>New Password</Text>
-                  <CustomTextInput
-                    secureTextEntry={true}
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="Enter your new Password"
-                    value={newPassword}
-                    onPress={() => {}}
-                    setValue={setNewPassword}
-                  />
-                </View>
-              </View>
-              <View style={globalStyles.profileInputContainer}>
-                <View style={{ flex: 1 }}>
-                  <Text style={globalStyles.userInputLabel}>
-                    Confirm New Password
-                  </Text>
-                  <CustomTextInput
-                    secureTextEntry={true}
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="Re-enter your new Password"
-                    value={confirmPassword}
-                    onPress={() => {}}
-                    setValue={setConfirmPassword}
-                  />
-                </View>
+            <View style={globalStyles.profileInputContainer}>
+              <View style={{ flex: 1 }}>
+                <Text style={globalStyles.userInputLabel}>
+                  Current Password
+                </Text>
+                <CustomTextInput
+                  secureTextEntry={true}
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="Enter your current Password"
+                  value={currPassword}
+                  onPress={() => {}}
+                  setValue={setCurrPassword}
+                  onblur={() => {
+                    handleBlur(currPassword);
+                  }}
+                />
               </View>
             </View>
-          </ScrollView>
-          <View style={globalStyles.p_3}>
-            <Button
-              onPress={() => {
-                handleChangePassword();
-              }}
-              title="Save Password"
-            />
+            <View style={globalStyles.profileInputContainer}>
+              <View style={{ flex: 1 }}>
+                <Text style={globalStyles.userInputLabel}>New Password</Text>
+                <CustomTextInput
+                  secureTextEntry={true}
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="Enter your new Password"
+                  value={newPassword}
+                  onPress={() => {}}
+                  setValue={setNewPassword}
+                />
+              </View>
+            </View>
+            <View style={globalStyles.profileInputContainer}>
+              <View style={{ flex: 1 }}>
+                <Text style={globalStyles.userInputLabel}>
+                  Confirm New Password
+                </Text>
+                <CustomTextInput
+                  secureTextEntry={true}
+                  containerStyle={globalStyles.userInputContainer}
+                  TextStyle={globalStyles.input}
+                  placeholder="Re-enter your new Password"
+                  value={confirmPassword}
+                  onPress={() => {}}
+                  setValue={setConfirmPassword}
+                />
+              </View>
+            </View>
+            <Button onPress={handleChangePassword} title="Save Password" />
           </View>
-        </View>
+        </ScrollView>
+        {/* <Button
+            onPress={handleChangePassword}
+            title="Save"
+          /> */}
+        {/* <View style={globalStyles.p_3}>
+          <Button
+            onPress={() => {
+              handleChangePassword();
+            }}
+            title="Save Password"
+          />
+        </View> */}
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+    </PageLayout>
+    // </SafeAreaView>
   );
 };
 

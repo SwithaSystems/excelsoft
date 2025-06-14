@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     backgroundColor: colors.white,
     paddingBottom: 16,
   },

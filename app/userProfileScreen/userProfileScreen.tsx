@@ -1,3 +1,4 @@
+import { USER_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -153,7 +154,7 @@ const UserProfileScreen = () => {
       hasHeader={true}
       hasFooter={true}
       headerComponent={
-        <Header headerText="User Profile" needResetNavigation={true} />
+        <Header headerText={USER_PROFILE_SCREEN_TITLE} needResetNavigation={true} />
       }
       footerComponent={<Footer activeTab="menu" />}
       scrollable={true}

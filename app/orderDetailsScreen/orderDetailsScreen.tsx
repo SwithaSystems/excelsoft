@@ -28,6 +28,8 @@ import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import colors from "../config/colors";
+import PageLayout from "../pageLayoutProps";
+import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
@@ -160,118 +162,135 @@ const orderDetailsScreen = () => {
 
   return (
     <>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <View style={styles.container}>
+      {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
+      <PageLayout
+        hasFooter
+        hasHeader
+        scrollable
+        headerComponent={
           <Header
+            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
+            needResetNavigation={from !== "myOrders"}
+          />
+        }
+        footerComponent={<Footer />}
+      >
+        <View style={styles.container}>
+          {/* <Header
             headerText="Order Details"
             needResetNavigation={from !== "myOrders"}
           />
-          <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
-              <View style={{}}>
-                <QRCodeDisplay
-                  qrValue={orderDetails?.orderNumber}
-                  noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
-                />
-              </View>
-              <View style={styles.orderSummaryItem}>
-                <Text
-                  style={[
-                    styles.orderSummaryItemText,
-                    globalStyles.fontWeight500,
-                  ]}
-                >
-                  Status
-                </Text>
-                <Text
-                  style={[
-                    styles.orderSummaryItemText,
-                    globalStyles.fontWeight500,
-                  ]}
-                >
-                  {orderDetails?.status}
-                </Text>
-              </View>
-              <View style={styles.orderSummaryItem}>
-                <Text style={styles.orderSummaryItemText}>Order Number: </Text>
-                <Text style={styles.orderSummaryItemText}>
-                  {orderDetails?.orderNumber}
-                </Text>
-              </View>
-              <View style={styles.orderSummaryItem}>
-                <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
-                <Text style={styles.orderSummaryItemText}>
-                  {/* {orderDetails?.orderDate} */}
-                  {formattedDate}
-                </Text>
-              </View>
-              <View style={styles.orderSummaryItem}>
-                <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-                <Text style={styles.orderSummaryItemText}>
-                  {orderDetails?.shippingCharges}
-                </Text>
-              </View>
-              <View style={styles.orderSummaryItem}>
-                <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-                <Text style={styles.orderSummaryItemText}>
-                  {orderDetails?.totalAmount.toFixed(2)}
-                </Text>
-              </View>
-              <View>
-                {cartItemsWithDetails.map((eachProduct: any) => (
-                  <CartItem
-                    hideActions={true}
-                    itemContainerStyle={styles.cartItemContainerStyle}
-                    key={eachProduct._id}
-                    cartItem={eachProduct}
-                  />
-                ))}
-              </View>
-              <View style={[globalStyles.mb_2, styles.deliverSection]}>
-                <Text
-                  style={[
-                    globalStyles.fontWeight500,
-                    styles.orderSummaryItemText,
-                  ]}
-                >
-                  Deliver To:
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    redirectToPage(containers.deliveryTrackingScreenScreen, {
-                      orderId: orderDetails?._id,
-                    });
-                  }}
-                >
-                  <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
-                    Track Order
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={[globalStyles.mb_2, styles.addressText]}>
-                Choosen Delivery: {orderDetails?.pickupMode}
+          <ScrollView> */}
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
+            <View style={{}}>
+              <QRCodeDisplay
+                qrValue={orderDetails?.orderNumber}
+                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
+              />
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text
+                style={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                ]}
+              >
+                Status
               </Text>
-              {orderDetails?.pickupMode === "homeDelivery" && (
-                <Text style={[globalStyles.mb_3, styles.addressText]}>
-                  Address: {shippingAddress_order?.line1}
-                  {shippingAddress_order?.city}, {shippingAddress_order?.state}
-                  {shippingAddress_order?.postalCode},{" "}
-                </Text>
-              )}
-              <View>
-                <RecommendedProductsSlider
-                  recommendedProducts={recommendedProducts}
-                  sectionTitleStyle={[
-                    styles.orderSummaryItemText,
-                    globalStyles.fontWeight500,
-                    //{marginBottom:16},
-                  ]}
-                  title="Would you like to see these too?"
-                  showAddToCart={false}
+              <Text
+                style={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                ]}
+              >
+                {orderDetails?.status}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Order Number: </Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.orderNumber}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
+              <Text style={styles.orderSummaryItemText}>
+                {/* {orderDetails?.orderDate} */}
+                {formattedDate}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Shipping:</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.shippingCharges}
+              </Text>
+            </View>
+            <View style={styles.orderSummaryItem}>
+              <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
+              <Text style={styles.orderSummaryItemText}>
+                {orderDetails?.totalAmount.toFixed(2)}
+              </Text>
+            </View>
+            <View>
+              {cartItemsWithDetails.map((eachProduct: any) => (
+                <CartItem
+                  hideActions={true}
+                  itemContainerStyle={styles.cartItemContainerStyle}
+                  key={eachProduct._id}
+                  cartItem={eachProduct}
                 />
-              </View>
-              <View style={styles.buttonContainer}>
-                {/* <TouchableOpacity
+              ))}
+            </View>
+            <View style={[globalStyles.mb_2, styles.deliverSection]}>
+              <Text
+                style={[
+                  globalStyles.fontWeight500,
+                  styles.orderSummaryItemText,
+                ]}
+              >
+                Deliver To:
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.deliveryTrackingScreenScreen, {
+                    orderId: orderDetails?._id,
+                  });
+                }}
+              >
+                <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
+                  Track Order
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[globalStyles.mb_2, styles.addressText]}>
+              Choosen Delivery: {orderDetails?.pickupMode}
+            </Text>
+            {orderDetails?.pickupMode === "homeDelivery" && (
+              <Text style={[globalStyles.mb_3, styles.addressText]}>
+                Address: {shippingAddress_order?.line1}
+                {shippingAddress_order?.city}, {shippingAddress_order?.state}
+                {shippingAddress_order?.postalCode},{" "}
+              </Text>
+            )}
+            <View>
+              <RecommendedProductsSlider
+                recommendedProducts={recommendedProducts}
+                sectionTitleStyle={[
+                  styles.orderSummaryItemText,
+                  globalStyles.fontWeight500,
+                  //{marginBottom:16},
+                ]}
+                title="Would you like to see these too?"
+                showAddToCart={false}
+              />
+            </View>
+            <View style={styles.buttonContainer}>
+              {/* <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => {
                     redirectToPage(containers.cancelOrderScreen, {
@@ -291,12 +310,14 @@ const orderDetailsScreen = () => {
                 >
                   <Text style={styles.buttonText}>Request Return</Text>
                 </TouchableOpacity> */}
-              </View>
             </View>
-          </ScrollView>
-          <Footer />
+          </View>
         </View>
-      </SafeAreaView>
+      </PageLayout>
+      {/* </ScrollView> */}
+      {/* <Footer /> */}
+      {/* </View> */}
+      {/* </SafeAreaView> */}
     </>
   );
 };

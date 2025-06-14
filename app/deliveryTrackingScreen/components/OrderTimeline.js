@@ -30,7 +30,9 @@ const OrderTimeline = (props) => {
                 styles.circle,
                 {
                   backgroundColor:
-                    index <= currentStatus ? "#17C6ED" : "#7E8A8C",
+                    index <= currentStatus
+                      ? colors.primary
+                      : colors.secondaryText,
                 },
               ]}
             >
@@ -38,14 +40,19 @@ const OrderTimeline = (props) => {
               <Ionicons
                 name={icons[index]}
                 size={22}
-                color={index <= currentStatus ? "white" : "white"}
+                color={index <= currentStatus ? colors.white : colors.white}
               />
             </View>
             {/* Status Text */}
             <Text
               style={[
                 styles.statusText,
-                { color: index <= currentStatus ? "#17C6ED" : "#7E8A8C" },
+                {
+                  color:
+                    index <= currentStatus
+                      ? colors.primary
+                      : colors.secondaryText,
+                },
               ]}
             >
               {item}
@@ -57,7 +64,9 @@ const OrderTimeline = (props) => {
                   styles.line,
                   {
                     backgroundColor:
-                      index < currentStatus ? "#17C6ED" : "#7E8A8C",
+                      index < currentStatus
+                        ? colors.primary
+                        : colors.secondaryText,
                   },
                 ]}
               />

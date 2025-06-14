@@ -18,6 +18,7 @@ import { categoryService } from "@/services/categoryService";
 import NoContentFound from "@/components/NoContentFound";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
@@ -272,11 +273,13 @@ const SearchResultsScreen = () => {
     }
 
     if (!displayProducts.length) {
-        return (
-          <View style={{ flex:1, padding: 16 }}>
-            <NoContentFound message="No products found" />
-          </View>
-        );
+      return (
+        <View style={{ flex: 1, 
+          // padding: 16 
+        }}>
+          <NoContentFound message="No products found" />
+        </View>
+      );
     }
 
     return (
@@ -293,32 +296,40 @@ const SearchResultsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={
-      // [styles.container, { backgroundColor: colors.white }]
-      globalStyles.safeAreaContainer
-    }>
+    // <SafeAreaView style={
+    //   // [styles.container, { backgroundColor: colors.white }]
+    //   globalStyles.safeAreaContainer
+    // }>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText={headerTitle} />}
+      footerComponent={<Footer navigation={router} />}
+    >
       <KeyBoardWrapper>
-      <Header headerText={headerTitle} />
+        {/* <Header headerText={headerTitle} /> */}
 
-      {!isLoading && !error && (
-        <>
-          {!isFromSearch && searchQuery ? (
-            <Text style={styles.resultsCount}>
-              {filteredProducts.length} search results for "{searchQuery}"
-            </Text>
-          ) : isFromSearch ? (
-            renderCategoryBadges()
-          ) : null}
-        </>
-      )}
+        {!isLoading && !error && (
+          <>
+            {!isFromSearch && searchQuery ? (
+              <Text style={styles.resultsCount}>
+                {filteredProducts.length} search results for "{searchQuery}"
+              </Text>
+            ) : isFromSearch ? (
+              renderCategoryBadges()
+            ) : null}
+          </>
+        )}
 
-      <View style={[styles.divider, { backgroundColor: colors.white }]}>
-        {renderContent()}
-      </View>
+        <View style={[styles.divider, { backgroundColor: colors.white }]}>
+          {renderContent()}
+        </View>
 
-      <Footer navigation={router} activeTab="home" />
+        {/* <Footer navigation={router} activeTab="home" /> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

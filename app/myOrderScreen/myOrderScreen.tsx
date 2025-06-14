@@ -1,3 +1,4 @@
+import { MY_ORDERS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -15,6 +16,7 @@ import Footer from "@/components/Footer";
 import { Order, orderService } from "@/services/orderService";
 import colors from "../config/colors";
 import { useLocalSearchParams } from "expo-router";
+import PageLayout from "../pageLayoutProps";
 
 const myOrderScreen = () => {
   // const orderData = [
@@ -56,14 +58,24 @@ const myOrderScreen = () => {
     fetchOrders();
   }, []);
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable
+      headerComponent={<Header headerText={MY_ORDERS_SCREEN_TITLE} />}
+      footerComponent={<Footer />}
+    >
       <View style={globalStyles.container}>
-        <Header headerText="Your Orders" />
+        {/* <Header headerText={MY_ORDERS_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={
             <>
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              <View style={[
+                // globalStyles.sectionContent, 
+                globalStyles.pt_0
+              ]}>
                 <Text style={styles.yourLastOrders}>Your last orders</Text>
 
                 <FlatList
@@ -87,10 +99,12 @@ const myOrderScreen = () => {
           data={[]}
           renderItem={() => null}
         />
-        {/* </ScrollView> */}
+      </View>
+    </PageLayout>
+    /* </ScrollView> 
         <Footer />
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */
   );
 };
 

@@ -19,6 +19,8 @@ import { useLocalSearchParams } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
+import { ADD_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -60,41 +62,52 @@ const addAddressScreen = () => {
     }
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //
+    // <View style={styles.container}>
+    //   <Header headerText={ADD_ADDRESS_SCREEN_TITLE} />
+    <PageLayout
+      hasHeader
+      hasFooter={false}
+      scrollable
+      headerComponent={<Header headerText={ADD_ADDRESS_SCREEN_TITLE} />}
+    >
       <KeyBoardWrapper>
-    <View style={styles.container}>
-      <Header headerText="Add New Address" />
-      <ScrollView>
-        <Text style={styles.fieldLabel}>Recipient Name</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <ScrollView>
+          <Text style={styles.fieldLabel}>Recipient Name</Text>
+          <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-        <Text style={styles.fieldLabel}>Postcode</Text>
-        <TextInput
-          style={styles.input}
-          value={postalcode}
-          onChangeText={setPostalCode}
-          keyboardType="email-address"
-        />
+          <Text style={styles.fieldLabel}>Postcode</Text>
+          <TextInput
+            style={styles.input}
+            value={postalcode}
+            onChangeText={setPostalCode}
+            keyboardType="email-address"
+          />
 
-        <Text style={styles.fieldLabel}>Address Line 1</Text>
-        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+          <Text style={styles.fieldLabel}>Address Line 1</Text>
+          <TextInput
+            style={styles.input}
+            value={line1}
+            onChangeText={setLine1}
+          />
 
-        <Text style={styles.fieldLabel}>Address Line 2</Text>
-        <TextInput
-          style={styles.input}
-          value={line2}
-          onChangeText={setLine2}
-          keyboardType="email-address"
-        />
+          <Text style={styles.fieldLabel}>Address Line 2</Text>
+          <TextInput
+            style={styles.input}
+            value={line2}
+            onChangeText={setLine2}
+            keyboardType="email-address"
+          />
 
-        <Text style={styles.fieldLabel}>Town/City</Text>
-        <TextInput
-          style={styles.input}
-          value={towncity}
-          onChangeText={setTownCity}
-          keyboardType="email-address"
-        />
-        {/* <Text style={styles.fieldLabel}>State</Text>
+          <Text style={styles.fieldLabel}>Town/City</Text>
+          <TextInput
+            style={styles.input}
+            value={towncity}
+            onChangeText={setTownCity}
+            keyboardType="email-address"
+          />
+          {/* <Text style={styles.fieldLabel}>State</Text>
         <TextInput
           style={styles.input}
           value={state}
@@ -102,8 +115,7 @@ const addAddressScreen = () => {
           keyboardType="email-address"
         /> */}
 
-        
-        {/* <Text style={styles.fieldLabel}>Country</Text>
+          {/* <Text style={styles.fieldLabel}>Country</Text>
         <View style={styles.countriesdropdown}>
           <TextInput
             style={styles.input}
@@ -117,31 +129,32 @@ const addAddressScreen = () => {
             color={colors.black}
           />
         </View> */}
-        <Text style={styles.fieldLabel}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-        />
-        <View style={styles.checkBox}>
-          <CheckBox
-            checked={isDefault}
-            onPress={() => setIsDefault(!isDefault)}
+          <Text style={styles.fieldLabel}>Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            keyboardType="phone-pad"
           />
-          <Text>Mark as default address</Text>
-        </View>
+          <View style={styles.checkBox}>
+            <CheckBox
+              checked={isDefault}
+              onPress={() => setIsDefault(!isDefault)}
+            />
+            <Text>Mark as default address</Text>
+          </View>
 
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleAddAddress}
-            >
-              <Text style={styles.buttonText}>Add Address</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleAddAddress}
+          >
+            <Text style={styles.buttonText}>Add Address</Text>
+          </TouchableOpacity>
+        </ScrollView>
+        {/* </View> */}
       </KeyBoardWrapper>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

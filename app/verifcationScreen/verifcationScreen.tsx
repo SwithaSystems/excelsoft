@@ -19,6 +19,8 @@ import containers from "@/containers";
 import colors from "../config/colors";
 import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import PageLayout from "../pageLayoutProps";
+import { VERIFICATION_SCREEN_TITLE } from './../config/stringLiterals';
 
 const verifcationScreen = () => {
   const { userData, from, phoneNumber_forgetPwd, phoneNumber_editAccount } =
@@ -194,42 +196,48 @@ const verifcationScreen = () => {
   };
   return (
     <>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
+      {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
+      <PageLayout
+        hasFooter={false}
+        hasHeader
+        headerComponent={<Header headerText={VERIFICATION_SCREEN_TITLE} />}
+      >
         <KeyBoardWrapper>
-          <View style={styles.container}>
-            <Header headerText="Verify Your Account" />
-            <Image
-              style={styles.image}
-              source={require("assets/UserVerificationSuccessful.png")}
-            />
-            <Text style={styles.description}>
-              We have sent a verification code to your mobile.Please enter code
-            </Text>
-            <View style={styles.codeContainer}>
-              {code.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  ref={(ref) => {
-                    if (ref) inputRefs.current[index] = ref;
-                  }}
-                  style={styles.inputBox}
-                  keyboardType="numeric"
-                  maxLength={1}
-                  value={digit}
-                  returnKeyType="next"
-                  onKeyPress={({ nativeEvent }) => {
-                    if (
-                      nativeEvent.key === "Backspace" &&
-                      !code[index] &&
-                      index > 0
-                    ) {
-                      inputRefs.current[index - 1]?.focus();
-                    }
-                  }}
-                  onChangeText={(text) => handleChange(text, index)}
-                />
-              ))}
-            </View>
+          {/* <View style={styles.container}> */}
+          {/* <Header headerText={VERIFICATION_SCREEN_TITLE} /> */}
+          <Image
+            style={styles.image}
+            source={require("assets/UserVerificationSuccessful.png")}
+          />
+          <Text style={styles.description}>
+            We have sent a verification code to your mobile.Please enter code
+          </Text>
+          <View style={styles.codeContainer}>
+            {code.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => {
+                  if (ref) inputRefs.current[index] = ref;
+                }}
+                style={styles.inputBox}
+                keyboardType="numeric"
+                maxLength={1}
+                value={digit}
+                returnKeyType="next"
+                onKeyPress={({ nativeEvent }) => {
+                  if (
+                    nativeEvent.key === "Backspace" &&
+                    !code[index] &&
+                    index > 0
+                  ) {
+                    inputRefs.current[index - 1]?.focus();
+                  }
+                }}
+                onChangeText={(text) => handleChange(text, index)}
+              />
+            ))}
+          </View>
+          <View style={{ alignItems: "center" }}>
             <TouchableOpacity
               style={styles.verifyButton}
               onPress={handleVerify}
@@ -244,8 +252,10 @@ const verifcationScreen = () => {
               </Text>
             </Text>
           </View>
+          {/* </View> */}
         </KeyBoardWrapper>
-      </SafeAreaView>
+        {/* </SafeAreaView> */}
+      </PageLayout>
     </>
   );
 };
