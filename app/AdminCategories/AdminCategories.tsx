@@ -22,9 +22,11 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import AdminFooter from "@/components/AdminFooter";
 import PageLayout from "../pageLayoutProps";
-import { ADMIN_CATEGORIES_SCREEN_TITLE } from './../config/stringLiterals';
+import { ADMIN_CATEGORIES_SCREEN_TITLE } from "./../config/stringLiterals";
+import CategoryDropdown from "./categoryDropdown";
 
 interface Category {
+  _id: any;
   id: number;
   name: string;
   description?: string;
@@ -38,9 +40,15 @@ const AdminCategories = () => {
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImages, setCategoryImages] = useState<any[]>([]);
-  const [parentCategory, setParentCategory] = useState("");
-  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [parentCategory, setParentCategory] = useState<any>(null);
+  const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
+    null
+  );
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -169,9 +177,55 @@ const AdminCategories = () => {
     }
   }
 
+  // Clear form function
+  const clearForm = useCallback(() => {
+    setCategoryName("");
+    setCategoryDescription("");
+    setCategoryImages([]);
+    setParentCategory(null);
+    setIsEditMode(false);
+    setEditingCategoryId(null);
+  }, []);
+
+  // Handle edit category click
+  const handleEditCategory = useCallback((category: Category) => {
+    console.log("Editing category:", category);
+    setCategoryName(category.name);
+    setCategoryDescription(category.description || "");
+    setParentCategory(category.parentCategory || null);
+
+    // Convert image URLs to the format expected by the image picker
+    const imageObjects =
+      category.images?.map((imageUrl) => ({ uri: imageUrl })) || [];
+    setCategoryImages(imageObjects);
+
+    setIsEditMode(true);
+    setEditingCategoryId(category._id);
+  }, []);
+
+  // Handle cancel edit
+  const handleCancelEdit = useCallback(() => {
+    Alert.alert(
+      "Cancel Edit",
+      "Are you sure you want to cancel editing? All changes will be lost.",
+      [
+        {
+          text: "Continue Editing",
+          style: "cancel",
+        },
+        {
+          text: "Cancel Edit",
+          onPress: clearForm,
+          style: "destructive",
+        },
+      ]
+    );
+  }, [clearForm]);
+
   const handleAddCategory = useCallback(async () => {
     try {
       setLoading(true);
+      console.log(" Parentcategory to update", parentCategory);
 
       // Validate required fields
       if (!categoryName.trim()) {
@@ -182,24 +236,32 @@ const AdminCategories = () => {
       // Create FormData for multipart/form-data upload
       const formData = new FormData();
 
-      // Find the max id from the category list
-      const maxId = categoryList.reduce((max, category) => {
-        return category.id &&
-          typeof category.id === "number" &&
-          category.id > max
-          ? category.id
-          : max;
-      }, 0);
+      if (isEditMode && editingCategoryId) {
+        // Edit mode - use existing ID
+        formData.append("id", editingCategoryId.toString());
+      } else {
+        // Add mode - find the max id from the category list
+        const maxId = categoryList.reduce((max, category) => {
+          return category.id &&
+            typeof category.id === "number" &&
+            category.id > max
+            ? category.id
+            : max;
+        }, 0);
 
-      const newId = maxId + 1;
-      formData.append("id", newId.toString());
+        const newId = maxId + 1;
+        formData.append("id", newId.toString());
+      }
+
       // Append regular text fields
       formData.append("name", categoryName.trim());
       if (categoryDescription.trim()) {
         formData.append("description", categoryDescription.trim());
       }
-      if (parentCategory.trim()) {
-        formData.append("parentCategory", parentCategory.trim());
+
+      // Handle parentCategory as number, not string
+      if (parentCategory && typeof parentCategory === "number") {
+        formData.append("parentCategory", parentCategory.toString());
       }
 
       // Process images - append each image to form data
@@ -225,32 +287,70 @@ const AdminCategories = () => {
         }
       });
 
-      console.log("Submitting form data for category creation", formData);
+      console.log(
+        `Submitting form data for category ${
+          isEditMode ? "update" : "creation"
+        }`,
+        formData
+      );
 
-      const addedCategory = await categoryService.addCategory(formData);
-      if (!addedCategory) {
-        Alert.alert("Error", "Failed to add category");
+      let result;
+      if (isEditMode && editingCategoryId) {
+        result = await categoryService.updateCategory(
+          editingCategoryId,
+          formData
+        );
+      } else {
+        result = await categoryService.addCategory(formData);
+      }
+
+      console.log(
+        `Result for category ${isEditMode ? "update" : "creation"}`,
+        result
+      );
+
+      if (!result) {
+        Alert.alert(
+          "Error",
+          `Failed to ${isEditMode ? "update" : "add"} category`
+        );
         return;
       } else {
-        // Refresh the category list
         await getAllCategories();
 
-        // Clear form
-        setCategoryName("");
-        setCategoryDescription("");
-        setCategoryImages([]);
-        setParentCategory("");
+        clearForm();
 
-        Alert.alert("Success", "Category added successfully");
-        router.back();
+        Alert.alert(
+          "Success",
+          `Category ${isEditMode ? "updated" : "added"} successfully`
+        );
+
+        if (!isEditMode) {
+          router.back();
+        }
       }
     } catch (error) {
-      console.error("Error adding category:", error);
-      Alert.alert("Error", "Failed to add category");
+      console.error(
+        `Error ${isEditMode ? "updating" : "adding"} category:`,
+        error
+      );
+      Alert.alert(
+        "Error",
+        `Failed to ${isEditMode ? "update" : "add"} category`
+      );
     } finally {
       setLoading(false);
     }
-  }, [categoryName, categoryDescription, categoryImages, parentCategory]);
+  }, [
+    categoryName,
+    categoryDescription,
+    categoryImages,
+    parentCategory,
+    isEditMode,
+    editingCategoryId,
+    categoryList,
+    clearForm,
+  ]);
 
   useEffect(() => {
     getAllCategories();
@@ -266,9 +366,6 @@ const AdminCategories = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <View style={styles.container}>
-    //     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
     <PageLayout
       hasHeader
       hasFooter
@@ -278,7 +375,19 @@ const AdminCategories = () => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>Add New Category</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {isEditMode ? "Edit Category" : "Add New Category"}
+            </Text>
+            {isEditMode && (
+              <TouchableOpacity
+                onPress={handleCancelEdit}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           <CustomTextInput
             value={categoryName}
@@ -296,13 +405,14 @@ const AdminCategories = () => {
             onPress={() => {}}
           />
 
-          <CustomTextInput
-            value={parentCategory}
-            setValue={setParentCategory}
-            placeholder="Enter parent category ID (optional)"
-            containerStyle={styles.input}
-            keyboardType="numeric"
-            onPress={() => {}}
+          <CategoryDropdown
+            categories={categoryList.filter(
+              (cat) => cat.id !== editingCategoryId
+            )} // Prevent self-selection as parent
+            selectedCategory={parentCategory}
+            setSelectedCategory={setParentCategory}
+            containerStyle={{ borderColor: colors.primary }}
+            placeholder="Select parent category (optional)"
           />
 
           {/* Image Selection Section */}
@@ -352,7 +462,13 @@ const AdminCategories = () => {
             disabled={loading}
           >
             <Text style={styles.addButtonText}>
-              {loading ? "Adding..." : "Add Category"}
+              {loading
+                ? isEditMode
+                  ? "Updating..."
+                  : "Adding..."
+                : isEditMode
+                ? "Update Category"
+                : "Add Category"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -363,7 +479,12 @@ const AdminCategories = () => {
             {categoryList.map((categoryItem: Category, index: number) => (
               <TouchableOpacity
                 key={categoryItem.id || index}
-                style={styles.categoryItem}
+                style={[
+                  styles.categoryItem,
+                  editingCategoryId === categoryItem.id &&
+                    styles.editingCategoryItem,
+                ]}
+                onPress={() => handleEditCategory(categoryItem)}
               >
                 <View style={styles.categoryContent}>
                   {categoryItem.images && categoryItem.images.length > 0 && (
@@ -381,20 +502,24 @@ const AdminCategories = () => {
                       </Text>
                     )}
                     <Text style={styles.categoryId}>
-                      ID: {categoryItem.id} Parent:{" "}
+                      ID: {categoryItem.id} | Parent:{" "}
                       {getParentCategoryName(
                         categoryItem.parentCategory,
                         categoryList
                       )}
                     </Text>
-                    {/* {categoryItem.parentCategory && (
-                        <Text style={styles.parentCategory}>
-                          Parent: {categoryItem.parentCategory}
-                        </Text>
-                      )} */}
                   </View>
                 </View>
-                {/* <Ionicons name="chevron-forward" size={20} color="#C8C8C8" /> */}
+                <View style={styles.categoryActions}>
+                  {editingCategoryId === categoryItem.id && (
+                    <Text style={styles.editingLabel}>Editing</Text>
+                  )}
+                  <Ionicons
+                    name="create-outline"
+                    size={20}
+                    color={colors.primary}
+                  />
+                </View>
               </TouchableOpacity>
             ))}
             {categoryList.length === 0 && (
@@ -405,9 +530,6 @@ const AdminCategories = () => {
           </ScrollView>
         </View>
       </ScrollView>
-      {/* </View>
-      <AdminFooter activeTab="categories" />
-    </SafeAreaView> */}
     </PageLayout>
   );
 };
@@ -421,11 +543,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 16,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 16,
     color: colors.primary,
+  },
+  cancelButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.borderGrey,
+    borderRadius: 6,
+  },
+  cancelButtonText: {
+    color: colors.darkCharcoal,
+    fontSize: 14,
+    fontWeight: "500",
   },
   input: {
     backgroundColor: colors.white,
@@ -516,6 +654,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.shadeOfBlueGray,
   },
+  editingCategoryItem: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+    backgroundColor: colors.lightSkyBlue,
+  },
   categoryContent: {
     flexDirection: "row",
     alignItems: "center",
@@ -546,9 +689,14 @@ const styles = StyleSheet.create({
     color: colors.lightgrey,
     marginBottom: 1,
   },
-  parentCategory: {
-    fontSize: 12,
-    color: colors.lightgrey,
+  categoryActions: {
+    alignItems: "center",
+  },
+  editingLabel: {
+    fontSize: 10,
+    color: colors.primary,
+    fontWeight: "600",
+    marginBottom: 4,
   },
   emptyState: {
     padding: 20,

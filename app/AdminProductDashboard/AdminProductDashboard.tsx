@@ -1,4 +1,4 @@
-import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from './../config/stringLiterals';
+import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from "./../config/stringLiterals";
 // import { useFocusEffect } from "@react-navigation/native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
@@ -209,7 +209,9 @@ const AdminProductDashboard = () => {
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />}
+      headerComponent={
+        <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+      }
       footerComponent={<AdminFooter activeTab="products" />}
     >
       <View
@@ -227,7 +229,7 @@ const AdminProductDashboard = () => {
               onGoBack: () => setRefreshTrigger((prev) => prev + 1),
             });
           }}
-          title="+ Add New Product"
+          title="Add New Product"
         />
         {/* <TouchableOpacity
               onPress={() => redirectToPage(containers.AdminCategoriesScreen)}

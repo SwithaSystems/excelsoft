@@ -19,6 +19,20 @@ export const categoryService = {
       throw error;
     }
   },
+  updateCategory: async (categoryId: any, category: any): Promise<Category> => {
+    console.log("updating category", categoryId, category);
+    try {
+      const formDataAxios = createAxiosInstance("formdata");
+      const response = await formDataAxios.put(
+        `/categories/updateCategory/${categoryId}`,
+        category
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating category:", error);
+      throw error;
+    }
+  },
   getAllCategories: async (parentCategory?: number): Promise<Category[]> => {
     try {
       const response = await jsonAxios.get(`/categories`, {
