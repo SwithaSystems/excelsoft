@@ -1,4 +1,4 @@
-import { CHANGE_PASSWORD_SCREEN_TITLE } from './../config/stringLiterals';
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -90,6 +90,7 @@ const changePasswordScreen = () => {
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
+      scrollable={false}
       hasHeader
       hasFooter={false}
       headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
@@ -99,10 +100,12 @@ const changePasswordScreen = () => {
         {/* <View style={globalStyles.container}> */}
         {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
         <ScrollView>
-          <View style={[
-            // globalStyles.sectionContent, 
-            globalStyles.pt_0
-          ]}>
+          <View
+            style={[
+              // globalStyles.sectionContent,
+              globalStyles.pt_0,
+            ]}
+          >
             {/* <View style={globalStyles.profilePictureContainer}>
             <Image
               source={{ uri: "https://picsum.photos/100" }}
@@ -158,16 +161,21 @@ const changePasswordScreen = () => {
                 />
               </View>
             </View>
+            <Button onPress={handleChangePassword} title="Save Password" />
           </View>
         </ScrollView>
-        <View style={globalStyles.p_3}>
+        {/* <Button
+            onPress={handleChangePassword}
+            title="Save"
+          /> */}
+        {/* <View style={globalStyles.p_3}>
           <Button
             onPress={() => {
               handleChangePassword();
             }}
             title="Save Password"
           />
-        </View>
+        </View> */}
         {/* </View> */}
       </KeyBoardWrapper>
     </PageLayout>

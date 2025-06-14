@@ -4,7 +4,7 @@ import colors from "../config/colors";
 const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   ordersContainer: {
     paddingHorizontal: 24,

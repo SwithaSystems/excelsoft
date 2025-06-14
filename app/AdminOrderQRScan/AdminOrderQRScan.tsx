@@ -39,7 +39,7 @@ const AdminOrderQRScan = () => {
 
       <MaterialIcons
         name="qr-code-scanner"
-        size={108}
+        size={196}
         color={colors.primary}
         style={styles.qrIcon}
       />
