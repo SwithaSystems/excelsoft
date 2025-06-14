@@ -555,7 +555,7 @@ const PickupScreen = () => {
         style={[
           inputStyles.textInput,
           error && inputStyles.inputError,
-          props?.editable === false && { backgroundColor: "#f0f0f0" },
+          props?.editable === false && { backgroundColor: colors.paleWhite },
         ]}
         {...props}
       />

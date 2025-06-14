@@ -251,14 +251,14 @@ const addBillingAddressScreen = () => {
         <Header
           headerText={
             isEditMode
-              ? { UPDATE_BILLING_ADDRESS_SCREEN_TITLE }
-              : { ADD_BILLING_ADDRESS_SCREEN_TITLE }
+              ? UPDATE_BILLING_ADDRESS_SCREEN_TITLE
+              : ADD_BILLING_ADDRESS_SCREEN_TITLE 
           }
         />
       }
     >
       <KeyBoardWrapper>
-        <ScrollView style={{ padding: 16 }}>
+        <ScrollView>
           <View style={{ marginBottom: 16 }}>
             <Text style={styles.fieldLabel}>
               Address Name

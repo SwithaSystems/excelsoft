@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   }, 
   cartItem: {
     flexDirection: "row",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.paleWhite,
     borderRadius: 10,
     paddingVertical: 10,
     marginBottom: 16,
@@ -70,16 +70,16 @@ const styles = StyleSheet.create({
   },
   itemQty: {
     fontSize: 14,
-    color: "#666",
+    color: colors.darkGray,
     marginVertical: 4,
   },
   itemPrice: {
     fontSize: 14,
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   originalPrice: {
     textDecorationLine: "line-through",
-    color: "#888",
+    color: colors.argentGray,
     fontSize: 13,
     marginLeft: 4,
   },
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.lightSkyBlue,
     elevation: 4,
-    shadowColor: "#DEF7FC",
+    shadowColor: colors.secondary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1.0,
     shadowRadius: 4,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
       width: 50,
     },
     amPmSelector: {
-      // backgroundColor: '#f8f8f8',
+      // backgroundColor: colors.lightgrey,
       borderRadius: 8,
       borderWidth:1,
       borderColor: colors.primary,

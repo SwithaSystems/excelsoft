@@ -4,7 +4,7 @@ import colors from "../config/colors";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     //padding: 20,
     //justifyContent: "center",
     alignItems: "center",
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   description: {
     textAlign: "center",
     marginVertical: 10,
-    color: "#555",
+    color: colors.black,
     lineHeight: 20,
   },
   codeContainer: {
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     borderWidth: 1,
-    borderColor: "#00BFFF",
+    borderColor: colors.primary,
     borderRadius: 8,
     width: 50,
     height: 50,
@@ -45,17 +45,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
   },
   resendText: {
     marginTop: 20,
-    color: "#555",
+    color: colors.black,
     textAlign:"center",
   },
   resendLink: {
-    color: "#00BFFF",
+    color: colors.primary,
     fontWeight: "bold",
   },
 });

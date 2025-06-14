@@ -115,7 +115,7 @@ const SaveItemFav = (props) => {
               {getImageSource() ? (
                 <Image source={getImageSource()} style={styles.itemImage} />
               ) : (
-                <View style={[styles.itemImage, { backgroundColor: "#ccc" }]} />
+                <View style={[styles.itemImage, { backgroundColor: colors.Gray88 }]} />
               )}
             </View>
             {props?.hideActions ? (
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     display: "flex",
-    color: "#646464",
+    color: colors.darkGray,
     backgroundColor: colors.white,
   },
   plusBtn: {

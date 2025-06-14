@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   suggestionItem: {
     // padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: colors.paleWhite,
   },
   suggestionText: {
     fontSize: 16,

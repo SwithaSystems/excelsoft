@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 24,
     paddingTop: 16,
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     flexGrow: 1,
   },
   emptyNotifContainer: {
@@ -17,14 +17,14 @@ const styles = StyleSheet.create({
   noNotificationText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: colors.black,
     textAlign: "center",
     marginBottom: 16,
     paddingTop: 16,
   },
   subText: {
     fontSize: 14,
-    color: "#333",
+    color: colors.darkCharcoal,
     textAlign: "center",
   },
   notificationBox: {
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: 14,
-    color: "#000",
+    color: colors.darkCharcoal,
     flex: 1,
   },
 });
