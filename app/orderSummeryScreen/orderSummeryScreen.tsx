@@ -1,4 +1,4 @@
-import { ORDER_SUMMARY_SCREEN_TITLE } from './../config/stringLiterals';
+import { ORDER_SUMMARY_SCREEN_TITLE } from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -304,10 +304,7 @@ const orderSummeryScreen = () => {
                 <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
-              <View style={[
-                globalStyles.pl_3, 
-                styles.deliverAddress]}
-              >
+              <View style={[globalStyles.pl_3, styles.deliverAddress]}>
                 {selectedMode === "storePickup" ? (
                   <Ionicons
                     name="storefront"
@@ -544,10 +541,12 @@ Contact Number: ${pickupAddress.phone}`}
             </View>
           </View>
 
-          <View style={{ 
-            paddingHorizontal: 24, 
-            // paddingBottom: 14 
-          }}>
+          <View
+            style={{
+              paddingHorizontal: 24,
+              // paddingBottom: 14
+            }}
+          >
             <Button
               title="Proceed for Payment"
               disabled={!isPaymentEnabled}

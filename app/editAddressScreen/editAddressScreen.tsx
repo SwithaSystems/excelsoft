@@ -1,4 +1,4 @@
-import { EDIT_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
+import { EDIT_ADDRESS_SCREEN_TITLE } from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -15,8 +15,6 @@ import { CheckBox } from "react-native-elements";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../config/colors";
-import OrderSummary from "@/components/OrderSummary";
 import { useSelector } from "react-redux";
 import { addressService } from "@/services/addressService";
 import { useAppContext } from "../../context/AppContext";
