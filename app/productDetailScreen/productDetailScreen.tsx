@@ -34,6 +34,7 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import PageLayout from "../pageLayoutProps";
+import HeroBanner from "../../components/HeroBanner";
 import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const ProductDetailScreen = () => {
@@ -149,7 +150,7 @@ const ProductDetailScreen = () => {
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
           {/* <Header headerText={"About the Product"} /> */}
-          <View style={{ position: "relative" }}>
+          {/* <View style={{ position: "relative" }}>
             <ScrollView
               ref={scrollViewRef}
               horizontal
@@ -197,7 +198,17 @@ const ProductDetailScreen = () => {
                 />
               ))}
             </View>
-          </View>
+          </View> */}
+
+          {product && product.image && product.image.length > 0 &&(
+            <HeroBanner
+              bannerData={product.image.map((imageurl: string, index: number) => ({
+                id: index,
+                image: {uri:imageurl},
+              }))}
+              onBannerPress={()=> {}}
+            />
+          )}
 
           <View style={styles.contentContainer}>
             <View style={styles.exclusiveDetails}>

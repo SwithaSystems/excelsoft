@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   suggestionItem: {
-    // padding: 16,
+    padding: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.paleWhite,
   },

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
+  Image,
   View,
   ScrollView,
   TextInput,
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
   StyleSheet,
   ActivityIndicator,
   Platform,
@@ -30,20 +30,14 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
-import categoriesScreen from "../categoriesScree/categoriesScree";
 import { parentCategoryIDAll } from "@/config/constants";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import AdminFooter from "@/components/AdminFooter";
 import { PageLayout } from "../pageLayoutProps";
 
-const bannerImages = [
-  { imageUrl: require("../../assets/banner1.png") },
-  { imageUrl: require("../../assets/banner2.png") },
-  { imageUrl: require("../../assets/banner3.png") },
-];
+// const bannerImages = [
+//   { imageUrl: require("../../assets/banner1.png") },
+//   { imageUrl: require("../../assets/banner2.png") },
+//   { imageUrl: require("../../assets/banner3.png") },
+// ];
 
 const recommendedProducts = products
   .filter((p) =>
@@ -98,7 +92,11 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const renderBanner = () => <HeroBanner />;
+  const handleBannerPress = (item: any, index: number) => {
+    redirectToPage(containers.offersScreenScreen);
+  };
+
+  const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress}/>;
 
   const renderFeaturedProducts = () => (
     <View>
