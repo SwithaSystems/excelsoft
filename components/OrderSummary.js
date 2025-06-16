@@ -28,9 +28,13 @@ function OrderSummary(props) {
         <Text style={styles.summaryQuantity}>Total Items</Text>
         <Text style={styles.summaryPrice}>Price</Text>
       </View>
-      <View style={{ 
-          // paddingHorizontal: 5 
-        }}>
+      <View
+        style={
+          {
+            // paddingHorizontal: 5
+          }
+        }
+      >
         {!props.hideItems &&
           cartItems.map((item) => (
             <View key={item.id} style={styles.summaryItem}>
@@ -42,6 +46,17 @@ function OrderSummary(props) {
               </Text>
             </View>
           ))}
+
+        <View style={styles.summaryItem}>
+          <Text style={[styles.summaryName, { color: colors.primary }]}>
+            SubTotal
+          </Text>
+          <Text style={styles.summaryQuantity}></Text>
+          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+            {CurrencySymbol}
+            {subTotal.toFixed(2)}
+          </Text>
+        </View>
 
         <View style={styles.summaryItem}>
           <Text style={[styles.summaryName, { color: colors.primary }]}>
@@ -66,28 +81,18 @@ function OrderSummary(props) {
             </Text>
           </View>
         )}
-
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryName, { color: colors.primary }]}>
-            Shipping
-          </Text>
-          <Text style={styles.summaryQuantity}></Text>
-          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            +{CurrencySymbol}
-            {shipping.toFixed(2)}
-          </Text>
-        </View>
-
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryName, { color: colors.primary }]}>
-            SubTotal
-          </Text>
-          <Text style={styles.summaryQuantity}></Text>
-          <Text style={[styles.summaryPrice, { color: colors.primary }]}>
-            {CurrencySymbol}
-            {subTotal.toFixed(2)}
-          </Text>
-        </View>
+        {shipping > 0 && (
+          <View style={styles.summaryItem}>
+            <Text style={[styles.summaryName, { color: colors.primary }]}>
+              Shipping
+            </Text>
+            <Text style={styles.summaryQuantity}></Text>
+            <Text style={[styles.summaryPrice, { color: colors.primary }]}>
+              +{CurrencySymbol}
+              {shipping.toFixed(2)}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

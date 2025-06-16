@@ -1,4 +1,4 @@
-import { CART_SCREEN_TITLE } from './../config/stringLiterals';
+import { CART_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
@@ -157,13 +157,13 @@ const CartScreen = () => {
                   />
                 ))}
                 {/* <View style={{ margin: 16 }} /> */}
-                <SpecialOffersBanner />
                 <OrderSummary
                   cartItems={cartItems}
                   // sectionHeadingStyle={
                   //   // styles.sectionHeading
                   // }
                 />
+
                 <View
                   style={{
                     width: "50%",
@@ -192,6 +192,8 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
           </View>*/}
+
+            <SpecialOffersBanner />
 
             {savedForLaterItems.length > 0 && (
               <SavedLaterItem
