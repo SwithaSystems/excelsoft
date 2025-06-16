@@ -4,6 +4,12 @@ trigger:
       - main
       # - development
       - feature/ci-cd
+pr: 
+  branches:
+    include:
+      # - main
+      # - development
+      - feature/ci-cd
 
 pool:
   vmImage: "ubuntu-latest"
