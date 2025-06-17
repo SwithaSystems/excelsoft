@@ -38,7 +38,7 @@ import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const { isLoading, setIsLoading } = useAppContext();
   const [product, setProduct] = useState<Product | null>(null);
@@ -64,7 +64,32 @@ const ProductDetailScreen = () => {
     }
   };
 
-  const fetchProduct = async () => {
+  // const fetchProduct = async () => {
+  //   try {
+  //     const fetchedProduct = await ProductsAPI.getProductBYID(
+  //       Number(productId)
+  //     );
+  //     setProduct(fetchedProduct);
+  //     if (fetchedProduct?.productColors?.length) {
+  //       setSelectedColor(fetchedProduct.productColors[0]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching product:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // console.log("fetched product", product);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (productId) {
+  //       fetchProduct();
+  //     }
+  //   }, [productId])
+  // );
+
+  const fetchProduct = useCallback(async () => {
     try {
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
@@ -78,11 +103,6 @@ const ProductDetailScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (!productId) return;
-    fetchProduct();
   }, [productId]);
 
   useFocusEffect(
@@ -90,7 +110,7 @@ const ProductDetailScreen = () => {
       if (productId) {
         fetchProduct();
       }
-    }, [productId])
+    }, [fetchProduct, productId])
   );
 
   const indexRef = useRef(0);
@@ -250,12 +270,13 @@ const ProductDetailScreen = () => {
                   <View style={styles.colorOptions}>
                     {product.productColors.map((color: any) => (
                       <TouchableOpacity
-                        key={color}
+                        key={color._id}
                         onPress={() => setSelectedColor(color)}
                         style={[
                           styles.colorOption,
-                          { backgroundColor: color },
-                          selectedColor === color && styles.selectedColorOption,
+                          { backgroundColor: color.colorCode },
+                          selectedColor?._id === color._id &&
+                            styles.selectedColorOption,
                         ]}
                       />
                     ))}
