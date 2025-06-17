@@ -12,10 +12,11 @@ export const authService = {
         password,
       });
       await AsyncStorage.setItem("token", response.data.access_token);
-      await AsyncStorage.setItem(
-        "refreshtoken",
-        JSON.stringify(response.data.refresh_token)
-      );
+      // await AsyncStorage.setItem(
+      //   "refreshtoken",
+      //   JSON.stringify(response.data.refresh_token)
+      // );
+      await AsyncStorage.setItem("refreshtoken", response.data.refresh_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
