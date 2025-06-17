@@ -25,6 +25,7 @@ import styles from "./searchStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/components/Footer";
 import PageLayout from "../pageLayoutProps";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
@@ -342,21 +343,23 @@ const SearchScreen = () => {
       headerComponent={<Header headerText={"Search"} />}
       footerComponent={<Footer activeTab="search" />}
     >
-      <View style={styles.container}>
-        {/* <Header headerText={"Search"} /> */}
+      <KeyBoardWrapper>
+        <View style={styles.container}>
+          {/* <Header headerText={"Search"} /> */}
 
-        <View style={styles.searchBarContainer}>
-          <SearchBar
-            placeholder="Search..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            onPress={handleSearch}
-          />
+          <View style={styles.searchBarContainer}>
+            <SearchBar
+              placeholder="Search..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+              onPress={handleSearch}
+            />
+          </View>
+
+          {renderMainContent()}
         </View>
-
-        {renderMainContent()}
-      </View>
+      </KeyBoardWrapper>
     </PageLayout>
     /*  <Footer activeTab = "search"/>
      </SafeAreaView> */

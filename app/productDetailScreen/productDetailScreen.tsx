@@ -312,14 +312,14 @@ const ProductDetailScreen = () => {
                         discount: product.originalPrice - product.price,
                       })
                     );
-                    // Toast.show({
-                    //   type: "customToast",
-                    //   text1: "Product added successfully!",
-                    //   text2: `${product.name} - ${product.price}`,
-                    //   onPress: () => {
-                    //     redirectToPage(containers.cartScreenScreen);
-                    //   },
-                    // });
+                    Toast.show({
+                      type: "customToast",
+                      text1: "Product added successfully!",
+                      text2: `${product.name} - ${product.price}`,
+                      onPress: () => {
+                        redirectToPage(containers.cartScreenScreen);
+                      },
+                    });
                   }
                 }}
                 style={styles.button}
