@@ -1,6 +1,6 @@
 import colors from "@/app/config/colors";
 import { Ionicons } from "@expo/vector-icons";
-import React, { Children }  from "react";
+import React, { Children, useEffect, useState }  from "react";
 import { KeyboardAvoidingView, Platform, TouchableOpacity, useColorScheme } from 'react-native';
 import { Keyboard } from "react-native";
 
@@ -15,7 +15,18 @@ const KeyBoardWrapper = ({
 }: props) => {
     const deviceTheme = useColorScheme();
     const iconColor = deviceTheme === "dark" ? "colors.white" : "colors.black";
-    
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(()=>{
+        const showKeyboard = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+        const hideKeyboard = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+
+        return () => {
+            showKeyboard.remove();
+            hideKeyboard.remove();
+        };
+    }, []);
+
     return (
         <KeyboardAvoidingView
             style = {{flex:1}}
@@ -23,7 +34,7 @@ const KeyBoardWrapper = ({
             keyboardVerticalOffset={Platform.OS==='ios' ? 0 : 20}
         >
             {children}
-            {showHideButton && (
+            {showHideButton && keyboardVisible && (
                 <TouchableOpacity
                     onPress={()=>Keyboard.dismiss()}
                 >
