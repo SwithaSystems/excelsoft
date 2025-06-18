@@ -400,20 +400,29 @@ const AdminProductUpdation = () => {
     { name: "Coral", hex: "#FF7F50" },
   ];
   // Function to handle color selection
-  const handleColorSelection = (colorHex: any, colorName: any) => {
-    setSelectedColors((prev: any) => {
-      const existingColorIndex = prev.findIndex(
-        (color: any) => color.hex === colorHex
-      );
+  const handleColorSelection = (colorHex: string, colorName: string) => {
+    const colorExists = selectedColors.some(
+      (color: any) => (color.hex || color.colorCode) === colorHex
+    );
 
-      if (existingColorIndex !== -1) {
-        // Remove color if already selected
-        return prev.filter((color: any) => color.hex !== colorHex);
-      } else {
-        // Add color object with both name and hex
-        return [...prev, { colorName: colorName, colorCode: colorHex }];
-      }
-    });
+    if (colorExists) {
+      setSelectedColors(
+        selectedColors.filter(
+          (color: any) => (color.hex || color.colorCode) !== colorHex
+        )
+      );
+    } else {
+      // Add color with consistent structure
+      setSelectedColors([
+        ...selectedColors,
+        {
+          hex: colorHex,
+          name: colorName,
+          colorCode: colorHex,
+          colorName: colorName,
+        },
+      ]);
+    }
   };
   console.log("selectedColors just after dropdown", selectedColors);
   const getSelectedColorsText = () => {
@@ -556,7 +565,7 @@ const AdminProductUpdation = () => {
                   }
                 }}
               />
-              <Text>Is Colors Available?</Text>
+              <Text>Colors Available?</Text>
             </View>
             {!newProduct && selectedColors.length > 0 && (
               <View
@@ -584,11 +593,11 @@ const AdminProductUpdation = () => {
                         width: 12,
                         height: 12,
                         borderRadius: 6,
-                        backgroundColor: color.colorCode,
+                        backgroundColor: color.hex || color.colorCode,
                         marginRight: 6,
                       }}
                     />
-                    <Text>{color.colorName}</Text>
+                    <Text>{color.colorName || color.name}</Text>
                   </View>
                 ))}
               </View>
@@ -611,7 +620,10 @@ const AdminProductUpdation = () => {
                                 key={index}
                                 style={[
                                   styles.smallColorCircle,
-                                  { backgroundColor: colorHex.hex },
+                                  {
+                                    backgroundColor:
+                                      colorHex.hex || colorHex.colorCode,
+                                  },
                                 ]}
                               />
                             ))}
@@ -667,36 +679,43 @@ const AdminProductUpdation = () => {
                         </TouchableOpacity>
                       </View>
                       <ScrollView style={styles.colorListContainer}>
-                        {predefinedColors.map((color, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.colorOptionRow}
-                            onPress={() =>
-                              handleColorSelection(color.hex, color.name)
-                            }
-                          >
-                            <View style={styles.colorOptionContent}>
-                              <CheckBox
-                                checked={selectedColors.some(
-                                  (selectedColor: any) =>
-                                    selectedColor.hex === color.hex
-                                )}
-                                onPress={() =>
-                                  handleColorSelection(color.hex, color.name)
-                                }
-                              />
-                              <View
-                                style={[
-                                  styles.colorCircle,
-                                  { backgroundColor: color.hex },
-                                ]}
-                              />
-                              <Text style={styles.colorNameText}>
-                                {color.name} ({color.hex})
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
+                        {predefinedColors.map((color, index) => {
+                          const isSelected = selectedColors.some(
+                            (selectedColor: any) =>
+                              (selectedColor.hex || selectedColor.colorCode) ===
+                                color.hex ||
+                              (selectedColor.name ||
+                                selectedColor.colorName) === color.name
+                          );
+
+                          return (
+                            <TouchableOpacity
+                              key={index}
+                              style={styles.colorOptionRow}
+                              onPress={() =>
+                                handleColorSelection(color.hex, color.name)
+                              }
+                            >
+                              <View style={styles.colorOptionContent}>
+                                <CheckBox
+                                  checked={isSelected}
+                                  onPress={() =>
+                                    handleColorSelection(color.hex, color.name)
+                                  }
+                                />
+                                <View
+                                  style={[
+                                    styles.colorCircle,
+                                    { backgroundColor: color.hex },
+                                  ]}
+                                />
+                                <Text style={styles.colorNameText}>
+                                  {color.name} ({color.hex})
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
                       </ScrollView>
 
                       <View style={styles.modalFooter}>
@@ -724,12 +743,12 @@ const AdminProductUpdation = () => {
               checked={isChecked}
               onPress={() => setIsChecked(!isChecked)}
             />
-            <Text>Is returnable?</Text>
+            <Text>Returnable?</Text>
             <CheckBox
               checked={isAgeRestricted}
               onPress={() => setIsAgeRestricted(!isAgeRestricted)}
             />
-            <Text>Is Age Restricted?</Text>
+            <Text>Age Restricted?</Text>
           </View>
           {/* <View style={styles.checkBox}>
            
