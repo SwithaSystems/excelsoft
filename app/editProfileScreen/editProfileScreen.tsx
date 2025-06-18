@@ -16,6 +16,7 @@ import {
   SafeAreaView,
   DeviceEventEmitter,
   Platform,
+  TextInput,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./editProfileScreenStyles";
@@ -32,6 +33,8 @@ import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {formatToDDMMYYYY} from "../config/dateTimeFormat";
 
 interface User {
   id: string;
@@ -55,6 +58,8 @@ const editProfileScreen = () => {
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   const insets = useSafeAreaInsets();
 
@@ -235,13 +240,17 @@ const editProfileScreen = () => {
       setLoading(false);
     }
   };
-  const formatDateToDDMMYYYY = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+ 
+  const showDatePicker = () => setDatePickerVisibility(true);
+  const hideDatePicker = () => setDatePickerVisibility(false);
+
+  const uponDateSelection = (date: Date) => {
+    const formatted = formatToDDMMYYYY(date);
+    setSelectedDate(formatted);
+    setDateOfBirth(formatted);
+    hideDatePicker();
+  }
+
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -318,24 +327,26 @@ const editProfileScreen = () => {
                 </View>
               </View>
 
-              <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="calendar-o"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                  <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
+            <View style={globalStyles.profileInputContainer}>
+              <FontAwesome
+                name="calendar-o"
+                size={32}
+                style={globalStyles.userInputLabelIcon}
+              />
+              <View style={{ flex: 1, paddingLeft: 14 }}>
+                <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
+                <TouchableOpacity onPress={showDatePicker}>
+                  <TextInput
+                    style={globalStyles.input}
                     placeholder="--/--/----"
-                    value={dateOfBirth ? dateOfBirth : ""}
-                    onPress={() => {}}
-                    setValue={setDateOfBirth}
+                    value={dateOfBirth}
+                    editable={false} // Make it read-only
+                    pointerEvents="none" // Prevents keyboard popup
                   />
-                </View>
+                </TouchableOpacity>
               </View>
+            </View>
+
 
               {/* <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
@@ -413,6 +424,13 @@ const editProfileScreen = () => {
             title="Save"
           />
         </View>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          date={new Date(selectedDate || Date.now())}
+          onConfirm={uponDateSelection}
+          onCancel={hideDatePicker}
+        />
       </KeyBoardWrapper>
     </PageLayout>
     // </SafeAreaView>
