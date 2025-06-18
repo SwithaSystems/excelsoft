@@ -127,7 +127,7 @@ const orderDetailsScreen = () => {
 
   console.log("orderData in orderDetails", orderData);
   console.log("ordernumber", orderDetails?.orderNumber);
-  const formattedDate = new Date(orderDetails?.orderDate).toLocaleDateString(
+  const formattedDate = new Date(orderDetails?.orderData).toLocaleDateString(
     "en-CA"
   );
   console.log("cartItemsWithDetails", cartItemsWithDetails);
@@ -270,13 +270,23 @@ const orderDetailsScreen = () => {
             <Text style={[globalStyles.mb_2, styles.addressText]}>
               Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-            {orderDetails?.pickupMode === "homeDelivery" && (
-              <Text style={[globalStyles.mb_3, styles.addressText]}>
-                Address: {shippingAddress_order?.line1}
-                {shippingAddress_order?.city}, {shippingAddress_order?.state}
-                {shippingAddress_order?.postalCode},{" "}
-              </Text>
-            )}
+            {orderDetails?.pickupMode === "homeDelivery" &&
+              shippingAddress_order && (
+                <Text>
+                  Address:{" "}
+                  {[
+                    shippingAddress_order.line1,
+                    shippingAddress_order.line2,
+                    shippingAddress_order.city,
+                    shippingAddress_order.state,
+                    shippingAddress_order.postalCode,
+                    shippingAddress_order.phone,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </Text>
+              )}
+
             <View>
               <RecommendedProductsSlider
                 recommendedProducts={recommendedProducts}

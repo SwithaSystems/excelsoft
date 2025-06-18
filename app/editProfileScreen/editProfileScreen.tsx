@@ -1,4 +1,4 @@
-import { EDIT_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
+import { EDIT_PROFILE_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -34,7 +34,7 @@ import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import {formatToDDMMYYYY} from "../config/dateTimeFormat";
+import { formatToDDMMYYYY } from "../config/dateTimeFormat";
 
 interface User {
   id: string;
@@ -59,7 +59,7 @@ const editProfileScreen = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const insets = useSafeAreaInsets();
 
@@ -240,17 +240,17 @@ const editProfileScreen = () => {
       setLoading(false);
     }
   };
- 
+
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
 
   const uponDateSelection = (date: Date) => {
     const formatted = formatToDDMMYYYY(date);
+    console.log("formatted", formatted);
     setSelectedDate(formatted);
     setDateOfBirth(formatted);
     hideDatePicker();
-  }
-
+  };
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -291,9 +291,7 @@ const editProfileScreen = () => {
                   size={32}
                   style={globalStyles.userInputLabelIcon}
                 />
-                <View style={{ flex: 1, 
-                  paddingLeft: 14
-               }}>
+                <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
@@ -327,26 +325,25 @@ const editProfileScreen = () => {
                 </View>
               </View>
 
-            <View style={globalStyles.profileInputContainer}>
-              <FontAwesome
-                name="calendar-o"
-                size={32}
-                style={globalStyles.userInputLabelIcon}
-              />
-              <View style={{ flex: 1, paddingLeft: 14 }}>
-                <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                <TouchableOpacity onPress={showDatePicker}>
-                  <TextInput
-                    style={globalStyles.input}
-                    placeholder="--/--/----"
-                    value={dateOfBirth}
-                    editable={false} // Make it read-only
-                    pointerEvents="none" // Prevents keyboard popup
-                  />
-                </TouchableOpacity>
+              <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="calendar-o"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
+                />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
+                  <TouchableOpacity onPress={showDatePicker}>
+                    <TextInput
+                      style={globalStyles.input}
+                      placeholder="--/--/----"
+                      value={dateOfBirth}
+                      editable={false} // Make it read-only
+                      pointerEvents="none" // Prevents keyboard popup
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-
 
               {/* <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
@@ -414,15 +411,12 @@ const editProfileScreen = () => {
             /> */}
           {/* </View> */}
         </View>
-        <View 
+        <View
         // style={
         //   // globalStyles.p_3
         // }
         >
-          <Button
-            onPress={handleEditProfile}
-            title="Save"
-          />
+          <Button onPress={handleEditProfile} title="Save" />
         </View>
         <DateTimePickerModal
           isVisible={isDatePickerVisible}

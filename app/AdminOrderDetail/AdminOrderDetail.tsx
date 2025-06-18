@@ -166,53 +166,71 @@ const AdminOrderDetail = () => {
               >
                 Payment: {orderDetails?.paymentStatus}
               </Text>
-              <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.mb_2,
-                ]}
-              >
-                Deliver To:
-              </Text>
+
               <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
                 >
                   Pick Up Choice:&nbsp;
                 </Text>
-                Home Delivery
+                {orderDetails?.pickupMode}
+              </Text>
+
+              <Text
+                style={[
+                  globalStyles.size_16,
+                  globalStyles.fontWeight500,
+                  globalStyles.mb_2,
+                  { fontWeight: "bold" },
+                ]}
+              >
+                {orderDetails?.pickupMode === "homeDelivery"
+                  ? "Deliver To:"
+                  : "Pickup"}
               </Text>
               <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
                 >
-                  Time:&nbsp;
+                  Time:
+                  {new Date(orderDetails?.deliveryDate).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
-                8 am to 9 am
               </Text>
               <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
                 >
-                  Date:&nbsp;
+                  Date:
                 </Text>
-                03-02-2025
-              </Text>
-              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                <Text
-                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                >
-                  Address:&nbsp;
-                </Text>
-                {orderDetails?.pickupMode === "homeDelivery" && (
-                  <Text style={[globalStyles.mb_3, styles.addressText]}>
-                    {shippingAddress_order?.line1}
-                    {shippingAddress_order?.city},{" "}
-                    {shippingAddress_order?.state}
-                    {shippingAddress_order?.postalCode},{" "}
-                  </Text>
+                {new Date(orderDetails?.deliveryDate).toLocaleDateString(
+                  "en-GB"
                 )}
+              </Text>
+              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                <Text
+                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
+                >
+                  {/* Address:&nbsp; */}
+                </Text>
+                {orderDetails?.pickupMode === "homeDelivery" &&
+                  shippingAddress_order && (
+                    <Text>
+                      Address:{" "}
+                      {[
+                        shippingAddress_order.line1,
+                        shippingAddress_order.line2,
+                        shippingAddress_order.city,
+                        shippingAddress_order.state,
+                        shippingAddress_order.postalCode,
+                        shippingAddress_order.phone,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </Text>
+                  )}
               </Text>
 
               {/* FIXED: Status section - simple approach */}
