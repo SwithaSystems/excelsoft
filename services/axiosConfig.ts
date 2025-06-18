@@ -61,10 +61,19 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
     async (error: AxiosError) => {
       const originalRequest = error.config;
 
+      const status = error.response?.status;
+
+      console.log("=== Axios Error Interceptor ===");
+      console.log("Error:", error);
+      console.log("Status:", status);
+      console.log("Config:", originalRequest);
+      console.log("Response:", error.response);
+
       // Handle 401 Unauthorized errors
       if (error.response?.status === 401 && originalRequest) {
         try {
           const refreshToken = await AsyncStorage.getItem("refreshtoken");
+          console.log("refreshToken after 401", refreshToken);
           if (!refreshToken) {
             throw new Error("Refresh token not available.");
           }
@@ -80,13 +89,22 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
           console.log("newAccessToken", newAccessToken);
 
           await AsyncStorage.setItem("token", newAccessToken);
+          originalRequest.headers.set(
+            "Authorization",
+            `Bearer ${newAccessToken}`
+          );
 
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          // originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          // originalRequest.headers = {
+          //   ...(originalRequest.headers || {}),
+          //   Authorization: `Bearer ${newAccessToken}`,
+          // };
+
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           // Token refresh failed → logout
           await AsyncStorage.removeItem("token");
-          await AsyncStorage.removeItem("refresh_token");
+          await AsyncStorage.removeItem("refreshtoken");
           await AsyncStorage.removeItem("user");
           redirectToPage(containers.signInScreen);
           // router.replace("../auth/signIn");

@@ -204,28 +204,6 @@ const HomeDeliveryScreen = () => {
     return { isValid: true };
   };
 
-  // Set default time to 2 hours ahead of current time
-  // useEffect(() => {
-  //   const now = new Date();
-  //   const twoHoursAhead = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-
-  //   // Format hours for 12-hour clock
-  //   let defaultHours = twoHoursAhead.getHours();
-  //   const defaultPeriod = defaultHours >= 12 ? "pm" : "am";
-
-  //   // Convert 24-hour format to 12-hour format
-  //   if (defaultHours > 12) {
-  //     defaultHours -= 12;
-  //   } else if (defaultHours === 0) {
-  //     defaultHours = 12;
-  //   }
-
-  //   // Set default values
-  //   setHours(defaultHours.toString());
-  //   setMinutes(twoHoursAhead.getMinutes().toString().padStart(2, "0"));
-  //   setPeriod(defaultPeriod);
-  // }, []);
-
   useEffect(() => {
     const fetchAddresses = async () => {
       try {

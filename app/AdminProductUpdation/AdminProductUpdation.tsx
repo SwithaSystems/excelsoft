@@ -23,6 +23,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../config/colors";
@@ -56,6 +57,7 @@ const AdminProductUpdation = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
+  const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -69,7 +71,9 @@ const AdminProductUpdation = () => {
   const [productImages, setProductImages] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
   const MAX_IMAGES = 5;
-
+  const [isColorsAvailable, setIsColorsAvailable] = useState(false);
+  const [selectedColors, setSelectedColors] = useState<any>([]);
+  const [showColorModal, setShowColorModal] = useState(false);
   // Parse product data only once when component mounts
   const productData = React.useMemo(() => {
     return typeof props.item === "string" ? JSON.parse(props.item) : props.item;
@@ -101,10 +105,25 @@ const AdminProductUpdation = () => {
       setPrice(productData.originalPrice?.toString() || "");
       setDiscountPrice(productData.price?.toString() || "");
       setCategory(productData.categoryId?.[0]?.toString() || "");
-
+      // setColor(productData.productColors?.[0] || "");
+      setMinimumOrderQuantity(
+        productData.minimumOrderQuantity?.toString() || ""
+      );
+      setIsAgeRestricted(productData.isAgeRestricted || false);
+      setIsChecked(productData.isReturnable || false);
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
+      }
+
+      if (productData?.productColors?.length > 0) {
+        // Transform and set selected colors
+        const colors = productData.productColors.map((c: any) => ({
+          colorCode: c.colorCode,
+          colorName: c.colorName,
+        }));
+        setIsColorsAvailable(true);
+        setSelectedColors(colors);
       }
 
       const now = new Date();
@@ -117,19 +136,6 @@ const AdminProductUpdation = () => {
     }
   }, [productData]);
 
-  // const onDateChange = (
-  //   event: DateTimePickerEvent,
-  //   selectedDate: Date | undefined
-  // ) => {
-  //   const currentDate = selectedDate || new Date(date);
-  //   setShowDatePicker(false);
-  //   setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
-  // };
-  // const addNewPrice = () => {
-  //   const newRow = { qty: "", actualPrice: "", discountPrice: "" };
-  //   const updatedPrices = offerPrice.concat(newRow);
-  //   setOfferPrice(updatedPrices);
-  // };
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
       try {
@@ -250,6 +256,7 @@ const AdminProductUpdation = () => {
   const handleUpdateProduct = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log("selectedColors", selectedColors);
 
       if (!productName.trim()) {
         Alert.alert("Error", "Product name is required");
@@ -283,8 +290,15 @@ const AdminProductUpdation = () => {
       formData.append("price", discountPrice || price);
       formData.append("categoryId", category);
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
-      formData.append("productColors", JSON.stringify([{ color }]));
       formData.append("isReturnable", isChecked ? "true" : "false");
+      formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+      if (isColorsAvailable && selectedColors.length > 0) {
+        formData.append("productColors", JSON.stringify(selectedColors));
+      } else if (color) {
+        formData.append("productColors", JSON.stringify([{ color }]));
+      } else {
+        formData.append("productColors", JSON.stringify([]));
+      }
 
       // ✅ Separate existing image URLs and new local image files
       const existingImageUrls = productImages
@@ -311,7 +325,7 @@ const AdminProductUpdation = () => {
         } as any);
       });
 
-      console.log("Submitting form data for product update");
+      console.log("Submitting form data for product update", formData);
 
       const response = newProduct
         ? await ProductsAPI.addProduct(formData)
@@ -349,26 +363,69 @@ const AdminProductUpdation = () => {
     discountPrice,
     category,
     color,
+    selectedColors,
     productImages,
     id,
     title,
     productDescription,
     minimumOrderQunatity,
     isChecked,
+    isAgeRestricted,
     router,
     newProduct,
     productData?._id,
   ]);
 
+  // Define the predefined colors array
+  const predefinedColors = [
+    { name: "Red", hex: "#FF0000" },
+    { name: "Blue", hex: "#0000FF" },
+    { name: "Green", hex: "#008000" },
+    { name: "Yellow", hex: "#FFFF00" },
+    { name: "Orange", hex: "#FFA500" },
+    { name: "Purple", hex: "#800080" },
+    { name: "Pink", hex: "#FFC0CB" },
+    { name: "Brown", hex: "#A52A2A" },
+    { name: "Black", hex: "#000000" },
+    { name: "White", hex: "#FFFFFF" },
+    { name: "Gray", hex: "#808080" },
+    { name: "Navy", hex: "#000080" },
+    { name: "Teal", hex: "#008080" },
+    { name: "Lime", hex: "#00FF00" },
+    { name: "Maroon", hex: "#800000" },
+    { name: "Olive", hex: "#808000" },
+    { name: "Aqua", hex: "#00FFFF" },
+    { name: "Silver", hex: "#C0C0C0" },
+    { name: "Fuchsia", hex: "#FF00FF" },
+    { name: "Coral", hex: "#FF7F50" },
+  ];
+  // Function to handle color selection
+  const handleColorSelection = (colorHex: any, colorName: any) => {
+    setSelectedColors((prev: any) => {
+      const existingColorIndex = prev.findIndex(
+        (color: any) => color.hex === colorHex
+      );
+
+      if (existingColorIndex !== -1) {
+        // Remove color if already selected
+        return prev.filter((color: any) => color.hex !== colorHex);
+      } else {
+        // Add color object with both name and hex
+        return [...prev, { colorName: colorName, colorCode: colorHex }];
+      }
+    });
+  };
+  console.log("selectedColors just after dropdown", selectedColors);
+  const getSelectedColorsText = () => {
+    if (selectedColors.length === 0) return "Select colors";
+    if (selectedColors.length === 1) {
+      const color = predefinedColors.find((c) => c.hex === selectedColors[0]);
+      return color?.name || "1 color selected";
+    }
+    return `${selectedColors.length} colors selected`;
+  };
+
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <KeyBoardWrapper>
-    //     <View style={[globalStyles.container, { paddingTop: 16 }]}>
-    //       {newProduct ? (
-    //         <Header headerText="Add Product" />
-    //       ) : (
-    //         <Header headerText={ADMIN_PRODUCT_UPDATE_SCREEN_TITLE} />
-    //       )}
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -481,14 +538,6 @@ const AdminProductUpdation = () => {
               keyboardType="numeric"
             />
 
-            {/* <Text style={styles.label}>Discount Price</Text>
-            <CustomTextInput
-              setValue={setDiscountPrice}
-              value={discountPrice}
-              onPress={() => {}}
-              placeholder="Enter the discount price"
-              keyboardType="numeric"
-            /> */}
             <Text style={styles.label}>Minimum Order Qunatity:</Text>
             <CustomTextInput
               setValue={setMinimumOrderQuantity}
@@ -497,173 +546,226 @@ const AdminProductUpdation = () => {
               placeholder="Enter the minimum order quantity"
               keyboardType="numeric"
             />
-            <Text style={[styles.label, { paddingBottom: 8 }]}>Add Color</Text>
-            <View
-              style={[
-                styles.categoryStyles,
-                {
-                  height: 40,
-                  justifyContent: "center",
-                  // borderColor: colors.primary,
-                  // borderWidth: 1,
-                  borderRadius: 8,
-                },
-              ]}
-            >
-              <CustomTextInput
-                setValue={setColor}
-                value={color}
-                onPress={() => {}}
-                placeholder="Add color"
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={[globalStyles.mt_3]}>
-              <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
-                Pick the date and time when the discount starts and ends.
-              </Text>
-              <View
-                style={[
-                  globalStyles.flexRow,
-                  globalStyles.justifyContentBetween,
-                ]}
-              >
-                {/* <View style={utilitiesStyles.flex_1}>
-                  <Text style={[styles.label, globalStyles.mt_0]}>Date: *</Text>
-                  {Platform.OS === "web" ? (
-                    <input
-                      type="date"
-                      style={globalStyles.webDateInput}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  ) : (
-                    <TouchableOpacity
-                      style={globalStyles.dateInput}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text>{date}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={new Date(date)}
-                      mode="date"
-                      display="default"
-                      onChange={onDateChange}
-                    />
-                  )}
-                </View>
-
-                <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
-                  <Text style={[styles.label, globalStyles.mt_0]}>Time: *</Text>
-                  <View style={globalStyles.timeContainer}>
-                    <TextInput
-                      style={globalStyles.timeInput}
-                      placeholder="HH"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={hours}
-                      onChangeText={setHours}
-                    />
-                    <Text>:</Text>
-                    <TextInput
-                      style={globalStyles.timeInput}
-                      placeholder="MM"
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={minutes}
-                      onChangeText={setMinutes}
-                    />
-
-                    <Picker
-                      selectedValue={period}
-                      style={globalStyles.picker_sm}
-                      onValueChange={(itemValue) => setPeriod(itemValue)}
-                    >
-                      <Picker.Item label="AM" value="am" />
-                      <Picker.Item label="PM" value="pm" />
-                    </Picker>
-                  </View>
-                </View> */}
-              </View>
-            </View>
             <View style={styles.checkBox}>
               <CheckBox
-                checked={isChecked}
-                onPress={() => setIsChecked(!isChecked)}
+                checked={isColorsAvailable}
+                onPress={() => {
+                  setIsColorsAvailable(!isColorsAvailable);
+                  if (!isColorsAvailable) {
+                    setSelectedColors([]);
+                  }
+                }}
               />
-              <Text>Is returnable?</Text>
+              <Text>Is Colors Available?</Text>
             </View>
-            {/* <Text style={styles.tableHeading}>
-              QTY Actual Price Discounted Price
-            </Text>
-            {offerPrice.map((item, index) => (
-              <View key={index} style={styles.tableRow}>
-                <TextInput
-                  style={styles.tableInput}
-                  value={item.qty}
-                  //onChangeText={}
-                  placeholder="QTY"
-                />
-                <TextInput
-                  style={styles.tableInput}
-                  value={item.actualPrice}
-                  //onChangeText={}
-                  placeholder="Price"
-                />
-                <TextInput
-                  style={styles.tableInput}
-                  value={item.discountPrice}
-                  //onChangeText={}
-                  placeholder="Discounted"
-                />
-
-                {index === offerPrice.length - 1 && (
-                  <TouchableOpacity onPress={addNewPrice}>
-                    <Ionicons name="add" size={24} color="green" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))} */}
-            <Text style={[styles.label, globalStyles.mt_4]}>
-              Product Images
-            </Text>
-            <Text style={styles.subLabel}>
-              Upload up to {MAX_IMAGES} images
-            </Text>
-
-            <View style={styles.imageContainer}>
-              {/* Display existing images */}
-              {productImages.map((img: any, index: any) => (
-                <View key={`img-${index}`} style={styles.imageWrapper}>
-                  <Image
-                    source={{ uri: img.uri }}
-                    style={styles.productImage}
-                  />
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => removeImage(index)}
+            {!newProduct && selectedColors.length > 0 && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  marginTop: 10,
+                }}
+              >
+                {selectedColors.map((color: any, index: any) => (
+                  <View
+                    key={index}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: 20,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      margin: 4,
+                    }}
                   >
-                    <Ionicons name="close-circle" size={20} color="red" />
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: color.colorCode,
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text>{color.colorName}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {isColorsAvailable && (
+              <>
+                <Text style={styles.label}>Select Color</Text>
+                <View style={styles.categoryContainer}>
+                  <TouchableOpacity
+                    style={styles.categorySelector}
+                    onPress={() => setShowColorModal(true)}
+                  >
+                    <View style={styles.selectedColorsDisplay}>
+                      {selectedColors.length > 0 && (
+                        <View style={styles.selectedColorCircles}>
+                          {selectedColors
+                            .slice(0, 3)
+                            .map((colorHex: any, index: any) => (
+                              <View
+                                key={index}
+                                style={[
+                                  styles.smallColorCircle,
+                                  { backgroundColor: colorHex.hex },
+                                ]}
+                              />
+                            ))}
+                          {selectedColors.length > 3 && (
+                            <View style={styles.moreColorsIndicator}>
+                              <Text style={styles.moreColorsText}>
+                                +{selectedColors.length - 3}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      )}
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          {
+                            color:
+                              selectedColors.length > 0
+                                ? selectedColors.map((c: any) => c.hex)
+                                : colors.slateGrey,
+                          },
+                        ]}
+                      >
+                        {getSelectedColorsText()}
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name="chevron-down-outline"
+                      size={20}
+                      color={colors.primary}
+                    />
                   </TouchableOpacity>
                 </View>
-              ))}
-
-              {/* Add image placeholders */}
-              {Array.from({
-                length: MAX_IMAGES - productImages.length,
-              }).map((_, index) => (
-                <TouchableOpacity
-                  key={`placeholder-${index}`}
-                  style={styles.imagePlaceholder}
-                  onPress={showImageOptions}
+                <Modal
+                  visible={showColorModal}
+                  transparent={true}
+                  animationType="slide"
+                  onRequestClose={() => setShowColorModal(false)}
                 >
-                  <Text style={styles.plus}>+</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                      <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Select Colors</Text>
+                        <TouchableOpacity
+                          onPress={() => setShowColorModal(false)}
+                          style={styles.closeButton}
+                        >
+                          <Ionicons
+                            name="close"
+                            size={24}
+                            color={colors.black}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <ScrollView style={styles.colorListContainer}>
+                        {predefinedColors.map((color, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={styles.colorOptionRow}
+                            onPress={() =>
+                              handleColorSelection(color.hex, color.name)
+                            }
+                          >
+                            <View style={styles.colorOptionContent}>
+                              <CheckBox
+                                checked={selectedColors.some(
+                                  (selectedColor: any) =>
+                                    selectedColor.hex === color.hex
+                                )}
+                                onPress={() =>
+                                  handleColorSelection(color.hex, color.name)
+                                }
+                              />
+                              <View
+                                style={[
+                                  styles.colorCircle,
+                                  { backgroundColor: color.hex },
+                                ]}
+                              />
+                              <Text style={styles.colorNameText}>
+                                {color.name} ({color.hex})
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+
+                      <View style={styles.modalFooter}>
+                        <TouchableOpacity
+                          style={styles.clearButton}
+                          onPress={() => setSelectedColors([])}
+                        >
+                          <Text style={styles.clearButtonText}>Clear All</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.doneButton}
+                          onPress={() => setShowColorModal(false)}
+                        >
+                          <Text style={styles.doneButtonText}>Done</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+              </>
+            )}
           </View>
+          <View style={styles.checkBox}>
+            <CheckBox
+              checked={isChecked}
+              onPress={() => setIsChecked(!isChecked)}
+            />
+            <Text>Is returnable?</Text>
+            <CheckBox
+              checked={isAgeRestricted}
+              onPress={() => setIsAgeRestricted(!isAgeRestricted)}
+            />
+            <Text>Is Age Restricted?</Text>
+          </View>
+          {/* <View style={styles.checkBox}>
+           
+          </View> */}
+
+          <Text style={[styles.label, globalStyles.mt_4]}>Product Images</Text>
+          <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
+
+          <View style={styles.imageContainer}>
+            {/* Display existing images */}
+            {productImages.map((img: any, index: any) => (
+              <View key={`img-${index}`} style={styles.imageWrapper}>
+                <Image source={{ uri: img.uri }} style={styles.productImage} />
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeImage(index)}
+                >
+                  <Ionicons name="close-circle" size={20} color="red" />
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            {/* Add image placeholders */}
+            {Array.from({
+              length: MAX_IMAGES - productImages.length,
+            }).map((_, index) => (
+              <TouchableOpacity
+                key={`placeholder-${index}`}
+                style={styles.imagePlaceholder}
+                onPress={showImageOptions}
+              >
+                <Text style={styles.plus}>+</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {/* </View> */}
         </ScrollView>
 
         <View
@@ -710,7 +812,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "bold",
-    marginTop: 16,
+    marginTop: 14,
     marginBottom: 4,
   },
   subLabel: {
@@ -850,6 +952,7 @@ const styles = StyleSheet.create({
   checkBox: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: -16,
   },
   addImageButton: {
     borderWidth: 1,
@@ -895,6 +998,197 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.7)",
     zIndex: 1000,
+  },
+  colorScrollView: {
+    maxHeight: 300,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  colorOptionContainer: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  colorCheckboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  colorPreview: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  colorText: {
+    fontSize: 14,
+    color: colors.black,
+    flex: 1,
+  },
+  selectedColorsContainer: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: colors.offWhite,
+    borderRadius: 8,
+  },
+  selectedColorsLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 10,
+  },
+  selectedColorsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  selectedColorChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  selectedColorPreview: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 5,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  selectedColorName: {
+    fontSize: 12,
+    color: colors.black,
+  },
+  selectedColorsDisplay: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  selectedColorCircles: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  smallColorCircle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 4,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  moreColorsIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.lightgrey,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  moreColorsText: {
+    fontSize: 8,
+    color: colors.black,
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    width: "90%",
+    maxHeight: "80%",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.black,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  colorListContainer: {
+    maxHeight: 400,
+    paddingHorizontal: 16,
+  },
+  colorOptionRow: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  colorOptionContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  colorCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginLeft: 12,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  colorNameText: {
+    fontSize: 14,
+    color: colors.black,
+    flex: 1,
+  },
+  modalFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.lightgrey,
+  },
+  clearButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  clearButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  doneButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: colors.primary,
+  },
+  doneButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
 
