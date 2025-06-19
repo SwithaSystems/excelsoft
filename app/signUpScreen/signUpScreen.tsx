@@ -21,6 +21,17 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import colors from "../config/colors";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import {
+  FIX_VALIDATION_ERRORS,
+  REGISTRATION_FAILED,
+  OTP_SEND_FAILED,
+  PHONE_ALREADY_REGISTERED,
+  EMAIL_ALREADY_REGISTERED,
+  ACCOUNT_CREATION_FAILED,
+} from "../config/customErrorMessages";
+
+import { showErrorAlert } from "../config/showErrorAlert";
+
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -59,10 +70,10 @@ const signUpScreen = () => {
       try {
         const response = await UserAPI.getUserByPhonenumber(formattedPhone);
         if (response?.data) {
-          Alert.alert(
-            "Already Registered",
-            "This phone number is already in use."
-          );
+          showErrorAlert({
+            title: "Phone Number Already exists!",
+            message: PHONE_ALREADY_REGISTERED,
+          });
           setPhoneNumber("");
         }
       } catch (error) {
@@ -142,7 +153,10 @@ const signUpScreen = () => {
             from: "signup",
           });
         } else {
-          Alert.alert("Error", "Failed to send OTP. Please try again.");
+          showErrorAlert({
+            title: "Failed to send OTP",
+            message: OTP_SEND_FAILED,
+          });
         }
         // if (response && response.access_token) {
         //   console.log("Phone Number for OTP:", userData.phone);
@@ -157,13 +171,16 @@ const signUpScreen = () => {
         // }
       } catch (error) {
         console.error("Registration error:", error);
-        Alert.alert("Error", "Something went wrong during registration.");
+        showErrorAlert({
+          title: "Registration Failed",
+          message: ACCOUNT_CREATION_FAILED,
+        });
       }
     } else {
-      Alert.alert(
-        "Validation Error",
-        "Please fix the errors before submitting."
-      );
+      showErrorAlert({
+        title: "Validation Error",
+        message: FIX_VALIDATION_ERRORS,
+      });
     }
   };
 

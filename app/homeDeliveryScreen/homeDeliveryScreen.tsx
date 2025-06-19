@@ -39,6 +39,15 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {formatToDDMMYYYY} from "../config/dateTimeFormat";
+import { showErrorAlert } from "../config/showErrorAlert";
+import {
+  MISSING_REQUIRED_FIELDS,
+  PICKUP_TIME_REQUIRED,
+  PICKUP_TIME_IN_PAST,
+  ADDRESS_NOT_SAVED,
+} from "../config/customErrorMessages";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -53,6 +62,11 @@ const HomeDeliveryScreen = () => {
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  const [pickerMode, setPickerMode] = useState("date"); 
+
   // Form state
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -114,7 +128,8 @@ const HomeDeliveryScreen = () => {
       targetMinute = 0;
     }
     // Format the date for state
-    const formattedDate = targetDate.toISOString().split("T")[0];
+    // const formattedDate = targetDate.toISOString().split("T")[0];
+    const formattedDate = formatToDDMMYYYY(targetDate);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
@@ -259,7 +274,7 @@ const HomeDeliveryScreen = () => {
   ) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(currentDate.toISOString().split("T")[0]);
+    setDate(formatToDDMMYYYY(currentDate));
 
     // Validate time with new date
     setTimeout(() => {
@@ -272,33 +287,38 @@ const HomeDeliveryScreen = () => {
     }, 100);
   };
 
-  const validateForm = () => {
-    if (!date || !hours || !minutes || !selectedAddressId) {
-      let missingFields = [];
-      if (!date) missingFields.push("Date");
-      if (!hours || !minutes) missingFields.push("Time");
-      if (!selectedAddressId) missingFields.push("Shipping Address");
-
-      Alert.alert(
-        "Error",
-        `Please fill in all required fields: ${missingFields.join(", ")}`
-      );
+   const validateForm = () => {
+    if (!date) {
+      showErrorAlert({ 
+        title: "Select Pickup Date", 
+        message: PICKUP_TIME_REQUIRED 
+      });
       return false;
     }
-
-    // Check if time is valid
+    if (!hours || !minutes) {
+      showErrorAlert({ 
+        title: "Select Pickup Time", 
+        message: PICKUP_TIME_REQUIRED 
+      });
+      return false;
+    }
+    if (!selectedAddressId) {
+      showErrorAlert({ 
+        title: "Oops", 
+        message: MISSING_REQUIRED_FIELDS 
+      });
+      return false;
+    }
     const timeValidation = validateFutureTime(hours, minutes, period, date);
     if (!timeValidation.isValid) {
-      Alert.alert(
-        "Error",
-        timeValidation.message || "Please select a valid future time"
-      );
+      showErrorAlert({ 
+        title: "Oops", 
+        message: timeValidation.message || PICKUP_TIME_IN_PAST 
+      });
       return false;
     }
-
     return true;
   };
-
   const handleSubmit = async () => {
     try {
       // Final validation check right before submission
@@ -307,12 +327,12 @@ const HomeDeliveryScreen = () => {
       }
 
       // Double check time is valid
-      const timeValidation = validateFutureTime(hours, minutes, period, date);
+     const timeValidation = validateFutureTime(hours, minutes, period, date);
       if (!timeValidation.isValid) {
-        Alert.alert(
-          "Error",
-          timeValidation.message || "Please select a valid future time"
-        );
+        showErrorAlert({ 
+          title: "Oops", 
+          message: timeValidation.message || PICKUP_TIME_IN_PAST 
+        });
         return;
       }
 
@@ -344,10 +364,10 @@ const HomeDeliveryScreen = () => {
       });
     } catch (error) {
       console.error("Error submitting delivery request:", error);
-      Alert.alert(
-        "Error",
-        "Failed to submit delivery request. Please try again later."
-      );
+       showErrorAlert({ 
+        title: "Oops", 
+        message: ADDRESS_NOT_SAVED 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -598,11 +618,24 @@ const HomeDeliveryScreen = () => {
                     </TouchableOpacity>
                   )}
                   {showDatePicker && (
-                    <DateTimePicker
-                      value={new Date(date)}
+                    // <DateTimePicker
+                    //   value={new Date(date)}
+                    //   mode="date"
+                    //   display="default"
+                    //   onChange={onDateChange}
+                    //   minimumDate={new Date()}
+                    // />
+                    <DateTimePickerModal
+                      isVisible={showDatePicker}
                       mode="date"
-                      display="default"
-                      onChange={onDateChange}
+                      onConfirm={(selectedDate) => {
+                        setShowDatePicker(false);
+                        setDate(formatToDDMMYYYY(selectedDate));
+                        setTimeout(() => {
+                          validateTime(formatToDDMMYYYY(selectedDate), hours, minutes, period);
+                        }, 100);
+                      }}
+                      onCancel={() => setShowDatePicker(false)}
                       minimumDate={new Date()}
                     />
                   )}

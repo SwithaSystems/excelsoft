@@ -21,6 +21,14 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { ADD_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
+import { showErrorAlert } from "../config/showErrorAlert";
+import {
+  MISSING_REQUIRED_FIELDS,
+  INVALID_POSTCODE,
+  ADDRESS_NOT_DELIVERABLE,
+  ADDRESS_NOT_SAVED,
+  DUPLICATE_ADDRESS,
+} from "../config/customErrorMessages";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -36,31 +44,73 @@ const addAddressScreen = () => {
   const from = params.from;
 
   const handleAddAddress = async () => {
-    try {
-      const response = await addressService.addShippingAddress({
-        name: name,
-        line1: line1,
-        line2: line2,
-        city: towncity,
-        state: state,
-        postalCode: postalcode,
-        phone: phoneNumber,
-        isDefault: isDefault,
-      });
-      if (response.status === 200 || response.status === 201) {
-        alert("Address added successfully");
-      } else {
-        alert("Failed to add address");
+  if (
+        !name.trim() ||
+        !postalcode.trim() ||
+        !line1.trim() ||
+        !towncity.trim() ||
+        !phoneNumber.trim()
+      ) {
+        showErrorAlert({
+          title: "Error",
+          message: MISSING_REQUIRED_FIELDS,
+        });
+        return;
       }
-      if (from === "homeDelivery") {
-        redirectToPage(containers.homeDeliveryScreenScreen);
-      } else {
-        redirectToPage(containers.savedAddressScreenScreen);
+
+      try {
+        const response = await addressService.addShippingAddress({
+          name,
+          line1,
+          line2,
+          city: towncity,
+          state,
+          postalCode: postalcode,
+          phone: phoneNumber,
+          isDefault,
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          alert("Address added successfully");
+          if (from === "homeDelivery") {
+            redirectToPage(containers.homeDeliveryScreenScreen);
+          } else {
+            redirectToPage(containers.savedAddressScreenScreen);
+          }
+        } else {
+          showErrorAlert({
+            title: "Error",
+            message: ADDRESS_NOT_SAVED,
+          });
+        }
+      } catch (error) {
+        console.error("Error adding address:", error);
+
+        const isErrorWithResponse = (err: any): err is { response: { data: { message: string } } } =>
+          err && err.response && err.response.data && typeof err.response.data.message === "string";
+
+        const isErrorWithMessage = (err: any): err is { message: string } =>
+          err && typeof err.message === "string";
+
+        if (
+          (isErrorWithResponse(error) && error.response.data.message.includes("duplicate")) ||
+          (isErrorWithMessage(error) && error.message.toLowerCase().includes("duplicate"))
+        ) {
+          showErrorAlert({
+            title: "Duplicate Address",
+            message: DUPLICATE_ADDRESS,
+          });
+        } else {
+          showErrorAlert({
+            title: "Error",
+            message: ADDRESS_NOT_SAVED,
+          });
+        }
       }
-    } catch (error) {
-      console.error("Error adding address:", error);
-    }
-  };
+    };
+
+
+
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     //

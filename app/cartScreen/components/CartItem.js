@@ -13,6 +13,12 @@ import {
 } from "../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../store/slices/cartSlice";
+import { showErrorAlert } from "../config/showErrorAlert";
+import {
+  ITEM_OUT_OF_STOCK,
+  QUANTITY_NOT_AVAILABLE,
+} from "../config/customErrorMessages";
+
 
 function CartItem(props) {
   const item = props.cartItem;
@@ -59,17 +65,37 @@ function CartItem(props) {
     }
   };
   const increaseQuantity = (itemId, currentQuantity) => {
-    if (props.isSavedItem) {
-      dispatch(
-        updateSavedForLaterItemQuantity({
-          id: itemId,
-          quantity: currentQuantity + 1,
-        })
-      );
-    } else {
-      dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
-    }
-  };
+  const itemInCart = props.cartItem;
+  const maxAvailable = itemInCart?.availableQuantity;
+
+  if (!maxAvailable || maxAvailable === 0) {
+    showErrorAlert({
+      title: "Out of Stock",
+      message: ITEM_OUT_OF_STOCK,
+    });
+    return;
+  }
+
+  if (currentQuantity + 1 > maxAvailable) {
+    showErrorAlert({
+      title: "Stock Limit Reached",
+      message: QUANTITY_NOT_AVAILABLE.replace("{{available}}", `${maxAvailable}`),
+    });
+    return;
+  }
+
+  if (props.isSavedItem) {
+    dispatch(
+      updateSavedForLaterItemQuantity({
+        id: itemId,
+        quantity: currentQuantity + 1,
+      })
+    );
+  } else {
+    dispatch(updateQuantity({ id: itemId, quantity: currentQuantity + 1 }));
+  }
+};
+
 
   const decreaseQuantity = (itemId, currentQuantity) => {
     if (currentQuantity > 1) {

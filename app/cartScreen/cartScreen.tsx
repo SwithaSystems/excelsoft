@@ -41,6 +41,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/components/NoContentFound";
 import PageLayout from "../pageLayoutProps";
+import { showErrorAlert } from "../config/showErrorAlert";
+import { 
+        SESSION_EXPIRED,
+        ITEM_OUT_OF_STOCK,
+        QUANTITY_NOT_AVAILABLE,
+ } from "../config/customErrorMessages";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -103,8 +109,11 @@ const CartScreen = () => {
   const handlePlaceOrder = () => {
     console.log("User:", user);
     if (!user) {
-      Alert.alert("Please login", "You need to login before placing an order");
-      redirectToPage(containers.signInScreen);
+      showErrorAlert({
+        title: "Login Required",
+        message: SESSION_EXPIRED, 
+      });      
+    redirectToPage(containers.signInScreen);
     } else {
       redirectToPage(containers.pickUpModescreenScreen);
     }

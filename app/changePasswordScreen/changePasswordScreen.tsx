@@ -12,9 +12,12 @@ import { Image } from "react-native-elements";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
-import colors from "../config/colors";
-import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../pageLayoutProps";
+import {
+  INCORRECT_CURRENT_PASSWORD,
+  PASSWORD_CHANGE_FAILED,
+  PASSWORD_CHANGED,
+} from "../config/customErrorMessages";
+import { showErrorAlert } from "../config/showErrorAlert";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -56,28 +59,46 @@ const changePasswordScreen = () => {
     const isMatch = await comparePasswords(currPassword, existingPassword);
     console.log("isMatch", isMatch);
     if (!isMatch) {
-      alert("Current password is incorrect");
-    }
+    showErrorAlert({
+      title: "Error",
+      message: INCORRECT_CURRENT_PASSWORD,
+    });
+}
+
   };
-  const handleChangePassword = async () => {
-    if (!currPassword || !newPassword || !confirmPassword) {
-      alert("All fields are required");
+  if (!currPassword || !newPassword || !confirmPassword) {
+      showErrorAlert({
+        title: "Validation Error",
+        message: "All fields are required",
+      });
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      alert("New and Confirm passwords do not match");
-      return;
-    }
+
+   if (newPassword !== confirmPassword) {
+  showErrorAlert({
+    title: "Validation Error",
+    message: "New and Confirm passwords do not match",
+  });
+  return;
+}
+
 
     try {
       const response = await UserAPI.changePassword({ newPassword });
       console.log("response", response.data);
       if (response.data.message === "Password successfully changed") {
-        alert("Password successfully changed");
+        showErrorAlert({
+          title: "Success",
+          message: PASSWORD_CHANGED,
+        });
+
         redirectToPage(containers.signInScreen);
       } else {
-        alert("Failed to change password");
+       showErrorAlert({
+          title: "Error",
+          message: PASSWORD_CHANGE_FAILED,
+        });
         redirectToPage(containers.userProfileScreenScreen);
       }
     } catch (err) {

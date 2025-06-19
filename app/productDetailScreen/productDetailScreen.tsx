@@ -36,6 +36,8 @@ import {
 import PageLayout from "../pageLayoutProps";
 import HeroBanner from "../../components/HeroBanner";
 import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
+import { ITEM_OUT_OF_STOCK, QUANTITY_NOT_AVAILABLE } from "../config/customErrorMessages";
+import { showErrorAlert } from "../config/showErrorAlert";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -310,7 +312,19 @@ const ProductDetailScreen = () => {
                 <Text style={styles.quantityText}>{quantity}</Text>
                 <TouchableOpacity
                   style={styles.quantityButton}
-                  onPress={() => setQuantity(quantity + 1)}
+                  onPress={() => {
+                    const available = product?.stock || 0;
+                    if(quantity + 1 > available){
+                      const message = QUANTITY_NOT_AVAILABLE.replace("{{available}}", available.toString());
+
+                      showErrorAlert({
+                        title: "Limited Stock Alert",
+                        message,
+                      });
+                      return;
+                    }
+                    setQuantity(quantity + 1);
+                  }}
                 >
                   <Ionicons name="add" size={20} color={colors.black} />
                 </TouchableOpacity>
@@ -322,6 +336,13 @@ const ProductDetailScreen = () => {
                 title="Add To Cart"
                 onPress={() => {
                   if (product) {
+                    if(product.stock === 0){
+                      showErrorAlert({
+                        title: "Out of Stock",
+                        message: ITEM_OUT_OF_STOCK,
+                      });
+                      return;
+                    }
                     dispatch(
                       addToCart({
                         id: product.id,

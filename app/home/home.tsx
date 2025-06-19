@@ -129,7 +129,7 @@ const HomePage = () => {
     const fetchCategories = async () => {
       try {
         const data = await categoryService.getAllCategories();
-        console.log(data);
+        console.log("Categories:", data);
         const sortedData = data.sort((a, b) => a.id - b.id);
         setCategories(sortedData);
       } catch (error) {
