@@ -1,4 +1,4 @@
-import { EDIT_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
+import { EDIT_PROFILE_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -65,7 +65,7 @@ const editProfileScreen = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const insets = useSafeAreaInsets();
 
@@ -241,11 +241,11 @@ const editProfileScreen = () => {
 
   const uponDateSelection = (date: Date) => {
     const formatted = formatToDDMMYYYY(date);
+    console.log("formatted", formatted);
     setSelectedDate(formatted);
     setDateOfBirth(formatted);
     hideDatePicker();
-  }
-
+  };
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -333,10 +333,31 @@ const editProfileScreen = () => {
                       style={globalStyles.input}
                       placeholder="--/--/----"
                       value={dateOfBirth}
-                      editable={false} 
-                      pointerEvents="none" 
+                      editable={false} // Make it read-only
+                      pointerEvents="none" // Prevents keyboard popup
                     />
                   </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* <View style={globalStyles.profileInputContainer}>
+                <FontAwesome
+                  name="phone"
+                  size={32}
+                  style={globalStyles.userInputLabelIcon}
+                />
+                <View style={{ flex: 1, paddingLeft: 14 }}>
+                  <Text style={globalStyles.userInputLabel}>Phone</Text>
+                  <CustomTextInput
+                    disabled={true}
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="phone number"
+                    value={user ? user.phone : phone}
+                    onPress={() => {}}
+                    setValue={setPhone}
+                    keyboardType="phone-pad"
+                  />
                 </View>
               </View>
 
@@ -406,11 +427,12 @@ const editProfileScreen = () => {
             /> */}
           {/* </View> */}
         </View>
-        <View>
-          <Button
-            onPress={handleEditProfile}
-            title="Save"
-          />
+        <View
+        // style={
+        //   // globalStyles.p_3
+        // }
+        >
+          <Button onPress={handleEditProfile} title="Save" />
         </View>
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
