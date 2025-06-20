@@ -13,11 +13,11 @@ import {
 } from "../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../store/slices/cartSlice";
-import { showErrorAlert } from "../config/showErrorAlert";
+import { showErrorAlert } from "../../config/showErrorAlert";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
-} from "../config/customErrorMessages";
+} from "../../config/customErrorMessages";
 
 
 function CartItem(props) {

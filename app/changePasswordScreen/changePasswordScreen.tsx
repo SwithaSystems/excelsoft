@@ -18,6 +18,8 @@ import {
   PASSWORD_CHANGED,
 } from "../config/customErrorMessages";
 import { showErrorAlert } from "../config/showErrorAlert";
+import PageLayout from "../pageLayoutProps";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -29,9 +31,7 @@ const changePasswordScreen = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      // const userData = await AsyncStorage.getItem("user");
       if (user) {
-        // const user = JSON.parse(userData);
         console.log("user in change password", user);
         setPhoneNumber(user.phone);
         setExistingPassword(user.password);
@@ -50,7 +50,7 @@ const changePasswordScreen = () => {
     return new Promise((resolve, reject) => {
       Bcrypt.compare(currentPassword, existingPassword, function (err, res) {
         if (err) reject(err);
-        else resolve(res); // true if match, false otherwise
+        else resolve(res); 
       });
     });
   };
@@ -59,14 +59,16 @@ const changePasswordScreen = () => {
     const isMatch = await comparePasswords(currPassword, existingPassword);
     console.log("isMatch", isMatch);
     if (!isMatch) {
-    showErrorAlert({
-      title: "Error",
-      message: INCORRECT_CURRENT_PASSWORD,
-    });
-}
-
+      showErrorAlert({
+        title: "Error",
+        message: INCORRECT_CURRENT_PASSWORD,
+      });
+    }
   };
-  if (!currPassword || !newPassword || !confirmPassword) {
+
+ 
+  const handleChangePassword = async () => {
+    if (!currPassword || !newPassword || !confirmPassword) {
       showErrorAlert({
         title: "Validation Error",
         message: "All fields are required",
@@ -74,15 +76,13 @@ const changePasswordScreen = () => {
       return;
     }
 
-
-   if (newPassword !== confirmPassword) {
-  showErrorAlert({
-    title: "Validation Error",
-    message: "New and Confirm passwords do not match",
-  });
-  return;
-}
-
+    if (newPassword !== confirmPassword) {
+      showErrorAlert({
+        title: "Validation Error",
+        message: "New and Confirm passwords do not match",
+      });
+      return;
+    }
 
     try {
       const response = await UserAPI.changePassword({ newPassword });
@@ -95,7 +95,7 @@ const changePasswordScreen = () => {
 
         redirectToPage(containers.signInScreen);
       } else {
-       showErrorAlert({
+        showErrorAlert({
           title: "Error",
           message: PASSWORD_CHANGE_FAILED,
         });
@@ -109,30 +109,15 @@ const changePasswordScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable={false}
       hasHeader
       hasFooter={false}
       headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
-      scrollable={false}
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
         <ScrollView>
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-            ]}
-          >
-            {/* <View style={globalStyles.profilePictureContainer}>
-            <Image
-              source={{ uri: "https://picsum.photos/100" }}
-              style={globalStyles.profileImage}
-            />
-          </View> */}
+          <View style={[globalStyles.pt_0]}>
             <View style={globalStyles.profileInputContainer}>
               <View style={{ flex: 1 }}>
                 <Text style={globalStyles.userInputLabel}>
@@ -146,6 +131,8 @@ const changePasswordScreen = () => {
                   value={currPassword}
                   onPress={() => {}}
                   setValue={setCurrPassword}
+                  
+                 
                   onblur={() => {
                     handleBlur(currPassword);
                   }}
@@ -185,22 +172,8 @@ const changePasswordScreen = () => {
             <Button onPress={handleChangePassword} title="Save Password" />
           </View>
         </ScrollView>
-        {/* <Button
-            onPress={handleChangePassword}
-            title="Save"
-          /> */}
-        {/* <View style={globalStyles.p_3}>
-          <Button
-            onPress={() => {
-              handleChangePassword();
-            }}
-            title="Save Password"
-          />
-        </View> */}
-        {/* </View> */}
       </KeyBoardWrapper>
     </PageLayout>
-    // </SafeAreaView>
   );
 };
 

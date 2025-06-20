@@ -92,9 +92,10 @@ const signUpScreen = () => {
 
     const trimmedPhone = phone.trim();
 
-    if (!email.trim() && !trimmedPhone) {
-      newErrors.email = "Email or Phone number is required.";
+   if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = "Enter a valid email address.";
     }
+
 
     // Normalize phone by removing leading 0
     const normalizedPhone = trimmedPhone.startsWith("0")
