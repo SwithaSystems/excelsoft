@@ -10,11 +10,21 @@ const OrderTimeline = (props) => {
   console.log("statusList", statusList);
 
   const icons = [
-    "document-text-outline",
-    "cube-outline",
-    "car-outline",
-    "location-outline",
+    "cart-outline",
+    "time-outline",
+    "card-outline",
+    "shield-checkmark-outline",
+    "construct-outline",
     "checkmark-circle-outline",
+    "car-outline",
+    "home-outline",
+    "cube-outline",
+    "close-circle-outline",
+    "warning-outline",
+    "ban-outline",
+    "alert-circle-outline",
+    "swap-horizontal-outline",
+    "cash-outline",
   ];
 
   return (
@@ -39,7 +49,7 @@ const OrderTimeline = (props) => {
               {/*Icon for each status */}
               <Ionicons
                 name={icons[index]}
-                size={22}
+                size={24}
                 color={index <= currentStatus ? colors.white : colors.white}
               />
             </View>

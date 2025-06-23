@@ -17,6 +17,7 @@ import { ProductsAPI } from "@/services/productService";
 import PageLayout from "../pageLayoutProps";
 import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
+import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -28,6 +29,9 @@ const AdminOrderDetail = () => {
   const [shippingAddress_order, setShippingAddress_order] =
     React.useState<any>(null);
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
+  const [reason, setReason] = useState("");
+  const statusesNeedingReason = ["Cancelled", "Failed", "Rejected"];
+  const [reasonError, setReasonError] = useState("");
   console.log("orderId", orderId);
 
   const getOrderdetails = async () => {
@@ -116,6 +120,31 @@ const AdminOrderDetail = () => {
   //   },
   // ];
 
+ useEffect(() => {
+    const needsReason = statusesNeedingReason.includes(status);
+    
+    if (needsReason) {
+      if (reason.trim() === "") {
+        setReasonError(`Reason is required for ${status} status`);
+      }
+      else if (reason.trim().length < 3) {
+        setReasonError("Reason must be at least 3 characters long");
+      }
+      else {
+        setReasonError("");
+      }
+    } else {
+      setReasonError("");
+      setReason("");
+    }
+  }, [reason, status]);
+
+  const handleUpdateDetails = () => {
+    if(reasonError){
+      return;
+    }
+   
+  };
   return (
     <>
       {/* <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -282,6 +311,44 @@ const AdminOrderDetail = () => {
                   <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
                 </View>
               </ModalSelector>
+              {statusesNeedingReason.includes(status) && (
+              <>
+                <Text
+                  style={[
+                    globalStyles.size_16,
+                    globalStyles.fontWeight500,
+                    globalStyles.mt_3,
+                    globalStyles.mb_1,
+                  ]}
+                >
+                  Reason for {status}:
+                </Text>
+
+                <View>
+                  <CustomTextInput
+                      multiline
+                      value={reason}
+                      setValue={setReason}
+                      placeholder={`Enter reason for ${status.toLowerCase()}`}
+                      textBoxHeight={100} 
+                      onPress={ () => { } }                  
+                  />
+                </View>
+              </>
+            )}
+
+            {reasonError ? (
+                      <Text
+                        style={{
+                          color: "#ff0000",
+                          fontSize: 14,
+                          marginTop: 5,
+                          marginLeft: 5,
+                        }}
+                      >
+                        {reasonError}
+                      </Text>
+                    ) : null}
             </View>
             <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
               <Button onPress={() => {}} title="Update Details" />

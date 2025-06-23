@@ -27,6 +27,7 @@ const deliveryTrackingScreen = () => {
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   console.log("orderId", orderId.orderId);
+  
   const getOrderById = async () => {
     const order_Details = await orderService.getOrderByMongoId(
       String(orderId.orderId)
@@ -37,6 +38,7 @@ const deliveryTrackingScreen = () => {
   useEffect(() => {
     getOrderById();
   }, []);
+
   const getAllOrderStatuses = async () => {
     const orderStatuses = await orderService.getAllOrderStatuses();
     console.log("all Order statuses", orderStatuses);
