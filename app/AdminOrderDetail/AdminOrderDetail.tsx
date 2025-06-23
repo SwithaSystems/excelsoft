@@ -18,6 +18,7 @@ import PageLayout from "../pageLayoutProps";
 import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
+import { NotificationService } from "@/services/notificationService";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -121,6 +122,11 @@ const AdminOrderDetail = () => {
       await orderService.updateOrderStatus(orderPayload);
       await getOrderdetails(); // reload updated order
       alert("Order updated successfully.");
+      await NotificationService.scheduleLocalNotification(
+        "Order Status Update",
+        `Your order #ORD-${orderDetails?.orderNumber} is ${status}`,
+        { orderId, type: "status_update" }
+      );
     } catch (err) {
       console.error("Update failed", err);
       alert("Failed to update order.");

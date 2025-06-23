@@ -40,7 +40,7 @@ import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import {formatToDDMMYYYY} from "../config/dateTimeFormat";
+import { formatToDDMMYYYY } from "../config/dateTimeFormat";
 import { showErrorAlert } from "../config/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
@@ -65,7 +65,7 @@ const HomeDeliveryScreen = () => {
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
-  const [pickerMode, setPickerMode] = useState("date"); 
+  const [pickerMode, setPickerMode] = useState("date");
 
   // Form state
   const [isLoading, setIsLoading] = useState(false);
@@ -287,33 +287,33 @@ const HomeDeliveryScreen = () => {
     }, 100);
   };
 
-   const validateForm = () => {
+  const validateForm = () => {
     if (!date) {
-      showErrorAlert({ 
-        title: "Select Pickup Date", 
-        message: PICKUP_TIME_REQUIRED 
+      showErrorAlert({
+        title: "Select Pickup Date",
+        message: PICKUP_TIME_REQUIRED,
       });
       return false;
     }
     if (!hours || !minutes) {
-      showErrorAlert({ 
-        title: "Select Pickup Time", 
-        message: PICKUP_TIME_REQUIRED 
+      showErrorAlert({
+        title: "Select Pickup Time",
+        message: PICKUP_TIME_REQUIRED,
       });
       return false;
     }
     if (!selectedAddressId) {
-      showErrorAlert({ 
-        title: "Oops", 
-        message: MISSING_REQUIRED_FIELDS 
+      showErrorAlert({
+        title: "Oops",
+        message: MISSING_REQUIRED_FIELDS,
       });
       return false;
     }
     const timeValidation = validateFutureTime(hours, minutes, period, date);
     if (!timeValidation.isValid) {
-      showErrorAlert({ 
-        title: "Oops", 
-        message: timeValidation.message || PICKUP_TIME_IN_PAST 
+      showErrorAlert({
+        title: "Oops",
+        message: timeValidation.message || PICKUP_TIME_IN_PAST,
       });
       return false;
     }
@@ -327,22 +327,16 @@ const HomeDeliveryScreen = () => {
       }
 
       // Double check time is valid
-     const timeValidation = validateFutureTime(hours, minutes, period, date);
+      const timeValidation = validateFutureTime(hours, minutes, period, date);
       if (!timeValidation.isValid) {
-        showErrorAlert({ 
-          title: "Oops", 
-          message: timeValidation.message || PICKUP_TIME_IN_PAST 
+        showErrorAlert({
+          title: "Oops",
+          message: timeValidation.message || PICKUP_TIME_IN_PAST,
         });
         return;
       }
 
       setIsLoading(true);
-
-      await NotificationService.scheduleLocalNotification(
-        "Delivery Scheduled",
-        `Your order #${orderId} delivery is scheduled for ${date} at ${hours}:${minutes} ${period}`,
-        { orderId, type: "delivery_scheduled" }
-      );
 
       const shippingAddress = existingShippingAddress.find(
         (addr) => addr._id === selectedAddressId
@@ -364,9 +358,9 @@ const HomeDeliveryScreen = () => {
       });
     } catch (error) {
       console.error("Error submitting delivery request:", error);
-       showErrorAlert({ 
-        title: "Oops", 
-        message: ADDRESS_NOT_SAVED 
+      showErrorAlert({
+        title: "Oops",
+        message: ADDRESS_NOT_SAVED,
       });
     } finally {
       setIsLoading(false);
@@ -632,7 +626,12 @@ const HomeDeliveryScreen = () => {
                         setShowDatePicker(false);
                         setDate(formatToDDMMYYYY(selectedDate));
                         setTimeout(() => {
-                          validateTime(formatToDDMMYYYY(selectedDate), hours, minutes, period);
+                          validateTime(
+                            formatToDDMMYYYY(selectedDate),
+                            hours,
+                            minutes,
+                            period
+                          );
                         }, 100);
                       }}
                       onCancel={() => setShowDatePicker(false)}

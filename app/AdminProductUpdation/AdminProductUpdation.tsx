@@ -37,7 +37,7 @@ import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { showErrorAlert } from "../config/showErrorAlert";
-import {FIX_VALIDATION_ERRORS} from "../config/customErrorMessages";
+import { FIX_VALIDATION_ERRORS } from "../config/customErrorMessages";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -77,17 +77,19 @@ const AdminProductUpdation = () => {
   const [selectedColors, setSelectedColors] = useState<any>([]);
   const [showColorModal, setShowColorModal] = useState(false);
 
-  const [errors, setErrors] = useState<Partial<{
-    productName: string;
-    title: string;
-    productDescription: string;
-    stock: string;
-    price: string;
-    discountPrice: string;
-    category: string;
-    minimumOrderQunatity: string;
-    productImages: string;
-  }>>({});
+  const [errors, setErrors] = useState<
+    Partial<{
+      productName: string;
+      title: string;
+      productDescription: string;
+      stock: string;
+      price: string;
+      discountPrice: string;
+      category: string;
+      minimumOrderQunatity: string;
+      productImages: string;
+    }>
+  >({});
 
   // Parse product data only once when component mounts
   const productData = React.useMemo(() => {
@@ -113,7 +115,7 @@ const AdminProductUpdation = () => {
     // Only run once when component mounts
     if (productData) {
       setId(productData.id || "");
-      setTitle(productData.title || "");
+      setTitle(productData.title || "Product");
       setProductDescription(productData.description || "");
       setProductName(productData.name || "");
       setStock(productData.stock?.toString() || "");
@@ -270,9 +272,12 @@ const AdminProductUpdation = () => {
 
   const validateProductName = (name: string) => {
     if (!name.trim()) return "Product name is required";
-    if (name.trim().length < 2) return "Product name must be at least 2 characters";
-    if (name.trim().length > 100) return "Product name cannot exceed 100 characters";
-    if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim())) return "Product name contains invalid characters";
+    if (name.trim().length < 2)
+      return "Product name must be at least 2 characters";
+    if (name.trim().length > 100)
+      return "Product name cannot exceed 100 characters";
+    if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim()))
+      return "Product name contains invalid characters";
     return null;
   };
 
@@ -284,7 +289,8 @@ const AdminProductUpdation = () => {
   };
 
   const validateDescription = (description: string) => {
-    if (description.trim().length > 1000) return "Description cannot exceed 1000 characters";
+    if (description.trim().length > 1000)
+      return "Description cannot exceed 1000 characters";
     return null;
   };
 
@@ -303,20 +309,25 @@ const AdminProductUpdation = () => {
     if (isNaN(priceNum)) return "Price must be a valid number";
     if (priceNum <= 0) return "Price must be greater than 0";
     if (priceNum > 999999) return "Price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(price)) return "Price can have maximum 2 decimal places";
+    if (!/^\d+(\.\d{1,2})?$/.test(price))
+      return "Price can have maximum 2 decimal places";
     return null;
   };
 
-  const validateDiscountPrice = (discountPrice: string, originalPrice: string) => {
+  const validateDiscountPrice = (
+    discountPrice: string,
+    originalPrice: string
+  ) => {
     if (!discountPrice.trim()) return null; // Optional field
     const discountNum = parseFloat(discountPrice);
     const originalNum = parseFloat(originalPrice);
-    
+
     if (isNaN(discountNum)) return "Discount price must be a valid number";
     if (discountNum <= 0) return "Discount price must be greater than 0";
     if (discountNum > 999999) return "Discount price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(discountPrice)) return "Discount price can have maximum 2 decimal places";
-    
+    if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
+      return "Discount price can have maximum 2 decimal places";
+
     if (!isNaN(originalNum) && discountNum >= originalNum) {
       return "Discount price must be less than original price";
     }
@@ -334,248 +345,255 @@ const AdminProductUpdation = () => {
 
   const validateImages = (images: any[]) => {
     if (images.length === 0) return "At least one product image is required";
-    if (images.length > MAX_IMAGES) return `Maximum ${MAX_IMAGES} images allowed`;
+    if (images.length > MAX_IMAGES)
+      return `Maximum ${MAX_IMAGES} images allowed`;
     return null;
   };
 
-     const validateFields = () => {
-  const newErrors: typeof errors = {};
+  const validateFields = () => {
+    const newErrors: typeof errors = {};
 
-  // Validate product name
-  const productNameError = validateProductName(productName);
-  if (productNameError) newErrors.productName = productNameError;
+    // Validate product name
+    const productNameError = validateProductName(productName);
+    if (productNameError) newErrors.productName = productNameError;
 
-  // Validate title
-  const titleError = validateTitle(title);
-  if (titleError) newErrors.title = titleError;
+    // Validate title
+    const titleError = validateTitle(title);
+    if (titleError) newErrors.title = titleError;
 
-  // Validate description
-  const descriptionError = validateDescription(productDescription);
-  if (descriptionError) newErrors.productDescription = descriptionError;
+    // Validate description
+    const descriptionError = validateDescription(productDescription);
+    if (descriptionError) newErrors.productDescription = descriptionError;
 
-  // Validate stock
-  const stockError = validateStock(stock);
-  if (stockError) newErrors.stock = stockError;
+    // Validate stock
+    const stockError = validateStock(stock);
+    if (stockError) newErrors.stock = stockError;
 
-  // Validate price
-  const priceError = validatePrice(price);
-  if (priceError) newErrors.price = priceError;
+    // Validate price
+    const priceError = validatePrice(price);
+    if (priceError) newErrors.price = priceError;
 
-  // Validate discount price
-  const discountPriceError = validateDiscountPrice(discountPrice, price);
-  if (discountPriceError) newErrors.discountPrice = discountPriceError;
+    // Validate discount price
+    const discountPriceError = validateDiscountPrice(discountPrice, price);
+    if (discountPriceError) newErrors.discountPrice = discountPriceError;
 
-  // Validate category
-  if (!category) newErrors.category = "Please select a category";
+    // Validate category
+    if (!category) newErrors.category = "Please select a category";
 
-  // Validate minimum order quantity
-  const minOrderQtyError = validateMinimumOrderQuantity(minimumOrderQunatity);
-  if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
+    // Validate minimum order quantity
+    const minOrderQtyError = validateMinimumOrderQuantity(minimumOrderQunatity);
+    if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
 
-  // Validate images (only for new products)
-  if (newProduct) {
-    const imagesError = validateImages(productImages);
-    if (imagesError) newErrors.productImages = imagesError;
-  }
-
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
-const handleProductNameChange = (value: string) => {
-  setProductName(value);
-  if (errors.productName) {
-    const error = validateProductName(value);
-    setErrors(prev => ({ ...prev, productName: error || undefined }));
-  }
-};
-
-const handleTitleChange = (value: string) => {
-  setTitle(value);
-  if (errors.title) {
-    const error = validateTitle(value);
-    setErrors(prev => ({ ...prev, title: error || undefined }));
-  }
-};
-
-const handleDescriptionChange = (value: string) => {
-  setProductDescription(value);
-  if (errors.productDescription) {
-    const error = validateDescription(value);
-    setErrors(prev => ({ ...prev, productDescription: error || undefined }));
-  }
-};
-
-const handleStockChange = (value: string) => {
-  // Only allow numeric input
-  const numericValue = value.replace(/[^0-9]/g, '');
-  setStock(numericValue);
-  if (errors.stock) {
-    const error = validateStock(numericValue);
-    setErrors(prev => ({ ...prev, stock: error || undefined }));
-  }
-};
-
-const handlePriceChange = (value: string) => {
-  // Allow numeric input with up to 2 decimal places
-  const numericValue = value.replace(/[^0-9.]/g, '');
-  const parts = numericValue.split('.');
-  if (parts.length > 2) return; // Prevent multiple decimal points
-  if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
-  
-  setPrice(numericValue);
-  if (errors.price) {
-    const error = validatePrice(numericValue);
-    setErrors(prev => ({ ...prev, price: error || undefined }));
-  }
-};
-
-const handleDiscountPriceChange = (value: string) => {
-  // Allow numeric input with up to 2 decimal places
-  const numericValue = value.replace(/[^0-9.]/g, '');
-  const parts = numericValue.split('.');
-  if (parts.length > 2) return; // Prevent multiple decimal points
-  if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
-  
-  setDiscountPrice(numericValue);
-  if (errors.discountPrice) {
-    const error = validateDiscountPrice(numericValue, price);
-    setErrors(prev => ({ ...prev, discountPrice: error || undefined }));
-  }
-};
-
-const handleMinOrderQuantityChange = (value: string) => {
-  // Only allow numeric input
-  const numericValue = value.replace(/[^0-9]/g, '');
-  setMinimumOrderQuantity(numericValue);
-  if (errors.minimumOrderQunatity) {
-    const error = validateMinimumOrderQuantity(numericValue);
-    setErrors(prev => ({ ...prev, minimumOrderQunatity: error || undefined }));
-  }
-};
-
-const handleUpdateProduct = useCallback(async () => {
-  // Validate fields before submission
-  if (!validateFields()) {
-    showErrorAlert({
-      title: "Let's fix that",
-      message: FIX_VALIDATION_ERRORS,
-    });
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-    console.log("selectedColors", selectedColors);
-
-    // Prepare form data
-    const formData = new FormData();
-
-    // Append regular text fields
-    formData.append("name", productName.trim());
-    formData.append("id", id ? id : maxId.toString());
-    formData.append("title", title.trim());
-    formData.append("description", productDescription.trim());
-    formData.append("stock", stock);
-    formData.append("originalPrice", price);
-    formData.append("price", discountPrice || price);
-    formData.append("categoryId", category);
-    formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
-    formData.append("isReturnable", isChecked ? "true" : "false");
-    formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
-
-    // Handle colors
-    if (isColorsAvailable && selectedColors.length > 0) {
-      formData.append("productColors", JSON.stringify(selectedColors));
-    } else if (color) {
-      formData.append("productColors", JSON.stringify([{ color }]));
-    } else {
-      formData.append("productColors", JSON.stringify([]));
+    // Validate images (only for new products)
+    if (newProduct) {
+      const imagesError = validateImages(productImages);
+      if (imagesError) newErrors.productImages = imagesError;
     }
 
-    // Separate existing image URLs and new local image files
-    const existingImageUrls = productImages
-      .filter((img: any) => !img.uri.startsWith("file://"))
-      .map((img: any) => img.uri);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    const newImageFiles = productImages.filter((img: any) =>
-      img.uri.startsWith("file://")
-    );
+  const handleProductNameChange = (value: string) => {
+    setProductName(value);
+    if (errors.productName) {
+      const error = validateProductName(value);
+      setErrors((prev) => ({ ...prev, productName: error || undefined }));
+    }
+  };
 
-    // Send existing Cloudinary URLs to the server
-    formData.append("images", JSON.stringify(existingImageUrls));
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (errors.title) {
+      const error = validateTitle(value);
+      setErrors((prev) => ({ ...prev, title: error || undefined }));
+    }
+  };
 
-    // Send new image files (to upload)
-    newImageFiles.forEach((img: any, index: number) => {
-      const uri = img.uri;
-      const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
-      const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
+  const handleDescriptionChange = (value: string) => {
+    setProductDescription(value);
+    if (errors.productDescription) {
+      const error = validateDescription(value);
+      setErrors((prev) => ({
+        ...prev,
+        productDescription: error || undefined,
+      }));
+    }
+  };
 
-      formData.append("imageFiles", {
-        uri,
-        name: fileName,
-        type: fileType,
-      } as any);
-    });
+  const handleStockChange = (value: string) => {
+    // Only allow numeric input
+    const numericValue = value.replace(/[^0-9]/g, "");
+    setStock(numericValue);
+    if (errors.stock) {
+      const error = validateStock(numericValue);
+      setErrors((prev) => ({ ...prev, stock: error || undefined }));
+    }
+  };
 
-    console.log("Submitting form data for product update", formData);
+  const handlePriceChange = (value: string) => {
+    // Allow numeric input with up to 2 decimal places
+    const numericValue = value.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
+    if (parts.length > 2) return; // Prevent multiple decimal points
+    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
-    // Make API call based on whether it's a new product or update
-    const response = newProduct
-      ? await ProductsAPI.addProduct(formData)
-      : await ProductsAPI.updateProduct(productData._id, formData);
+    setPrice(numericValue);
+    if (errors.price) {
+      const error = validatePrice(numericValue);
+      setErrors((prev) => ({ ...prev, price: error || undefined }));
+    }
+  };
 
-    if (!response) {
-      throw new Error("Failed to update product.");
+  const handleDiscountPriceChange = (value: string) => {
+    // Allow numeric input with up to 2 decimal places
+    const numericValue = value.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
+    if (parts.length > 2) return; // Prevent multiple decimal points
+    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
+
+    setDiscountPrice(numericValue);
+    if (errors.discountPrice) {
+      const error = validateDiscountPrice(numericValue, price);
+      setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
+    }
+  };
+
+  const handleMinOrderQuantityChange = (value: string) => {
+    // Only allow numeric input
+    const numericValue = value.replace(/[^0-9]/g, "");
+    setMinimumOrderQuantity(numericValue);
+    if (errors.minimumOrderQunatity) {
+      const error = validateMinimumOrderQuantity(numericValue);
+      setErrors((prev) => ({
+        ...prev,
+        minimumOrderQunatity: error || undefined,
+      }));
+    }
+  };
+
+  const handleUpdateProduct = useCallback(async () => {
+    // Validate fields before submission
+    if (!validateFields()) {
+      showErrorAlert({
+        title: "Let's fix that",
+        message: FIX_VALIDATION_ERRORS,
+      });
+      return;
     }
 
-    // Show success message and redirect
-    Alert.alert(
-      "Success",
-      newProduct
-        ? "Product added successfully!"
-        : "Product updated successfully!",
-      [
-        {
-          text: "OK",
-          onPress: () =>
-            router.replace(
-              "/AdminProductDashboard/AdminProductDashboard?refresh=true"
-            ),
-        },
-      ]
-    );
-  } catch (error) {
-    console.error("Error updating product:", error);
-    showErrorAlert({
-      title: "Oops!",
-      message: "Failed to update product. Please try again.",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-}, [
-  productName,
-  stock,
-  price,
-  discountPrice,
-  category,
-  color,
-  selectedColors,
-  productImages,
-  id,
-  title,
-  productDescription,
-  minimumOrderQunatity,
-  isChecked,
-  isAgeRestricted,
-  router,
-  newProduct,
-  productData?._id,
-  maxId,
-  isColorsAvailable,
-  validateFields, 
-]);
+    try {
+      setIsLoading(true);
+      console.log("selectedColors", selectedColors);
+
+      // Prepare form data
+      const formData = new FormData();
+
+      // Append regular text fields
+      formData.append("name", productName.trim());
+      formData.append("id", id ? id : maxId.toString());
+      formData.append("title", title.trim());
+      formData.append("description", productDescription.trim());
+      formData.append("stock", stock);
+      formData.append("originalPrice", price);
+      formData.append("price", discountPrice || price);
+      formData.append("categoryId", category);
+      formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
+      formData.append("isReturnable", isChecked ? "true" : "false");
+      formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+
+      // Handle colors
+      if (isColorsAvailable && selectedColors.length > 0) {
+        formData.append("productColors", JSON.stringify(selectedColors));
+      } else if (color) {
+        formData.append("productColors", JSON.stringify([{ color }]));
+      } else {
+        formData.append("productColors", JSON.stringify([]));
+      }
+
+      // Separate existing image URLs and new local image files
+      const existingImageUrls = productImages
+        .filter((img: any) => !img.uri.startsWith("file://"))
+        .map((img: any) => img.uri);
+
+      const newImageFiles = productImages.filter((img: any) =>
+        img.uri.startsWith("file://")
+      );
+
+      // Send existing Cloudinary URLs to the server
+      formData.append("images", JSON.stringify(existingImageUrls));
+
+      // Send new image files (to upload)
+      newImageFiles.forEach((img: any, index: number) => {
+        const uri = img.uri;
+        const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
+        const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
+
+        formData.append("imageFiles", {
+          uri,
+          name: fileName,
+          type: fileType,
+        } as any);
+      });
+
+      console.log("Submitting form data for product update", formData);
+
+      // Make API call based on whether it's a new product or update
+      const response = newProduct
+        ? await ProductsAPI.addProduct(formData)
+        : await ProductsAPI.updateProduct(productData._id, formData);
+
+      if (!response) {
+        throw new Error("Failed to update product.");
+      }
+
+      // Show success message and redirect
+      Alert.alert(
+        "Success",
+        newProduct
+          ? "Product added successfully!"
+          : "Product updated successfully!",
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              router.replace(
+                "/AdminProductDashboard/AdminProductDashboard?refresh=true"
+              ),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error updating product:", error);
+      showErrorAlert({
+        title: "Oops!",
+        message: "Failed to update product. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    productName,
+    stock,
+    price,
+    discountPrice,
+    category,
+    color,
+    selectedColors,
+    productImages,
+    id,
+    title,
+    productDescription,
+    minimumOrderQunatity,
+    isChecked,
+    isAgeRestricted,
+    router,
+    newProduct,
+    productData?._id,
+    maxId,
+    isColorsAvailable,
+    validateFields,
+  ]);
   // Define the predefined colors array
   const predefinedColors = [
     { name: "Red", hex: "#FF0000" },
@@ -672,17 +690,17 @@ const handleUpdateProduct = useCallback(async () => {
             )}
 
             <Text style={styles.label}>Title *</Text>
-              <CustomTextInput
-                value={title}
-                setValue={handleTitleChange}
-                onPress={() => {}}
-                placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
-                style={errors.title ? globalStyles.errorInput : undefined}
-                maxLength={150}
-              />
-              {errors.title && (
-                <Text style={globalStyles.errorText}>{errors.title}</Text>
-              )}
+            <CustomTextInput
+              value={title}
+              setValue={handleTitleChange}
+              onPress={() => {}}
+              placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
+              style={errors.title ? globalStyles.errorInput : undefined}
+              maxLength={150}
+            />
+            {errors.title && (
+              <Text style={globalStyles.errorText}>{errors.title}</Text>
+            )}
 
             <Text style={styles.label}>Product Description</Text>
             <TextInput
@@ -691,15 +709,21 @@ const handleUpdateProduct = useCallback(async () => {
               placeholder="Describe your product features, specifications, and benefits in detail..."
               multiline
               numberOfLines={6}
-              style={[styles.multilinetextbox, errors.productDescription ? globalStyles.errorInput : undefined]}
+              style={[
+                styles.multilinetextbox,
+                errors.productDescription ? globalStyles.errorInput : undefined,
+              ]}
               maxLength={1000}
             />
-            <Text style={styles.characterCount}>{productDescription.length}/1000 characters</Text>
+            <Text style={styles.characterCount}>
+              {productDescription.length}/1000 characters
+            </Text>
             {errors.productDescription && (
-              <Text style={globalStyles.errorText}>{errors.productDescription}</Text>
+              <Text style={globalStyles.errorText}>
+                {errors.productDescription}
+              </Text>
             )}
             <View style={styles.inputContainer}>
-
               <Text style={styles.label}>Category *</Text>
               <View style={styles.categoryContainer}>
                 <ModalSelector
@@ -734,12 +758,14 @@ const handleUpdateProduct = useCallback(async () => {
                     />
                   </View>
                   {errors.category && (
-                    <Text style={globalStyles.errorText}>{errors.category}</Text>
+                    <Text style={globalStyles.errorText}>
+                      {errors.category}
+                    </Text>
                   )}
                 </ModalSelector>
               </View>
             </View>
-           <Text style={styles.label}>Stock *</Text>
+            <Text style={styles.label}>Stock *</Text>
             <CustomTextInput
               setValue={handleStockChange}
               value={stock}
@@ -767,7 +793,7 @@ const handleUpdateProduct = useCallback(async () => {
               <Text style={globalStyles.errorText}>{errors.price}</Text>
             )}
 
-           <Text style={styles.label}>Discount Price (₹)</Text>
+            <Text style={styles.label}>Discount Price (₹)</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
               value={discountPrice}
@@ -788,11 +814,17 @@ const handleUpdateProduct = useCallback(async () => {
               onPress={() => {}}
               placeholder="e.g., 1 (optional - leave empty for no minimum)"
               keyboardType="numeric"
-              style={errors.minimumOrderQunatity ? globalStyles.errorInput : undefined}
+              style={
+                errors.minimumOrderQunatity
+                  ? globalStyles.errorInput
+                  : undefined
+              }
               maxLength={4}
             />
             {errors.minimumOrderQunatity && (
-              <Text style={globalStyles.errorText}>{errors.minimumOrderQunatity}</Text>
+              <Text style={globalStyles.errorText}>
+                {errors.minimumOrderQunatity}
+              </Text>
             )}
 
             <View style={styles.checkBox}>
@@ -1454,12 +1486,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   characterCount: {
-  fontSize: 12,
-  color: colors.darkGray,
-  textAlign: 'right',
-  marginTop: 4,
-  marginBottom: 8,
-},
+    fontSize: 12,
+    color: colors.darkGray,
+    textAlign: "right",
+    marginTop: 4,
+    marginBottom: 8,
+  },
 });
 
 export default AdminProductUpdation;

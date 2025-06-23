@@ -127,9 +127,13 @@ const orderDetailsScreen = () => {
 
   console.log("orderData in orderDetails", orderData);
   console.log("ordernumber", orderDetails?.orderNumber);
-  const formattedDate = new Date(orderDetails?.orderData).toLocaleDateString(
-    "en-CA"
-  );
+  const rawDate = new Date(orderDetails?.orderDate);
+  const formattedDate = `${rawDate.getDate().toString().padStart(2, "0")}/${(
+    rawDate.getMonth() + 1
+  )
+    .toString()
+    .padStart(2, "0")}/${rawDate.getFullYear()}`;
+
   console.log("cartItemsWithDetails", cartItemsWithDetails);
 
   console.log("orderDetails by order ID", orderDetails);

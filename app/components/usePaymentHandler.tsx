@@ -7,6 +7,7 @@ import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
+import { NotificationService } from "@/services/notificationService";
 
 type Product = {
   productId: string;
@@ -115,7 +116,7 @@ export const usePaymentHandler = () => {
     } else {
       Alert.alert("Success", "Payment completed successfully!");
 
-      const response = await orderService.createOrder({
+      const orderDetails: any = {
         products: products,
         shippingCharges: 10,
         discounts: [10],
@@ -141,26 +142,82 @@ export const usePaymentHandler = () => {
           state: params.shippingAddress?.state ?? "N/A",
           postalCode: params.shippingAddress?.postalCode ?? "N/A",
         },
-        // timeslot: params.selectedSlot
-        //   ? new Date(params.selectedSlot)
-        //   : undefined,
-        pickupDetails: {
-          date: params.pickupdetails?.date ?? "N/A",
-          time: params.pickupdetails?.time ?? "N/A",
-          firstName: params.pickupdetails?.firstName ?? "N/A",
-          lastName: params.pickupdetails?.lastName ?? "N/A",
-          phone: params.pickupdetails?.phone ?? "N/A",
-          email: params.pickupdetails?.email ?? "N/A",
-          vehicleType: params.pickupdetails?.vehicleType,
-          vehicleNumber: params.pickupdetails?.vehicleNumber,
-          additionalDetails: params.pickupdetails?.additionalDetails,
-        },
-      });
+      };
+
+      // Conditionally add pickupDetails
+      if (
+        params.selectedMode !== "homeDelivery" &&
+        params.pickupdetails?.date
+      ) {
+        orderDetails.pickupDetails = {
+          date: params.pickupdetails.date,
+          time: params.pickupdetails.time ?? "N/A",
+          firstName: params.pickupdetails.firstName ?? "N/A",
+          lastName: params.pickupdetails.lastName ?? "N/A",
+          phone: params.pickupdetails.phone ?? "N/A",
+          email: params.pickupdetails.email ?? "N/A",
+          vehicleType: params.pickupdetails.vehicleType,
+          vehicleNumber: params.pickupdetails.vehicleNumber,
+          additionalDetails: params.pickupdetails.additionalDetails,
+        };
+      }
+
+      console.log("orderPayload", orderDetails);
+
+      const response = await orderService.createOrder(orderDetails);
+
+      // const response = await orderService.createOrder({
+      //   products: products,
+      //   shippingCharges: 10,
+      //   discounts: [10],
+      //   tax: 2.99,
+      //   totalAmount: subtotal + 10 + 2.99 - 10,
+      //   paymentMethod: "credit_card",
+      //   pickupMode: (params.selectedMode || "Delivery") as PickupMode,
+      //   // status:"ORDER_PLACED",
+      //   deliveryDate: params.deliveryDate ?? "N/A",
+      //   deliveryTime: params.deliveryTime,
+      //   billingAddress: {
+      //     name: params.billingAddress?.name ?? "N/A",
+      //     line1: params.billingAddress?.line1 ?? "N/A",
+      //     line2: params.billingAddress?.line2 ?? "",
+      //     city: params.billingAddress?.city ?? "N/A",
+      //     state: params.billingAddress?.state ?? "N/A",
+      //     postalCode: params.billingAddress?.postalCode ?? "N/A",
+      //   },
+      //   shippingAddress: {
+      //     name: params.shippingAddress?.name ?? "N/A",
+      //     line1: params.shippingAddress?.line1 ?? "N/A",
+      //     line2: params.shippingAddress?.line2 ?? "",
+      //     city: params.shippingAddress?.city ?? "N/A",
+      //     state: params.shippingAddress?.state ?? "N/A",
+      //     postalCode: params.shippingAddress?.postalCode ?? "N/A",
+      //   },
+      //   // timeslot: params.selectedSlot
+      //   //   ? new Date(params.selectedSlot)
+      //   //   : undefined,
+      //   pickupDetails: {
+      //     date: new Date(params.pickupdetails?.date ?? "").toISOString(), //params.pickupdetails?.date ?? "N/A",
+      //     time: params.pickupdetails?.time ?? "N/A",
+      //     firstName: params.pickupdetails?.firstName ?? "N/A",
+      //     lastName: params.pickupdetails?.lastName ?? "N/A",
+      //     phone: params.pickupdetails?.phone ?? "N/A",
+      //     email: params.pickupdetails?.email ?? "N/A",
+      //     vehicleType: params.pickupdetails?.vehicleType,
+      //     vehicleNumber: params.pickupdetails?.vehicleNumber,
+      //     additionalDetails: params.pickupdetails?.additionalDetails,
+      //   },
+      // });
       console.log("after order placed", response);
       dispatch(clearCart());
       redirectToPage(containers.orderSuccessfulScreenScreen, {
         orderData: JSON.stringify(response),
       });
+      //   await NotificationService.scheduleLocalNotification(
+      //   "your Order is Placed",
+      //   `Your order Number is #ORD-${response?.orderId}`,
+      //   { orderId, type: "delivery_scheduled" }
+      // );
     }
   };
 
