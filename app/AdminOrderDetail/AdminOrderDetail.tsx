@@ -29,10 +29,12 @@ const AdminOrderDetail = () => {
   const [shippingAddress_order, setShippingAddress_order] =
     React.useState<any>(null);
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
-  const [reason, setReason] = useState("");
-  const statusesNeedingReason = ["Cancelled", "Failed", "Rejected"];
+  const [reason, setReason] = useState<any>("");
+  const [isLoading, setIsLoading] = useState(false);
   const [reasonError, setReasonError] = useState("");
   console.log("orderId", orderId);
+
+  const statusesRequiringReason = ["Failed", "Rejected", "Cancelled"];
 
   const getOrderdetails = async () => {
     const response = await orderService.getOrderByMongoId(String(orderId));
@@ -72,6 +74,12 @@ const AdminOrderDetail = () => {
   }, [orderDetails?.shippingAddress]);
 
   useEffect(() => {
+    if (orderDetails?.status) {
+      setStatus(orderDetails.status);
+    }
+  }, [orderDetails]);
+
+  useEffect(() => {
     const fetchProductDetails = async () => {
       if (!orderDetails?.products?.length) return;
 
@@ -95,42 +103,43 @@ const AdminOrderDetail = () => {
 
     fetchProductDetails();
   }, [orderDetails]);
-  // const cartItems = [
-  //   {
-  //     id: 1,
-  //     image: require("assets/DuckToys.png"),
-  //     name: "Duck Toys",
-  //     price: 10.0,
-  //     originalPrice: 6.99,
-  //     quantity: 1,
-  //   },
-  //   {
-  //     id: 2,
-  //     image: require("../../assets/OrangeJuice.png"),
-  //     name: "Orange Juice",
-  //     price: 3.0,
-  //     quantity: 2,
-  //   },
-  //   {
-  //     id: 3,
-  //     image: require("../../assets/baby-bicycle.png"),
-  //     name: "Whole Wheat Bread",
-  //     price: 12.0,
-  //     quantity: 1,
-  //   },
-  // ];
 
- useEffect(() => {
-    const needsReason = statusesNeedingReason.includes(status);
-    
+  useEffect(() => {
+    if (!statusesRequiringReason.includes(status)) {
+      setReason("");
+    }
+  }, [status]);
+
+  const handleUpdate = async () => {
+    try {
+      setIsLoading(true);
+      const orderPayload = {
+        _id: orderDetails._id,
+        status: status,
+        reason: reason,
+      };
+      await orderService.updateOrderStatus(orderPayload);
+      await getOrderdetails(); // reload updated order
+      alert("Order updated successfully.");
+    } catch (err) {
+      console.error("Update failed", err);
+      alert("Failed to update order.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check if current status requires a reason
+  const shouldShowReasonField = statusesRequiringReason.includes(status);
+  useEffect(() => {
+    const needsReason = statusesRequiringReason.includes(status);
+
     if (needsReason) {
       if (reason.trim() === "") {
         setReasonError(`Reason is required for ${status} status`);
-      }
-      else if (reason.trim().length < 3) {
+      } else if (reason.trim().length < 3) {
         setReasonError("Reason must be at least 3 characters long");
-      }
-      else {
+      } else {
         setReasonError("");
       }
     } else {
@@ -139,17 +148,8 @@ const AdminOrderDetail = () => {
     }
   }, [reason, status]);
 
-  const handleUpdateDetails = () => {
-    if(reasonError){
-      return;
-    }
-   
-  };
   return (
     <>
-      {/* <SafeAreaView style={globalStyles.safeAreaContainer}>
-        <View style={[globalStyles.container, { flex: 1 }]}>
-          <Header headerText="Order Details" /> */}
       <PageLayout
         hasHeader
         headerComponent={
@@ -159,19 +159,8 @@ const AdminOrderDetail = () => {
         footerComponent={<AdminFooter />}
         scrollable
       >
-        {/* <SafeAreaView style={{ flex: 1 }}> */}
-        <View
-          style={[
-            // globalStyles.sectionContent,
-            globalStyles.pt_0,
-            { flex: 1 },
-          ]}
-        >
-          <ScrollView
-            style={{ flex: 1 }}
-            showsVerticalScrollIndicator={false}
-            // contentContainerStyle={{ paddingBottom: 100 }}
-          >
+        <View style={[globalStyles.pt_0, { flex: 1 }]}>
+          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
               return (
@@ -226,33 +215,38 @@ const AdminOrderDetail = () => {
                   ? "Deliver To:"
                   : "Pickup"}
               </Text>
+              {orderDetails?.deliveryDate && (
+                <>
+                  <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                    <Text
+                      style={[globalStyles.size_16, globalStyles.fontWeight500]}
+                    >
+                      Time:
+                    </Text>{" "}
+                    {new Date(orderDetails.deliveryDate).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                  </Text>
+                  <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                    <Text
+                      style={[globalStyles.size_16, globalStyles.fontWeight500]}
+                    >
+                      Date:
+                    </Text>{" "}
+                    {new Date(orderDetails.deliveryDate).toLocaleDateString(
+                      "en-GB"
+                    )}
+                  </Text>
+                </>
+              )}
               <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                >
-                  Time:
-                  {new Date(orderDetails?.deliveryDate).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              </Text>
-              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                <Text
-                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                >
-                  Date:
-                </Text>
-                {new Date(orderDetails?.deliveryDate).toLocaleDateString(
-                  "en-GB"
-                )}
-              </Text>
-              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                <Text
-                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                >
-                  {/* Address:&nbsp; */}
-                </Text>
+                ></Text>
                 {orderDetails?.pickupMode === "homeDelivery" &&
                   shippingAddress_order && (
                     <Text>
@@ -271,7 +265,6 @@ const AdminOrderDetail = () => {
                   )}
               </Text>
 
-              {/* FIXED: Status section - simple approach */}
               <Text
                 style={[
                   globalStyles.size_16,
@@ -311,33 +304,18 @@ const AdminOrderDetail = () => {
                   <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
                 </View>
               </ModalSelector>
-              {statusesNeedingReason.includes(status) && (
-              <>
-                <Text
-                  style={[
-                    globalStyles.size_16,
-                    globalStyles.fontWeight500,
-                    globalStyles.mt_3,
-                    globalStyles.mb_1,
-                  ]}
-                >
-                  Reason for {status}:
-                </Text>
-
-                <View>
-                  <CustomTextInput
-                      multiline
-                      value={reason}
-                      setValue={setReason}
-                      placeholder={`Enter reason for ${status.toLowerCase()}`}
-                      textBoxHeight={100} 
-                      onPress={ () => { } }                  
-                  />
-                </View>
-              </>
-            )}
-
-            {reasonError ? (
+              {statusesRequiringReason.includes(status) && (
+                <>
+                  <Text
+                    style={[
+                      globalStyles.size_16,
+                      globalStyles.fontWeight500,
+                      globalStyles.mt_2,
+                      globalStyles.mb_1,
+                    ]}
+                  >
+                    Reason for {status}:{" "}
+                    {reasonError ? (
                       <Text
                         style={{
                           color: "#ff0000",
@@ -346,12 +324,45 @@ const AdminOrderDetail = () => {
                           marginLeft: 5,
                         }}
                       >
-                        {reasonError}
+                        *
                       </Text>
                     ) : null}
+                  </Text>
+
+                  <View>
+                    <CustomTextInput
+                      containerStyle={{
+                        ...globalStyles.userInputContainer,
+                      }}
+                      placeholder="Reason"
+                      TextStyle={globalStyles.input}
+                      label="Reason"
+                      value={reason}
+                      setValue={setReason}
+                      multiline={true}
+                      onPress={() => null}
+                    />
+                  </View>
+                </>
+              )}
             </View>
+            {/* {shouldShowReasonField && (
+              <CustomTextInput
+                containerStyle={{
+                  ...globalStyles.userInputContainer,
+                  marginTop: 20,
+                }}
+                placeholder="Reason"
+                TextStyle={globalStyles.input}
+                label="Reason"
+                value={reason}
+                setValue={setReason}
+                multiline={true}
+                onPress={() => null}
+              />
+            )} */}
             <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
-              <Button onPress={() => {}} title="Update Details" />
+              <Button onPress={handleUpdate} title="Update Details" />
             </View>
           </ScrollView>
         </View>
