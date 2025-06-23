@@ -50,6 +50,11 @@ const deliveryTrackingScreen = () => {
   }, []);
   console.log("orderDetails in tracking order", orderDetails?.status);
 
+  const paymentStatus = ["Payment Pending", "Payment Confirmed"];
+  const filteredStatuses = from === "admin" 
+            ? allOrderStatuses
+            : allOrderStatuses.filter( status => !paymentStatus.includes(status));
+
   return (
     <PageLayout
       hasFooter
@@ -73,9 +78,9 @@ const deliveryTrackingScreen = () => {
           <Text style={styles.headingNote}>
             Your Order packed Successfully!! Let’s see the Progress!
           </Text>
-          <View style={styles.trackingContainer}>
+          <View style={styles.trackingContainer}>  
             <OrderTimeline
-              statusList={allOrderStatuses}
+              statusList={filteredStatuses}
               actualStatus={orderDetails?.status}
             />
           </View>
