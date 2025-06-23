@@ -20,7 +20,8 @@ import ModalSelector from "react-native-modal-selector";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
-  const orderStatuses = ["Pending", "Processed", "Delivered", "Cancel"];
+  // const orderStatuses = ["Pending", "Processed", "Delivered", "Cancel"];
+  const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const props = useLocalSearchParams();
   const orderId = props.orderId;
   const [orderDetails, setOrderDetails] = useState<any>({});
@@ -35,8 +36,16 @@ const AdminOrderDetail = () => {
     setOrderDetails(response);
   };
 
+  const getAllOrderStatuses = async () => {
+    const orderStatuses = await orderService.getAllOrderStatuses();
+    console.log("all Order statuses", orderStatuses);
+    setAllOrderStatuses(orderStatuses?.statuses);
+  };
   useEffect(() => {
     getOrderdetails();
+  }, []);
+  useEffect(() => {
+    getAllOrderStatuses();
   }, []);
 
   console.log("orderDetails in admin", orderDetails);
@@ -246,7 +255,7 @@ const AdminOrderDetail = () => {
               </Text>
 
               <ModalSelector
-                data={orderStatuses.map((item, index) => ({
+                data={allOrderStatuses.map((item, index) => ({
                   key: index,
                   label: item,
                   value: item,
@@ -273,30 +282,12 @@ const AdminOrderDetail = () => {
                   <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
                 </View>
               </ModalSelector>
-
-              {/* <Picker
-                  selectedValue={status}
-                  style={{
-                    height: 50,
-                  }}
-                  onValueChange={(itemValue) => setStatus(itemValue)}
-                >
-                  {orderStatuses.map((each, index) => {
-                    return (
-                      <Picker.Item key={index} label={each} value={each} />
-                    );
-                  })}
-                </Picker> */}
             </View>
             <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
               <Button onPress={() => {}} title="Update Details" />
             </View>
           </ScrollView>
         </View>
-        a {/* </SafeAreaView> */}
-        {/* </View>
-        <AdminFooter />
-      </SafeAreaView> */}
       </PageLayout>
     </>
   );

@@ -138,4 +138,15 @@ export const orderService = {
       throw error;
     }
   },
+
+  getAllOrderStatuses: async (): Promise<{ statuses: string[] }> => {
+    try {
+      const response = await jsonAxios.get(`${API_BASE_URL}/orders/statuses`);
+      console.log("response of order status", response);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order statuses", error);
+      throw error;
+    }
+  },
 };
