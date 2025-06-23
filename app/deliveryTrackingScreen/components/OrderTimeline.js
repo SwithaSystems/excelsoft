@@ -68,7 +68,7 @@ const OrderTimeline = (props) => {
               {item}
             </Text>
             {/* Connecting Line */}
-            {index !== statusList.length && (
+            {index !== statusList.length - 1 && (
               <View
                 style={[
                   styles.line,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 18,
     top: 40,
-    height: 60,
+    height: 90,
     width: 1,
     backgroundColor: colors.black,
   },
