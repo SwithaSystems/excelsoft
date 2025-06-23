@@ -1,7 +1,7 @@
-import { DELIVERY_TRACKING_SCREEN_TITLE } from './../config/stringLiterals';
+import { DELIVERY_TRACKING_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import React, { use, useEffect } from "react";
+import React, { use, useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
@@ -13,16 +13,18 @@ import AdminFooter from "@/components/AdminFooter";
 import PageLayout from "../pageLayoutProps";
 
 const deliveryTrackingScreen = () => {
-  const orderStatus = [
-    "Order Placed",
-    "Order Packed",
-    "Out for delivery",
-    "Reached the Location",
-    "Order Delivered Successully!!",
-  ];
+  // const orderStatus = [
+  //   "Order Placed",
+  //   "Order Packed",
+  //   "Out for delivery",
+  //   "Reached the Location",
+  //   "Order Delivered Successully!!",
+  // ];
+
   const props = useLocalSearchParams();
   const from = props.from;
   const orderId = useLocalSearchParams();
+  const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   console.log("orderId", orderId.orderId);
   const getOrderById = async () => {
@@ -34,6 +36,15 @@ const deliveryTrackingScreen = () => {
   };
   useEffect(() => {
     getOrderById();
+  }, []);
+  const getAllOrderStatuses = async () => {
+    const orderStatuses = await orderService.getAllOrderStatuses();
+    console.log("all Order statuses", orderStatuses);
+    setAllOrderStatuses(orderStatuses?.statuses);
+  };
+
+  useEffect(() => {
+    getAllOrderStatuses();
   }, []);
   console.log("orderDetails in tracking order", orderDetails?.status);
 
@@ -50,15 +61,19 @@ const deliveryTrackingScreen = () => {
       <View style={[globalStyles.container]}>
         {/* <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
-        <View style={[
-            // globalStyles.sectionContent
-          ]}>
+        <View
+          style={
+            [
+              // globalStyles.sectionContent
+            ]
+          }
+        >
           <Text style={styles.headingNote}>
             Your Order packed Successfully!! Let’s see the Progress!
           </Text>
           <View style={styles.trackingContainer}>
             <OrderTimeline
-              statusList={orderStatus}
+              statusList={allOrderStatuses}
               actualStatus={orderDetails?.status}
             />
           </View>
