@@ -98,7 +98,6 @@ const deliveryTrackingScreen = () => {
     return filteredStatuses;
   };
 
-  // Function to get relevant statuses in the correct order for the timeline
   const getOrderedStatusesForTimeline = (): string[] => {
     const hasAgeRestriction =
       orderDetails && hasAgeRestrictedProducts(orderDetails);

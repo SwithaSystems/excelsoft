@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
+import { formatDateForBackend } from "../config/dateTimeFormat";
 
 type Product = {
   productId: string;
@@ -124,7 +125,7 @@ export const usePaymentHandler = () => {
         totalAmount: subtotal + 10 + 2.99 - 10,
         paymentMethod: "credit_card",
         pickupMode: (params.selectedMode || "Delivery") as PickupMode,
-        deliveryDate: params.deliveryDate ?? "N/A",
+        deliveryDate: formatDateForBackend(params.deliveryDate) ?? "N/A",
         deliveryTime: params.deliveryTime,
         billingAddress: {
           name: params.billingAddress?.name ?? "N/A",
@@ -150,7 +151,7 @@ export const usePaymentHandler = () => {
         params.pickupdetails?.date
       ) {
         orderDetails.pickupDetails = {
-          date: params.pickupdetails.date,
+          date: formatDateForBackend(params.pickupdetails.date) ?? "N/A",
           time: params.pickupdetails.time ?? "N/A",
           firstName: params.pickupdetails.firstName ?? "N/A",
           lastName: params.pickupdetails.lastName ?? "N/A",

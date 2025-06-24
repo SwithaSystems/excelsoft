@@ -81,6 +81,7 @@ const orderSummeryScreen = () => {
     ? JSON.parse(params.pickupAddress as string)
     : null;
   const pickupDetails = JSON.parse(params?.pickupDetails) || "";
+  console.log("pickup details", pickupDetails);
   const selectedMode = params?.selectedMode || "Delivery";
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 

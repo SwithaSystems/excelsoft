@@ -129,7 +129,9 @@ const HomeDeliveryScreen = () => {
     }
     // Format the date for state
     // const formattedDate = targetDate.toISOString().split("T")[0];
+    console.log("target date", targetDate);
     const formattedDate = formatToDDMMYYYY(targetDate);
+    console.log("formatted date", formattedDate);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
