@@ -19,6 +19,8 @@ import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { NotificationService } from "@/services/notificationService";
+import { showErrorAlert } from "../config/showErrorAlert";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -112,6 +114,23 @@ const AdminOrderDetail = () => {
   }, [status]);
 
   const handleUpdate = async () => {
+
+    if (statusesRequiringReason.includes(status)) {
+      if(!reason || reason.trim().length < 3){ 
+        if(!reason){
+          showErrorAlert({
+            title: "Error",
+            message: `Reason is required for this ${status} status`,
+          })
+        }else{
+          showErrorAlert({
+            title: "Error",
+            message: `Reason should be at least 3 characters long for this ${status} status`,
+          })
+        }
+        return;
+      }
+    }
     try {
       setIsLoading(true);
       const orderPayload = {
@@ -165,7 +184,8 @@ const AdminOrderDetail = () => {
         footerComponent={<AdminFooter />}
         scrollable
       >
-        <View style={[globalStyles.pt_0, { flex: 1 }]}>
+        <KeyBoardWrapper>
+        {/* <View style={[globalStyles.pt_0, { flex: 1 }]}> */}
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
@@ -371,7 +391,8 @@ const AdminOrderDetail = () => {
               <Button onPress={handleUpdate} title="Update Details" />
             </View>
           </ScrollView>
-        </View>
+        {/* </View> */}
+        </KeyBoardWrapper>
       </PageLayout>
     </>
   );

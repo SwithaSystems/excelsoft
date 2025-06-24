@@ -120,7 +120,6 @@ const CartScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       hasFooter
@@ -241,8 +240,6 @@ const CartScreen = () => {
         </ScrollView>
       </View>
     </PageLayout>
-    /* <Footer navigation={router} activeTab="cart" />
-    </SafeAreaView> */
   );
 };
 

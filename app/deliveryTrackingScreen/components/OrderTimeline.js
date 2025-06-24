@@ -5,7 +5,10 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 
 const OrderTimeline = (props) => {
   const statusList = props.statusList;
+  const reason = props.reason;
+  const from = props.from;
   const currentStatus = statusList.indexOf(props?.actualStatus);
+  const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
   console.log("currentStatus", currentStatus);
   console.log("statusList", statusList);
 
@@ -32,7 +35,11 @@ const OrderTimeline = (props) => {
       <FlatList
         data={statusList}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => (
+        renderItem={({ item, index }) => {
+          const isCurrent = index === currentStatus;
+          const isNegative = negativeStatuses.includes(item);
+
+          return(
           <View style={styles.itemContainer}>
             {/* Timeline Circle */}
             <View
@@ -54,6 +61,7 @@ const OrderTimeline = (props) => {
               />
             </View>
             {/* Status Text */}
+            <View style={{flexDirection:"column"}}>
             <Text
               style={[
                 styles.statusText,
@@ -67,6 +75,16 @@ const OrderTimeline = (props) => {
             >
               {item}
             </Text>
+
+            {isCurrent && isNegative && reason ? (
+              <Text style={styles.reasonText}>
+                {from === "admin"
+                  ? `You Reasoned: ${reason}`
+                  : `Seller Reasoned: ${reason}`}
+              </Text>
+            ): null
+          }
+            </View>
             {/* Connecting Line */}
             {index !== statusList.length - 1 && (
               <View
@@ -82,7 +100,8 @@ const OrderTimeline = (props) => {
               />
             )}
           </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -120,6 +139,13 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: colors.black,
   },
+  reasonText: {
+    fontSize: 14,
+    fontStyle: "italic",
+    fontWeight: "400",
+    color: colors.red,
+    maxWidth:250,
+  }
 });
 
 export default OrderTimeline;

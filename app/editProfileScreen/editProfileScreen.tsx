@@ -175,8 +175,19 @@ const editProfileScreen = () => {
       return;
     }
 
+    if (!/^[A-Za-z]+$/.test(firstName.trim())) {
+    showErrorAlert({
+      title: "Invalid First Name",
+      message: "First name should contain only alphabets.",
+    });
+    return;
+  }
+
     if (!/^[A-Za-z]+$/.test(lastName.trim())) {
-      showErrorAlert({ title: "Invalid Last Name", message: "Last name should contain only alphabets." });
+      showErrorAlert({ 
+        title: "Invalid Last Name", 
+        message: "Last name should contain only alphabets." 
+      });
       return;
     }
 
@@ -437,6 +448,7 @@ const editProfileScreen = () => {
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
           mode="date"
+          maximumDate={new Date()}
           date={new Date(selectedDate || Date.now())}
           onConfirm={uponDateSelection}
           onCancel={hideDatePicker}
