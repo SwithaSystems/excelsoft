@@ -100,44 +100,92 @@ const deliveryTrackingScreen = () => {
 
   // Function to get relevant statuses in the correct order for the timeline
   const getOrderedStatusesForTimeline = (): string[] => {
-    const hasAgeRestriction =
-      orderDetails && hasAgeRestrictedProducts(orderDetails);
 
-    // Define the order flow based on backend statuses
-    const baseFlow = [
-      ORDER_STATUS.ORDER_PLACED,
-      ORDER_STATUS.PREPARING,
-      ORDER_STATUS.READY,
-      ORDER_STATUS.OUT_FOR_DELIVERY,
-      ORDER_STATUS.DELIVERED,
-    ];
+    if(!orderDetails || !allOrderStatuses.length) return [];
 
-    const ageRestrictedFlow = [
+    const hasAgeRestriction = hasAgeRestrictedProducts(orderDetails);
+      // orderDetails && hasAgeRestrictedProducts(orderDetails);
+
+    const status = orderDetails?.status; 
+
+    // // Define the order flow based on backend statuses
+    // const baseFlow = [
+    //   ORDER_STATUS.ORDER_PLACED,
+    //   ORDER_STATUS.PREPARING,
+    //   ORDER_STATUS.READY,
+    //   ORDER_STATUS.OUT_FOR_DELIVERY,
+    //   ORDER_STATUS.DELIVERED,
+    // ];
+
+    // const ageRestrictedFlow = [
+    //   ORDER_STATUS.ORDER_PLACED,
+    //   ORDER_STATUS.AWAITING_AGE_VERIFICATION,
+    //   ORDER_STATUS.PREPARING,
+    //   ORDER_STATUS.READY,
+    //   ORDER_STATUS.OUT_FOR_DELIVERY,
+    //   ORDER_STATUS.DELIVERED,
+    // ];
+
+    let flow: string[] = hasAgeRestriction?[
       ORDER_STATUS.ORDER_PLACED,
       ORDER_STATUS.AWAITING_AGE_VERIFICATION,
       ORDER_STATUS.PREPARING,
       ORDER_STATUS.READY,
       ORDER_STATUS.OUT_FOR_DELIVERY,
       ORDER_STATUS.DELIVERED,
+    ]:[
+      ORDER_STATUS.ORDER_PLACED,
+      ORDER_STATUS.PREPARING,
+      ORDER_STATUS.READY,
+      ORDER_STATUS.OUT_FOR_DELIVERY,
+      ORDER_STATUS.DELIVERED,
     ];
-
+   
     // For pickup orders, replace DELIVERED with COLLECTED
     const isPickupOrder =
       orderDetails?.pickupMode === "storePickup" ||
       orderDetails?.type === "curbsidePickup";
 
-    let relevantFlow: any = hasAgeRestriction ? ageRestrictedFlow : baseFlow;
+    // let relevantFlow: any = hasAgeRestriction ? ageRestrictedFlow : baseFlow;
 
     if (isPickupOrder) {
-      relevantFlow = relevantFlow
+      flow = flow
         .map((status: any) =>
           status === ORDER_STATUS.DELIVERED ? ORDER_STATUS.COLLECTED : status
         )
         .filter((status: any) => status !== ORDER_STATUS.OUT_FOR_DELIVERY);
     }
 
+    //Scenario when there is a stock issue for the ordered product
+    if (status === ORDER_STATUS.STOCK_ISSUE) {
+      const prepIndex = flow.indexOf(ORDER_STATUS.PREPARING);
+      if(prepIndex !== -1) {
+        flow.slice(0, prepIndex + 1);
+        flow.push(ORDER_STATUS.STOCK_ISSUE);
+      }
+      return flow;
+    }
+
+    //Scenario when the order is cancelled/failed/rejected
+    const negativeStatuses = [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.FAILED,
+      ORDER_STATUS.REJECTED,
+    ];
+
+    if(negativeStatuses.includes(status)) {
+      const currentIndex = flow.indexOf(status);
+
+      const lastUpdatedIndex = flow.indexOf(orderDetails.lastValidStatus) >=0
+        ? flow.indexOf(orderDetails.lastValidStatus)  
+        : flow.indexOf(ORDER_STATUS.PREPARING);
+
+        const truncatedFlow = lastUpdatedIndex >= 0 ? flow.slice(0, lastUpdatedIndex + 1) : [];
+
+        return [...truncatedFlow, status];
+    }
     // Filter to only include statuses that exist in the backend response
-    return relevantFlow.filter((status: any) =>
+    return flow.filter((status: any) =>
       allOrderStatuses.includes(status)
     );
   };
@@ -164,12 +212,14 @@ const deliveryTrackingScreen = () => {
       <View style={[globalStyles.container]}>
         <View>
           <Text style={styles.headingNote}>
-            Your Order packed Successfully!! Let's see the Progress!
+            Your Order placed Successfully!! Let's see the Progress!
           </Text>
           <View style={styles.trackingContainer}>
             <OrderTimeline
               statusList={displayStatuses}
               actualStatus={orderDetails?.status}
+              reason={orderDetails?.reason}
+              from={from}
             />
           </View>
         </View>

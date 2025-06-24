@@ -499,28 +499,6 @@ const HomeDeliveryScreen = () => {
     return { isValid: true };
   };
 
-  // // Validate the time whenever any input changes
-  // const validateTime = () => {
-  //   // Only validate if both hours and minutes have values
-  //   if (hours && minutes) {
-  //     const validation = validateFutureTime(hours, minutes, period, date);
-
-  //     if (!validation.isValid) {
-  //       setError(validation.message?.toString() ?? null);
-  //       setIsFormValid(false);
-  //       return false;
-  //     } else {
-  //       setError(null);
-  //       // We need to check other fields too before enabling the button
-  //       validateFormFields();
-  //       return true;
-  //     }
-  //   }
-
-  //   setIsFormValid(false);
-  //   return false; // Don't consider valid if incomplete
-  // };
-
   // Handle hours input changes
   const handleHoursChange = (text: any) => {
     // Only allow numeric input
@@ -569,7 +547,6 @@ const HomeDeliveryScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={DELIVERY_MODE_HOME} />}
@@ -583,10 +560,7 @@ const HomeDeliveryScreen = () => {
           ListHeaderComponent={
             <>
               <View
-                style={[
-                  // globalStyles.sectionContent,
-                  globalStyles.pt_0,
-                ]}
+                style={[globalStyles.pt_0]}
               >
                 <Text style={styles.label}>
                   Do you prefer home delivery? Let us know your available day
@@ -779,9 +753,7 @@ const HomeDeliveryScreen = () => {
           data={[]}
           renderItem={null}
         />
-        {/* </View> */}
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };
