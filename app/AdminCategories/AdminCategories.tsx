@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   imageSection: {
-    marginBottom: 16,
+    marginVertical: 16,
   },
   imageLabel: {
     fontSize: 16,
@@ -641,6 +641,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 20,
+    paddingTop: 16,
   },
   categoryItem: {
     flexDirection: "row",

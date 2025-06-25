@@ -87,13 +87,15 @@ const OrderTimeline = (props) => {
           }
             </View>
             {/* Connecting Line */}
-            {index !== statusList.length - 1 && (
+            {index !== statusList.length && (
               <View
                 style={[
                   styles.line,
                   {
                     backgroundColor:
                       index < currentStatus
+                        ? colors.primary
+                        : index === currentStatus && index === statusList.length - 1
                         ? colors.primary
                         : colors.secondaryText,
                   },
@@ -118,6 +120,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 90,
     position: "relative",
+    marginTop: 16,
   },
   circle: {
     width: 40,

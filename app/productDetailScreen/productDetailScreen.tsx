@@ -358,6 +358,8 @@ const ProductDetailScreen = () => {
                       type: "customToast",
                       text1: "Product added successfully!",
                       text2: `${product.name} - ${product.price}`,
+                      visibilityTime: 1000, 
+                      autoHide: true,
                       onPress: () => {
                         redirectToPage(containers.cartScreenScreen);
                       },

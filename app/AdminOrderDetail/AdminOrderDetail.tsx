@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  Alert,
+} from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
@@ -10,7 +17,7 @@ import Button from "@/components/commonComponents/Button";
 import Footer from "@/components/Footer";
 import colors from "../config/colors";
 import AdminFooter from "@/components/AdminFooter";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
@@ -114,19 +121,18 @@ const AdminOrderDetail = () => {
   }, [status]);
 
   const handleUpdate = async () => {
-
     if (statusesRequiringReason.includes(status)) {
-      if(!reason || reason.trim().length < 3){ 
-        if(!reason){
+      if (!reason || reason.trim().length < 3) {
+        if (!reason) {
           showErrorAlert({
             title: "Error",
             message: `Reason is required for this ${status} status`,
-          })
-        }else{
+          });
+        } else {
           showErrorAlert({
             title: "Error",
             message: `Reason should be at least 3 characters long for this ${status} status`,
-          })
+          });
         }
         return;
       }
@@ -140,7 +146,13 @@ const AdminOrderDetail = () => {
       };
       await orderService.updateOrderStatus(orderPayload);
       await getOrderdetails(); // reload updated order
-      alert("Order updated successfully.");
+      Alert.alert("Success", "Order updated successfully.", [
+        {
+          text: "OK",
+          onPress: () =>
+            router.replace("/AdminDashboard/AdminDashboard?refresh=true"),
+        },
+      ]);
       await NotificationService.scheduleLocalNotification(
         "Order Status Update",
         `Your order #ORD-${orderDetails?.orderNumber} is ${status}`,
@@ -185,7 +197,7 @@ const AdminOrderDetail = () => {
         scrollable
       >
         <KeyBoardWrapper>
-        {/* <View style={[globalStyles.pt_0, { flex: 1 }]}> */}
+          {/* <View style={[globalStyles.pt_0, { flex: 1 }]}> */}
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
@@ -391,7 +403,7 @@ const AdminOrderDetail = () => {
               <Button onPress={handleUpdate} title="Update Details" />
             </View>
           </ScrollView>
-        {/* </View> */}
+          {/* </View> */}
         </KeyBoardWrapper>
       </PageLayout>
     </>

@@ -2,15 +2,19 @@ import { DELIVERY_TRACKING_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import {ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
+import Button from "@/components/commonComponents/Button";
 import Footer from "@/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { orderService } from "@/services/orderService";
 import AdminFooter from "@/components/AdminFooter";
 import PageLayout from "../pageLayoutProps";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
+
 // Order status constants matching backend response
 const ORDER_STATUS = {
   ORDER_PLACED: "Order Placed",
@@ -103,27 +107,8 @@ const deliveryTrackingScreen = () => {
     if(!orderDetails || !allOrderStatuses.length) return [];
 
     const hasAgeRestriction = hasAgeRestrictedProducts(orderDetails);
-      // orderDetails && hasAgeRestrictedProducts(orderDetails);
 
     const status = orderDetails?.status; 
-
-    // // Define the order flow based on backend statuses
-    // const baseFlow = [
-    //   ORDER_STATUS.ORDER_PLACED,
-    //   ORDER_STATUS.PREPARING,
-    //   ORDER_STATUS.READY,
-    //   ORDER_STATUS.OUT_FOR_DELIVERY,
-    //   ORDER_STATUS.DELIVERED,
-    // ];
-
-    // const ageRestrictedFlow = [
-    //   ORDER_STATUS.ORDER_PLACED,
-    //   ORDER_STATUS.AWAITING_AGE_VERIFICATION,
-    //   ORDER_STATUS.PREPARING,
-    //   ORDER_STATUS.READY,
-    //   ORDER_STATUS.OUT_FOR_DELIVERY,
-    //   ORDER_STATUS.DELIVERED,
-    // ];
 
     let flow: string[] = hasAgeRestriction?[
       ORDER_STATUS.ORDER_PLACED,
@@ -210,9 +195,27 @@ const deliveryTrackingScreen = () => {
     >
       <View style={[globalStyles.container]}>
         <View>
-          <Text style={styles.headingNote}>
-            Your Order placed Successfully!! Let's see the Progress!
-          </Text>
+          {from === "admin" && orderDetails ? (
+              <View style={styles.adminInfoCard}>
+                <Text style={styles.infoText}>
+                  <Text style={styles.label}>Order ID: </Text>#{orderDetails?.orderNumber}
+                </Text>
+                <Text style={styles.infoText}>
+                  <Text style={styles.label}>Customer: </Text>{orderDetails?.userId?.firstName} {orderDetails?.userId?.lastName}
+                </Text>
+                <Text style={styles.infoText}>
+                  <Text style={styles.label}>Pick Up Choice: </Text>
+                  {orderDetails?.pickupMode === "homeDelivery" ? "Home Delivery" : "Store Pickup"}
+                </Text>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.headingNote}>
+                  Your Order placed Successfully!! Let's see the Progress!
+                </Text>
+              </View>
+            )}
+
           <View style={styles.trackingContainer}>
             <OrderTimeline
               statusList={displayStatuses}
@@ -221,6 +224,17 @@ const deliveryTrackingScreen = () => {
               from={from}
             />
           </View>
+
+          {from === "admin"  && (
+              <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
+                <Button 
+                title="View Order Details"
+                onPress={() => {
+                  redirectToPage(containers.AdminProductUpdationScreen); 
+                }} 
+                  />
+              </View>
+            )}
         </View>
       </View>
     </PageLayout>
