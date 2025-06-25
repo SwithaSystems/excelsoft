@@ -66,7 +66,7 @@ function CartItem(props) {
   };
   const increaseQuantity = (itemId, currentQuantity) => {
   const itemInCart = props.cartItem;
-  const maxAvailable = itemInCart?.availableQuantity;
+  const maxAvailable = props.stockAvailable || 0;
 
   if (!maxAvailable || maxAvailable === 0) {
     showErrorAlert({

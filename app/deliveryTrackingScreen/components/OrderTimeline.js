@@ -6,7 +6,7 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 const OrderTimeline = (props) => {
   const statusList = props.statusList;
   const reason = props.reason;
-  const from = props.from;
+  // const from = props.from;
   const currentStatus = statusList.indexOf(props?.actualStatus);
   const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
   console.log("currentStatus", currentStatus);
@@ -78,9 +78,10 @@ const OrderTimeline = (props) => {
 
             {isCurrent && isNegative && reason ? (
               <Text style={styles.reasonText}>
-                {from === "admin"
+                {/* {from === "admin"
                   ? `You Reasoned: ${reason}`
-                  : `Seller Reasoned: ${reason}`}
+                  : `Seller Reasoned: ${reason}`} */}
+                  {reason}
               </Text>
             ): null
           }

@@ -137,9 +137,6 @@ const signIn = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //     <View style={styles.container}>
-    //       <Header headerText={"Sign In"} needResetNavigation={true} />
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -278,8 +275,6 @@ const signIn = () => {
           </TouchableOpacity>
         </View>
       </KeyBoardWrapper>
-      {/* </View>
-    </SafeAreaView> */}
     </PageLayout>
   );
 };

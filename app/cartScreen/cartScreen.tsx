@@ -47,6 +47,7 @@ import {
         ITEM_OUT_OF_STOCK,
         QUANTITY_NOT_AVAILABLE,
  } from "../config/customErrorMessages";
+import { ProductsAPI } from "@/services/productService";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -55,6 +56,7 @@ const CartScreen = () => {
     (state: RootState) => state.savedForLaterItems.items
   );
   const user = useSelector((state: RootState) => state.user.user);
+  const [stockAvailable, setStockAvailable] = useState<Record<string, number>>({});
 
   console.log("user in cart screen", user);
 
@@ -119,6 +121,23 @@ const CartScreen = () => {
     }
   };
 
+  useEffect(() => {
+    async function getStock() {
+      const newStock: Record<string, number> = {};
+
+      for(let item of cartItems){
+        try{
+          const product = await ProductsAPI.getProductBYID(Number(item.id));
+          newStock[item.id] = product?.stock || 0;
+        }catch(error){
+          newStock[item.id] = 0;
+        }
+      }
+      setStockAvailable(newStock);
+    }
+    getStock();
+  }, [cartItems]);
+
   return (
     <PageLayout
       hasHeader
@@ -128,13 +147,7 @@ const CartScreen = () => {
     >
       <View style={[globalStyles.container]}>
         <ScrollView>
-          {/* <Header headerText={CART_SCREEN_TITLE} /> */}
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-            ]}
-          >
+          <View style={[globalStyles.pt_0]} >
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
                 <Ionicons
@@ -162,14 +175,11 @@ const CartScreen = () => {
                     handleDelete={handleDelete}
                     key={eachCartItem.id}
                     cartItem={eachCartItem}
+                    stockAvailable={stockAvailable[eachCartItem.id] || 0}
                   />
                 ))}
-                {/* <View style={{ margin: 16 }} /> */}
                 <OrderSummary
                   cartItems={cartItems}
-                  // sectionHeadingStyle={
-                  //   // styles.sectionHeading
-                  // }
                 />
 
                 <View
