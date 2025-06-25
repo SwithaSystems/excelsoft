@@ -210,7 +210,7 @@ const PickupScreen = () => {
     // Validate email if entered
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(email.trim())) {
         errors.push("Email format is invalid");
         setEmailError("Please enter a valid email address");
       } else {
@@ -575,6 +575,7 @@ const PickupScreen = () => {
 
   // Handle email input change with validation
   const handleEmailChange = (text: any) => {
+    console.log("Email input: ", text);
     setEmail(text);
 
     if (!text) {
@@ -583,12 +584,13 @@ const PickupScreen = () => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(text)) {
+    if (!emailRegex.test(text.trim())) {
       setEmailError("Please enter a valid email address");
     } else {
       setEmailError(null);
     }
   };
+
 
   // Reusable text input component
   const renderTextInput = (
