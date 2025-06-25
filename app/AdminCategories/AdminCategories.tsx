@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: colors.darkCharcoal,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   imagePickerButton: {
     flexDirection: "row",
