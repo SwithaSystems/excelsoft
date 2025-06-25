@@ -173,6 +173,11 @@ export const usePaymentHandler = () => {
         redirectToPage(containers.orderSuccessfulScreenScreen, {
           orderData: JSON.stringify(response),
         });
+        await NotificationService.scheduleLocalNotification(
+          "your Order is Placed",
+          `Your order Number is #ORD-${response?.orderNumber}`,
+          { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
+        );
       } catch (error) {
         console.error("=== ORDER CREATION FAILED ===");
         console.error("Error:", error);
