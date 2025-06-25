@@ -1,4 +1,4 @@
-import { SIGN_UP_SCREEN_TITLE } from './../config/stringLiterals';
+import { SIGN_UP_SCREEN_TITLE } from "./../config/stringLiterals";
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
 import React, { useState } from "react";
@@ -32,7 +32,6 @@ import {
 
 import { showErrorAlert } from "../config/showErrorAlert";
 
-
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhoneNumber] = useState("");
@@ -60,6 +59,14 @@ const signUpScreen = () => {
   };
 
   const checkIfUserExists = async () => {
+    if (mode === "phone") {
+      await checkIfPhoneExists();
+    } else if (mode === "email") {
+      await checkIfEmailExists();
+    }
+  };
+
+  const checkIfPhoneExists = async () => {
     const trimmedPhone = phone.trim();
     if (!trimmedPhone || !callingCode) return;
     if (trimmedPhone) {
@@ -82,6 +89,24 @@ const signUpScreen = () => {
     }
   };
 
+  const checkIfEmailExists = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return;
+
+    try {
+      const response = await UserAPI.getUserByEmail(trimmedEmail);
+      if (response?.data) {
+        showErrorAlert({
+          title: "Email Already exists!",
+          message: EMAIL_ALREADY_REGISTERED,
+        });
+        setEmail("");
+      }
+    } catch (error) {
+      console.error("Error checking email", error);
+    }
+  };
+
   const validateFields = () => {
     const newErrors = {} as {
       phone?: string;
@@ -92,10 +117,9 @@ const signUpScreen = () => {
 
     const trimmedPhone = phone.trim();
 
-   if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       newErrors.email = "Enter a valid email address.";
     }
-
 
     // Normalize phone by removing leading 0
     const normalizedPhone = trimmedPhone.startsWith("0")
@@ -126,6 +150,28 @@ const signUpScreen = () => {
 
   const handleSignUp = async () => {
     if (validateFields()) {
+      try {
+        if (mode === "phone") {
+          await handlePhoneSignUp();
+        } else if (mode === "email") {
+          await handleEmailSignUp();
+        }
+      } catch (error) {
+        console.error("Registration error:", error);
+        showErrorAlert({
+          title: "Registration Failed",
+          message: ACCOUNT_CREATION_FAILED,
+        });
+      }
+    } else {
+      showErrorAlert({
+        title: "Validation Error",
+        message: FIX_VALIDATION_ERRORS,
+      });
+    }
+  };
+  const handlePhoneSignUp = async () => {
+    if (validateFields()) {
       let normalizedPhone = phone.trim();
       if (normalizedPhone.startsWith("0")) {
         normalizedPhone = normalizedPhone.slice(1);
@@ -137,8 +183,6 @@ const signUpScreen = () => {
       const userData = { phone: formattedPhone, email, password };
 
       try {
-        // const response = await authService.register(userData);
-
         const responseFromTwilio = await TwilioApi.sendOtp({
           phone: userData.phone,
         });
@@ -159,17 +203,6 @@ const signUpScreen = () => {
             message: OTP_SEND_FAILED,
           });
         }
-        // if (response && response.access_token) {
-        //   console.log("Phone Number for OTP:", userData.phone);
-        //   await TwilioApi.sendOtp({ phone: userData.phone });
-
-        //   redirectToPage(containers.verifcationScreenScreen, {
-        //     phoneNumber: userphone,
-        //     from: "signup",
-        //   });
-        // } else {
-        //   Alert.alert("Error", response?.message || "Sign-up failed.");
-        // }
       } catch (error) {
         console.error("Registration error:", error);
         showErrorAlert({
@@ -185,8 +218,40 @@ const signUpScreen = () => {
     }
   };
 
+  const handleEmailSignUp = async () => {
+    const userData = { phone: "", email: email.trim(), password };
+
+    try {
+      // Send email verification using your auth service
+      const response = await TwilioApi.sendOtp_Email({
+        email: userData.email,
+      });
+
+      console.log("Email verification response:", response?.data?.success);
+
+      if (response?.status === 201 && response?.data?.success) {
+        // Email verification sent successfully, proceed to verification screen
+        redirectToPage(containers.verifcationScreenScreen, {
+          userData: JSON.stringify(userData),
+          from: "signup",
+          verificationType: "email",
+        });
+      } else {
+        showErrorAlert({
+          title: "Failed to send verification email",
+          message: response?.message || "Please try again later.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Email verification error:", error);
+      showErrorAlert({
+        title: "Failed to send verification email",
+        message: error?.message || "Please try again later.",
+      });
+    }
+  };
+
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       hasFooter={false}
@@ -194,12 +259,8 @@ const signUpScreen = () => {
       headerComponent={<Header headerText={SIGN_UP_SCREEN_TITLE} />}
     >
       <KeyBoardWrapper>
-        {/* <View style={styles.container}> */}
-        {/* <Header headerText={"Sign Up"} /> */}
-
         <View style={styles.sectionContainer}>
           <View style={styles.toggleContainer}>
-            {/* <Text style={styles.label}>Email Address/Phone Number</Text> */}
             <TouchableOpacity
               style={[
                 styles.toggleButton,
@@ -239,7 +300,7 @@ const signUpScreen = () => {
                 placeholder="Enter your email address"
                 value={email}
                 onChangeText={(text) => {
-                  setEmail(text); // Fallback for other text entries
+                  setEmail(text);
                   setPhoneNumber("");
                 }}
               />
@@ -339,9 +400,7 @@ const signUpScreen = () => {
             </Text>
           </Text>
         </View>
-        {/* </View> */}
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

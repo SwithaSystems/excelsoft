@@ -21,15 +21,15 @@ function BrandHeader(props) {
   const [isAdmin, setIsAdmin] = useState(false);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
-
+  console.log("user in home page", user);
   const fetchUser = async () => {
     try {
-      if (user && user?.phone) {
-        const userPhone = user?.phone;
-        console.log("userPhone", userPhone);
+      if (user && user?.id) {
+        const userId = user?.id;
+        console.log("userPhone", userId);
 
         // Check if user exists in DB
-        const response = await UserAPI.getUserByPhonenumber(userPhone);
+        const response = await UserAPI.getUserById(userId);
 
         if (response?.data) {
           console.log("userdata", response.data);
@@ -118,7 +118,11 @@ function BrandHeader(props) {
                   {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
                 </Text>
               )}
-              <Ionicons name="person-circle-outline" size={24} color={colors.black} />
+              <Ionicons
+                name="person-circle-outline"
+                size={24}
+                color={colors.black}
+              />
             </View>
           </TouchableOpacity>
 

@@ -36,11 +36,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { formatToDDMMYYYY } from "../config/dateTimeFormat";
 import { showErrorAlert } from "../config/showErrorAlert";
-import { 
-  FAILED_TO_UPDATE_DETAILS, 
-  CAMERA_ACCESS_REQUIRED, 
-  GALLERY_ACCESS_REQUIRED
- } from "../config/customErrorMessages";
+import {
+  FAILED_TO_UPDATE_DETAILS,
+  CAMERA_ACCESS_REQUIRED,
+  GALLERY_ACCESS_REQUIRED,
+} from "../config/customErrorMessages";
 
 interface User {
   id: string;
@@ -60,7 +60,7 @@ const editProfileScreen = () => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Store Manager");
   const [profileImage, setProfileImage] = useState("");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -73,12 +73,13 @@ const editProfileScreen = () => {
     const getUser = async () => {
       console.log("userData", userData);
       if (userData) {
-        const user = await UserAPI.getUserByPhonenumber(userData?.phone);
+        const user = await UserAPI.getUserById(userData?.id);
         console.log("user", user.data);
         if (user) {
-          setFirstName(user.data.firstName);
-          setLastName(user.data.lastName);
-          setPhone(user.data.phone);
+          setUser(user.data);
+          setFirstName(user?.data?.firstName);
+          setLastName(user?.data?.lastName);
+          setPhone(user?.data?.phone);
           // setDateOfBirth(user.data.dateOfBirth);
           setEmail(user.data?.email || "No mail added");
           setProfileImage(user.data.profileImageUrl);
@@ -105,8 +106,8 @@ const editProfileScreen = () => {
       if (type === "camera") {
         const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
         if (!cameraPerm.granted) {
-          showErrorAlert({ 
-            title: "Camera Permission", 
+          showErrorAlert({
+            title: "Camera Permission",
             message: CAMERA_ACCESS_REQUIRED,
           });
           return;
@@ -122,8 +123,8 @@ const editProfileScreen = () => {
         const galleryPerm =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!galleryPerm.granted) {
-          showErrorAlert({ 
-            title: "Gallery Permission", 
+          showErrorAlert({
+            title: "Gallery Permission",
             message: GALLERY_ACCESS_REQUIRED,
           });
           return;
@@ -145,9 +146,9 @@ const editProfileScreen = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      showErrorAlert({ 
-        title: "Image Error", 
-        message: "Something went wrong while picking the image." 
+      showErrorAlert({
+        title: "Image Error",
+        message: "Something went wrong while picking the image.",
       });
     }
   };
@@ -171,22 +172,25 @@ const editProfileScreen = () => {
 
   const handleEditProfile = async () => {
     if (!firstName.trim()) {
-      showErrorAlert({ title: "Missing Details", message: "First name is required." });
+      showErrorAlert({
+        title: "Missing Details",
+        message: "First name is required.",
+      });
       return;
     }
 
     if (!/^[A-Za-z]+$/.test(firstName.trim())) {
-    showErrorAlert({
-      title: "Invalid First Name",
-      message: "First name should contain only alphabets.",
-    });
-    return;
-  }
+      showErrorAlert({
+        title: "Invalid First Name",
+        message: "First name should contain only alphabets.",
+      });
+      return;
+    }
 
     if (!/^[A-Za-z]+$/.test(lastName.trim())) {
-      showErrorAlert({ 
-        title: "Invalid Last Name", 
-        message: "Last name should contain only alphabets." 
+      showErrorAlert({
+        title: "Invalid Last Name",
+        message: "Last name should contain only alphabets.",
       });
       return;
     }
@@ -220,10 +224,11 @@ const editProfileScreen = () => {
     formData.append("dateOfBirth", dateOfBirth);
 
     console.log("formData", formData);
+    console.log("user?.data?._id", user);
 
     try {
       setLoading(true);
-      const response = await UserAPI.userEditProfile(phone, formData);
+      const response = await UserAPI.userEditProfile(user?._id, formData);
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
@@ -241,7 +246,10 @@ const editProfileScreen = () => {
       return response?.data;
     } catch (error) {
       console.error("Profile update failed:", error);
-      showErrorAlert({ title: "Update Failed", message: FAILED_TO_UPDATE_DETAILS });
+      showErrorAlert({
+        title: "Update Failed",
+        message: FAILED_TO_UPDATE_DETAILS,
+      });
     } finally {
       setLoading(false);
     }

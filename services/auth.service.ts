@@ -5,12 +5,14 @@ import { jsonAxios } from "./axiosConfig";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 
 export const authService = {
-  async login(phone: string, password: string) {
+  async login(loginId: string, password: string) {
     try {
+      console.log("credentials", loginId, password);
       const response = await jsonAxios.post("/auth/login", {
-        phone,
+        loginId,
         password,
       });
+      console.log("response", response.data);
       await AsyncStorage.setItem("token", response.data.access_token);
       // await AsyncStorage.setItem(
       //   "refreshtoken",
