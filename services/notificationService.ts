@@ -5,12 +5,13 @@ import { Platform } from "react-native";
 import { jsonAxios } from "./axiosConfig";
 import colors from "@/app/config/colors";
 
-// Configure notification behavior
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -42,7 +43,11 @@ export class NotificationService {
         return null;
       }
 
-      token = (await Notifications.getExpoPushTokenAsync()).data;
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId: "aea6cfd3-263e-485d-b179-a859b7197f9e",
+        })
+      ).data;
 
       // Register token with backend
       if (token) {

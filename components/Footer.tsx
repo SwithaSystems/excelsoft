@@ -49,9 +49,9 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 
   const validateAndFetchUser = async () => {
     try {
-      if (userData_redux?.phone) {
-        const response = await UserAPI.getUserByPhonenumber(
-          userData_redux.phone
+      if (userData_redux?.id || userData_redux?._id) {
+        const response = await UserAPI.getUserById(
+          userData_redux?.id || userData_redux?._id
         );
         if (response?.data) {
           setIsValidUser(true);
@@ -103,23 +103,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   };
 
   return (
-    <View
-    // style={[
-    //   // styles.absoluteFooter,
-    //   // {
-    //   //   paddingBottom:
-    //   //     Platform.OS === "ios"
-    //   //       ? insets.bottom > 0
-    //   //         ? insets.bottom
-    //   //         : 10
-    //   //       : androidBottomPadding,
-    //   // },
-    //   {
-    //     height: footerHeight,
-    //     paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-    //   },
-    // ]}
-    >
+    <View>
       <View style={styles.footer}>
         <FooterButton
           icon="home"
@@ -183,21 +167,14 @@ const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
 );
 
 const styles = StyleSheet.create({
-  // absoluteFooter: {
-  //   position: "relative",
-  //   left: 0,
-  //   right: 0,
-  //   bottom: 0,
-  //   backgroundColor: colors.white,
-  //   borderTopColor: colors.placeholdergrey,
-  //   borderTopWidth: 1,
-  // },
   footer: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
     height: 60,
     paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.placeholdergrey,
   },
   footerTab: {
     flex: 1,

@@ -7,7 +7,7 @@ import { setUserData, clearUserData } from "../store/slices/userSlice"; //
 interface AuthContextType {
   isAuthenticated: boolean;
   user: any;
-  login: (phone: string, password: string) => Promise<void>;
+  login: (loginId: string, password: string) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
@@ -67,9 +67,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const login = async (phone: string, password: string) => {
+  const login = async (loginId: string, password: string) => {
     try {
-      const response = await authService.login(phone, password);
+      const response = await authService.login(loginId, password);
       setIsAuthenticated(true);
       setUser(response.user);
 
