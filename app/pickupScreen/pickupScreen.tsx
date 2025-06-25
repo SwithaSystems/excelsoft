@@ -43,7 +43,6 @@ import {
 } from "../config/customErrorMessages";
 import { showErrorAlert } from "../config/showErrorAlert";
 
-
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -73,8 +72,9 @@ const PickupScreen = () => {
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
   const [timeError, setTimeError] = useState<any>(null);
-  const [pickupDate, setPickupDate] = useState('');
-  const [isPickupDatePickerVisible, setPickupDatePickerVisibility] = useState(false);
+  const [pickupDate, setPickupDate] = useState("");
+  const [isPickupDatePickerVisible, setPickupDatePickerVisibility] =
+    useState(false);
 
   // User state
   const [collector, setCollector] = useState("myself");
@@ -96,6 +96,7 @@ const PickupScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  console.log("userData in pickupscreen", userData);
 
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);
@@ -185,7 +186,6 @@ const PickupScreen = () => {
     hideDatePicker();
   };
 
-
   // Validate form on every field change to enable/disable the submit button
   useEffect(() => {
     const errors = [];
@@ -243,11 +243,13 @@ const PickupScreen = () => {
   // Load user data from API
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userData?.phone) return;
+      // if (!userData?.phone) return;
 
       try {
-        const response = await UserAPI.getUserByPhonenumber(userData.phone);
-
+        const response = await UserAPI.getUserById(
+          userData?.id || userData?._id
+        );
+        console.log("response in pickup", response);
         if (response?.data) {
           const fetchedUserData = {
             firstName: response.data.firstName || "",
@@ -502,7 +504,7 @@ const PickupScreen = () => {
       if (!isFormValid) {
         focusFirstErrorField();
 
-        if(!date || !hours || !minutes){
+        if (!date || !hours || !minutes) {
           showErrorAlert({
             title: "Time Required",
             message: PICKUP_TIME_REQUIRED,
@@ -510,8 +512,14 @@ const PickupScreen = () => {
           return;
         }
 
-        const timeValidation = validateTime(date, hours, minutes, period, false);
-        if(!timeValidation.isValid){
+        const timeValidation = validateTime(
+          date,
+          hours,
+          minutes,
+          period,
+          false
+        );
+        if (!timeValidation.isValid) {
           showErrorAlert({
             title: "Invalid Time",
             message: PICKUP_TIME_IN_PAST,
@@ -534,7 +542,7 @@ const PickupScreen = () => {
           });
           return;
         }
-        
+
         return;
       }
 
@@ -598,7 +606,7 @@ const PickupScreen = () => {
     value: any,
     onChangeText: any,
     required = true,
-    props: TextInputProps= {},
+    props: TextInputProps = {},
     error = null,
     ref?: React.Ref<TextInput> | null
   ) => (
@@ -636,7 +644,6 @@ const PickupScreen = () => {
       }
     >
       <KeyBoardWrapper>
-       
         <ScrollView ref={scrollViewRef}>
           <View
             style={[
@@ -678,8 +685,8 @@ const PickupScreen = () => {
                 mode="date"
                 onConfirm={(selectedDate) => {
                   const isoDate = selectedDate.toISOString().split("T")[0];
-                  setDate(isoDate); 
-                  setPickupDate(formatToDDMMYYYY(selectedDate)); 
+                  setDate(isoDate);
+                  setPickupDate(formatToDDMMYYYY(selectedDate));
                   validateTime(isoDate, hours, minutes, period);
                   setShowDatePicker(false);
                 }}
@@ -720,7 +727,7 @@ const PickupScreen = () => {
                 onChangeText={handleMinutesChange}
                 accessibilityLabel="Minutes"
               />
-             
+
               <View style={styles.toggleContainer}>
                 <TouchableOpacity
                   style={[

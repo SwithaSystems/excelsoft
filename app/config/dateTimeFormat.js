@@ -13,6 +13,16 @@ export function formatToDDMMYYYY(dateInput) {
 }
 
 export function formatDateForBackend(dateString) {
-  const [day, month, year] = dateString.split("/");
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  if (!dateString) return "N/A";
+
+  if (dateString.includes("/")) {
+    const [day, month, year] = dateString.split("/");
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  if (dateString.includes("-")) {
+    return dateString;
+  }
+
+  return "N/A";
 }
