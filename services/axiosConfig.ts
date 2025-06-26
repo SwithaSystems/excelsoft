@@ -48,10 +48,10 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
     async (config: InternalAxiosRequestConfig) => {
       try {
         const token = await AsyncStorage.getItem("token");
-        console.log("Token", token);
+        console.log("Token before setting", token);
         // const refreshToken = await AsyncStorage.getItem("refreshtoken");
         await AsyncStorage.setItem("token", "expired");
-        // console.log("refreshtoken", refreshToken);
+        console.log("Token after setting", token);
         const isExcluded = EXCLUDED_APIS.some((url) =>
           config.url?.includes(url)
         );
@@ -140,9 +140,9 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
               timeout: 10000,
             }
           );
-
-          const newAccessToken = refreshResponse.data.token;
-          const newRefreshToken = refreshResponse.data.refreshToken; // If your API returns a new refresh token
+          console.log("refreshResponse", refreshResponse.data);
+          const newAccessToken = refreshResponse.data.access_token;
+          const newRefreshToken = refreshResponse.data.refresh_token;
 
           console.log("newAccessToken", newAccessToken);
 
