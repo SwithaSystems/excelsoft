@@ -2,7 +2,7 @@ import { DELIVERY_TRACKING_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
-import {ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
 import Button from "@/components/commonComponents/Button";
@@ -103,28 +103,29 @@ const deliveryTrackingScreen = () => {
   };
 
   const getOrderedStatusesForTimeline = (): string[] => {
-
-    if(!orderDetails || !allOrderStatuses.length) return [];
+    if (!orderDetails || !allOrderStatuses.length) return [];
 
     const hasAgeRestriction = hasAgeRestrictedProducts(orderDetails);
 
-    const status = orderDetails?.status; 
+    const status = orderDetails?.status;
 
-    let flow: string[] = hasAgeRestriction?[
-      ORDER_STATUS.ORDER_PLACED,
-      ORDER_STATUS.AWAITING_AGE_VERIFICATION,
-      ORDER_STATUS.PREPARING,
-      ORDER_STATUS.READY,
-      ORDER_STATUS.OUT_FOR_DELIVERY,
-      ORDER_STATUS.DELIVERED,
-    ]:[
-      ORDER_STATUS.ORDER_PLACED,
-      ORDER_STATUS.PREPARING,
-      ORDER_STATUS.READY,
-      ORDER_STATUS.OUT_FOR_DELIVERY,
-      ORDER_STATUS.DELIVERED,
-    ];
-   
+    let flow: string[] = hasAgeRestriction
+      ? [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.AWAITING_AGE_VERIFICATION,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ]
+      : [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ];
+
     // For pickup orders, replace DELIVERED with COLLECTED
     const isPickupOrder =
       orderDetails?.pickupMode === "storePickup" ||
@@ -143,7 +144,7 @@ const deliveryTrackingScreen = () => {
     //Scenario when there is a stock issue for the ordered product
     if (status === ORDER_STATUS.STOCK_ISSUE) {
       const prepIndex = flow.indexOf(ORDER_STATUS.PREPARING);
-      if(prepIndex !== -1) {
+      if (prepIndex !== -1) {
         flow.slice(0, prepIndex + 1);
         flow.push(ORDER_STATUS.STOCK_ISSUE);
       }
@@ -157,21 +158,21 @@ const deliveryTrackingScreen = () => {
       ORDER_STATUS.REJECTED,
     ];
 
-    if(negativeStatuses.includes(status)) {
+    if (negativeStatuses.includes(status)) {
       const currentIndex = flow.indexOf(status);
 
-      const lastUpdatedIndex = flow.indexOf(orderDetails.lastValidStatus) >=0
-        ? flow.indexOf(orderDetails.lastValidStatus)  
-        : flow.indexOf(ORDER_STATUS.PREPARING);
+      const lastUpdatedIndex =
+        flow.indexOf(orderDetails.lastValidStatus) >= 0
+          ? flow.indexOf(orderDetails.lastValidStatus)
+          : flow.indexOf(ORDER_STATUS.PREPARING);
 
-        const truncatedFlow = lastUpdatedIndex >= 0 ? flow.slice(0, lastUpdatedIndex + 1) : [];
+      const truncatedFlow =
+        lastUpdatedIndex >= 0 ? flow.slice(0, lastUpdatedIndex + 1) : [];
 
-        return [...truncatedFlow, status];
+      return [...truncatedFlow, status];
     }
     // Filter to only include statuses that exist in the backend response
-    return flow.filter((status: any) =>
-      allOrderStatuses.includes(status)
-    );
+    return flow.filter((status: any) => allOrderStatuses.includes(status));
   };
 
   console.log("orderDetails in tracking order", orderDetails?.status);
@@ -196,25 +197,30 @@ const deliveryTrackingScreen = () => {
       <View style={[globalStyles.container]}>
         <View>
           {from === "admin" && orderDetails ? (
-              <View style={styles.adminInfoCard}>
-                <Text style={styles.infoText}>
-                  <Text style={styles.label}>Order ID: </Text>#{orderDetails?.orderNumber}
-                </Text>
-                <Text style={styles.infoText}>
-                  <Text style={styles.label}>Customer: </Text>{orderDetails?.userId?.firstName} {orderDetails?.userId?.lastName}
-                </Text>
-                <Text style={styles.infoText}>
-                  <Text style={styles.label}>Pick Up Choice: </Text>
-                  {orderDetails?.pickupMode === "homeDelivery" ? "Home Delivery" : "Store Pickup"}
-                </Text>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.headingNote}>
-                  Your Order placed Successfully!! Let's see the Progress!
-                </Text>
-              </View>
-            )}
+            <View style={styles.adminInfoCard}>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Order ID: </Text>#
+                {orderDetails?.orderNumber}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Customer: </Text>
+                {orderDetails?.userId?.firstName}{" "}
+                {orderDetails?.userId?.lastName}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Pick Up Choice: </Text>
+                {orderDetails?.pickupMode === "homeDelivery"
+                  ? "Home Delivery"
+                  : "Store Pickup"}
+              </Text>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.headingNote}>
+                Your Order placed Successfully!! Let's see the Progress!
+              </Text>
+            </View>
+          )}
 
           <View style={styles.trackingContainer}>
             <OrderTimeline
@@ -225,16 +231,18 @@ const deliveryTrackingScreen = () => {
             />
           </View>
 
-          {from === "admin"  && (
-              <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
-                <Button 
+          {from === "admin" && (
+            <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
+              <Button
                 title="View Order Details"
                 onPress={() => {
-                  redirectToPage(containers.AdminProductUpdationScreen); 
-                }} 
-                  />
-              </View>
-            )}
+                  redirectToPage(containers.AdminOrderDetailScreen, {
+                    orderId: orderDetails?._id,
+                  });
+                }}
+              />
+            </View>
+          )}
         </View>
       </View>
     </PageLayout>
