@@ -2,7 +2,6 @@ import { AnimateStyle } from "react-native-reanimated";
 import { AnimationType } from "expo-symbols";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { jsonAxios } from "./axiosConfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -97,13 +96,10 @@ export const addressService = {
 
   getAllShppingAddress_userId: async (): Promise<Address[]> => {
     try {
-      console.log("in homedelivery screen");
-      const refresh_token = await AsyncStorage.getItem("refreshtoken");
-      console.log("refreshtoken", refresh_token);
       const response = await jsonAxios.get<Address[]>(
         `${API_BASE_URL}/shippingAddress`
       );
-      console.log("shippingAddress in service", response.data);
+      console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching shippingAddress:", error);

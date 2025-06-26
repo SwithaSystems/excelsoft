@@ -574,13 +574,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   imageSection: {
-    marginVertical: 16,
+    marginBottom: 16,
   },
   imageLabel: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.darkCharcoal,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   imagePickerButton: {
     flexDirection: "row",
@@ -641,7 +641,6 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 20,
-    paddingTop: 16,
   },
   categoryItem: {
     flexDirection: "row",

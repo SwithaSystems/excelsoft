@@ -23,7 +23,6 @@ import {
   Alert,
   Image,
   ActivityIndicator,
-  Modal,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../config/colors";
@@ -36,8 +35,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
-import { showErrorAlert } from "../config/showErrorAlert";
-import { FIX_VALIDATION_ERRORS } from "../config/customErrorMessages";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -59,7 +56,6 @@ const AdminProductUpdation = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default date as ISO for web support
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
-  const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -73,23 +69,6 @@ const AdminProductUpdation = () => {
   const [productImages, setProductImages] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
   const MAX_IMAGES = 5;
-  const [isColorsAvailable, setIsColorsAvailable] = useState(false);
-  const [selectedColors, setSelectedColors] = useState<any>([]);
-  const [showColorModal, setShowColorModal] = useState(false);
-
-  const [errors, setErrors] = useState<
-    Partial<{
-      productName: string;
-      title: string;
-      productDescription: string;
-      stock: string;
-      price: string;
-      discountPrice: string;
-      category: string;
-      minimumOrderQunatity: string;
-      productImages: string;
-    }>
-  >({});
 
   // Parse product data only once when component mounts
   const productData = React.useMemo(() => {
@@ -115,32 +94,17 @@ const AdminProductUpdation = () => {
     // Only run once when component mounts
     if (productData) {
       setId(productData.id || "");
-      setTitle(productData.title || "Product");
+      setTitle(productData.title || "");
       setProductDescription(productData.description || "");
       setProductName(productData.name || "");
       setStock(productData.stock?.toString() || "");
       setPrice(productData.originalPrice?.toString() || "");
       setDiscountPrice(productData.price?.toString() || "");
       setCategory(productData.categoryId?.[0]?.toString() || "");
-      // setColor(productData.productColors?.[0] || "");
-      setMinimumOrderQuantity(
-        productData.minimumOrderQuantity?.toString() || ""
-      );
-      setIsAgeRestricted(productData.isAgeRestricted || false);
-      setIsChecked(productData.isReturnable || false);
+
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
-      }
-
-      if (productData?.productColors?.length > 0) {
-        // Transform and set selected colors
-        const colors = productData.productColors.map((c: any) => ({
-          colorCode: c.colorCode,
-          colorName: c.colorName,
-        }));
-        setIsColorsAvailable(true);
-        setSelectedColors(colors);
       }
 
       const now = new Date();
@@ -153,6 +117,19 @@ const AdminProductUpdation = () => {
     }
   }, [productData]);
 
+  // const onDateChange = (
+  //   event: DateTimePickerEvent,
+  //   selectedDate: Date | undefined
+  // ) => {
+  //   const currentDate = selectedDate || new Date(date);
+  //   setShowDatePicker(false);
+  //   setDate(currentDate.toISOString().split("T")[0]); // Format date as yyyy-mm-dd
+  // };
+  // const addNewPrice = () => {
+  //   const newRow = { qty: "", actualPrice: "", discountPrice: "" };
+  //   const updatedPrices = offerPrice.concat(newRow);
+  //   setOfferPrice(updatedPrices);
+  // };
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
       try {
@@ -270,248 +247,46 @@ const AdminProductUpdation = () => {
 
   console.log("Images in product page", productImages);
 
-  const validateProductName = (name: string) => {
-    if (!name.trim()) return "Product name is required";
-    if (name.trim().length < 2)
-      return "Product name must be at least 2 characters";
-    if (name.trim().length > 100)
-      return "Product name cannot exceed 100 characters";
-    if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim()))
-      return "Product name contains invalid characters";
-    return null;
-  };
-
-  const validateTitle = (title: string) => {
-    if (!title.trim()) return "Title is required";
-    if (title.trim().length < 3) return "Title must be at least 3 characters";
-    if (title.trim().length > 150) return "Title cannot exceed 150 characters";
-    return null;
-  };
-
-  const validateDescription = (description: string) => {
-    if (description.trim().length > 1000)
-      return "Description cannot exceed 1000 characters";
-    return null;
-  };
-
-  const validateStock = (stock: string) => {
-    if (!stock.trim()) return "Stock is required";
-    const stockNum = parseInt(stock);
-    if (isNaN(stockNum)) return "Stock must be a valid number";
-    if (stockNum < 0) return "Stock cannot be negative";
-    if (stockNum > 99999) return "Stock cannot exceed 99,999";
-    return null;
-  };
-
-  const validatePrice = (price: string) => {
-    if (!price.trim()) return "Price is required";
-    const priceNum = parseFloat(price);
-    if (isNaN(priceNum)) return "Price must be a valid number";
-    if (priceNum <= 0) return "Price must be greater than 0";
-    if (priceNum > 999999) return "Price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(price))
-      return "Price can have maximum 2 decimal places";
-    return null;
-  };
-
-  const validateDiscountPrice = (
-    discountPrice: string,
-    originalPrice: string
-  ) => {
-    if (!discountPrice.trim()) return null; // Optional field
-    const discountNum = parseFloat(discountPrice);
-    const originalNum = parseFloat(originalPrice);
-
-    if (isNaN(discountNum)) return "Discount price must be a valid number";
-    if (discountNum <= 0) return "Discount price must be greater than 0";
-    if (discountNum > 999999) return "Discount price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
-      return "Discount price can have maximum 2 decimal places";
-
-    if (!isNaN(originalNum) && discountNum >= originalNum) {
-      return "Discount price must be less than original price";
-    }
-    return null;
-  };
-
-  const validateMinimumOrderQuantity = (quantity: string) => {
-    if (!quantity.trim()) return null; // Optional field
-    const qtyNum = parseInt(quantity);
-    if (isNaN(qtyNum)) return "Minimum order quantity must be a valid number";
-    if (qtyNum < 0) return "Minimum order quantity cannot be negative";
-    if (qtyNum > 1000) return "Minimum order quantity cannot exceed 1000";
-    return null;
-  };
-
-  const validateImages = (images: any[]) => {
-    if (images.length === 0) return "At least one product image is required";
-    if (images.length > MAX_IMAGES)
-      return `Maximum ${MAX_IMAGES} images allowed`;
-    return null;
-  };
-
-  const validateFields = () => {
-    const newErrors: typeof errors = {};
-
-    // Validate product name
-    const productNameError = validateProductName(productName);
-    if (productNameError) newErrors.productName = productNameError;
-
-    // Validate title
-    const titleError = validateTitle(title);
-    if (titleError) newErrors.title = titleError;
-
-    // Validate description
-    const descriptionError = validateDescription(productDescription);
-    if (descriptionError) newErrors.productDescription = descriptionError;
-
-    // Validate stock
-    const stockError = validateStock(stock);
-    if (stockError) newErrors.stock = stockError;
-
-    // Validate price
-    const priceError = validatePrice(price);
-    if (priceError) newErrors.price = priceError;
-
-    // Validate discount price
-    const discountPriceError = validateDiscountPrice(discountPrice, price);
-    if (discountPriceError) newErrors.discountPrice = discountPriceError;
-
-    // Validate category
-    if (!category) newErrors.category = "Please select a category";
-
-    // Validate minimum order quantity
-    const minOrderQtyError = validateMinimumOrderQuantity(minimumOrderQunatity);
-    if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
-
-    // Validate images (only for new products)
-    if (newProduct) {
-      const imagesError = validateImages(productImages);
-      if (imagesError) newErrors.productImages = imagesError;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleProductNameChange = (value: string) => {
-    setProductName(value);
-    if (errors.productName) {
-      const error = validateProductName(value);
-      setErrors((prev) => ({ ...prev, productName: error || undefined }));
-    }
-  };
-
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-    if (errors.title) {
-      const error = validateTitle(value);
-      setErrors((prev) => ({ ...prev, title: error || undefined }));
-    }
-  };
-
-  const handleDescriptionChange = (value: string) => {
-    setProductDescription(value);
-    if (errors.productDescription) {
-      const error = validateDescription(value);
-      setErrors((prev) => ({
-        ...prev,
-        productDescription: error || undefined,
-      }));
-    }
-  };
-
-  const handleStockChange = (value: string) => {
-    // Only allow numeric input
-    const numericValue = value.replace(/[^0-9]/g, "");
-    setStock(numericValue);
-    if (errors.stock) {
-      const error = validateStock(numericValue);
-      setErrors((prev) => ({ ...prev, stock: error || undefined }));
-    }
-  };
-
-  const handlePriceChange = (value: string) => {
-    // Allow numeric input with up to 2 decimal places
-    const numericValue = value.replace(/[^0-9.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return; // Prevent multiple decimal points
-    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
-
-    setPrice(numericValue);
-    if (errors.price) {
-      const error = validatePrice(numericValue);
-      setErrors((prev) => ({ ...prev, price: error || undefined }));
-    }
-  };
-
-  const handleDiscountPriceChange = (value: string) => {
-    // Allow numeric input with up to 2 decimal places
-    const numericValue = value.replace(/[^0-9.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return; // Prevent multiple decimal points
-    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
-
-    setDiscountPrice(numericValue);
-    if (errors.discountPrice) {
-      const error = validateDiscountPrice(numericValue, price);
-      setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
-    }
-  };
-
-  const handleMinOrderQuantityChange = (value: string) => {
-    // Only allow numeric input
-    const numericValue = value.replace(/[^0-9]/g, "");
-    setMinimumOrderQuantity(numericValue);
-    if (errors.minimumOrderQunatity) {
-      const error = validateMinimumOrderQuantity(numericValue);
-      setErrors((prev) => ({
-        ...prev,
-        minimumOrderQunatity: error || undefined,
-      }));
-    }
-  };
-
   const handleUpdateProduct = useCallback(async () => {
-    // Validate fields before submission
-    if (!validateFields()) {
-      showErrorAlert({
-        title: "Let's fix that",
-        message: FIX_VALIDATION_ERRORS,
-      });
-      return;
-    }
-
     try {
       setIsLoading(true);
-      console.log("selectedColors", selectedColors);
 
-      // Prepare form data
+      if (!productName.trim()) {
+        Alert.alert("Error", "Product name is required");
+        return;
+      }
+
+      if (!stock || isNaN(parseInt(stock))) {
+        Alert.alert("Error", "Valid stock quantity is required");
+        return;
+      }
+
+      if (!price || isNaN(parseFloat(price))) {
+        Alert.alert("Error", "Valid price is required");
+        return;
+      }
+
+      if (!category) {
+        Alert.alert("Error", "Please select a category");
+        return;
+      }
+
       const formData = new FormData();
 
       // Append regular text fields
-      formData.append("name", productName.trim());
+      formData.append("name", productName);
       formData.append("id", id ? id : maxId.toString());
-      formData.append("title", title.trim());
-      formData.append("description", productDescription.trim());
+      formData.append("title", title);
+      formData.append("description", productDescription);
       formData.append("stock", stock);
       formData.append("originalPrice", price);
       formData.append("price", discountPrice || price);
       formData.append("categoryId", category);
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
+      formData.append("productColors", JSON.stringify([{ color }]));
       formData.append("isReturnable", isChecked ? "true" : "false");
-      formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
 
-      // Handle colors
-      if (isColorsAvailable && selectedColors.length > 0) {
-        formData.append("productColors", JSON.stringify(selectedColors));
-      } else if (color) {
-        formData.append("productColors", JSON.stringify([{ color }]));
-      } else {
-        formData.append("productColors", JSON.stringify([]));
-      }
-
-      // Separate existing image URLs and new local image files
+      // ✅ Separate existing image URLs and new local image files
       const existingImageUrls = productImages
         .filter((img: any) => !img.uri.startsWith("file://"))
         .map((img: any) => img.uri);
@@ -520,10 +295,10 @@ const AdminProductUpdation = () => {
         img.uri.startsWith("file://")
       );
 
-      // Send existing Cloudinary URLs to the server
+      // ✅ Send existing Cloudinary URLs to the server
       formData.append("images", JSON.stringify(existingImageUrls));
 
-      // Send new image files (to upload)
+      // ✅ Send new image files (to upload)
       newImageFiles.forEach((img: any, index: number) => {
         const uri = img.uri;
         const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
@@ -536,9 +311,8 @@ const AdminProductUpdation = () => {
         } as any);
       });
 
-      console.log("Submitting form data for product update", formData);
+      console.log("Submitting form data for product update");
 
-      // Make API call based on whether it's a new product or update
       const response = newProduct
         ? await ProductsAPI.addProduct(formData)
         : await ProductsAPI.updateProduct(productData._id, formData);
@@ -547,7 +321,6 @@ const AdminProductUpdation = () => {
         throw new Error("Failed to update product.");
       }
 
-      // Show success message and redirect
       Alert.alert(
         "Success",
         newProduct
@@ -565,10 +338,7 @@ const AdminProductUpdation = () => {
       );
     } catch (error) {
       console.error("Error updating product:", error);
-      showErrorAlert({
-        title: "Oops!",
-        message: "Failed to update product. Please try again.",
-      });
+      Alert.alert("Error", "Failed to update product. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -579,80 +349,26 @@ const AdminProductUpdation = () => {
     discountPrice,
     category,
     color,
-    selectedColors,
     productImages,
     id,
     title,
     productDescription,
     minimumOrderQunatity,
     isChecked,
-    isAgeRestricted,
     router,
     newProduct,
     productData?._id,
-    maxId,
-    isColorsAvailable,
-    validateFields,
   ]);
-  // Define the predefined colors array
-  const predefinedColors = [
-    { name: "Red", hex: "#FF0000" },
-    { name: "Blue", hex: "#0000FF" },
-    { name: "Green", hex: "#008000" },
-    { name: "Yellow", hex: "#FFFF00" },
-    { name: "Orange", hex: "#FFA500" },
-    { name: "Purple", hex: "#800080" },
-    { name: "Pink", hex: "#FFC0CB" },
-    { name: "Brown", hex: "#A52A2A" },
-    { name: "Black", hex: "#000000" },
-    { name: "White", hex: "#FFFFFF" },
-    { name: "Gray", hex: "#808080" },
-    { name: "Navy", hex: "#000080" },
-    { name: "Teal", hex: "#008080" },
-    { name: "Lime", hex: "#00FF00" },
-    { name: "Maroon", hex: "#800000" },
-    { name: "Olive", hex: "#808000" },
-    { name: "Aqua", hex: "#00FFFF" },
-    { name: "Silver", hex: "#C0C0C0" },
-    { name: "Fuchsia", hex: "#FF00FF" },
-    { name: "Coral", hex: "#FF7F50" },
-  ];
-  // Function to handle color selection
-  const handleColorSelection = (colorHex: string, colorName: string) => {
-    const colorExists = selectedColors.some(
-      (color: any) => (color.hex || color.colorCode) === colorHex
-    );
-
-    if (colorExists) {
-      setSelectedColors(
-        selectedColors.filter(
-          (color: any) => (color.hex || color.colorCode) !== colorHex
-        )
-      );
-    } else {
-      // Add color with consistent structure
-      setSelectedColors([
-        ...selectedColors,
-        {
-          hex: colorHex,
-          name: colorName,
-          colorCode: colorHex,
-          colorName: colorName,
-        },
-      ]);
-    }
-  };
-  console.log("selectedColors just after dropdown", selectedColors);
-  const getSelectedColorsText = () => {
-    if (selectedColors.length === 0) return "Select colors";
-    if (selectedColors.length === 1) {
-      const color = predefinedColors.find((c) => c.hex === selectedColors[0]);
-      return color?.name || "1 color selected";
-    }
-    return `${selectedColors.length} colors selected`;
-  };
 
   return (
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <KeyBoardWrapper>
+    //     <View style={[globalStyles.container, { paddingTop: 16 }]}>
+    //       {newProduct ? (
+    //         <Header headerText="Add Product" />
+    //       ) : (
+    //         <Header headerText={ADMIN_PRODUCT_UPDATE_SCREEN_TITLE} />
+    //       )}
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -676,55 +392,33 @@ const AdminProductUpdation = () => {
               globalStyles.mt_n3,
             ]}
           >
-            <Text style={styles.label}>Product Name *</Text>
+            <Text style={styles.label}>Product Name</Text>
             <CustomTextInput
-              setValue={handleProductNameChange}
+              setValue={setProductName}
               value={productName}
               onPress={() => {}}
-              placeholder="e.g., Premium Wireless Headphones"
-              style={errors.productName ? globalStyles.errorInput : undefined}
-              maxLength={100}
+              placeholder="Enter product name"
             />
-            {errors.productName && (
-              <Text style={globalStyles.errorText}>{errors.productName}</Text>
-            )}
-
-            <Text style={styles.label}>Title *</Text>
+            <Text style={styles.label}>Title</Text>
             <CustomTextInput
               value={title}
-              setValue={handleTitleChange}
+              setValue={setTitle}
               onPress={() => {}}
-              placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
-              style={errors.title ? globalStyles.errorInput : undefined}
-              maxLength={150}
+              placeholder="Enter title"
+              // style={styles.textboxStyles}
             />
-            {errors.title && (
-              <Text style={globalStyles.errorText}>{errors.title}</Text>
-            )}
-
             <Text style={styles.label}>Product Description</Text>
             <TextInput
               value={productDescription}
-              onChangeText={handleDescriptionChange}
-              placeholder="Describe your product features, specifications, and benefits in detail..."
+              onChangeText={setProductDescription}
+              onPress={() => {}}
+              placeholder="Enter Product Description"
               multiline
               numberOfLines={6}
-              style={[
-                styles.multilinetextbox,
-                errors.productDescription ? globalStyles.errorInput : undefined,
-              ]}
-              maxLength={1000}
+              style={styles.multilinetextbox}
             />
-            <Text style={styles.characterCount}>
-              {productDescription.length}/1000 characters
-            </Text>
-            {errors.productDescription && (
-              <Text style={globalStyles.errorText}>
-                {errors.productDescription}
-              </Text>
-            )}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Category *</Text>
+              <Text style={styles.label}>Category</Text>
               <View style={styles.categoryContainer}>
                 <ModalSelector
                   data={allCategories.map((cat: any) => ({
@@ -757,310 +451,219 @@ const AdminProductUpdation = () => {
                       color={colors.primary}
                     />
                   </View>
-                  {errors.category && (
-                    <Text style={globalStyles.errorText}>
-                      {errors.category}
-                    </Text>
-                  )}
                 </ModalSelector>
               </View>
             </View>
-            <Text style={styles.label}>Stock *</Text>
+            <Text style={styles.label}>Stock</Text>
             <CustomTextInput
-              setValue={handleStockChange}
+              setValue={setStock}
               value={stock}
               onPress={() => {}}
-              placeholder="e.g., 100"
+              placeholder="Enter available stock"
               keyboardType="numeric"
-              style={errors.stock ? globalStyles.errorInput : undefined}
-              maxLength={5}
             />
-            {errors.stock && (
-              <Text style={globalStyles.errorText}>{errors.stock}</Text>
-            )}
 
-            <Text style={styles.label}>Price * (₹)</Text>
+            <Text style={styles.label}>Price</Text>
             <CustomTextInput
-              setValue={handlePriceChange}
+              setValue={setPrice}
               value={price}
               onPress={() => {}}
-              placeholder="e.g., 2999.99"
-              keyboardType="decimal-pad"
-              style={errors.price ? globalStyles.errorInput : undefined}
-              maxLength={10}
+              placeholder="Enter price per unit"
+              keyboardType="numeric"
             />
-            {errors.price && (
-              <Text style={globalStyles.errorText}>{errors.price}</Text>
-            )}
 
-            <Text style={styles.label}>Discount Price (₹)</Text>
+            <Text style={styles.label}>Discount Price</Text>
             <CustomTextInput
-              setValue={handleDiscountPriceChange}
+              setValue={setDiscountPrice}
               value={discountPrice}
               onPress={() => {}}
-              placeholder="e.g., 2499.99 (optional - must be less than original price)"
-              keyboardType="decimal-pad"
-              style={errors.discountPrice ? globalStyles.errorInput : undefined}
-              maxLength={10}
+              placeholder="Enter the Discount Price"
+              keyboardType="numeric"
             />
-            {errors.discountPrice && (
-              <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
-            )}
 
-            <Text style={styles.label}>Minimum Order Quantity</Text>
+            {/* <Text style={styles.label}>Discount Price</Text>
             <CustomTextInput
-              setValue={handleMinOrderQuantityChange}
+              setValue={setDiscountPrice}
+              value={discountPrice}
+              onPress={() => {}}
+              placeholder="Enter the discount price"
+              keyboardType="numeric"
+            /> */}
+            <Text style={styles.label}>Minimum Order Qunatity:</Text>
+            <CustomTextInput
+              setValue={setMinimumOrderQuantity}
               value={minimumOrderQunatity}
               onPress={() => {}}
-              placeholder="e.g., 1 (optional - leave empty for no minimum)"
+              placeholder="Enter the minimum order quantity"
               keyboardType="numeric"
-              style={
-                errors.minimumOrderQunatity
-                  ? globalStyles.errorInput
-                  : undefined
-              }
-              maxLength={4}
             />
-            {errors.minimumOrderQunatity && (
-              <Text style={globalStyles.errorText}>
-                {errors.minimumOrderQunatity}
+            <Text style={[styles.label, { paddingBottom: 8 }]}>Add Color</Text>
+            <View
+              style={[
+                styles.categoryStyles,
+                {
+                  height: 40,
+                  justifyContent: "center",
+                  // borderColor: colors.primary,
+                  // borderWidth: 1,
+                  borderRadius: 8,
+                },
+              ]}
+            >
+              <CustomTextInput
+                setValue={setColor}
+                value={color}
+                onPress={() => {}}
+                placeholder="Add color"
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[globalStyles.mt_3]}>
+              <Text style={[globalStyles.size_16, globalStyles.mb_3]}>
+                Pick the date and time when the discount starts and ends.
               </Text>
-            )}
+              <View
+                style={[
+                  globalStyles.flexRow,
+                  globalStyles.justifyContentBetween,
+                ]}
+              >
+                {/* <View style={utilitiesStyles.flex_1}>
+                  <Text style={[styles.label, globalStyles.mt_0]}>Date: *</Text>
+                  {Platform.OS === "web" ? (
+                    <input
+                      type="date"
+                      style={globalStyles.webDateInput}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={globalStyles.dateInput}
+                      onPress={() => setShowDatePicker(true)}
+                    >
+                      <Text>{date}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={new Date(date)}
+                      mode="date"
+                      display="default"
+                      onChange={onDateChange}
+                    />
+                  )}
+                </View>
 
+                <View style={[utilitiesStyles.flex_1, globalStyles.pl_3]}>
+                  <Text style={[styles.label, globalStyles.mt_0]}>Time: *</Text>
+                  <View style={globalStyles.timeContainer}>
+                    <TextInput
+                      style={globalStyles.timeInput}
+                      placeholder="HH"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={hours}
+                      onChangeText={setHours}
+                    />
+                    <Text>:</Text>
+                    <TextInput
+                      style={globalStyles.timeInput}
+                      placeholder="MM"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={minutes}
+                      onChangeText={setMinutes}
+                    />
+
+                    <Picker
+                      selectedValue={period}
+                      style={globalStyles.picker_sm}
+                      onValueChange={(itemValue) => setPeriod(itemValue)}
+                    >
+                      <Picker.Item label="AM" value="am" />
+                      <Picker.Item label="PM" value="pm" />
+                    </Picker>
+                  </View>
+                </View> */}
+              </View>
+            </View>
             <View style={styles.checkBox}>
               <CheckBox
-                checked={isColorsAvailable}
-                onPress={() => {
-                  setIsColorsAvailable(!isColorsAvailable);
-                  if (!isColorsAvailable) {
-                    setSelectedColors([]);
-                  }
-                }}
+                checked={isChecked}
+                onPress={() => setIsChecked(!isChecked)}
               />
-              <Text>Colors Available?</Text>
+              <Text>Is returnable?</Text>
             </View>
-            {!newProduct && selectedColors.length > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginTop: 10,
-                }}
-              >
-                {selectedColors.map((color: any, index: any) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: 20,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      margin: 4,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: color.hex || color.colorCode,
-                        marginRight: 6,
-                      }}
-                    />
-                    <Text>{color.colorName || color.name}</Text>
-                  </View>
-                ))}
+            {/* <Text style={styles.tableHeading}>
+              QTY Actual Price Discounted Price
+            </Text>
+            {offerPrice.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.qty}
+                  //onChangeText={}
+                  placeholder="QTY"
+                />
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.actualPrice}
+                  //onChangeText={}
+                  placeholder="Price"
+                />
+                <TextInput
+                  style={styles.tableInput}
+                  value={item.discountPrice}
+                  //onChangeText={}
+                  placeholder="Discounted"
+                />
+
+                {index === offerPrice.length - 1 && (
+                  <TouchableOpacity onPress={addNewPrice}>
+                    <Ionicons name="add" size={24} color="green" />
+                  </TouchableOpacity>
+                )}
               </View>
-            )}
-            {isColorsAvailable && (
-              <>
-                <Text style={styles.label}>Select Color</Text>
-                <View style={styles.categoryContainer}>
+            ))} */}
+            <Text style={[styles.label, globalStyles.mt_4]}>
+              Product Images
+            </Text>
+            <Text style={styles.subLabel}>
+              Upload up to {MAX_IMAGES} images
+            </Text>
+
+            <View style={styles.imageContainer}>
+              {/* Display existing images */}
+              {productImages.map((img: any, index: any) => (
+                <View key={`img-${index}`} style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: img.uri }}
+                    style={styles.productImage}
+                  />
                   <TouchableOpacity
-                    style={styles.categorySelector}
-                    onPress={() => setShowColorModal(true)}
+                    style={styles.removeButton}
+                    onPress={() => removeImage(index)}
                   >
-                    <View style={styles.selectedColorsDisplay}>
-                      {selectedColors.length > 0 && (
-                        <View style={styles.selectedColorCircles}>
-                          {selectedColors
-                            .slice(0, 3)
-                            .map((colorHex: any, index: any) => (
-                              <View
-                                key={index}
-                                style={[
-                                  styles.smallColorCircle,
-                                  {
-                                    backgroundColor:
-                                      colorHex.hex || colorHex.colorCode,
-                                  },
-                                ]}
-                              />
-                            ))}
-                          {selectedColors.length > 3 && (
-                            <View style={styles.moreColorsIndicator}>
-                              <Text style={styles.moreColorsText}>
-                                +{selectedColors.length - 3}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      )}
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          {
-                            color:
-                              selectedColors.length > 0
-                                ? selectedColors.map((c: any) => c.hex)
-                                : colors.slateGrey,
-                          },
-                        ]}
-                      >
-                        {getSelectedColorsText()}
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-down-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
+                    <Ionicons name="close-circle" size={20} color="red" />
                   </TouchableOpacity>
                 </View>
-                <Modal
-                  visible={showColorModal}
-                  transparent={true}
-                  animationType="slide"
-                  onRequestClose={() => setShowColorModal(false)}
-                >
-                  <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                      <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Select Colors</Text>
-                        <TouchableOpacity
-                          onPress={() => setShowColorModal(false)}
-                          style={styles.closeButton}
-                        >
-                          <Ionicons
-                            name="close"
-                            size={24}
-                            color={colors.black}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <ScrollView style={styles.colorListContainer}>
-                        {predefinedColors.map((color, index) => {
-                          const isSelected = selectedColors.some(
-                            (selectedColor: any) =>
-                              (selectedColor.hex || selectedColor.colorCode) ===
-                                color.hex ||
-                              (selectedColor.name ||
-                                selectedColor.colorName) === color.name
-                          );
+              ))}
 
-                          return (
-                            <TouchableOpacity
-                              key={index}
-                              style={styles.colorOptionRow}
-                              onPress={() =>
-                                handleColorSelection(color.hex, color.name)
-                              }
-                            >
-                              <View style={styles.colorOptionContent}>
-                                <CheckBox
-                                  checked={isSelected}
-                                  onPress={() =>
-                                    handleColorSelection(color.hex, color.name)
-                                  }
-                                />
-                                <View
-                                  style={[
-                                    styles.colorCircle,
-                                    { backgroundColor: color.hex },
-                                  ]}
-                                />
-                                <Text style={styles.colorNameText}>
-                                  {color.name} ({color.hex})
-                                </Text>
-                              </View>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
-
-                      <View style={styles.modalFooter}>
-                        <TouchableOpacity
-                          style={styles.clearButton}
-                          onPress={() => setSelectedColors([])}
-                        >
-                          <Text style={styles.clearButtonText}>Clear All</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.doneButton}
-                          onPress={() => setShowColorModal(false)}
-                        >
-                          <Text style={styles.doneButtonText}>Done</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </Modal>
-              </>
-            )}
-          </View>
-          <View style={styles.checkBox}>
-            <CheckBox
-              checked={isChecked}
-              onPress={() => setIsChecked(!isChecked)}
-            />
-            <Text>Returnable?</Text>
-            <CheckBox
-              checked={isAgeRestricted}
-              onPress={() => setIsAgeRestricted(!isAgeRestricted)}
-            />
-            <Text>Age Restricted?</Text>
-          </View>
-          {/* <View style={styles.checkBox}>
-           
-          </View> */}
-
-          <Text style={[styles.label, globalStyles.mt_4]}>Product Images</Text>
-          <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
-
-          <View style={styles.imageContainer}>
-            {/* Display existing images */}
-            {productImages.map((img: any, index: any) => (
-              <View key={`img-${index}`} style={styles.imageWrapper}>
-                <Image source={{ uri: img.uri }} style={styles.productImage} />
+              {/* Add image placeholders */}
+              {Array.from({
+                length: MAX_IMAGES - productImages.length,
+              }).map((_, index) => (
                 <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index)}
+                  key={`placeholder-${index}`}
+                  style={styles.imagePlaceholder}
+                  onPress={showImageOptions}
                 >
-                  <Ionicons name="close-circle" size={20} color="red" />
+                  <Text style={styles.plus}>+</Text>
                 </TouchableOpacity>
-              </View>
-            ))}
-
-            {/* Add image placeholders */}
-            {Array.from({
-              length: MAX_IMAGES - productImages.length,
-            }).map((_, index) => (
-              <TouchableOpacity
-                key={`placeholder-${index}`}
-                style={styles.imagePlaceholder}
-                onPress={showImageOptions}
-              >
-                <Text style={styles.plus}>+</Text>
-              </TouchableOpacity>
-            ))}
+              ))}
+            </View>
           </View>
-
-          {newProduct && errors.productImages && (
-            <Text style={globalStyles.errorText}>{errors.productImages}</Text>
-          )}
-          {/* </View> */}
         </ScrollView>
 
         <View
@@ -1107,7 +710,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "bold",
-    marginTop: 14,
+    marginTop: 16,
     marginBottom: 4,
   },
   subLabel: {
@@ -1247,7 +850,6 @@ const styles = StyleSheet.create({
   checkBox: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: -16,
   },
   addImageButton: {
     borderWidth: 1,
@@ -1293,204 +895,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.7)",
     zIndex: 1000,
-  },
-  colorScrollView: {
-    maxHeight: 300,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-  },
-  colorOptionContainer: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lightgrey,
-  },
-  colorCheckboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  colorPreview: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginLeft: 10,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-  },
-  colorText: {
-    fontSize: 14,
-    color: colors.black,
-    flex: 1,
-  },
-  selectedColorsContainer: {
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: colors.offWhite,
-    borderRadius: 8,
-  },
-  selectedColorsLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 10,
-  },
-  selectedColorsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  selectedColorChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.white,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-  },
-  selectedColorPreview: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 5,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-  },
-  selectedColorName: {
-    fontSize: 12,
-    color: colors.black,
-  },
-  selectedColorsDisplay: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  selectedColorCircles: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  smallColorCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 4,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-  },
-  moreColorsIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: colors.lightgrey,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  moreColorsText: {
-    fontSize: 8,
-    color: colors.black,
-    fontWeight: "bold",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    backgroundColor: colors.white,
-    borderRadius: 10,
-    width: "90%",
-    maxHeight: "80%",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lightgrey,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.black,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  colorListContainer: {
-    maxHeight: 400,
-    paddingHorizontal: 16,
-  },
-  colorOptionRow: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.lightgrey,
-  },
-  colorOptionContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  colorCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginLeft: 12,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-  },
-  colorNameText: {
-    fontSize: 14,
-    color: colors.black,
-    flex: 1,
-  },
-  modalFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.lightgrey,
-  },
-  clearButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  clearButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  doneButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-  },
-  doneButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  characterCount: {
-    fontSize: 12,
-    color: colors.darkGray,
-    textAlign: "right",
-    marginTop: 4,
-    marginBottom: 8,
   },
 });
 

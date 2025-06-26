@@ -25,12 +25,6 @@ import styles from "./searchStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/components/Footer";
 import PageLayout from "../pageLayoutProps";
-import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
-import { showErrorAlert } from "../config/showErrorAlert";
-import {
-  SEARCH_QUERY_REQUIRED_MESSAGE,
-} from "../config/customErrorMessages";
-
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
@@ -142,24 +136,20 @@ const SearchScreen = () => {
 
   // Fix 3: Make handleSearch async and add error handling
   const handleSearch = useCallback(async () => {
-  if (!searchQuery.trim()) {
-      showErrorAlert({
-        title: "Nothing to Search",
-        message: SEARCH_QUERY_REQUIRED_MESSAGE,
-      });
-      return;
-    }
+    if (searchQuery.trim()) {
+      try {
+        // Save to recent searches
+        await saveSearchToHistory(searchQuery);
 
-    try {
-      await saveSearchToHistory(searchQuery);
-
-      redirectToPage(containers.searchResultsScreenScreen, {
-        query: searchQuery,
-      });
-    } catch (error) {
-      console.error("Error in handleSearch:", error);
+        // Navigate to results screen
+        redirectToPage(containers.searchResultsScreenScreen, {
+          query: searchQuery,
+        });
+      } catch (error) {
+        console.error("Error in handleSearch:", error);
+      }
     }
-  }, [searchQuery, recentSearches]);
+  }, [searchQuery, recentSearches]); // Add recentSearches to dependencies
 
   // Remove search from history
   const removeSearchFromHistory = async (searchText: any) => {
@@ -352,23 +342,21 @@ const SearchScreen = () => {
       headerComponent={<Header headerText={"Search"} />}
       footerComponent={<Footer activeTab="search" />}
     >
-      <KeyBoardWrapper>
-        <View style={styles.container}>
-          {/* <Header headerText={"Search"} /> */}
+      <View style={styles.container}>
+        {/* <Header headerText={"Search"} /> */}
 
-          <View style={styles.searchBarContainer}>
-            <SearchBar
-              placeholder="Search..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              onPress={handleSearch}
-            />
-          </View>
-
-          {renderMainContent()}
+        <View style={styles.searchBarContainer}>
+          <SearchBar
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            onPress={handleSearch}
+          />
         </View>
-      </KeyBoardWrapper>
+
+        {renderMainContent()}
+      </View>
     </PageLayout>
     /*  <Footer activeTab = "search"/>
      </SafeAreaView> */

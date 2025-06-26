@@ -13,13 +13,13 @@ export const UserAPI = {
     return response;
   },
 
-  userEditProfile: async (id: any, body: any) => {
-    console.log("Sending body to API:", body, id);
+  userEditProfile: async (phoneNumber: any, body: any) => {
+    console.log("Sending body to API:", body);
     const formDataAxios = createAxiosInstance("formdata");
 
     try {
       const response = await formDataAxios.put(
-        `/users/updateProfile/${id}`,
+        `/users/updateProfile/${phoneNumber}`,
         body
       );
       return response;
@@ -60,16 +60,6 @@ export const UserAPI = {
     return response;
   },
 
-  getUserById: async (id: any) => {
-    console.log("id", id);
-    const response = await jsonAxios.get(`/users/getUserById/${id}`);
-    return response;
-  },
-  getUserByEmail: async (email: any) => {
-    console.log("email", email);
-    const response = await jsonAxios.get(`/users/getUserByEmail/${email}`);
-    return response;
-  },
   // changePassword: async (phoneNumber: any, body: any) => {
   //   const response = await axiosInstance.put(
   //     `/users/changePassword/${phoneNumber}`,

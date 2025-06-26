@@ -14,7 +14,10 @@ import styles from "./billingAddressScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
+import colors from "../config/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import OrderSummary from "@/components/OrderSummary";
+import CartItem from "../cartScreen/components/CartItem";
 import { useSelector } from "react-redux";
 import { addressService } from "@/services/addressService";
 import Button from "@/components/commonComponents/Button";
@@ -249,7 +252,7 @@ const addBillingAddressScreen = () => {
           headerText={
             isEditMode
               ? UPDATE_BILLING_ADDRESS_SCREEN_TITLE
-              : ADD_BILLING_ADDRESS_SCREEN_TITLE
+              : ADD_BILLING_ADDRESS_SCREEN_TITLE 
           }
         />
       }

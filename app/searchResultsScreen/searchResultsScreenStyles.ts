@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContainer: {
-    padding: 8,
+    // padding: 8,
     paddingTop: 0,
     
   },

@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Image,
 } from "react-native";
 import colors from "../app/config/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -14,117 +13,68 @@ import Carousel from "react-native-reanimated-carousel";
 
 const { width } = Dimensions.get("window");
 
-// const bannerData = [
-//   {
-//     title: "New Year Eve Special discount!",
-//     discount: "40-60% Discount",
-//     description: "Limited time offers on all products",
-//     backgroundColor: colors.bannerPurple,
-//   },
-//   {
-//     title: "Flash Sale This Weekend!",
-//     discount: "Up to 70% Off!",
-//     description: "Don't miss out on hot deals!",
-//     backgroundColor: colors.starColor,
-//   },
-//   {
-//     title: "Clearance Sale!",
-//     discount: "upto 50% Discount",
-//     description: "Stock Clearance on selected items!",
-//     backgroundColor: colors.black,
-//   },
-// ];
+const bannerData = [
+  {
+    title: "New Year Eve Special discount!",
+    discount: "40-60% Discount",
+    description: "Limited time offers on all products",
+    backgroundColor: colors.bannerPurple,
+  },
+  {
+    title: "Flash Sale This Weekend!",
+    discount: "Up to 70% Off!",
+    description: "Don't miss out on hot deals!",
+    backgroundColor: colors.starColor,
+  },
+  {
+    title: "Clearance Sale!",
+    discount: "upto 50% Discount",
+    description: "Stock Clearance on selected items!",
+    backgroundColor: colors.black,
+  },
+];
 
-function HeroBanner({
-  bannerData = [], 
-  onBannerPress, 
-  showIndicators = true, 
-  autoPlay = true, 
-  autoPlayInterval = 5000, 
-  height = 230,
-  bannerWidth = width - 32,
-  borderRadius = 20,
-  loop = true,
-  activeIndicatorStyle = {}, 
-  scrollAnimationDuration = 300, 
-}) {
+function HeroBanner(props) {
   const [currentIndex, setCurrentIndex] = useState(0);
-
-    const defaultBannerData = [
-    {
-      id:1, 
-      image: require('../assets/Carousal-1.png')
-    },
-    {
-      id:2, 
-      image: require('../assets/Carousal-2.png')
-    },
-    {
-      id:3, 
-      image: require('../assets/Carousal-3.png')
-    },
-  ];
-
-  const renderBanner = bannerData.length > 0 ? bannerData: defaultBannerData;
-
-  const handlePress = (item, index) => {
-    if(onBannerPress) {
-      onBannerPress(item, index);
-    } else {
-      redirectToPage(containers.offersScreenScreen);
-    }
-  };
-
-  if(renderBanner.length === 0){
-    return null;
-  }
-
   return (
     <>
       <Carousel
-        width={bannerWidth}
-        height={height}
-        data={renderBanner}
-        renderItem={({item, index}) => (
-          <TouchableOpacity
-            onPress={() => handlePress(item,index)}
-            style={styles.bannerWrapper}
+        width={width - 32}
+        height={230}
+        data={bannerData}
+        onSnapToItem={(index) => setCurrentIndex(index)}
+        scrollAnimationDuration={300}
+        renderItem={({ item }) => (
+          <View
+            style={[styles.banner, { backgroundColor: item.backgroundColor }]}
           >
-          <Image
-            source = {item.image}
-            style={[
-              styles.bannerImage,
-              {height, borderRadius},
-            ]} 
-          />
-          </TouchableOpacity>
+            <Text style={styles.bannerTitle}>{item.title}</Text>
+            <Text style={styles.bannerDiscount}>{item.discount}</Text>
+            <Text style={styles.bannerText}>{item.description}</Text>
+            <TouchableOpacity
+              style={styles.shopNowButton}
+              onPress={() => redirectToPage(containers.offersScreenScreen)}
+            >
+              <Text style={styles.shopNowText}>Shop Now</Text>
+            </TouchableOpacity>
+          </View>
         )}
-        onSnapToItem= {setCurrentIndex}
-        scrollAnimationDuration={scrollAnimationDuration}
-        autoPlay = {autoPlay}
-        autoPlayInterval={autoPlayInterval}
-        loop={loop}
-      //   renderItem={({ item }) => (
-      //     <View
-      //       style={[styles.banner, { backgroundColor: item.backgroundColor }]}
-      //     >
-      //       <Text style={styles.bannerTitle}>{item.title}</Text>
-      //       <Text style={styles.bannerDiscount}>{item.discount}</Text>
-      //       <Text style={styles.bannerText}>{item.description}</Text>
-      //       <TouchableOpacity
-      //         style={styles.shopNowButton}
-      //         onPress={() => redirectToPage(containers.offersScreenScreen)}
-      //       >
-      //         <Text style={styles.shopNowText}>Shop Now</Text>
-      //       </TouchableOpacity>
-      //     </View>
-      //   )}
-      //   loop
-      //   autoPlayInterval={5000}
-      //   autoPlay
+        loop
+        autoPlayInterval={5000}
+        autoPlay
       />
-   
-      {/* <View style={styles.indicatorContainer}>
+
+      {/* <View style={styles.banner}>
+        <Text style={styles.bannerTitle}>New Year Eve Special Discount!</Text>
+        <Text style={styles.bannerDiscount}>40-60% Discount</Text>
+        <Text style={styles.bannerText}>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit
+        </Text>
+        <TouchableOpacity style={styles.shopNowButton} onPress={(e)=>{redirectToPage(containers.offersScreenScreen)}}>
+          <Text style={styles.shopNowText}>Shop Now</Text>
+        </TouchableOpacity>
+      </View> */}
+      <View style={styles.indicatorContainer}>
         {bannerData.map((banner, index) => {
           const isActive = currentIndex === index;
           return (
@@ -134,28 +84,10 @@ function HeroBanner({
             />
           );
         })}
-      </View> */}
-      {showIndicators && renderBanner.length>1&&(
-        <View style={styles.indicatorContainer}>
-            {renderBanner.map((banner,index) => {
-              const isActive = index === currentIndex;
-              return(
-                <View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    isActive && [styles.activeIndicator, activeIndicatorStyle]
-                  ]}
-                />
-              );
-            }
-            
-            )}
-        </View>
-      )}
+      </View>
     </>
   );
-};
+}
 const styles = StyleSheet.create({
   banner: {
     borderRadius: 20,
@@ -164,48 +96,41 @@ const styles = StyleSheet.create({
     //height: 230,
     width: "100%",
   },
-  bannerWrapper:{
-    width:"100%"
+  bannerTitle: {
+    color: colors.white,
+    fontSize: 17,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
   },
-  bannerImage:{
-    width: "100%",
-    borderRadius: 20,
+  bannerDiscount: {
+    color: colors.white,
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
-  // bannerTitle: {
-  //   color: colors.white,
-  //   fontSize: 17,
-  //   fontWeight: "bold",
-  //   textAlign: "center",
-  //   marginBottom: 10,
-  // },
-  // bannerDiscount: {
-  //   color: colors.white,
-  //   fontSize: 28,
-  //   fontWeight: "bold",
-  //   marginBottom: 10,
-  // },
-  // bannerText: {
-  //   color: colors.white,
-  //   fontSize: 16,
-  //   textAlign: "center",
-  //   marginBottom: 20,
-  // },
-  // shopNowButton: {
-  //   backgroundColor: "rgba(255, 255, 255, 0.2)",
-  //   paddingHorizontal: 30,
-  //   paddingVertical: 10,
-  //   borderRadius: 25,
-  // },
-  // shopNowText: {
-  //   color: colors.white,
-  //   fontSize: 16,
-  //   fontWeight: "500",
-  // },
+  bannerText: {
+    color: colors.white,
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  shopNowButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    borderRadius: 25,
+  },
+  shopNowText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "500",
+  },
 
   indicatorContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 16,
+    marginTop: 12,
   },
   indicator: {
     width: 40,

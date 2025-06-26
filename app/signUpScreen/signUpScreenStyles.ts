@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import colors from "../config/colors";
+import { color } from "react-native-elements/dist/helpers";
 
 const styles = StyleSheet.create({
   container: {
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: colors.lightgrey,
   },
-  passwordContainer: {
+  passwordContainer:{
     paddingTop: 16,
   },
 });

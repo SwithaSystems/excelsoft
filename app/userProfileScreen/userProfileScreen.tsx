@@ -1,4 +1,4 @@
-import { USER_PROFILE_SCREEN_TITLE } from "./../config/stringLiterals";
+import { USER_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -21,19 +21,14 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "../pageLayoutProps";
 import Footer from "@/components/Footer";
-import {
-  ACCOUNT_DELETED,
-  ACCOUNT_DELETION_ERROR,
-} from "../config/customErrorMessages";
-import { showErrorAlert } from "../config/showErrorAlert";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldShowBanner: true, // Add this property
+    shouldShowList: true, // Add this property
   }),
 });
 
@@ -63,6 +58,7 @@ const UserProfileScreen = () => {
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
     Feedback: containers.AppReviewScreenScreen,
+    // Admin: containers.AdminDashboardScreen,
   };
 
   // useEffect(() => {
@@ -89,10 +85,9 @@ const UserProfileScreen = () => {
       if (!userData_redux?.id) return;
 
       try {
-        const response = await UserAPI.getUserById(
-          userData_redux?.id || userData_redux?._id
+        const response = await UserAPI.getUserByPhonenumber(
+          userData_redux?.phone
         );
-        console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -159,10 +154,7 @@ const UserProfileScreen = () => {
       hasHeader={true}
       hasFooter={true}
       headerComponent={
-        <Header
-          headerText={USER_PROFILE_SCREEN_TITLE}
-          needResetNavigation={true}
-        />
+        <Header headerText={USER_PROFILE_SCREEN_TITLE} needResetNavigation={true} />
       }
       footerComponent={<Footer activeTab="menu" />}
       scrollable={true}

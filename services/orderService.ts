@@ -138,32 +138,4 @@ export const orderService = {
       throw error;
     }
   },
-
-  getAllOrderStatuses: async (): Promise<{ statuses: string[] }> => {
-    try {
-      const response = await jsonAxios.get(`${API_BASE_URL}/orders/statuses`);
-      console.log("response of order status", response);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching order statuses", error);
-      throw error;
-    }
-  },
-
-  updateOrderStatus: async (orderPayload: Partial<Order>): Promise<Order> => {
-    console.log("orderPayload", orderPayload);
-    try {
-      const { _id, ...updateData } = orderPayload;
-
-      const response = await jsonAxios.put<Order>(
-        `${API_BASE_URL}/orders/${_id}/status`,
-        updateData
-      );
-      console.log(response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      throw error;
-    }
-  },
 };

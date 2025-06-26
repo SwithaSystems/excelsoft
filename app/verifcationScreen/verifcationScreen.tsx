@@ -20,23 +20,17 @@ import colors from "../config/colors";
 import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
-import { VERIFICATION_SCREEN_TITLE } from "./../config/stringLiterals";
+import { VERIFICATION_SCREEN_TITLE } from './../config/stringLiterals';
 
 const verifcationScreen = () => {
-  const {
-    userData,
-    from,
-    phoneNumber_forgetPwd,
-    phoneNumber_editAccount,
-    verificationType,
-  } = useLocalSearchParams();
+  const { userData, from, phoneNumber_forgetPwd, phoneNumber_editAccount } =
+    useLocalSearchParams();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
   const [parsedUserData, setParsedUserData] = useState(null);
   const inputRefs = useRef<TextInput[]>([]);
 
-  console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
+  console.log("from", from, userData, phoneNumber_forgetPwd);
 
   useEffect(() => {
     console.log("Source:", from);
@@ -53,8 +47,6 @@ const verifcationScreen = () => {
           setParsedUserData(parsed);
           if (parsed?.phone) {
             setPhoneNumber(parsed.phone);
-          } else if (parsed?.email) {
-            setEmail(parsed.email);
           } else {
             console.error("No phone number in userData");
           }
@@ -126,37 +118,20 @@ const verifcationScreen = () => {
     }
 
     try {
-      let res;
+      const res = await TwilioApi.verifyOtp({
+        phoneNumber,
+        OtpNumber,
+      });
 
-      if (verificationType === "email") {
-        res = await TwilioApi.verifyOtp_Email({
-          email: email,
-          OtpNumber,
-        });
-        console.log("Email OTP verification result:", res);
-      } else {
-        res = await TwilioApi.verifyOtp({
-          phoneNumber,
-          OtpNumber,
-        });
-        console.log("Phone OTP verification result:", res);
-      }
+      console.log("OTP verification result:", res);
 
-      // Check if verification was successful
-      // You need to check the actual response structure from your API
-      const isVerified =
-        res?.success === true ||
-        res?.data?.success === true ||
-        res === "verified successfully";
-
-      if (isVerified) {
+      if (res === "verified successfully") {
         if (from === "forgotPassword") {
           redirectToPage(containers.passwordResetScreenScreen, {
             phoneNumber,
           });
           return;
         }
-
         if (from === "verify") {
           redirectToPage(containers.editAccountInformationscreenScreen);
           return;
@@ -178,7 +153,7 @@ const verifcationScreen = () => {
             console.log("response from verify otp", response);
 
             if (response?.access_token && response?.user) {
-              Alert.alert("Success", "User successfully registered");
+              Alert.alert("User successfully registered");
               redirectToPage(containers.signInScreen);
             } else {
               Alert.alert("Registration Error", "Failed to register the user.");
@@ -186,55 +161,34 @@ const verifcationScreen = () => {
           } catch (registerError: any) {
             console.error("Registration Error:", registerError);
 
-            // Properly extract error message
-            let errorMessage = "Registration failed. Please try again.";
-
-            if (registerError?.response?.data?.message) {
-              errorMessage = registerError.response.data.message;
-            } else if (registerError?.message) {
-              errorMessage = registerError.message;
-            }
+            // Check for user already exists error
+            const message =
+              registerError?.response?.data?.message ||
+              "Registration failed. Please try again.";
 
             if (
-              typeof errorMessage === "string" &&
-              errorMessage.toLowerCase().includes("already exists")
+              typeof message === "string" &&
+              message.toLowerCase().includes("already exists")
             ) {
               Alert.alert(
                 "Registration Error",
                 "This phone number is already registered."
               );
             } else {
-              Alert.alert("Registration Error", errorMessage);
+              Alert.alert("Registration Error", message);
             }
           }
         }
       } else {
-        // Handle unsuccessful verification
-        let errorMessage = "Invalid OTP. Please try again.";
-
-        if (res?.data?.message) {
-          errorMessage = res.data.message;
-        }
-
-        Alert.alert("Verification Failed", errorMessage);
+        Alert.alert("Error", "Invalid OTP. Please try again.");
       }
     } catch (error: any) {
       console.error("OTP Verification Failed", error);
 
-      // FIX: Properly extract error message instead of passing entire error object
-      let errorMessage = "Verification failed. Please try again.";
-
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
-
-      Alert.alert("Verification Error", errorMessage);
+      Alert.alert("Verification Error", error);
     }
   };
+
   const handleResend = async () => {
     await TwilioApi.sendOtp({ phone: String(phoneNumber) });
     setCode(["", "", "", "", "", ""]);
