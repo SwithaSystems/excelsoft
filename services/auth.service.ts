@@ -20,6 +20,11 @@ export const authService = {
       // );
       await AsyncStorage.setItem("refreshtoken", response.data.refresh_token);
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      console.log(
+        'stored',
+        await AsyncStorage.getItem('token'),
+        await AsyncStorage.getItem('refreshtoken')
+      );
       return response.data;
     } catch (error) {
       throw error;
