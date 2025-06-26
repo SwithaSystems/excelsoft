@@ -48,10 +48,10 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
     async (config: InternalAxiosRequestConfig) => {
       try {
         const token = await AsyncStorage.getItem("token");
-        console.log("Token before setting", token);
+        // console.log("Token before setting", token);
         // const refreshToken = await AsyncStorage.getItem("refreshtoken");
-        await AsyncStorage.setItem("token", "expired");
-        console.log("Token after setting", token);
+        // await AsyncStorage.setItem("token", "expired");
+        // console.log("Token after setting", token);
         const isExcluded = EXCLUDED_APIS.some((url) =>
           config.url?.includes(url)
         );
