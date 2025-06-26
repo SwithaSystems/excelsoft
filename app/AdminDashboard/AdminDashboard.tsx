@@ -22,10 +22,8 @@ import AdminFooter from "@/components/AdminFooter";
 import { orderService } from "@/services/orderService";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import PageLayout from "../pageLayoutProps";
-import { router, useLocalSearchParams } from "expo-router";
 
 const AdminDashboard = () => {
-  const { refresh } = useLocalSearchParams();
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
   const [allOrders, setAllOrders] = React.useState<any>([]);
   const [loading, setLoading] = React.useState(true);
@@ -56,9 +54,6 @@ const AdminDashboard = () => {
 
   React.useEffect(() => {
     fetchData();
-    if (refresh === "true") {
-      router.replace("/AdminDashboard/AdminDashboard");
-    }
   }, [fetchData]);
 
   // Memoize expensive calculations
@@ -73,7 +68,7 @@ const AdminDashboard = () => {
     }
 
     const pendingOrders = allOrders.filter(
-      (order: any) => order.status !== "Delivered"
+      (order: any) => order.status !== "Order Delivered Successfully"
     );
 
     const recentOrders = allOrders
@@ -85,7 +80,7 @@ const AdminDashboard = () => {
       .slice(0, 3);
 
     const todayRevenue = allOrders
-      .filter((order: any) => order.status === "Delivered" || "Collected")
+      .filter((order: any) => order.status === "Order Delivered Successfully")
       .reduce((total: number, order: any) => total + order.totalAmount, 0);
 
     return {
@@ -105,11 +100,11 @@ const AdminDashboard = () => {
     switch (status) {
       case "Order Placed":
         return globalStyles.orderPlacedBadge;
-      case "Delivered":
+      case "Order Delivered Successfully":
         return globalStyles.orderCompletedBadge;
       case "Pending":
         return globalStyles.orderPendingBadge;
-      case "Cancelled":
+      case "Canceled":
         return globalStyles.orderCanceledBadge;
       default:
         return {};
@@ -301,22 +296,16 @@ const AdminDashboard = () => {
       scrollable
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={[
-            // globalStyles.sectionContent,
-            globalStyles.pt_0,
-          ]}
-        >
+        <View style={[
+            // globalStyles.sectionContent, 
+            globalStyles.pt_0
+          ]}>
           <Text style={styles.title}>Dashboard</Text>
 
           <View style={styles.metricsContainer}>
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons
-                  name="work-outline"
-                  size={24}
-                  color={colors.lushblue}
-                />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Total Orders</Text>
               </View>
               <View>
@@ -337,11 +326,7 @@ const AdminDashboard = () => {
 
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons
-                  name="work-outline"
-                  size={24}
-                  color={colors.lushblue}
-                />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Pending Orders</Text>
               </View>
               <View>
@@ -353,11 +338,7 @@ const AdminDashboard = () => {
 
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
-                <MaterialIcons
-                  name="work-outline"
-                  size={24}
-                  color={colors.lushblue}
-                />
+                <MaterialIcons name="work-outline" size={24} color={colors.lushblue} />
                 <Text style={styles.metricTitle}>Today's Revenue</Text>
               </View>
               <View>

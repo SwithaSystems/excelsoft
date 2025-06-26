@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  StyleSheet,
   TextInput,
+  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
 import styles from "./forgotPasswordScreenStyles";
@@ -18,94 +20,52 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { FORGOT_PASSWORD_SCREEN_TITLE } from "../config/stringLiterals";
-import { showErrorAlert } from "../config/showErrorAlert";
-import {
-  FIX_VALIDATION_ERRORS,
-} from "../config/customErrorMessages";
 
 const forgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
+  const [ModalOpen, setModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [mode, setMode] = useState("phone");
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
 
-  const [errors, setErrors] = useState<Partial<{ email?: string; phone?: string }>>({});
-
   const toggleMode = (selected: any) => {
     setMode(selected);
     setEmail("");
     setPhoneNumber("");
-    setErrors({});
-  };
-
-  const validateFields = () => {
-    const newErrors: { email?: string; phone?: string } = {};
-
-    if (mode === "email") {
-      if (!email.trim()) {
-        newErrors.email = "Email is required.";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        newErrors.email = "Enter a valid email address.";
-      }
-    } else if (mode === "phone") {
-      let cleanedPhone = phoneNumber.trim();
-      if (cleanedPhone.startsWith("0")) cleanedPhone = cleanedPhone.slice(1);
-
-      if (!cleanedPhone) {
-        newErrors.phone = "Phone number is required.";
-      } else if (!/^\d{10}$/.test(cleanedPhone)) {
-        newErrors.phone = "Enter a valid 10-digit phone number.";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleSendCode = async () => {
-    const isValid = validateFields();
-    if (!isValid) {
-      showErrorAlert({
-        title: "Let's fix that",
-        message: FIX_VALIDATION_ERRORS,
+    console.log("phoneNumber", phoneNumber);
+    console.log("user", user);
+
+    const phoneNumberwithCountryCode = `+${callingCode}${phoneNumber}`;
+    console.log("phoneNumberwithCountryCode", phoneNumberwithCountryCode);
+
+    if (user) {
+      await TwilioApi.sendOtp({ phone: phoneNumberwithCountryCode });
+      redirectToPage(containers.verifcationScreenScreen, {
+        phoneNumber_forgetPwd: phoneNumberwithCountryCode,
+        from: "forgotPassword",
       });
-      return;
-    }
-
-    const fullPhone = `+${callingCode}${phoneNumber}`;
-
-    if (mode === "phone") {
-      if (user) {
-        await TwilioApi.sendOtp({ phone: fullPhone });
-        redirectToPage(containers.verifcationScreenScreen, {
-          phoneNumber_forgetPwd: fullPhone,
-          from: "forgotPassword",
-        });
-      } else {
-        setModalOpen(true);
-      }
     } else {
-      // TODO: Implement forgot password for email, if required
-      console.log("Email forgot password not implemented.");
+      setModalOpen(true);
     }
   };
-
   useEffect(() => {
-    if (mode === "phone" && phoneNumber) {
-      UserAPI.getUserByPhonenumber(`+${callingCode}${phoneNumber}`)
-        .then((response) => {
-          setUser(response.data);
-        })
-        .catch(() => {
-          setUser(null);
-        });
-    }
+    const response = UserAPI.getUserByPhonenumber(
+      `+${callingCode}${phoneNumber}`
+    ).then((response) => {
+      console.log("response", response);
+      setUser(response.data);
+    });
   }, [phoneNumber]);
 
   return (
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={styles.container}>
+    //     <Header headerText={"Forgot Password"} />
     <PageLayout
       hasHeader
       hasFooter={false}
@@ -114,27 +74,42 @@ const forgotPasswordScreen = () => {
     >
       <KeyBoardWrapper>
         <View style={styles.sectionContainer}>
-          <Text>Please enter your email/phone number to reset your password.</Text>
-
+          <Text>
+            Please enter your email/phone number to reset your password.
+          </Text>
           <View style={styles.toggleContainer}>
+            {/* <Text style={styles.label}>Email Address/Phone Number</Text> */}
             <TouchableOpacity
-              style={[styles.toggleButton, mode === "phone" && styles.activeToggle]}
+              style={[
+                styles.toggleButton,
+                mode === "phone" && styles.activeToggle,
+              ]}
               onPress={() => toggleMode("phone")}
             >
-              <Text style={mode === "phone" ? styles.activeText : styles.inactiveText}>
+              <Text
+                style={
+                  mode === "phone" ? styles.activeText : styles.inactiveText
+                }
+              >
                 Phone
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.toggleButton, mode === "email" && styles.activeToggle]}
+              style={[
+                styles.toggleButton,
+                mode === "email" && styles.activeToggle,
+              ]}
               onPress={() => toggleMode("email")}
             >
-              <Text style={mode === "email" ? styles.activeText : styles.inactiveText}>
+              <Text
+                style={
+                  mode === "email" ? styles.activeText : styles.inactiveText
+                }
+              >
                 Email
               </Text>
             </TouchableOpacity>
           </View>
-
           {mode === "email" ? (
             <>
               <Text style={styles.label}>Email</Text>
@@ -143,19 +118,14 @@ const forgotPasswordScreen = () => {
                 placeholder="Enter your email address"
                 value={email}
                 onChangeText={(text) => {
-                  setEmail(text);
+                  setEmail(text); // Fallback for other text entries
                   setPhoneNumber("");
                 }}
-                onBlur={validateFields}
-                keyboardType="email-address"
               />
-              {errors.email && (
-                <Text style={globalStyles.errorText}>{errors.email}</Text>
-              )}
             </>
           ) : (
             <>
-              <Text style={styles.label}>Phone Number</Text>
+              <Text style={styles.label}> Phone Number</Text>
               <View style={styles.phoneInputContainer}>
                 <View style={styles.countryPickerContainer}>
                   <CountryPicker
@@ -180,17 +150,12 @@ const forgotPasswordScreen = () => {
                     setPhoneNumber(text);
                     setEmail("");
                   }}
-                  onBlur={validateFields}
                   maxLength={11}
                   keyboardType="phone-pad"
                 />
               </View>
-              {errors.phone && (
-                <Text style={globalStyles.errorText}>{errors.phone}</Text>
-              )}
             </>
           )}
-
           <Button
             title="Send Verification Code"
             style={styles.signInButton}
@@ -201,17 +166,22 @@ const forgotPasswordScreen = () => {
             style={styles.signInButton}
             onPress={() => redirectToPage(containers.signInScreen)}
           />
-
-          <ConfirmationModal
-            onClose={() => setModalOpen(false)}
-            isModalVisible={modalOpen}
-            text="Uh-oh! It seems that you have entered the email/phone that doesn’t exist! Let’s try again."
-            submitText="OK"
-            handleSubmit={() => setModalOpen(false)}
-            handleCancel={() => setModalOpen(false)}
-          />
         </View>
+        <ConfirmationModal
+          onClose={() => {
+            setModalOpen(false);
+          }}
+          isModalVisible={ModalOpen}
+          text="Uh-oh! It seems that you have entered the email/phone that doesn’t exist! Let’s try again. "
+          submitText="OK"
+          handleSubmit={() => setModalOpen(false)}
+          handleCancel={() => {
+            setModalOpen(false);
+          }}
+        />
+        {/* </View> */}
       </KeyBoardWrapper>
+      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

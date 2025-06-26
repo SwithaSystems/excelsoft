@@ -31,8 +31,6 @@ interface Props {
   disabled?: boolean;
   required?: boolean;
   onblur?: () => void;
-  style?: ViewStyle;
-  maxLength?: number;
 }
 
 export const CustomTextInput = (props: Props) => {
@@ -46,7 +44,6 @@ export const CustomTextInput = (props: Props) => {
         multiline={props.multiline}
         editable={!props.disabled}
         onBlur={props.onblur}
-        maxLength={props.maxLength}
         style={[
           {
             flex: 1,

@@ -36,14 +36,14 @@ export default CustomToastAlert;
 const styles = StyleSheet.create({
     toastContainer:{
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingBottom: 0,
+        justifyContent: 'flex-end',
+        paddingBottom: 100,
         width: '100%',
         height: height,
         zIndex: 1,
     },
     container:{
-        backgroundColor: colors.secondary,
+        backgroundColor: colors.white,
         padding: 10,
         borderRadius: 50,
         width: '70%',

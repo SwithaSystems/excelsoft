@@ -1,4 +1,4 @@
-import { MY_ORDERS_SCREEN_TITLE } from "./../config/stringLiterals";
+import { MY_ORDERS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -72,18 +72,16 @@ const myOrderScreen = () => {
         <FlatList
           ListHeaderComponent={
             <>
-              <View
-                style={[
-                  // globalStyles.sectionContent,
-                  globalStyles.pt_0,
-                ]}
-              >
+              <View style={[
+                // globalStyles.sectionContent, 
+                globalStyles.pt_0
+              ]}>
                 <Text style={styles.yourLastOrders}>Your last orders</Text>
 
                 <FlatList
                   data={orders.map((order) => ({
                     orderId: `#ORD-${order.orderNumber}`,
-                    date: new Date(order.deliveryDate).toLocaleString(),
+                    date: new Date(order.createdAt).toLocaleString(),
                     status: order?.status,
                     totalItems: order.products?.length ?? 0,
                     subtotal: order.totalAmount.toFixed(2),

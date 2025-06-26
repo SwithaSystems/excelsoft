@@ -5,29 +5,16 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 
 const OrderTimeline = (props) => {
   const statusList = props.statusList;
-  const reason = props.reason;
-  // const from = props.from;
   const currentStatus = statusList.indexOf(props?.actualStatus);
-  const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
   console.log("currentStatus", currentStatus);
   console.log("statusList", statusList);
 
   const icons = [
-    "cart-outline",
-    "time-outline",
-    "card-outline",
-    "shield-checkmark-outline",
-    "construct-outline",
-    "checkmark-circle-outline",
-    "car-outline",
-    "home-outline",
+    "document-text-outline",
     "cube-outline",
-    "close-circle-outline",
-    "warning-outline",
-    "ban-outline",
-    "alert-circle-outline",
-    "swap-horizontal-outline",
-    "cash-outline",
+    "car-outline",
+    "location-outline",
+    "checkmark-circle-outline",
   ];
 
   return (
@@ -35,11 +22,7 @@ const OrderTimeline = (props) => {
       <FlatList
         data={statusList}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => {
-          const isCurrent = index === currentStatus;
-          const isNegative = negativeStatuses.includes(item);
-
-          return(
+        renderItem={({ item, index }) => (
           <View style={styles.itemContainer}>
             {/* Timeline Circle */}
             <View
@@ -56,12 +39,11 @@ const OrderTimeline = (props) => {
               {/*Icon for each status */}
               <Ionicons
                 name={icons[index]}
-                size={24}
+                size={22}
                 color={index <= currentStatus ? colors.white : colors.white}
               />
             </View>
             {/* Status Text */}
-            <View style={{flexDirection:"column"}}>
             <Text
               style={[
                 styles.statusText,
@@ -75,17 +57,6 @@ const OrderTimeline = (props) => {
             >
               {item}
             </Text>
-
-            {isCurrent && isNegative && reason ? (
-              <Text style={styles.reasonText}>
-                {/* {from === "admin"
-                  ? `You Reasoned: ${reason}`
-                  : `Seller Reasoned: ${reason}`} */}
-                  {reason}
-              </Text>
-            ): null
-          }
-            </View>
             {/* Connecting Line */}
             {index !== statusList.length && (
               <View
@@ -95,16 +66,13 @@ const OrderTimeline = (props) => {
                     backgroundColor:
                       index < currentStatus
                         ? colors.primary
-                        : index === currentStatus && index === statusList.length - 1
-                        ? colors.primary
                         : colors.secondaryText,
                   },
                 ]}
               />
             )}
           </View>
-          );
-        }}
+        )}
       />
     </View>
   );
@@ -120,7 +88,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 90,
     position: "relative",
-    marginTop: 16,
   },
   circle: {
     width: 40,
@@ -139,17 +106,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 18,
     top: 40,
-    height: 90,
+    height: 60,
     width: 1,
     backgroundColor: colors.black,
   },
-  reasonText: {
-    fontSize: 14,
-    fontStyle: "italic",
-    fontWeight: "400",
-    color: colors.red,
-    maxWidth:250,
-  }
 });
 
 export default OrderTimeline;
