@@ -73,14 +73,15 @@ const editProfileScreen = () => {
     const getUser = async () => {
       console.log("userData", userData?.id);
       if (userData) {
-        const user = await UserAPI.getUserById(userData?.id);
+        const user = await UserAPI.getUserById(
+          userData?._id ? userData?._id : userData?.id
+        );
         console.log("user", user.data);
         if (user) {
           setUser(user.data);
           setFirstName(user?.data?.firstName);
           setLastName(user?.data?.lastName);
           setPhone(user?.data?.phone);
-          // setDateOfBirth(user.data.dateOfBirth);
           setEmail(user.data?.email || "No mail added");
           setProfileImage(user.data.profileImageUrl);
           if (user.data.dateOfBirth) {
@@ -195,13 +196,6 @@ const editProfileScreen = () => {
       return;
     }
 
-    // if (
-    //   !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateOfBirth)
-    // ) {
-    //   alert("Invalid date format. Use MM/DD/YYYY");
-    //   return;
-    // }
-
     const formData = new FormData();
 
     console.log("profileImage", profileImage);
@@ -267,7 +261,6 @@ const editProfileScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable={false}
       hasHeader
@@ -352,105 +345,16 @@ const editProfileScreen = () => {
                       style={globalStyles.input}
                       placeholder="--/--/----"
                       value={dateOfBirth}
-                      editable={false} // Make it read-only
-                      pointerEvents="none" // Prevents keyboard popup
+                      editable={false}
+                      pointerEvents="none"
                     />
                   </TouchableOpacity>
                 </View>
               </View>
-
-              {/* <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="phone"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <Text style={globalStyles.userInputLabel}>Phone</Text>
-                  <CustomTextInput
-                    disabled={true}
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="phone number"
-                    value={user ? user.phone : phone}
-                    onPress={() => {}}
-                    setValue={setPhone}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-              </View>
-
-              {/* <View style={globalStyles.profileInputContainer}> */}
-              {/*   <FontAwesome */}
-              {/*     name="phone" */}
-              {/*     size={32} */}
-              {/*     style={globalStyles.userInputLabelIcon} */}
-              {/*   /> */}
-              {/*   <View style={{ flex: 1, paddingLeft: 14 }}> */}
-              {/*     <Text style={globalStyles.userInputLabel}>Phone</Text> */}
-              {/*     <CustomTextInput */}
-              {/*       disabled={true} */}
-              {/*       containerStyle={globalStyles.userInputContainer} */}
-              {/*       TextStyle={globalStyles.input} */}
-              {/*       placeholder="phone number" */}
-              {/*       value={user ? user.phone : phone} */}
-              {/*       onPress={() => {}} */}
-              {/*       setValue={setPhone} */}
-              {/*       keyboardType="phone-pad" */}
-              {/*     /> */}
-              {/*   </View> */}
-              {/* </View> */}
-
-              {/* <View style={globalStyles.profileInputContainer}> */}
-              {/*   <FontAwesome */}
-              {/*     name="envelope-o" */}
-              {/*     size={32} */}
-              {/*     style={globalStyles.userInputLabelIcon} */}
-              {/*   /> */}
-              {/*   <View style={{ flex: 1, paddingLeft: 14 }}> */}
-              {/*     <Text style={globalStyles.userInputLabel}>Email</Text> */}
-              {/*     <CustomTextInput */}
-              {/*       containerStyle={globalStyles.userInputContainer} */}
-              {/*       TextStyle={globalStyles.input} */}
-              {/*       placeholder="email" */}
-              {/*       disabled={true} */}
-              {/*       value={user ? user.email : email} */}
-              {/*       onPress={() => {}} */}
-              {/*       setValue={setEmail} */}
-              {/*       keyboardType="email-address" */}
-              {/*     /> */}
-              {/*   </View> */}
-              {/* </View> */}
             </View>
           </ScrollView>
-          {/* <View style={[globalStyles.p_3]}> */}
-          {/* <Button
-            title="Save"
-            onPress={handleEditProfile}
-            disabled={loading}
-            // style={{
-            //   // position: "absolute",
-            //   bottom: Platform.OS === "ios" ? 60 : 76,
-            //   left: 16,
-            //   right: 16,
-            //   marginBottom: Math.max(
-            //     insets.bottom,
-            //     Platform.OS === "ios" ? 10 : 16
-            //   ),
-            // }}
-          /> */}
-          {/* <Button
-              title="Save"
-              // style={styles.signInButton}
-              onPress={handleEditProfile}
-            /> */}
-          {/* </View> */}
         </View>
-        <View
-        // style={
-        //   // globalStyles.p_3
-        // }
-        >
+        <View>
           <Button onPress={handleEditProfile} title="Save" />
         </View>
         <DateTimePickerModal
@@ -463,7 +367,6 @@ const editProfileScreen = () => {
         />
       </KeyBoardWrapper>
     </PageLayout>
-    // </SafeAreaView>
   );
 };
 
