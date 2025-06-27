@@ -62,6 +62,7 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
+    "Biometric settings": containers.biometricSettingsScreen,
     Feedback: containers.AppReviewScreenScreen,
   };
 
