@@ -24,8 +24,8 @@ function BrandHeader(props) {
   console.log("user in home page", user);
   const fetchUser = async () => {
     try {
-      if (user && user?.id) {
-        const userId = user?.id;
+      if (user) {
+        const userId = user?._id ? user?._id : user?.id;
         console.log("userPhone", userId);
 
         // Check if user exists in DB

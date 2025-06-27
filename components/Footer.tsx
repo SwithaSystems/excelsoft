@@ -51,7 +51,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
     try {
       if (userData_redux?.id || userData_redux?._id) {
         const response = await UserAPI.getUserById(
-          userData_redux?.id || userData_redux?._id
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
         if (response?.data) {
           setIsValidUser(true);

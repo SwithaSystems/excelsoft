@@ -71,7 +71,7 @@ const editProfileScreen = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      console.log("userData", userData);
+      console.log("userData", userData?.id);
       if (userData) {
         const user = await UserAPI.getUserById(userData?.id);
         console.log("user", user.data);

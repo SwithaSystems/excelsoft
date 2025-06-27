@@ -90,7 +90,7 @@ const UserProfileScreen = () => {
 
       try {
         const response = await UserAPI.getUserById(
-          userData_redux?.id || userData_redux?._id
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
         console.log("response in userProfilescreen", response?.data);
         if (response?.data) {

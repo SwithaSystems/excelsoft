@@ -247,7 +247,7 @@ const PickupScreen = () => {
 
       try {
         const response = await UserAPI.getUserById(
-          userData?.id || userData?._id
+          userData?._id ? userData?._id : userData?.id
         );
         console.log("response in pickup", response);
         if (response?.data) {
@@ -598,7 +598,6 @@ const PickupScreen = () => {
       setEmailError(null);
     }
   };
-
 
   // Reusable text input component
   const renderTextInput = (
