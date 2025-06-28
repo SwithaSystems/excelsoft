@@ -39,6 +39,8 @@ const feedBackScreen = () => {
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
 
+  console.log("userData_redux", userData_redux);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickImage = async () => {
@@ -69,9 +71,12 @@ const feedBackScreen = () => {
     }
     setIsSubmitting(true);
     try {
-      const userphone = userData_redux.phone;
-      const user = await UserAPI.getUserByPhonenumber(userphone);
+      const userID = userData_redux._id
+        ? userData_redux._id
+        : userData_redux.id;
+      const user = await UserAPI.getUserById(userID);
       const UserParsed = user.data;
+      console.log("user in addreview", UserParsed);
 
       const review = {
         id: (Number(reviewsArrayLength) + 1).toString(),
