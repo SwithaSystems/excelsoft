@@ -83,7 +83,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   const enableBiometricAuth = async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: `Enable ${biometricType} for app access`,
+        promptMessage: `Enable biometrics for app access`,
       });
 
       if (result.success) {
@@ -201,11 +201,12 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         <View style={styles.settingItem}>
           <View style={styles.settingInfo}>
             <Text style={styles.settingTitle}>
-              {biometricType} Authentication
+              {/* {biometricType} Authentication */}
+              Biometric authenticatin
             </Text>
             <Text style={styles.settingDescription}>
               {isBiometricSupported
-                ? `Use ${biometricType} to quickly and securely access your account`
+                ? `Use biometrics to quickly and securely access your account`
                 : `${biometricType} is not available on this device`}
             </Text>
           </View>
