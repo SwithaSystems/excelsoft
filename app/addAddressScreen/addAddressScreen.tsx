@@ -422,7 +422,7 @@ const addAddressScreen = () => {
             style={[styles.input, errors.line1 && globalStyles.errorInput]}
             value={line1}
             onChangeText={handleLine1Change}
-            placeholder="House number and street name (e.g., 123 Main Street)"
+            placeholder="House no. and street name"
             maxLength={100}
             autoCorrect={false}
             autoCapitalize="words"

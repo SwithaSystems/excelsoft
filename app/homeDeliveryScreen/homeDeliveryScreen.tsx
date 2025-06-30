@@ -422,9 +422,10 @@ const HomeDeliveryScreen = () => {
   };
 
   const handleEditAddress = (item: Address) => {
-    setSelectedAddressId(item);
-    redirectToPage(containers.editAddressScreenScreen);
-  };
+  redirectToPage(containers.editAddressScreenScreen, {
+    edit_address: JSON.stringify(item)
+  });
+};
 
   const handleDeleteAddress = (item: Address) => {
     setItemToDelete({ id: item._id });

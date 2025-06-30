@@ -93,7 +93,10 @@ const reviewsScreen = () => {
           />
         </View>
         <View style={styles.reviewsContainer}>
-          <Text style={styles.reviewContainerHeading}>Reviews</Text>
+          <View style={styles.reviewsHeader}>
+            <Text style={styles.reviewContainerHeading}>Reviews</Text>
+             <Text style={styles.addReviewText}>see more</Text>
+            </View>
           {soretedReviews?.map((review: any, index: number) => (
             <ProductRating key={`${review.id}-${index}`} review={review} />
           ))}

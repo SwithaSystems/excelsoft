@@ -244,6 +244,17 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
   },
+  reviewsHeader:{
+    flexDirection:"row",
+    justifyContent:"space-between",
+  },
+  addReviewText:{
+    textDecorationStyle:"solid",
+    textDecorationLine:"underline",
+    fontSize:12,
+    paddingTop: 4,
+    color:colors.primary,
+  }
 });
 
 export default styles;
