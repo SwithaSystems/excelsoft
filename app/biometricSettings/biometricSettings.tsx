@@ -6,6 +6,7 @@ import {
   Alert,
   StyleSheet,
   SafeAreaView,
+  Platform,
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
@@ -18,6 +19,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [biometricType, setBiometricType] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState("");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -26,12 +28,29 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   }, []);
 
   const checkBiometricSupport = async () => {
+    let detectedType = "Biometric";
+
+    console.log(" Checking biometric support...");
     try {
       const compatible = await LocalAuthentication.hasHardwareAsync();
-      setIsBiometricSupported(compatible);
+      console.log(" Hardware compatible:", compatible);
+
+      if (!compatible) {
+        setIsBiometricSupported(false);
+        setDebugInfo("Hardware not compatible");
+        return;
+      }
 
       if (compatible) {
+        // Check if biometrics are enrolled
         const enrolled = await LocalAuthentication.isEnrolledAsync();
+        console.log("👆 Biometrics enrolled:", enrolled);
+
+        if (!enrolled) {
+          setIsBiometricSupported(false);
+          setDebugInfo("No biometrics enrolled");
+          return;
+        }
         if (!enrolled) {
           setIsBiometricSupported(false);
           return;
@@ -39,23 +58,43 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
 
         const types =
           await LocalAuthentication.supportedAuthenticationTypesAsync();
-        if (
-          types.includes(
-            LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
-          )
-        ) {
-          setBiometricType("Face ID");
-        } else if (
-          types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
-        ) {
-          setBiometricType("Fingerprint");
+
+        console.log("supported types", types);
+        if (Platform.OS === "ios") {
+          if (
+            types.includes(
+              LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+            )
+          ) {
+            detectedType = "Face ID";
+          } else if (
+            types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+          ) {
+            detectedType = "Touch ID";
+          } else {
+            detectedType = "Biometric";
+          }
         } else {
-          setBiometricType("Biometric");
+          if (
+            types.includes(
+              LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+            )
+          ) {
+            detectedType = "Face Recognition";
+          } else if (
+            types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+          ) {
+            detectedType = "Fingerprint";
+          }
         }
+        setBiometricType(detectedType);
+        setIsBiometricSupported(true);
+        setDebugInfo(`${detectedType} available`);
       }
     } catch (error) {
-      console.error("Error checking biometric support:", error);
-      setIsBiometricSupported(false);
+      setBiometricType(detectedType);
+      setIsBiometricSupported(true);
+      setDebugInfo(`${detectedType} available`);
     }
   };
 
@@ -81,17 +120,34 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   };
 
   const enableBiometricAuth = async () => {
+    console.log(" Starting biometric authentication...");
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: `Enable biometrics for app access`,
+        promptMessage: `Enable ${biometricType} for secure app access`,
+        disableDeviceFallback: false,
+        fallbackLabel: "Use Password",
       });
+
+      console.log("Authentication result:", result);
 
       if (result.success) {
         await SecureStore.setItemAsync("biometric_enabled", "true");
         setIsBiometricEnabled(true);
         Alert.alert("Success", `${biometricType} has been enabled.`);
       } else {
-        Alert.alert("Failed", "Authentication was not successful.");
+        if (result.error === "user_cancel") {
+          console.log("User cancelled the authentication");
+        } else if (result.error === "user_fallback") {
+          console.log("User chose to use passcode");
+        } else if (result.error === "system_cancel") {
+          console.log("System cancelled authentication");
+        } else {
+          console.log(" Authentication failed:", result.error);
+        }
+        Alert.alert(
+          "Authentication Failed",
+          `${biometricType} authentication was not successful. Please try again.`
+        );
       }
     } catch (error) {
       console.error(error);
@@ -116,6 +172,36 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         },
       ]
     );
+  };
+
+  // Test biometric authentication function
+  const testBiometricAuth = async () => {
+    try {
+      console.log("Testing biometric authentication...");
+
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: `Test ${biometricType} Authentication`,
+        disableDeviceFallback: false,
+        fallbackLabel: "Use Passcode",
+      });
+
+      console.log("Test result:", result);
+
+      if (result.success) {
+        Alert.alert(
+          "Success",
+          `${biometricType} authentication works correctly!`
+        );
+      } else {
+        Alert.alert(
+          "Test Failed",
+          `${biometricType} authentication test failed: ${result.error}`
+        );
+      }
+    } catch (error: any) {
+      console.error("Test error:", error);
+      Alert.alert("Error", `Test failed: ${error.message}`);
+    }
   };
 
   // const registerDeviceForBiometric = async () => {
@@ -184,7 +270,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text>Loading...</Text>
+          <Text>Loading biometric settings...</Text>
         </View>
       </SafeAreaView>
     );
@@ -219,9 +305,22 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
           />
         </View>
 
+        {/* Debug Information - Remove in production */}
+        <View style={styles.debugBox}>
+          <Text style={styles.debugTitle}>Debug Info:</Text>
+          <Text style={styles.debugText}>Platform: {Platform.OS}</Text>
+          <Text style={styles.debugText}>Status: {debugInfo}</Text>
+          <Text style={styles.debugText}>
+            Supported: {isBiometricSupported ? "Yes" : "No"}
+          </Text>
+          <Text style={styles.debugText}>
+            Enabled: {isBiometricEnabled ? "Yes" : "No"}
+          </Text>
+        </View>
+
         {isBiometricEnabled && (
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>
+            <Text style={styles.infoText} onPress={testBiometricAuth}>
               ✓ {biometricType} authentication is enabled. You'll be prompted to
               authenticate when opening the app.
             </Text>
@@ -315,6 +414,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#856404",
     lineHeight: 20,
+  },
+  debugBox: {
+    backgroundColor: "#f8f9fa",
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#dee2e6",
+  },
+  debugTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#495057",
+  },
+  debugText: {
+    fontSize: 12,
+    color: "#6c757d",
+    marginBottom: 5,
   },
 });
 
