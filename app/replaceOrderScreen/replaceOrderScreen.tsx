@@ -26,6 +26,11 @@ import DateTimePicker, {
 import { Platform } from "react-native";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import PageLayout from "../pageLayoutProps";
+import {
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_HOME,
+  DELIVERY_MODE_STORE,
+} from "../config/stringLiterals";
 
 const options = [
   {
@@ -34,7 +39,7 @@ const options = [
     description: "Pick up your order from our store",
     icon: "location-outline",
     redirectionScreen: containers.pickupScreenScreen,
-    params: { mode: "store" },
+    params: { mode: DELIVERY_MODE_STORE },
   },
   {
     id: "curbside",
@@ -42,7 +47,7 @@ const options = [
     description: "We will pick your order curbside, right from your car.",
     icon: "car-outline",
     redirectionScreen: containers.pickupScreenScreen,
-    params: { mode: "curbside" },
+    params: { mode: DELIVERY_MODE_CURBSIDE },
   },
   {
     id: "doorstep",
@@ -50,7 +55,7 @@ const options = [
     description: "We will pick your order at your doorstep.",
     icon: "home-outline",
     redirectionScreen: containers.homeDeliveryScreenScreen,
-    params: { mode: "home" },
+    params: { mode: DELIVERY_MODE_HOME },
   },
 ];
 const cartItems = [

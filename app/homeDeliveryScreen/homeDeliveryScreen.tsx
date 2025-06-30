@@ -354,7 +354,7 @@ const HomeDeliveryScreen = () => {
       };
       redirectToPage(containers.orderSummeryScreenScreen, {
         pickupAddress: JSON.stringify(address),
-        selectedMode: "homeDelivery",
+        selectedMode: DELIVERY_MODE_HOME,
         shippingAddress: JSON.stringify(shippingAddress),
         pickupDetails: JSON.stringify(pickupDetails),
       });
@@ -561,9 +561,7 @@ const HomeDeliveryScreen = () => {
         <FlatList
           ListHeaderComponent={
             <>
-              <View
-                style={[globalStyles.pt_0]}
-              >
+              <View style={[globalStyles.pt_0]}>
                 <Text style={styles.label}>
                   Do you prefer home delivery? Let us know your available day
                   and time.

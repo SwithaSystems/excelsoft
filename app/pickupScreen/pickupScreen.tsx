@@ -31,6 +31,8 @@ import { RootState } from "@/store/store";
 import PageLayout from "../pageLayoutProps";
 import {
   DEFAULT_PICKUP_HOURS,
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_STORE,
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
 } from "../config/stringLiterals";
@@ -62,8 +64,8 @@ const MIN_PICKUP_MINUTES = 30;
 
 const PickupScreen = () => {
   const { mode, orderId } = useLocalSearchParams();
-  const isStorePickup = mode === "store";
-  const isCurbsidePickup = mode === "curbside";
+  const isStorePickup = mode === DELIVERY_MODE_STORE;
+  const isCurbsidePickup = mode === DELIVERY_MODE_CURBSIDE;
 
   // Date and time state
   const [date, setDate] = useState("");
@@ -568,7 +570,9 @@ const PickupScreen = () => {
       redirectToPage(containers.orderSummeryScreenScreen, {
         pickupDetails: JSON.stringify(pickupDetails),
         pickupAddress: JSON.stringify(pickupDetails),
-        selectedMode: isStorePickup ? "storePickup" : "curbsidePickup",
+        selectedMode: isStorePickup
+          ? DELIVERY_MODE_STORE
+          : DELIVERY_MODE_CURBSIDE,
       });
     } catch (error) {
       console.error("Error processing pickup request:", error);

@@ -22,7 +22,10 @@ import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import PageLayout from "../pageLayoutProps";
-import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
+import {
+  ADMIN_ORDER_DETAIL_SCREEN_TITLE,
+  DELIVERY_MODE_HOME,
+} from "../config/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
 import { NotificationService } from "@/services/notificationService";
@@ -249,7 +252,7 @@ const AdminOrderDetail = () => {
                   { fontWeight: "bold" },
                 ]}
               >
-                {orderDetails?.pickupMode === "homeDelivery"
+                {orderDetails?.pickupMode === DELIVERY_MODE_HOME
                   ? "Deliver To:"
                   : "Pickup"}
               </Text>
@@ -285,7 +288,7 @@ const AdminOrderDetail = () => {
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
                 ></Text>
-                {orderDetails?.pickupMode === "homeDelivery" &&
+                {orderDetails?.pickupMode === DELIVERY_MODE_HOME &&
                   shippingAddress_order && (
                     <Text>
                       Address:{" "}
