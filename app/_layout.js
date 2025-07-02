@@ -17,6 +17,7 @@ import BiometricAuth from "../components/Biometriauth"; // Import your Biometric
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -134,7 +135,26 @@ function BiometricAuthWrapper({ children }) {
 
 const LayoutContent = () => {
   const { isLoading } = useAppContext();
+  const [stripePublishableKey, setStripePublishableKey] = useState(null);
+  const clientId = "client_abc";
 
+  useEffect(() => {
+    const fetchStripeConfig = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
+        );
+        const data = res.data;
+        console.log("config data", data);
+        setStripePublishableKey(data.stripePublishableKey);
+      } catch (error) {
+        console.error("Failed to fetch Stripe config", error);
+      }
+    };
+
+    fetchStripeConfig();
+  }, []);
+  console.log("stripePublishableKey", stripePublishableKey);
   return (
     <>
       {isLoading ? (
@@ -423,8 +443,35 @@ const LayoutContent = () => {
 };
 
 export default function Layout() {
+  const [stripePublishableKey, setStripePublishableKey] = useState(null);
+  const clientId = "client_abc";
+
+  useEffect(() => {
+    const fetchStripeConfig = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
+        );
+        const data = res.data;
+        console.log("config data", data);
+        setStripePublishableKey(data.stripePublishableKey);
+      } catch (error) {
+        console.error("Failed to fetch Stripe config", error);
+      }
+    };
+
+    fetchStripeConfig();
+  }, []);
+
+  console.log("stripePublishableKey", stripePublishableKey);
+
+  // Show loading while fetching Stripe key
+  if (!stripePublishableKey) {
+    return <SplashScreen />;
+  }
   return (
-    <StripeProvider publishableKey="pk_test_51R964dE2THJkmBnHVkIykpypErffxTtnzoitEUsS0MOdtf2mUCqpARkTLpxXdyoRUxP8yXwzlHN8EZBlUZMlDsg000rsEfx2De">
+    // <StripeProvider publishableKey="pk_test_51R964dE2THJkmBnHVkIykpypErffxTtnzoitEUsS0MOdtf2mUCqpARkTLpxXdyoRUxP8yXwzlHN8EZBlUZMlDsg000rsEfx2De">
+    <StripeProvider publishableKey={stripePublishableKey}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <AppProvider>

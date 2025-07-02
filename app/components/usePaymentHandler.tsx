@@ -34,13 +34,14 @@ export const usePaymentHandler = () => {
   const calculateSubtotal = (cartItems: Product[]) =>
     cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const fetchPaymentIntent = async (amount: number) => {
+  const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
           amount: Math.round(amount * 100),
           currency: CURRENCY_CODE,
+          clientId: clientId,
         }
       );
 
@@ -61,7 +62,7 @@ export const usePaymentHandler = () => {
     console.log("all order details", params);
     console.log("cartItems", cartItems);
     const subtotal = calculateSubtotal(cartItems);
-    const paymentData = await fetchPaymentIntent(subtotal);
+    const paymentData = await fetchPaymentIntent(subtotal, "client_abc");
     if (!paymentData) return;
 
     const { clientSecret, ephemeralKey, customer } = paymentData;
