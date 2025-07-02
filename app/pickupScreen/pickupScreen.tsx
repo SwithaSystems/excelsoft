@@ -224,8 +224,10 @@ const PickupScreen = () => {
       if (!userData?.phone) return;
 
       try {
-        const response = await UserAPI.getUserByPhonenumber(userData.phone);
-
+        const response = await UserAPI.getUserById(
+          userData?._id ? userData?._id : userData?.id
+        );
+        console.log("response in pickup", response);
         if (response?.data) {
           const fetchedUserData = {
             firstName: response.data.firstName || "",

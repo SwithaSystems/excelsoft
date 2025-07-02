@@ -49,9 +49,9 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 
   const validateAndFetchUser = async () => {
     try {
-      if (userData_redux?.phone) {
-        const response = await UserAPI.getUserByPhonenumber(
-          userData_redux.phone
+      if (userData_redux?.id || userData_redux?._id) {
+        const response = await UserAPI.getUserById(
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
         if (response?.data) {
           setIsValidUser(true);

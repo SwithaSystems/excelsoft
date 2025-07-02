@@ -1,4 +1,4 @@
-import { USER_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
+import { USER_PROFILE_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -57,6 +57,7 @@ const UserProfileScreen = () => {
     "Change Password": containers.changePasswordScreenScreen,
     "Notification Settings": containers.notificationsScreenScreen,
     "Customer Support": containers.customerSupportScreenScreen,
+    "Biometric settings": containers.biometricSettingsScreen,
     Feedback: containers.AppReviewScreenScreen,
     // Admin: containers.AdminDashboardScreen,
   };
@@ -85,8 +86,8 @@ const UserProfileScreen = () => {
       if (!userData_redux?.id) return;
 
       try {
-        const response = await UserAPI.getUserByPhonenumber(
-          userData_redux?.phone
+        const response = await UserAPI.getUserById(
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
         if (response?.data) {
           setUser(response.data);
@@ -154,7 +155,10 @@ const UserProfileScreen = () => {
       hasHeader={true}
       hasFooter={true}
       headerComponent={
-        <Header headerText={USER_PROFILE_SCREEN_TITLE} needResetNavigation={true} />
+        <Header
+          headerText={USER_PROFILE_SCREEN_TITLE}
+          needResetNavigation={true}
+        />
       }
       footerComponent={<Footer activeTab="menu" />}
       scrollable={true}

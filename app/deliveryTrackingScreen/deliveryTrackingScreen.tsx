@@ -1,7 +1,7 @@
-import { DELIVERY_TRACKING_SCREEN_TITLE } from './../config/stringLiterals';
+import { DELIVERY_TRACKING_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import React, { use, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
@@ -35,6 +35,129 @@ const deliveryTrackingScreen = () => {
   useEffect(() => {
     getOrderById();
   }, []);
+
+  const getAllOrderStatuses = async () => {
+    const orderStatuses = await orderService.getAllOrderStatuses();
+    console.log("all Order statuses", orderStatuses);
+    setAllOrderStatuses(orderStatuses?.statuses);
+  };
+
+  useEffect(() => {
+    getAllOrderStatuses();
+  }, []);
+
+  // Function to check if order has age-restricted products
+  const hasAgeRestrictedProducts = (order: any): boolean => {
+    if (!order?.items && !order?.products) return false;
+
+    // Check items array (adjust property names based on your data structure)
+    const items = order.items || order.products || [];
+    return items.some(
+      (item: any) =>
+        item.isAgeRestricted ||
+        item.ageRestricted ||
+        item.requiresAgeVerification ||
+        item.product?.isAgeRestricted ||
+        item.product?.ageRestricted
+    );
+  };
+
+  // Function to get filtered statuses based on order type and user role
+  const getFilteredStatuses = (): string[] => {
+    const paymentStatus = ["Payment Pending", "Payment Confirmed"];
+
+    // Base filtering for admin vs customer
+    let filteredStatuses =
+      from === "admin"
+        ? allOrderStatuses
+        : allOrderStatuses.filter((status) => !paymentStatus.includes(status));
+
+    if (
+      from !== "admin" &&
+      orderDetails &&
+      !hasAgeRestrictedProducts(orderDetails)
+    ) {
+      filteredStatuses = filteredStatuses.filter(
+        (status) => status !== ORDER_STATUS.AWAITING_AGE_VERIFICATION
+      );
+    }
+
+    return filteredStatuses;
+  };
+
+  const getOrderedStatusesForTimeline = (): string[] => {
+    if (!orderDetails || !allOrderStatuses.length) return [];
+
+    const hasAgeRestriction = hasAgeRestrictedProducts(orderDetails);
+
+    const status = orderDetails?.status;
+
+    let flow: string[] = hasAgeRestriction
+      ? [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.AWAITING_AGE_VERIFICATION,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ]
+      : [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ];
+
+    // For pickup orders, replace DELIVERED with COLLECTED
+    const isPickupOrder =
+      orderDetails?.pickupMode === "storePickup" ||
+      orderDetails?.type === "curbsidePickup";
+
+    // let relevantFlow: any = hasAgeRestriction ? ageRestrictedFlow : baseFlow;
+
+    if (isPickupOrder) {
+      flow = flow
+        .map((status: any) =>
+          status === ORDER_STATUS.DELIVERED ? ORDER_STATUS.COLLECTED : status
+        )
+        .filter((status: any) => status !== ORDER_STATUS.OUT_FOR_DELIVERY);
+    }
+
+    //Scenario when there is a stock issue for the ordered product
+    if (status === ORDER_STATUS.STOCK_ISSUE) {
+      const prepIndex = flow.indexOf(ORDER_STATUS.PREPARING);
+      if (prepIndex !== -1) {
+        flow.slice(0, prepIndex + 1);
+        flow.push(ORDER_STATUS.STOCK_ISSUE);
+      }
+      return flow;
+    }
+
+    //Scenario when the order is cancelled/failed/rejected
+    const negativeStatuses = [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.FAILED,
+      ORDER_STATUS.REJECTED,
+    ];
+
+    if (negativeStatuses.includes(status)) {
+      const currentIndex = flow.indexOf(status);
+
+      const lastUpdatedIndex =
+        flow.indexOf(orderDetails.lastValidStatus) >= 0
+          ? flow.indexOf(orderDetails.lastValidStatus)
+          : flow.indexOf(ORDER_STATUS.PREPARING);
+
+      const truncatedFlow =
+        lastUpdatedIndex >= 0 ? flow.slice(0, lastUpdatedIndex + 1) : [];
+
+      return [...truncatedFlow, status];
+    }
+    // Filter to only include statuses that exist in the backend response
+    return flow.filter((status: any) => allOrderStatuses.includes(status));
+  };
+
   console.log("orderDetails in tracking order", orderDetails?.status);
 
   return (
@@ -48,20 +171,52 @@ const deliveryTrackingScreen = () => {
       }
     >
       <View style={[globalStyles.container]}>
-        {/* <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} /> */}
-        {/* <ScrollView> */}
-        <View style={[
-            // globalStyles.sectionContent
-          ]}>
-          <Text style={styles.headingNote}>
-            Your Order packed Successfully!! Let’s see the Progress!
-          </Text>
+        <View>
+          {from === "admin" && orderDetails ? (
+            <View style={styles.adminInfoCard}>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Order ID: </Text>#
+                {orderDetails?.orderNumber}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Customer: </Text>
+                {orderDetails?.userId?.firstName}{" "}
+                {orderDetails?.userId?.lastName}
+              </Text>
+              <Text style={styles.infoText}>
+                <Text style={styles.label}>Pick Up Choice: </Text>
+                {orderDetails?.pickupMode === "homeDelivery"
+                  ? "Home Delivery"
+                  : "Store Pickup"}
+              </Text>
+            </View>
+          ) : (
+            <View>
+              <Text style={styles.headingNote}>
+                Your Order placed Successfully!! Let's see the Progress!
+              </Text>
+            </View>
+          )}
+
           <View style={styles.trackingContainer}>
             <OrderTimeline
               statusList={orderStatus}
               actualStatus={orderDetails?.status}
             />
           </View>
+
+          {from === "admin" && (
+            <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
+              <Button
+                title="View Order Details"
+                onPress={() => {
+                  redirectToPage(containers.AdminOrderDetailScreen, {
+                    orderId: orderDetails?._id,
+                  });
+                }}
+              />
+            </View>
+          )}
         </View>
       </View>
     </PageLayout>

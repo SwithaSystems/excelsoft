@@ -13,6 +13,10 @@ import { PersistGate } from "redux-persist/integration/react";
 import Toast from "react-native-toast-message";
 import CustomToastAlert from "../components/commonComponents/CustomToastAlert";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import BiometricAuth from "../components/Biometriauth"; // Import your BiometricAuth component
+import * as SecureStore from "expo-secure-store";
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 // Component to handle notifications
 function NotificationsHandler() {
@@ -57,6 +61,77 @@ function NotificationsHandler() {
   return null;
 }
 
+function BiometricAuthWrapper({ children }) {
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+  const [isBiometricAuthenticated, setIsBiometricAuthenticated] =
+    useState(false);
+  const [isCheckingBiometric, setIsCheckingBiometric] = useState(true);
+  const { user } = useAuth();
+  useEffect(() => {
+    checkBiometricSettings();
+  }, [user]);
+  const checkBiometricSettings = async () => {
+    try {
+      // Check if user has enabled biometric authentication
+      const biometricEnabled = await SecureStore.getItemAsync(
+        "biometric_enabled"
+      );
+
+      // Require biometric auth if:
+      // 1. User is logged in
+      // 2. User has enabled biometric authentication
+      if (user && biometricEnabled === "true") {
+        setIsBiometricEnabled(true);
+        setIsBiometricAuthenticated(false);
+      } else {
+        setIsBiometricEnabled(false);
+        setIsBiometricAuthenticated(true); // Skip biometric auth
+      }
+    } catch (error) {
+      console.error("Error checking biometric settings:", error);
+      setIsBiometricEnabled(false);
+      setIsBiometricAuthenticated(true);
+    } finally {
+      setIsCheckingBiometric(false);
+    }
+  };
+  const handleBiometricAuthSuccess = async () => {
+    // No backend verification required – simply mark as authenticated
+    setIsBiometricAuthenticated(true);
+    // Toast.show({
+    //   type: "success",
+    //   text1: "Authentication Successful",
+    //   text2: "Welcome back!",
+    // });
+  };
+  const handleBiometricAuthFailure = (error) => {
+    console.error("Biometric authentication failed:", error);
+    Toast.show({
+      type: "error",
+      text1: "Authentication Failed",
+      text2: error,
+    });
+  };
+
+  // Show loading while checking biometric settings
+  if (isCheckingBiometric) {
+    return <SplashScreen />;
+  }
+
+  // Show biometric authentication if enabled and not authenticated
+  if (isBiometricEnabled && !isBiometricAuthenticated) {
+    return (
+      <BiometricAuth
+        onAuthSuccess={handleBiometricAuthSuccess}
+        onAuthFailure={handleBiometricAuthFailure}
+      />
+    );
+  }
+
+  // Return normal app content
+  return children;
+}
+
 const LayoutContent = () => {
   const { isLoading } = useAppContext();
 
@@ -65,277 +140,283 @@ const LayoutContent = () => {
       {isLoading ? (
         <SplashScreen />
       ) : (
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen
-            name={containers.splashScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="index" options={{ title: "ExcelSoft" }} />
-          <Stack.Screen
-            name={containers.homeScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.searchScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.productDetailScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.searchResultsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.searchSuggesionsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.welcomeScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.signInScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.catagoryScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.reviewsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.userReviewScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.cartScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.pickUpModescreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.pickupScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.storePickUpScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.curbsidePickupScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.homeDeliveryScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.orderSummeryScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.paymentScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.paymentSaveCardScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.billingAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.orderSuccessfulScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.deliveryTrackingScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.offersScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.welcomeScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.signUpScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.mailVerificationScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.resedMailScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.verifcationScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.passwordResetScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.verifyUserScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.forgotPasswordScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.userProfileScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.editProfileScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.editAccountInformationscreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.changePasswordScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.notificationsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.customerSupportScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.myOrderScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.orderDetailsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.savedItemScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.savedAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.editAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.allPaymentsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.updateCardDetailsScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.addNewPaymentScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.feedBackScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.dashBoardScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.filterScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminDashboardScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminSeeAllOrdersScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminOrderDetailScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminProductDashboardScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminProductUpdationScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminStoreInformationScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminOrderQRScanScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.categoriesScreeScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.NotificationListingScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.returnOrderScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AppReviewScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.cancelOrderScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.replaceOrderScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.addAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.selectBillingAddressScreenScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.AdminCategoriesScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name={containers.UserNotificationsScreen}
-            options={{ headerShown: false }}
-          />
-        </Stack>
+        <BiometricAuthWrapper>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen
+              name={containers.splashScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="index" options={{ title: "ExcelSoft" }} />
+            <Stack.Screen
+              name={containers.homeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.searchScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.productDetailScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.searchResultsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.searchSuggesionsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.welcomeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.signInScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.catagoryScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.reviewsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.userReviewScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.cartScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.pickUpModescreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.pickupScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.storePickUpScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.curbsidePickupScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.homeDeliveryScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.orderSummeryScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.paymentScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.paymentSaveCardScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.billingAddressScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.orderSuccessfulScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.deliveryTrackingScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.offersScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.welcomeScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.signUpScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.mailVerificationScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.resedMailScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.verifcationScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.passwordResetScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.verifyUserScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.forgotPasswordScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.userProfileScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.editProfileScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.editAccountInformationscreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.changePasswordScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.notificationsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.customerSupportScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.myOrderScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.orderDetailsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.savedItemScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.savedAddressScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.editAddressScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.allPaymentsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.updateCardDetailsScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.addNewPaymentScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.feedBackScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.dashBoardScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.filterScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminDashboardScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminSeeAllOrdersScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminOrderDetailScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminProductDashboardScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminProductUpdationScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminStoreInformationScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminOrderQRScanScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.categoriesScreeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.NotificationListingScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.returnOrderScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AppReviewScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.cancelOrderScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.replaceOrderScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.addAddressScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.selectBillingAddressScreenScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.AdminCategoriesScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.UserNotificationsScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name={containers.biometricSettingsScreen}
+              options={{ headerShown: false }}
+            />
+          </Stack>
+        </BiometricAuthWrapper>
       )}
     </>
   );

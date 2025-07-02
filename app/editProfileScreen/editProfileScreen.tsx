@@ -1,4 +1,7 @@
-import { EDIT_PROFILE_SCREEN_TITLE } from './../config/stringLiterals';
+import {
+  EDIT_PROFILE_SCREEN_TITLE,
+  MINIMUM_USER_AGE,
+} from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -16,6 +19,7 @@ import {
   SafeAreaView,
   DeviceEventEmitter,
   Platform,
+  TextInput,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./editProfileScreenStyles";
@@ -32,6 +36,14 @@ import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { formatToDDMMYYYY } from "../config/dateTimeFormat";
+import { showErrorAlert } from "../config/showErrorAlert";
+import {
+  FAILED_TO_UPDATE_DETAILS,
+  CAMERA_ACCESS_REQUIRED,
+  GALLERY_ACCESS_REQUIRED,
+} from "../config/customErrorMessages";
 
 interface User {
   id: string;
@@ -51,24 +63,28 @@ const editProfileScreen = () => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Store Manager");
   const [profileImage, setProfileImage] = useState("");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const getUser = async () => {
-      console.log("userData", userData);
+      console.log("userData", userData?.id);
       if (userData) {
-        const user = await UserAPI.getUserByPhonenumber(userData?.phone);
+        const user = await UserAPI.getUserById(
+          userData?._id ? userData?._id : userData?.id
+        );
         console.log("user", user.data);
         if (user) {
-          setFirstName(user.data.firstName);
-          setLastName(user.data.lastName);
-          setPhone(user.data.phone);
-          // setDateOfBirth(user.data.dateOfBirth);
+          setUser(user.data);
+          setFirstName(user?.data?.firstName);
+          setLastName(user?.data?.lastName);
+          setPhone(user?.data?.phone);
           setEmail(user.data?.email || "No mail added");
           setProfileImage(user.data.profileImageUrl);
           if (user.data.dateOfBirth) {
@@ -94,7 +110,10 @@ const editProfileScreen = () => {
       if (type === "camera") {
         const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
         if (!cameraPerm.granted) {
-          alert("Permission to access camera is required!");
+          showErrorAlert({
+            title: "Camera Permission",
+            message: CAMERA_ACCESS_REQUIRED,
+          });
           return;
         }
 
@@ -108,7 +127,10 @@ const editProfileScreen = () => {
         const galleryPerm =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!galleryPerm.granted) {
-          alert("Permission to access gallery is required!");
+          showErrorAlert({
+            title: "Gallery Permission",
+            message: GALLERY_ACCESS_REQUIRED,
+          });
           return;
         }
 
@@ -128,29 +150,12 @@ const editProfileScreen = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      alert("Something went wrong while picking the image.");
+      showErrorAlert({
+        title: "Image Error",
+        message: "Something went wrong while picking the image.",
+      });
     }
   };
-
-  // const takePhoto = async () => {
-  //   //ask for camera permission
-  //   const { status } = await ImagePicker.requestCameraPermissionsAsync();
-  //   if (status !== "granted") {
-  //     alert("Permission to access camera is required!");
-  //     return;
-  //   }
-
-  //   const result = await ImagePicker.launchCameraAsync({
-  //     // mediaTypes: ImagePicker.MediaTypeOptions.Images,
-  //     mediaTypes: ["images"],
-  //     allowsEditing: true,
-  //     aspect: [4, 3],
-  //     quality: 1,
-  //   });
-  //   if (!result.canceled) {
-  //     setProfileImage(result.assets[0].uri);
-  //   }
-  // };
 
   const showImageOptions = () => {
     Alert.alert("Select Image", "Choose image source", [
@@ -168,24 +173,39 @@ const editProfileScreen = () => {
       },
     ]);
   };
-
+  const getMaximumDate = () => {
+    const today = new Date();
+    const maxDate = new Date(
+      today.getFullYear() - MINIMUM_USER_AGE,
+      today.getMonth(),
+      today.getDate()
+    );
+    return maxDate;
+  };
   const handleEditProfile = async () => {
     if (!firstName.trim()) {
-      alert("First name is required");
+      showErrorAlert({
+        title: "Missing Details",
+        message: "First name is required.",
+      });
+      return;
+    }
+
+    if (!/^[A-Za-z]+$/.test(firstName.trim())) {
+      showErrorAlert({
+        title: "Invalid First Name",
+        message: "First name should contain only alphabets.",
+      });
       return;
     }
 
     if (!/^[A-Za-z]+$/.test(lastName.trim())) {
-      alert("Last name should contain only alphabets");
+      showErrorAlert({
+        title: "Invalid Last Name",
+        message: "Last name should contain only alphabets.",
+      });
       return;
     }
-
-    // if (
-    //   !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateOfBirth)
-    // ) {
-    //   alert("Invalid date format. Use MM/DD/YYYY");
-    //   return;
-    // }
 
     const formData = new FormData();
 
@@ -209,10 +229,11 @@ const editProfileScreen = () => {
     formData.append("dateOfBirth", dateOfBirth);
 
     console.log("formData", formData);
+    console.log("user?.data?._id", user);
 
     try {
       setLoading(true);
-      const response = await UserAPI.userEditProfile(phone, formData);
+      const response = await UserAPI.userEditProfile(user?._id, formData);
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
@@ -230,21 +251,27 @@ const editProfileScreen = () => {
       return response?.data;
     } catch (error) {
       console.error("Profile update failed:", error);
-      alert("Failed to update profile.");
+      showErrorAlert({
+        title: "Update Failed",
+        message: FAILED_TO_UPDATE_DETAILS,
+      });
     } finally {
       setLoading(false);
     }
   };
-  const formatDateToDDMMYYYY = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+
+  const showDatePicker = () => setDatePickerVisibility(true);
+  const hideDatePicker = () => setDatePickerVisibility(false);
+
+  const uponDateSelection = (date: Date) => {
+    const formatted = formatToDDMMYYYY(date);
+    console.log("formatted", formatted);
+    setSelectedDate(formatted);
+    setDateOfBirth(formatted);
+    hideDatePicker();
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable={false}
       hasHeader
@@ -282,9 +309,7 @@ const editProfileScreen = () => {
                   size={32}
                   style={globalStyles.userInputLabelIcon}
                 />
-                <View style={{ flex: 1, 
-                  paddingLeft: 14
-               }}>
+                <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={globalStyles.userInputContainer}
@@ -326,96 +351,34 @@ const editProfileScreen = () => {
                 />
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                  <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="--/--/----"
-                    value={dateOfBirth ? dateOfBirth : ""}
-                    onPress={() => {}}
-                    setValue={setDateOfBirth}
-                  />
+                  <TouchableOpacity onPress={showDatePicker}>
+                    <TextInput
+                      style={globalStyles.input}
+                      placeholder="--/--/----"
+                      value={dateOfBirth}
+                      editable={false}
+                      pointerEvents="none"
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
-
-              {/* <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="phone"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <Text style={globalStyles.userInputLabel}>Phone</Text>
-                  <CustomTextInput
-                    disabled={true}
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="phone number"
-                    value={user ? user.phone : phone}
-                    onPress={() => {}}
-                    setValue={setPhone}
-                    keyboardType="phone-pad"
-                  />
-                </View>
-              </View>
-
-              <View style={globalStyles.profileInputContainer}>
-                <FontAwesome
-                  name="envelope-o"
-                  size={32}
-                  style={globalStyles.userInputLabelIcon}
-                />
-                <View style={{ flex: 1, paddingLeft: 14 }}>
-                  <Text style={globalStyles.userInputLabel}>Email</Text>
-                  <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
-                    placeholder="email"
-                    disabled={true}
-                    value={user ? user.email : email}
-                    onPress={() => {}}
-                    setValue={setEmail}
-                    keyboardType="email-address"
-                  />
-                </View>
-              </View> */}
             </View>
           </ScrollView>
-          {/* <View style={[globalStyles.p_3]}> */}
-          {/* <Button
-            title="Save"
-            onPress={handleEditProfile}
-            disabled={loading}
-            // style={{
-            //   // position: "absolute",
-            //   bottom: Platform.OS === "ios" ? 60 : 76,
-            //   left: 16,
-            //   right: 16,
-            //   marginBottom: Math.max(
-            //     insets.bottom,
-            //     Platform.OS === "ios" ? 10 : 16
-            //   ),
-            // }}
-          /> */}
-          {/* <Button
-              title="Save"
-              // style={styles.signInButton}
-              onPress={handleEditProfile}
-            /> */}
-          {/* </View> */}
         </View>
-        <View 
-        // style={
-        //   // globalStyles.p_3
-        // }
-        >
-          <Button
-            onPress={handleEditProfile}
-            title="Save"
-          />
+        <View>
+          <Button onPress={handleEditProfile} title="Save" />
         </View>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          maximumDate={getMaximumDate()}
+          // date={new Date(selectedDate || Date.now())}
+          date={selectedDate ? new Date(selectedDate) : new Date()}
+          onConfirm={uponDateSelection}
+          onCancel={hideDatePicker}
+        />
       </KeyBoardWrapper>
     </PageLayout>
-    // </SafeAreaView>
   );
 };
 

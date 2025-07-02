@@ -24,9 +24,9 @@ function BrandHeader(props) {
 
   const fetchUser = async () => {
     try {
-      if (user && user?.phone) {
-        const userPhone = user?.phone;
-        console.log("userPhone", userPhone);
+      if (user) {
+        const userId = user?._id ? user?._id : user?.id;
+        console.log("userPhone", userId);
 
         // Check if user exists in DB
         const response = await UserAPI.getUserByPhonenumber(userPhone);
@@ -117,7 +117,11 @@ function BrandHeader(props) {
                   {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
                 </Text>
               )}
-              <Ionicons name="person-circle-outline" size={24} color={colors.black} />
+              <Ionicons
+                name="person-circle-outline"
+                size={24}
+                color={colors.black}
+              />
             </View>
           </TouchableOpacity>
 

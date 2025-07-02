@@ -1,5 +1,4 @@
-export default {
-  homeScreen: "home/home",
+export default {homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -66,5 +65,4 @@ export default {
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
   selectBillingAddressScreenScreen:"selectBillingAddressScreen/selectBillingAddressScreen",
   AdminCategoriesScreen: 'AdminCategories/AdminCategories', 
-  UserNotificationsScreen: 'UserNotifications/UserNotifications'
-};
+  UserNotificationsScreen: 'UserNotifications/UserNotifications', biometricSettingsScreen: 'biometricSettings/biometricSettings'};
