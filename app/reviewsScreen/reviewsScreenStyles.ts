@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     addReviewText:{
       textDecorationStyle:"solid",
       textDecorationLine:"underline",
-      fontSize:12,
+      fontSize:14,
       // paddingTop: 8,
       color:colors.primary,
     }

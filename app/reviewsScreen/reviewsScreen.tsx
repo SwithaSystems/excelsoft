@@ -83,7 +83,15 @@ const reviewsScreen = () => {
       scrollable
     >
       <View style={[globalStyles.sectionContent, { paddingTop: 0 }]}>
+         <View style={styles.reviewsHeader}>
         <Text style={styles.heading}>Overall Ratings</Text>
+        <Text 
+          style={styles.addReviewText}
+          onPress={handleAddReviews}
+        >
+          Add Your Review
+        </Text>
+        </View>
         <View style={styles.overAllRatingContainer}>
           <Text style={styles.rating}>{productRating}</Text>
           <ProductStars
@@ -93,10 +101,7 @@ const reviewsScreen = () => {
           />
         </View>
         <View style={styles.reviewsContainer}>
-          <View style={styles.reviewsHeader}>
-            <Text style={styles.reviewContainerHeading}>Reviews</Text>
-             <Text style={styles.addReviewText}>see more</Text>
-            </View>
+            <Text style={styles.reviewContainerHeading}>Reviews</Text>         
           {soretedReviews?.map((review: any, index: number) => (
             <ProductRating key={`${review.id}-${index}`} review={review} />
           ))}

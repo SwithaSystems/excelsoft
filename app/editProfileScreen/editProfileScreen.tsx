@@ -93,6 +93,7 @@ const editProfileScreen = () => {
               "/" +
               date.getFullYear();
             setDateOfBirth(formatted);
+            setSelectedDate(formatted);
           }
         }
       }
@@ -260,6 +261,12 @@ const editProfileScreen = () => {
     hideDatePicker();
   };
 
+  const parsedDate = (dateStr: string): Date => {
+    const [day, month, year] = dateStr.split("/");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  };
+
+
   return (
     <PageLayout
       scrollable={false}
@@ -361,7 +368,7 @@ const editProfileScreen = () => {
           isVisible={isDatePickerVisible}
           mode="date"
           maximumDate={new Date()}
-          date={new Date(selectedDate || Date.now())}
+          date={selectedDate ? parsedDate(selectedDate) : new Date()}
           onConfirm={uponDateSelection}
           onCancel={hideDatePicker}
         />
