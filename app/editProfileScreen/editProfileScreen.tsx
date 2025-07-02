@@ -1,4 +1,5 @@
 import {
+  DATE_FORMAT_Display,
   EDIT_PROFILE_SCREEN_TITLE,
   MINIMUM_USER_AGE,
 } from "./../config/stringLiterals";
@@ -44,6 +45,7 @@ import {
   CAMERA_ACCESS_REQUIRED,
   GALLERY_ACCESS_REQUIRED,
 } from "../config/customErrorMessages";
+import { format } from "date-fns";
 
 interface User {
   id: string;
@@ -87,14 +89,16 @@ const editProfileScreen = () => {
           setPhone(user?.data?.phone);
           setEmail(user.data?.email || "No mail added");
           setProfileImage(user.data.profileImageUrl);
+
           if (user.data.dateOfBirth) {
             const date = new Date(user.data.dateOfBirth);
-            const formatted =
-              String(date.getDate()).padStart(2, "0") +
-              "/" +
-              String(date.getMonth() + 1).padStart(2, "0") +
-              "/" +
-              date.getFullYear();
+            // const formatted =
+            //   String(date.getDate()).padStart(2, "0") +
+            //   "/" +
+            //   String(date.getMonth() + 1).padStart(2, "0") +
+            //   "/" +
+            //   date.getFullYear();
+            const formatted = format(date, DATE_FORMAT_Display);
             setDateOfBirth(formatted);
           }
         }
@@ -264,7 +268,8 @@ const editProfileScreen = () => {
   const hideDatePicker = () => setDatePickerVisibility(false);
 
   const uponDateSelection = (date: Date) => {
-    const formatted = formatToDDMMYYYY(date);
+    // const formatted = formatToDDMMYYYY(date);
+    const formatted = format(date, DATE_FORMAT_Display);
     console.log("formatted", formatted);
     setSelectedDate(formatted);
     setDateOfBirth(formatted);

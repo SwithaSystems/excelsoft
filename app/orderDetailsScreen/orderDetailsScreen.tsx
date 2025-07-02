@@ -136,6 +136,7 @@ const orderDetailsScreen = () => {
   )
     .toString()
     .padStart(2, "0")}/${rawDate.getFullYear()}`;
+  console.log("formattedDate", formattedDate);
 
   console.log("cartItemsWithDetails", cartItemsWithDetails);
 

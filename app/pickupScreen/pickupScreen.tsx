@@ -30,6 +30,7 @@ import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import PageLayout from "../pageLayoutProps";
 import {
+  DATE_FORMAT_Display,
   DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_STORE,
@@ -44,6 +45,7 @@ import {
   PICKUP_DETAILS_REQUIRED,
 } from "../config/customErrorMessages";
 import { showErrorAlert } from "../config/showErrorAlert";
+import { format } from "date-fns";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -154,7 +156,9 @@ const PickupScreen = () => {
       targetMinute = 0;
     }
     // Format the date for state
-    const formattedDate = targetDate.toISOString().split("T")[0];
+    const formattedDate = format(targetDate, DATE_FORMAT_Display);
+    // const formattedDate_old = targetDate.toISOString().split("T")[0];
+    // console.log("2_formattedDate", formattedDate, formattedDate_old);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
@@ -352,17 +356,17 @@ const PickupScreen = () => {
   };
 
   // Handle date picker change
-  const handleDateChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate || new Date(date);
-    setShowDatePicker(false);
-    setDate(currentDate.toISOString().split("T")[0]);
-    validateTime(
-      currentDate.toISOString().split("T")[0],
-      hours,
-      minutes,
-      period
-    );
-  };
+  // const handleDateChange = (event: any, selectedDate: any) => {
+  //   const currentDate = selectedDate || new Date(date);
+  //   setShowDatePicker(false);
+  //   setDate(currentDate.toISOString().split("T")[0]);
+  //   validateTime(
+  //     currentDate.toISOString().split("T")[0],
+  //     hours,
+  //     minutes,
+  //     period
+  //   );
+  // };
 
   // Handle hours input changes with auto-focus to minutes
   const handleHoursChange = (text: any) => {
@@ -680,7 +684,8 @@ const PickupScreen = () => {
                   style={globalStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <Text>{formatToDDMMYYYY(date)}</Text>
+                  {/* <Text>{formatToDDMMYYYY(date)}</Text> */}
+                  <Text>{format(date, DATE_FORMAT_Display)}</Text>
                 </TouchableOpacity>
               )}
               <DateTimePickerModal
@@ -689,7 +694,8 @@ const PickupScreen = () => {
                 onConfirm={(selectedDate) => {
                   const isoDate = selectedDate.toISOString().split("T")[0];
                   setDate(isoDate);
-                  setPickupDate(formatToDDMMYYYY(selectedDate));
+                  // setPickupDate(formatToDDMMYYYY(selectedDate));
+                  setPickupDate(format(selectedDate, DATE_FORMAT_Display));
                   validateTime(isoDate, hours, minutes, period);
                   setShowDatePicker(false);
                 }}
