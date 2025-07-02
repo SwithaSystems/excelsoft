@@ -1,4 +1,7 @@
-import { EDIT_PROFILE_SCREEN_TITLE } from "./../config/stringLiterals";
+import {
+  EDIT_PROFILE_SCREEN_TITLE,
+  MINIMUM_USER_AGE,
+} from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/components/commonComponents/Button";
 import { CustomTextInput } from "@/components/commonComponents/CustomTextInput";
@@ -171,7 +174,15 @@ const editProfileScreen = () => {
       },
     ]);
   };
-
+  const getMaximumDate = () => {
+    const today = new Date();
+    const maxDate = new Date(
+      today.getFullYear() - MINIMUM_USER_AGE,
+      today.getMonth(),
+      today.getDate()
+    );
+    return maxDate;
+  };
   const handleEditProfile = async () => {
     if (!firstName.trim()) {
       showErrorAlert({
@@ -367,8 +378,9 @@ const editProfileScreen = () => {
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
           mode="date"
-          maximumDate={new Date()}
-          date={selectedDate ? parsedDate(selectedDate) : new Date()}
+          maximumDate={getMaximumDate()}
+          // date={new Date(selectedDate || Date.now())}
+          date={selectedDate ? new Date(selectedDate) : new Date()}
           onConfirm={uponDateSelection}
           onCancel={hideDatePicker}
         />

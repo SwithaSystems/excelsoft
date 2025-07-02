@@ -34,14 +34,11 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import PageLayout from "../pageLayoutProps";
-import HeroBanner from "../../components/HeroBanner";
 import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
-import { ITEM_OUT_OF_STOCK, QUANTITY_NOT_AVAILABLE } from "../config/customErrorMessages";
-import { showErrorAlert } from "../config/showErrorAlert";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
-  const [selectedColor, setSelectedColor] = useState<any>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const { isLoading, setIsLoading } = useAppContext();
   const [product, setProduct] = useState<Product | null>(null);
@@ -67,32 +64,7 @@ const ProductDetailScreen = () => {
     }
   };
 
-  // const fetchProduct = async () => {
-  //   try {
-  //     const fetchedProduct = await ProductsAPI.getProductBYID(
-  //       Number(productId)
-  //     );
-  //     setProduct(fetchedProduct);
-  //     if (fetchedProduct?.productColors?.length) {
-  //       setSelectedColor(fetchedProduct.productColors[0]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching product:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // console.log("fetched product", product);
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (productId) {
-  //       fetchProduct();
-  //     }
-  //   }, [productId])
-  // );
-
-  const fetchProduct = useCallback(async () => {
+  const fetchProduct = async () => {
     try {
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
@@ -106,6 +78,11 @@ const ProductDetailScreen = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (!productId) return;
+    fetchProduct();
   }, [productId]);
 
   useFocusEffect(
@@ -113,7 +90,7 @@ const ProductDetailScreen = () => {
       if (productId) {
         fetchProduct();
       }
-    }, [fetchProduct, productId])
+    }, [productId])
   );
 
   const indexRef = useRef(0);
@@ -172,7 +149,7 @@ const ProductDetailScreen = () => {
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
           {/* <Header headerText={"About the Product"} /> */}
-          {/* <View style={{ position: "relative" }}>
+          <View style={{ position: "relative" }}>
             <ScrollView
               ref={scrollViewRef}
               horizontal
@@ -220,17 +197,7 @@ const ProductDetailScreen = () => {
                 />
               ))}
             </View>
-          </View> */}
-
-          {product && product.image && product.image.length > 0 &&(
-            <HeroBanner
-              bannerData={product.image.map((imageurl: string, index: number) => ({
-                id: index,
-                image: {uri:imageurl},
-              }))}
-              onBannerPress={()=> {}}
-            />
-          )}
+          </View>
 
           <View style={styles.contentContainer}>
             <View style={styles.exclusiveDetails}>
@@ -283,13 +250,12 @@ const ProductDetailScreen = () => {
                   <View style={styles.colorOptions}>
                     {product.productColors.map((color: any) => (
                       <TouchableOpacity
-                        key={color._id}
+                        key={color}
                         onPress={() => setSelectedColor(color)}
                         style={[
                           styles.colorOption,
-                          { backgroundColor: color.colorCode },
-                          selectedColor?._id === color._id &&
-                            styles.selectedColorOption,
+                          { backgroundColor: color },
+                          selectedColor === color && styles.selectedColorOption,
                         ]}
                       />
                     ))}
@@ -312,19 +278,7 @@ const ProductDetailScreen = () => {
                 <Text style={styles.quantityText}>{quantity}</Text>
                 <TouchableOpacity
                   style={styles.quantityButton}
-                  onPress={() => {
-                    const available = product?.stock || 0;
-                    if(quantity + 1 > available){
-                      const message = QUANTITY_NOT_AVAILABLE.replace("{{available}}", available.toString());
-
-                      showErrorAlert({
-                        title: "Limited Stock Alert",
-                        message,
-                      });
-                      return;
-                    }
-                    setQuantity(quantity + 1);
-                  }}
+                  onPress={() => setQuantity(quantity + 1)}
                 >
                   <Ionicons name="add" size={20} color={colors.black} />
                 </TouchableOpacity>
@@ -336,13 +290,6 @@ const ProductDetailScreen = () => {
                 title="Add To Cart"
                 onPress={() => {
                   if (product) {
-                    if(product.stock === 0){
-                      showErrorAlert({
-                        title: "Out of Stock",
-                        message: ITEM_OUT_OF_STOCK,
-                      });
-                      return;
-                    }
                     dispatch(
                       addToCart({
                         id: product.id,
@@ -354,16 +301,14 @@ const ProductDetailScreen = () => {
                         discount: product.originalPrice - product.price,
                       })
                     );
-                    Toast.show({
-                      type: "customToast",
-                      text1: "Product added successfully!",
-                      text2: `${product.name} - ${product.price}`,
-                      visibilityTime: 1000, 
-                      autoHide: true,
-                      onPress: () => {
-                        redirectToPage(containers.cartScreenScreen);
-                      },
-                    });
+                    // Toast.show({
+                    //   type: "customToast",
+                    //   text1: "Product added successfully!",
+                    //   text2: `${product.name} - ${product.price}`,
+                    //   onPress: () => {
+                    //     redirectToPage(containers.cartScreenScreen);
+                    //   },
+                    // });
                   }
                 }}
                 style={styles.button}

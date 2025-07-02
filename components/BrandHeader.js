@@ -21,7 +21,7 @@ function BrandHeader(props) {
   const [isAdmin, setIsAdmin] = useState(false);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
-  console.log("user in home page", user);
+
   const fetchUser = async () => {
     try {
       if (user) {
@@ -29,7 +29,7 @@ function BrandHeader(props) {
         console.log("userPhone", userId);
 
         // Check if user exists in DB
-        const response = await UserAPI.getUserById(userId);
+        const response = await UserAPI.getUserByPhonenumber(userPhone);
 
         if (response?.data) {
           console.log("userdata", response.data);
@@ -94,7 +94,6 @@ function BrandHeader(props) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingBottom: 4,
           //   bottom: Platform.OS === "android" ? 20 : 0,
         }}
       >

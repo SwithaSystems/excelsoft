@@ -1,10 +1,8 @@
-trigger:
+trigger: none
+pr: 
   branches:
     include:
-      - main
-      # - development
-      - feature/ci-cd
-
+      - development
 pool:
   vmImage: "ubuntu-latest"
 

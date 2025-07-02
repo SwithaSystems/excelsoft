@@ -12,6 +12,7 @@ import {
   ScrollView,
   Text,
   View,
+  SafeAreaView,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
@@ -200,6 +201,10 @@ const AdminProductDashboard = () => {
   };
 
   return (
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
+    //   <View style={[globalStyles.container]}>
+    //     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+    //     <ScrollView>
     <PageLayout
       hasFooter
       hasHeader
@@ -211,6 +216,7 @@ const AdminProductDashboard = () => {
     >
       <View
         style={[
+          // globalStyles.sectionContent,
           globalStyles.pt_0,
           { paddingTop: 16 },
         ]}
@@ -249,6 +255,10 @@ const AdminProductDashboard = () => {
           handleCancel={cancelDelete}
         />
       </View>
+      {/* </ScrollView>
+        <AdminFooter activeTab="products" />
+      </View>
+    </SafeAreaView> */}
     </PageLayout>
   );
 };

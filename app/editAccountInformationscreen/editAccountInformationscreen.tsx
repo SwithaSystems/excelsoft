@@ -1,4 +1,4 @@
-import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from './../config/stringLiterals';
+import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -41,7 +41,9 @@ const editAccountInformationscreen = () => {
     const getUser = async () => {
       console.log("userData", userData);
       if (userData) {
-        const user = await UserAPI.getUserByPhonenumber(userData?.phone);
+        const user = await UserAPI.getUserById(
+          userData?._id ? userData?._id : userData?.id
+        );
         console.log("user", user.data);
         if (user) {
           setId(user.data._id);
@@ -111,16 +113,20 @@ const editAccountInformationscreen = () => {
       hasFooter={false}
       hasHeader
       scrollable
-      headerComponent={<Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />}
+      headerComponent={
+        <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />
+      }
     >
       <KeyBoardWrapper>
         {/* <View style={globalStyles.container}> */}
         {/* <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} /> */}
         {/* <ScrollView> */}
-        <View style={[
-            // globalStyles.sectionContent, 
-            globalStyles.pt_0
-          ]}>
+        <View
+          style={[
+            // globalStyles.sectionContent,
+            globalStyles.pt_0,
+          ]}
+        >
           <View style={globalStyles.profilePictureContainer}>
             <Image
               source={
@@ -169,10 +175,12 @@ const editAccountInformationscreen = () => {
               size={28}
               style={globalStyles.userInputLabelIcon}
             />
-            <View style={{ 
-              flex: 1, 
-              paddingLeft: 14 
-            }}>
+            <View
+              style={{
+                flex: 1,
+                paddingLeft: 14,
+              }}
+            >
               <View style={globalStyles.deviceHeading}>
                 <Text style={globalStyles.userInputLabel}>Email</Text>
                 {/* <TouchableOpacity>
@@ -192,7 +200,7 @@ const editAccountInformationscreen = () => {
           </View>
         </View>
         {/* </ScrollView> */}
-        <View 
+        <View
         // style={
         //   // globalStyles.p_3
         // }

@@ -14,23 +14,33 @@ import { Ionicons } from "@expo/vector-icons";
 interface BiometricAuthProps {
   onAuthSuccess: (token: string) => void;
   onAuthFailure: (error: string) => void;
-  onLogout?: () => void;
+  // onLogout?: () => void;
   userName?: string;
 }
 
 const BiometricAuth: React.FC<BiometricAuthProps> = ({
   onAuthSuccess,
   onAuthFailure,
-  onLogout,
+  // onLogout,
   userName = "User",
 }) => {
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [biometricType, setBiometricType] = useState("Biometric");
   const [isEnrolled, setIsEnrolled] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     checkBiometricSupport();
   }, []);
+  // useEffect(() => {
+  //   const checkExistingToken = async () => {
+  //     const token = await SecureStore.getItemAsync("biometric_auth_token");
+  //     if (token) {
+  //       onAuthSuccess(token);
+  //     }
+  //   };
+  //   checkExistingToken();
+  // }, []);
 
   const checkBiometricSupport = async () => {
     try {
@@ -63,13 +73,15 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
 
   const handleBiometricAuth = async () => {
     try {
+      // if (isAuthenticated) return;
       if (!isBiometricSupported || !isEnrolled) {
         Alert.alert("Error", "Biometric auth not available");
         return;
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: `Login to App`,
+        // promptMessage: `Login to App`,
+        promptMessage: `Authenticate as ${userName}`,
         cancelLabel: "Cancel",
         fallbackLabel: "Use Pattern",
         disableDeviceFallback: false,
@@ -79,6 +91,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
         const token = await generateAuthToken();
         await SecureStore.setItemAsync("biometric_auth_token", token);
         onAuthSuccess(token);
+        // setIsAuthenticated(true);
       } else {
         onAuthFailure(result.error || "Authentication failed");
       }
@@ -102,11 +115,11 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
   return (
     <View style={styles.container}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      {/* <View style={styles.topBar}>
         <TouchableOpacity onPress={onLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
@@ -116,7 +129,10 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
 
       {/* Biometric Auth Button */}
       {isBiometricSupported && isEnrolled ? (
-        <TouchableOpacity style={styles.authButton} onPress={handleBiometricAuth}>
+        <TouchableOpacity
+          style={styles.authButton}
+          onPress={handleBiometricAuth}
+        >
           <Ionicons name="finger-print-outline" size={28} color="#007AFF" />
           <Text style={styles.authButtonText}>Login with biometric</Text>
         </TouchableOpacity>
@@ -128,7 +144,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
 
       {/* Branding */}
       <View style={styles.footer}>
-        <Text style={styles.branding}>Zerodha</Text>
+        <Text style={styles.branding}>ExcelSoft</Text>
         <TouchableOpacity onPress={clearBiometricData}>
           <Text style={styles.clearText}>Clear Biometric Data</Text>
         </TouchableOpacity>
@@ -151,10 +167,10 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
   },
-  logoutText: {
-    fontSize: 16,
-    color: "#007AFF",
-  },
+  // logoutText: {
+  //   fontSize: 16,
+  //   color: "#007AFF",
+  // },
   avatarContainer: {
     alignItems: "center",
     marginBottom: 40,

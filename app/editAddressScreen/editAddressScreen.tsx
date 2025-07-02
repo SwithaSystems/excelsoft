@@ -1,32 +1,33 @@
-import { EDIT_ADDRESS_SCREEN_TITLE } from "./../config/stringLiterals";
+import { EDIT_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  StyleSheet,
   ScrollView,
-  TextInput,
+  Image,
   TouchableOpacity,
+  TextInput,
   SafeAreaView,
 } from "react-native";
 import styles from "./editAddressScreenStyles";
 import { CheckBox } from "react-native-elements";
+import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
+import { Ionicons } from "@expo/vector-icons";
+import colors from "../config/colors";
+import OrderSummary from "@/components/OrderSummary";
+import { useSelector } from "react-redux";
+import { addressService } from "@/services/addressService";
+import { useAppContext } from "../../context/AppContext";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
-import { showErrorAlert } from "../config/showErrorAlert";
-import {
-  MISSING_REQUIRED_FIELDS,
-  ADDRESS_UPDATE_FAILED,
-  DUPLICATE_ADDRESS,
-} from "../config/customErrorMessages";
-import { addressService } from "@/services/addressService";
-import { redirectToPage } from "@/utilities/redirectionHelper";
-import containers from "@/containers";
-import { globalStyles } from "@/assets/styles/globalStyles";
 
 const editAddressScreen = () => {
-  const { edit_address } = useLocalSearchParams();
+  const { params } = useLocalSearchParams();
   const [address, setAddress] = useState("");
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
@@ -34,14 +35,8 @@ const editAddressScreen = () => {
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isDefault, setIsDefault] = useState(false);
-
-  const [errors, setErrors] = useState<{
-    address?: string;
-    line1?: string;
-    towncity?: string;
-    postalcode?: string;
-    phoneNumber?: string;
-  }>({});
+  console.log("params from edit page", params);
+  const { edit_address } = useLocalSearchParams();
 
   useEffect(() => {
     if(!edit_address){
@@ -168,57 +163,27 @@ const editAddressScreen = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateFields()) {
-      showErrorAlert({
-        title: "Validation Error",
-        message: MISSING_REQUIRED_FIELDS,
-      });
-      return;
+    const response = await addressService.updateShippingAddress({
+      _id: JSON.parse(edit_address as string)._id,
+      name: address,
+      line1: line1,
+      line2: line2,
+      city: towncity,
+      state: "",
+      postalCode: postalcode,
+      phone: phoneNumber,
+      isDefault: isDefault,
+    });
+    console.log("Updated address", response.data);
+    if (response.status === 200) {
+      alert("Address updated successfully");
+    } else {
+      alert("Failed to update address");
     }
-
-    try {
-      const response = await addressService.updateShippingAddress({
-        _id: JSON.parse(edit_address as string)._id,
-        name: address.trim(),
-        line1: line1.trim(),
-        line2: line2.trim(),
-        city: towncity.trim(),
-        state: "", // optional state field
-        postalCode: postalcode.trim(),
-        phone: phoneNumber.trim(),
-        isDefault: isDefault,
-      });
-
-      if (response.status === 200) {
-        alert("Address updated successfully");
-        redirectToPage(containers.savedAddressScreenScreen);
-      } else {
-        showErrorAlert({
-          title: "Error",
-          message: ADDRESS_UPDATE_FAILED,
-        });
-      }
-    } catch (error: any) {
-      console.error("Error updating address:", error);
-
-      if (
-        error?.response?.data?.message?.toLowerCase().includes("duplicate") ||
-        error?.message?.toLowerCase().includes("duplicate")
-      ) {
-        showErrorAlert({
-          title: "Duplicate Address",
-          message: DUPLICATE_ADDRESS,
-        });
-      } else {
-        showErrorAlert({
-          title: "Error",
-          message: ADDRESS_UPDATE_FAILED,
-        });
-      }
-    }
+    redirectToPage(containers.savedAddressScreenScreen);
   };
-
   return (
+    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={EDIT_ADDRESS_SCREEN_TITLE} />}
@@ -226,85 +191,63 @@ const editAddressScreen = () => {
       scrollable
     >
       <KeyBoardWrapper>
-        <ScrollView>
-          <Text style={styles.fieldLabel}>Address Name</Text>
-          <TextInput
-            style={[styles.input, errors.address && globalStyles.errorInput]}
-            value={address}
-            onChangeText={validateAndSetAddress}
-            placeholder="e.g., Home, Office"
-            maxLength={100}
-            autoCapitalize="words"
+        {/* <View style={styles.container}>
+        <Header headerText={EDIT_ADDRESS_SCREEN_TITLE} /> */}
+
+        <Text style={styles.fieldLabel}>Address</Text>
+        <TextInput
+          style={styles.input}
+          value={address}
+          onChangeText={setAddress}
+        />
+
+        <Text style={styles.fieldLabel}>Line 1</Text>
+        <TextInput style={styles.input} value={line1} onChangeText={setLine1} />
+
+        <Text style={styles.fieldLabel}>Line 2</Text>
+        <TextInput
+          style={styles.input}
+          value={line2}
+          onChangeText={setLine2}
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.fieldLabel}>Town/City</Text>
+        <TextInput
+          style={styles.input}
+          value={towncity}
+          onChangeText={setTownCity}
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.fieldLabel}>Postal Code</Text>
+        <TextInput
+          style={styles.input}
+          value={postalcode}
+          onChangeText={setPostalCode}
+          keyboardType="email-address"
+        />
+        <Text style={styles.fieldLabel}>Phone Number</Text>
+        <TextInput
+          style={styles.input}
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
+        <View style={styles.checkBox}>
+          <CheckBox
+            checked={isDefault}
+            onPress={() => setIsDefault(!isDefault)}
           />
-          {errors.address && <Text style={globalStyles.errorText}>{errors.address}</Text>}
+          <Text>Mark as default address</Text>
+        </View>
 
-          <Text style={styles.fieldLabel}>Address Line 1</Text>
-          <TextInput
-            style={[styles.input, errors.line1 && globalStyles.errorInput]}
-            value={line1}
-            onChangeText={validateAndSetLine1}
-            placeholder="Street address, P.O. box"
-            maxLength={150}
-            autoCapitalize="words"
-          />
-          {errors.line1 && <Text style={globalStyles.errorText}>{errors.line1}</Text>}
-
-          <Text style={styles.fieldLabel}>Address Line 2 (Optional)</Text>
-          <TextInput
-            style={styles.input}
-            value={line2}
-            onChangeText={validateAndSetLine2}
-            placeholder="Apartment, suite, floor, etc."
-            maxLength={150}
-            autoCapitalize="words"
-          />
-
-          <Text style={styles.fieldLabel}>Town/City</Text>
-          <TextInput
-            style={[styles.input, errors.towncity && globalStyles.errorInput]}
-            value={towncity}
-            onChangeText={validateAndSetTownCity}
-            placeholder="Enter city name"
-            maxLength={50}
-            autoCapitalize="words"
-          />
-          {errors.towncity && <Text style={globalStyles.errorText}>{errors.towncity}</Text>}
-
-          <Text style={styles.fieldLabel}>Postal Code</Text>
-          <TextInput
-            style={[styles.input, errors.postalcode && globalStyles.errorInput]}
-            value={postalcode}
-            onChangeText={validateAndSetPostalCode}
-            placeholder="e.g., 12345 or A1B 2C3"
-            maxLength={10}
-            autoCapitalize="characters"
-          />
-          {errors.postalcode && <Text style={globalStyles.errorText}>{errors.postalcode}</Text>}
-
-          <Text style={styles.fieldLabel}>Phone Number</Text>
-          <TextInput
-            style={[styles.input, errors.phoneNumber && globalStyles.errorInput]}
-            value={phoneNumber}
-            onChangeText={validateAndSetPhoneNumber}
-            placeholder="1234567890"
-            keyboardType="numeric"
-            maxLength={10}
-          />
-          {errors.phoneNumber && <Text style={globalStyles.errorText}>{errors.phoneNumber}</Text>}
-
-          <View style={styles.checkBox}>
-            <CheckBox
-              checked={isDefault}
-              onPress={() => setIsDefault(!isDefault)}
-            />
-            <Text>Mark as default address</Text>
-          </View>
-
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Update Address</Text>
-          </TouchableOpacity>
-        </ScrollView>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>Update Address</Text>
+        </TouchableOpacity>
+        {/* </View> */}
       </KeyBoardWrapper>
+      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };
