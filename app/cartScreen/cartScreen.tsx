@@ -1,4 +1,4 @@
-import { CART_SCREEN_TITLE } from './../config/stringLiterals';
+import { CART_SCREEN_TITLE } from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
@@ -41,6 +41,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/components/NoContentFound";
 import PageLayout from "../pageLayoutProps";
+import { showErrorAlert } from "../config/showErrorAlert";
+import { 
+        SESSION_EXPIRED,
+        ITEM_OUT_OF_STOCK,
+        QUANTITY_NOT_AVAILABLE,
+ } from "../config/customErrorMessages";
+import { ProductsAPI } from "@/services/productService";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -49,6 +56,7 @@ const CartScreen = () => {
     (state: RootState) => state.savedForLaterItems.items
   );
   const user = useSelector((state: RootState) => state.user.user);
+  const [stockAvailable, setStockAvailable] = useState<Record<string, number>>({});
 
   console.log("user in cart screen", user);
 
@@ -103,15 +111,34 @@ const CartScreen = () => {
   const handlePlaceOrder = () => {
     console.log("User:", user);
     if (!user) {
-      Alert.alert("Please login", "You need to login before placing an order");
-      redirectToPage(containers.signInScreen);
+      showErrorAlert({
+        title: "Login Required",
+        message: SESSION_EXPIRED, 
+      });      
+    redirectToPage(containers.signInScreen);
     } else {
       redirectToPage(containers.pickUpModescreenScreen);
     }
   };
 
+  useEffect(() => {
+    async function getStock() {
+      const newStock: Record<string, number> = {};
+
+      for(let item of cartItems){
+        try{
+          const product = await ProductsAPI.getProductBYID(Number(item.id));
+          newStock[item.id] = product?.stock || 0;
+        }catch(error){
+          newStock[item.id] = 0;
+        }
+      }
+      setStockAvailable(newStock);
+    }
+    getStock();
+  }, [cartItems]);
+
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       hasFooter
@@ -120,13 +147,7 @@ const CartScreen = () => {
     >
       <View style={[globalStyles.container]}>
         <ScrollView>
-          {/* <Header headerText={CART_SCREEN_TITLE} /> */}
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-            ]}
-          >
+          <View style={[globalStyles.pt_0]} >
             {cartItems.length === 0 ? (
               <View style={styles.emptyCartContainer}>
                 <Ionicons
@@ -154,16 +175,13 @@ const CartScreen = () => {
                     handleDelete={handleDelete}
                     key={eachCartItem.id}
                     cartItem={eachCartItem}
+                    stockAvailable={stockAvailable[eachCartItem.id] || 0}
                   />
                 ))}
-                {/* <View style={{ margin: 16 }} /> */}
-                <SpecialOffersBanner />
                 <OrderSummary
                   cartItems={cartItems}
-                  // sectionHeadingStyle={
-                  //   // styles.sectionHeading
-                  // }
                 />
+
                 <View
                   style={{
                     width: "50%",
@@ -192,6 +210,8 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
           </View>*/}
+
+            <SpecialOffersBanner />
 
             {savedForLaterItems.length > 0 && (
               <SavedLaterItem
@@ -230,8 +250,6 @@ const CartScreen = () => {
         </ScrollView>
       </View>
     </PageLayout>
-    /* <Footer navigation={router} activeTab="cart" />
-    </SafeAreaView> */
   );
 };
 

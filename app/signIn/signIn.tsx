@@ -18,6 +18,15 @@ import colors from "../config/colors";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
+import { showErrorAlert } from "../config/showErrorAlert";
+import {
+  FIX_VALIDATION_ERRORS,
+  INVALID_CREDENTIALS,
+  INVALID_EMAIL_FORMAT,
+  PASSWORD_MISMATCH,
+  PHONE_NUMBER_VALIDATION,
+} from "../config/customErrorMessages";
+
 
 const signIn = () => {
   const [inputValue, setInputValue] = useState(""); // Combined input field value
@@ -81,10 +90,11 @@ const signIn = () => {
 
   const handleSignIn = async () => {
     if (!validateFields()) {
-      Alert.alert(
-        "Validation Error",
-        "Please fix the errors before submitting."
-      );
+     showErrorAlert({
+        title: "Let's fix that",
+        message: FIX_VALIDATION_ERRORS,
+      });
+
       return;
     }
 
@@ -98,10 +108,10 @@ const signIn = () => {
         }
 
         if (normalizedPhone.length !== 10) {
-          Alert.alert(
-            "Invalid Phone Number",
-            "Phone number must be 10 digits."
-          );
+          showErrorAlert({
+          title: "Phone Number Error",
+          message: PHONE_NUMBER_VALIDATION,
+        });
           return;
         }
 
@@ -115,7 +125,10 @@ const signIn = () => {
       // Alert.alert("Success", "You have successfully signed in.");
       redirectToPage(containers.homeScreen);
     } catch (error) {
-      Alert.alert("Error", "Invalid credentials. Please try again.");
+      showErrorAlert({
+        title: "Oops!",
+        message: INVALID_CREDENTIALS,
+      });
     }
   };
 
@@ -124,9 +137,6 @@ const signIn = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //     <View style={styles.container}>
-    //       <Header headerText={"Sign In"} needResetNavigation={true} />
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -265,8 +275,6 @@ const signIn = () => {
           </TouchableOpacity>
         </View>
       </KeyBoardWrapper>
-      {/* </View>
-    </SafeAreaView> */}
     </PageLayout>
   );
 };

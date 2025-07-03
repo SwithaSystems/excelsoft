@@ -7,6 +7,8 @@ import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
+import { NotificationService } from "@/services/notificationService";
+import { formatDateForBackend } from "../config/dateTimeFormat";
 
 type Product = {
   productId: string;
@@ -53,42 +55,10 @@ export const usePaymentHandler = () => {
     }
   };
 
-  const handlePayment = async (
-    cartItems: Product[],
-    params: {
-      billingAddress?: {
-        name: string;
-        line1: string;
-        line2?: string;
-        city: string;
-        state: string;
-        postalCode: string;
-      };
-      shippingAddress?: {
-        name: string;
-        line1: string;
-        line2?: string;
-        city: string;
-        state: string;
-        postalCode: string;
-      };
-      pickupdetails?: {
-        time: string;
-        date: string;
-        vehicleType?: string;
-        vehicleNumber?: string;
-        firstName: string;
-        lastName: string;
-        phone: string;
-        email: string;
-        additionalDetails?: string;
-      };
-      deliveryDate?: string;
-      deliveryTime?: string;
-      selectedSlot?: string;
-      selectedMode?: string;
-    }
-  ) => {
+  // Add this enhanced debugging to your handlePayment function
+  const handlePayment = async (cartItems: Product[], params: any) => {
+    console.log("all order details", params);
+    console.log("cartItems", cartItems);
     const subtotal = calculateSubtotal(cartItems);
     const paymentData = await fetchPaymentIntent(subtotal);
     if (!paymentData) return;
@@ -113,9 +83,10 @@ export const usePaymentHandler = () => {
     if (paymentError) {
       Alert.alert("Payment Failed", paymentError.message);
     } else {
+      console.log("=== PAYMENT SUCCESSFUL - STARTING ORDER CREATION ===");
       Alert.alert("Success", "Payment completed successfully!");
 
-      const response = await orderService.createOrder({
+      const orderDetails: any = {
         products: products,
         shippingCharges: 10,
         discounts: [10],
@@ -123,7 +94,7 @@ export const usePaymentHandler = () => {
         totalAmount: subtotal + 10 + 2.99 - 10,
         paymentMethod: "credit_card",
         pickupMode: (params.selectedMode || "Delivery") as PickupMode,
-        deliveryDate: params.deliveryDate ?? "N/A",
+        deliveryDate: formatDateForBackend(params.deliveryDate) ?? "N/A",
         deliveryTime: params.deliveryTime,
         billingAddress: {
           name: params.billingAddress?.name ?? "N/A",
@@ -141,11 +112,32 @@ export const usePaymentHandler = () => {
           state: params.shippingAddress?.state ?? "N/A",
           postalCode: params.shippingAddress?.postalCode ?? "N/A",
         },
-        // timeslot: params.selectedSlot
-        //   ? new Date(params.selectedSlot)
-        //   : undefined,
-        pickupDetails: {
-          date: params.pickupdetails?.date ?? "N/A",
+      };
+
+      console.log("=== BEFORE PICKUP DETAILS CHECK ===");
+      console.log("selectedMode:", params.selectedMode);
+      console.log(
+        "selectedMode !== 'homeDelivery':",
+        params.selectedMode !== "homeDelivery"
+      );
+      console.log("pickupdetails?.date:", params.pickupdetails?.date);
+      console.log(
+        "Condition result:",
+        params.selectedMode !== "homeDelivery" && params.pickupdetails?.date
+      );
+
+      // Enhanced conditional check with more logging
+      if (
+        params.selectedMode !== "homeDelivery" &&
+        params.pickupdetails?.date
+      ) {
+        console.log("=== ADDING PICKUP DETAILS ===");
+
+        const formattedDate = formatDateForBackend(params.pickupdetails.date);
+        console.log("Formatted date:", formattedDate);
+
+        orderDetails.pickupDetails = {
+          date: formattedDate ?? "N/A",
           time: params.pickupdetails?.time ?? "N/A",
           firstName: params.pickupdetails?.firstName ?? "N/A",
           lastName: params.pickupdetails?.lastName ?? "N/A",
@@ -153,14 +145,46 @@ export const usePaymentHandler = () => {
           email: params.pickupdetails?.email ?? "N/A",
           vehicleType: params.pickupdetails?.vehicleType,
           vehicleNumber: params.pickupdetails?.vehicleNumber,
-          additionalDetails: params.pickupdetails?.additionalDetails,
-        },
-      });
-      console.log("after order placed", response);
-      dispatch(clearCart());
-      redirectToPage(containers.orderSuccessfulScreenScreen, {
-        orderData: JSON.stringify(response),
-      });
+          additionalDetails: params.pickupdetails.additionalDetails,
+        };
+
+        console.log("=== PICKUP DETAILS ADDED ===");
+        console.log("pickupDetails:", orderDetails.pickupDetails);
+      } else {
+        console.log("=== PICKUP DETAILS NOT ADDED ===");
+        console.log(
+          "Reason: selectedMode is homeDelivery OR pickupdetails.date is missing"
+        );
+      }
+
+      console.log("=== FINAL ORDER DETAILS ===");
+      console.log("orderDetails:", JSON.stringify(orderDetails, null, 2));
+
+      try {
+        console.log("=== CALLING ORDER SERVICE ===");
+        const response = await orderService.createOrder(orderDetails);
+        console.log("=== ORDER SERVICE RESPONSE ===");
+        console.log("Response:", JSON.stringify(response, null, 2));
+
+        console.log("=== CLEARING CART ===");
+        dispatch(clearCart());
+
+        console.log("=== REDIRECTING TO SUCCESS PAGE ===");
+        redirectToPage(containers.orderSuccessfulScreenScreen, {
+          orderData: JSON.stringify(response),
+        });
+        await NotificationService.scheduleLocalNotification(
+          "your Order is Placed",
+          `Your order Number is #ORD-${response?.orderNumber}`,
+          { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
+        );
+      } catch (error) {
+        console.error("=== ORDER CREATION FAILED ===");
+        console.error("Error:", error);
+        // console.error("Error message:", error?.message);
+        // console.error("Error response:", error?.response?.data);
+        Alert.alert("Error", "Failed to create order. Please try again.");
+      }
     }
   };
 

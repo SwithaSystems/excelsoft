@@ -21,14 +21,19 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "../pageLayoutProps";
 import Footer from "@/components/Footer";
+import {
+  ACCOUNT_DELETED,
+  ACCOUNT_DELETION_ERROR,
+} from "../config/customErrorMessages";
+import { showErrorAlert } from "../config/showErrorAlert";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-    shouldShowBanner: true, // Add this property
-    shouldShowList: true, // Add this property
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -59,7 +64,6 @@ const UserProfileScreen = () => {
     "Customer Support": containers.customerSupportScreenScreen,
     "Biometric settings": containers.biometricSettingsScreen,
     Feedback: containers.AppReviewScreenScreen,
-    // Admin: containers.AdminDashboardScreen,
   };
 
   // useEffect(() => {
@@ -89,6 +93,7 @@ const UserProfileScreen = () => {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
+        console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {

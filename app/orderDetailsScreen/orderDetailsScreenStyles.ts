@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   orderSummaryItemText: {
+    marginTop: 10,
     fontSize: 16,
   },
   buttonText: {

@@ -65,6 +65,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  errorInput: {
+  borderColor: 'red',
+  borderWidth: 1,
+},
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
+  },
+
 });
 
 export default styles;

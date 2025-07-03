@@ -34,6 +34,7 @@ const NO_RESULTS_FOUND =
 const PAGE_NOT_FOUND =
   "Oops – this page isn’t available. Please head back to the homepage or try another link. Cheers for your patience.";
 
+
 // Contact & Feedback
 const FEEDBACK_ERROR =
   "Sorry, there was an issue submitting your feedback. Please try again shortly – we really value your thoughts.";
@@ -201,7 +202,7 @@ export {
   DETAILS_UPDATED,
   PASSWORD_CHANGED,
   ACCOUNT_DELETED,
-  FIX_VALIDATION_ERRORS,
+  FIX_VALIDATION_ERRORS, 
   PHONE_NUMBER_VALIDATION,
   REGISTRATION_FAILED,
   OTP_SEND_FAILED,
