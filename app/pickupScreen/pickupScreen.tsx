@@ -30,6 +30,14 @@ import {
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
 } from "../config/stringLiterals";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { formatToDDMMYYYY } from "../config/dateTimeFormat";
+import {
+  PICKUP_TIME_IN_PAST,
+  PICKUP_TIME_REQUIRED,
+  PICKUP_DETAILS_REQUIRED,
+} from "../config/customErrorMessages";
+import { showErrorAlert } from "../config/showErrorAlert";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -60,6 +68,9 @@ const PickupScreen = () => {
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
   const [timeError, setTimeError] = useState<any>(null);
+  const [pickupDate, setPickupDate] = useState("");
+  const [isPickupDatePickerVisible, setPickupDatePickerVisibility] =
+    useState(false);
 
   // User state
   const [collector, setCollector] = useState("myself");
@@ -81,6 +92,7 @@ const PickupScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  console.log("userData in pickupscreen", userData);
 
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);
@@ -161,6 +173,15 @@ const PickupScreen = () => {
     );
   }, []);
 
+  const displayDatePicker = () => setPickupDatePickerVisibility(true);
+  const hideDatePicker = () => setPickupDatePickerVisibility(false);
+
+  const handlePickupDateConfirm = (date: Date) => {
+    const formattedDate = formatToDDMMYYYY(date);
+    setPickupDate(formattedDate);
+    hideDatePicker();
+  };
+
   // Validate form on every field change to enable/disable the submit button
   useEffect(() => {
     const errors = [];
@@ -185,7 +206,7 @@ const PickupScreen = () => {
     // Validate email if entered
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(email.trim())) {
         errors.push("Email format is invalid");
         setEmailError("Please enter a valid email address");
       } else {
@@ -218,7 +239,7 @@ const PickupScreen = () => {
   // Load user data from API
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userData?.phone) return;
+      // if (!userData?.phone) return;
 
       try {
         const response = await UserAPI.getUserById(
@@ -478,6 +499,46 @@ const PickupScreen = () => {
       // If the form isn't valid, focus on first error field and return
       if (!isFormValid) {
         focusFirstErrorField();
+
+        if (!date || !hours || !minutes) {
+          showErrorAlert({
+            title: "Time Required",
+            message: PICKUP_TIME_REQUIRED,
+          });
+          return;
+        }
+
+        const timeValidation = validateTime(
+          date,
+          hours,
+          minutes,
+          period,
+          false
+        );
+        if (!timeValidation.isValid) {
+          showErrorAlert({
+            title: "Invalid Time",
+            message: PICKUP_TIME_IN_PAST,
+          });
+          return;
+        }
+
+        if (!firstName || !lastName || !phone || !email) {
+          showErrorAlert({
+            title: "Missing details",
+            message: PICKUP_DETAILS_REQUIRED,
+          });
+          return;
+        }
+
+        if (isCurbsidePickup && (!vehicleType || !vehicleNumber)) {
+          showErrorAlert({
+            title: "Missing vehicle info",
+            message: PICKUP_DETAILS_REQUIRED,
+          });
+          return;
+        }
+
         return;
       }
 
@@ -518,6 +579,7 @@ const PickupScreen = () => {
 
   // Handle email input change with validation
   const handleEmailChange = (text: any) => {
+    console.log("Email input: ", text);
     setEmail(text);
 
     if (!text) {
@@ -526,12 +588,13 @@ const PickupScreen = () => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(text)) {
+    if (!emailRegex.test(text.trim())) {
       setEmailError("Please enter a valid email address");
     } else {
       setEmailError(null);
     }
   };
+
 
   // Reusable text input component
   const renderTextInput = (
@@ -539,7 +602,7 @@ const PickupScreen = () => {
     value: any,
     onChangeText: any,
     required = true,
-    props = {},
+    props: TextInputProps = {},
     error = null,
     ref?: React.Ref<TextInput> | null
   ) => (
@@ -579,15 +642,6 @@ const PickupScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}>
-          <Header
-            headerText={
-              isStorePickup
-                ? PickupMode.STORE_PICKUP
-                : PickupMode.CURBSIDE_PICKUP
-            }
-          /> */}
-
         <ScrollView ref={scrollViewRef}>
           <View
             style={[
@@ -621,7 +675,7 @@ const PickupScreen = () => {
                   style={globalStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <Text>{date}</Text>
+                  <Text>{formatToDDMMYYYY(date)}</Text>
                 </TouchableOpacity>
               )}
               <DateTimePickerModal
@@ -672,37 +726,7 @@ const PickupScreen = () => {
                 onChangeText={handleMinutesChange}
                 accessibilityLabel="Minutes"
               />
-              {/* AM/PM */}
-              {/* <View
-                  style={{
-                    borderColor: timeError ? "red" : colors.primary,
-                    borderWidth: 1,
-                    height: 40,
-                    width: 150,
-                    borderRadius: 8,
-                    justifyContent: "center",
-                  }}
-                >
-                  <ModalSelector
-                    data={TIME_PERIOD_OPTIONS}
-                    initValue="Select Period"
-                    onChange={(option) => {
-                      setPeriod(option.value);
-                      validateTime(date, hours, minutes, option.value);
-                    }}
-                    optionTextStyle={{ color: colors.primary }}
-                    optionContainerStyle={{ backgroundColor: colors.white }}
-                    cancelStyle={{ backgroundColor: colors.white }}
-                    accessible={true}
-                    accessibilityLabel="Select time period: AM or PM"
-                  >
-                    <TextInput
-                      style={globalStyles.picker_50}
-                      editable={false}
-                      value={period?.toUpperCase() || ""}
-                    />
-                  </ModalSelector>
-                </View> */}
+
               <View style={styles.toggleContainer}>
                 <TouchableOpacity
                   style={[

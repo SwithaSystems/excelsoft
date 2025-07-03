@@ -12,9 +12,14 @@ import { Image } from "react-native-elements";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
-import colors from "../config/colors";
-import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
+import {
+  INCORRECT_CURRENT_PASSWORD,
+  PASSWORD_CHANGE_FAILED,
+  PASSWORD_CHANGED,
+} from "../config/customErrorMessages";
+import { showErrorAlert } from "../config/showErrorAlert";
 import PageLayout from "../pageLayoutProps";
+import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -26,9 +31,7 @@ const changePasswordScreen = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      // const userData = await AsyncStorage.getItem("user");
       if (user) {
-        // const user = JSON.parse(userData);
         console.log("user in change password", user);
         setPhoneNumber(user.phone);
         setExistingPassword(user.password);
@@ -47,7 +50,7 @@ const changePasswordScreen = () => {
     return new Promise((resolve, reject) => {
       Bcrypt.compare(currentPassword, existingPassword, function (err, res) {
         if (err) reject(err);
-        else resolve(res); // true if match, false otherwise
+        else resolve(res); 
       });
     });
   };
@@ -56,17 +59,28 @@ const changePasswordScreen = () => {
     const isMatch = await comparePasswords(currPassword, existingPassword);
     console.log("isMatch", isMatch);
     if (!isMatch) {
-      alert("Current password is incorrect");
+      showErrorAlert({
+        title: "Error",
+        message: INCORRECT_CURRENT_PASSWORD,
+      });
     }
   };
+
+ 
   const handleChangePassword = async () => {
     if (!currPassword || !newPassword || !confirmPassword) {
-      alert("All fields are required");
+      showErrorAlert({
+        title: "Validation Error",
+        message: "All fields are required",
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("New and Confirm passwords do not match");
+      showErrorAlert({
+        title: "Validation Error",
+        message: "New and Confirm passwords do not match",
+      });
       return;
     }
 
@@ -74,10 +88,17 @@ const changePasswordScreen = () => {
       const response = await UserAPI.changePassword({ newPassword });
       console.log("response", response.data);
       if (response.data.message === "Password successfully changed") {
-        alert("Password successfully changed");
+        showErrorAlert({
+          title: "Success",
+          message: PASSWORD_CHANGED,
+        });
+
         redirectToPage(containers.signInScreen);
       } else {
-        alert("Failed to change password");
+        showErrorAlert({
+          title: "Error",
+          message: PASSWORD_CHANGE_FAILED,
+        });
         redirectToPage(containers.userProfileScreenScreen);
       }
     } catch (err) {
@@ -88,30 +109,15 @@ const changePasswordScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable={false}
       hasHeader
       hasFooter={false}
       headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
-      scrollable={false}
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} /> */}
         <ScrollView>
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-            ]}
-          >
-            {/* <View style={globalStyles.profilePictureContainer}>
-            <Image
-              source={{ uri: "https://picsum.photos/100" }}
-              style={globalStyles.profileImage}
-            />
-          </View> */}
+          <View style={[globalStyles.pt_0]}>
             <View style={globalStyles.profileInputContainer}>
               <View style={{ flex: 1 }}>
                 <Text style={globalStyles.userInputLabel}>
@@ -125,6 +131,8 @@ const changePasswordScreen = () => {
                   value={currPassword}
                   onPress={() => {}}
                   setValue={setCurrPassword}
+                  
+                 
                   onblur={() => {
                     handleBlur(currPassword);
                   }}
@@ -164,22 +172,8 @@ const changePasswordScreen = () => {
             <Button onPress={handleChangePassword} title="Save Password" />
           </View>
         </ScrollView>
-        {/* <Button
-            onPress={handleChangePassword}
-            title="Save"
-          /> */}
-        {/* <View style={globalStyles.p_3}>
-          <Button
-            onPress={() => {
-              handleChangePassword();
-            }}
-            title="Save Password"
-          />
-        </View> */}
-        {/* </View> */}
       </KeyBoardWrapper>
     </PageLayout>
-    // </SafeAreaView>
   );
 };
 

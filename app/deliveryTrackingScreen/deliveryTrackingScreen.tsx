@@ -5,26 +5,42 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import OrderTimeline from "./components/OrderTimeline";
 import styles from "./deliveryTrackingScreenStyles";
+import Button from "@/components/commonComponents/Button";
 import Footer from "@/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import colors from "../config/colors";
 import { orderService } from "@/services/orderService";
 import AdminFooter from "@/components/AdminFooter";
 import PageLayout from "../pageLayoutProps";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
+
+// Order status constants matching backend response
+const ORDER_STATUS = {
+  ORDER_PLACED: "Order Placed",
+  AWAITING_AGE_VERIFICATION: "Awaiting Age Verification",
+  PREPARING: "Preparing", // Note: backend uses "Preparing" not "Preparing Order"
+  READY: "Ready",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  DELIVERED: "Delivered",
+  COLLECTED: "Collected",
+  CANCELLED: "Cancelled",
+  FAILED: "Failed",
+  REJECTED: "Rejected",
+  STOCK_ISSUE: "Stock Issue",
+  REFUND_INITIATED: "Refund Initiated",
+  REFUND_COMPLETED: "Refund Completed",
+} as const;
 
 const deliveryTrackingScreen = () => {
-  const orderStatus = [
-    "Order Placed",
-    "Order Packed",
-    "Out for delivery",
-    "Reached the Location",
-    "Order Delivered Successully!!",
-  ];
   const props = useLocalSearchParams();
   const from = props.from;
   const orderId = useLocalSearchParams();
+  const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
+
   console.log("orderId", orderId.orderId);
+
   const getOrderById = async () => {
     const order_Details = await orderService.getOrderByMongoId(
       String(orderId.orderId)
@@ -32,6 +48,7 @@ const deliveryTrackingScreen = () => {
     console.log("order_Details", order_Details);
     setOrderDetails(order_Details);
   };
+
   useEffect(() => {
     getOrderById();
   }, []);
@@ -159,6 +176,13 @@ const deliveryTrackingScreen = () => {
   };
 
   console.log("orderDetails in tracking order", orderDetails?.status);
+  console.log(
+    "hasAgeRestrictedProducts",
+    orderDetails && hasAgeRestrictedProducts(orderDetails)
+  );
+
+  // Get the appropriate statuses for display
+  const displayStatuses = getOrderedStatusesForTimeline();
 
   return (
     <PageLayout
@@ -200,7 +224,7 @@ const deliveryTrackingScreen = () => {
 
           <View style={styles.trackingContainer}>
             <OrderTimeline
-              statusList={orderStatus}
+              statusList={displayStatuses}
               actualStatus={orderDetails?.status}
             />
           </View>
@@ -220,7 +244,6 @@ const deliveryTrackingScreen = () => {
         </View>
       </View>
     </PageLayout>
-    /* </ScrollView>*/
   );
 };
 
