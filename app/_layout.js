@@ -416,7 +416,8 @@ const LayoutContent = () => {
               name={containers.biometricSettingsScreen}
               options={{ headerShown: false }}
             />
-          </Stack>
+            <Stack.Screen name={containers.adminAccessControlScreenScreen} options={{ headerShown: false }} />
+</Stack>
         </BiometricAuthWrapper>
       )}
     </>

@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Image,
   TextInput,
-  SafeAreaView,
 } from "react-native";
 import styles from "./feedBackScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -19,7 +17,6 @@ import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { ProductsAPI } from "@/services/productService";
 import { useLocalSearchParams } from "expo-router";
-import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,6 +27,11 @@ import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { FEEDBACK_SCREEN2_TITLE } from "../config/stringLiterals";
 
+type Media = {
+  uri: string;
+  type?: string;
+};
+
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
@@ -38,7 +40,7 @@ const feedBackScreen = () => {
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
-
+  const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickImage = async () => {
@@ -47,14 +49,29 @@ const feedBackScreen = () => {
       alert("Permission to access gallery is required!");
       return;
     }
+
+    if(mediaAssets.length >= 5){
+      alert("You can only upload up to 5 media.");
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsMultipleSelection: true,
+      // aspect: [4, 3],
       quality: 1,
     });
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const selected = result.assets;
+      console.log("Image picker result", result);
+      const total = mediaAssets.length + selected.length;
+
+      if (total > 5) {
+        alert("You can only upload up to 5 media.");
+        return;
+      }
+
+      setMediaAssets([...mediaAssets, ...selected]);
+      // setImage(result.assets[0].uri);
     }
   };
 
@@ -97,7 +114,6 @@ const feedBackScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -115,20 +131,9 @@ const feedBackScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}>
-          <Header
-            headerText="Add Your Review"
-            secondaryBtnText="Discard"
-            secondaryBtnCallBack={() => {
-              redirectToPage(containers.productDetailScreenScreen, {
-                productId: productId,
-              });
-            }}
-          />
-          <ScrollView> */}
+        <ScrollView>
         <View
           style={[
-            // globalStyles.sectionContent,
             globalStyles.pt_0,
           ]}
         >
@@ -175,10 +180,7 @@ const feedBackScreen = () => {
             )}
           </View>
         </View>
-        {/* </ScrollView> */}
-        <View
-        // style={globalStyles.p_3}
-        >
+        <View>
           <Button
             title={isSubmitting ? "Submitting..." : "Submit Review"}
             onPress={handleAddReview}
@@ -191,9 +193,8 @@ const feedBackScreen = () => {
           message="Review Added Successfully"
           onClose={() => setShowReviewconfirmationModal(false)}
         />
-        {/* </View> */}
+        </ScrollView>
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

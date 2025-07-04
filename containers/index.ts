@@ -65,4 +65,4 @@ export default {homeScreen: "home/home",
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
   selectBillingAddressScreenScreen:"selectBillingAddressScreen/selectBillingAddressScreen",
   AdminCategoriesScreen: 'AdminCategories/AdminCategories', 
-  UserNotificationsScreen: 'UserNotifications/UserNotifications', biometricSettingsScreen: 'biometricSettings/biometricSettings'};
+  UserNotificationsScreen: 'UserNotifications/UserNotifications', biometricSettingsScreen: 'biometricSettings/biometricSettings', adminAccessControlScreenScreen: 'adminAccessControlScreen/adminAccessControlScreen'};

@@ -16,8 +16,8 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    height: 100, // Adjust as needed
-    textAlignVertical: 'top', // Align text to the top (Android)
+    height: 100, 
+    textAlignVertical: 'top', 
   },
   imagePickerContainer: {
     marginBottom: 20,
