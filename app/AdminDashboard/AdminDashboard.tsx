@@ -376,6 +376,17 @@ const AdminDashboard = () => {
                 </View>
               </View>
             </View>
+            <View style={styles.metricBox}>
+              <View style={styles.metricIconContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    redirectToPage(containers.adminAccessControlScreenScreen);
+                  }}
+                >
+                  <Text style={styles.metricTitle}>User Admin Access</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
 
           <View style={styles.ordersHeader}>

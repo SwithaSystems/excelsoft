@@ -64,7 +64,6 @@ const UserProfileScreen = () => {
     "Customer Support": containers.customerSupportScreenScreen,
     "Biometric settings": containers.biometricSettingsScreen,
     Feedback: containers.AppReviewScreenScreen,
-    Admin: containers.adminAccessControlScreenScreen,
   };
 
   // useEffect(() => {

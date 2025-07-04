@@ -93,4 +93,9 @@ export const UserAPI = {
     });
     return response;
   },
+
+  getAllUsers: async () => {
+    const response = await jsonAxios.get("/users");
+    return response;
+  },
 };
