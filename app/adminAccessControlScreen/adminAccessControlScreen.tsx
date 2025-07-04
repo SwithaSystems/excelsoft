@@ -119,7 +119,7 @@ const usersToShow = displayUser ? allUsersData : allUsersData.slice(0, 10);
               onPress={() => toggleAccess(index)}
             >
               {accessList[index] && (
-                <Ionicons name="checkmark" size={16} color="black" />
+                <Ionicons name="checkmark" size={12} color="black" />
               )}
             </TouchableOpacity>
           </View>

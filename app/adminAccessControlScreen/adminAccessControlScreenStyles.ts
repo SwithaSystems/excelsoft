@@ -70,10 +70,13 @@ const styles = StyleSheet.create({
       fontSize: 14,
     },
     checkboxCell: {
-      flexBasis: '10%',
       justifyContent: 'center',
       alignItems: 'center',
-      height: 20,
+      height: 16,
+      width: 16,
+      borderWidth: 1,
+      aspectRatio: 1,
+      borderColor: 'black',
     },
     nameCell: {
       flexBasis: '30%',

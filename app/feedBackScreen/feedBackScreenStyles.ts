@@ -48,6 +48,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  imageContainer:{
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    marginTop: 10,
+  }
 });
 
 export default styles;

@@ -36,7 +36,7 @@ const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  // const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
@@ -52,25 +52,25 @@ const feedBackScreen = () => {
 
     if(mediaAssets.length >= 5){
       alert("You can only upload up to 5 media.");
+      return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
+      allowsMultipleSelection: false,
       // aspect: [4, 3],
       quality: 1,
     });
     if (!result.canceled) {
-      const selected = result.assets;
+      const selected = result.assets[0];
       console.log("Image picker result", result);
-      const total = mediaAssets.length + selected.length;
 
-      if (total > 5) {
+      if (mediaAssets.length >= 5) {
         alert("You can only upload up to 5 media.");
         return;
       }
 
-      setMediaAssets([...mediaAssets, ...selected]);
+      setMediaAssets([...mediaAssets, selected]);
       // setImage(result.assets[0].uri);
     }
   };
@@ -95,6 +95,7 @@ const feedBackScreen = () => {
         rating: rating,
         name: UserParsed?.firstName,
         review: reviewText,
+        media: mediaAssets.map((asset) => asset.uri),
       };
 
       await ProductsAPI.addReview(Number(productId), review);
@@ -131,7 +132,7 @@ const feedBackScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <View
           style={[
             globalStyles.pt_0,
@@ -172,12 +173,35 @@ const feedBackScreen = () => {
                 color={isSubmitting ? colors.borderGrey : colors.darkGray}
               />
             </TouchableOpacity>
-            {image && (
+            {/* {image && (
               <Image
                 source={{ uri: image }}
                 style={{ width: 200, height: 200, marginTop: 10 }}
               />
-            )}
+            )} */}
+            <View style={styles.imageContainer}>
+            {mediaAssets.map((asset, index) => (
+              <TouchableOpacity
+                key={index}
+                onLongPress={() => {
+                  const updated = mediaAssets.filter((_, i) => i !== index);
+                  setMediaAssets(updated);
+                }}
+                >
+                <Image
+                      source={{ uri: asset.uri }}
+                      style={{
+                        width: 100,
+                        height: 100,
+                        margin: 5,
+                        borderRadius: 8,
+                        borderColor: colors.lightgrey,
+                        borderWidth: 1,
+                      }}
+                    />
+           </TouchableOpacity>
+            ))}
+            </View>
           </View>
         </View>
         <View>
