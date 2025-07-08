@@ -32,7 +32,7 @@ const feedBackScreen = () => {
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
-  const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
+  // const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
   console.log("userData_redux", userData_redux);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
