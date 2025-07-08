@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  TextInput,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput } from "react-native";
 import styles from "./feedBackScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -38,6 +32,8 @@ const feedBackScreen = () => {
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
+  const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
+  console.log("userData_redux", userData_redux);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -82,9 +78,12 @@ const feedBackScreen = () => {
     }
     setIsSubmitting(true);
     try {
-      const userphone = userData_redux.phone;
-      const user = await UserAPI.getUserByPhonenumber(userphone);
+      const userID = userData_redux._id
+        ? userData_redux._id
+        : userData_redux.id;
+      const user = await UserAPI.getUserById(userID);
       const UserParsed = user.data;
+      console.log("user in addreview", UserParsed);
 
       // const review = {
       //   id: (Number(reviewsArrayLength) + 1).toString(),

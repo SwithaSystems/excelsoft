@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "400",
-    marginBottom: 35,
+    // marginBottom: 35,
     color: colors.deepSkyBlue,
   },
   metricsContainer: {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   metricTitle: {
     fontSize: 14,
     marginLeft: 16,
-    color: colors.mutedBlue,
+    color: colors.lushblue,
     fontWeight: 600,
   },
   metricValue: {
@@ -150,6 +150,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.Gray88,
     color: colors.darkCharcoal,
   },
+  linkText:{
+    color: colors.primary,
+    fontSize: 14,
+    textDecorationLine: "underline",
+  },
+  headerContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 4,
+    // marginBottom: 16,
+  }
 });
 
 export default styles;

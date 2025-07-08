@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.excelsoft.app",
@@ -34,11 +32,7 @@
       "package": "com.excelsoft.app",
       "versionCode": 1,
       "newArchEnabled": true,
-      "permissions": [
-        "NOTIFICATION",
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
-      ]
+      "permissions": ["NOTIFICATION", "USE_BIOMETRIC", "USE_FINGERPRINT"]
     },
     "web": {
       "bundler": "metro",
@@ -46,6 +40,14 @@
       "favicon": "./assets/brandlogo.png"
     },
     "plugins": [
+      [
+        "expo-media-library",
+
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos."
+        }
+      ],
       "expo-router",
       [
         "expo-notifications",

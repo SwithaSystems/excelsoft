@@ -209,12 +209,14 @@ const AdminProductDashboard = () => {
       }
       footerComponent={<AdminFooter activeTab="products" />}
     >
-      <View
-        style={[
-          globalStyles.pt_0,
-          { paddingTop: 16 },
-        ]}
-      >
+      <View style={[globalStyles.pt_0, { paddingTop: 16 }]}>
+        {/* <Button
+        style={{marginBottom: 16}}
+          onPress={() => {
+            redirectToPage(containers.fileUploadAddProductCategoryScreen);
+          }}
+          title="Upload Product Data"
+        /> */}
         <Button
           onPress={() => {
             redirectToPage(containers.AdminProductUpdationScreen, {

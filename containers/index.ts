@@ -1,4 +1,5 @@
-export default {homeScreen: "home/home",
+export default {
+  homeScreen: "home/home",
   searchScreen: "search/search",
   productDetailScreenScreen: "productDetailScreen/productDetailScreen",
   searchSuggesionsScreenScreen: "searchSuggesionsScreen/searchSuggesionsScreen",
@@ -63,6 +64,13 @@ export default {homeScreen: "home/home",
   cancelOrderScreen: "cancelOrder/cancelOrder",
   replaceOrderScreenScreen: "replaceOrderScreen/replaceOrderScreen",
   addAddressScreenScreen: "addAddressScreen/addAddressScreen",
-  selectBillingAddressScreenScreen:"selectBillingAddressScreen/selectBillingAddressScreen",
-  AdminCategoriesScreen: 'AdminCategories/AdminCategories', 
-  UserNotificationsScreen: 'UserNotifications/UserNotifications', biometricSettingsScreen: 'biometricSettings/biometricSettings', adminAccessControlScreenScreen: 'adminAccessControlScreen/adminAccessControlScreen'};
+  selectBillingAddressScreenScreen:
+    "selectBillingAddressScreen/selectBillingAddressScreen",
+  AdminCategoriesScreen: "AdminCategories/AdminCategories",
+  UserNotificationsScreen: "UserNotifications/UserNotifications",
+  biometricSettingsScreen: "biometricSettings/biometricSettings",
+  adminAccessControlScreenScreen:
+    "adminAccessControlScreen/adminAccessControlScreen",
+  fileUploadAddProductCategoryScreen:
+    "fileUploadAddProductCategory/fileUploadAddProductCategory",
+};

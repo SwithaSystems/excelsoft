@@ -68,8 +68,8 @@ const AdminAccessControlScreen = () => {
       const simplifiedUsers = response.data.map((user: any) => ({
         id: user?.id || user?._id,
         name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
-        phone: user?.phone || "N/A",
-        email: user?.email || "N/A",
+        phone: user?.phone,
+        email: user?.email,
         isAdmin: user?.isAdmin || false,
       }));
 

@@ -27,24 +27,11 @@ import Footer from "@/components/Footer";
 import PageLayout from "../pageLayoutProps";
 import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import { showErrorAlert } from "../config/showErrorAlert";
-import {
-  SEARCH_QUERY_REQUIRED_MESSAGE,
-} from "../config/customErrorMessages";
-
+import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../config/customErrorMessages";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "@app_recent_searches";
 const MAX_RECENT_SEARCHES = 5;
-
-// // Mock data for suggestions - in a real app this would come from an API
-// const mockSuggestions: any = {
-//   app: ["Apple", "Applesauce", "Appetizers", "Appliances"],
-//   or: ["Oranges", "Organic", "Organic Fruits", "Orange Juice"],
-//   sh: ["Shampoo", "Shoes", "Shirts", "Shorts"],
-//   me: ["Meat", "Medicine", "Melons", "Mexican Food"],
-//   dr: ["Drinks", "Dried Fruits", "Dress", "Dryer Sheets"],
-//   gro: ["Groceries", "Ground Beef", "Grapes", "Grains"],
-// };
 
 const trendingSearches = ["Clothes", "Meat", "Alcohol", "Oranges"];
 
@@ -142,7 +129,7 @@ const SearchScreen = () => {
 
   // Fix 3: Make handleSearch async and add error handling
   const handleSearch = useCallback(async () => {
-  if (!searchQuery.trim()) {
+    if (!searchQuery.trim()) {
       showErrorAlert({
         title: "Nothing to Search",
         message: SEARCH_QUERY_REQUIRED_MESSAGE,
@@ -259,7 +246,7 @@ const SearchScreen = () => {
       </>
     );
   }, [recentSearches, handleSelectRecentSearch]);
-  
+
   const renderTrendingSearches = () => {
     return (
       <View style={styles.section}>
