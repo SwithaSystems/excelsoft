@@ -211,6 +211,7 @@ const AdminProductDashboard = () => {
     >
       <View style={[globalStyles.pt_0, { paddingTop: 16 }]}>
         <Button
+        style={{marginBottom: 16}}
           onPress={() => {
             redirectToPage(containers.fileUploadAddProductCategoryScreen);
           }}

@@ -14,7 +14,8 @@ import * as FileSystem from "expo-file-system";
 import PageLayout from "../pageLayoutProps";
 import Header from "@/components/Header";
 import { FILE_UPLOAD } from "../config/stringLiterals";
-
+import colors from "../config/colors";
+import { color } from "react-native-elements/dist/helpers";
 // Define types
 interface FileUploadProps {
   onUploadComplete?: (result: any) => void;
@@ -454,16 +455,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   fileInfoContainer: {
-    backgroundColor: "#e8f5e8",
+    backgroundColor: colors.secondary,
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#c8e6c9",
+    borderColor: colors.primary,
   },
   fileInfoText: {
     fontSize: 14,
-    color: "#2e7d32",
+    color: colors.primary,
     marginBottom: 5,
   },
   buttonContainer: {
@@ -484,7 +485,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   chooseButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: colors.primary,
     flex: 1,
     marginRight: 10,
   },
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   uploadButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: colors.primary,
     marginTop: 10,
   },
   buttonDisabled: {
