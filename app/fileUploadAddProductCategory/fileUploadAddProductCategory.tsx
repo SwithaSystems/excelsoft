@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import FileUploadComponent from "../components/FileUploadComponent";
+import FileUploadComponent from "./FileUploadComponent";
 
 const fileUploadAddProductCategory = () => {
   const handleUploadComplete = (result: any) => {
