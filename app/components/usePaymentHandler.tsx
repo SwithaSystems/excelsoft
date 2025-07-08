@@ -9,6 +9,7 @@ import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../config/dateTimeFormat";
+import { DELIVERY_MODE_HOME } from "../config/stringLiterals";
 
 type Product = {
   productId: string;
@@ -117,18 +118,18 @@ export const usePaymentHandler = () => {
       console.log("=== BEFORE PICKUP DETAILS CHECK ===");
       console.log("selectedMode:", params.selectedMode);
       console.log(
-        "selectedMode !== 'homeDelivery':",
-        params.selectedMode !== "homeDelivery"
+        `selectedMode !==${DELIVERY_MODE_HOME}:`,
+        params.selectedMode !== DELIVERY_MODE_HOME
       );
       console.log("pickupdetails?.date:", params.pickupdetails?.date);
       console.log(
         "Condition result:",
-        params.selectedMode !== "homeDelivery" && params.pickupdetails?.date
+        params.selectedMode !== DELIVERY_MODE_HOME && params.pickupdetails?.date
       );
 
       // Enhanced conditional check with more logging
       if (
-        params.selectedMode !== "homeDelivery" &&
+        params.selectedMode !== DELIVERY_MODE_HOME &&
         params.pickupdetails?.date
       ) {
         console.log("=== ADDING PICKUP DETAILS ===");

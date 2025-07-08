@@ -1,4 +1,7 @@
-import { MY_ORDERS_SCREEN_TITLE } from "./../config/stringLiterals";
+import {
+  DATE_FORMAT_Display,
+  MY_ORDERS_SCREEN_TITLE,
+} from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -17,6 +20,7 @@ import { Order, orderService } from "@/services/orderService";
 import colors from "../config/colors";
 import { useLocalSearchParams } from "expo-router";
 import PageLayout from "../pageLayoutProps";
+import { format } from "date-fns";
 
 const myOrderScreen = () => {
   // const orderData = [
@@ -83,7 +87,8 @@ const myOrderScreen = () => {
                 <FlatList
                   data={orders.map((order) => ({
                     orderId: `#ORD-${order.orderNumber}`,
-                    date: new Date(order.deliveryDate).toLocaleString(),
+                    // date: new Date(order.deliveryDate).toLocaleString(),
+                    date: format(order.deliveryDate, DATE_FORMAT_Display),
                     status: order?.status,
                     totalItems: order.products?.length ?? 0,
                     subtotal: order.totalAmount.toFixed(2),

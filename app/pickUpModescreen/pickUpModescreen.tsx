@@ -17,7 +17,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import PageLayout from "../pageLayoutProps";
-import { PICKUP_MODE_SCREEN_TITLE } from "../config/stringLiterals";
+import {
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_HOME,
+  DELIVERY_MODE_STORE,
+  PICKUP_MODE_SCREEN_TITLE,
+} from "../config/stringLiterals";
 
 const options = [
   {
@@ -26,7 +31,7 @@ const options = [
     description: "Pick up your order from our store",
     icon: "location-outline",
     redirectionScreen: containers.pickupScreenScreen,
-    params: { mode: "store" },
+    params: { mode: DELIVERY_MODE_STORE },
   },
   {
     id: "curbside",
@@ -34,7 +39,7 @@ const options = [
     description: "Pick up your order curbside, right from your car.",
     icon: "car-outline",
     redirectionScreen: containers.pickupScreenScreen,
-    params: { mode: "curbside" },
+    params: { mode: DELIVERY_MODE_CURBSIDE },
   },
   {
     id: "home",
@@ -42,7 +47,7 @@ const options = [
     description: "Receive your order at your doorstep.",
     icon: "home-outline",
     redirectionScreen: containers.homeDeliveryScreenScreen,
-    params: { mode: "home" },
+    params: { mode: DELIVERY_MODE_HOME },
   },
 ] as const;
 const pickUpModescreen = () => {

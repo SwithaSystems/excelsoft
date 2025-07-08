@@ -29,7 +29,10 @@ import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import colors from "../config/colors";
 import PageLayout from "../pageLayoutProps";
-import { ADMIN_ORDER_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
+import {
+  ADMIN_ORDER_DETAIL_SCREEN_TITLE,
+  DELIVERY_MODE_HOME,
+} from "../config/stringLiterals";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
@@ -133,6 +136,7 @@ const orderDetailsScreen = () => {
   )
     .toString()
     .padStart(2, "0")}/${rawDate.getFullYear()}`;
+  console.log("formattedDate", formattedDate);
 
   console.log("cartItemsWithDetails", cartItemsWithDetails);
 
@@ -274,7 +278,7 @@ const orderDetailsScreen = () => {
             <Text style={[globalStyles.mb_2, styles.addressText]}>
               Choosen Delivery: {orderDetails?.pickupMode}
             </Text>
-            {orderDetails?.pickupMode === "homeDelivery" &&
+            {orderDetails?.pickupMode === DELIVERY_MODE_HOME &&
               shippingAddress_order && (
                 <Text>
                   Address:{" "}

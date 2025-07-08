@@ -98,11 +98,11 @@ function BiometricAuthWrapper({ children }) {
   const handleBiometricAuthSuccess = async () => {
     // No backend verification required – simply mark as authenticated
     setIsBiometricAuthenticated(true);
-    Toast.show({
-      type: "success",
-      text1: "Authentication Successful",
-      text2: "Welcome back!",
-    });
+    // Toast.show({
+    //   type: "success",
+    //   text1: "Authentication Successful",
+    //   text2: "Welcome back!",
+    // });
   };
   const handleBiometricAuthFailure = (error) => {
     console.error("Biometric authentication failed:", error);
@@ -112,7 +112,6 @@ function BiometricAuthWrapper({ children }) {
       text2: error,
     });
   };
-  
 
   // Show loading while checking biometric settings
   if (isCheckingBiometric) {

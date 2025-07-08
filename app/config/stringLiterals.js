@@ -73,8 +73,18 @@ const DEFAULT_PICKUP_HOURS = 2;
 const STORE_OPENING_TIMINGS = 7;
 const STORE_CLOSING_TIMINGS = 17;
 
+//Minimum UserAge
+const MINIMUM_USER_AGE = 12;
+
+//Date Formats
+const DATE_FORMAT_Display = "dd/MM/yyyy";
+const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.sssZ";
+
 // Export all constants
 export {
+  DATE_FORMAT_Display,
+  DATE_FORMAT_API,
+  MINIMUM_USER_AGE,
   ADMIN_PRODUCT_ADD_SCREEN_TITLE,
   STORE_OPENING_TIMINGS,
   STORE_CLOSING_TIMINGS,
