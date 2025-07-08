@@ -27,20 +27,18 @@ import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { FEEDBACK_SCREEN2_TITLE } from "../config/stringLiterals";
 
-type Media = {
-  uri: string;
-  type?: string;
-};
+const MAX_IMAGES = 5;
 
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [selectedImages, setSelectedImages] = useState<{uri: string; name: string; type: string}[]>([]);
   // const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
-  const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickImage = async () => {
@@ -49,30 +47,28 @@ const feedBackScreen = () => {
       alert("Permission to access gallery is required!");
       return;
     }
-
-    if(mediaAssets.length >= 5){
-      alert("You can only upload up to 5 media.");
-      return;
-    }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: false,
+      allowsEditing: true,
       // aspect: [4, 3],
       quality: 1,
     });
     if (!result.canceled) {
-      const selected = result.assets[0];
-      console.log("Image picker result", result);
-
-      if (mediaAssets.length >= 5) {
-        alert("You can only upload up to 5 media.");
-        return;
-      }
-
-      setMediaAssets([...mediaAssets, selected]);
       // setImage(result.assets[0].uri);
+      const newImages = result.assets.map((asset) => ({
+        uri: asset.uri,
+        name: asset.fileName ?? `image-${Date.now()}.jpg`,
+        type: asset.type ?? "image/jpeg",
+      }));
+      const totalImages = [...selectedImages, ...newImages].slice(0, MAX_IMAGES);
+      setSelectedImages(totalImages);
     }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedImages = [...selectedImages];
+    updatedImages.splice(index, 1);
+    setSelectedImages(updatedImages);
   };
 
   const handleAddReview = async () => {
@@ -90,15 +86,27 @@ const feedBackScreen = () => {
       const user = await UserAPI.getUserByPhonenumber(userphone);
       const UserParsed = user.data;
 
-      const review = {
-        id: (Number(reviewsArrayLength) + 1).toString(),
-        rating: rating,
-        name: UserParsed?.firstName,
-        review: reviewText,
-        media: mediaAssets.map((asset) => asset.uri),
-      };
+      // const review = {
+      //   id: (Number(reviewsArrayLength) + 1).toString(),
+      //   rating: rating,
+      //   name: UserParsed?.firstName,
+      //   review: reviewText,
+      // };
 
-      await ProductsAPI.addReview(Number(productId), review);
+      const formData = new FormData();
+      formData.append("id", (Number(reviewsArrayLength) + 1).toString());
+      formData.append("rating", rating.toString());
+      formData.append("name", UserParsed?.firstName);
+      formData.append("review", reviewText);
+
+      selectedImages.forEach((img) => {
+        formData.append("images", {
+          uri: img.uri,
+          name: img.name,
+          type: img.type,
+        }as any);
+      });
+      await ProductsAPI.addReview(Number(productId), formData);
       setShowReviewconfirmationModal(true);
 
       // setTimeout(() => {
@@ -132,7 +140,7 @@ const feedBackScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView>
         <View
           style={[
             globalStyles.pt_0,
@@ -179,29 +187,28 @@ const feedBackScreen = () => {
                 style={{ width: 200, height: 200, marginTop: 10 }}
               />
             )} */}
-            <View style={styles.imageContainer}>
-            {mediaAssets.map((asset, index) => (
-              <TouchableOpacity
-                key={index}
-                onLongPress={() => {
-                  const updated = mediaAssets.filter((_, i) => i !== index);
-                  setMediaAssets(updated);
-                }}
-                >
-                <Image
-                      source={{ uri: asset.uri }}
-                      style={{
-                        width: 100,
-                        height: 100,
-                        margin: 5,
-                        borderRadius: 8,
-                        borderColor: colors.lightgrey,
-                        borderWidth: 1,
-                      }}
+
+            <View style={styles.selectedImagesContainer}>
+              {selectedImages.map((image, index) => (
+                <View key={index} style={styles.imgContainer}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.selectedImage}
+                  />
+                  <TouchableOpacity
+                    onPress={() => removeImage(index)}
+                    style={styles.removeImageButton}
+                    disabled={isSubmitting}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={20}
+                      color={isSubmitting ? colors.borderGrey : colors.darkGray}
                     />
-           </TouchableOpacity>
-            ))}
-            </View>
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </View>
           </View>
         </View>
         <View>

@@ -52,7 +52,29 @@ const styles = StyleSheet.create({
     flexDirection: "row", 
     flexWrap: "wrap", 
     marginTop: 10,
-  }
+  },
+  selectedImagesContainer:{
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    marginTop: 10
+  },
+  imgContainer:{
+    position: "relative", 
+    marginRight: 10, 
+    marginBottom: 10
+  },
+  selectedImage:{
+    width: 100, 
+    height: 100, 
+    borderRadius: 8,
+  },
+  removeImageButton:{
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "white",
+    borderRadius: 10,   
+  },
 });
 
 export default styles;

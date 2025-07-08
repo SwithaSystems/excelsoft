@@ -181,18 +181,7 @@ const HomePage = () => {
           {renderBanner()}
         </View>
 
-        <View style={{ backgroundColor: colors.bannerPurple }}>
-          <Text>Test color</Text>
-        </View>
-        <View style={{ backgroundColor: colors.subtlePurpleBg }}>
-          <Text>Test color</Text>
-        </View>
-        <View style={{ backgroundColor: colors.subtlePurpleText }}>
-          <Text>Test color</Text>
-        </View>
-        <View style={{ backgroundColor: colors.placeholderTextColor }}>
-          <Text>Test color</Text>
-        </View>
+       
         
 
         {/* Recommended Products */}
