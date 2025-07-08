@@ -76,6 +76,7 @@ const reviewsScreen = () => {
     //     <ScrollView>
     //       <Header headerText={"Product Reviews"} />
 
+    <View style={{flex:1}}>
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={"Product Reviews"} />}
@@ -108,7 +109,11 @@ const reviewsScreen = () => {
         </View>
       </View>
       {/* </ScrollView> */}
-      <View style={styles.addReviewContainer}>
+      
+      {/* </View>
+     </SafeAreaView> */}
+    </PageLayout>
+    <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
           onPress={
@@ -121,9 +126,7 @@ const reviewsScreen = () => {
           style={styles.addReviewBtn}
         />
       </View>
-      {/* </View>
-     </SafeAreaView> */}
-    </PageLayout>
+      </View>
   );
 };
 

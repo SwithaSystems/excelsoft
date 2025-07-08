@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   addReviewContainer: {
     // flexDirection: "row-reverse",
     // flexWrap: "nowrap",
-    // paddingHorizontal: 16,
+    paddingHorizontal: 16,
     paddingBottom: 16,
   },
   addReviewBtn: {
