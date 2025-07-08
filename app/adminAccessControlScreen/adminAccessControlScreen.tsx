@@ -16,6 +16,7 @@ import { ADMIN_ACCESS_CONTROL_SCREEN_TITLE } from "../config/stringLiterals";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import colors from "../config/colors";
 import { UserAPI } from "@/services/userService";
+import styles from "./adminAccessControlScreenStyles";
 
 const AdminAccessControlScreen = () => {
   const [accessList, setAccessList] = useState<boolean[]>([]);
@@ -25,7 +26,7 @@ const AdminAccessControlScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [updatingAccess, setUpdatingAccess] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(3);
+  const [usersPerPage] = useState(10);
 
   const toggleAccess = async (index: number, userId: string) => {
     try {
@@ -37,8 +38,10 @@ const AdminAccessControlScreen = () => {
       newAccessList[index] = newAccessValue;
       setAccessList(newAccessList);
 
+      console.log("userID and new accessValue", userId, newAccessValue);
       // Make API call to update user access
-      // await UserAPI.updateUserAccess(userId, newAccessValue);
+      const response = await UserAPI.updateUserAccess(userId, newAccessValue);
+      console.log("response in toggleAccess", response.data);
 
       Alert.alert(
         "Access Updated",
@@ -66,7 +69,7 @@ const AdminAccessControlScreen = () => {
       console.log("response in userProfilescreen", response?.data);
 
       const simplifiedUsers = response.data.map((user: any) => ({
-        id: user?.id || user?._id,
+        _id: user?._id,
         name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
         phone: user?.phone,
         email: user?.email,
@@ -98,12 +101,18 @@ const AdminAccessControlScreen = () => {
     if (!searchText.trim()) {
       return allUsersData;
     }
-    return allUsersData.filter(
-      (user: any) =>
-        user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchText.toLowerCase()) ||
-        user.phone.includes(searchText)
-    );
+    return allUsersData.filter((user: any) => {
+      const searchLower = searchText.toLowerCase();
+      const name = (user.name || "").toLowerCase();
+      const email = (user.email || "").toLowerCase();
+      const phone = String(user.phone || "");
+
+      return (
+        name.includes(searchLower) ||
+        email.includes(searchLower) ||
+        phone.includes(searchText)
+      );
+    });
   }, [allUsersData, searchText]);
 
   // Reset to first page when search changes
@@ -164,7 +173,7 @@ const AdminAccessControlScreen = () => {
             styles.accessToggle,
             accessList[actualIndex] && styles.accessToggleActive,
           ]}
-          onPress={() => toggleAccess(actualIndex, item.id)}
+          onPress={() => toggleAccess(actualIndex, item._id)}
           disabled={updatingAccess === actualIndex}
         >
           {updatingAccess === actualIndex ? (
@@ -396,223 +405,5 @@ const AdminAccessControlScreen = () => {
     </PageLayout>
   );
 };
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.darkGray,
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 16,
-    color: "#333",
-  },
-  clearButton: {
-    padding: 4,
-  },
-  listContainer: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#f8f9fa",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  headerText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  pageInfo: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: "#666",
-  },
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    backgroundColor: "white",
-  },
-  userInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  nameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  nameText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    flex: 1,
-  },
-  adminBadge: {
-    backgroundColor: colors.primary || "#007bff",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  adminBadgeText: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: "white",
-  },
-  phoneText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 2,
-  },
-  emailText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  accessToggle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#e0e0e0",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-  },
-  accessToggleActive: {
-    backgroundColor: colors.primary || "#007bff",
-    borderColor: colors.primary || "#007bff",
-  },
-  paginationContainer: {
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  paginationInfo: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  paginationText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  paginationControls: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-  pageButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  pageButtonDisabled: {
-    opacity: 0.5,
-  },
-  pageNumberButton: {
-    minWidth: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    paddingHorizontal: 8,
-  },
-  pageNumberButtonActive: {
-    backgroundColor: colors.primary || "#007bff",
-    borderColor: colors.primary || "#007bff",
-  },
-  pageNumberText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-  pageNumberTextActive: {
-    color: "white",
-  },
-  ellipsis: {
-    fontSize: 16,
-    color: "#666",
-    paddingHorizontal: 4,
-  },
-  showMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-  showMoreText: {
-    fontSize: 16,
-    color: colors.primary || "#007bff",
-    fontWeight: "600",
-    marginRight: 8,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: colors.Gray88 || "#666",
-    textAlign: "center",
-    marginTop: 16,
-  },
-  emptyListContainer: {
-    flex: 1,
-  },
-});
 
 export default AdminAccessControlScreen;
