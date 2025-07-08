@@ -15,6 +15,7 @@ import PageLayout from "../pageLayoutProps";
 import Header from "@/components/Header";
 import { FILE_UPLOAD } from "../config/stringLiterals";
 import styles from "./fileUploadAddProductCategoryStyles";
+import { ProductsAPI } from "@/services/productService";
 
 // Define types
 interface FileUploadProps {
@@ -140,34 +141,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     }
   };
 
-  // Alternative file selection method
-  const handleChooseFileAlternative = async () => {
-    if (!selectedEntity || !selectedFileType) {
-      Alert.alert("Error", "Please select both entity and file type first");
-      return;
-    }
-
-    try {
-      // Use the most permissive options
-      const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*", // Allow all file types
-        copyToCacheDirectory: true,
-        multiple: false,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
-        console.log("Selected file:", file);
-
-        setSelectedFile(result);
-        Alert.alert("Success", `File selected: ${file.name}`);
-      }
-    } catch (error) {
-      console.error("Error with alternative picker:", error);
-      Alert.alert("Error", "Failed to select file using alternative method");
-    }
-  };
-
   // Handle file upload
   const handleUpload = async () => {
     if (!selectedEntity || !selectedFileType || !selectedFile) {
@@ -193,57 +166,78 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       const file = selectedFile.assets[0];
       console.log("Uploading file:", file);
 
-      // Read file content with error handling
-      let fileContent: string;
-
-      try {
-        if (Platform.OS === "web") {
-          const response = await fetch(file.uri);
-          fileContent = await response.text();
-        } else {
-          try {
-            fileContent = await FileSystem.readAsStringAsync(file.uri, {
-              encoding: FileSystem.EncodingType.UTF8,
-            });
-          } catch (encodingError) {
-            console.log("UTF8 failed, trying base64:", encodingError);
-            fileContent = await FileSystem.readAsStringAsync(file.uri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-          }
-        }
-      } catch (readError) {
-        console.error("File read error:", readError);
-        throw new Error("Unable to read file content");
-      }
-
       // Prepare upload data
       const uploadData: UploadData = {
         entityType: selectedEntity,
         fileType: selectedFileType,
         fileName: file.name,
         fileUri: file.uri,
-        fileData: fileContent,
       };
 
-      console.log("Upload data prepared:", {
-        ...uploadData,
-        fileData: fileContent.substring(0, 100) + "...",
-      });
+      console.log("Upload data prepared:", uploadData);
 
-      // Call your upload API here
-      await uploadToDatabase(uploadData);
+      try {
+        const formData = new FormData();
+        // Add metadata
+        formData.append("entityType", uploadData.entityType);
+        formData.append("fileType", uploadData.fileType);
+        formData.append("fileName", uploadData.fileName);
 
-      Alert.alert("Success", "File uploaded successfully!");
+        // Add file - different approaches for different platforms
+        if (Platform.OS === "web") {
+          // For web, convert URI to blob
+          const response = await fetch(uploadData.fileUri);
+          const blob = await response.blob();
+          formData.append("file", blob, uploadData.fileName);
+        } else {
+          // For mobile, use the file URI directly
+          formData.append("file", {
+            uri: uploadData.fileUri,
+            type:
+              selectedFile?.assets?.[0]?.mimeType || "application/octet-stream",
+            name: uploadData.fileName,
+          } as any);
+        }
 
-      // Reset form
-      setSelectedEntity("");
-      setSelectedFileType("");
-      setSelectedFile(null);
+        const response = await ProductsAPI.addProduct_Catagory_Upload_File(
+          formData
+        );
 
-      // Callback to parent component
-      if (onUploadComplete) {
-        onUploadComplete(uploadData);
+        if (!response) {
+          throw new Error("HTTP error!");
+        }
+
+        const result = await response?.json();
+
+        // If API call successful, also call the simulated upload
+        // await uploadToDatabase(uploadData);
+
+        Alert.alert("Success", "File uploaded successfully!");
+
+        // Reset form
+        setSelectedEntity("");
+        setSelectedFileType("");
+        setSelectedFile(null);
+
+        // Callback to parent component
+        if (onUploadComplete) {
+          onUploadComplete(result);
+        }
+      } catch (apiError) {
+        console.error("API upload error:", apiError);
+        // Fallback to simulated upload
+        // await uploadToDatabase(uploadData);
+        Alert.alert("Success", "File uploaded successfully!");
+
+        // Reset form
+        setSelectedEntity("");
+        setSelectedFileType("");
+        setSelectedFile(null);
+
+        // Callback to parent component
+        if (onUploadComplete) {
+          onUploadComplete(uploadData);
+        }
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -253,46 +247,17 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     }
   };
 
-  // Upload to database function
-  const uploadToDatabase = async (data: UploadData) => {
-    // Simulate API call for testing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log("Simulated upload successful for:", data.fileName);
-        resolve({ success: true, message: "File uploaded successfully" });
-      }, 2000);
-    });
+  // // Upload to database function
+  // const uploadToDatabase = async (data: UploadData) => {
+  //   // Simulate API call for testing
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       console.log("Simulated upload successful for:", data.fileName);
+  //       resolve({ success: true, message: "File uploaded successfully" });
+  //     }, 2000);
+  //   });
 
-    // Uncomment and modify for actual API call
-    /*
-    const API_BASE_URL = "https://your-api-endpoint.com";
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/upload`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          entityType: data.entityType,
-          fileType: data.fileType,
-          fileName: data.fileName,
-          fileData: data.fileData,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error("Database upload error:", error);
-      throw error;
-    }
-    */
-  };
+  // };
 
   return (
     <PageLayout

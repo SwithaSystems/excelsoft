@@ -86,4 +86,11 @@ export const ProductsAPI = {
     console.log("review", review);
     await jsonAxios.post(`/products/${productId}/reviews`, review);
   },
+
+  addProduct_Catagory_Upload_File: async (data: any) => {
+    console.log("data in product service", data);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/products/upload`, data);
+    return response.data;
+  },
 };
