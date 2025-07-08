@@ -315,7 +315,7 @@ const AdminDashboard = () => {
                 redirectToPage(containers.fileUploadAddProductCategoryScreen);
               }}
             >
-              Upload Product Data
+              Upload Data
             </Text>
           </View>
           <View style={styles.metricsContainer}>
