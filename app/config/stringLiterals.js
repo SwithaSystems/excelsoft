@@ -42,6 +42,7 @@ const PICKUP_MODE_SCREEN_TITLE = "Pickup Options";
 const REVIEW_SCREEN_TITLE = "Product Reviews";
 const SAVED_ADDRESS_SCREEN_TITLE = "Saved Address";
 const FEEDBACK_SCREEN2_TITLE = "Add Your Review";
+const FILE_UPLOAD = "File Upload";
 
 // Delivery Modes
 const DELIVERY_MODE_HOME = "Home Delivery";
@@ -85,6 +86,7 @@ export {
   DATE_FORMAT_Display,
   DATE_FORMAT_API,
   MINIMUM_USER_AGE,
+  FILE_UPLOAD,
   ADMIN_PRODUCT_ADD_SCREEN_TITLE,
   STORE_OPENING_TIMINGS,
   STORE_CLOSING_TIMINGS,
