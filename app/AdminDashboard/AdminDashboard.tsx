@@ -307,8 +307,17 @@ const AdminDashboard = () => {
             globalStyles.pt_0,
           ]}
         >
-          <Text style={styles.title}>Dashboard</Text>
-
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Dashboard</Text>
+            <Text
+              style={styles.linkText}
+              onPress={() => {
+                redirectToPage(containers.fileUploadAddProductCategoryScreen);
+              }}
+            >
+              Upload Product Data
+            </Text>
+          </View>
           <View style={styles.metricsContainer}>
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
