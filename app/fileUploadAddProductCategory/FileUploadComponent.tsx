@@ -48,11 +48,11 @@ const FILE_TYPE_OPTIONS = [
 const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
 }) => {
-  const [selectedEntity, setSelectedEntity] = useState < string > "";
-  const [selectedFileType, setSelectedFileType] = useState < string > "";
+  const [selectedEntity, setSelectedEntity] = useState<string>("");
+  const [selectedFileType, setSelectedFileType] = useState<string>("");
   const [selectedFile, setSelectedFile] =
-    (useState < DocumentPicker.DocumentPickerResult) | (null > null);
-  const [isUploading, setIsUploading] = useState < boolean > false;
+    useState<DocumentPicker.DocumentPickerResult | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   // Get file types for document picker
   const getDocumentPickerTypes = (fileType: string): string[] => {
