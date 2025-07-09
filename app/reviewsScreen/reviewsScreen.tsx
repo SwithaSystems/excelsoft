@@ -74,6 +74,7 @@ const reviewsScreen = () => {
     //     <ScrollView>
     //       <Header headerText={"Product Reviews"} />
 
+    <View style={{flex:1}}>
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={"Product Reviews"} />}
@@ -81,7 +82,15 @@ const reviewsScreen = () => {
       scrollable
     >
       <View style={[globalStyles.sectionContent, { paddingTop: 0 }]}>
+         <View style={styles.reviewsHeader}>
         <Text style={styles.heading}>Overall Ratings</Text>
+        <Text 
+          style={styles.addReviewText}
+          onPress={handleAddReviews}
+        >
+          Add Your Review
+        </Text>
+        </View>
         <View style={styles.overAllRatingContainer}>
           <Text style={styles.rating}>{productRating}</Text>
           <ProductStars
@@ -91,14 +100,18 @@ const reviewsScreen = () => {
           />
         </View>
         <View style={styles.reviewsContainer}>
-          <Text style={styles.reviewContainerHeading}>Reviews</Text>
+            <Text style={styles.reviewContainerHeading}>Reviews</Text>         
           {soretedReviews?.map((review: any, index: number) => (
             <ProductRating key={`${review.id}-${index}`} review={review} />
           ))}
         </View>
       </View>
       {/* </ScrollView> */}
-      <View style={styles.addReviewContainer}>
+      
+      {/* </View>
+     </SafeAreaView> */}
+    </PageLayout>
+    <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
           onPress={
@@ -111,9 +124,7 @@ const reviewsScreen = () => {
           style={styles.addReviewBtn}
         />
       </View>
-      {/* </View>
-     </SafeAreaView> */}
-    </PageLayout>
+      </View>
   );
 };
 

@@ -447,7 +447,7 @@ const AdminCategories = () => {
                       <Ionicons
                         name="close-circle"
                         size={24}
-                        color={colors.saturatedRed}
+                        color={colors.alertRed}
                       />
                     </TouchableOpacity>
                   </View>

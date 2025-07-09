@@ -8,12 +8,8 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  SafeAreaView,
   TextInputProps,
 } from "react-native";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import Button from "@/components/commonComponents/Button";
@@ -607,6 +603,7 @@ const PickupScreen = () => {
     }
   };
 
+
   // Reusable text input component
   const renderTextInput = (
     label: any,
@@ -635,6 +632,8 @@ const PickupScreen = () => {
       {error && <Text style={inputStyles.errorText}>{error}</Text>}
     </View>
   );
+
+
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -691,6 +690,7 @@ const PickupScreen = () => {
               <DateTimePickerModal
                 isVisible={showDatePicker}
                 mode="date"
+                date={date ? new Date(date) : new Date()}
                 onConfirm={(selectedDate) => {
                   const isoDate = selectedDate.toISOString().split("T")[0];
                   setDate(isoDate);

@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   replaced: {
     backgroundColor: colors.warningBg,
-    color: colors.warningText,
+    color: colors.red,
   },
   returned: {
     backgroundColor: colors.subtlePurpleBg,

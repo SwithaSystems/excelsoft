@@ -13,11 +13,8 @@ import {
   StatusBar,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import homeStyles from "./Homestyles";
 import Footer from "../../components/Footer";
-import ProductCard from "../home/ProductCard";
 import CategoryItem from "../../components/CategoryItem";
 import colors from "../config/colors";
 import products from "../../data/products";
@@ -32,12 +29,6 @@ import containers from "@/containers";
 import { categoryService, Category } from "../../services/categoryService";
 import { parentCategoryIDAll } from "@/config/constants";
 import { PageLayout } from "../pageLayoutProps";
-
-// const bannerImages = [
-//   { imageUrl: require("../../assets/banner1.png") },
-//   { imageUrl: require("../../assets/banner2.png") },
-//   { imageUrl: require("../../assets/banner3.png") },
-// ];
 
 const recommendedProducts = products
   .filter((p) =>
@@ -142,15 +133,6 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
-  // const insets = useSafeAreaInsets();
-  // const footerHeight =
-  //   60 +
-  //   (Platform.OS === "ios"
-  //     ? insets.bottom
-  //     : insets.bottom > 0
-  //     ? insets.bottom
-  //     : 10);
-
   return (
     <PageLayout
       hasHeader
@@ -195,16 +177,15 @@ const HomePage = () => {
         </View>
 
         {/* Banner */}
-        <View
-        //  style={{ marginVertical: 8 }}
-        >
+        <View>
           {renderBanner()}
         </View>
 
+       
+        
+
         {/* Recommended Products */}
-        <View
-        // style={{ marginVertical: 8 }}
-        >
+        <View>
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
@@ -213,16 +194,12 @@ const HomePage = () => {
         </View>
 
         {/* Exclusive Offers */}
-        <View
-        //  style={globalStyles.px_4}
-        >
+        <View>
           <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
         </View>
 
         {/* Best Sellers */}
-        <View
-        // style={{ marginVertical: 8 }}
-        >
+        <View>
           <RecommendedProductsSlider
             recommendedProducts={bestSellers}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
@@ -242,7 +219,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
     marginVertical: 8,
-    // paddingHorizontal: 8,
   },
 
   scrollView: {
@@ -337,12 +313,6 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 10,
   },
-
-  // sectionTitle: {
-  //   fontSize: 20,
-  //   marginVertical: 10,
-  //   marginLeft: 10,
-  // },
   categoriesContainer: {
     paddingTop: 8,
     paddingBottom: 8,

@@ -1,7 +1,6 @@
 import { SAVED_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
-import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -20,7 +19,6 @@ import { useAppContext } from "@/context/AppContext";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import AddressItem from "../components/AddressItem";
 import NoContentFound from "@/components/NoContentFound";
-import colors from "../config/colors";
 import PageLayout from "../pageLayoutProps";
 
 const savedAddressScreen = () => {

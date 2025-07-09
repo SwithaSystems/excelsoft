@@ -323,7 +323,7 @@ export const globalStyles = StyleSheet.create({
   },
   orderCanceledBadge: {
     backgroundColor: colors.paleRed,
-    color: colors.crimsonRed,
+    color: colors.buttonError,
   },
   OrderStatusText: {
     fontSize: 12,

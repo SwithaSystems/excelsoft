@@ -36,7 +36,10 @@ import {
 import PageLayout from "../pageLayoutProps";
 import HeroBanner from "../../components/HeroBanner";
 import { PRODUCT_DETAIL_SCREEN_TITLE } from "../config/stringLiterals";
-import { ITEM_OUT_OF_STOCK, QUANTITY_NOT_AVAILABLE } from "../config/customErrorMessages";
+import {
+  ITEM_OUT_OF_STOCK,
+  QUANTITY_NOT_AVAILABLE,
+} from "../config/customErrorMessages";
 import { showErrorAlert } from "../config/showErrorAlert";
 
 const ProductDetailScreen = () => {
@@ -222,13 +225,15 @@ const ProductDetailScreen = () => {
             </View>
           </View> */}
 
-          {product && product.image && product.image.length > 0 &&(
+          {product && product.image && product.image.length > 0 && (
             <HeroBanner
-              bannerData={product.image.map((imageurl: string, index: number) => ({
-                id: index,
-                image: {uri:imageurl},
-              }))}
-              onBannerPress={()=> {}}
+              bannerData={product.image.map(
+                (imageurl: string, index: number) => ({
+                  id: index,
+                  image: { uri: imageurl },
+                })
+              )}
+              onBannerPress={() => {}}
             />
           )}
 
@@ -314,8 +319,11 @@ const ProductDetailScreen = () => {
                   style={styles.quantityButton}
                   onPress={() => {
                     const available = product?.stock || 0;
-                    if(quantity + 1 > available){
-                      const message = QUANTITY_NOT_AVAILABLE.replace("{{available}}", available.toString());
+                    if (quantity + 1 > available) {
+                      const message = QUANTITY_NOT_AVAILABLE.replace(
+                        "{{available}}",
+                        available.toString()
+                      );
 
                       showErrorAlert({
                         title: "Limited Stock Alert",
@@ -336,7 +344,7 @@ const ProductDetailScreen = () => {
                 title="Add To Cart"
                 onPress={() => {
                   if (product) {
-                    if(product.stock === 0){
+                    if (product.stock === 0) {
                       showErrorAlert({
                         title: "Out of Stock",
                         message: ITEM_OUT_OF_STOCK,
@@ -358,7 +366,7 @@ const ProductDetailScreen = () => {
                       type: "customToast",
                       text1: "Product added successfully!",
                       text2: `${product.name} - ${product.price}`,
-                      visibilityTime: 1000, 
+                      visibilityTime: 1000,
                       autoHide: true,
                       onPress: () => {
                         redirectToPage(containers.cartScreenScreen);
@@ -373,7 +381,10 @@ const ProductDetailScreen = () => {
           </View>
 
           <View style={styles.reviewsSection}>
-            <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+            <View style={styles.reviewsHeader}>
+              <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+              {/* <Text style={styles.addReviewText}>see more</Text> */}
+            </View>
             {[...product.reviews]
               .sort((a, b) => Number(b.id) - Number(a.id))
               .slice(0, 5)
