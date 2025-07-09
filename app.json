@@ -27,7 +27,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/AppLibraryIcon.png",
+        "foregroundImage": "./assets/androidAppLibraryIcon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.excelsoft.app",
