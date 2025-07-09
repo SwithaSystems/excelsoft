@@ -231,8 +231,6 @@ const deliveryTrackingScreen = () => {
             <OrderTimeline
               statusList={displayStatuses}
               actualStatus={orderDetails?.status}
-              reason={orderDetails?.reason}
-              from={from}
             />
           </View>
 

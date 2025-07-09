@@ -44,8 +44,21 @@ const editAddressScreen = () => {
   }>({});
 
   useEffect(() => {
-    if (edit_address) {
-      const selectedAddress = JSON.parse(edit_address as string);
+    if(!edit_address){
+      console.log("No edit_address found, returning");
+      return;
+    } 
+
+    let selectedAddress;
+
+    try{
+      selectedAddress = 
+        typeof edit_address === "string" 
+        ? JSON.parse(edit_address) 
+        : edit_address;
+      console.log("Parsed address data:", selectedAddress);
+      console.log("Type of selectedAddress:", typeof selectedAddress);
+
       setAddress(selectedAddress.name || "");
       setLine1(selectedAddress.line1 || "");
       setLine2(selectedAddress.line2 || "");
@@ -53,14 +66,17 @@ const editAddressScreen = () => {
       setPostalCode(selectedAddress.postalCode || "");
       setPhoneNumber(selectedAddress.phone || "");
       setIsDefault(selectedAddress.isDefault || false);
-    }
-  }, [edit_address]);
 
-  // Input validation functions
+      console.log("values set successfully");
+    }catch(e){
+      console.log(e);
+      return;
+    }
+      
+    }, [edit_address]);
+
   const validateAndSetAddress = (text: string) => {
-    // Remove leading/trailing spaces and limit length
     const cleanText = text.trimStart().slice(0, 100);
-    // Allow only letters, numbers, spaces, and common punctuation
     const validText = cleanText.replace(/[^a-zA-Z0-9\s\-\.\,\']/g, '');
     setAddress(validText);
     
@@ -70,9 +86,7 @@ const editAddressScreen = () => {
   };
 
   const validateAndSetLine1 = (text: string) => {
-    // Remove leading/trailing spaces and limit length
     const cleanText = text.trimStart().slice(0, 150);
-    // Allow letters, numbers, spaces, and address-related punctuation
     const validText = cleanText.replace(/[^a-zA-Z0-9\s\-\.\,\'\/\#]/g, '');
     setLine1(validText);
     
@@ -82,17 +96,13 @@ const editAddressScreen = () => {
   };
 
   const validateAndSetLine2 = (text: string) => {
-    // Remove leading/trailing spaces and limit length
     const cleanText = text.trimStart().slice(0, 150);
-    // Allow letters, numbers, spaces, and address-related punctuation
     const validText = cleanText.replace(/[^a-zA-Z0-9\s\-\.\,\'\/\#]/g, '');
     setLine2(validText);
   };
 
   const validateAndSetTownCity = (text: string) => {
-    // Remove leading/trailing spaces and limit length
     const cleanText = text.trimStart().slice(0, 50);
-    // Allow only letters, spaces, hyphens, and apostrophes for city names
     const validText = cleanText.replace(/[^a-zA-Z\s\-\']/g, '');
     setTownCity(validText);
     
@@ -102,9 +112,7 @@ const editAddressScreen = () => {
   };
 
   const validateAndSetPostalCode = (text: string) => {
-    // Remove spaces and convert to uppercase, limit length
     const cleanText = text.replace(/\s/g, '').toUpperCase().slice(0, 10);
-    // Allow letters, numbers, and hyphens for postal codes
     const validText = cleanText.replace(/[^a-zA-Z0-9\-]/g, '');
     setPostalCode(validText);
     
@@ -114,7 +122,6 @@ const editAddressScreen = () => {
   };
 
   const validateAndSetPhoneNumber = (text: string) => {
-    // Remove all non-numeric characters and limit to 10 digits
     const numericText = text.replace(/[^0-9]/g, '').slice(0, 10);
     setPhoneNumber(numericText);
     

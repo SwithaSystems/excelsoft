@@ -181,12 +181,20 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
         _retryCount?: number;
       };
 
-      const status = error.response?.status;
+      // const status = error.response?.status;
 
       console.log("=== Response Error Interceptor ===");
       console.log("Status:", status);
       console.log("URL:", originalRequest?.url);
       console.log("Retry count:", originalRequest?._retryCount || 0);
+
+      const status = error.response?.status;
+
+      console.log("=== Axios Error Interceptor ===");
+      console.log("Error:", error);
+      console.log("Status:", status);
+      console.log("Config:", originalRequest);
+      console.log("Response:", error.response);
 
       // Handle 401 Unauthorized errors
       if (error.response?.status === 401 && originalRequest) {

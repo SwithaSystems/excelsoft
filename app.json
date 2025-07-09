@@ -26,7 +26,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brandlogo.png",
+        "foregroundImage": "./assets/AppLibraryIcon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.excelsoft.app",
@@ -37,7 +37,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/brandlogo.png"
+      "favicon": "./assets/AppLibraryIcon.png"
     },
     "plugins": [
       [

@@ -373,7 +373,10 @@ const ProductDetailScreen = () => {
           </View>
 
           <View style={styles.reviewsSection}>
+            <View style={styles.reviewsHeader}>
             <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+            <Text style={styles.addReviewText}>see more</Text>
+            </View>
             {[...product.reviews]
               .sort((a, b) => Number(b.id) - Number(a.id))
               .slice(0, 5)

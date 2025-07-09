@@ -21,10 +21,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { orderService } from "@/services/orderService";
 import PageLayout from "../pageLayoutProps";
 import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../config/stringLiterals";
+import useDebounce from "@/utilities/customHooks/useDebounce";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [allOrders, setAllOrders] = useState<any>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const statusFilters = ["All Orders", "Cancelled", "Replaced", "Returned"];
 
@@ -145,17 +149,34 @@ const AdminSeeAllOrders = () => {
 
   // Filter orders based on active filter
   const getFilteredOrders = () => {
-    if (activeFilter === "All Orders") {
-      return allOrders;
+    let filteredORders = allOrders;
+
+    if (activeFilter !== "All Orders") {
+      filteredORders = filteredORders.filter((order: any) => order.status === activeFilter);  
     }
-    return allOrders.filter((order: any) => order.status === activeFilter);
+    if(debouncedSearchQuery.trim()){
+    const query = debouncedSearchQuery.toLowerCase().trim();
+    filteredORders = filteredORders.filter((order: any) => {
+      const orderNumber = order.orderNumber || order._id || "";
+      const orderMatches = orderNumber ? orderNumber.toString().includes(query) : false;
+
+      const customerName = typeof order.userId === "object" && order.userId?.firstName
+          ? `${order.userId.firstName} ${order.userId.lastName || ""}`.trim()
+          : "";
+      const customerMatches = customerName.toLowerCase().includes(query);
+
+      const statusMatches = order.status ? order.status.toLowerCase().includes(query) : false;
+
+      const totalAmount = typeof order.totalAmount === "number" ? order.totalAmount : "0";
+
+      const amountMatches = totalAmount.toString().includes(query);
+      return orderMatches || customerMatches || statusMatches || amountMatches;
+    })
+  }
+  return filteredORders;
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <View style={globalStyles.container}>
-    //     <Header headerText="Orders" />
-    //     <ScrollView>
     <PageLayout
       hasHeader
       hasFooter
@@ -167,7 +188,6 @@ const AdminSeeAllOrders = () => {
     >
       <View
         style={[
-          // globalStyles.sectionContent,
           globalStyles.pt_0,
           globalStyles.pb_0,
         ]}
@@ -177,6 +197,8 @@ const AdminSeeAllOrders = () => {
             placeholder="Search orders..."
             placeholderTextColor={colors.placeholdergrey}
             style={localStyles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
           <TouchableOpacity style={localStyles.searchIcon}>
             <Ionicons name="search" size={20} color={colors.primary} />

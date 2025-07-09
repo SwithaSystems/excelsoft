@@ -100,6 +100,7 @@ const editProfileScreen = () => {
             //   date.getFullYear();
             const formatted = format(date, DATE_FORMAT_Display);
             setDateOfBirth(formatted);
+            setSelectedDate(formatted);
           }
         }
       }
@@ -275,6 +276,12 @@ const editProfileScreen = () => {
     setDateOfBirth(formatted);
     hideDatePicker();
   };
+
+  const parsedDate = (dateStr: string): Date => {
+    const [day, month, year] = dateStr.split("/");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  };
+
 
   return (
     <PageLayout

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import colors from "../config/colors";
+import colors from "../config/colors";
 
 const styles = StyleSheet.create({
   heading: {
@@ -35,19 +36,19 @@ const styles = StyleSheet.create({
   starsContainer: {
     marginBottom: 0,
   },
-  reviewsHeader:{
-      flexDirection:"row",
-      justifyContent:"space-between",
-      alignContent:"center",
-      alignItems:"center",
-    },
-    addReviewText:{
-      textDecorationStyle:"solid",
-      textDecorationLine:"underline",
-      fontSize:14,
-      // paddingTop: 8,
-      color:colors.primary,
-    },
+  reviewsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignContent: "center",
+    alignItems: "center",
+  },
+  addReviewText: {
+    textDecorationStyle: "solid",
+    textDecorationLine: "underline",
+    fontSize: 14,
+    // paddingTop: 8,
+    color: colors.primary,
+  },
   // reviewsHeader:{
   //     flexDirection:"row",
   //     justifyContent:"space-between",
