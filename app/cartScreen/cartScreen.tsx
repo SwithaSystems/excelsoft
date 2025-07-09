@@ -133,10 +133,19 @@ const CartScreen = () => {
           newStock[item.id] = 0;
         }
       }
+
+      for(let item of savedForLaterItems){
+        try{
+          const product = await ProductsAPI.getProductBYID(Number(item.id));
+          newStock[item.id] = product?.stock || 0;
+        }catch(error){
+          newStock[item.id] = 0;
+        }
+      }
       setStockAvailable(newStock);
     }
     getStock();
-  }, [cartItems]);
+  }, [cartItems, savedForLaterItems]);
 
   return (
     <PageLayout
@@ -217,6 +226,7 @@ const CartScreen = () => {
               <SavedLaterItem
                 savedForLaterItems={savedForLaterItems}
                 sectionHeadingStyle={styles.sectionHeading}
+                stockAvailable={stockAvailable}
                 handleDelete={(item: any) => {
                   dispatch(removeFromSavedForLaterItems(item.id));
                 }}
