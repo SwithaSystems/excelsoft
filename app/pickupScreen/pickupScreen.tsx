@@ -603,7 +603,6 @@ const PickupScreen = () => {
     }
   };
 
-
   // Reusable text input component
   const renderTextInput = (
     label: any,
@@ -632,8 +631,6 @@ const PickupScreen = () => {
       {error && <Text style={inputStyles.errorText}>{error}</Text>}
     </View>
   );
-
-
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -683,25 +680,32 @@ const PickupScreen = () => {
                   style={globalStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  {/* <Text>{formatToDDMMYYYY(date)}</Text> */}
                   <Text>{date}</Text>
                 </TouchableOpacity>
               )}
-              <DateTimePickerModal
-                isVisible={showDatePicker}
-                mode="date"
-                date={date ? new Date(date) : new Date()}
-                onConfirm={(selectedDate) => {
-                  const isoDate = selectedDate.toISOString().split("T")[0];
-                  setDate(isoDate);
-                  // setPickupDate(formatToDDMMYYYY(selectedDate));
-                  setPickupDate(format(selectedDate, DATE_FORMAT_Display));
-                  validateTime(isoDate, hours, minutes, period);
-                  setShowDatePicker(false);
-                }}
-                onCancel={() => setShowDatePicker(false)}
-                minimumDate={new Date()}
-              />
+              {showDatePicker && (
+                <DateTimePickerModal
+                  isVisible={showDatePicker}
+                  mode="date"
+                  date={date ? new Date(date) : new Date()}
+                  onConfirm={(selectedDate) => {
+                    setShowDatePicker(false);
+                    setDate(format(selectedDate, DATE_FORMAT_Display));
+                    // setDate(formatToDDMMYYYY(selectedDate));
+                    setTimeout(() => {
+                      validateTime(
+                        // formatToDDMMYYYY(selectedDate),
+                        format(selectedDate, DATE_FORMAT_Display),
+                        hours,
+                        minutes,
+                        period
+                      );
+                    }, 100);
+                  }}
+                  onCancel={() => setShowDatePicker(false)}
+                  minimumDate={new Date()}
+                />
+              )}
             </View>
 
             {/* Time Input */}

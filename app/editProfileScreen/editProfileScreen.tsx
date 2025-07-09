@@ -282,7 +282,6 @@ const editProfileScreen = () => {
     return new Date(Number(year), Number(month) - 1, Number(day));
   };
 
-
   return (
     <PageLayout
       scrollable={false}
@@ -385,7 +384,7 @@ const editProfileScreen = () => {
           mode="date"
           maximumDate={getMaximumDate()}
           // date={new Date(selectedDate || Date.now())}
-          date={selectedDate ? new Date(selectedDate) : new Date()}
+          date={selectedDate ? parsedDate(selectedDate) : new Date()}
           onConfirm={uponDateSelection}
           onCancel={hideDatePicker}
         />
