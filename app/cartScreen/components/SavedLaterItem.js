@@ -19,6 +19,8 @@ function SavedLaterItem(props) {
               handleDelete={props.handleDelete}
               footerBtnText="Move to Cart"
               onFooterAction={() => props.handleMoveToCart(eactItem)}
+              stockAvailable={props.stockAvailable?.[eactItem.id]||0}
+              isSavedItem={true}
             />
           );
         })}

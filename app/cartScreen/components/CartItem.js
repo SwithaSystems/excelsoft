@@ -259,8 +259,6 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   cartItem: {
-    //paddingHorizontal: 16,
-    //marginBottom: 8,
     paddingBottom: 16,
   },
   cartItemContent: {
@@ -272,11 +270,9 @@ const styles = StyleSheet.create({
   cartItemImageContainer: {
     justifyContent: "center",
     height: 136,
-    //width: 20,
   },
   itemImage: {
     width: 140,
-    //aspectRatio: 1.5,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
     height: "100%",
