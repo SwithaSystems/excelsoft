@@ -7,14 +7,12 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 // import products from "@/data/products";
 import { useLocalSearchParams } from "expo-router";
 import ProductStars from "@/components/ProductStars";
-import NoContentFound from "../../components/NoContentFound";
 import ProductRating from "@/components/ProductRating";
 import Button from "@/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
-import colors from "../config/colors";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import PageLayout from "../pageLayoutProps";
@@ -76,6 +74,7 @@ const reviewsScreen = () => {
     //     <ScrollView>
     //       <Header headerText={"Product Reviews"} />
 
+    <View style={{flex:1}}>
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={"Product Reviews"} />}
@@ -83,7 +82,15 @@ const reviewsScreen = () => {
       scrollable
     >
       <View style={[globalStyles.sectionContent, { paddingTop: 0 }]}>
+         <View style={styles.reviewsHeader}>
         <Text style={styles.heading}>Overall Ratings</Text>
+        <Text 
+          style={styles.addReviewText}
+          onPress={handleAddReviews}
+        >
+          Add Your Review
+        </Text>
+        </View>
         <View style={styles.overAllRatingContainer}>
           <Text style={styles.rating}>{productRating}</Text>
           <ProductStars
@@ -93,14 +100,18 @@ const reviewsScreen = () => {
           />
         </View>
         <View style={styles.reviewsContainer}>
-          <Text style={styles.reviewContainerHeading}>Reviews</Text>
+            <Text style={styles.reviewContainerHeading}>Reviews</Text>         
           {soretedReviews?.map((review: any, index: number) => (
             <ProductRating key={`${review.id}-${index}`} review={review} />
           ))}
         </View>
       </View>
       {/* </ScrollView> */}
-      <View style={styles.addReviewContainer}>
+      
+      {/* </View>
+     </SafeAreaView> */}
+    </PageLayout>
+    <View style={styles.addReviewContainer}>
         <Button
           title="Add your Review"
           onPress={
@@ -113,9 +124,7 @@ const reviewsScreen = () => {
           style={styles.addReviewBtn}
         />
       </View>
-      {/* </View>
-     </SafeAreaView> */}
-    </PageLayout>
+      </View>
   );
 };
 

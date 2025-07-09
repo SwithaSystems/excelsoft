@@ -1,3 +1,12 @@
+export const DATE_FORMATS = {
+  DISPLAY: "DD/MM/YYYY",
+  API: "YYYY-MM-DDTHH:mm:ss.sssZ",
+  TIME_12: "hh:mm A",
+  TIME_24: "HH:mm",
+  DATETIME_DISPLAY: "DD/MM/YYYY hh:mm A",
+  DATETIME_API: "YYYY-MM-DDTHH:mm:ss.sssZ",
+};
+
 export function formatToDDMMYYYY(dateInput) {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
 

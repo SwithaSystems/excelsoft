@@ -181,7 +181,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
         _retryCount?: number;
       };
 
-      const status = error.response?.status;
+      // const status = error.response?.status;
 
       console.log("=== Response Error Interceptor ===");
       console.log("Status:", status);

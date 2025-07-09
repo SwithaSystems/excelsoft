@@ -1,4 +1,9 @@
-import { ORDER_SUMMARY_SCREEN_TITLE } from "./../config/stringLiterals";
+import {
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_HOME,
+  DELIVERY_MODE_STORE,
+  ORDER_SUMMARY_SCREEN_TITLE,
+} from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -100,11 +105,11 @@ const orderSummeryScreen = () => {
     : undefined;
 
   let displayMode = "";
-  if (selectedMode === "curbsidePickup") {
+  if (selectedMode === DELIVERY_MODE_CURBSIDE) {
     displayMode = "Curbside Pickup";
-  } else if (selectedMode === "storePickup") {
+  } else if (selectedMode === DELIVERY_MODE_STORE) {
     displayMode = "Store Pickup";
-  } else if (selectedMode === "homeDelivery") {
+  } else if (selectedMode === DELIVERY_MODE_HOME) {
     displayMode = "Home Delivery";
   } else {
     displayMode = selectedMode;
@@ -267,7 +272,8 @@ const orderSummeryScreen = () => {
   };
 
   const isPickupMode =
-    selectedMode === "curbsidePickup" || selectedMode === "storePickup";
+    selectedMode === DELIVERY_MODE_CURBSIDE ||
+    selectedMode === DELIVERY_MODE_STORE;
   const isPaymentEnabled =
     cartItems.length > 0 &&
     selectedBillingAddress &&
@@ -298,22 +304,22 @@ const orderSummeryScreen = () => {
             ]}
           >
             <View style={styles.section}>
-              {selectedMode === "storePickup" ||
-              selectedMode === "curbsidePickup" ? (
+              {selectedMode === DELIVERY_MODE_STORE ||
+              selectedMode === DELIVERY_MODE_CURBSIDE ? (
                 <Text style={styles.sectionHeading}>User Details</Text>
               ) : (
                 <Text style={styles.sectionHeading}>Address:</Text>
               )}
 
               <View style={[globalStyles.pl_3, styles.deliverAddress]}>
-                {selectedMode === "storePickup" ? (
+                {selectedMode === DELIVERY_MODE_STORE ? (
                   <Ionicons
                     name="storefront"
                     size={24}
                     color={colors.primary}
                     style={{ marginRight: 10 }}
                   />
-                ) : selectedMode === "curbsidePickup" ? (
+                ) : selectedMode === DELIVERY_MODE_CURBSIDE ? (
                   <Ionicons
                     name="car"
                     size={24}
@@ -330,13 +336,13 @@ const orderSummeryScreen = () => {
                 )}
 
                 <View style={styles.addressContainer}>
-                  {selectedMode === "storePickup" ||
-                  selectedMode === "curbsidePickup" ? (
+                  {selectedMode === DELIVERY_MODE_STORE ||
+                  selectedMode === DELIVERY_MODE_CURBSIDE ? (
                     <Text style={styles.subheading}>Pickup Details:</Text>
                   ) : (
                     <Text style={styles.subheading}>Delivery Address:</Text>
                   )}
-                  {selectedMode === "storePickup" ? (
+                  {selectedMode === DELIVERY_MODE_STORE ? (
                     <Text style={styles.addressTextBox}>
                       {`${pickupAddress.firstName || ""} ${
                         pickupAddress.lastName || ""
@@ -344,7 +350,7 @@ const orderSummeryScreen = () => {
 Email: ${pickupAddress.email}
 Contact Number: ${pickupAddress.phone}`}
                     </Text>
-                  ) : selectedMode === "curbsidePickup" ? (
+                  ) : selectedMode === DELIVERY_MODE_CURBSIDE ? (
                     <Text style={styles.addressTextBox}>
                       {`${pickupAddress.firstName || ""} ${
                         pickupAddress.lastName || ""
@@ -395,8 +401,8 @@ Contact Number: ${pickupAddress.phone}`}
               </View>
 
               {/* Checkbox logic */}
-              {selectedMode !== "storePickup" &&
-                selectedMode !== "curbsidePickup" && (
+              {selectedMode !== DELIVERY_MODE_STORE &&
+                selectedMode !== DELIVERY_MODE_CURBSIDE && (
                   <>
                     <View style={styles.checkBox}>
                       <CheckBox
@@ -500,7 +506,7 @@ Contact Number: ${pickupAddress.phone}`}
               <Text style={styles.sectionHeading}>Your Slot</Text>
               <View style={globalStyles.pl_3}>
                 <Text>
-                  {selectedMode === "homeDelivery"
+                  {selectedMode === DELIVERY_MODE_HOME
                     ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
                     : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
                 </Text>

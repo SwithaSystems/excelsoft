@@ -93,4 +93,16 @@ export const UserAPI = {
     });
     return response;
   },
+
+  getAllUsers: async () => {
+    const response = await jsonAxios.get("/users");
+    return response;
+  },
+
+  updateUserAccess: async (userId: string, isAdmin: boolean) => {
+    const response = await jsonAxios.put(`/users/${userId}/access`, {
+      isAdmin,
+    });
+    return response;
+  },
 };

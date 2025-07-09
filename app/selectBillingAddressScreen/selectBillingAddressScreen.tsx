@@ -1,4 +1,8 @@
-import { SELECT_BILLING_ADDRESS_SCREEN_TITLE } from './../config/stringLiterals';
+import {
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_STORE,
+  SELECT_BILLING_ADDRESS_SCREEN_TITLE,
+} from "./../config/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -172,7 +176,8 @@ const selectBillingAddressScreen = () => {
   });
 
   const isPickupMode =
-    selectedMode === "curbsidePickup" || selectedMode === "storePickup";
+    selectedMode === DELIVERY_MODE_CURBSIDE ||
+    selectedMode === DELIVERY_MODE_STORE;
   const isPaymentEnabled =
     cartItems.length > 0 &&
     selectedBillingAddress &&

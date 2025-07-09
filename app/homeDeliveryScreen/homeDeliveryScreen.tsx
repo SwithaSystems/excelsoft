@@ -1,4 +1,5 @@
 import {
+  DATE_FORMAT_Display,
   DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_HOME,
   STORE_CLOSING_TIMINGS,
@@ -48,6 +49,7 @@ import {
   PICKUP_TIME_IN_PAST,
   ADDRESS_NOT_SAVED,
 } from "../config/customErrorMessages";
+import { format } from "date-fns";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -130,7 +132,8 @@ const HomeDeliveryScreen = () => {
     // Format the date for state
     // const formattedDate = targetDate.toISOString().split("T")[0];
     console.log("target date", targetDate);
-    const formattedDate = formatToDDMMYYYY(targetDate);
+    // const formattedDate = formatToDDMMYYYY(targetDate);
+    const formattedDate = format(targetDate, DATE_FORMAT_Display);
     console.log("formatted date", formattedDate);
     setDate(formattedDate);
 
@@ -276,7 +279,8 @@ const HomeDeliveryScreen = () => {
   ) => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
-    setDate(formatToDDMMYYYY(currentDate));
+    setDate(format(currentDate, DATE_FORMAT_Display));
+    // setDate(formatToDDMMYYYY(currentDate));
 
     // Validate time with new date
     setTimeout(() => {
@@ -354,7 +358,7 @@ const HomeDeliveryScreen = () => {
       };
       redirectToPage(containers.orderSummeryScreenScreen, {
         pickupAddress: JSON.stringify(address),
-        selectedMode: "homeDelivery",
+        selectedMode: DELIVERY_MODE_HOME,
         shippingAddress: JSON.stringify(shippingAddress),
         pickupDetails: JSON.stringify(pickupDetails),
       });
@@ -422,9 +426,10 @@ const HomeDeliveryScreen = () => {
   };
 
   const handleEditAddress = (item: Address) => {
-    setSelectedAddressId(item);
-    redirectToPage(containers.editAddressScreenScreen);
-  };
+  redirectToPage(containers.editAddressScreenScreen, {
+    edit_address: JSON.stringify(item)
+  });
+};
 
   const handleDeleteAddress = (item: Address) => {
     setItemToDelete({ id: item._id });
@@ -561,9 +566,7 @@ const HomeDeliveryScreen = () => {
         <FlatList
           ListHeaderComponent={
             <>
-              <View
-                style={[globalStyles.pt_0]}
-              >
+              <View style={[globalStyles.pt_0]}>
                 <Text style={styles.label}>
                   Do you prefer home delivery? Let us know your available day
                   and time.
@@ -600,10 +603,12 @@ const HomeDeliveryScreen = () => {
                       mode="date"
                       onConfirm={(selectedDate) => {
                         setShowDatePicker(false);
-                        setDate(formatToDDMMYYYY(selectedDate));
+                        setDate(format(selectedDate, DATE_FORMAT_Display));
+                        // setDate(formatToDDMMYYYY(selectedDate));
                         setTimeout(() => {
                           validateTime(
-                            formatToDDMMYYYY(selectedDate),
+                            // formatToDDMMYYYY(selectedDate),
+                            format(selectedDate, DATE_FORMAT_Display),
                             hours,
                             minutes,
                             period

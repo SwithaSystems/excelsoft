@@ -1,13 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  TextInput,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput } from "react-native";
 import styles from "./feedBackScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
@@ -19,7 +11,6 @@ import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import { ProductsAPI } from "@/services/productService";
 import { useLocalSearchParams } from "expo-router";
-import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -30,15 +21,18 @@ import KeyBoardWrapper from "@/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "../pageLayoutProps";
 import { FEEDBACK_SCREEN2_TITLE } from "../config/stringLiterals";
 
+const MAX_IMAGES = 5;
+
 const feedBackScreen = () => {
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [image, setImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<{uri: string; name: string; type: string}[]>([]);
+  // const [image, setImage] = useState<string | null>(null);
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] =
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
-
+  // const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
   console.log("userData_redux", userData_redux);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,12 +46,25 @@ const feedBackScreen = () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      // aspect: [4, 3],
       quality: 1,
     });
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      // setImage(result.assets[0].uri);
+      const newImages = result.assets.map((asset) => ({
+        uri: asset.uri,
+        name: asset.fileName ?? `image-${Date.now()}.jpg`,
+        type: asset.type ?? "image/jpeg",
+      }));
+      const totalImages = [...selectedImages, ...newImages].slice(0, MAX_IMAGES);
+      setSelectedImages(totalImages);
     }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedImages = [...selectedImages];
+    updatedImages.splice(index, 1);
+    setSelectedImages(updatedImages);
   };
 
   const handleAddReview = async () => {
@@ -78,14 +85,27 @@ const feedBackScreen = () => {
       const UserParsed = user.data;
       console.log("user in addreview", UserParsed);
 
-      const review = {
-        id: (Number(reviewsArrayLength) + 1).toString(),
-        rating: rating,
-        name: UserParsed?.firstName,
-        review: reviewText,
-      };
+      // const review = {
+      //   id: (Number(reviewsArrayLength) + 1).toString(),
+      //   rating: rating,
+      //   name: UserParsed?.firstName,
+      //   review: reviewText,
+      // };
 
-      await ProductsAPI.addReview(Number(productId), review);
+      const formData = new FormData();
+      formData.append("id", (Number(reviewsArrayLength) + 1).toString());
+      formData.append("rating", rating.toString());
+      formData.append("name", UserParsed?.firstName);
+      formData.append("review", reviewText);
+
+      selectedImages.forEach((img) => {
+        formData.append("images", {
+          uri: img.uri,
+          name: img.name,
+          type: img.type,
+        }as any);
+      });
+      await ProductsAPI.addReview(Number(productId), formData);
       setShowReviewconfirmationModal(true);
 
       // setTimeout(() => {
@@ -102,7 +122,6 @@ const feedBackScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -120,20 +139,9 @@ const feedBackScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}>
-          <Header
-            headerText="Add Your Review"
-            secondaryBtnText="Discard"
-            secondaryBtnCallBack={() => {
-              redirectToPage(containers.productDetailScreenScreen, {
-                productId: productId,
-              });
-            }}
-          />
-          <ScrollView> */}
+        <ScrollView>
         <View
           style={[
-            // globalStyles.sectionContent,
             globalStyles.pt_0,
           ]}
         >
@@ -172,18 +180,37 @@ const feedBackScreen = () => {
                 color={isSubmitting ? colors.borderGrey : colors.darkGray}
               />
             </TouchableOpacity>
-            {image && (
+            {/* {image && (
               <Image
                 source={{ uri: image }}
                 style={{ width: 200, height: 200, marginTop: 10 }}
               />
-            )}
+            )} */}
+
+            <View style={styles.selectedImagesContainer}>
+              {selectedImages.map((image, index) => (
+                <View key={index} style={styles.imgContainer}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.selectedImage}
+                  />
+                  <TouchableOpacity
+                    onPress={() => removeImage(index)}
+                    style={styles.removeImageButton}
+                    disabled={isSubmitting}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={20}
+                      color={isSubmitting ? colors.borderGrey : colors.darkGray}
+                    />
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </View>
           </View>
         </View>
-        {/* </ScrollView> */}
-        <View
-        // style={globalStyles.p_3}
-        >
+        <View>
           <Button
             title={isSubmitting ? "Submitting..." : "Submit Review"}
             onPress={handleAddReview}
@@ -196,9 +223,8 @@ const feedBackScreen = () => {
           message="Review Added Successfully"
           onClose={() => setShowReviewconfirmationModal(false)}
         />
-        {/* </View> */}
+        </ScrollView>
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

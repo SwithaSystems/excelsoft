@@ -1,4 +1,9 @@
-import { DELIVERY_TRACKING_SCREEN_TITLE } from "./../config/stringLiterals";
+import {
+  DELIVERY_MODE_CURBSIDE,
+  DELIVERY_MODE_HOME,
+  DELIVERY_MODE_STORE,
+  DELIVERY_TRACKING_SCREEN_TITLE,
+} from "./../config/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "@/components/Header";
 import React, { useEffect, useState } from "react";
@@ -128,8 +133,8 @@ const deliveryTrackingScreen = () => {
 
     // For pickup orders, replace DELIVERED with COLLECTED
     const isPickupOrder =
-      orderDetails?.pickupMode === "storePickup" ||
-      orderDetails?.type === "curbsidePickup";
+      orderDetails?.pickupMode === DELIVERY_MODE_STORE ||
+      orderDetails?.type === DELIVERY_MODE_CURBSIDE;
 
     // let relevantFlow: any = hasAgeRestriction ? ageRestrictedFlow : baseFlow;
 
@@ -209,7 +214,7 @@ const deliveryTrackingScreen = () => {
               </Text>
               <Text style={styles.infoText}>
                 <Text style={styles.label}>Pick Up Choice: </Text>
-                {orderDetails?.pickupMode === "homeDelivery"
+                {orderDetails?.pickupMode === DELIVERY_MODE_HOME
                   ? "Home Delivery"
                   : "Store Pickup"}
               </Text>

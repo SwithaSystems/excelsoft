@@ -23,12 +23,35 @@ import { orderService } from "@/services/orderService";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import PageLayout from "../pageLayoutProps";
 import { router, useLocalSearchParams } from "expo-router";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { UserAPI } from "@/services/userService";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
   const [allOrders, setAllOrders] = React.useState<any>([]);
   const [loading, setLoading] = React.useState(true);
+  const userData = useSelector((state: RootState) => state.user.user);
+  const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
+  const fetchUser = async () => {
+    try {
+      console.log("userData in admin dashboard", userData);
+      const user = await UserAPI.getUserById(
+        userData?._id ? userData?._id : userData?.id
+      );
+      console.log("user in admin dashboard", user.data);
+      if (user) {
+        setIsSuperAdmin(user?.data?.isSuperAdmin);
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchUser();
+  }, []);
 
   // Memoize date calculation
   const dateOnly = useMemo(() => {
@@ -307,8 +330,17 @@ const AdminDashboard = () => {
             globalStyles.pt_0,
           ]}
         >
-          <Text style={styles.title}>Dashboard</Text>
-
+          <View style={styles.headerContainer}>
+            <Text style={styles.title}>Dashboard</Text>
+            <Text
+              style={styles.linkText}
+              onPress={() => {
+                redirectToPage(containers.fileUploadAddProductCategoryScreen);
+              }}
+            >
+              Upload Data
+            </Text>
+          </View>
           <View style={styles.metricsContainer}>
             <View style={styles.metricBox}>
               <View style={styles.metricIconContainer}>
@@ -376,6 +408,19 @@ const AdminDashboard = () => {
                 </View>
               </View>
             </View>
+            {isSuperAdmin && (
+              <View style={styles.metricBox}>
+                <View style={styles.metricIconContainer}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      redirectToPage(containers.adminAccessControlScreenScreen);
+                    }}
+                  >
+                    <Text style={styles.metricTitle}>User Admin Access</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
 
           <View style={styles.ordersHeader}>

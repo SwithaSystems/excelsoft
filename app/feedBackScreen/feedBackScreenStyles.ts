@@ -16,8 +16,8 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
-    height: 100, // Adjust as needed
-    textAlignVertical: 'top', // Align text to the top (Android)
+    height: 100, 
+    textAlignVertical: 'top', 
   },
   imagePickerContainer: {
     marginBottom: 20,
@@ -47,6 +47,33 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  imageContainer:{
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    marginTop: 10,
+  },
+  selectedImagesContainer:{
+    flexDirection: "row", 
+    flexWrap: "wrap", 
+    marginTop: 10
+  },
+  imgContainer:{
+    position: "relative", 
+    marginRight: 10, 
+    marginBottom: 10
+  },
+  selectedImage:{
+    width: 100, 
+    height: 100, 
+    borderRadius: 8,
+  },
+  removeImageButton:{
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "white",
+    borderRadius: 10,   
   },
 });
 

@@ -9,6 +9,7 @@ import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../config/dateTimeFormat";
+import { DELIVERY_MODE_HOME } from "../config/stringLiterals";
 
 type Product = {
   productId: string;
@@ -33,13 +34,14 @@ export const usePaymentHandler = () => {
   const calculateSubtotal = (cartItems: Product[]) =>
     cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-  const fetchPaymentIntent = async (amount: number) => {
+  const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
           amount: Math.round(amount * 100),
           currency: CURRENCY_CODE,
+          clientId: clientId,
         }
       );
 
@@ -60,7 +62,7 @@ export const usePaymentHandler = () => {
     console.log("all order details", params);
     console.log("cartItems", cartItems);
     const subtotal = calculateSubtotal(cartItems);
-    const paymentData = await fetchPaymentIntent(subtotal);
+    const paymentData = await fetchPaymentIntent(subtotal, "client_abc");
     if (!paymentData) return;
 
     const { clientSecret, ephemeralKey, customer } = paymentData;
@@ -117,18 +119,18 @@ export const usePaymentHandler = () => {
       console.log("=== BEFORE PICKUP DETAILS CHECK ===");
       console.log("selectedMode:", params.selectedMode);
       console.log(
-        "selectedMode !== 'homeDelivery':",
-        params.selectedMode !== "homeDelivery"
+        `selectedMode !==${DELIVERY_MODE_HOME}:`,
+        params.selectedMode !== DELIVERY_MODE_HOME
       );
       console.log("pickupdetails?.date:", params.pickupdetails?.date);
       console.log(
         "Condition result:",
-        params.selectedMode !== "homeDelivery" && params.pickupdetails?.date
+        params.selectedMode !== DELIVERY_MODE_HOME && params.pickupdetails?.date
       );
 
       // Enhanced conditional check with more logging
       if (
-        params.selectedMode !== "homeDelivery" &&
+        params.selectedMode !== DELIVERY_MODE_HOME &&
         params.pickupdetails?.date
       ) {
         console.log("=== ADDING PICKUP DETAILS ===");
