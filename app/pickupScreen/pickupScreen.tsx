@@ -685,7 +685,7 @@ const PickupScreen = () => {
                   onPress={() => setShowDatePicker(true)}
                 >
                   {/* <Text>{formatToDDMMYYYY(date)}</Text> */}
-                  <Text>{format(date, DATE_FORMAT_Display)}</Text>
+                  <Text>{date}</Text>
                 </TouchableOpacity>
               )}
               <DateTimePickerModal
