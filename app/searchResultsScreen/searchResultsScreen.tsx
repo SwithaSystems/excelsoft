@@ -81,38 +81,38 @@ const SearchResultsScreen = () => {
 
   // FIX 1: Fetch all products with proper cleanup
   useEffect(() => {
-    if (!isFromSearch && searchQuery) {
-      let cancelled = false;
+    // if (!isFromSearch && searchQuery) {
+    let cancelled = false;
 
-      const fetchAllProducts = async () => {
-        try {
-          setIsLoading(true);
-          setError(null);
-          const data = await ProductsAPI.getAllProducts();
+    const fetchAllProducts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await ProductsAPI.getAllProducts();
 
-          // Check if component is still mounted and request wasn't cancelled
-          if (!cancelled && isMountedRef.current) {
-            setAllProducts(data);
-          }
-        } catch (err) {
-          console.error("Error fetching all products:", err);
-          if (!cancelled && isMountedRef.current) {
-            setError("Failed to fetch products. Please try again.");
-          }
-        } finally {
-          if (!cancelled && isMountedRef.current) {
-            setIsLoading(false);
-          }
+        // Check if component is still mounted and request wasn't cancelled
+        if (!cancelled && isMountedRef.current) {
+          setAllProducts(data);
         }
-      };
+      } catch (err) {
+        console.error("Error fetching all products:", err);
+        if (!cancelled && isMountedRef.current) {
+          setError("Failed to fetch products. Please try again.");
+        }
+      } finally {
+        if (!cancelled && isMountedRef.current) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-      fetchAllProducts();
+    fetchAllProducts();
 
-      // Cleanup function
-      return () => {
-        cancelled = true;
-      };
-    }
+    // Cleanup function
+    return () => {
+      cancelled = true;
+    };
+    // }
   }, [isFromSearch, searchQuery]);
 
   // FIX 2: Fetch subcategories with proper cleanup
@@ -150,6 +150,22 @@ const SearchResultsScreen = () => {
       };
     }
   }, [isFromSearch, parsedCategoryId]);
+
+  useEffect(() => {
+    if (parsedSubCategoryIds.length > 0) {
+      const filtered_products = allProducts.filter((product) => {
+        return (
+          Array.isArray(product.categoryId) &&
+          parsedSubCategoryIds.some((id) =>
+            product.categoryId.map(Number).includes(Number(id))
+          )
+        );
+      });
+
+      console.log("filtered_products", filtered_products);
+      setProducts(filtered_products);
+    }
+  }, [parsedSubCategoryIds, allProducts]);
 
   useEffect(() => {
     // Only run if we're in category mode or have subcategory filters
