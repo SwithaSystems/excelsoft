@@ -80,8 +80,8 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        // promptMessage: `Login to App`,
-        promptMessage: `Authenticate as ${userName}`,
+        // promptMessage: `Authenticate as ${userName}`,
+        promptMessage: `Login to Weekes`,
         cancelLabel: "Cancel",
         fallbackLabel: "Use Pattern",
         disableDeviceFallback: false,
@@ -134,7 +134,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
           onPress={handleBiometricAuth}
         >
           <Ionicons name="finger-print-outline" size={28} color="#007AFF" />
-          <Text style={styles.authButtonText}>Login with biometric</Text>
+          <Text style={styles.authButtonText}>Quick Secure Access</Text>
         </TouchableOpacity>
       ) : (
         <Text style={styles.infoText}>
@@ -143,12 +143,12 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
       )}
 
       {/* Branding */}
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <Text style={styles.branding}>ExcelSoft</Text>
         <TouchableOpacity onPress={clearBiometricData}>
           <Text style={styles.clearText}>Clear Biometric Data</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
