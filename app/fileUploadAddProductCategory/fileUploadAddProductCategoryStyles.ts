@@ -56,6 +56,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: '#000',
   },
+  modalTrigger:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalTriggerIcon: {
+    paddingVertical:10,
+  },
   label: {
     fontSize: 16,
     fontWeight: "600",
