@@ -17,6 +17,8 @@ import { FILE_UPLOAD } from "../config/stringLiterals";
 import styles from "./fileUploadAddProductCategoryStyles";
 import { ProductsAPI } from "@/services/productService";
 import ModalSelector from "react-native-modal-selector";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import colors from "../config/colors";
 
 // Define types
 interface FileUploadProps {
@@ -282,12 +284,17 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           optionTextStyle={styles.modalOptionText}
           selectedItemTextStyle={styles.modalSelectedItemText}
         >
+          <View style={styles.modalTrigger}>
           <Text style={styles.modalTriggerText}>
             {
               ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)?.label ||
               "Select Entity"
             }
           </Text>
+           <View style={styles.modalTriggerIcon}>
+          <Ionicons name="caret-down" size={20} color={colors.primary} />
+          </View>
+          </View>
         </ModalSelector>
       </View>
 
@@ -306,16 +313,20 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         optionTextStyle={styles.modalOptionText}
         selectedItemTextStyle={styles.modalSelectedItemText}
       >
+        <View 
+          style={styles.modalTrigger}      >
         <Text style={styles.modalTriggerText}>
           {
             FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)?.label ||
             "Select File Type"
           }
         </Text>
+        <View style={styles.modalTriggerIcon}>
+        <Ionicons name="caret-down" size={20} color={colors.primary} />
+        </View>
+        </View>
       </ModalSelector>
     </View>
-
-
       {/* Selected File Display */}
       {selectedFile && !selectedFile.canceled && selectedFile.assets && (
         <View style={styles.fileInfoContainer}>

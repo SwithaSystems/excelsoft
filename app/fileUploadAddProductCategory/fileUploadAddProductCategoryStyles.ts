@@ -56,6 +56,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     color: '#000',
   },
+  modalTrigger:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalTriggerIcon: {
+    paddingVertical:10,
+  },
   label: {
     fontSize: 16,
     fontWeight: "600",
@@ -123,7 +130,7 @@ const styles = StyleSheet.create({
   chooseButton: {
     backgroundColor: colors.primary,
     flex: 1,
-    marginRight: 10,
+    // marginRight: 10,
   },
   alternativeButton: {
     backgroundColor: "#FF9800",

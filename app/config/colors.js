@@ -58,6 +58,7 @@ export default {
   ghostWhite: "#f9f9f9",
   lightgrey: "#F8F8F8",
   placeholdergrey: "#D9D9D9",
+  inactivegrey: "#7E8A8C",
   borderGrey: "#CCCCCC",
   neutralGrey: "#7D7A7A",
   neutralGrey2: "#989B9C",
