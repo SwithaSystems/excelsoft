@@ -123,7 +123,9 @@ const savedAddressScreen = () => {
     <PageLayout
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText={SAVED_ADDRESS_SCREEN_TITLE} />}
+      headerComponent={<Header headerText={SAVED_ADDRESS_SCREEN_TITLE}
+      needResetNavigation = {true}
+       />}
     >
       <View style={globalStyles.container}>
         {/* <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} /> */}
