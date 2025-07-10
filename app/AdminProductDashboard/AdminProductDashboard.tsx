@@ -25,6 +25,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import ConfirmationModal from "@/components/commonComponents/ConfirmationModal";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PageLayout from "../pageLayoutProps";
+import { categoryService } from "@/services/categoryService";
 
 const AdminProductDashboard = () => {
   const [productsList, setAllProductsList] = useState<any[]>([]);
@@ -34,6 +35,7 @@ const AdminProductDashboard = () => {
   const { refresh } = useLocalSearchParams();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [categories, setCategories] = useState<any>([]);
 
   const fetchAllProducts = async () => {
     try {
@@ -48,9 +50,20 @@ const AdminProductDashboard = () => {
     }
   };
 
+  const fetchAllCategories = async () => {
+    try {
+      const data = await categoryService.getAllCategories();
+      console.log("Fetched categories:", data);
+      setCategories(data);
+    } catch (err) {
+      console.error("Error fetching all categories:", err);
+    }
+  };
+
   // Initial fetch
   useEffect(() => {
     fetchAllProducts();
+    fetchAllCategories();
     if (refresh === "true") {
       // Remove the refresh param to prevent re-triggering
       router.replace("/AdminProductDashboard/AdminProductDashboard");
@@ -139,7 +152,18 @@ const AdminProductDashboard = () => {
               </View>
             </View>
 
-            <Text style={styles.text}>Category: {item.category}</Text>
+            <Text style={styles.text}>
+              {" "}
+              Category:{" "}
+              {item.categoryId
+                ?.map((catId: number) => {
+                  const matched = categories.find(
+                    (cat: any) => cat.id === catId
+                  );
+                  return matched ? matched.name : "Unknown";
+                })
+                .join(", ")}
+            </Text>
             <Text style={styles.text}>£{item.price} per unit</Text>
             <View
               style={{

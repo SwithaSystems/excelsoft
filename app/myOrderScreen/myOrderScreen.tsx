@@ -23,24 +23,6 @@ import PageLayout from "../pageLayoutProps";
 import { format } from "date-fns";
 
 const myOrderScreen = () => {
-  // const orderData = [
-  //   {
-  //     id: "1",
-  //     date: "25th January, Sat, 10 A.M.- 11 A.M.",
-  //     status: "Delivered Successfully!",
-  //     orderId: "#ORD-2025-1234",
-  //     totalItems: 7,
-  //     subtotal: "$28",
-  //   },
-  //   {
-  //     id: "2",
-  //     date: "25th January, Sat, 10 A.M.- 11 A.M.",
-  //     status: "Processed!!",
-  //     orderId: "#ORD-2025-1235", // Changed order ID for demonstration
-  //     totalItems: 3, // Changed total items for demonstration
-  //     subtotal: "$15", // Changed subtotal for demonstration
-  //   },
-  // ];
   const [orders, setOrders] = useState<any[]>([]);
   const params = useLocalSearchParams();
 
@@ -62,7 +44,6 @@ const myOrderScreen = () => {
     fetchOrders();
   }, []);
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasFooter
       hasHeader
@@ -71,24 +52,21 @@ const myOrderScreen = () => {
       footerComponent={<Footer />}
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText={MY_ORDERS_SCREEN_TITLE} /> */}
-        {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={
             <>
-              <View
-                style={[
-                  // globalStyles.sectionContent,
-                  globalStyles.pt_0,
-                ]}
-              >
+              <View style={[globalStyles.pt_0]}>
                 <Text style={styles.yourLastOrders}>Your last orders</Text>
 
                 <FlatList
                   data={orders.map((order) => ({
                     orderId: `#ORD-${order.orderNumber}`,
-                    // date: new Date(order.deliveryDate).toLocaleString(),
-                    date: format(order.deliveryDate, DATE_FORMAT_Display),
+                    date: order.deliveryDate
+                      ? format(
+                          new Date(order.deliveryDate),
+                          DATE_FORMAT_Display
+                        )
+                      : "N/A",
                     status: order?.status,
                     totalItems: order.products?.length ?? 0,
                     subtotal: order.totalAmount.toFixed(2),
@@ -108,10 +86,6 @@ const myOrderScreen = () => {
         />
       </View>
     </PageLayout>
-    /* </ScrollView> 
-        <Footer />
-      </View>
-    </SafeAreaView> */
   );
 };
 
