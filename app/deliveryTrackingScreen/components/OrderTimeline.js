@@ -38,6 +38,7 @@ const OrderTimeline = (props) => {
         renderItem={({ item, index }) => {
           const isCurrent = index === currentStatus;
           const isNegative = negativeStatuses.includes(item);
+          const isActive = index <= currentStatus;
 
           return(
           <View style={styles.itemContainer}>
@@ -47,9 +48,7 @@ const OrderTimeline = (props) => {
                 styles.circle,
                 {
                   backgroundColor:
-                    index <= currentStatus
-                      ? colors.primary
-                      : colors.secondaryText,
+                    isActive ? colors.primary : colors.inactivegrey,
                 },
               ]}
             >
@@ -57,7 +56,7 @@ const OrderTimeline = (props) => {
               <Ionicons
                 name={icons[index]}
                 size={24}
-                color={index <= currentStatus ? colors.white : colors.white}
+                color={isActive ? colors.white : colors.white}
               />
             </View>
             {/* Status Text */}
@@ -67,9 +66,7 @@ const OrderTimeline = (props) => {
                 styles.statusText,
                 {
                   color:
-                    index <= currentStatus
-                      ? colors.primary
-                      : colors.secondaryText,
+                    isActive ? colors.primary : colors.secondaryText,
                 },
               ]}
             >
@@ -92,12 +89,7 @@ const OrderTimeline = (props) => {
                 style={[
                   styles.line,
                   {
-                    backgroundColor:
-                      index < currentStatus
-                        ? colors.primary
-                        : index === currentStatus && index === statusList.length - 1
-                        ? colors.primary
-                        : colors.secondaryText,
+                    backgroundColor: isActive ? colors.primary : colors.inactivegrey,
                   },
                 ]}
               />
