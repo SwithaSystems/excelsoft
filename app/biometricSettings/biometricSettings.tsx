@@ -306,7 +306,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         </View>
 
         {/* Debug Information - Remove in production */}
-        <View style={styles.debugBox}>
+        {/* <View style={styles.debugBox}>
           <Text style={styles.debugTitle}>Debug Info:</Text>
           <Text style={styles.debugText}>Platform: {Platform.OS}</Text>
           <Text style={styles.debugText}>Status: {debugInfo}</Text>
@@ -316,16 +316,16 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
           <Text style={styles.debugText}>
             Enabled: {isBiometricEnabled ? "Yes" : "No"}
           </Text>
-        </View>
+        </View> */}
 
-        {isBiometricEnabled && (
+        {/* {isBiometricEnabled && (
           <View style={styles.infoBox}>
             <Text style={styles.infoText} onPress={testBiometricAuth}>
               ✓ {biometricType} authentication is enabled. You'll be prompted to
               authenticate when opening the app.
             </Text>
           </View>
-        )}
+        )} */}
 
         {!isBiometricSupported && (
           <View style={styles.warningBox}>
