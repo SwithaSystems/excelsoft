@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   chooseButton: {
     backgroundColor: colors.primary,
     flex: 1,
-    marginRight: 10,
+    // marginRight: 10,
   },
   alternativeButton: {
     backgroundColor: "#FF9800",
