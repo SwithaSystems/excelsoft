@@ -67,7 +67,7 @@ type shippingAddressDTo = {
 const orderSummeryScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
-  const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
+  const [selectedBillingAddress, setSelectedBillingAddress] = useState<any>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
   const cartItems = useSelector((state: any) => [...state.cart.items]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -566,10 +566,8 @@ Contact Number: ${pickupAddress.phone}`}
               disabled={!isPaymentEnabled}
               onPress={() =>
                 handlePayment(cartItems, {
+                  shippingAddress: shippingAddress,
                   billingAddress: selectedBillingAddress,
-                  shippingAddress: useSameAddress
-                    ? selectedBillingAddress
-                    : shippingAddress,
                   pickupdetails: pickupDetails,
                   deliveryDate: pickupDetails?.date,
                   deliveryTime: pickupDetails?.time,
