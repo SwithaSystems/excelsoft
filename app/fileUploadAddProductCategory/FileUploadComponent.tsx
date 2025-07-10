@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import { FILE_UPLOAD } from "../config/stringLiterals";
 import styles from "./fileUploadAddProductCategoryStyles";
 import { ProductsAPI } from "@/services/productService";
+import ModalSelector from "react-native-modal-selector";
 
 // Define types
 interface FileUploadProps {
@@ -269,42 +270,51 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       {/* Entity Dropdown */}
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedEntity}
-            onValueChange={(itemValue) => setSelectedEntity(itemValue)}
-            style={styles.picker}
-          >
-            {ENTITY_OPTIONS.map((option) => (
-              <Picker.Item
-                key={option.value}
-                label={option.label}
-                value={option.value}
-              />
-            ))}
-          </Picker>
-        </View>
+        <ModalSelector
+          data={ENTITY_OPTIONS}
+          initValue="Select Entity"
+          onChange={(option) => setSelectedEntity(option.value)}
+          keyExtractor={(item) => item.value}
+          labelExtractor={(item) => item.label}
+          style={styles.modalSelector}
+          initValueTextStyle={styles.modalInitValue}
+          selectTextStyle={styles.modalSelectedText}
+          optionTextStyle={styles.modalOptionText}
+          selectedItemTextStyle={styles.modalSelectedItemText}
+        >
+          <Text style={styles.modalTriggerText}>
+            {
+              ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)?.label ||
+              "Select Entity"
+            }
+          </Text>
+        </ModalSelector>
       </View>
 
       {/* File Type Dropdown */}
       <View style={styles.dropdownContainer}>
-        <Text style={styles.label}>Select File Type:</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedFileType}
-            onValueChange={(itemValue) => setSelectedFileType(itemValue)}
-            style={styles.picker}
-          >
-            {FILE_TYPE_OPTIONS.map((option) => (
-              <Picker.Item
-                key={option.value}
-                label={option.label}
-                value={option.value}
-              />
-            ))}
-          </Picker>
-        </View>
-      </View>
+      <Text style={styles.label}>Select File Type:</Text>
+      <ModalSelector
+        data={FILE_TYPE_OPTIONS}
+        initValue="Select File Type"
+        onChange={(option) => setSelectedFileType(option.value)}
+        keyExtractor={(item) => item.value}
+        labelExtractor={(item) => item.label}
+        style={styles.modalSelector}
+        initValueTextStyle={styles.modalInitValue}
+        selectTextStyle={styles.modalSelectedText}
+        optionTextStyle={styles.modalOptionText}
+        selectedItemTextStyle={styles.modalSelectedItemText}
+      >
+        <Text style={styles.modalTriggerText}>
+          {
+            FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)?.label ||
+            "Select File Type"
+          }
+        </Text>
+      </ModalSelector>
+    </View>
+
 
       {/* Selected File Display */}
       {selectedFile && !selectedFile.canceled && selectedFile.assets && (

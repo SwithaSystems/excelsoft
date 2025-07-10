@@ -30,6 +30,32 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     marginBottom: 15,
   },
+  modalSelector: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 5,
+  padding: 10,
+  backgroundColor: '#fff',
+},
+  modalInitValue: {
+    color: '#888',
+  },
+  modalSelectedText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  modalOptionText: {
+    fontSize: 16,
+  },
+  modalSelectedItemText: {
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  modalTriggerText: {
+    fontSize: 16,
+    paddingVertical: 10,
+    color: '#000',
+  },
   label: {
     fontSize: 16,
     fontWeight: "600",
