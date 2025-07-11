@@ -313,9 +313,6 @@ const AdminDashboard = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <View style={[styles.container, { paddingTop }]}>
-    //     <BrandHeader hideUserGreeting={true} />
     <PageLayout
       hasHeader
       headerComponent={<BrandHeader hideUserGreeting={true} />}
@@ -324,12 +321,7 @@ const AdminDashboard = () => {
       scrollable
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View
-          style={[
-            // globalStyles.sectionContent,
-            globalStyles.pt_0,
-          ]}
-        >
+        <View style={[globalStyles.pt_0]}>
           <View style={styles.headerContainer}>
             <Text style={styles.title}>Dashboard</Text>
             <Text
@@ -347,7 +339,7 @@ const AdminDashboard = () => {
                 <MaterialIcons
                   name="work-outline"
                   size={24}
-                  color={colors.lushblue}
+                  color={colors.black}
                 />
                 <Text style={styles.metricTitle}>Total Orders</Text>
               </View>
@@ -372,7 +364,7 @@ const AdminDashboard = () => {
                 <MaterialIcons
                   name="work-outline"
                   size={24}
-                  color={colors.lushblue}
+                  color={colors.black}
                 />
                 <Text style={styles.metricTitle}>Pending Orders</Text>
               </View>
@@ -388,7 +380,7 @@ const AdminDashboard = () => {
                 <MaterialIcons
                   name="work-outline"
                   size={24}
-                  color={colors.lushblue}
+                  color={colors.black}
                 />
                 <Text style={styles.metricTitle}>Today's Revenue</Text>
               </View>

@@ -242,22 +242,22 @@ const verifcationScreen = () => {
   };
   return (
     <>
-      {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
       <PageLayout
         hasFooter={false}
         hasHeader
         headerComponent={<Header headerText={VERIFICATION_SCREEN_TITLE} />}
       >
         <KeyBoardWrapper>
-          {/* <View style={styles.container}> */}
-          {/* <Header headerText={VERIFICATION_SCREEN_TITLE} /> */}
           <Image
             style={styles.image}
             source={require("assets/UserVerificationSuccessful.png")}
           />
           <Text style={styles.description}>
-            We have sent a verification code to your mobile.Please enter code
+            {verificationType === "email"
+              ? "We've sent a verification link to your email address. Please check your inbox and click on the link to verify your email. If you don't see the email, check your spam folder or try resending the verification email."
+              : "We have sent a verification code to your mobile. Please enter the code."}
           </Text>
+
           <View style={styles.codeContainer}>
             {code.map((digit, index) => (
               <TextInput

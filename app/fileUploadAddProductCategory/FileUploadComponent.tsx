@@ -368,7 +368,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         disabled={!selectedFile || isUploading}
       >
         {isUploading ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <ActivityIndicator size="small" color={colors.white} />
         ) : (
           <Text style={styles.buttonText}>Upload File</Text>
         )}

@@ -1,60 +1,46 @@
 import { StyleSheet } from "react-native";
 import colors from "../config/colors";
+import { color } from "react-native-elements/dist/helpers";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: "#333",
-  },
-  debugContainer: {
-    backgroundColor: "#fff3cd",
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#ffeaa7",
-  },
-  debugText: {
-    fontSize: 12,
-    color: "#856404",
-    marginBottom: 2,
+    color: colors.darkCharcoal,
   },
   dropdownContainer: {
     marginBottom: 15,
   },
   modalSelector: {
   borderWidth: 1,
-  borderColor: '#ccc',
+  borderColor: colors.primary,
   borderRadius: 5,
   padding: 10,
-  backgroundColor: '#fff',
 },
   modalInitValue: {
-    color: '#888',
+    color: colors.argentGray,
   },
   modalSelectedText: {
     fontSize: 16,
-    color: '#000',
+    color: colors.pureBlack,
   },
   modalOptionText: {
     fontSize: 16,
   },
   modalSelectedItemText: {
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: colors.sparkleBlue,
   },
   modalTriggerText: {
     fontSize: 16,
     paddingVertical: 10,
-    color: '#000',
+    color: colors.pureBlack,
   },
   modalTrigger:{
     flexDirection: 'row',
@@ -67,15 +53,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
-    color: "#333",
+    color: colors.darkCharcoal,
   },
   pickerContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: colors.lightgrey,
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: colors.pureBlack,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -84,16 +70,13 @@ const styles = StyleSheet.create({
     height: 50,
   },
   helpContainer: {
-    backgroundColor: "#e3f2fd",
+    backgroundColor: colors.infoBg,
     padding: 12,
-    borderRadius: 8,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#bbdefb",
   },
   helpText: {
     fontSize: 14,
-    color: "#1976d2",
+    color: colors.infoText,
     textAlign: "center",
     lineHeight: 20,
   },
@@ -133,7 +116,7 @@ const styles = StyleSheet.create({
     // marginRight: 10,
   },
   alternativeButton: {
-    backgroundColor: "#FF9800",
+    backgroundColor: colors.warningBg,
     flex: 1,
     marginLeft: 10,
   },
@@ -142,12 +125,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: colors.borderGrey,
     elevation: 0,
     shadowOpacity: 0,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "600",
   },

@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   metricTitle: {
     fontSize: 14,
     marginLeft: 16,
-    color: colors.lushblue,
+    color: colors.black,
     fontWeight: 600,
   },
   metricValue: {
