@@ -195,7 +195,7 @@ const AdminSeeAllOrders = () => {
         <View style={localStyles.searchBarContainer}>
           <TextInput
             placeholder="Search orders..."
-            placeholderTextColor={colors.placeholdergrey}
+            textSecondary={colors.placeholdergrey}
             style={localStyles.searchInput}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -312,16 +312,16 @@ const localStyles = StyleSheet.create({
     color: colors.errorText,
   },
   replaced: {
-    backgroundColor: colors.warningBg,
-    color: colors.red,
+    backgroundColor: colors.secondaryYellow,
+    color: colors.primaryRed,
   },
   returned: {
-    backgroundColor: colors.subtlePurpleBg,
-    color: colors.subtlePurpleText,
+    backgroundColor: colors.secondaryPurple,
+    color: colors.primaryPurple,
   },
   defaultStatus: {
-    backgroundColor: colors.Gray88,
-    color: colors.darkCharcoal,
+    backgroundColor: colors.placeholdergrey,
+    color: colors.black,
   },
 
   badgeContainer: {

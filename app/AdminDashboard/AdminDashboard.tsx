@@ -183,7 +183,7 @@ const AdminDashboard = () => {
               <Ionicons
                 style={{ marginLeft: 8 }}
                 name="chevron-forward"
-                color={colors.dirtyBlue}
+                color={colors.slateGrey}
                 size={20}
               />
             </Text>

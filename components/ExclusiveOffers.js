@@ -62,7 +62,7 @@ function ExclusiveOffers(props) {
                     <Ionicons
                       name={isItemSaved(item.id) ? "heart" : "heart-outline"}
                       size={20}
-                      color={isItemSaved(item.id) ? colors.red : colors.black}
+                      color={isItemSaved(item.id) ? colors.primaryRed : colors.black}
                     />
                   </TouchableOpacity>
                 </View>

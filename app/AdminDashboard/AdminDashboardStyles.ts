@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.pureBlack,
+    borderColor: colors.black,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -139,16 +139,16 @@ const styles = StyleSheet.create({
     color: colors.errorText,
   },
   replaced: {
-    backgroundColor: colors.warningBg,
-    color: colors.red,
+    backgroundColor: colors.secondaryYellow,
+    color: colors.primaryRed,
   },
   returned: {
-    backgroundColor: colors.subtlePurpleBg,
-    color: colors.subtlePurpleText,
+    backgroundColor: colors.secondaryPurple,
+    color: colors.primaryPurple,
   },
   defaultStatus: {
-    backgroundColor: colors.Gray88,
-    color: colors.darkCharcoal,
+    backgroundColor: colors.placeholdergrey,
+    color: colors.black,
   },
   linkText:{
     color: colors.primary,

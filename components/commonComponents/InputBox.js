@@ -20,7 +20,7 @@ const InputBox = ({ placeholder }) => {
 const styles = StyleSheet.create({
   container: {
     borderWidth: 2,
-    borderColor: colors.Gray88,
+    borderColor: colors.placeholdergrey,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   },
   focusedContainer: {
     borderColor: colors.linkBlue,
-    backgroundColor: colors.linkBlueBg,
+    backgroundColor: colors.infoBg,
   },
   input: {
     height: 40,

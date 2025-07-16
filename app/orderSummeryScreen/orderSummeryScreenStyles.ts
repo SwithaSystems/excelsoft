@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingLeft: 10,
     borderLeftWidth: 1,
-    borderLeftColor: colors.Gray88,
+    borderLeftColor: colors.placeholdergrey,
     minHeight: 200,
   },
   noAddressContainer: {

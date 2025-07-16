@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   noteText:{
     fontWeight: 500,
     fontSize: 14,
-    color: colors.buttonError,
+    color: colors.error,
     marginBottom: 16,
   },
 });

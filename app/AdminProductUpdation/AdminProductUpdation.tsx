@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: 65,
     height: 65,
-    backgroundColor: colors.Gray88,
+    backgroundColor: colors.placeholdergrey,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 5,
