@@ -188,7 +188,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
         // Add file - different approaches for different platforms
         if (Platform.OS === "web") {
-          // For web, convert URI to blob
+          // For web, convert URI to bloba
           const response = await fetch(uploadData.fileUri);
           const blob = await response.blob();
           formData.append("file", blob, uploadData.fileName);
@@ -210,6 +210,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           throw new Error("HTTP error!");
         }
 
+        console.log("API response:", response);
         const result = await response?.json();
 
         // If API call successful, also call the simulated upload
@@ -285,48 +286,43 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           selectedItemTextStyle={styles.modalSelectedItemText}
         >
           <View style={styles.modalTrigger}>
-          <Text style={styles.modalTriggerText}>
-            {
-              ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)?.label ||
-              "Select Entity"
-            }
-          </Text>
-           <View style={styles.modalTriggerIcon}>
-          <Ionicons name="caret-down" size={20} color={colors.primary} />
-          </View>
+            <Text style={styles.modalTriggerText}>
+              {ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)
+                ?.label || "Select Entity"}
+            </Text>
+            <View style={styles.modalTriggerIcon}>
+              <Ionicons name="caret-down" size={20} color={colors.primary} />
+            </View>
           </View>
         </ModalSelector>
       </View>
 
       {/* File Type Dropdown */}
       <View style={styles.dropdownContainer}>
-      <Text style={styles.label}>Select File Type:</Text>
-      <ModalSelector
-        data={FILE_TYPE_OPTIONS}
-        initValue="Select File Type"
-        onChange={(option) => setSelectedFileType(option.value)}
-        keyExtractor={(item) => item.value}
-        labelExtractor={(item) => item.label}
-        style={styles.modalSelector}
-        initValueTextStyle={styles.modalInitValue}
-        selectTextStyle={styles.modalSelectedText}
-        optionTextStyle={styles.modalOptionText}
-        selectedItemTextStyle={styles.modalSelectedItemText}
-      >
-        <View 
-          style={styles.modalTrigger}      >
-        <Text style={styles.modalTriggerText}>
-          {
-            FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)?.label ||
-            "Select File Type"
-          }
-        </Text>
-        <View style={styles.modalTriggerIcon}>
-        <Ionicons name="caret-down" size={20} color={colors.primary} />
-        </View>
-        </View>
-      </ModalSelector>
-    </View>
+        <Text style={styles.label}>Select File Type:</Text>
+        <ModalSelector
+          data={FILE_TYPE_OPTIONS}
+          initValue="Select File Type"
+          onChange={(option) => setSelectedFileType(option.value)}
+          keyExtractor={(item) => item.value}
+          labelExtractor={(item) => item.label}
+          style={styles.modalSelector}
+          initValueTextStyle={styles.modalInitValue}
+          selectTextStyle={styles.modalSelectedText}
+          optionTextStyle={styles.modalOptionText}
+          selectedItemTextStyle={styles.modalSelectedItemText}
+        >
+          <View style={styles.modalTrigger}>
+            <Text style={styles.modalTriggerText}>
+              {FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)
+                ?.label || "Select File Type"}
+            </Text>
+            <View style={styles.modalTriggerIcon}>
+              <Ionicons name="caret-down" size={20} color={colors.primary} />
+            </View>
+          </View>
+        </ModalSelector>
+      </View>
       {/* Selected File Display */}
       {selectedFile && !selectedFile.canceled && selectedFile.assets && (
         <View style={styles.fileInfoContainer}>

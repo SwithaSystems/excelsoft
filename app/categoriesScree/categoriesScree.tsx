@@ -17,13 +17,12 @@ import Footer from "@/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import styles from "./categoriesScreeStyles";
 import { categoryService, Category } from "@/services/categoryService";
-import { globalStyles } from "@/assets/styles/globalStyles";
 import PageLayout from "../pageLayoutProps";
 
 const screenWidth = Dimensions.get("window").width;
 
 const categoriesScreen = () => {
-  const [subCategories, setsubCategories] = useState<Category[]>([]);
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
   const [category, setCategory] = useState<Category>();
   const { categoryId } = useLocalSearchParams();
 
@@ -38,22 +37,20 @@ const categoriesScreen = () => {
   }, []);
 
   useEffect(() => {
-    const fetchSubCategories = async () => {
+    const fetchAllCategories = async () => {
       try {
-        const data = await categoryService.getAllSubCategories(
-          Number(categoryId)
-        );
+        const data = await categoryService.getAllCategories();
         console.log(data);
-        const filterData = data.filter(
-          (item) => item.id !== Number(categoryId)
-        );
-        setsubCategories(filterData);
+        // const filterData = data.filter(
+        //   (item) => item.id !== Number(categoryId)
+        // );
+        setAllCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
 
-    fetchSubCategories();
+    fetchAllCategories();
   }, []);
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
@@ -82,10 +79,6 @@ const categoriesScreen = () => {
     );
   };
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <View style={{ flex: 1 }}>
-    //     <Header headerText={category?.name} />
-    //     <ScrollView style={styles.categories}>
     <PageLayout
       scrollable
       hasHeader
@@ -97,30 +90,25 @@ const categoriesScreen = () => {
         ListHeaderComponent={
           <View style={[{ backgroundColor: colors.white }]}>
             <FlatList
-              data={subCategories}
+              data={allCategories}
               keyExtractor={(item: any) => item.id}
               renderItem={renderItem}
               numColumns={2}
               columnWrapperStyle={[
                 styles.row,
-                { 
-                  justifyContent: "space-between", 
-                  // paddingHorizontal: 16 
+                {
+                  justifyContent: "space-between",
+                  // paddingHorizontal: 16
                 },
               ]}
               contentContainerStyle={styles.listContainer}
               showsVerticalScrollIndicator={false}
-              //nestedScrollEnabled={true}
             />
           </View>
         }
         data={[]}
         renderItem={null}
       />
-      {/* </ScrollView>
-        <Footer navigation={router} activeTab="home" />
-      </View>
-    </SafeAreaView> */}
     </PageLayout>
   );
 };

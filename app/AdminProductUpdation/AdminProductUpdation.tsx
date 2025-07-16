@@ -99,7 +99,7 @@ const AdminProductUpdation = () => {
   console.log("Product data in product updation", productData);
   async function getallCategories() {
     try {
-      const categories = await categoryService.getAllCategories(2);
+      const categories = await categoryService.getAllCategories();
       if (categories) {
         setAllCategories(categories);
       }
