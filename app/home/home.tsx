@@ -179,23 +179,7 @@ const HomePage = () => {
         {/* Banner */}
         <View>
           {renderBanner()}
-        </View>
-
-        <View style={{backgroundColor: colors.white}} >
-        <Text>Color checking text</Text>
-        </View>
-        <View style={{backgroundColor: colors.offWhite}} >
-        <Text>Color checking text</Text>
-        </View>
-        <View style={{backgroundColor: colors.offWhite}} >
-        <Text>Color checking text</Text>
-        </View>
-        <View style={{backgroundColor: colors.offWhite}} >
-        <Text>Color checking text</Text>
-        </View>
-        <View style={{backgroundColor: colors.lightgrey}} >
-        <Text>Color checking text</Text>
-        </View>        
+        </View>    
 
         {/* Recommended Products */}
         <View>
