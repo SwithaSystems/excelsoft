@@ -203,6 +203,40 @@ const AdminCategories = () => {
     setEditingCategoryId(category._id);
   }, []);
 
+  const handleDeleteCategory = useCallback((categoryId: number) => {
+    Alert.alert(
+      "Delete Category",
+      "Are you sure you want to delete this category?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const result = await categoryService.deleteCategory(categoryId);
+              if (result) {
+                await getAllCategories();
+                Alert.alert("Success", "Category deleted successfully");
+              }
+            } catch (error: any) {
+              console.log("Delete error:", error?.response?.data);
+
+              const errorMessage =
+                error?.response?.data?.message ||
+                "Something went wrong while deleting the category.";
+
+              Alert.alert("Error", errorMessage);
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  }, []);
+
   // Handle cancel edit
   const handleCancelEdit = useCallback(() => {
     Alert.alert(
@@ -435,22 +469,24 @@ const AdminCategories = () => {
                 style={styles.imagePreviewContainer}
               >
                 {categoryImages.map((image, index) => (
-                  <View key={index} style={styles.imagePreviewItem}>
-                    <Image
-                      source={{ uri: image.uri }}
-                      style={styles.previewImage}
-                    />
-                    <TouchableOpacity
-                      style={styles.removeImageButton}
-                      onPress={() => removeImage(index)}
-                    >
-                      <Ionicons
-                        name="close-circle"
-                        size={24}
-                        color={colors.alertRed}
+                  <React.Fragment>
+                    <View style={styles.imagePreviewItem}>
+                      <Image
+                        source={{ uri: image.uri }}
+                        style={styles.previewImage}
                       />
-                    </TouchableOpacity>
-                  </View>
+                      <TouchableOpacity
+                        style={styles.removeImageButton}
+                        onPress={() => removeImage(index)}
+                      >
+                        <Ionicons
+                          name="close-circle"
+                          size={24}
+                          color={colors.alertRed}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </React.Fragment>
                 ))}
               </ScrollView>
             )}
@@ -476,57 +512,70 @@ const AdminCategories = () => {
         <View style={styles.listSection}>
           <Text style={styles.sectionTitle}>Existing Categories</Text>
           <ScrollView style={styles.listContainer}>
-            {categoryList.map((categoryItem: Category, index: number) => (
-              <TouchableOpacity
-                key={categoryItem.id || index}
-                style={[
-                  styles.categoryItem,
-                  editingCategoryId === categoryItem.id &&
-                    styles.editingCategoryItem,
-                ]}
-                onPress={() => handleEditCategory(categoryItem)}
-              >
-                <View style={styles.categoryContent}>
-                  {categoryItem.images && categoryItem.images.length > 0 && (
-                    <Image
-                      source={{ uri: categoryItem.images[0] }}
-                      style={styles.categoryImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.categoryInfo}>
-                    <Text style={styles.categoryName}>{categoryItem.name}</Text>
-                    {categoryItem.description && (
-                      <Text style={styles.categoryDescription}>
-                        {categoryItem.description}
-                      </Text>
+            <View>
+              {categoryList.map((categoryItem: Category, index: number) => (
+                <TouchableOpacity
+                  key={categoryItem.id || index}
+                  style={[
+                    styles.categoryItem,
+                    editingCategoryId === categoryItem.id &&
+                      styles.editingCategoryItem,
+                  ]}
+                  onPress={() => handleEditCategory(categoryItem)}
+                >
+                  <View style={styles.categoryContent}>
+                    {categoryItem.images && categoryItem.images.length > 0 && (
+                      <Image
+                        source={{ uri: categoryItem.images[0] }}
+                        style={styles.categoryImage}
+                        resizeMode="cover"
+                      />
                     )}
-                    <Text style={styles.categoryId}>
-                      ID: {categoryItem.id} | Parent:{" "}
-                      {getParentCategoryName(
-                        categoryItem.parentCategory,
-                        categoryList
+                    <View style={styles.categoryInfo}>
+                      <Text style={styles.categoryName}>
+                        {categoryItem.name}
+                      </Text>
+                      {categoryItem.description && (
+                        <Text style={styles.categoryDescription}>
+                          {categoryItem.description}
+                        </Text>
                       )}
-                    </Text>
+                      <Text style={styles.categoryId}>
+                        ID: {categoryItem.id} | Parent:{" "}
+                        {getParentCategoryName(
+                          categoryItem.parentCategory,
+                          categoryList
+                        )}
+                      </Text>
+                    </View>
                   </View>
+                  <View style={styles.categoryActions}>
+                    {editingCategoryId === categoryItem.id && (
+                      <Text style={styles.editingLabel}>Editing</Text>
+                    )}
+                    <Ionicons
+                      name="create-outline"
+                      size={20}
+                      color={colors.primary}
+                    />
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteCategory(categoryItem._id)}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={20}
+                      color={colors.alertRed}
+                    />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
+              {categoryList.length === 0 && (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>No categories found</Text>
                 </View>
-                <View style={styles.categoryActions}>
-                  {editingCategoryId === categoryItem.id && (
-                    <Text style={styles.editingLabel}>Editing</Text>
-                  )}
-                  <Ionicons
-                    name="create-outline"
-                    size={20}
-                    color={colors.primary}
-                  />
-                </View>
-              </TouchableOpacity>
-            ))}
-            {categoryList.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>No categories found</Text>
-              </View>
-            )}
+              )}
+            </View>
           </ScrollView>
         </View>
       </ScrollView>
