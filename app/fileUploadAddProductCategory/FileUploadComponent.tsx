@@ -27,7 +27,7 @@ interface FileUploadProps {
 
 interface UploadData {
   entityType: string;
-  fileType: string;
+  // fileType: string;
   fileName: string;
   fileUri: string;
   fileData?: any;
@@ -53,7 +53,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
 }) => {
   const [selectedEntity, setSelectedEntity] = useState<string>("");
-  const [selectedFileType, setSelectedFileType] = useState<string>("");
+  // const [selectedFileType, setSelectedFileType] = useState<string>("");
   const [selectedFile, setSelectedFile] =
     useState<DocumentPicker.DocumentPickerResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -81,7 +81,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
   // Handle file selection with better approach
   const handleChooseFile = async () => {
-    if (!selectedEntity || !selectedFileType) {
+    if (!selectedEntity) {
       Alert.alert("Error", "Please select both entity and file type first");
       return;
     }
@@ -89,7 +89,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     try {
       // Use more flexible document picker options
       const pickerOptions = {
-        type: getDocumentPickerTypes(selectedFileType),
+        type: ["*/*"],
         copyToCacheDirectory: true,
         multiple: false,
       };
@@ -100,36 +100,37 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
       console.log("Document picker result:", result);
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
+      // if (!result.canceled && result.assets && result.assets.length > 0) {
+      //   const file = result.assets[0];
+
+      //   // More flexible file validation
+      //   const fileName = file.name.toLowerCase();
+      //   let isValidFile = true;
+
+      //   if (selectedFileType !== "all") {
+      //     const expectedExtension = `.${selectedFileType}`;
+      //     isValidFile = fileName.endsWith(expectedExtension);
+      //   }
+
+      //   if (!isValidFile) {
+      //     Alert.alert(
+      //       "File Type Mismatch",
+      //       `Selected file doesn't match the expected type (${selectedFileType.toUpperCase()}). Do you want to proceed anyway?`,
+      //       [
+      //         { text: "Cancel", style: "cancel" },
+      //         {
+      //           text: "Proceed",
+      //           onPress: () => {
+      //             setSelectedFile(result);
+      //             Alert.alert("Success", `File selected: ${file.name}`);
+      //           },
+      //         },
+      //       ]
+      //     );
+      //     return;
+      //   }
+      if(result.assets && result.assets.length > 0){
         const file = result.assets[0];
-
-        // More flexible file validation
-        const fileName = file.name.toLowerCase();
-        let isValidFile = true;
-
-        if (selectedFileType !== "all") {
-          const expectedExtension = `.${selectedFileType}`;
-          isValidFile = fileName.endsWith(expectedExtension);
-        }
-
-        if (!isValidFile) {
-          Alert.alert(
-            "File Type Mismatch",
-            `Selected file doesn't match the expected type (${selectedFileType.toUpperCase()}). Do you want to proceed anyway?`,
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Proceed",
-                onPress: () => {
-                  setSelectedFile(result);
-                  Alert.alert("Success", `File selected: ${file.name}`);
-                },
-              },
-            ]
-          );
-          return;
-        }
-
         setSelectedFile(result);
         Alert.alert("Success", `File selected: ${file.name}`);
       } else if (result.canceled) {
@@ -146,7 +147,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
   // Handle file upload
   const handleUpload = async () => {
-    if (!selectedEntity || !selectedFileType || !selectedFile) {
+    if (!selectedEntity || !selectedFile) {
       Alert.alert(
         "Error",
         "Please select entity, file type, and choose a file"
@@ -172,7 +173,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       // Prepare upload data
       const uploadData: UploadData = {
         entityType: selectedEntity,
-        fileType: selectedFileType,
+        // fileType: selectedFileType,
         fileName: file.name,
         fileUri: file.uri,
       };
@@ -183,7 +184,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         const formData = new FormData();
         // Add metadata
         formData.append("entityType", uploadData.entityType);
-        formData.append("fileType", uploadData.fileType);
+        // formData.append("fileType", uploadData.fileType);
         formData.append("fileName", uploadData.fileName);
 
         // Add file - different approaches for different platforms
@@ -220,7 +221,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
         // Reset form
         setSelectedEntity("");
-        setSelectedFileType("");
+        // setSelectedFileType("");
         setSelectedFile(null);
 
         // Callback to parent component
@@ -235,7 +236,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
         // Reset form
         setSelectedEntity("");
-        setSelectedFileType("");
+        // setSelectedFileType("");
         setSelectedFile(null);
 
         // Callback to parent component
@@ -298,31 +299,31 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       </View>
 
       {/* File Type Dropdown */}
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.label}>Select File Type:</Text>
-        <ModalSelector
-          data={FILE_TYPE_OPTIONS}
-          initValue="Select File Type"
-          onChange={(option) => setSelectedFileType(option.value)}
-          keyExtractor={(item) => item.value}
-          labelExtractor={(item) => item.label}
-          style={styles.modalSelector}
-          initValueTextStyle={styles.modalInitValue}
-          selectTextStyle={styles.modalSelectedText}
-          optionTextStyle={styles.modalOptionText}
-          selectedItemTextStyle={styles.modalSelectedItemText}
-        >
-          <View style={styles.modalTrigger}>
-            <Text style={styles.modalTriggerText}>
-              {FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)
-                ?.label || "Select File Type"}
-            </Text>
-            <View style={styles.modalTriggerIcon}>
-              <Ionicons name="caret-down" size={20} color={colors.primary} />
-            </View>
-          </View>
-        </ModalSelector>
-      </View>
+      {/* // <View style={styles.dropdownContainer}>
+         <Text style={styles.label}>Select File Type:</Text>
+         <ModalSelector
+           data={FILE_TYPE_OPTIONS}
+           initValue="Select File Type"
+           onChange={(option) => setSelectedFileType(option.value)}
+           keyExtractor={(item) => item.value}
+           labelExtractor={(item) => item.label}
+           style={styles.modalSelector}
+           initValueTextStyle={styles.modalInitValue}
+           selectTextStyle={styles.modalSelectedText}
+           optionTextStyle={styles.modalOptionText}
+           selectedItemTextStyle={styles.modalSelectedItemText}
+         >
+           <View style={styles.modalTrigger}>
+             <Text style={styles.modalTriggerText}>
+               {FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)
+                 ?.label || "Select File Type"}
+             </Text>
+             <View style={styles.modalTriggerIcon}>
+               <Ionicons name="caret-down" size={20} color={colors.primary} />
+             </View>
+           </View>
+         </ModalSelector>
+       </View> */}
       {/* Selected File Display */}
       {selectedFile && !selectedFile.canceled && selectedFile.assets && (
         <View style={styles.fileInfoContainer}>
@@ -344,10 +345,10 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           style={[
             styles.button,
             styles.chooseButton,
-            (!selectedEntity || !selectedFileType) && styles.buttonDisabled,
+            (!selectedEntity) && styles.buttonDisabled,
           ]}
           onPress={handleChooseFile}
-          disabled={!selectedEntity || !selectedFileType}
+          disabled={!selectedEntity}
         >
           <Text style={styles.buttonText}>Choose File</Text>
         </TouchableOpacity>
