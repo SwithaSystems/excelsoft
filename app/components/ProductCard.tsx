@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import colors from "../../app/config/colors";
-import Star from "../../components/Star";
+import Star from "./Star";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import CurrencySymbol from "@/constants/CurrencySymbol";
