@@ -16,7 +16,7 @@ import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
 import Footer from "../../components/Footer";
 import CategoryItem_Home from "../../components/CategoryItem_Home";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import products from "../../../data/products";
 import SearchBar from "../../components/searchBar";
 import Header from "../../components/Header";
@@ -27,7 +27,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../../services/categoryService";
-import { PageLayout } from "../../pageLayoutProps";
+import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 
 const recommendedProducts = products
   .filter((p) =>

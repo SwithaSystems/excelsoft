@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TextInput, View, StyleSheet } from "react-native";
-import colors from "../../config/colors";
+import colors from "@/constants/colors";
 
 const InputBox = ({ placeholder }) => {
   const [isFocused, setIsFocused] = useState(false);

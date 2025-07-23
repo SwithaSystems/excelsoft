@@ -1,4 +1,4 @@
-import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from "../../config/stringLiterals";
+import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import { View, Text, Alert, DeviceEventEmitter } from "react-native";
 import styles from "./EditAccountInformationStyles";
@@ -17,7 +17,7 @@ import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setUserData } from "@/store/slices/userSlice";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const editAccountInformationscreen = () => {
   const dispatch = useDispatch();

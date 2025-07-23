@@ -13,7 +13,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
   DateTimePickerEvent,

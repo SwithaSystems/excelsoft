@@ -1,7 +1,7 @@
 import {
   DATE_FORMAT_Display,
   MY_ORDERS_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList } from "react-native";
 import styles from "./MyOrderScreenStyles";
@@ -11,7 +11,7 @@ import OrderItem from "./Components/OrderItem";
 import Footer from "@/app/components/Footer";
 import { orderService } from "@/services/orderService";
 import { useLocalSearchParams } from "expo-router";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { format } from "date-fns";
 
 const myOrderScreen = () => {

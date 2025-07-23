@@ -11,10 +11,10 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import { UserAPI } from "@/services/userService";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { FORGOT_PASSWORD_SCREEN_TITLE } from "../../config/stringLiterals";
-import { showErrorAlert } from "../../config/showErrorAlert";
-import { FIX_VALIDATION_ERRORS } from "../../config/customErrorMessages";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { FORGOT_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import styles from "./ForgotPasswordStyles";
 
 const forgotPasswordScreen = () => {

@@ -9,7 +9,7 @@ import {
   FlatList,
 } from "react-native";
 import { FontAwesome, Feather, Ionicons } from "@expo/vector-icons";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -93,9 +93,7 @@ const CategoryBadges = (props) => {
               style={[
                 styles.filterButton,
                 activeFilter === category && styles.activeFilterButton,
-                index === subCategoriesNames.length 
-                  ? { marginRight: 0 }
-                  : {},
+                index === subCategoriesNames.length ? { marginRight: 0 } : {},
               ]}
               onPress={() => {
                 setActiveFilter(category);

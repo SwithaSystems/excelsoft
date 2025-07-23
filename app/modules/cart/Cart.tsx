@@ -1,4 +1,4 @@
-import { CART_SCREEN_TITLE } from "../../config/stringLiterals";
+import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ import {
 } from "../../../store/slices/cartSlice";
 import { removeFromSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import { addToSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import SpecialOffersBanner from "./Components/SpecialOffersBanner";
 import CartItem from "./Components/CartItem";
 import OrderSummary from "../../components/OrderSummary";
@@ -39,13 +39,13 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/app/components/NoContentFound";
-import PageLayout from "../../pageLayoutProps";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   SESSION_EXPIRED,
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 import { ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
 

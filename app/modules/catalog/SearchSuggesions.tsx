@@ -7,13 +7,13 @@ import {
   SafeAreaView,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../../components/Header";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import SearchBar from "@/app/components/searchBar";
 
 const suggestions = [

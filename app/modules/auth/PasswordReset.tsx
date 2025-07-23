@@ -17,8 +17,8 @@ import axios from "axios";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const passwordResetScreen = () => {
   const { phoneNumber } = useLocalSearchParams();

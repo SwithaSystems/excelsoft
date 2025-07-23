@@ -2,7 +2,7 @@ import {
   DATE_FORMAT_Display,
   EDIT_PROFILE_SCREEN_TITLE,
   MINIMUM_USER_AGE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
@@ -24,7 +24,7 @@ import {
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import * as ImagePicker from "expo-image-picker";
 import { useDerivedValue } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -35,16 +35,16 @@ import { RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { formatToDDMMYYYY } from "../../config/dateTimeFormat";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import { formatToDDMMYYYY } from "../../../utilities/dateTimeFormat";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FAILED_TO_UPDATE_DETAILS,
   CAMERA_ACCESS_REQUIRED,
   GALLERY_ACCESS_REQUIRED,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
 
 interface User {

@@ -8,7 +8,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import styles from "./PickUpModeStyles";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,13 +16,13 @@ import Button from "@/app/components/commonComponents/Button";
 import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import PageLayout from "../../pageLayoutProps";
 import {
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
   PICKUP_MODE_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const options = [
   {
@@ -56,23 +56,13 @@ const pickUpModescreen = () => {
   >({});
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    // <View style={globalStyles.container}>
-    //   <ScrollView>
-    //     <Header headerText="Pick up Options" />
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
       hasFooter={false}
       scrollable={false}
     >
-      <View
-        style={[
-          // globalStyles.sectionContent,
-          globalStyles.pt_0,
-          { paddingHorizontal: 20 },
-        ]}
-      >
+      <View style={[globalStyles.pt_0, { paddingHorizontal: 20 }]}>
         {options.map((option) => (
           <TouchableOpacity
             key={option.id}
@@ -83,12 +73,7 @@ const pickUpModescreen = () => {
             onPress={() => setSelected(option)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons
-                name={option.icon}
-                size={24}
-                color={colors.black}
-                // style={styles.icon}
-              />
+              <Ionicons name={option.icon} size={24} color={colors.black} />
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.optionLabel}>{option.label}</Text>
@@ -113,9 +98,6 @@ const pickUpModescreen = () => {
           textStyle={!selected?.id ? styles.buttonText_disabled : {}}
         />
       </View>
-      {/* </ScrollView>
-    </View>
-    </SafeAreaView> */}
     </PageLayout>
   );
 };

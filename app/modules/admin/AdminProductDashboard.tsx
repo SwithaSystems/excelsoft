@@ -1,4 +1,4 @@
-import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from "../../config/stringLiterals";
+import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from "../../../constants/stringLiterals";
 // import { useFocusEffect } from "@react-navigation/native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -18,12 +18,12 @@ import {
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { ProductsAPI } from "@/services/productService";
 import AdminFooter from "@/app/components/AdminFooter";
 import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { categoryService } from "@/services/categoryService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 

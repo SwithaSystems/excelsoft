@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { useNavigation } from "expo-router";
 import { clearNavigationStack } from "@/utilities/redirectionHelper";
 

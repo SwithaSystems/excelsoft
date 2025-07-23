@@ -5,7 +5,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import colors from "./config/colors";
+import colors from "@/constants/colors";
 
 interface PageLayoutProps {
   children: React.ReactNode;

@@ -2,7 +2,7 @@ import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import DisplayPrice from "../../../components/DisplayPrice";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import Button from "@/app/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { useSelector, useDispatch } from "react-redux";

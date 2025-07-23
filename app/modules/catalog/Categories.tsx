@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import Header from "../../components/Header";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import CategoryItem from "../../components/CategoryItem";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -17,7 +17,7 @@ import Footer from "@/app/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService, Category } from "@/services/categoryService";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./CategoriesStyles";
 
 const screenWidth = Dimensions.get("window").width;

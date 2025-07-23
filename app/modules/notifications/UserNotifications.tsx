@@ -1,12 +1,12 @@
-import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from "../../config/stringLiterals";
+import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import Footer from "@/app/components/Footer";
-import colors from "../../config/colors";
-import PageLayout from "../../pageLayoutProps";
+import colors from "../../../constants/colors";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./UserNotificationsStyles";
 
 const notifications = [

@@ -1,7 +1,7 @@
 import {
   ADMIN_PRODUCT_ADD_SCREEN_TITLE,
   ADMIN_PRODUCT_UPDATE_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -26,7 +26,7 @@ import {
   Modal,
 } from "react-native";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService } from "@/services/categoryService";
 import { CheckBox } from "react-native-elements";
@@ -35,9 +35,9 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { showErrorAlert } from "../../config/showErrorAlert";
-import { FIX_VALIDATION_ERRORS } from "../../config/customErrorMessages";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();

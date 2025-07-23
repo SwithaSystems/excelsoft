@@ -2,7 +2,7 @@ import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import DisplayPrice from "../../../components/DisplayPrice";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import Button from "@/app/components/commonComponents/Button";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { useSelector, useDispatch } from "react-redux";
@@ -13,11 +13,11 @@ import {
 } from "../../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../../store/slices/cartSlice";
-import { showErrorAlert } from "../../../config/showErrorAlert";
+import { showErrorAlert } from "../../../../utilities/showErrorAlert";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
-} from "../../../config/customErrorMessages";
+} from "../../../../constants/customErrorMessages";
 
 function CartItem(props) {
   const item = props.cartItem;

@@ -1,6 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, Image, StyleSheet } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 import { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";

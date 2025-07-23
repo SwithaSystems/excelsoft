@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import { StyleSheet } from "react-native"; // Replace with your style file
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
 const ReturnReplaceToggle = ({ mode, setMode }: any) => {

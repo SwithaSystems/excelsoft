@@ -9,7 +9,7 @@ import {
   TextInput,
   SafeAreaView,
 } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { CheckBox } from "react-native-elements";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -25,12 +25,12 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 
 const options = [
   {

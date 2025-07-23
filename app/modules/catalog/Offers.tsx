@@ -17,7 +17,7 @@ import ExclusiveOffers from "@/app/components/ExclusiveOffers";
 import { router } from "expo-router";
 import Footer from "@/app/components/Footer";
 import { ImageBackground } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import styles from "./OffersStyles";
 
 const offersScreen = () => {

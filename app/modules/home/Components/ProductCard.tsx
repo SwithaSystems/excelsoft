@@ -3,7 +3,7 @@ import { View, Image, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import HomeStyles from "../Homestyles";
 import CurrencySymbol from "../../../../constants/CurrencySymbol";
-import colors from "../../../config/colors";
+import colors from "../../../../constants/colors";
 
 interface ProductCardProps {
   title: string;

@@ -14,15 +14,15 @@ import { SafeAreaView } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { Button } from "react-native-elements";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { categoryService } from "@/services/categoryService";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import AdminFooter from "@/app/components/AdminFooter";
-import PageLayout from "../../pageLayoutProps";
-import { ADMIN_CATEGORIES_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { ADMIN_CATEGORIES_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import CategoryDropdown from "./components/categoryDropdown";
 
 interface Category {

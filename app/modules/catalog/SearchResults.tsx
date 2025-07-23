@@ -20,10 +20,10 @@ import NoContentFound from "@/app/components/NoContentFound";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import styles from "./SearchResultsStyles";
 import ProductCard from "@/app/components/ProductCard";
-import colors from "@/app/config/colors";
-import PageLayout from "@/app/pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
 import CategoryBadges from "./Components/CategoryBadges";
+import colors from "@/constants/colors";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =

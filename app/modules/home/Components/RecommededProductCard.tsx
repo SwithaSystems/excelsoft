@@ -1,7 +1,7 @@
 import react from "react";
 import { View, Image, Text, TouchableOpacity, FlatList } from "react-native";
 import { StyleSheet } from "react-native";
-import colors from "../../../config/colors";
+import colors from "../../../../constants/colors";
 import { router } from "expo-router";
 import products from "@/data/products";
 import { Ionicons } from "@expo/vector-icons";

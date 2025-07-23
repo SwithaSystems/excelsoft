@@ -18,8 +18,8 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { VERIFICATION_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { VERIFICATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const verifcationScreen = () => {
   const {

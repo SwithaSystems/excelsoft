@@ -10,13 +10,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { useEffect } from "react";
 import { Alert } from "react-native";
-import PageLayout from "../../pageLayoutProps";
-import { NOTIFICATIONS_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import styles from "./NotificationsStyles";
 
 // Define TypeScript interfaces for the settings

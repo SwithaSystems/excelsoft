@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import colors from "../../app/config/colors";
+import colors from "../../constants/colors";
 import Star from "./Star";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";

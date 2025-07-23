@@ -3,7 +3,7 @@ import {
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
   DELIVERY_TRACKING_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
@@ -13,10 +13,10 @@ import styles from "./DeliveryTrackingStyles";
 import Button from "@/app/components/commonComponents/Button";
 import Footer from "@/app/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { orderService } from "@/services/orderService";
 import AdminFooter from "@/app/components/AdminFooter";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 

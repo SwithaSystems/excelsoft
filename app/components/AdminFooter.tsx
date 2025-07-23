@@ -9,7 +9,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import colors from "@/app/config/colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ADMINFOOTER_CATEGORIES,
@@ -17,7 +16,8 @@ import {
   ADMINFOOTER_ORDERS,
   ADMINFOOTER_PRODUCTS,
   ADMINFOOTER_SCAN,
-} from "@/app/config/stringLiterals";
+} from "@/constants/stringLiterals";
+import colors from "@/constants/colors";
 
 const AdminFooter = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();

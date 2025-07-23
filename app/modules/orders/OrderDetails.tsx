@@ -27,12 +27,12 @@ import { useSelector } from "react-redux";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
-import colors from "../../config/colors";
-import PageLayout from "../../pageLayoutProps";
+import colors from "../../../constants/colors";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   ADMIN_ORDER_DETAIL_SCREEN_TITLE,
   DELIVERY_MODE_HOME,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();

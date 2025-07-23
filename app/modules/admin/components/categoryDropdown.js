@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, Modal } from "react-native";
-import colors from "../../../config/colors";
+import colors from "../../../../constants/colors";
 
 const CategoryDropdown = ({
   selectedCategory,

@@ -1,4 +1,4 @@
-import { ADMIN_ORDER_QR_SCREEN_TITLE } from "../../config/stringLiterals";
+import { ADMIN_ORDER_QR_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useState } from "react";
 import {
   View,
@@ -10,12 +10,12 @@ import {
 } from "react-native";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import AdminFooter from "@/app/components/AdminFooter";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./AdminOrderQRScanStyles";
 const AdminOrderQRScan = () => {
   const [qrCode, setQrCode] = useState("");

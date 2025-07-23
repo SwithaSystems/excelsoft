@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 
 interface TrendingSearchItemProps {
   text: string;

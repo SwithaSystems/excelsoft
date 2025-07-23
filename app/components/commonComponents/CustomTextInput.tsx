@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import react, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";

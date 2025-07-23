@@ -14,7 +14,7 @@ import containers from "@/containers";
 import {
   ORDER_PLACED_FAILED,
   ORDER_PLACED_SUCCESS,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 
 const orderSuccessfulScreen = () => {
   const { orderData } = useLocalSearchParams();

@@ -13,7 +13,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import { UserAPI } from "@/services/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -22,7 +22,7 @@ import {
   FOOTER_MENU,
   FOOTER_SAVED,
   FOOTER_SEARCH,
-} from "@/app/config/stringLiterals";
+} from "@/constants/stringLiterals";
 
 const Footer = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();

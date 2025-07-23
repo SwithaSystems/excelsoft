@@ -22,11 +22,11 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { useAppContext } from "@/context/AppContext";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   ADD_BILLING_ADDRESS_SCREEN_TITLE,
   UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();

@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 
 const { width } = Dimensions.get("window");
 const itemWidth = (width - 48) / 2; // 48 = padding (16) * 2 + gap between items (16)

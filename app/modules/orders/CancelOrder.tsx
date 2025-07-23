@@ -1,4 +1,4 @@
-import { CANCEL_ORDER_SCREEN_TITLE } from "../../config/stringLiterals";
+import { CANCEL_ORDER_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useState } from "react";
 import {
   View,
@@ -13,7 +13,7 @@ import styles from "./CancelOrderStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";

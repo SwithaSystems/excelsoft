@@ -15,7 +15,7 @@ import axios from "axios";
 import { useAppContext } from "@/context/AppContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const reviewsScreen = () => {

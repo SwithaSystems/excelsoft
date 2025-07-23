@@ -3,7 +3,7 @@ import {
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
   ORDER_SUMMARY_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -34,12 +34,12 @@ import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
 import { Address, addressService } from "@/services/addressService";
 import { RootState } from "@/store/store";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import AddressItem from "../../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 type OrderSummeryScreenParams = {
   orderId: string;

@@ -2,7 +2,7 @@ import {
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_STORE,
   SELECT_BILLING_ADDRESS_SCREEN_TITLE,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -24,7 +24,7 @@ import { useAppContext } from "@/context/AppContext";
 import OrderSummary from "@/app/components/OrderSummary";
 import { useSelector } from "react-redux";
 import { useLocalSearchParams } from "expo-router";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import styles from "./SelectBillingAddressStyles";

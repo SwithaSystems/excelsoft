@@ -7,7 +7,7 @@ import {
   TextStyle,
   ActivityIndicator,
 } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 
 interface ButtonProps {
   title: string;

@@ -1,4 +1,4 @@
-import { APP_REVIEW_SCREEN_TITLE } from "../../config/stringLiterals";
+import { APP_REVIEW_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useState } from "react";
 import {
   View,
@@ -17,9 +17,9 @@ import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/app/components/ProductStars";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const appReviewScreen = () => {
   const [rating, setRating] = useState(0);

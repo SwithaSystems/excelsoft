@@ -1,4 +1,4 @@
-import { SAVED_ADDRESS_SCREEN_TITLE } from "../../config/stringLiterals";
+import { SAVED_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
@@ -19,7 +19,7 @@ import { useAppContext } from "@/context/AppContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import AddressItem from "../../components/AddressItem";
 import NoContentFound from "@/app/components/NoContentFound";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);

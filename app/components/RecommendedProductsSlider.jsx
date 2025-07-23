@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 import { router } from "expo-router";
 import DisplayPrice from "./DisplayPrice";
 import Button from "./commonComponents/Button";

@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import colors from '../config/colors';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import colors from "../../constants/colors";
 
 interface SearchHistoryItemProps {
   searchText: string;
@@ -9,10 +9,17 @@ interface SearchHistoryItemProps {
   onSelect: (text: string) => void;
 }
 
-const SearchHistoryItem = ({ searchText, onRemove, onSelect }: SearchHistoryItemProps) => {
+const SearchHistoryItem = ({
+  searchText,
+  onRemove,
+  onSelect,
+}: SearchHistoryItemProps) => {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.leftContent} onPress={() => onSelect(searchText)}>
+      <TouchableOpacity
+        style={styles.leftContent}
+        onPress={() => onSelect(searchText)}
+      >
         <Ionicons name="time-outline" size={24} color={colors.secondary} />
         <Text style={styles.searchText}>{searchText}</Text>
       </TouchableOpacity>
@@ -25,15 +32,15 @@ const SearchHistoryItem = ({ searchText, onRemove, onSelect }: SearchHistoryItem
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 6,
     // paddingHorizontal: 15,
   },
   leftContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
   searchText: {

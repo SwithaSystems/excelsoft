@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 
 interface StarProps {
   filled?: boolean;

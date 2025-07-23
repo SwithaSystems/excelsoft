@@ -15,21 +15,21 @@ import CartItem from "../cart/Components/CartItem";
 import { Picker } from "@react-native-picker/picker";
 import Button from "@/app/components/commonComponents/Button";
 import Footer from "@/app/components/Footer";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import AdminFooter from "@/app/components/AdminFooter";
 import { router, useLocalSearchParams } from "expo-router";
 import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   ADMIN_ORDER_DETAIL_SCREEN_TITLE,
   DELIVERY_MODE_HOME,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { NotificationService } from "@/services/notificationService";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 
 const AdminOrderDetail = () => {

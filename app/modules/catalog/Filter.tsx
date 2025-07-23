@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -17,8 +17,8 @@ import { useLocalSearchParams, useNavigation } from "expo-router";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { categoryService } from "@/services/categoryService";
-import PageLayout from "../../pageLayoutProps";
-import { FILTER_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { FILTER_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const Filter = () => {
   const props = useLocalSearchParams();

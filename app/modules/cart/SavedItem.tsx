@@ -1,4 +1,4 @@
-import { SAVED_ITEMS_SCREEN_TITLE } from "../../config/stringLiterals";
+import { SAVED_ITEMS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
 import {
   View,
@@ -22,7 +22,7 @@ import { router } from "expo-router";
 import { selectSavedItems } from "@/store/selectors/savedItemsSelectors";
 import { Image } from "react-native-elements";
 import Button from "@/app/components/commonComponents/Button";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import {
@@ -32,7 +32,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../../components/ProductCard";
 import SaveItemFav from "./Components/SaveItem_fav";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./SavedItemStyles";
 
 const savedItemScreen = () => {

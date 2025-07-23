@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 import BackArrow from "./commonComponents/BackArrow";
 import SearchBar from "@/app/components/searchBar";
 import { useRouter } from "expo-router";

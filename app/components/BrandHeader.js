@@ -13,7 +13,7 @@ import containers from "../../containers";
 import { UserAPI } from "../../services/userService";
 import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 
 function BrandHeader(props) {
   const [username, setUsername] = useState(null);

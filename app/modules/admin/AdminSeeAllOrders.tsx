@@ -15,12 +15,12 @@ import Header from "../../components/Header";
 import CurrencySymbol from "../../../constants/CurrencySymbol";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import AdminFooter from "@/app/components/AdminFooter";
 import { Ionicons } from "@expo/vector-icons";
 import { orderService } from "@/services/orderService";
-import PageLayout from "../../pageLayoutProps";
-import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 
 const AdminSeeAllOrders = () => {

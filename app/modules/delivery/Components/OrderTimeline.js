@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, FlatList, StyleSheet } from "react-native";
@@ -40,61 +40,62 @@ const OrderTimeline = (props) => {
           const isNegative = negativeStatuses.includes(item);
           const isActive = index <= currentStatus;
 
-          return(
-          <View style={styles.itemContainer}>
-            {/* Timeline Circle */}
-            <View
-              style={[
-                styles.circle,
-                {
-                  backgroundColor:
-                    isActive ? colors.primary : colors.inactivegrey,
-                },
-              ]}
-            >
-              {/*Icon for each status */}
-              <Ionicons
-                name={icons[index]}
-                size={24}
-                color={isActive ? colors.white : colors.white}
-              />
-            </View>
-            {/* Status Text */}
-            <View style={{flexDirection:"column"}}>
-            <Text
-              style={[
-                styles.statusText,
-                {
-                  color:
-                    isActive ? colors.primary : colors.secondaryText,
-                },
-              ]}
-            >
-              {item}
-            </Text>
-
-            {isCurrent && isNegative && reason ? (
-              <Text style={styles.reasonText}>
-                {/* {from === "admin"
-                  ? `You Reasoned: ${reason}`
-                  : `Seller Reasoned: ${reason}`} */}
-                  {reason}
-              </Text>
-            ): null
-          }
-            </View>
-            {/* Connecting Line */}
-            {index !== statusList.length && (
+          return (
+            <View style={styles.itemContainer}>
+              {/* Timeline Circle */}
               <View
                 style={[
-                  styles.line,
+                  styles.circle,
                   {
-                    backgroundColor: isActive ? colors.primary : colors.inactivegrey,
+                    backgroundColor: isActive
+                      ? colors.primary
+                      : colors.inactivegrey,
                   },
                 ]}
-              />
-            )}
-          </View>
+              >
+                {/*Icon for each status */}
+                <Ionicons
+                  name={icons[index]}
+                  size={24}
+                  color={isActive ? colors.white : colors.white}
+                />
+              </View>
+              {/* Status Text */}
+              <View style={{ flexDirection: "column" }}>
+                <Text
+                  style={[
+                    styles.statusText,
+                    {
+                      color: isActive ? colors.primary : colors.secondaryText,
+                    },
+                  ]}
+                >
+                  {item}
+                </Text>
+
+                {isCurrent && isNegative && reason ? (
+                  <Text style={styles.reasonText}>
+                    {/* {from === "admin"
+                  ? `You Reasoned: ${reason}`
+                  : `Seller Reasoned: ${reason}`} */}
+                    {reason}
+                  </Text>
+                ) : null}
+              </View>
+              {/* Connecting Line */}
+              {index !== statusList.length && (
+                <View
+                  style={[
+                    styles.line,
+                    {
+                      backgroundColor: isActive
+                        ? colors.primary
+                        : colors.inactivegrey,
+                    },
+                  ]}
+                />
+              )}
+            </View>
           );
         }}
       />
@@ -140,8 +141,8 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontWeight: "400",
     color: colors.red,
-    maxWidth:250,
-  }
+    maxWidth: 250,
+  },
 });
 
 export default OrderTimeline;

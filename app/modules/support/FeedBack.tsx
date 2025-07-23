@@ -15,10 +15,10 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { FEEDBACK_SCREEN2_TITLE } from "../../config/stringLiterals";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { FEEDBACK_SCREEN2_TITLE } from "../../../constants/stringLiterals";
 
 const MAX_IMAGES = 5;
 

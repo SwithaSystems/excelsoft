@@ -8,16 +8,14 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import PageLayout from "../../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../../components/Header";
-import { FILE_UPLOAD } from "../../../config/stringLiterals";
+import { FILE_UPLOAD } from "../../../../constants/stringLiterals";
 import { ProductsAPI } from "@/services/productService";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import colors from "../../../config/colors";
+import colors from "../../../../constants/colors";
 import styles from "../FileUploadAddProductCategoryStyles";
 
 // Define types

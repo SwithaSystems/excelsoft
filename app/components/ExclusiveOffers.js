@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 import DisplayPrice from "./DisplayPrice";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";

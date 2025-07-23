@@ -7,7 +7,7 @@ import {
   View,
   Image,
 } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Carousel from "react-native-reanimated-carousel";

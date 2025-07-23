@@ -1,18 +1,24 @@
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 
 interface SearchBarProps {
   placeholder: string;
   onFocus?: () => void;
-  onPress?: () => void; 
-  value?:string;
-  onChangeText?:(text:string)=>void;
-  onSubmitEditing?:()=>void;
-
+  onPress?: () => void;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  onSubmitEditing?: () => void;
 }
 
-const SearchBar = ({ placeholder="", onFocus , onPress,value="",onChangeText=()=>{}, onSubmitEditing=()=>{} }: SearchBarProps) => {
+const SearchBar = ({
+  placeholder = "",
+  onFocus,
+  onPress,
+  value = "",
+  onChangeText = () => {},
+  onSubmitEditing = () => {},
+}: SearchBarProps) => {
   return (
     <View style={styles.searchContainer}>
       <TextInput
@@ -42,11 +48,11 @@ const styles = StyleSheet.create({
     padding: 8,
     // marginHorizontal: 16,
     marginTop: 8,
-    marginBottom: 16
+    marginBottom: 16,
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    color: colors.black
+    color: colors.black,
   },
 });

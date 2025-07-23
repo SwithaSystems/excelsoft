@@ -1,4 +1,4 @@
-import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../config/stringLiterals";
+import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
@@ -14,9 +14,9 @@ import {
   INCORRECT_CURRENT_PASSWORD,
   PASSWORD_CHANGE_FAILED,
   PASSWORD_CHANGED,
-} from "../../config/customErrorMessages";
-import { showErrorAlert } from "../../config/showErrorAlert";
-import PageLayout from "../../pageLayoutProps";
+} from "../../../constants/customErrorMessages";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 
 const changePasswordScreen = () => {

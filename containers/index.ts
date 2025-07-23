@@ -76,7 +76,7 @@ const routes = {
 
   // Support
   customerSupportScreen: "modules/support/CustomerSupport",
-  feedbackScreen: "modules/support/Feedback",
+  feedbackScreen: "modules/support/FeedBack",
   appReviewScreen: "modules/support/AppReview",
 
   // Reviews

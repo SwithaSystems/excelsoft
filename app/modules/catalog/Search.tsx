@@ -10,7 +10,7 @@ import {
   Alert,
   SafeAreaView,
 } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import SearchHistoryItem from "../../components/SearchHistoryItem";
 import TrendingSearchItem from "../../components/TrendingSearchItem";
 import CategoryItem from "../../components/CategoryItem";
@@ -23,10 +23,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/app/components/Footer";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import { showErrorAlert } from "../../config/showErrorAlert";
-import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../config/customErrorMessages";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMessages";
 import styles from "./SearchStyles";
 
 // Storage key for recent searches

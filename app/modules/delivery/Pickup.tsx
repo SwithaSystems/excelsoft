@@ -17,14 +17,13 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import styles from "./PickupStyles";
 import { useLocalSearchParams } from "expo-router";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { PickupMode } from "@/services/orderService";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
-import PageLayout from "../../pageLayoutProps";
 import {
   DATE_FORMAT_Display,
   DEFAULT_PICKUP_HOURS,
@@ -32,16 +31,17 @@ import {
   DELIVERY_MODE_STORE,
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
-} from "../../config/stringLiterals";
+} from "../../../constants/stringLiterals";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { formatToDDMMYYYY } from "../../config/dateTimeFormat";
+import { formatToDDMMYYYY } from "../../../utilities/dateTimeFormat";
 import {
   PICKUP_TIME_IN_PAST,
   PICKUP_TIME_REQUIRED,
   PICKUP_DETAILS_REQUIRED,
-} from "../../config/customErrorMessages";
-import { showErrorAlert } from "../../config/showErrorAlert";
+} from "../../../constants/customErrorMessages";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { format } from "date-fns";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [

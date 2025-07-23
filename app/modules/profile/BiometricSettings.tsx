@@ -11,7 +11,7 @@ import {
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { useAuth } from "@/context/AuthContext";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../components/Header";
 import styles from "./BiometricSettingsStyles";
 

@@ -10,13 +10,13 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-// import { PageLayout } from "../../pageLayoutProps";
+// import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../components/Header";
-import { ADMIN_ACCESS_CONTROL_SCREEN_TITLE } from "../../config/stringLiterals";
+import { ADMIN_ACCESS_CONTROL_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import { UserAPI } from "@/services/userService";
-import PageLayout from "@/app/pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./AdminAccessControlStyles";
 
 const AdminAccessControlScreen = () => {

@@ -1,4 +1,4 @@
-import { EDIT_ADDRESS_SCREEN_TITLE } from "../../config/stringLiterals";
+import { EDIT_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -13,13 +13,13 @@ import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
 import { useLocalSearchParams } from "expo-router";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
   ADDRESS_UPDATE_FAILED,
   DUPLICATE_ADDRESS,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 import { addressService } from "@/services/addressService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";

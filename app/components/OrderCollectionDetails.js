@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import React, { useState } from "react";
 import {
   StyleSheet,

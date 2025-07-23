@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import LikeDisLike from "./LikeDisLike";

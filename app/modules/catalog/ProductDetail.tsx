@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 // import styles from "../../../productDetail/productDetailScreenStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -33,14 +33,14 @@ import {
   addToSavedItems,
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import HeroBanner from "../../components/HeroBanner";
-import { PRODUCT_DETAIL_SCREEN_TITLE } from "../../config/stringLiterals";
+import { PRODUCT_DETAIL_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
-} from "../../config/customErrorMessages";
-import { showErrorAlert } from "../../config/showErrorAlert";
+} from "../../../constants/customErrorMessages";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./ProductDetailStyles";
 
 const ProductDetailScreen = () => {

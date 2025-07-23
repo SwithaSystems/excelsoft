@@ -13,19 +13,19 @@ import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FIX_VALIDATION_ERRORS,
   INVALID_CREDENTIALS,
   INVALID_EMAIL_FORMAT,
   PASSWORD_MISMATCH,
   PHONE_NUMBER_VALIDATION,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const signIn = () => {
   const [inputValue, setInputValue] = useState(""); // Combined input field value
@@ -120,8 +120,6 @@ const signIn = () => {
       }
 
       await login(loginId, password);
-
-      // Alert.alert("Success", "You have successfully signed in.");
       redirectToPage(containers.homeScreen);
     } catch (error) {
       showErrorAlert({

@@ -1,4 +1,4 @@
-import { SIGN_UP_SCREEN_TITLE } from "../../config/stringLiterals";
+import { SIGN_UP_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import React, { useState } from "react";
@@ -16,9 +16,9 @@ import containers from "@/containers";
 import { TwilioApi } from "@/services/twilioService";
 import { authService } from "@/services/auth.service";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   FIX_VALIDATION_ERRORS,
   REGISTRATION_FAILED,
@@ -26,9 +26,9 @@ import {
   PHONE_ALREADY_REGISTERED,
   EMAIL_ALREADY_REGISTERED,
   ACCOUNT_CREATION_FAILED,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 
-import { showErrorAlert } from "../../config/showErrorAlert";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./SignUpStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 

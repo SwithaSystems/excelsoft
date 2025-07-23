@@ -1,4 +1,4 @@
-import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from "../../config/stringLiterals";
+import { NOTIFICATIONS_LISTING_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
 import {
   View,
@@ -14,8 +14,8 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "../../config/colors";
-import PageLayout from "../../pageLayoutProps";
+import colors from "../../../constants/colors";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 
 const NotificationListing = () => {
   const notifications = [

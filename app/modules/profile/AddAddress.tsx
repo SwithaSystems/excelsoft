@@ -10,25 +10,22 @@ import {
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
-import { Ionicons } from "@expo/vector-icons";
-import colors from "../../config/colors";
 import { addressService } from "@/services/addressService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
-import { Colors } from "@/constants/Colors";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import PageLayout from "../../pageLayoutProps";
-import { ADD_ADDRESS_SCREEN_TITLE } from "../../config/stringLiterals";
-import { showErrorAlert } from "../../config/showErrorAlert";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { ADD_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
   INVALID_POSTCODE,
   ADDRESS_NOT_DELIVERABLE,
   ADDRESS_NOT_SAVED,
   DUPLICATE_ADDRESS,
-} from "../../config/customErrorMessages";
+} from "../../../constants/customErrorMessages";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();

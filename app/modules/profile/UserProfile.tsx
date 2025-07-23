@@ -1,10 +1,10 @@
-import { USER_PROFILE_SCREEN_TITLE } from "../../config/stringLiterals";
+import { USER_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
 import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import colors from "../../config/colors";
+import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
@@ -19,13 +19,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
-import { PageLayout } from "../../pageLayoutProps";
+import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
 import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
-} from "../../config/customErrorMessages";
-import { showErrorAlert } from "../../config/showErrorAlert";
+} from "../../../constants/customErrorMessages";
+import { showErrorAlert } from "../../../utilities/showErrorAlert";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

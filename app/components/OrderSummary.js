@@ -1,4 +1,4 @@
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CurrencySymbol from "@/constants/CurrencySymbol";

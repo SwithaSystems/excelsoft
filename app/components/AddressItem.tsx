@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Address } from "@/services/addressService";
 import { StyleSheet } from "react-native";
-import colors from "../config/colors";
+import colors from "../../constants/colors";
 
 type AddressItemProps = {
   item: Address;
