@@ -152,7 +152,7 @@ const selectBillingAddressScreen = () => {
   };
   const handleEdit = (item: Address) => {
     setSelectedBillingAddress(item);
-    redirectToPage(containers.billingAddressScreenScreen, {
+    redirectToPage(containers.billingAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
@@ -224,7 +224,7 @@ const selectBillingAddressScreen = () => {
                     <Button
                       title="Add New Address"
                       onPress={() => {
-                        redirectToPage(containers.billingAddressScreenScreen, {
+                        redirectToPage(containers.billingAddressScreen, {
                           pickupDetails: JSON.stringify(pickupDetails),
                           shippingAddress: JSON.stringify(shippingAddress),
                           selectedMode: selectedMode,

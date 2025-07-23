@@ -105,7 +105,7 @@ const SaveItemFav = (props) => {
       <View style={[styles.cartItem /*props?.itemContainerStyle*/]}>
         <TouchableOpacity
           onPress={() =>
-            redirectToPage(containers.productDetailScreenScreen, {
+            redirectToPage(containers.productDetailScreen, {
               productId: item.id,
             })
           }

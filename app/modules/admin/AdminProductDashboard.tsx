@@ -125,7 +125,7 @@ const AdminProductDashboard = () => {
               <View style={{ flexDirection: "row", gap: 4 }}>
                 <TouchableOpacity
                   onPress={() =>
-                    redirectToPage(containers.adminProductUpdationScreen, {
+                    redirectToPage(containers.AdminProductDashboardScreen, {
                       item: JSON.stringify(item),
                     })
                   }
@@ -243,7 +243,7 @@ const AdminProductDashboard = () => {
         /> */}
         <Button
           onPress={() => {
-            redirectToPage(containers.adminProductUpdationScreen, {
+            redirectToPage(containers.AdminProductUpdationScreen, {
               newProduct: true,
               maxId: maxId + 1,
               onGoBack: () => setRefreshTrigger((prev) => prev + 1),

@@ -108,7 +108,7 @@ const savedAddressScreen = () => {
 
   const handleEdit = (item: Address) => {
     // setSelectedAddress(item);
-    redirectToPage(containers.editAddressScreenScreen, {
+    redirectToPage(containers.editAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
@@ -220,7 +220,7 @@ const savedAddressScreen = () => {
             <Button
               title="Add New Address"
               onPress={() => {
-                redirectToPage(containers.addAddressScreenScreen);
+                redirectToPage(containers.addAddressScreen);
               }}
             />
           </View>

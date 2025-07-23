@@ -30,7 +30,7 @@ const options = [
     label: "Store Pickup",
     description: "Pick up your order from our store",
     icon: "location-outline",
-    redirectionScreen: containers.pickupScreenScreen,
+    redirectionScreen: containers.pickupScreen,
     params: { mode: DELIVERY_MODE_STORE },
   },
   {
@@ -38,7 +38,7 @@ const options = [
     label: "Curbside Pickup",
     description: "Pick up your order curbside, right from your car.",
     icon: "car-outline",
-    redirectionScreen: containers.pickupScreenScreen,
+    redirectionScreen: containers.pickupScreen,
     params: { mode: DELIVERY_MODE_CURBSIDE },
   },
   {
@@ -46,7 +46,7 @@ const options = [
     label: "Home Delivery",
     description: "Receive your order at your doorstep.",
     icon: "home-outline",
-    redirectionScreen: containers.homeDeliveryScreenScreen,
+    redirectionScreen: containers.homeDeliveryScreen,
     params: { mode: DELIVERY_MODE_HOME },
   },
 ] as const;

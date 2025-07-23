@@ -195,13 +195,13 @@ const orderSummeryScreen = () => {
 
   const handleEdit = (item: Address) => {
     setSelectedBillingAddress(item);
-    redirectToPage(containers.billingAddressScreenScreen, {
+    redirectToPage(containers.billingAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
 
   const handleAddBillingAddress = async () => {
-    redirectToPage(containers.billingAddressScreenScreen, {
+    redirectToPage(containers.billingAddressScreen, {
       onAddressAdded: async () => {
         try {
           const addresses = await addressService.getAllBillingAddress_userId();

@@ -58,12 +58,12 @@ const UserProfileScreen = () => {
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const settingsMenu = {
-    "Edit Account Information": containers.editAccountInformationscreenScreen,
-    "Change Password": containers.changePasswordScreenScreen,
-    "Notification Settings": containers.notificationsScreenScreen,
-    "Customer Support": containers.customerSupportScreenScreen,
+    "Edit Account Information": containers.editAccountInformationScreen,
+    "Change Password": containers.changePasswordScreen,
+    "Notification Settings": containers.notificationsScreen,
+    "Customer Support": containers.customerSupportScreen,
     "Biometric settings": containers.biometricSettingsScreen,
-    Feedback: containers.AppReviewScreenScreen,
+    Feedback: containers.appReviewScreen,
   };
 
   // useEffect(() => {
@@ -149,7 +149,7 @@ const UserProfileScreen = () => {
       // await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
-      router.replace("/home/home");
+      router.replace("../../home/Home");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -191,7 +191,7 @@ const UserProfileScreen = () => {
         <TouchableOpacity
           style={styles.editProfile}
           onPress={() => {
-            redirectToPage(containers.editProfileScreenScreen);
+            redirectToPage(containers.editProfileScreen);
           }}
         >
           <Text style={styles.editText}>Edit Profile</Text>
@@ -202,7 +202,7 @@ const UserProfileScreen = () => {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              redirectToPage(containers.myOrderScreenScreen, {
+              redirectToPage(containers.myOrderScreen, {
                 userId: userData_redux?._id
                   ? userData_redux?._id
                   : userData_redux?.id,
@@ -215,7 +215,7 @@ const UserProfileScreen = () => {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              redirectToPage(containers.savedItemScreenScreen);
+              redirectToPage(containers.savedItemScreen);
             }}
           >
             <FontAwesome name="heart" size={32} color={colors.primary} />
@@ -224,7 +224,7 @@ const UserProfileScreen = () => {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              redirectToPage(containers.savedAddressScreenScreen);
+              redirectToPage(containers.savedAddressScreen);
             }}
           >
             <FontAwesome name="map-marker" size={32} color={colors.primary} />

@@ -248,7 +248,7 @@ const editProfileScreen = () => {
           {
             text: "OK",
             onPress: () => {
-              redirectToPage(containers.userProfileScreenScreen);
+              redirectToPage(containers.userProfileScreen);
             },
           },
         ]);

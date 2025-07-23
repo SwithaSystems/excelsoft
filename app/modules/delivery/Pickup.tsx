@@ -567,7 +567,7 @@ const PickupScreen = () => {
       };
 
       // Navigate to order summary screen
-      redirectToPage(containers.orderSummeryScreenScreen, {
+      redirectToPage(containers.orderSummaryScreen, {
         pickupDetails: JSON.stringify(pickupDetails),
         pickupAddress: JSON.stringify(pickupDetails),
         selectedMode: isStorePickup

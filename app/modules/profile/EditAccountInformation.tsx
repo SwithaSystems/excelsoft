@@ -58,7 +58,7 @@ const editAccountInformationscreen = () => {
         responseFromTwilio.data?.status === "pending"
       ) {
         // OTP sent successfully, proceed to verification screen
-        redirectToPage(containers.verifcationScreenScreen, {
+        redirectToPage(containers.verificationScreen, {
           phoneNumber_editAccount: phone,
           from: "verify",
         });
@@ -86,7 +86,7 @@ const editAccountInformationscreen = () => {
           {
             text: "OK",
             onPress: () => {
-              redirectToPage(containers.userProfileScreenScreen);
+              redirectToPage(containers.userProfileScreen);
             },
           },
         ]);

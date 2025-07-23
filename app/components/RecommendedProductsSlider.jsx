@@ -28,7 +28,7 @@ function RecommendedProductsSlider(props) {
           <TouchableOpacity
             style={styles.recommendedCard}
             onPress={() =>
-              redirectToPage(containers.productDetailScreenScreen, {
+              redirectToPage(containers.productDetailScreen, {
                 productId: item.id,
               })
             }

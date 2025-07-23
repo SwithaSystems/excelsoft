@@ -104,7 +104,7 @@ const AdminSeeAllOrders = () => {
                   </View>
                   <TouchableOpacity
                     onPress={() => {
-                      redirectToPage(containers.deliveryTrackingScreenScreen, {
+                      redirectToPage(containers.deliveryTrackingScreen, {
                         from: "admin",
                         orderId: item._id,
                       });

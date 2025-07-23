@@ -172,7 +172,7 @@ export const usePaymentHandler = () => {
         dispatch(clearCart());
 
         console.log("=== REDIRECTING TO SUCCESS PAGE ===");
-        redirectToPage(containers.orderSuccessfulScreenScreen, {
+        redirectToPage(containers.orderSuccessfulScreen, {
           orderData: JSON.stringify(response),
         });
         await NotificationService.scheduleLocalNotification(

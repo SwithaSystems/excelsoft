@@ -150,14 +150,14 @@ const verifcationScreen = () => {
 
       if (isVerified) {
         if (from === "forgotPassword") {
-          redirectToPage(containers.passwordResetScreenScreen, {
+          redirectToPage(containers.passwordResetScreen, {
             phoneNumber,
           });
           return;
         }
 
         if (from === "verify") {
-          redirectToPage(containers.editAccountInformationscreenScreen);
+          redirectToPage(containers.editAccountInformationScreen);
           return;
         }
 

@@ -185,7 +185,7 @@ const addBillingAddressScreen = () => {
       if (router.canGoBack()) {
         router.back();
       } else {
-        redirectToPage(containers.orderSummeryScreenScreen, {
+        redirectToPage(containers.orderSummaryScreen, {
           newAddressAdded: true,
           selectedAddressId: savedAddress._id,
         });

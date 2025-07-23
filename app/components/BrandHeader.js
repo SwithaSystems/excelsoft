@@ -106,7 +106,7 @@ function BrandHeader(props) {
           <TouchableOpacity
             onPress={() => {
               if (isValidUser) {
-                redirectToPage(containers.userProfileScreenScreen);
+                redirectToPage(containers.userProfileScreen);
               } else {
                 redirectToPage(containers.signInScreen);
               }
@@ -152,7 +152,7 @@ function BrandHeader(props) {
           <TouchableOpacity
             style={{ marginLeft: 14 }}
             onPress={() => {
-              redirectToPage(containers.UserNotificationsScreen);
+              redirectToPage(containers.userNotificationsScreen);
             }}
           >
             <Ionicons name="notifications" size={24} color={colors.black} />

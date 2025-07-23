@@ -45,7 +45,7 @@ function ExclusiveOffers(props) {
             <TouchableOpacity
               style={styles.exclusiveCard}
               onPress={() =>
-                redirectToPage(containers.productDetailScreenScreen, {
+                redirectToPage(containers.productDetailScreen, {
                   productId: item.id,
                 })
               }

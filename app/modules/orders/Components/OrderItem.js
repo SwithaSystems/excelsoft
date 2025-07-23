@@ -13,7 +13,7 @@ function OrderItem(props) {
   return (
     <TouchableOpacity
       onPress={() => {
-        redirectToPage(containers.orderDetailsScreenScreen, {
+        redirectToPage(containers.orderDetailsScreen, {
           orderId: item._id,
           from: props.from,
         });
@@ -28,7 +28,7 @@ function OrderItem(props) {
             onPress={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              redirectToPage(containers.deliveryTrackingScreenScreen, {
+              redirectToPage(containers.deliveryTrackingScreen, {
                 orderId: item._id,
               });
             }}

@@ -190,7 +190,7 @@ const editAddressScreen = () => {
 
       if (response.status === 200) {
         alert("Address updated successfully");
-        redirectToPage(containers.savedAddressScreenScreen);
+        redirectToPage(containers.savedAddressScreen);
       } else {
         showErrorAlert({
           title: "Error",

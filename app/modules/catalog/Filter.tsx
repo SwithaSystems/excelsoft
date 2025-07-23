@@ -69,7 +69,7 @@ const Filter = () => {
       return;
     } else {
       // Now navigate to the search result screen and pass these IDs
-      redirectToPage(containers.searchResultsScreenScreen, {
+      redirectToPage(containers.searchResultsScreen, {
         selectedSubCategories: selectedCategoryIds,
         fromSearch: true,
       });

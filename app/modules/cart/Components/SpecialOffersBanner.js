@@ -21,7 +21,7 @@ const SpecialOffersBanner = () => {
           <TouchableOpacity
             style={styles.checkButton}
             onPress={() => {
-              redirectToPage(containers.offersScreenScreen);
+              redirectToPage(containers.offersScreen);
             }}
           >
             <Text style={styles.checkButtonText}>Check</Text>

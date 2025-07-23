@@ -96,12 +96,12 @@ const changePasswordScreen = () => {
           title: "Error",
           message: PASSWORD_CHANGE_FAILED,
         });
-        redirectToPage(containers.userProfileScreenScreen);
+        redirectToPage(containers.userProfileScreen);
       }
     } catch (err) {
       alert("Failed to change password");
       console.error(err);
-      redirectToPage(containers.userProfileScreenScreen);
+      redirectToPage(containers.userProfileScreen);
     }
   };
 

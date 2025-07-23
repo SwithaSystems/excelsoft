@@ -62,7 +62,7 @@ const reviewsScreen = () => {
       return;
     }
 
-    redirectToPage(containers.feedBackScreen, {
+    redirectToPage(containers.feedbackScreen, {
       productId: productId,
       reviewsArrayLength: reviewsArray.length,
     });

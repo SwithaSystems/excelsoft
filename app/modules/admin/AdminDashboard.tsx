@@ -152,7 +152,7 @@ const AdminDashboard = () => {
     );
 
     const handlePress = useCallback(() => {
-      redirectToPage(containers.adminOrderDetailScreen, {
+      redirectToPage(containers.AdminOrderDetailScreen, {
         orderId: item._id,
       });
     }, [item._id]);
@@ -199,7 +199,7 @@ const AdminDashboard = () => {
   );
 
   const handleSeeAllPress = useCallback(() => {
-    redirectToPage(containers.adminSeeAllOrdersScreen);
+    redirectToPage(containers.AdminSeeAllOrdersScreen);
   }, []);
 
   const keyExtractor = useCallback((item: any) => item.id || item._id, []);
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
       <>
         <TouchableOpacity
           onPress={() => {
-            redirectToPage(containers.adminOrderDetailScreen, {
+            redirectToPage(containers.AdminOrderDetailScreen, {
               orderId: item._id,
             });
           }}

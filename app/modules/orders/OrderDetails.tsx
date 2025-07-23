@@ -265,7 +265,7 @@ const orderDetailsScreen = () => {
               </Text>
               <TouchableOpacity
                 onPress={() => {
-                  redirectToPage(containers.deliveryTrackingScreenScreen, {
+                  redirectToPage(containers.deliveryTrackingScreen, {
                     orderId: orderDetails?._id,
                   });
                 }}

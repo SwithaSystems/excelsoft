@@ -272,9 +272,9 @@ const addAddressScreen = () => {
       if (response.status === 200 || response.status === 201) {
         alert("Address added successfully");
         if (from === "homeDelivery") {
-          redirectToPage(containers.homeDeliveryScreenScreen);
+          redirectToPage(containers.homeDeliveryScreen);
         } else {
-          redirectToPage(containers.savedAddressScreenScreen);
+          redirectToPage(containers.savedAddressScreen);
         }
       } else {
         showErrorAlert({

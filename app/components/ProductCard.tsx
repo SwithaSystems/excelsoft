@@ -81,7 +81,7 @@ const ProductCard = ({
     <TouchableOpacity
       style={styles.container}
       onPress={() =>
-        redirectToPage(containers.productDetailScreenScreen, { productId: id })
+        redirectToPage(containers.productDetailScreen, { productId: id })
       }
     >
       <Image
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   originalPrice: {
     fontSize: 14,
-    color: colors.secondaryText,
+    color: colors.textSecondary,
     textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,

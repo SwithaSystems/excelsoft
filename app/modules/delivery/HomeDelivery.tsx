@@ -327,7 +327,9 @@ const HomeDeliveryScreen = () => {
   };
   const handleSubmit = async () => {
     try {
-      // Final validation check right before submission
+      console.log("confirm", containers.orderSummaryScreen);
+      // Final
+      //  validation check right before submission
       if (!validateForm()) {
         return;
       }
@@ -356,7 +358,7 @@ const HomeDeliveryScreen = () => {
         email: email,
         additionalDetails: additionalDetails,
       };
-      redirectToPage(containers.orderSummeryScreenScreen, {
+      redirectToPage(containers.orderSummaryScreen, {
         pickupAddress: JSON.stringify(address),
         selectedMode: DELIVERY_MODE_HOME,
         shippingAddress: JSON.stringify(shippingAddress),
@@ -426,7 +428,7 @@ const HomeDeliveryScreen = () => {
   };
 
   const handleEditAddress = (item: Address) => {
-    redirectToPage(containers.editAddressScreenScreen, {
+    redirectToPage(containers.editAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
@@ -697,7 +699,7 @@ const HomeDeliveryScreen = () => {
                     <Button
                       title="Add Address"
                       onPress={() => {
-                        redirectToPage(containers.addAddressScreenScreen, {
+                        redirectToPage(containers.addAddressScreen, {
                           from: "homeDelivery",
                         });
                       }}

@@ -76,14 +76,14 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
   const handleMenuPress = () => {
     if (activeTab === FOOTER_MENU) return;
     redirectToPage(
-      isValidUser ? containers.userProfileScreenScreen : containers.signInScreen
+      isValidUser ? containers.userProfileScreen : containers.signInScreen
     );
   };
 
   const handleSavedItems = () => {
     if (activeTab === FOOTER_SAVED) return;
     redirectToPage(
-      isValidUser ? containers.savedItemScreenScreen : containers.signInScreen
+      isValidUser ? containers.savedItemScreen : containers.signInScreen
     );
   };
 
@@ -99,7 +99,7 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 
   const handleCartPress = () => {
     if (activeTab === FOOTER_CART) return;
-    redirectToPage(containers.cartScreenScreen);
+    redirectToPage(containers.cartScreen);
   };
 
   return (

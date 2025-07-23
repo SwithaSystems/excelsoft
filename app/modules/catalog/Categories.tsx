@@ -71,7 +71,7 @@ const categoriesScreen = () => {
           title={item.name}
           image={item.images?.[0] || ""}
           onPress={() =>
-            redirectToPage(containers.searchResultsScreenScreen, {
+            redirectToPage(containers.searchResultsScreen, {
               fromSearch: true,
               category: item.name,
               categoryId: item.id,

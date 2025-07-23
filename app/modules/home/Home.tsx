@@ -27,7 +27,6 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../../services/categoryService";
-import { parentCategoryIDAll } from "@/config/constants";
 import { PageLayout } from "../../pageLayoutProps";
 
 const recommendedProducts = products
@@ -84,7 +83,7 @@ const HomePage = () => {
   const router = useRouter();
 
   const handleBannerPress = (item: any, index: number) => {
-    redirectToPage(containers.offersScreenScreen);
+    redirectToPage(containers.offersScreen);
   };
 
   const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
@@ -99,7 +98,7 @@ const HomePage = () => {
           <TouchableOpacity
             style={styles.featuredCard}
             onPress={() =>
-              redirectToPage(containers.productDetailScreenScreen, {
+              redirectToPage(containers.productDetailScreen, {
                 productId: item.id,
               })
             }
@@ -160,11 +159,11 @@ const HomePage = () => {
                   imageUrl={item.images?.[0] || ""}
                   onPress={() =>
                     item.id === 2
-                      ? redirectToPage(containers.categoriesScreeScreen, {
+                      ? redirectToPage(containers.categoriesScreen, {
                           category: item.name,
                           categoryId: item.id,
                         })
-                      : redirectToPage(containers.searchResultsScreenScreen, {
+                      : redirectToPage(containers.searchResultsScreen, {
                           fromSearch: true,
                           category: item.name,
                           categoryId: item.id,

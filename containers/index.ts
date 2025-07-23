@@ -14,11 +14,11 @@ const routes = {
   categoriesScreen: "modules/catalog/Categories",
   filterScreen: "modules/catalog/Filter",
   offersScreen: "modules/catalog/Offers",
-  
+
   // Splash and Welcome
   splashScreen: "modules/auth/SplashScreen",
   welcomeScreen: "modules/auth/Welcome",
-  
+
   // Auth
   signInScreen: "modules/auth/SignIn",
   signUpScreen: "modules/auth/SignUp",
@@ -34,7 +34,7 @@ const routes = {
   savedItemScreen: "modules/cart/SavedItem",
 
   // Checkout
-  orderSummaryScreen: "modules/checkout/OrderSummary",
+  orderSummaryScreen: "modules/checkout/OrderSummery",
   paymentScreen: "modules/checkout/Payment",
   paymentSaveCardScreen: "modules/checkout/PaymentSaveCard",
   billingAddressScreen: "modules/checkout/AddBillingAddress",
@@ -94,11 +94,12 @@ const routes = {
   AdminCategoriesScreen: "modules/admin/AdminCategories",
   adminAccessControlScreen: "modules/admin/AdminAccessControl",
   adminAccessControlScreenScreen: "modules/admin/AdminAccessControl",
-  fileUploadAddProductCategoryScreen: "modules/admin/FileUploadAddProductCategory",
-  
+  fileUploadAddProductCategoryScreen:
+    "modules/admin/FileUploadAddProductCategory",
+
   // Category
   catagoryScreenScreen: "modules/catalog/Categories",
-  
+
   // Dashboard
   dashBoardScreenScreen: "modules/dashboard/Dashboard",
 } as const;

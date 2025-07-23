@@ -113,7 +113,7 @@ const feedBackScreen = () => {
       setShowReviewconfirmationModal(true);
 
       // setTimeout(() => {
-      redirectToPage(containers.productDetailScreenScreen, {
+      redirectToPage(containers.productDetailScreen, {
         productId: productId,
       });
       // }, 1500);
@@ -135,7 +135,7 @@ const feedBackScreen = () => {
           headerText={FEEDBACK_SCREEN2_TITLE}
           secondaryBtnText="Discard"
           secondaryBtnCallBack={() => {
-            redirectToPage(containers.productDetailScreenScreen, {
+            redirectToPage(containers.productDetailScreen, {
               productId: productId,
             });
           }}
