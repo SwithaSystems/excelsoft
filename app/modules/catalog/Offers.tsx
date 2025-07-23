@@ -19,6 +19,9 @@ import Footer from "@/app/components/Footer";
 import { ImageBackground } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./OffersStyles";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import BrandHeader from "@/app/components/BrandHeader";
+import { STORE_OFFERS } from "@/constants/stringLiterals";
 
 const offersScreen = () => {
   const filteredProducts = products;
@@ -62,14 +65,26 @@ const offersScreen = () => {
     );
   };
   return (
-    <SafeAreaView style={globalStyles.safeAreaContainer}>
-      <View style={[globalStyles.container]}>
+    <PageLayout
+      hasHeader={true}
+      hasFooter={true}
+      headerComponent={
+        <Header
+          headerText={STORE_OFFERS}
+        />
+      }
+      footerComponent={<Footer activeTab="menu" />}
+      scrollable={true}
+      contentPadding={true}
+    >
+    {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
+      {/* <View style={[globalStyles.container]}> */}
         {/* <ScrollView> */}
         <FlatList
           ListHeaderComponent={
             <>
-              <Header headerText="Store Offers" />
-              <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+              {/* <Header headerText="Store Offers" /> */}
+              <View style={[globalStyles.pt_0]}>
                 {/* <HeroBanner /> */}
                 <ImageBackground
                   source={require("@/assets/images/storeOffersbg.png")}
@@ -115,9 +130,10 @@ const offersScreen = () => {
           renderItem={() => null}
         />
         {/* </ScrollView> */}
-        <Footer navigation={router} />
-      </View>
-    </SafeAreaView>
+        {/* <Footer navigation={router} /> */}
+      {/* </View> */}
+    {/* </SafeAreaView> */}
+    </PageLayout>
   );
 };
 

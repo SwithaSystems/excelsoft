@@ -162,7 +162,6 @@ const UserProfileScreen = () => {
       headerComponent={
         <Header
           headerText={USER_PROFILE_SCREEN_TITLE}
-          needResetNavigation={true}
         />
       }
       footerComponent={<Footer activeTab="menu" />}

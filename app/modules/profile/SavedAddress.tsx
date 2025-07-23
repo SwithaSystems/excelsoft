@@ -126,7 +126,7 @@ const savedAddressScreen = () => {
       headerComponent={
         <Header
           headerText={SAVED_ADDRESS_SCREEN_TITLE}
-          needResetNavigation={true}
+          needResetNavigation={false}
         />
       }
     >

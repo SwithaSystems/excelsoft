@@ -44,6 +44,7 @@ const REVIEW_SCREEN_TITLE = "Product Reviews";
 const SAVED_ADDRESS_SCREEN_TITLE = "Saved Address";
 const FEEDBACK_SCREEN2_TITLE = "Add Your Review";
 const FILE_UPLOAD = "File Upload";
+const STORE_OFFERS = "Store Offers";
 
 // Delivery Modes
 const DELIVERY_MODE_HOME = "Home Delivery";
@@ -150,4 +151,5 @@ export {
   SAVED_ADDRESS_SCREEN_TITLE,
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
+  STORE_OFFERS,
 };

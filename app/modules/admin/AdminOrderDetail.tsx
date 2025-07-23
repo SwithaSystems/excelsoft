@@ -153,7 +153,7 @@ const AdminOrderDetail = () => {
         {
           text: "OK",
           onPress: () =>
-            router.replace("./AdminDashboard/AdminDashboard?refresh=true"),
+          router.replace("/modules/admin/AdminDashboard")
         },
       ]);
       await NotificationService.scheduleLocalNotification(
@@ -193,7 +193,10 @@ const AdminOrderDetail = () => {
       <PageLayout
         hasHeader
         headerComponent={
-          <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
+          <Header 
+            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
+            // needResetNavigation={false}
+           />
         }
         hasFooter
         footerComponent={<AdminFooter />}
