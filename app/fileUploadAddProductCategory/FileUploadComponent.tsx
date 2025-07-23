@@ -40,14 +40,14 @@ const ENTITY_OPTIONS = [
   { label: "Categories", value: "categories" },
 ];
 
-const FILE_TYPE_OPTIONS = [
-  { label: "Select File Type", value: "" },
-  { label: "Excel (.xlsx)", value: "xlsx" },
-  { label: "CSV (.csv)", value: "csv" },
-  { label: "JSON (.json)", value: "json" },
-  { label: "Text (.txt)", value: "txt" },
-  { label: "All Files", value: "all" },
-];
+// const FILE_TYPE_OPTIONS = [
+//   { label: "Select File Type", value: "" },
+//   { label: "Excel (.xlsx)", value: "xlsx" },
+//   { label: "CSV (.csv)", value: "csv" },
+//   { label: "JSON (.json)", value: "json" },
+//   { label: "Text (.txt)", value: "txt" },
+//   { label: "All Files", value: "all" },
+// ];
 
 const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
