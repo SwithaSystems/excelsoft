@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { ProductsAPI } from "@/services/productService";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import colors from "../config/colors";
+import { EntityAPI } from "@/services/entityService";
 
 // Define types
 interface FileUploadProps {
@@ -34,11 +35,11 @@ interface UploadData {
 }
 
 // Define dropdown options
-const ENTITY_OPTIONS = [
-  { label: "Select Entity", value: "" },
-  { label: "Products", value: "products" },
-  { label: "Categories", value: "categories" },
-];
+// const ENTITY_OPTIONS = [
+//   { label: "Select Entity", value: "" },
+//   { label: "Products", value: "products" },
+//   { label: "Categories", value: "categories" },
+// ];
 
 // const FILE_TYPE_OPTIONS = [
 //   { label: "Select File Type", value: "" },
@@ -57,6 +58,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   const [selectedFile, setSelectedFile] =
     useState<DocumentPicker.DocumentPickerResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [entityOptions, setEntityOptions] = useState([{label:"Select Entity", value:""}]);
 
   // Get file types for document picker
   const getDocumentPickerTypes = (fileType: string): string[] => {
@@ -78,6 +80,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         return ["*/*"];
     }
   };
+
 
   // Handle file selection with better approach
   const handleChooseFile = async () => {
@@ -252,6 +255,19 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     }
   };
 
+  useEffect(() => {
+    const fetchEntityOptions = async () => {
+      try{
+        const options = await EntityAPI.getEntityOptions();
+        setEntityOptions(options);
+        console.log("Fetched options from API:", options);
+      } catch(error){
+        console.error("Error fetching entity options:", error);
+      }
+    };
+    fetchEntityOptions();
+  }, []);
+
   // // Upload to database function
   // const uploadToDatabase = async (data: UploadData) => {
   //   // Simulate API call for testing
@@ -275,7 +291,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
         <ModalSelector
-          data={ENTITY_OPTIONS}
+          data={entityOptions}
           initValue="Select Entity"
           onChange={(option) => setSelectedEntity(option.value)}
           keyExtractor={(item) => item.value}
@@ -288,7 +304,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         >
           <View style={styles.modalTrigger}>
             <Text style={styles.modalTriggerText}>
-              {ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)
+              {entityOptions.find((opt) => opt.value === selectedEntity)
                 ?.label || "Select Entity"}
             </Text>
             <View style={styles.modalTriggerIcon}>
