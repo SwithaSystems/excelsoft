@@ -40,6 +40,12 @@ const OrderTimeline = (props) => {
           const isNegative = negativeStatuses.includes(item);
           const isActive = index <= currentStatus;
 
+          if (isCurrent && isNegative) {
+            console.log("Reason received in props:", reason);
+            console.log("Actual Status:", props.actualStatus);
+            console.log("Is Negative?", isNegative);
+          }
+
           return (
             <View style={styles.itemContainer}>
               {/* Timeline Circle */}
@@ -80,6 +86,7 @@ const OrderTimeline = (props) => {
                   : `Seller Reasoned: ${reason}`} */}
                     {reason}
                   </Text>
+                  
                 ) : null}
               </View>
               {/* Connecting Line */}

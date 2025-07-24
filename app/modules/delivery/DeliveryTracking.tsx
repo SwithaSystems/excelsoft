@@ -194,7 +194,10 @@ const deliveryTrackingScreen = () => {
       hasFooter
       hasHeader
       scrollable
-      headerComponent={<Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} />}
+      headerComponent={
+        <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE}
+        needResetNavigation = {false}
+      />}
       footerComponent={
         from === "admin" ? <AdminFooter /> : <Footer navigation={router} />
       }
@@ -231,6 +234,7 @@ const deliveryTrackingScreen = () => {
             <OrderTimeline
               statusList={displayStatuses}
               actualStatus={orderDetails?.status}
+              reason={orderDetails?.reason}
             />
           </View>
 

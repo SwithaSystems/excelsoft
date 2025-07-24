@@ -157,7 +157,7 @@ const orderDetailsScreen = () => {
 
   useEffect(() => {
     const handleHardwareBackPress = () => {
-      clearNavigationStack("home/home");
+      router.back();
       return true;
     };
 

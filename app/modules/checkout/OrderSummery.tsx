@@ -277,7 +277,7 @@ const orderSummeryScreen = () => {
   const isPaymentEnabled =
     cartItems.length > 0 &&
     selectedBillingAddress &&
-    (isPickupMode || shippingAddress) &&
+    (isPickupMode || shippingAddress?.line1) &&
     pickupDetails?.date &&
     pickupDetails?.time &&
     selectedMode &&

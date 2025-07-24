@@ -125,7 +125,7 @@ const AdminProductDashboard = () => {
               <View style={{ flexDirection: "row", gap: 4 }}>
                 <TouchableOpacity
                   onPress={() =>
-                    redirectToPage(containers.AdminProductDashboardScreen, {
+                    redirectToPage(containers.AdminProductUpdationScreen, {
                       item: JSON.stringify(item),
                     })
                   }
