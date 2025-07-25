@@ -359,7 +359,7 @@ const AdminAccessControlScreen = () => {
             <Ionicons name="search" size={20} color={colors.primary} />
             <TextInput
               placeholder="Search by name, email, or phone..."
-              placeholderTextColor={colors.placeholdergrey}
+              textSecondary={colors.placeholdergrey}
               style={styles.searchInput}
               value={searchText}
               onChangeText={setSearchText}

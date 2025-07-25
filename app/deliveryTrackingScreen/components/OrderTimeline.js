@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: "italic",
     fontWeight: "400",
-    color: colors.red,
+    color: colors.primaryRed,
     maxWidth:250,
   }
 });

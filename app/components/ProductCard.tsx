@@ -97,7 +97,7 @@ const ProductCard = ({
             <Ionicons
               name={isItemSaved(id) ? "heart" : "heart-outline"}
               size={20}
-              color={isItemSaved(id) ? colors.red : colors.black}
+              color={isItemSaved(id) ? colors.primaryRed : colors.black}
             />
           </TouchableOpacity>
         </View>

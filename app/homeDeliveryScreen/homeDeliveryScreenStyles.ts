@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   note: {
-    color: colors.buttonError,
+    color: colors.error,
     fontSize: 14,
     marginBottom: 16,
   },

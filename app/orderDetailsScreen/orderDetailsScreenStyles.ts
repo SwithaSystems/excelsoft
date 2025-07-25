@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     //marginTop: -216,
   },
   cancelButton: {
-    backgroundColor: colors.buttonError,
+    backgroundColor: colors.error,
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",

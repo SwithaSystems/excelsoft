@@ -115,7 +115,7 @@ const SaveItemFav = (props) => {
               {getImageSource() ? (
                 <Image source={getImageSource()} style={styles.itemImage} />
               ) : (
-                <View style={[styles.itemImage, { backgroundColor: colors.Gray88 }]} />
+                <View style={[styles.itemImage, { backgroundColor: colors.placeholdergrey }]} />
               )}
             </View>
             {props?.hideActions ? (
