@@ -245,7 +245,7 @@ const ProductDetailScreen = () => {
                   <Ionicons
                     name={isItemSaved(product.id) ? "heart" : "heart-outline"}
                     size={20}
-                    color={isItemSaved(product.id) ? colors.red : colors.black}
+                    color={isItemSaved(product.id) ? colors.primaryRed : colors.black}
                   />
                 </TouchableOpacity>
               </View>

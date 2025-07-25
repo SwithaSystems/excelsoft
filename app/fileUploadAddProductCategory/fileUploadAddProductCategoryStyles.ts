@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   dropdownContainer: {
     marginBottom: 15,
@@ -24,23 +24,23 @@ const styles = StyleSheet.create({
   padding: 10,
 },
   modalInitValue: {
-    color: colors.argentGray,
+    color: colors.darkGray,
   },
   modalSelectedText: {
     fontSize: 16,
-    color: colors.pureBlack,
+    color: colors.black,
   },
   modalOptionText: {
     fontSize: 16,
   },
   modalSelectedItemText: {
     fontWeight: 'bold',
-    color: colors.sparkleBlue,
+    color: colors.linkBlue,
   },
   modalTriggerText: {
     fontSize: 16,
     paddingVertical: 10,
-    color: colors.pureBlack,
+    color: colors.black,
   },
   modalTrigger:{
     flexDirection: 'row',
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   pickerContainer: {
     backgroundColor: colors.white,
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lightgrey,
     elevation: 2,
-    shadowColor: colors.pureBlack,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     // marginRight: 10,
   },
   alternativeButton: {
-    backgroundColor: colors.warningBg,
+    backgroundColor: colors.secondaryYellow,
     flex: 1,
     marginLeft: 10,
   },
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonDisabled: {
-    backgroundColor: colors.borderGrey,
+    backgroundColor: colors.placeholdergrey,
     elevation: 0,
     shadowOpacity: 0,
   },

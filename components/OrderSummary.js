@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.borderGrey,
+    borderTopColor: colors.placeholdergrey,
     paddingTop: 10,
   },
 });

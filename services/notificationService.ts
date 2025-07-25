@@ -24,7 +24,7 @@ export class NotificationService {
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: colors.paleRed ,
+        lightColor: colors.secondaryRed ,
       });
     }
 
