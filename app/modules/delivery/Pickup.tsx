@@ -81,6 +81,7 @@ const PickupScreen = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<any>(null);
 
@@ -220,6 +221,12 @@ const PickupScreen = () => {
       }
     }
 
+    if (phone){
+      const phoneValidation = validatePhoneNumber(phone);
+      if (!phoneValidation) {
+        errors.push("Please enter a valid phone number");
+      }
+    }
     // Validate curbside-specific fields
     if (isCurbsidePickup) {
       if (!vehicleType) errors.push("Vehicle type is required");
@@ -603,6 +610,42 @@ const PickupScreen = () => {
     }
   };
 
+  const validatePhoneNumber = (phone: any) => {
+    const cleanPhone = phone.replace(/\D/g, ""); 
+
+    if (cleanPhone.length < 10) {
+      setPhoneError("Phone number must contain at least 10 digits");
+    } else if (cleanPhone.length > 15) {
+      setPhoneError("Phone number cannot exceed 15 digits");
+    } else {
+      setPhoneError(null);
+    }
+
+    const phonePattern = [
+      /^44\d{10}$/,
+      /^0\d{10}$/,
+      /^\d{11}$/,
+      /^\d{10}$/,
+    ];
+
+    const isValidPhone = phonePattern.some((pattern) => pattern.test(cleanPhone));
+
+    if (!isValidPhone) {
+      setPhoneError("Please enter a valid phone number");
+    }
+
+    return isValidPhone;
+  };
+
+  const handlePhoneChange = (text: any) => {
+    setPhone(text);
+    
+    if(!text.trim()) {
+      setPhoneError("Phone number is required");
+    } else {
+      validatePhoneNumber(text);
+    }
+  };
   // Reusable text input component
   const renderTextInput = (
     label: any,
@@ -916,12 +959,13 @@ const PickupScreen = () => {
             {renderTextInput(
               "Phone",
               phone,
-              setPhone,
+              handlePhoneChange,
               true,
               {
                 keyboardType: "phone-pad",
+                placeholder:"e.g., 071234567789 or +447123456789"
               },
-              null,
+              phoneError,
               phoneRef
             )}
             {renderTextInput(
