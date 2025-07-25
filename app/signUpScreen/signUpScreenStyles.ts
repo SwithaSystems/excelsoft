@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderColor: colors.zircon,
+    borderColor: colors.placeholdergrey,
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 0,
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: "row",
     marginBottom: 20,
-    backgroundColor: colors.paleWhite,
+    backgroundColor: colors.offWhite,
     borderRadius: 30,
     overflow: "hidden",
   },
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   inactiveText: {
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   callingCode: {
     marginHorizontal: 8,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.zircon,
+    borderColor: colors.placeholdergrey,
     borderRadius: 5,
     overflow: "hidden",
     height: 48,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     paddingHorizontal: 10,
     borderRightWidth: 1,
-    borderRightColor: colors.zircon,
+    borderRightColor: colors.placeholdergrey,
   },
   countryPickerButton: {
     paddingVertical: 8,

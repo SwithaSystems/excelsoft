@@ -179,10 +179,7 @@ const HomePage = () => {
         {/* Banner */}
         <View>
           {renderBanner()}
-        </View>
-
-       
-        
+        </View>    
 
         {/* Recommended Products */}
         <View>

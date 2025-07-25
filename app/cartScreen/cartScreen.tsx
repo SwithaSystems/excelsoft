@@ -209,7 +209,7 @@ const CartScreen = () => {
               <TextInput
                 style={globalStyles.discountText}
                 placeholder="Enter your discount code"
-                placeholderTextColor=colors.primary
+                textSecondary=colors.primary
               />
               <Ionicons name="close" style={globalStyles.discountClearIcon} />
             </View>

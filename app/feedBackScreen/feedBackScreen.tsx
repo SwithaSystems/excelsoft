@@ -177,7 +177,7 @@ const feedBackScreen = () => {
               <Ionicons
                 name="add"
                 size={30}
-                color={isSubmitting ? colors.borderGrey : colors.darkGray}
+                color={isSubmitting ? colors.placeholdergrey : colors.darkGray}
               />
             </TouchableOpacity>
             {/* {image && (
@@ -202,7 +202,7 @@ const feedBackScreen = () => {
                     <Ionicons
                       name="close"
                       size={20}
-                      color={isSubmitting ? colors.borderGrey : colors.darkGray}
+                      color={isSubmitting ? colors.placeholdergrey : colors.darkGray}
                     />
                   </TouchableOpacity>
                 </View>

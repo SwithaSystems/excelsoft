@@ -85,11 +85,11 @@ const AdminProductDashboard = () => {
   const ProductCard = ({ item }: { item: any }) => {
     const getStockBadge = (stock: number) => {
       if (stock === 0) {
-        return { text: "Out of Stock", backgroundColor: colors.red };
+        return { text: "Out of Stock", backgroundColor: colors.primaryRed };
       } else if (stock < 10) {
-        return { text: "Low on Stock", backgroundColor: colors.mustardYellow };
+        return { text: "Low on Stock", backgroundColor: colors.primaryYellow };
       } else {
-        return { text: "In Stock", backgroundColor: colors.green };
+        return { text: "In Stock", backgroundColor: colors.primaryGreen };
       }
     };
 

@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   // note:{
-  //   color: colors.buttonError,
+  //   color: colors.error,
   //   fontSize: 14,
   // },
   sectionTitle: {

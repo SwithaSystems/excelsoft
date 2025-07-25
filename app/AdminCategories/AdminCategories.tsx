@@ -447,7 +447,7 @@ const AdminCategories = () => {
                       <Ionicons
                         name="close-circle"
                         size={24}
-                        color={colors.alertRed}
+                        color={colors.primaryRed}
                       />
                     </TouchableOpacity>
                   </View>
@@ -557,11 +557,11 @@ const styles = StyleSheet.create({
   cancelButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: colors.borderGrey,
+    backgroundColor: colors.placeholdergrey,
     borderRadius: 6,
   },
   cancelButtonText: {
-    color: colors.darkCharcoal,
+    color: colors.black,
     fontSize: 14,
     fontWeight: "500",
   },
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   imageLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.darkCharcoal,
+    color: colors.black,
     marginBottom: 16,
   },
   imagePickerButton: {
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.shadeOfBlueGray,
+    borderColor: colors.placeholdergrey,
   },
   editingCategoryItem: {
     borderColor: colors.primary,
@@ -677,7 +677,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.darkCharcoal,
+    color: colors.black,
     marginBottom: 2,
   },
   categoryDescription: {

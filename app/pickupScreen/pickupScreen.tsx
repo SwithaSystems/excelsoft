@@ -624,7 +624,7 @@ const PickupScreen = () => {
         style={[
           inputStyles.textInput,
           error && inputStyles.inputError,
-          props?.editable === false && { backgroundColor: colors.paleWhite },
+          props?.editable === false && { backgroundColor: colors.offWhite },
         ]}
         {...props}
       />
@@ -971,7 +971,7 @@ const inputStyles = StyleSheet.create({
     textAlignVertical: "top",
   },
   note: {
-    color: colors.buttonError,
+    color: colors.error,
     fontSize: 14,
     marginBottom: 16,
   },
