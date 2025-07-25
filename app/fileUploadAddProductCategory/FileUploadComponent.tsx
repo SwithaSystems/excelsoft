@@ -259,7 +259,12 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     const fetchEntityOptions = async () => {
       try{
         const options = await EntityAPI.getEntityOptions();
-        setEntityOptions(options);
+        const filteredOptions = options.filter((item: any) => item.name.toLowerCase() !== "select entity");
+        const mappedOptions = filteredOptions.map((item: any) => ({
+        label: item.name,
+        value: item.name.toLowerCase(),  
+      }));
+        setEntityOptions([{ label: "Select Entity", value: "" }, ...mappedOptions]);
         console.log("Fetched options from API:", options);
       } catch(error){
         console.error("Error fetching entity options:", error);

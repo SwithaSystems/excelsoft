@@ -6,7 +6,7 @@ export interface EntityOption{
 }
 
 export const EntityAPI ={
-    getEntityOptions: async() : Promise<EntityOption[]> => {
+    getEntityOptions: async() : Promise<EntityOption[]> => {;
         const response = await jsonAxios.get("/entity/entity-options");
         return response.data;
     }
