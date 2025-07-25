@@ -2,30 +2,29 @@ import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import React, { useState } from "react";
 import {
-  Alert,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView,
 } from "react-native";
 import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import colors from "../../../constants/colors";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FIX_VALIDATION_ERRORS,
   INVALID_CREDENTIALS,
-  INVALID_EMAIL_FORMAT,
-  PASSWORD_MISMATCH,
   PHONE_NUMBER_VALIDATION,
 } from "../../../constants/customErrorMessages";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import {
+  isValidEmail,
+  isValidPhoneNumber,
+} from "../../../utilities/validations";
 
 const signIn = () => {
   const [inputValue, setInputValue] = useState(""); // Combined input field value
@@ -55,28 +54,18 @@ const signIn = () => {
     } = {};
 
     if (mode === "email") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
       if (!email.trim()) {
         newErrors.input = "Email is required.";
-      } else if (!emailRegex.test(email.trim())) {
+      } else if (!isValidEmail(email)) {
         newErrors.input = "Enter a valid email address.";
       }
     } else if (mode === "phone") {
-      let cleanedPhone = phone.trim();
-
+      const phoneError = isValidPhoneNumber(phone);
       // Remove leading 0 if present
-      if (cleanedPhone.startsWith("0")) {
-        cleanedPhone = cleanedPhone.slice(1);
-      }
-
-      if (!cleanedPhone) {
-        newErrors.input = "Phone number is required.";
-      } else if (!/^\d{10}$/.test(cleanedPhone)) {
-        newErrors.input = "Enter a valid 10-digit phone number.";
+      if (phoneError) {
+        newErrors.input = phoneError;
       }
     }
-
     if (!password) {
       newErrors.password = "Password is required.";
     } else if (password.length < 6) {
@@ -139,7 +128,9 @@ const signIn = () => {
       hasHeader
       scrollable={false}
       headerComponent={
-        <Header headerText={"Sign In"} needResetNavigation={true} />
+        <Header headerText={"Sign In"} 
+        needResetNavigation={false}
+       />
       }
     >
       <KeyBoardWrapper>

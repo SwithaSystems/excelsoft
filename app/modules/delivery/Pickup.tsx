@@ -40,8 +40,13 @@ import {
   PICKUP_DETAILS_REQUIRED,
 } from "../../../constants/customErrorMessages";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import {
+  isValidEmail,
+  isValidName,
+  isValidPhoneNumber,
+} from "../../../utilities/validations";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -84,6 +89,8 @@ const PickupScreen = () => {
   const [phoneError, setPhoneError] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<any>(null);
+  const [firstNameError, setFirstNameError] = useState<any>(null);
+  const [lastNameError, setLastNameError] = useState<any>(null);
 
   // Curbside specific state
   const [vehicleType, setVehicleType] = useState("Car");
@@ -211,22 +218,21 @@ const PickupScreen = () => {
     }
 
     // Validate email if entered
-    if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        errors.push("Email format is invalid");
-        setEmailError("Please enter a valid email address");
-      } else {
-        setEmailError(null);
-      }
+    if (emailError) {
+      errors.push(emailError);
     }
 
-    if (phone){
-      const phoneValidation = validatePhoneNumber(phone);
-      if (!phoneValidation) {
-        errors.push("Please enter a valid phone number");
-      }
+    if (phoneError){
+      errors.push(phoneError);
     }
+
+    if (firstNameError){
+      errors.push(firstNameError);
+    }
+    if (lastNameError){ 
+      errors.push(lastNameError);
+    }
+
     // Validate curbside-specific fields
     if (isCurbsidePickup) {
       if (!vehicleType) errors.push("Vehicle type is required");
@@ -244,6 +250,10 @@ const PickupScreen = () => {
     lastName,
     phone,
     email,
+    emailError,
+    phoneError,
+    firstNameError,
+    lastNameError,
     isCurbsidePickup,
     vehicleType,
     vehicleNumber,
@@ -252,8 +262,6 @@ const PickupScreen = () => {
   // Load user data from API
   useEffect(() => {
     const fetchUserData = async () => {
-      // if (!userData?.phone) return;
-
       try {
         const response = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
@@ -357,19 +365,6 @@ const PickupScreen = () => {
       }
     }
   };
-
-  // Handle date picker change
-  // const handleDateChange = (event: any, selectedDate: any) => {
-  //   const currentDate = selectedDate || new Date(date);
-  //   setShowDatePicker(false);
-  //   setDate(currentDate.toISOString().split("T")[0]);
-  //   validateTime(
-  //     currentDate.toISOString().split("T")[0],
-  //     hours,
-  //     minutes,
-  //     period
-  //   );
-  // };
 
   // Handle hours input changes with auto-focus to minutes
   const handleHoursChange = (text: any) => {
@@ -497,12 +492,20 @@ const PickupScreen = () => {
       setLastName(originalUserData.lastName);
       setPhone(originalUserData.phone);
       setEmail(originalUserData.email);
+      setFirstNameError(null);
+      setLastNameError(null);
+      setPhoneError(null);
+      setEmailError(null);
     } else {
       // Clear fields for someone else
       setFirstName("");
       setLastName("");
       setPhone("");
       setEmail("");
+      setFirstNameError(null);
+      setLastNameError(null);
+      setPhoneError(null);
+      setEmailError(null);
     }
   };
 
@@ -597,55 +600,39 @@ const PickupScreen = () => {
     console.log("Email input: ", text);
     setEmail(text);
 
-    if (!text) {
+    if (!text.trim()) {
       setEmailError("Email is required");
       return;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(text.trim())) {
-      setEmailError("Please enter a valid email address");
+    if (!isValidEmail(text)) {
+      setEmailError("Please enter a valid Gmail address (e.g., user@gmail.com)");
     } else {
       setEmailError(null);
     }
   };
 
-  const validatePhoneNumber = (phone: any) => {
-    const cleanPhone = phone.replace(/\D/g, ""); 
-
-    if (cleanPhone.length < 10) {
-      setPhoneError("Phone number must contain at least 10 digits");
-    } else if (cleanPhone.length > 15) {
-      setPhoneError("Phone number cannot exceed 15 digits");
-    } else {
-      setPhoneError(null);
+  const handlePhoneChange = (phone: any) => {
+    setPhone(phone);
+    if (!phone.trim()) {
+      setPhoneError("Phone number is required.");
+      return;
     }
-
-    const phonePattern = [
-      /^44\d{10}$/,
-      /^0\d{10}$/,
-      /^\d{11}$/,
-      /^\d{10}$/,
-    ];
-
-    const isValidPhone = phonePattern.some((pattern) => pattern.test(cleanPhone));
-
-    if (!isValidPhone) {
-      setPhoneError("Please enter a valid phone number");
-    }
-
-    return isValidPhone;
+    const phoneValidationError = isValidPhoneNumber(phone);
+    setPhoneError(phoneValidationError);
   };
 
-  const handlePhoneChange = (text: any) => {
-    setPhone(text);
-    
-    if(!text.trim()) {
-      setPhoneError("Phone number is required");
-    } else {
-      validatePhoneNumber(text);
-    }
+  const handleFirstNameChange = (text: any) => {
+    setFirstName(text);
+    const nameValidationError = isValidName(text);
+    setFirstNameError(nameValidationError);
   };
+
+  const handleLastNameChange = (text: any) => {
+    setLastName(text);
+    const nameValidationError = isValidName(text);
+    setLastNameError(nameValidationError);
+  };
+
   // Reusable text input component
   const renderTextInput = (
     label: any,
@@ -941,19 +928,19 @@ const PickupScreen = () => {
             {renderTextInput(
               "First Name",
               firstName,
-              setFirstName,
+              handleFirstNameChange,
               true,
               { editable: collector !== "myself" },
-              null,
+              firstNameError,
               firstNameRef
             )}
             {renderTextInput(
               "Last Name",
               lastName,
-              setLastName,
+              handleLastNameChange,
               true,
               { editable: collector !== "myself" },
-              null,
+              lastNameError,
               lastNameRef
             )}
             {renderTextInput(

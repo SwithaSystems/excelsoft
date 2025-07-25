@@ -9,39 +9,29 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
-  ScrollView,
   Platform,
   TouchableOpacity,
-  Alert,
   FlatList,
-  SafeAreaView,
 } from "react-native";
 import styles from "./HomeDeliveryStyles";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import { Picker } from "@react-native-picker/picker";
 import Header from "../../components/Header";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Button from "@/app/components/commonComponents/Button";
 import { useLocalSearchParams } from "expo-router";
-import { useAuth } from "@/context/AuthContext";
-import { NotificationService } from "@/services/notificationService";
-import colors from "../../../constants/colors";
 import { Address, addressService } from "@/services/addressService";
 import AddressItem from "../../components/AddressItem";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
-import ModalSelector from "react-native-modal-selector";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { formatToDDMMYYYY } from "../../../utilities/dateTimeFormat";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
@@ -374,26 +364,7 @@ const HomeDeliveryScreen = () => {
       setIsLoading(false);
     }
   };
-
-  // const renderTextInput = (
-  //   label: string,
-  //   value: string,
-  //   onChangeText: (text: string) => void,
-  //   props = {}
-  // ) => (
-  //   <View style={styles.inputContainer}>
-  //     <Text style={styles.inputLabel}>
-  //       {label} <Text style={styles.required}>*</Text>
-  //     </Text>
-  //     <TextInput
-  //       style={styles.textInput}
-  //       value={value}
-  //       onChangeText={onChangeText}
-  //       {...props}
-  //     />
-  //   </View>
-  // );
-
+  
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {

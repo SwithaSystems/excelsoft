@@ -32,6 +32,12 @@ import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./SignUpStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
+import { 
+  isValidName,
+  isValidEmail,
+  isValidPhoneNumber,
+ } from "@/utilities/validations";
+
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhoneNumber] = useState("");
@@ -115,19 +121,21 @@ const signUpScreen = () => {
       confirmPassword?: string;
     };
 
-    const trimmedPhone = phone.trim();
+    if (mode === "email"){
+      const trimmedEmail = email.trim();
 
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      newErrors.email = "Enter a valid email address.";
+      if (!trimmedEmail) {
+        newErrors.email = "Email is required.";
+      } else if (!isValidEmail(trimmedEmail)) {
+        newErrors.email = "Enter a valid email address.";
+      }
     }
-
     // Normalize phone by removing leading 0
-    const normalizedPhone = trimmedPhone.startsWith("0")
-      ? trimmedPhone.slice(1)
-      : trimmedPhone;
-
-    if (trimmedPhone) {
-      if (!/^\d{10}$/.test(normalizedPhone)) {
+    if(mode === "phone") {
+      const trimmedPhone = phone.trim();
+      if (!trimmedPhone) {
+        newErrors.phone = "Phone number is required.";
+      } else if (!isValidPhoneNumber(trimmedPhone)) {
         newErrors.phone = "Enter a valid 10-digit phone number.";
       }
     }

@@ -1,7 +1,6 @@
 import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
 import { View, Text, Alert, DeviceEventEmitter } from "react-native";
-import styles from "./EditAccountInformationStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome } from "@expo/vector-icons";
@@ -181,21 +180,14 @@ const editAccountInformationscreen = () => {
             </View>
           </View>
         </View>
-        {/* </ScrollView> */}
-        <View
-        // style={
-        //   // globalStyles.p_3
-        // }
-        >
+        <View>
           <Button
             onPress={() => {
               handleSave();
-              // redirectToPage(containers.userProfileScreenScreen);
             }}
             title="Save"
           />
         </View>
-        {/* </View> */}
       </KeyBoardWrapper>
     </PageLayout>
   );
