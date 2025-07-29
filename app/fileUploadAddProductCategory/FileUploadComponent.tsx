@@ -256,22 +256,34 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   };
 
   useEffect(() => {
-    const fetchEntityOptions = async () => {
-      try{
-        const options = await EntityAPI.getEntityOptions();
-        const filteredOptions = options.filter((item: any) => item.name.toLowerCase() !== "select entity");
-        const mappedOptions = filteredOptions.map((item: any) => ({
+  const fetchEntityOptions = async () => {
+    try {
+      console.log('Fetching entity options...');
+      const options = await EntityAPI.getEntityOptions();
+      console.log("Fetched entity options from API:", options);
+
+      const mappedOptions = options.map((item: any) => ({
         label: item.name,
-        value: item.name.toLowerCase(),  
+        value: item.value, 
       }));
-        setEntityOptions([{ label: "Select Entity", value: "" }, ...mappedOptions]);
-        console.log("Fetched options from API:", options);
-      } catch(error){
-        console.error("Error fetching entity options:", error);
-      }
-    };
-    fetchEntityOptions();
-  }, []);
+
+      console.log("Mapped options:", mappedOptions);
+      setEntityOptions(mappedOptions);
+      
+    } catch (error) {
+      console.error("Error fetching entity options:", error);
+      
+      setEntityOptions([
+        { label: "Select Entity", value: "" },
+        { label: "Products", value: "products" },
+        { label: "Categories", value: "categories" },
+      ]);
+    }
+  };
+
+  fetchEntityOptions();
+}, []);
+
 
   // // Upload to database function
   // const uploadToDatabase = async (data: UploadData) => {
