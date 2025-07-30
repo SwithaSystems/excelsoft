@@ -17,6 +17,8 @@ import { TwilioApi } from "@/services/twilioService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setUserData } from "@/store/slices/userSlice";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
+import { set } from "date-fns";
 
 const editAccountInformationscreen = () => {
   const dispatch = useDispatch();
@@ -24,6 +26,10 @@ const editAccountInformationscreen = () => {
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
   const [profileImage, setProfileImage] = useState("");
+
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   const userData = useSelector((state: RootState) => state.user.user);
   console.log("userData in edit account information", userData);
 
@@ -45,6 +51,35 @@ const editAccountInformationscreen = () => {
     };
     getUser();
   }, [userData]);
+
+  const validatePhone = (phone: string) => {
+    const error = isValidPhoneNumber(phone);
+    setPhoneError(error);
+  };
+
+  const validateEmail = (email: string) => {
+    const isValid = isValidEmail(email);
+    setEmailError(isValid? null : "Please enter a valid Gmail address");
+    return isValid;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    if (value.trim()) {
+      validatePhone(value);
+    } else {
+      setPhoneError(null);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (value.trim()) {
+      validateEmail(value);
+    } else {
+      setEmailError(null);
+    }
+  };
 
   const handleVerify = async () => {
     try {
@@ -144,9 +179,12 @@ const editAccountInformationscreen = () => {
                 placeholder="phone number"
                 value={phone}
                 onPress={() => {}}
-                setValue={setPhone}
+                setValue={handlePhoneChange}
                 keyboardType="phone-pad"
               />
+              {phoneError && (
+                <Text style={globalStyles.errorText}>{phoneError}</Text>
+              )}
             </View>
           </View>
 
@@ -174,9 +212,12 @@ const editAccountInformationscreen = () => {
                 placeholder="email"
                 value={email}
                 onPress={() => {}}
-                setValue={setEmail}
+                setValue={handleEmailChange}
                 keyboardType="email-address"
               />
+              {emailError && (
+                <Text style={globalStyles.errorText}>{emailError}</Text>
+              )}
             </View>
           </View>
         </View>

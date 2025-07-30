@@ -104,3 +104,88 @@ export const isValidPhoneNumber = (phone: string): string | null => {
 
   return null;
 };
+
+export const isValidProductName = (name: string): string | null => {
+  if (!name.trim()) return "Product name is required";
+  if (name.trim().length < 2)
+    return "Product name must be at least 2 characters";
+  if (name.trim().length > 100)
+    return "Product name cannot exceed 100 characters";
+  if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim()))
+    return "Product name contains invalid characters";
+  return null;
+};
+
+export const isValidProductTitle = (title: string): string | null => {
+  if (!title.trim()) return "Title is required";
+  if (title.trim().length < 3) return "Title must be at least 3 characters";
+  if (title.trim().length > 150) return "Title cannot exceed 150 characters";
+  return null;
+};
+
+export const isValidProductDescription = (description: string): string | null => {
+  if (description.trim().length > 1000)
+    return "Description cannot exceed 1000 characters";
+  return null;
+};
+
+export const isValidStock = (stock: string): string | null => {
+  if (!stock.trim()) return "Stock is required";
+  const stockNum = parseInt(stock);
+  if (isNaN(stockNum)) return "Stock must be a valid number";
+  if (stockNum < 0) return "Stock cannot be negative";
+  if (stockNum > 99999) return "Stock cannot exceed 99,999";
+  return null;
+};
+
+export const isValidPrice = (price: string): string | null => {
+  if (!price.trim()) return "Price is required";
+  const priceNum = parseFloat(price);
+  if (isNaN(priceNum)) return "Price must be a valid number";
+  if (priceNum <= 0) return "Price must be greater than 0";
+  if (priceNum > 999999) return "Price cannot exceed 999,999";
+  if (!/^\d+(\.\d{1,2})?$/.test(price))
+    return "Price can have maximum 2 decimal places";
+  return null;
+};
+
+export const isValidDiscountPrice = (
+  discountPrice: string,
+  originalPrice: string
+): string | null => {
+  if (!discountPrice.trim()) return null; 
+  const discountNum = parseFloat(discountPrice);
+  const originalNum = parseFloat(originalPrice);
+
+  if (isNaN(discountNum)) return "Discount price must be a valid number";
+  if (discountNum <= 0) return "Discount price must be greater than 0";
+  if (discountNum > 999999) return "Discount price cannot exceed 999,999";
+  if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
+    return "Discount price can have maximum 2 decimal places";
+
+  if (!isNaN(originalNum) && discountNum >= originalNum) {
+    return "Discount price must be less than original price";
+  }
+  return null;
+};
+
+export const isValidMinimumOrderQuantity = (quantity: string): string | null => {
+  if (!quantity.trim()) return null; 
+  const qtyNum = parseInt(quantity);
+  if (isNaN(qtyNum)) return "Minimum order quantity must be a valid number";
+  if (qtyNum < 0) return "Minimum order quantity cannot be negative";
+  if (qtyNum > 1000) return "Minimum order quantity cannot exceed 1000";
+  return null;
+};
+
+export const isValidProductImages = (images: any[], maxImages: number = 5): string | null => {
+  if (images.length === 0) return "At least one product image is required";
+  if (images.length > maxImages)
+    return `Maximum ${maxImages} images allowed`;
+  return null;
+};
+
+export const isValidCategory = (category: string): string | null => {
+  if (!category) return "Please select a category";
+  return null;
+};
