@@ -178,7 +178,7 @@ const orderDetailsScreen = () => {
         headerComponent={
           <Header
             headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-            needResetNavigation={false}
+            needResetNavigation={from != "myOrders"}
           />
         }
         footerComponent={<Footer />}
