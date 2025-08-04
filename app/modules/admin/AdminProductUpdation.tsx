@@ -2,30 +2,23 @@ import {
   ADMIN_PRODUCT_ADD_SCREEN_TITLE,
   ADMIN_PRODUCT_UPDATE_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
-import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView,
   Alert,
   Image,
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import colors from "../../../constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService } from "@/services/categoryService";
@@ -38,6 +31,17 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
+import {
+  isValidProductName,
+  isValidProductTitle,
+  isValidProductDescription,
+  isValidStock,
+  isValidPrice,
+  isValidDiscountPrice,
+  isValidMinimumOrderQuantity,
+  isValidProductImages,
+  isValidCategory,
+} from "../../../utilities/validations";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -270,123 +274,43 @@ const AdminProductUpdation = () => {
 
   console.log("Images in product page", productImages);
 
-  const validateProductName = (name: string) => {
-    if (!name.trim()) return "Product name is required";
-    if (name.trim().length < 2)
-      return "Product name must be at least 2 characters";
-    if (name.trim().length > 100)
-      return "Product name cannot exceed 100 characters";
-    if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim()))
-      return "Product name contains invalid characters";
-    return null;
-  };
-
-  const validateTitle = (title: string) => {
-    if (!title.trim()) return "Title is required";
-    if (title.trim().length < 3) return "Title must be at least 3 characters";
-    if (title.trim().length > 150) return "Title cannot exceed 150 characters";
-    return null;
-  };
-
-  const validateDescription = (description: string) => {
-    if (description.trim().length > 1000)
-      return "Description cannot exceed 1000 characters";
-    return null;
-  };
-
-  const validateStock = (stock: string) => {
-    if (!stock.trim()) return "Stock is required";
-    const stockNum = parseInt(stock);
-    if (isNaN(stockNum)) return "Stock must be a valid number";
-    if (stockNum < 0) return "Stock cannot be negative";
-    if (stockNum > 99999) return "Stock cannot exceed 99,999";
-    return null;
-  };
-
-  const validatePrice = (price: string) => {
-    if (!price.trim()) return "Price is required";
-    const priceNum = parseFloat(price);
-    if (isNaN(priceNum)) return "Price must be a valid number";
-    if (priceNum <= 0) return "Price must be greater than 0";
-    if (priceNum > 999999) return "Price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(price))
-      return "Price can have maximum 2 decimal places";
-    return null;
-  };
-
-  const validateDiscountPrice = (
-    discountPrice: string,
-    originalPrice: string
-  ) => {
-    if (!discountPrice.trim()) return null; // Optional field
-    const discountNum = parseFloat(discountPrice);
-    const originalNum = parseFloat(originalPrice);
-
-    if (isNaN(discountNum)) return "Discount price must be a valid number";
-    if (discountNum <= 0) return "Discount price must be greater than 0";
-    if (discountNum > 999999) return "Discount price cannot exceed 999,999";
-    if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
-      return "Discount price can have maximum 2 decimal places";
-
-    if (!isNaN(originalNum) && discountNum >= originalNum) {
-      return "Discount price must be less than original price";
-    }
-    return null;
-  };
-
-  const validateMinimumOrderQuantity = (quantity: string) => {
-    if (!quantity.trim()) return null; // Optional field
-    const qtyNum = parseInt(quantity);
-    if (isNaN(qtyNum)) return "Minimum order quantity must be a valid number";
-    if (qtyNum < 0) return "Minimum order quantity cannot be negative";
-    if (qtyNum > 1000) return "Minimum order quantity cannot exceed 1000";
-    return null;
-  };
-
-  const validateImages = (images: any[]) => {
-    if (images.length === 0) return "At least one product image is required";
-    if (images.length > MAX_IMAGES)
-      return `Maximum ${MAX_IMAGES} images allowed`;
-    return null;
-  };
-
   const validateFields = () => {
     const newErrors: typeof errors = {};
 
     // Validate product name
-    const productNameError = validateProductName(productName);
+    const productNameError = isValidProductName(productName);
     if (productNameError) newErrors.productName = productNameError;
 
     // Validate title
-    const titleError = validateTitle(title);
+    const titleError = isValidProductTitle(title);
     if (titleError) newErrors.title = titleError;
 
     // Validate description
-    const descriptionError = validateDescription(productDescription);
+    const descriptionError = isValidProductDescription(productDescription);
     if (descriptionError) newErrors.productDescription = descriptionError;
 
     // Validate stock
-    const stockError = validateStock(stock);
+    const stockError = isValidStock(stock);
     if (stockError) newErrors.stock = stockError;
 
     // Validate price
-    const priceError = validatePrice(price);
+    const priceError = isValidPrice(price);
     if (priceError) newErrors.price = priceError;
 
     // Validate discount price
-    const discountPriceError = validateDiscountPrice(discountPrice, price);
+    const discountPriceError = isValidDiscountPrice(discountPrice, price);
     if (discountPriceError) newErrors.discountPrice = discountPriceError;
 
     // Validate category
     if (!category) newErrors.category = "Please select a category";
 
     // Validate minimum order quantity
-    const minOrderQtyError = validateMinimumOrderQuantity(minimumOrderQunatity);
+    const minOrderQtyError = isValidMinimumOrderQuantity(minimumOrderQunatity);
     if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
 
     // Validate images (only for new products)
     if (newProduct) {
-      const imagesError = validateImages(productImages);
+      const imagesError = isValidProductImages(productImages, MAX_IMAGES);
       if (imagesError) newErrors.productImages = imagesError;
     }
 
@@ -397,7 +321,7 @@ const AdminProductUpdation = () => {
   const handleProductNameChange = (value: string) => {
     setProductName(value);
     if (errors.productName) {
-      const error = validateProductName(value);
+      const error = isValidProductName(value);
       setErrors((prev) => ({ ...prev, productName: error || undefined }));
     }
   };
@@ -405,7 +329,7 @@ const AdminProductUpdation = () => {
   const handleTitleChange = (value: string) => {
     setTitle(value);
     if (errors.title) {
-      const error = validateTitle(value);
+      const error = isValidProductTitle(value);
       setErrors((prev) => ({ ...prev, title: error || undefined }));
     }
   };
@@ -413,7 +337,7 @@ const AdminProductUpdation = () => {
   const handleDescriptionChange = (value: string) => {
     setProductDescription(value);
     if (errors.productDescription) {
-      const error = validateDescription(value);
+      const error = isValidProductDescription(value);
       setErrors((prev) => ({
         ...prev,
         productDescription: error || undefined,
@@ -426,7 +350,7 @@ const AdminProductUpdation = () => {
     const numericValue = value.replace(/[^0-9]/g, "");
     setStock(numericValue);
     if (errors.stock) {
-      const error = validateStock(numericValue);
+      const error = isValidStock(numericValue);
       setErrors((prev) => ({ ...prev, stock: error || undefined }));
     }
   };
@@ -440,7 +364,7 @@ const AdminProductUpdation = () => {
 
     setPrice(numericValue);
     if (errors.price) {
-      const error = validatePrice(numericValue);
+      const error = isValidPrice(numericValue);
       setErrors((prev) => ({ ...prev, price: error || undefined }));
     }
   };
@@ -454,7 +378,7 @@ const AdminProductUpdation = () => {
 
     setDiscountPrice(numericValue);
     if (errors.discountPrice) {
-      const error = validateDiscountPrice(numericValue, price);
+      const error = isValidDiscountPrice(numericValue, price);
       setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
     }
   };
@@ -464,7 +388,7 @@ const AdminProductUpdation = () => {
     const numericValue = value.replace(/[^0-9]/g, "");
     setMinimumOrderQuantity(numericValue);
     if (errors.minimumOrderQunatity) {
-      const error = validateMinimumOrderQuantity(numericValue);
+      const error = isValidMinimumOrderQuantity(numericValue);
       setErrors((prev) => ({
         ...prev,
         minimumOrderQunatity: error || undefined,
