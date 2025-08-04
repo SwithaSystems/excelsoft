@@ -29,13 +29,16 @@ const CategoryBadges = (props) => {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
+        console.log("categoryId", props.categoryId);
         const data = await categoryService.getAllSubCategories(
           props.categoryId
         );
         console.log("all sub categories", data);
 
         if (data && data.length > 0) {
-          const setsubCategories = data.map((category) => category.name);
+          const setsubCategories = data
+            .map((category) => category.name)
+            .filter((name) => name.toLowerCase() !== "all");
           setsubCategoriesNames(setsubCategories);
         } else {
           setsubCategoriesNames([]);
@@ -93,9 +96,7 @@ const CategoryBadges = (props) => {
               style={[
                 styles.filterButton,
                 activeFilter === category && styles.activeFilterButton,
-                index === subCategoriesNames.length 
-                  ? { marginRight: 0 }
-                  : {},
+                index === subCategoriesNames.length ? { marginRight: 0 } : {},
               ]}
               onPress={() => {
                 setActiveFilter(category);
