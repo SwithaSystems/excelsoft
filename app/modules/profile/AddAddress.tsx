@@ -10,7 +10,10 @@ import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
 import { addressService } from "@/services/addressService";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import {
+  clearNavigationStack,
+  redirectToPage,
+} from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useLocalSearchParams } from "expo-router";
 import { globalStyles } from "@/assets/styles/globalStyles";

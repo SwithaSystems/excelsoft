@@ -16,7 +16,7 @@ const BackArrow = ({ needResetNavigation }: BackArrowProps) => {
 
   const handleBackArrow = () => {
     if (needResetNavigation) {
-      clearNavigationStack("home/home");
+      clearNavigationStack("modules/home/Home");
     } else {
       navigation.goBack();
     }
