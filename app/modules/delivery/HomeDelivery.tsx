@@ -86,8 +86,7 @@ const HomeDeliveryScreen = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [existingShippingAddress, setExistingSelectedShippingAddress] =
-    useState<Address[]>([]);
+  const [existingAddress, setExistingSelectedAddress] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -227,8 +226,8 @@ const HomeDeliveryScreen = () => {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await addressService.getAllShppingAddress_userId();
-        setExistingSelectedShippingAddress(response);
+        const response = await addressService.getAllAddress();
+        setExistingSelectedAddress(response);
         console.log("Shipping addresses:", response);
       } catch (err) {
         console.error("Error fetching shipping addresses:", err);
@@ -266,7 +265,7 @@ const HomeDeliveryScreen = () => {
       date &&
         hours &&
         minutes &&
-        existingShippingAddress.length > 0 &&
+        existingAddress.length > 0 &&
         selectedAddressId
     );
 
@@ -346,7 +345,7 @@ const HomeDeliveryScreen = () => {
 
       setIsLoading(true);
 
-      const shippingAddress = existingShippingAddress.find(
+      const shippingAddress = existingAddress.find(
         (addr) => addr._id === selectedAddressId
       );
       const pickupDetails = {
@@ -375,25 +374,6 @@ const HomeDeliveryScreen = () => {
     }
   };
 
-  // const renderTextInput = (
-  //   label: string,
-  //   value: string,
-  //   onChangeText: (text: string) => void,
-  //   props = {}
-  // ) => (
-  //   <View style={styles.inputContainer}>
-  //     <Text style={styles.inputLabel}>
-  //       {label} <Text style={styles.required}>*</Text>
-  //     </Text>
-  //     <TextInput
-  //       style={styles.textInput}
-  //       value={value}
-  //       onChangeText={onChangeText}
-  //       {...props}
-  //     />
-  //   </View>
-  // );
-
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
@@ -401,7 +381,7 @@ const HomeDeliveryScreen = () => {
           itemToDelete.id
         );
         if (response.success) {
-          setExistingSelectedShippingAddress((prev) =>
+          setExistingSelectedAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
           );
 
@@ -438,8 +418,6 @@ const HomeDeliveryScreen = () => {
     setIsModalVisible(true);
   };
 
-  // Function to validate if the selected time is in the future
-  // Function to validate if the selected time is in the future
   const validateFutureTime = (
     hours: any,
     minutes: any,
@@ -563,8 +541,6 @@ const HomeDeliveryScreen = () => {
       scrollable
     >
       <KeyBoardWrapper>
-        {/* <View style={globalStyles.container}> */}
-        {/* <Header headerText={DELIVERY_MODE_HOME} /> */}
         <FlatList
           ListHeaderComponent={
             <>
@@ -593,13 +569,6 @@ const HomeDeliveryScreen = () => {
                     </TouchableOpacity>
                   )}
                   {showDatePicker && (
-                    // <DateTimePicker
-                    //   value={new Date(date)}
-                    //   mode="date"
-                    //   display="default"
-                    //   onChange={onDateChange}
-                    //   minimumDate={new Date()}
-                    // />
                     <DateTimePickerModal
                       isVisible={showDatePicker}
                       mode="date"
@@ -695,7 +664,7 @@ const HomeDeliveryScreen = () => {
                 {/* Shipping Address Section */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>Shipping Address: *</Text>
-                  {existingShippingAddress.length === 0 && (
+                  {/* {existingAddress.length === 0 && (
                     <Button
                       title="Add Address"
                       onPress={() => {
@@ -704,12 +673,12 @@ const HomeDeliveryScreen = () => {
                         });
                       }}
                     />
-                  )}
+                  )} */}
                 </View>
 
                 {/* Address List */}
                 <FlatList
-                  data={existingShippingAddress}
+                  data={existingAddress}
                   keyExtractor={(item) => item._id}
                   renderItem={({ item }) => (
                     <AddressItem
@@ -725,6 +694,15 @@ const HomeDeliveryScreen = () => {
                     />
                   )}
                 />
+
+                <Text
+                  style={styles.linkText}
+                  onPress={() => {
+                    redirectToPage(containers.addAddressScreen);
+                  }}
+                >
+                  Add Address
+                </Text>
 
                 {/* Additional Instructions */}
                 <View style={styles.inputContainer}>

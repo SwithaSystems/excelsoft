@@ -99,7 +99,7 @@ const AdminProductUpdation = () => {
   console.log("Product data in product updation", productData);
   async function getallCategories() {
     try {
-      const categories = await categoryService.getAllCategories(2);
+      const categories = await categoryService.getAllCategories();
       if (categories) {
         setAllCategories(categories);
       }
@@ -1178,7 +1178,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: 65,
     height: 65,
-    backgroundColor: colors.Gray88,
+    backgroundColor: colors.placeholdergrey,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 5,

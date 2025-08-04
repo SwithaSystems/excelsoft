@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
 });
 

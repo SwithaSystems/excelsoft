@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 5,
     borderRadius: 5,
-    backgroundColor: colors.neutralGrey2,
+    backgroundColor: colors.darkGray,
     marginHorizontal: 5,
   },
   activeIndicator: {

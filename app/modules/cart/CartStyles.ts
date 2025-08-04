@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
     textAlign: "center",
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   emptySubtitle: {
     fontSize: 16,

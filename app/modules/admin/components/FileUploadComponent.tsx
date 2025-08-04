@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,18 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
-import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import Header from "../../../components/Header";
-import { FILE_UPLOAD } from "../../../../constants/stringLiterals";
+import * as FileSystem from "expo-file-system";
 import { ProductsAPI } from "@/services/productService";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import colors from "../../../../constants/colors";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import Header from "@/app/components/Header";
+import { FILE_UPLOAD } from "@/constants/stringLiterals";
 import styles from "../FileUploadAddProductCategoryStyles";
+import colors from "@/constants/colors";
+import { EntityAPI } from "@/services/entityService";
 
 // Define types
 interface FileUploadProps {
@@ -25,36 +28,39 @@ interface FileUploadProps {
 
 interface UploadData {
   entityType: string;
-  fileType: string;
+  // fileType: string;
   fileName: string;
   fileUri: string;
   fileData?: any;
 }
 
 // Define dropdown options
-const ENTITY_OPTIONS = [
-  { label: "Select Entity", value: "" },
-  { label: "Products", value: "products" },
-  { label: "Categories", value: "categories" },
-];
+// const ENTITY_OPTIONS = [
+//   { label: "Select Entity", value: "" },
+//   { label: "Products", value: "products" },
+//   { label: "Categories", value: "categories" },
+// ];
 
-const FILE_TYPE_OPTIONS = [
-  { label: "Select File Type", value: "" },
-  { label: "Excel (.xlsx)", value: "xlsx" },
-  { label: "CSV (.csv)", value: "csv" },
-  { label: "JSON (.json)", value: "json" },
-  { label: "Text (.txt)", value: "txt" },
-  { label: "All Files", value: "all" },
-];
+// const FILE_TYPE_OPTIONS = [
+//   { label: "Select File Type", value: "" },
+//   { label: "Excel (.xlsx)", value: "xlsx" },
+//   { label: "CSV (.csv)", value: "csv" },
+//   { label: "JSON (.json)", value: "json" },
+//   { label: "Text (.txt)", value: "txt" },
+//   { label: "All Files", value: "all" },
+// ];
 
 const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
 }) => {
   const [selectedEntity, setSelectedEntity] = useState<string>("");
-  const [selectedFileType, setSelectedFileType] = useState<string>("");
+  // const [selectedFileType, setSelectedFileType] = useState<string>("");
   const [selectedFile, setSelectedFile] =
     useState<DocumentPicker.DocumentPickerResult | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [entityOptions, setEntityOptions] = useState([
+    { label: "Select Entity", value: "" },
+  ]);
 
   // Get file types for document picker
   const getDocumentPickerTypes = (fileType: string): string[] => {
@@ -79,7 +85,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
   // Handle file selection with better approach
   const handleChooseFile = async () => {
-    if (!selectedEntity || !selectedFileType) {
+    if (!selectedEntity) {
       Alert.alert("Error", "Please select both entity and file type first");
       return;
     }
@@ -87,7 +93,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     try {
       // Use more flexible document picker options
       const pickerOptions = {
-        type: getDocumentPickerTypes(selectedFileType),
+        type: ["*/*"],
         copyToCacheDirectory: true,
         multiple: false,
       };
@@ -98,36 +104,37 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
       console.log("Document picker result:", result);
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
+      // if (!result.canceled && result.assets && result.assets.length > 0) {
+      //   const file = result.assets[0];
+
+      //   // More flexible file validation
+      //   const fileName = file.name.toLowerCase();
+      //   let isValidFile = true;
+
+      //   if (selectedFileType !== "all") {
+      //     const expectedExtension = `.${selectedFileType}`;
+      //     isValidFile = fileName.endsWith(expectedExtension);
+      //   }
+
+      //   if (!isValidFile) {
+      //     Alert.alert(
+      //       "File Type Mismatch",
+      //       `Selected file doesn't match the expected type (${selectedFileType.toUpperCase()}). Do you want to proceed anyway?`,
+      //       [
+      //         { text: "Cancel", style: "cancel" },
+      //         {
+      //           text: "Proceed",
+      //           onPress: () => {
+      //             setSelectedFile(result);
+      //             Alert.alert("Success", `File selected: ${file.name}`);
+      //           },
+      //         },
+      //       ]
+      //     );
+      //     return;
+      //   }
+      if (result.assets && result.assets.length > 0) {
         const file = result.assets[0];
-
-        // More flexible file validation
-        const fileName = file.name.toLowerCase();
-        let isValidFile = true;
-
-        if (selectedFileType !== "all") {
-          const expectedExtension = `.${selectedFileType}`;
-          isValidFile = fileName.endsWith(expectedExtension);
-        }
-
-        if (!isValidFile) {
-          Alert.alert(
-            "File Type Mismatch",
-            `Selected file doesn't match the expected type (${selectedFileType.toUpperCase()}). Do you want to proceed anyway?`,
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Proceed",
-                onPress: () => {
-                  setSelectedFile(result);
-                  Alert.alert("Success", `File selected: ${file.name}`);
-                },
-              },
-            ]
-          );
-          return;
-        }
-
         setSelectedFile(result);
         Alert.alert("Success", `File selected: ${file.name}`);
       } else if (result.canceled) {
@@ -144,7 +151,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
   // Handle file upload
   const handleUpload = async () => {
-    if (!selectedEntity || !selectedFileType || !selectedFile) {
+    if (!selectedEntity || !selectedFile) {
       Alert.alert(
         "Error",
         "Please select entity, file type, and choose a file"
@@ -170,7 +177,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       // Prepare upload data
       const uploadData: UploadData = {
         entityType: selectedEntity,
-        fileType: selectedFileType,
+        // fileType: selectedFileType,
         fileName: file.name,
         fileUri: file.uri,
       };
@@ -181,12 +188,12 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         const formData = new FormData();
         // Add metadata
         formData.append("entityType", uploadData.entityType);
-        formData.append("fileType", uploadData.fileType);
+        // formData.append("fileType", uploadData.fileType);
         formData.append("fileName", uploadData.fileName);
 
         // Add file - different approaches for different platforms
         if (Platform.OS === "web") {
-          // For web, convert URI to blob
+          // For web, convert URI to bloba
           const response = await fetch(uploadData.fileUri);
           const blob = await response.blob();
           formData.append("file", blob, uploadData.fileName);
@@ -208,6 +215,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           throw new Error("HTTP error!");
         }
 
+        console.log("API response:", response);
         const result = await response?.json();
 
         // If API call successful, also call the simulated upload
@@ -217,7 +225,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
         // Reset form
         setSelectedEntity("");
-        setSelectedFileType("");
+        // setSelectedFileType("");
         setSelectedFile(null);
 
         // Callback to parent component
@@ -232,7 +240,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
         // Reset form
         setSelectedEntity("");
-        setSelectedFileType("");
+        // setSelectedFileType("");
         setSelectedFile(null);
 
         // Callback to parent component
@@ -247,6 +255,34 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       setIsUploading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchEntityOptions = async () => {
+      try {
+        console.log("Fetching entity options...");
+        const options = await EntityAPI.getEntityOptions();
+        console.log("Fetched entity options from API:", options);
+
+        const mappedOptions = options.map((item: any) => ({
+          label: item.name,
+          value: item.value,
+        }));
+
+        console.log("Mapped options:", mappedOptions);
+        setEntityOptions(mappedOptions);
+      } catch (error) {
+        console.error("Error fetching entity options:", error);
+
+        setEntityOptions([
+          { label: "Select Entity", value: "" },
+          { label: "Products", value: "products" },
+          { label: "Categories", value: "categories" },
+        ]);
+      }
+    };
+
+    fetchEntityOptions();
+  }, []);
 
   // // Upload to database function
   // const uploadToDatabase = async (data: UploadData) => {
@@ -271,7 +307,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
         <ModalSelector
-          data={ENTITY_OPTIONS}
+          data={entityOptions}
           initValue="Select Entity"
           onChange={(option) => setSelectedEntity(option.value)}
           keyExtractor={(item) => item.value}
@@ -284,7 +320,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         >
           <View style={styles.modalTrigger}>
             <Text style={styles.modalTriggerText}>
-              {ENTITY_OPTIONS.find((opt) => opt.value === selectedEntity)
+              {entityOptions.find((opt) => opt.value === selectedEntity)
                 ?.label || "Select Entity"}
             </Text>
             <View style={styles.modalTriggerIcon}>
@@ -295,31 +331,31 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       </View>
 
       {/* File Type Dropdown */}
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.label}>Select File Type:</Text>
-        <ModalSelector
-          data={FILE_TYPE_OPTIONS}
-          initValue="Select File Type"
-          onChange={(option) => setSelectedFileType(option.value)}
-          keyExtractor={(item) => item.value}
-          labelExtractor={(item) => item.label}
-          style={styles.modalSelector}
-          initValueTextStyle={styles.modalInitValue}
-          selectTextStyle={styles.modalSelectedText}
-          optionTextStyle={styles.modalOptionText}
-          selectedItemTextStyle={styles.modalSelectedItemText}
-        >
-          <View style={styles.modalTrigger}>
-            <Text style={styles.modalTriggerText}>
-              {FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)
-                ?.label || "Select File Type"}
-            </Text>
-            <View style={styles.modalTriggerIcon}>
-              <Ionicons name="caret-down" size={20} color={colors.primary} />
-            </View>
-          </View>
-        </ModalSelector>
-      </View>
+      {/* // <View style={styles.dropdownContainer}>
+         <Text style={styles.label}>Select File Type:</Text>
+         <ModalSelector
+           data={FILE_TYPE_OPTIONS}
+           initValue="Select File Type"
+           onChange={(option) => setSelectedFileType(option.value)}
+           keyExtractor={(item) => item.value}
+           labelExtractor={(item) => item.label}
+           style={styles.modalSelector}
+           initValueTextStyle={styles.modalInitValue}
+           selectTextStyle={styles.modalSelectedText}
+           optionTextStyle={styles.modalOptionText}
+           selectedItemTextStyle={styles.modalSelectedItemText}
+         >
+           <View style={styles.modalTrigger}>
+             <Text style={styles.modalTriggerText}>
+               {FILE_TYPE_OPTIONS.find((opt) => opt.value === selectedFileType)
+                 ?.label || "Select File Type"}
+             </Text>
+             <View style={styles.modalTriggerIcon}>
+               <Ionicons name="caret-down" size={20} color={colors.primary} />
+             </View>
+           </View>
+         </ModalSelector>
+       </View> */}
       {/* Selected File Display */}
       {selectedFile && !selectedFile.canceled && selectedFile.assets && (
         <View style={styles.fileInfoContainer}>
@@ -341,10 +377,10 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           style={[
             styles.button,
             styles.chooseButton,
-            (!selectedEntity || !selectedFileType) && styles.buttonDisabled,
+            !selectedEntity && styles.buttonDisabled,
           ]}
           onPress={handleChooseFile}
-          disabled={!selectedEntity || !selectedFileType}
+          disabled={!selectedEntity}
         >
           <Text style={styles.buttonText}>Choose File</Text>
         </TouchableOpacity>

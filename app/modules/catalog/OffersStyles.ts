@@ -24,14 +24,14 @@ const styles = StyleSheet.create({
   rightItem: {
     marginLeft: 8,
   },
-  offerBanner: {
-    backgroundColor: colors.bannerPurple,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    //height: 230,
-    width: "100%",
-  },
+  // offerBanner: {
+  //   backgroundColor: colors.bannerPurple,
+  //   borderRadius: 20,
+  //   padding: 20,
+  //   alignItems: "center",
+  //   //height: 230,
+  //   width: "100%",
+  // },
   bannerTitle: {
     color: colors.white,
     fontSize: 24,

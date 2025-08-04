@@ -97,7 +97,7 @@ const ProductCard = ({
             <Ionicons
               name={isItemSaved(id) ? "heart" : "heart-outline"}
               size={20}
-              color={isItemSaved(id) ? colors.red : colors.black}
+              color={isItemSaved(id) ? colors.primaryRed : colors.black}
             />
           </TouchableOpacity>
         </View>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   originalPrice: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.secondaryText,
     textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,

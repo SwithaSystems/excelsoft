@@ -1,5 +1,5 @@
 import { EDIT_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -33,6 +33,7 @@ const editAddressScreen = () => {
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [addressType, setAddressType] = useState([]);
   const [isDefault, setIsDefault] = useState(false);
 
   const [errors, setErrors] = useState<{
@@ -65,6 +66,7 @@ const editAddressScreen = () => {
       setTownCity(selectedAddress.city || "");
       setPostalCode(selectedAddress.postalCode || "");
       setPhoneNumber(selectedAddress.phone || "");
+      setAddressType(selectedAddress.addressType || "");
       setIsDefault(selectedAddress.isDefault || false);
 
       console.log("values set successfully");
@@ -188,7 +190,7 @@ const editAddressScreen = () => {
         isDefault: isDefault,
       });
 
-      if (response.status === 200) {
+      if (response) {
         alert("Address updated successfully");
         redirectToPage(containers.savedAddressScreen);
       } else {

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     fontSize: 14,
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   originalPrice: {
     textDecorationLine: "line-through",
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   striked: {
     textDecorationLine: "line-through",
-    color: colors.Gray88,
+    color: colors.placeholdergrey,
     fontSize: 14,
   },
   returnModeCategory: {},
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.secondaryText,
   },
   radioCircle: {
     width: 20,

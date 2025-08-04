@@ -13,6 +13,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: colors.black,
   },
+  linkText: {
+    color: colors.primary,
+    fontSize: 14,
+    textDecorationLine: "underline",
+    marginBottom: 10,
+  },
   inputContainer: {
     marginBottom: 16,
     // paddingTop: 16,
@@ -33,7 +39,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   note: {
-    color: colors.buttonError,
+    color: colors.error,
     fontSize: 14,
     marginBottom: 16,
   },

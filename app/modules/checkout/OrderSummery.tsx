@@ -130,9 +130,9 @@ const orderSummeryScreen = () => {
   });
 
   useEffect(() => {
-    const fetchBillingAddresses = async () => {
+    const fetchAddresses = async () => {
       try {
-        const addresses = await addressService.getAllBillingAddress_userId();
+        const addresses = await addressService.getAllAddress();
         setAddressData(addresses);
 
         if (selectedBillingAddress && selectedBillingAddress._id) {
@@ -143,7 +143,7 @@ const orderSummeryScreen = () => {
       }
     };
 
-    fetchBillingAddresses();
+    fetchAddresses();
   }, [selectedBillingAddress]);
 
   useEffect(() => {
@@ -284,10 +284,7 @@ const orderSummeryScreen = () => {
     (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <View style={globalStyles.container}>
-    //     <ScrollView>
-    //       <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
+   
     <PageLayout
       hasHeader
       headerComponent={<Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />}
@@ -298,7 +295,6 @@ const orderSummeryScreen = () => {
         <ScrollView>
           <View
             style={[
-              // globalStyles.sectionContent,
               globalStyles.pt_0,
               globalStyles.pb_0,
             ]}
@@ -369,34 +365,7 @@ Contact Number: ${pickupAddress.phone}`}
 Contact Number: ${pickupAddress.phone}`}
                     </Text>
                   )}
-                  {/* {pickupAddress.firstName ? (
-                    <Text style={styles.addressTextBox}>
-                      {`${pickupAddress.firstName || ""} ${
-                        pickupAddress.lastName || ""
-                      }\nVehicle Type: ${
-                        pickupAddress.vehicleType
-                          ? `${pickupAddress.vehicleType}`
-                          : ""
-                      }\nVehicle Number: ${
-                        pickupAddress.vehicleNumber
-                          ? ` ${pickupAddress.vehicleNumber}`
-                          : ""
-                      }\nAdditional Details:${
-                        pickupAddress.additionalDetails
-                          ? `, ${pickupAddress.additionalDetails}`
-                          : "None"
-                      } \nEmail: ${pickupAddress.email} \nContact Number: ${
-                        pickupAddress.phone
-                      }`}
-                    </Text>
-                  ) : (
-                    <Text style={styles.addressTextBox}>
-                      {`${pickupAddress.name}, ${pickupAddress.line1}, ${
-                        pickupAddress.line2 ? `${pickupAddress.line2}` : ""
-                      },${pickupAddress.city}, ${pickupAddress.postalCode}
-                      Contact Number: ${pickupAddress.phone}`}
-                    </Text>
-                  )} */}
+                 
                 </View>
               </View>
 
@@ -414,6 +383,7 @@ Contact Number: ${pickupAddress.phone}`}
                         containerStyle={styles.checkBoxContainer}
                       />
                     </View>
+                    
                     {!useSameAddress && (
                       <>
                         <View>

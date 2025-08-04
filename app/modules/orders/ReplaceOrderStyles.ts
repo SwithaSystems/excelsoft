@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   cartItem: {
     flexDirection: "row",
-    backgroundColor: colors.paleWhite,
+    backgroundColor: colors.offWhite,
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
@@ -115,11 +115,11 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     fontSize: 14,
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   originalPrice: {
     textDecorationLine: "line-through",
-    color: colors.argentGray,
+    color: colors.darkGray,
     fontSize: 13,
     marginLeft: 4,
   },

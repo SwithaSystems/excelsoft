@@ -30,7 +30,7 @@ const savedAddressScreen = () => {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await addressService.getAllShppingAddress_userId();
+        const response = await addressService.getAllAddress();
         setAddressData(response);
         console.log("Shipping addresses:", response);
       } catch (err) {
@@ -45,9 +45,7 @@ const savedAddressScreen = () => {
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteShippingAddress(
-          itemToDelete.id
-        );
+        const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
           setAddressData((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
@@ -69,46 +67,9 @@ const savedAddressScreen = () => {
     setItemToDelete(null);
   };
 
-  // const AddressItem = ({ item }: { item: Address }) => (
-  //   <View style={styles.addressContainer}>
-  //     <View>
-  //       <View style={styles.nameRow}>
-  //         <Text style={styles.name}>{item.name}</Text>
-  //       </View>
-  //       <Text>{item.line1}</Text>
-  //       <Text>{item.line2}</Text>
-  //       <Text>{item.city}</Text>
-  //       <Text>{item.state}</Text>
-  //       <Text>{item.postalCode}</Text>
-  //       <Text>Phone No: {item.phone}</Text>
-  //     </View>
-  //     <View>
-  //       <View style={styles.iconRow}>
-  //         <TouchableOpacity
-  //           style={{ marginRight: 12 }}
-  //           onPress={() => {
-  //             setSelectedAddress(item);
-  //             redirectToPage(containers.editAddressScreenScreen);
-  //           }}
-  //         >
-  //           <Ionicons name="create-outline" size={24} color="black" />
-  //         </TouchableOpacity>
-  //         <TouchableOpacity
-  //           onPress={() => {
-  //             setIsModalVisible(true);
-  //             setItemToDelete({ id: item._id });
-  //           }}
-  //         >
-  //           <Ionicons name="trash-outline" size={24} color="red" />
-  //         </TouchableOpacity>
-  //       </View>
-  //     </View>
-  //   </View>
-  // );
-
   const handleEdit = (item: Address) => {
     // setSelectedAddress(item);
-    redirectToPage(containers.editAddressScreen, {
+    redirectToPage(containers.addAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
@@ -119,7 +80,6 @@ const savedAddressScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasHeader
       scrollable={false}
@@ -131,7 +91,6 @@ const savedAddressScreen = () => {
       }
     >
       <View style={globalStyles.container}>
-        {/* <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} /> */}
         <ScrollView>
           <FlatList
             ListHeaderComponent={
@@ -149,11 +108,9 @@ const savedAddressScreen = () => {
                   <View style={styles.centeredContainer}>
                     <View
                       style={[
-                        // globalStyles.sectionContent,
                         globalStyles.pt_0,
                         {
                           width: 350,
-                          // paddingLeft: 32
                         },
                       ]}
                     >
@@ -208,26 +165,17 @@ const savedAddressScreen = () => {
             renderItem={null}
           />
         </ScrollView>
-        <View
-          style={
-            {
-              // paddingHorizontal: 16,
-              // paddingBottom: 16
-            }
-          }
-        >
-          <View style={styles.addressList}>
-            <Button
-              title="Add New Address"
-              onPress={() => {
-                redirectToPage(containers.addAddressScreen);
-              }}
-            />
-          </View>
+
+        <View style={styles.addressList}>
+          <Button
+            title="Add New Address"
+            onPress={() => {
+              redirectToPage(containers.addAddressScreen);
+            }}
+          />
         </View>
       </View>
     </PageLayout>
-    // </SafeAreaView>
   );
 };
 

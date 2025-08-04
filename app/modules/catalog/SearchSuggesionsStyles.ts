@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   backButton: {
     fontSize: 24,
     marginRight: 10,
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   searchInput: {
     flex: 1,

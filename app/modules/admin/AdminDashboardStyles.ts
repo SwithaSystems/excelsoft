@@ -65,13 +65,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 600,
   },
+
   orderContainer: {
     backgroundColor: colors.white,
     padding: 16,
     borderRadius: 10,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.pureBlack,
+    borderColor: colors.black,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   },
   orderTime: {
     fontSize: 14,
-    color: colors.slateGrey2,
+    color: colors.slateGrey,
   },
   orderAmount: {
     fontSize: 16,
@@ -139,16 +140,16 @@ const styles = StyleSheet.create({
     color: colors.errorText,
   },
   replaced: {
-    backgroundColor: colors.warningBg,
-    color: colors.red,
+    backgroundColor: colors.secondaryYellow,
+    color: colors.primaryRed,
   },
   returned: {
-    backgroundColor: colors.subtlePurpleBg,
-    color: colors.subtlePurpleText,
+    backgroundColor: colors.secondaryPurple,
+    color: colors.secondaryPurple,
   },
   defaultStatus: {
-    backgroundColor: colors.Gray88,
-    color: colors.darkCharcoal,
+    backgroundColor: colors.placeholdergrey,
+    color: colors.black,
   },
   linkText: {
     color: colors.primary,

@@ -79,7 +79,7 @@ export const globalStyles = StyleSheet.create({
       android: 52, // Slightly taller for Android
       default: 48,
     }),
-    borderColor: colors.zircon,
+    borderColor: colors.placeholdergrey,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 8,
@@ -296,7 +296,7 @@ export const globalStyles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: colors.alertRed,
+    backgroundColor: colors.primaryRed,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -322,8 +322,8 @@ export const globalStyles = StyleSheet.create({
     color: colors.mustardYellow,
   },
   orderCanceledBadge: {
-    backgroundColor: colors.paleRed,
-    color: colors.buttonError,
+    backgroundColor: colors.secondaryRed,
+    color: colors.error,
   },
   OrderStatusText: {
     fontSize: 12,

@@ -143,7 +143,7 @@ const notificationsScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Push Notifications</Text>
             <Switch
               trackColor={{
-                false: colors.switchTrackOff,
+                false: colors.placeholdergrey,
                 true: colors.primary,
               }}
               thumbColor={colors.white}
@@ -163,7 +163,7 @@ const notificationsScreen: React.FC = () => {
                 </Text>
                 <Switch
                   trackColor={{
-                    false: colors.switchTrackOff,
+                    false: colors.placeholdergrey,
                     true: colors.primary,
                   }}
                   thumbColor={colors.white}
@@ -189,7 +189,7 @@ const notificationsScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>Email Notifications</Text>
             <Switch
               trackColor={{
-                false: colors.switchTrackOff,
+                false: colors.placeholdergrey,
                 true: colors.primary,
               }}
               thumbColor={colors.white}
@@ -209,7 +209,7 @@ const notificationsScreen: React.FC = () => {
                 </Text>
                 <Switch
                   trackColor={{
-                    false: colors.switchTrackOff,
+                    false: colors.placeholdergrey,
                     true: colors.primary,
                   }}
                   thumbColor={colors.white}

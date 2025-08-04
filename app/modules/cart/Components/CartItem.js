@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     shadowColor: colors.black,
     borderRadius: 4,
-    backgroundColor: colors.shadeOfBlueGray,
+    backgroundColor: colors.placeholdergrey,
     shadowOffset: {
       width: 0,
       height: 0,

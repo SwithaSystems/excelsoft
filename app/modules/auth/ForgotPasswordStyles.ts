@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   inactiveText: {
-    color: colors.darkCharcoal,
+    color: colors.black,
   },
   callingCode: {
     marginHorizontal: 8,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.borderGrey,
+    borderColor: colors.placeholdergrey,
     borderRadius: 5,
     overflow: "hidden",
     marginBottom: 16,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.offWhite,
     paddingHorizontal: 10,
     borderRightWidth: 1,
-    borderRightColor: colors.borderGrey,
+    borderRightColor: colors.placeholdergrey,
   },
   countryPickerButton: {
     paddingVertical: 8,

@@ -4,6 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Address } from "@/services/addressService";
 import { StyleSheet } from "react-native";
 import colors from "../../constants/colors";
+import Button from "./commonComponents/Button";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 type AddressItemProps = {
   item: Address;
@@ -44,6 +47,7 @@ const AddressItem = ({
           {item.state && <Text>{item.state}</Text>}
           <Text>{item.postalCode}</Text>
           <Text>Phone No: {item.phone}</Text>
+          {/* <Text>Address Type: {item.addressType}</Text> */}
         </View>
         <View style={styles.iconRow}>
           {onEdit && (
@@ -79,6 +83,10 @@ const styles = StyleSheet.create({
   radioButton: {
     paddingRight: 8,
     paddingTop: 16,
+  },
+  linkText: {
+    color: colors.primary,
+    fontSize: 16,
   },
   addressContainer: {
     flex: 1,

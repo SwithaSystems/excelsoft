@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: colors.Gray88 || "#666",
+    color: colors.placeholdergrey || "#666",
     textAlign: "center",
     marginTop: 16,
   },

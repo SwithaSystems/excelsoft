@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
   ScrollView,
-  SafeAreaView,
 } from "react-native";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
@@ -17,13 +16,14 @@ import { useLocalSearchParams } from "expo-router";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { ADD_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import {
+  ADD_ADDRESS_SCREEN_TITLE,
+  EDIT_ADDRESS_SCREEN_TITLE,
+} from "../../../constants/stringLiterals";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
-  MISSING_REQUIRED_FIELDS,
-  INVALID_POSTCODE,
-  ADDRESS_NOT_DELIVERABLE,
   ADDRESS_NOT_SAVED,
+  ADDRESS_UPDATE_FAILED,
   DUPLICATE_ADDRESS,
 } from "../../../constants/customErrorMessages";
 
@@ -36,11 +36,15 @@ const addAddressScreen = () => {
   const [state, setState] = useState("");
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [addressType, setAddressType] = useState([]);
   const [isDefault, setIsDefault] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addressId, setAddressId] = useState("");
 
   console.log("params", params);
   const from = params.from;
+  const isEditMode = !!params.edit_address;
+  console.log("isEditMode", isEditMode);
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -52,6 +56,39 @@ const addAddressScreen = () => {
     phoneNumber?: string;
     general?: string;
   }>({});
+
+  // Load existing address data if in edit mode
+  useEffect(() => {
+    if (isEditMode && params.edit_address) {
+      try {
+        const selectedAddress =
+          typeof params.edit_address === "string"
+            ? JSON.parse(params.edit_address)
+            : params.edit_address;
+
+        console.log("Loading address for edit:", selectedAddress);
+
+        setName(selectedAddress.name || "");
+        setLine1(selectedAddress.line1 || "");
+        setLine2(selectedAddress.line2 || "");
+        setTownCity(selectedAddress.city || "");
+        setState(selectedAddress.state || "");
+        setPostalCode(selectedAddress.postalCode || "");
+        setPhoneNumber(selectedAddress.phone || "");
+        setAddressType(selectedAddress.addressType || []);
+        setIsDefault(selectedAddress.isDefault || false);
+        setAddressId(selectedAddress._id || "");
+
+        console.log("Address data loaded successfully");
+      } catch (error) {
+        console.error("Error parsing address data:", error);
+        showErrorAlert({
+          title: "Error",
+          message: "Failed to load address data",
+        });
+      }
+    }
+  }, [isEditMode, params.edit_address]);
 
   // Enhanced validation functions with stricter rules
   const validateName = (text: string) => {
@@ -237,83 +274,6 @@ const addAddressScreen = () => {
     return "";
   };
 
-  const handleAddAddress = async () => {
-    // Prevent multiple submissions
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // Clear any previous general errors
-      setErrors((prev) => ({ ...prev, general: undefined }));
-
-      if (!validateAllFields()) {
-        showErrorAlert({
-          title: "Validation Error",
-          message: "Please correct all errors before submitting the form",
-        });
-        return;
-      }
-
-      const response = await addressService.addShippingAddress({
-        name: name.trim(),
-        line1: line1.trim(),
-        line2: line2.trim(),
-        city: towncity.trim(),
-        state: state.trim(),
-        postalCode: postalcode.trim(),
-        phone: phoneNumber.trim(),
-        isDefault,
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        alert("Address added successfully");
-        if (from === "homeDelivery") {
-          redirectToPage(containers.homeDeliveryScreen);
-        } else {
-          redirectToPage(containers.savedAddressScreen);
-        }
-      } else {
-        showErrorAlert({
-          title: "Error",
-          message: ADDRESS_NOT_SAVED,
-        });
-      }
-    } catch (error) {
-      console.error("Error adding address:", error);
-
-      const isErrorWithResponse = (
-        err: any
-      ): err is { response: { data: { message: string } } } =>
-        err &&
-        err.response &&
-        err.response.data &&
-        typeof err.response.data.message === "string";
-
-      const isErrorWithMessage = (err: any): err is { message: string } =>
-        err && typeof err.message === "string";
-
-      if (
-        (isErrorWithResponse(error) &&
-          error.response.data.message.includes("duplicate")) ||
-        (isErrorWithMessage(error) &&
-          error.message.toLowerCase().includes("duplicate"))
-      ) {
-        showErrorAlert({
-          title: "Duplicate Address",
-          message: DUPLICATE_ADDRESS,
-        });
-      } else {
-        showErrorAlert({
-          title: "Error",
-          message: ADDRESS_NOT_SAVED,
-        });
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const validateAllFields = () => {
     const newErrors: typeof errors = {};
 
@@ -385,12 +345,107 @@ const addAddressScreen = () => {
     setErrors((prev) => ({ ...prev, phoneNumber: error || undefined }));
   };
 
+  const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Clear any previous general errors
+      setErrors((prev) => ({ ...prev, general: undefined }));
+
+      if (!validateAllFields()) {
+        showErrorAlert({
+          title: "Validation Error",
+          message: "Please correct all errors before submitting the form",
+        });
+        return;
+      }
+      const addressData = {
+        name: name.trim(),
+        line1: line1.trim(),
+        line2: line2.trim(),
+        city: towncity.trim(),
+        state: state.trim(),
+        postalCode: postalcode.trim(),
+        phone: phoneNumber.trim(),
+        isDefault,
+        _id: addressId ?? "",
+        addressType: addressType ?? [],
+      };
+
+      let response;
+
+      if (isEditMode) {
+        response = await addressService.updateAddress(addressId, addressData);
+      } else {
+        response = await addressService.addAddress(addressData);
+      }
+
+      if (response.status === 200 || response.status === 201) {
+        alert(`Address ${isEditMode ? "updated" : "added"} successfully`);
+        if (!isEditMode && from === "homeDelivery") {
+          redirectToPage(containers.homeDeliveryScreen);
+        } else {
+          redirectToPage(containers.savedAddressScreen);
+        }
+      } else {
+        showErrorAlert({
+          title: "Error",
+          message: isEditMode ? ADDRESS_UPDATE_FAILED : ADDRESS_NOT_SAVED,
+        });
+      }
+    } catch (error) {
+      console.error(
+        `Error ${isEditMode ? "updating" : "adding"} address:`,
+        error
+      );
+
+      const isErrorWithResponse = (
+        err: any
+      ): err is { response: { data: { message: string } } } =>
+        err &&
+        err.response &&
+        err.response.data &&
+        typeof err.response.data.message === "string";
+
+      const isErrorWithMessage = (err: any): err is { message: string } =>
+        err && typeof err.message === "string";
+
+      if (
+        (isErrorWithResponse(error) &&
+          error.response.data.message.includes("duplicate")) ||
+        (isErrorWithMessage(error) &&
+          error.message.toLowerCase().includes("duplicate"))
+      ) {
+        showErrorAlert({
+          title: "Duplicate Address",
+          message: DUPLICATE_ADDRESS,
+        });
+      } else {
+        showErrorAlert({
+          title: "Error",
+          message: isEditMode ? ADDRESS_UPDATE_FAILED : ADDRESS_NOT_SAVED,
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <PageLayout
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText={ADD_ADDRESS_SCREEN_TITLE} />}
+      headerComponent={
+        <Header
+          headerText={
+            isEditMode ? EDIT_ADDRESS_SCREEN_TITLE : ADD_ADDRESS_SCREEN_TITLE
+          }
+        />
+      }
     >
       <KeyBoardWrapper>
         <ScrollView>
@@ -506,11 +561,14 @@ const addAddressScreen = () => {
 
           <TouchableOpacity
             style={[styles.submitButton, isSubmitting && { opacity: 0.6 }]}
-            onPress={handleAddAddress}
+            onPress={handleSubmit}
             disabled={isSubmitting}
           >
+            s
             <Text style={styles.buttonText}>
-              {isSubmitting ? "Adding Address..." : "Add Address"}
+              {isSubmitting
+                ? `${isEditMode ? "Updating" : "Adding"} Address...`
+                : `${isEditMode ? "Update" : "Add"} Address`}
             </Text>
           </TouchableOpacity>
         </ScrollView>

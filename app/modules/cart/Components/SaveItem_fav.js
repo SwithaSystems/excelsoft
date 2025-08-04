@@ -116,7 +116,10 @@ const SaveItemFav = (props) => {
                 <Image source={getImageSource()} style={styles.itemImage} />
               ) : (
                 <View
-                  style={[styles.itemImage, { backgroundColor: colors.Gray88 }]}
+                  style={[
+                    styles.itemImage,
+                    { backgroundColor: colors.placeholdergrey },
+                  ]}
                 />
               )}
             </View>

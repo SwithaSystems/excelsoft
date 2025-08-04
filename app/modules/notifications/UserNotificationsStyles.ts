@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontSize: 14,
-    color: colors.darkCharcoal,
+    color: colors.black,
     textAlign: "center",
   },
   notificationBox: {
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: 14,
-    color: colors.darkCharcoal,
+    color: colors.black,
     flex: 1,
   },
 });
