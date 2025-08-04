@@ -24,6 +24,7 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   isValidEmail,
   isValidPhoneNumber,
+  isValidPassword
 } from "../../../utilities/validations";
 
 const signIn = () => {
@@ -66,10 +67,9 @@ const signIn = () => {
         newErrors.input = phoneError;
       }
     }
-    if (!password) {
-      newErrors.password = "Password is required.";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    const passwordError = isValidPassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
     }
 
     setErrors(newErrors);

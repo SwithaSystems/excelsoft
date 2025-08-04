@@ -18,6 +18,7 @@ import {
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
+import { isValidPassword } from "../../../utilities/validations";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -73,6 +74,15 @@ const changePasswordScreen = () => {
       return;
     }
 
+    const newPasswordError = isValidPassword(newPassword);
+    if (newPasswordError) {
+      showErrorAlert({
+        title: "Validation Error",
+        message: newPasswordError,
+      });
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       showErrorAlert({
         title: "Validation Error",

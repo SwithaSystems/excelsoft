@@ -33,9 +33,9 @@ import styles from "./SignUpStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
 import { 
-  isValidName,
   isValidEmail,
   isValidPhoneNumber,
+  isValidPassword,
  } from "@/utilities/validations";
 
 const signUpScreen = () => {
@@ -140,10 +140,9 @@ const signUpScreen = () => {
       }
     }
 
-    if (!password) {
-      newErrors.password = "Password is required.";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    const passwordError = isValidPassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
     }
 
     if (!confirmPassword) {

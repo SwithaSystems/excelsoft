@@ -1,3 +1,9 @@
+export const isValidPassword = (password: string): string | null => {
+  if (!password) return "Password is required.";
+  if (password.length < 6) return "Password must be at least 6 characters.";
+  
+  return null;
+};
 
 export const isValidEmail = (email: string): boolean => {
   const trimmed = email.trim();
