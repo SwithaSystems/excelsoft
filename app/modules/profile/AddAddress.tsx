@@ -20,9 +20,6 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ADD_ADDRESS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
-  MISSING_REQUIRED_FIELDS,
-  INVALID_POSTCODE,
-  ADDRESS_NOT_DELIVERABLE,
   ADDRESS_NOT_SAVED,
   DUPLICATE_ADDRESS,
 } from "../../../constants/customErrorMessages";

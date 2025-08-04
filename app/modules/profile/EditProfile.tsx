@@ -17,9 +17,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  SafeAreaView,
   DeviceEventEmitter,
-  Platform,
   TextInput,
 } from "react-native";
 import { Image } from "react-native";
@@ -38,7 +36,6 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { formatToDDMMYYYY } from "../../../utilities/dateTimeFormat";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FAILED_TO_UPDATE_DETAILS,
@@ -92,12 +89,6 @@ const editProfileScreen = () => {
 
           if (user.data.dateOfBirth) {
             const date = new Date(user.data.dateOfBirth);
-            // const formatted =
-            //   String(date.getDate()).padStart(2, "0") +
-            //   "/" +
-            //   String(date.getMonth() + 1).padStart(2, "0") +
-            //   "/" +
-            //   date.getFullYear();
             const formatted = format(date, DATE_FORMAT_Display);
             setDateOfBirth(formatted);
             setSelectedDate(formatted);
@@ -269,7 +260,6 @@ const editProfileScreen = () => {
   const hideDatePicker = () => setDatePickerVisibility(false);
 
   const uponDateSelection = (date: Date) => {
-    // const formatted = formatToDDMMYYYY(date);
     const formatted = format(date, DATE_FORMAT_Display);
     console.log("formatted", formatted);
     setSelectedDate(formatted);
@@ -291,7 +281,6 @@ const editProfileScreen = () => {
     >
       <KeyBoardWrapper>
         <View style={globalStyles.container as ViewStyle}>
-          {/* <Header headerText={EDIT_PROFILE_SCREEN_TITLE} /> */}
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Profile Picture */}
