@@ -1,15 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Switch,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, Switch } from "react-native";
 import colors from "../../../constants/colors";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";

@@ -2,14 +2,12 @@ import React, { useState, useEffect } from "react";
 import {
   Image,
   View,
-  ScrollView,
   TextInput,
   Text,
   TouchableOpacity,
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  Platform,
   StatusBar,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
