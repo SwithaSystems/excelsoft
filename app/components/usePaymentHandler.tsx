@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
-import { formatDateForBackend } from "../config/dateTimeFormat";
-import { DELIVERY_MODE_HOME } from "../config/stringLiterals";
+import { formatDateForBackend } from "../../utilities/dateTimeFormat";
+import { DELIVERY_MODE_HOME } from "../../constants/stringLiterals";
 
 type Product = {
   productId: string;
@@ -172,7 +172,7 @@ export const usePaymentHandler = () => {
         dispatch(clearCart());
 
         console.log("=== REDIRECTING TO SUCCESS PAGE ===");
-        redirectToPage(containers.orderSuccessfulScreenScreen, {
+        redirectToPage(containers.orderSuccessfulScreen, {
           orderData: JSON.stringify(response),
         });
         await NotificationService.scheduleLocalNotification(

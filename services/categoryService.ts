@@ -66,7 +66,6 @@ export const categoryService = {
       throw error;
     }
   },
-
   deleteCategory: async (categoryId?: number) => {
     try {
       const response = await jsonAxios.delete(`/categories/${categoryId}`);

@@ -3,7 +3,7 @@ import * as Device from "expo-device";
 import { Platform } from "react-native";
 // import axiosInstance from "./axiosConfig";
 import { jsonAxios } from "./axiosConfig";
-import colors from "@/app/config/colors";
+import colors from "@/constants/colors";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,7 +24,7 @@ export class NotificationService {
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: colors.secondaryRed ,
+        lightColor: colors.secondaryRed,
       });
     }
 

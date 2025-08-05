@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-} from "react-native";
-import HomePage from "./home/home";
+import { StyleSheet } from "react-native";
+import HomePage from "../app/modules/home/Home";
 
 const styles = StyleSheet.create({
   container: {
