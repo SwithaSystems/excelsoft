@@ -27,6 +27,7 @@ import {
   ADD_BILLING_ADDRESS_SCREEN_TITLE,
   UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
+import { CheckBox } from "react-native-elements";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -40,6 +41,8 @@ const addBillingAddressScreen = () => {
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [state, setState] = useState("");
 
   // Component state
   const [billingAddress, setBillingAddress] = useState({});
@@ -47,16 +50,19 @@ const addBillingAddressScreen = () => {
   const [addressId, setAddressId] = useState(null);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDefault, setIsDefault] = useState(false);
+  const [addressType, setAddressType] = useState([]);
 
-  const [errors, setErrors] = useState<
-    Partial<{
-      address: string;
-      line1: string;
-      line2: string;
-      towncity: string;
-      postalcode: string;
-    }>
-  >({});
+  const [errors, setErrors] = useState<{
+    name?: string;
+    postalcode?: string;
+    line1?: string;
+    line2?: string;
+    towncity?: string;
+    state?: string;
+    phoneNumber?: string;
+    general?: string;
+  }>({});
 
   // Parse the edit_address parameter safely
   const edit_address = params.edit_address
@@ -69,8 +75,7 @@ const addBillingAddressScreen = () => {
   useEffect(() => {
     const fetchBillingAddress = async () => {
       try {
-        const billingAddress =
-          await addressService.getAllBillingAddress_userId();
+        const billingAddress = await addressService.getAllAddress();
         setBillingAddress(billingAddress);
         console.log("billing addresses:", billingAddress);
       } catch (error) {
@@ -88,7 +93,12 @@ const addBillingAddressScreen = () => {
       setLine1(edit_address.line1 || "");
       setLine2(edit_address.line2 || "");
       setTownCity(edit_address.city || "");
+      setState(edit_address.state || "");
       setPostalCode(edit_address.postalCode || "");
+      setPhoneNumber(edit_address.phoneNumber || "");
+      setAddressType(edit_address.addressType || []);
+      setIsDefault(edit_address.isDefault || false);
+
       setInitialDataLoaded(true);
       console.log("Editing address:", edit_address);
     }
@@ -97,7 +107,7 @@ const addBillingAddressScreen = () => {
   const validateFields = () => {
     const newErrors = {} as typeof errors;
 
-    if (!address.trim()) newErrors.address = "Address name is required.";
+    if (!address.trim()) newErrors.name = "Address name is required.";
     if (!line1.trim()) newErrors.line1 = "Line 1 is required.";
     // FIXED: Make line2 optional since it's not always required
     // if (!line2.trim()) newErrors.line2 = "Line 2 is required.";
@@ -127,10 +137,11 @@ const addBillingAddressScreen = () => {
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: "", // You might want to add state field later
+        state: state.trim(), // You might want to add state field later
         postalCode: postalcode.trim(),
-        // Add other fields that might be required
-        phone: "", // Add if needed
+        addressType: addressType ?? [],
+        isDefault,
+        phone: phoneNumber, // Add if needed
         email: "", // Add if needed
       };
 
@@ -139,7 +150,7 @@ const addBillingAddressScreen = () => {
 
       if (isEditMode && edit_address) {
         // Update existing address
-        response = await addressService.updateBillingAddress({
+        response = await addressService.updateAddress(edit_address._id, {
           _id: edit_address._id,
           ...addressData,
         });
@@ -160,7 +171,7 @@ const addBillingAddressScreen = () => {
         }
       } else {
         // Add new address
-        response = await addressService.addBillingAddress(addressData);
+        response = await addressService.addAddress(addressData);
 
         if (response.status === 200 || response.status === 201) {
           // Get the newly created address from response and set as selected
@@ -226,9 +237,17 @@ const addBillingAddressScreen = () => {
       case "towncity":
         setTownCity(value);
         break;
+      case "state":
+        setState(value);
+        break;
+      case "phoneNumber":
+        setPhoneNumber(value);
+        break;
       case "postalcode":
         setPostalCode(value);
         break;
+      default:
+        console.warn(`Unhandled field: ${field}`);
     }
   };
 
@@ -257,36 +276,45 @@ const addBillingAddressScreen = () => {
       <KeyBoardWrapper>
         <ScrollView>
           <View style={{ marginBottom: 16 }}>
-            <Text style={styles.fieldLabel}>
-              Address Name
-              <Text style={{ color: "red" }}>*</Text>
-            </Text>
+            <Text style={styles.fieldLabel}>Recipient Name *</Text>
             <TextInput
-              style={[styles.input, errors.address && styles.inputError]}
+              style={[styles.input, errors.name && styles.inputError]}
               value={address}
               onChangeText={(text) => handleInputChange("address", text)}
               placeholder="Enter address name (e.g., Home, Office)"
               maxLength={50}
             />
-            {errors.address && (
-              <Text style={globalStyles.errorText}>{errors.address}</Text>
+            {errors.name && (
+              <Text style={globalStyles.errorText}>{errors.name}</Text>
             )}
 
-            <Text style={styles.fieldLabel}>
-              Line 1<Text style={{ color: "red" }}>*</Text>
-            </Text>
+            <Text style={styles.fieldLabel}>Postcode *</Text>
             <TextInput
-              style={[styles.input, errors.line1 && styles.inputError]}
-              value={line1}
-              onChangeText={(text) => handleInputChange("line1", text)}
+              style={[styles.input, errors.postalcode && styles.inputError]}
+              value={postalcode}
+              onChangeText={(text) => handleInputChange("postalcode", text)}
               placeholder="Street address, P.O. box"
               maxLength={100}
+            />
+            {errors.postalcode && (
+              <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
+            )}
+
+            <Text style={styles.fieldLabel}>Address Line 1 *</Text>
+            <TextInput
+              style={[styles.input, errors.line1 && globalStyles.errorInput]}
+              value={line1}
+              onChangeText={(text) => handleInputChange("line1", text)}
+              placeholder="House number and street name (e.g., 123 Main Street)"
+              maxLength={100}
+              autoCorrect={false}
+              autoCapitalize="words"
             />
             {errors.line1 && (
               <Text style={globalStyles.errorText}>{errors.line1}</Text>
             )}
 
-            <Text style={styles.fieldLabel}>Line 2 (optional)</Text>
+            <Text style={styles.fieldLabel}>Address Line 2 (optional)</Text>
             <TextInput
               style={[styles.input, errors.line2 && styles.inputError]}
               value={line2}
@@ -298,36 +326,56 @@ const addBillingAddressScreen = () => {
               <Text style={globalStyles.errorText}>{errors.line2}</Text>
             )}
 
-            <Text style={styles.fieldLabel}>
-              Town/City
-              <Text style={{ color: "red" }}>*</Text>
-            </Text>
+            <Text style={styles.fieldLabel}>Town/City *</Text>
             <TextInput
               style={[styles.input, errors.towncity && styles.inputError]}
               value={towncity}
               onChangeText={(text) => handleInputChange("towncity", text)}
-              placeholder="Enter town or city"
+              placeholder="Enter town or city (e.g., London, New York)"
               maxLength={50}
             />
             {errors.towncity && (
               <Text style={globalStyles.errorText}>{errors.towncity}</Text>
             )}
 
-            <Text style={styles.fieldLabel}>
-              Postal Code
-              <Text style={{ color: "red" }}>*</Text>
-            </Text>
+            <Text style={styles.fieldLabel}>State/Province</Text>
             <TextInput
-              style={[styles.input, errors.postalcode && styles.inputError]}
-              value={postalcode}
-              onChangeText={(text) => handleInputChange("postalcode", text)}
-              placeholder="Enter postal code"
-              keyboardType="numeric"
-              maxLength={6}
+              style={[styles.input, errors.state && globalStyles.errorInput]}
+              value={state}
+              onChangeText={(text) => handleInputChange("state", text)}
+              placeholder="Enter state or province (optional)"
+              maxLength={50}
+              // autoCorrect={false}
+              // autoCapitalize="words"
             />
-            {errors.postalcode && (
-              <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
+            {errors.state && (
+              <Text style={globalStyles.errorText}>{errors.state}</Text>
             )}
+
+            <Text style={styles.fieldLabel}>Phone Number *</Text>
+            <TextInput
+              style={[
+                styles.input,
+                errors.phoneNumber && globalStyles.errorInput,
+              ]}
+              value={phoneNumber}
+              onChangeText={(text) => handleInputChange("phoneNumber", text)}
+              keyboardType="phone-pad"
+              placeholder="Enter phone number (e.g., +1 234 567 8900)"
+              maxLength={18}
+              autoCorrect={false}
+            />
+            {errors.phoneNumber && (
+              <Text style={globalStyles.errorText}>{errors.phoneNumber}</Text>
+            )}
+
+            <View style={styles.checkBox}>
+              <CheckBox
+                checked={isDefault}
+                onPress={() => setIsDefault(!isDefault)}
+              />
+              <Text>Mark as default address</Text>
+            </View>
           </View>
 
           <View
@@ -349,17 +397,10 @@ const addBillingAddressScreen = () => {
               }
               onPress={handleSaveAddress}
               disabled={isSubmitting}
-              //  style={[
-              //   styles.submitButton,
-              // //  isSubmitting && styles.submitButtonDisabled,
-              //  ]}
             />
-            {/* </View> */}
           </View>
         </ScrollView>
-        {/* </View> */}
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

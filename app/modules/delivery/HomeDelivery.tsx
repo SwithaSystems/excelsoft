@@ -82,6 +82,7 @@ const HomeDeliveryScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
+  const newAddressAdded = useLocalSearchParams();
 
   // Initialize default time values based on new business rules
   useEffect(() => {
@@ -317,8 +318,6 @@ const HomeDeliveryScreen = () => {
   const handleSubmit = async () => {
     try {
       console.log("confirm", containers.orderSummaryScreen);
-      // Final
-      //  validation check right before submission
       if (!validateForm()) {
         return;
       }
@@ -367,9 +366,7 @@ const HomeDeliveryScreen = () => {
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteShippingAddress(
-          itemToDelete.id
-        );
+        const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
           setExistingSelectedAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
@@ -398,8 +395,9 @@ const HomeDeliveryScreen = () => {
   };
 
   const handleEditAddress = (item: Address) => {
-    redirectToPage(containers.editAddressScreen, {
+    redirectToPage(containers.addAddressScreen, {
       edit_address: JSON.stringify(item),
+      from: "homeDelivery",
     });
   };
 
@@ -688,7 +686,9 @@ const HomeDeliveryScreen = () => {
                 <Text
                   style={styles.linkText}
                   onPress={() => {
-                    redirectToPage(containers.addAddressScreen);
+                    redirectToPage(containers.addAddressScreen, {
+                      from: "homeDelivery",
+                    });
                   }}
                 >
                   Add Address
