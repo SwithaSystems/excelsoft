@@ -391,7 +391,7 @@ const addAddressScreen = () => {
       if (response.status === 200 || response.status === 201) {
         alert(`Address ${isEditMode ? "updated" : "added"} successfully`);
         if (from === "homeDelivery") {
-          redirectToPage(containers.homeDeliveryScreen, {
+          clearNavigationStack(containers.homeDeliveryScreen, {
             newAddressAdded: true,
           });
         } else {

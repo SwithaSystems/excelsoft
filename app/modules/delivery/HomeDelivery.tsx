@@ -40,6 +40,8 @@ import {
   ADDRESS_NOT_SAVED,
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
+import colors from "@/constants/colors";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -662,6 +664,24 @@ const HomeDeliveryScreen = () => {
                       }}
                     />
                   )} */}
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      redirectToPage(containers.addAddressScreen, {
+                        from: "homeDelivery",
+                      });
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.linkText}>Add Address</Text>
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={16}
+                        color={colors.primary}
+                        style={{ marginLeft: 4, marginBottom: 2 }}
+                      />
+                    </View>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Address List */}
@@ -682,17 +702,6 @@ const HomeDeliveryScreen = () => {
                     />
                   )}
                 />
-
-                <Text
-                  style={styles.linkText}
-                  onPress={() => {
-                    redirectToPage(containers.addAddressScreen, {
-                      from: "homeDelivery",
-                    });
-                  }}
-                >
-                  Add Address
-                </Text>
 
                 {/* Additional Instructions */}
                 <View style={styles.inputContainer}>
