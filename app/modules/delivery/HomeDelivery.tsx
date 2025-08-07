@@ -693,17 +693,6 @@ const HomeDeliveryScreen = () => {
                   )}
                 />
 
-                <Text
-                  style={styles.linkText}
-                  onPress={() => {
-                    redirectToPage(containers.addAddressScreen, {
-                      from: "homeDelivery",
-                    });
-                  }}
-                >
-                  Add Address
-                </Text>
-
                 {/* Additional Instructions */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.inputLabel}>
