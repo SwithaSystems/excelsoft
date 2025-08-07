@@ -22,8 +22,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 16,
     // paddingTop: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    // flexDirection: "row",
+    // justifyContent: "space-between",
   },
   required: {
     color: colors.error,

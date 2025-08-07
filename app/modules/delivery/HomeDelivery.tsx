@@ -41,7 +41,7 @@ import {
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
-import colors from "@/constants/colors";
+import colors from "../../../constants/colors";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -653,36 +653,26 @@ const HomeDeliveryScreen = () => {
 
                 {/* Shipping Address Section */}
                 <View style={styles.inputContainer}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.inputLabel}>Shipping Address: *</Text>
-                  {/* {existingAddress.length === 0 && (
-                    <Button
-                      title="Add Address"
-                      onPress={() => {
-                        redirectToPage(containers.addAddressScreen, {
-                          from: "homeDelivery",
-                        });
-                      }}
-                    />
-                  )} */}
-
-                  <TouchableOpacity
+                  <Text
+                    style={styles.linkText}
                     onPress={() => {
                       redirectToPage(containers.addAddressScreen, {
                         from: "homeDelivery",
                       });
                     }}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={styles.linkText}>Add Address</Text>
-                      <Ionicons
-                        name="add-circle-outline"
-                        size={16}
-                        color={colors.primary}
-                        style={{ marginLeft: 4, marginBottom: 2 }}
-                      />
-                    </View>
-                  </TouchableOpacity>
+                    Add Address
+                    <Ionicons
+                    name="add-circle-outline"
+                    size={16}
+                    color={colors.primary}
+                    styles={{marginLeft: 4, marginBottom: 4}}
+                  />
+                  </Text>
                 </View>
+              </View>
 
                 {/* Address List */}
                 <FlatList
@@ -702,6 +692,17 @@ const HomeDeliveryScreen = () => {
                     />
                   )}
                 />
+
+                <Text
+                  style={styles.linkText}
+                  onPress={() => {
+                    redirectToPage(containers.addAddressScreen, {
+                      from: "homeDelivery",
+                    });
+                  }}
+                >
+                  Add Address
+                </Text>
 
                 {/* Additional Instructions */}
                 <View style={styles.inputContainer}>
