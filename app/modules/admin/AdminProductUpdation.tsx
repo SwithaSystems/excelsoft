@@ -481,9 +481,7 @@ const AdminProductUpdation = () => {
           {
             text: "OK",
             onPress: () =>
-              router.replace(
-                "./AdminProductDashboard/AdminProductDashboard?refresh=true"
-              ),
+              router.replace("/modules/admin/AdminProductDashboard"),
           },
         ]
       );
