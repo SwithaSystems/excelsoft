@@ -99,7 +99,7 @@ function BrandHeader(props) {
         }}
       >
         <Image
-          source={require("@/assets/FinalizedLogo.png")}
+          source={require("@/assets/RecreatedLogo_2.png")}
           style={{ width: 112, height: 34 }}
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
