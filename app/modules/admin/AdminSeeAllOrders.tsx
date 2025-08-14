@@ -200,7 +200,7 @@ const AdminSeeAllOrders = () => {
         <View style={localStyles.searchBarContainer}>
           <TextInput
             placeholder="Search orders..."
-            textSecondary={colors.placeholdergrey}
+            placeholderTextColor={colors.placeholdergrey}
             style={localStyles.searchInput}
             value={searchQuery}
             onChangeText={setSearchQuery}

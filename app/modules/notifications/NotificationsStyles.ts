@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: colors.ghostWhite,
+    backgroundColor: colors.lightgrey,
   },
   backButton: {
     position: "absolute",
