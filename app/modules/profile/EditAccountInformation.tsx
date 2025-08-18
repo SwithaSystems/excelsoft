@@ -15,6 +15,7 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { setUserData } from "@/store/slices/userSlice";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
@@ -114,8 +115,11 @@ const editAccountInformationscreen = () => {
       if (response?.data) {
         console.log("Inside");
         DeviceEventEmitter.emit("fetchUser");
-        await AsyncStorage.setItem("user", JSON.stringify(response.data));
-        dispatch(setUserData(response.data.user));
+        try {
+          await SecureStore.setItemAsync("user", JSON.stringify(response.data));
+        } catch (error) {
+          console.error("SecureStore setItem error:", error);
+        }        dispatch(setUserData(response.data.user));
         Alert.alert("Message", "Profile updated successfully.", [
           {
             text: "OK",

@@ -20,6 +20,7 @@ import useDebounce from "../../../utilities/customHooks/useDebounce";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/app/components/Footer";
@@ -28,9 +29,10 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMessages";
 import styles from "./SearchStyles";
+import { secureStore } from "@/store/secureStore";
 
 // Storage key for recent searches
-const RECENT_SEARCHES_KEY = "@app_recent_searches";
+const RECENT_SEARCHES_KEY = "app_recent_searches";
 const MAX_RECENT_SEARCHES = 5;
 
 const trendingSearches = ["Clothes", "Meat", "Alcohol", "Oranges"];
@@ -73,7 +75,7 @@ const SearchScreen = () => {
   // Load recent searches from AsyncStorage
   const loadRecentSearches = async () => {
     try {
-      const storedSearches = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      const storedSearches = await SecureStore.getItemAsync(RECENT_SEARCHES_KEY);
       console.log("Loaded searches from storage:", storedSearches); // Debug log
       if (storedSearches !== null) {
         const parsed = JSON.parse(storedSearches);
@@ -106,7 +108,7 @@ const SearchScreen = () => {
       setRecentSearches(updatedSearches);
 
       // Save to AsyncStorage separately
-      await AsyncStorage.setItem(
+      await SecureStore.setItemAsync(
         RECENT_SEARCHES_KEY,
         JSON.stringify(updatedSearches)
       );
@@ -155,7 +157,7 @@ const SearchScreen = () => {
         (item: any) => item !== searchText
       );
       setRecentSearches(updatedSearches);
-      await AsyncStorage.setItem(
+      await SecureStore.setItemAsync(
         RECENT_SEARCHES_KEY,
         JSON.stringify(updatedSearches)
       );
@@ -177,7 +179,7 @@ const SearchScreen = () => {
             style: "destructive",
             onPress: async () => {
               setRecentSearches([]);
-              await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
+              await SecureStore.deleteItemAsync(RECENT_SEARCHES_KEY);
             },
           },
         ]
@@ -297,16 +299,12 @@ const SearchScreen = () => {
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         {/* Recent Searches */}
         <View style={styles.section}>
-          <View
-          // style={styles.sectionHeader}
-          >
             <Text style={styles.sectionTitle}>Recent Searches</Text>
             {recentSearches.length > 0 && (
               <TouchableOpacity onPress={clearAllRecentSearches}>
                 <Text style={styles.clearAllText}>Clear All</Text>
               </TouchableOpacity>
             )}
-          </View>
           {renderRecentSearches()}
         </View>
         {/* Trending Searches */}

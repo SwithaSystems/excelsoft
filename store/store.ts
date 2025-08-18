@@ -1,10 +1,16 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { secureStore } from "./secureStore";
 import cartReducer from "./slices/cartSlice";
 import savedItemsReducer from "./slices/savedItemsSlice";
 import userReducer from "./slices/userSlice";
 import savedForLaterReducer from "./slices/savedForLaterSlice";
+
+const userPErsistConfig = {
+  key: "user",
+  storage: secureStore,
+};
 
 // Combine all reducers
 const rootReducer = combineReducers({
@@ -18,7 +24,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["cart", "savedItems", "user", "savedforLaterItems"],
+  whitelist: ["cart", "savedItems", "savedforLaterItems"],
 };
 
 // Apply persistReducer to the root reducer

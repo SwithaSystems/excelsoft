@@ -37,6 +37,7 @@ import containers from "@/containers";
 import { redirectToPage } from "../../../utilities/redirectionHelper";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/app/components/NoContentFound";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";

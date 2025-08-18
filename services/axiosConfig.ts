@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -92,7 +93,7 @@ const proactiveTokenRefresh = async (token: string) => {
   lastRefreshTime = now;
 
   try {
-    const refreshToken = await AsyncStorage.getItem("refreshtoken");
+    const refreshToken = await SecureStore.getItemAsync("refreshtoken");
     if (!refreshToken) {
       throw new Error("Refresh token not available.");
     }
@@ -109,9 +110,9 @@ const proactiveTokenRefresh = async (token: string) => {
     const newAccessToken = refreshResponse.data.access_token;
     const newRefreshToken = refreshResponse.data.refresh_token;
 
-    await AsyncStorage.setItem("token", newAccessToken);
+    await SecureStore.setItemAsync("token", newAccessToken);
     if (newRefreshToken) {
-      await AsyncStorage.setItem("refreshtoken", newRefreshToken);
+      await SecureStore.setItemAsync("refreshtoken", newRefreshToken);
     }
 
     console.log("Token proactively refreshed successfully");
@@ -139,7 +140,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
   axiosInstance.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
       try {
-        let token = await AsyncStorage.getItem("token");
+        let token = await SecureStore.getItemAsync("token");
         // console.log("Token before setting", token);
         // const refreshToken = await AsyncStorage.getItem("refreshtoken");
         // await AsyncStorage.setItem("token", "expired");
@@ -175,7 +176,11 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       // Check if server sent a new token in response headers
       const newToken = response.headers["x-new-token"];
       if (newToken) {
-        AsyncStorage.setItem("token", newToken);
+      try {
+          SecureStore.setItemAsync("token", newToken);
+        } catch (error) {
+          console.error("SecureStore setItem error:", error);
+        }      
       }
       return response;
     },
@@ -225,7 +230,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
         isRefreshing = true;
 
         try {
-          const refreshToken = await AsyncStorage.getItem("refreshtoken");
+          const refreshToken = await SecureStore.getItemAsync("refreshtoken");
           console.log("refreshToken after 401", refreshToken);
 
           if (!refreshToken) {
@@ -248,9 +253,13 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
           console.log("newAccessToken", newAccessToken);
 
           // Store the new tokens
-          await AsyncStorage.setItem("token", newAccessToken);
-          if (newRefreshToken) {
-            await AsyncStorage.setItem("refreshtoken", newRefreshToken);
+          try {
+            await SecureStore.setItemAsync("token", newAccessToken);
+            if (newRefreshToken) {
+              await SecureStore.setItemAsync("refreshtoken", newRefreshToken);
+            }
+          } catch (error) {
+            console.error("SecureStore setItem error:", error);
           }
 
           // Update the original request with new token
@@ -279,9 +288,15 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
             refreshError.response?.status === 401 ||
             refreshError.response?.status === 403
           ) {
-            console.log("Refresh token invalid, logging out...");
-            await AsyncStorage.multiRemove(["token", "refreshtoken", "user"]);
-            redirectToPage(containers.signInScreen);
+          try {
+              await Promise.all([
+                SecureStore.deleteItemAsync("token"),
+                SecureStore.deleteItemAsync("refreshtoken"),
+                SecureStore.deleteItemAsync("user"),
+              ]);
+            } catch (error) {
+              console.error("SecureStore deleteItem error:", error);
+            }            redirectToPage(containers.signInScreen);
           }
 
           return Promise.reject(refreshError);
