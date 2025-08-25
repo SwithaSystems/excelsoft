@@ -13,6 +13,7 @@ import containers from "../../containers";
 import { UserAPI } from "../../services/userService";
 import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import colors from "@/constants/colors";
 
 function BrandHeader(props) {
@@ -44,8 +45,9 @@ function BrandHeader(props) {
           // Clear Redux store and AsyncStorage
           try {
             // Clear AsyncStorage user data
-            await AsyncStorage.removeItem("user");
+            // await AsyncStorage.removeItem("user");
 
+            await SecureStore.removeItemAsync("user");
             //  clear Redux store
             if (dispatch && typeof dispatch === "function") {
               dispatch({ type: "user/clearUserData" });

@@ -46,6 +46,9 @@ const FEEDBACK_SCREEN2_TITLE = "Add Your Review";
 const FILE_UPLOAD = "File Upload";
 const STORE_OFFERS = "Store Offers";
 
+//Store Name and Address
+const STORE_NAME = "Weekes Food & Wine";
+
 // Delivery Modes
 const DELIVERY_MODE_HOME = "Home Delivery";
 const DELIVERY_MODE_STORE = "Store Pickup";
@@ -85,6 +88,7 @@ const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.sssZ";
 
 // Export all constants
 export {
+  STORE_NAME,
   DATE_FORMAT_Display,
   DATE_FORMAT_API,
   MINIMUM_USER_AGE,

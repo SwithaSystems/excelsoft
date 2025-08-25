@@ -26,6 +26,7 @@ import colors from "../../../constants/colors";
 import * as ImagePicker from "expo-image-picker";
 import { useDerivedValue } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
 import { useSelector } from "react-redux";
@@ -233,7 +234,7 @@ const editProfileScreen = () => {
       console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
         dispatch(setUserData(response.data.user));
         Alert.alert("Message", "Profile updated successfully.", [
           {

@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import containers from "@/containers";
 import { jsonAxios } from "./axiosConfig";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -17,9 +18,9 @@ export const authService = {
         loginId,
         password,
       });
-      await AsyncStorage.setItem("token", response.data.access_token);
-      await AsyncStorage.setItem("refreshtoken", response.data.refresh_token);
-      await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      await SecureStore.setItemAsync("token", response.data.access_token);
+      await SecureStore.setItemAsync("refreshtoken", response.data.refresh_token);
+      await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
@@ -37,8 +38,8 @@ export const authService = {
   }) {
     try {
       const response = await jsonAxios.post("/auth/register", payload);
-      await AsyncStorage.setItem("token", response.data.access_token);
-      await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      await SecureStore.setItemAsync("token", response.data.access_token);
+      await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
@@ -51,9 +52,9 @@ export const authService = {
    */
   async logout() {
     try {
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("refreshtoken");
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("user");
+      await SecureStore.deleteItemAsync("refreshtoken");
       redirectToPage(containers.signInScreen);
     } catch (error) {
       throw error;
@@ -66,7 +67,7 @@ export const authService = {
    */
   async getCurrentUser() {
     try {
-      const userStr = await AsyncStorage.getItem("user");
+      const userStr = await SecureStore.getItemAsync("user");
       return userStr ? JSON.parse(userStr) : null;
     } catch (error) {
       return null;
@@ -79,7 +80,7 @@ export const authService = {
    */
   async isAuthenticated() {
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await SecureStore.getItemAsync("token");
       return !!token;
     } catch (error) {
       return false;
@@ -93,7 +94,7 @@ export const authService = {
    */
   async refreshToken() {
     try {
-      const refreshToken = await AsyncStorage.getItem("refreshtoken");
+      const refreshToken = await SecureStore.getItemAsync("refreshtoken");
       if (!refreshToken) throw new Error("Refresh token not available.");
       const response = await jsonAxios.post(
         "/auth/refresh-token",
@@ -101,9 +102,9 @@ export const authService = {
         { headers: { Authorization: `Bearer ${refreshToken}` } }
       );
       const { access_token, refresh_token } = response.data;
-      await AsyncStorage.setItem("token", access_token);
+      await SecureStore.setItemAsync("token", access_token);
       if (refresh_token) {
-        await AsyncStorage.setItem("refreshtoken", refresh_token);
+        await SecureStore.setItemAsync("refreshtoken", refresh_token);
       }
       return access_token;
     } catch (error) {

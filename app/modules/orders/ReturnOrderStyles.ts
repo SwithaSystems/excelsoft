@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.secondaryText,
   },
   radioCircle: {
     width: 20,

@@ -13,6 +13,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import colors from "@/constants/colors";
 import { UserAPI } from "@/services/userService";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -56,7 +57,8 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
         if (response?.data) {
           setIsValidUser(true);
         } else {
-          await AsyncStorage.removeItem("user");
+          // await AsyncStorage.removeItem("user");
+          await SecureStore.deleteItemAsync("user");
           dispatch({ type: "user/clearUserData" });
           setIsValidUser(false);
         }

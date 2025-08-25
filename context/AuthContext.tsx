@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { authService } from "../services/auth.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { useDispatch } from "react-redux";
 import { setUserData, clearUserData } from "../store/slices/userSlice"; //
 
@@ -106,8 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await authService.logout();
 
       // Clear from AsyncStorage
-      await AsyncStorage.removeItem("user");
-
+      // await AsyncStorage.removeItem("user");
+      await SecureStore.deleteItemAsync("user");
       // Clear from Redux
       dispatch(clearUserData());
 
@@ -117,7 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error("Logout failed:", error);
       // Even if server logout fails, clear local data
-      await AsyncStorage.removeItem("user");
+      // await AsyncStorage.removeItem("user");
+      await SecureStore.deleteItemAsync("user");
       dispatch(clearUserData());
       setIsAuthenticated(false);
       setUser(null);
