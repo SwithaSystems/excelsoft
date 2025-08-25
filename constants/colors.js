@@ -1,7 +1,9 @@
 export default {
   // Primary & Secondary
-  primary: "#17C6ED",
-  secondary: "#CEF1F9",
+  // primary: "#17C6ED",
+  primary: "#0d7b4b",
+  // secondary: "#CEF1F9",
+  secondary: "#D1F4E6",
   lightSkyBlue: "#E9F3F6",
   paleBlue: "#EDFAFD",
   deepSkyBlue: "#00BFFF",

@@ -4,7 +4,7 @@
     "slug": "excelsoft-app",
     "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/AppLibraryIcon.png",
+    "icon": "./assets/ClientLogo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {
@@ -27,7 +27,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/androidAppLibraryIcon.png",
+        "foregroundImage": "./assets/ClientLogoAndroid.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.excelsoft.app",
