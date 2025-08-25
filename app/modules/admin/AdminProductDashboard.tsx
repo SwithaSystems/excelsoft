@@ -261,7 +261,9 @@ const AdminProductDashboard = () => {
           <FlatList
             data={productsList}
             renderItem={ProductCard}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) =>
+              `${item.id?.toString() || "product"}-${index}`
+            }
           />
         </View>
         <ConfirmationModal

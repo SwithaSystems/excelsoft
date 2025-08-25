@@ -10,6 +10,7 @@ import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../../utilities/dateTimeFormat";
 import { DELIVERY_MODE_HOME } from "../../constants/stringLiterals";
+import { STORE_NAME } from "../../constants/stringLiterals";
 
 type Product = {
   productId: string;
@@ -36,15 +37,16 @@ export const usePaymentHandler = () => {
 
   const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
+      console.log(" Creating payment intent for amount:", amount);
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: Math.round(amount * 100),
+          amount: amount,
           currency: CURRENCY_CODE,
           clientId: clientId,
         }
       );
-
+      console.log("Payment Intent Backend response:", response.data);
       return {
         clientSecret: response.data.paymentIntent.client_secret,
         ephemeralKey: response.data.ephemeralKey,
@@ -68,15 +70,25 @@ export const usePaymentHandler = () => {
     const { clientSecret, ephemeralKey, customer } = paymentData;
 
     const { error: initError } = await initPaymentSheet({
-      merchantDisplayName: "Store Name",
+      merchantDisplayName: STORE_NAME,
       customerId: customer,
       customerEphemeralKeySecret: ephemeralKey,
       paymentIntentClientSecret: clientSecret,
       allowsDelayedPaymentMethods: true,
+      defaultBillingDetails: {
+        name: params.customerName || "",
+        address: {
+          city: params.city || "",
+          line1: params.address || "",
+          postalCode: params.postalCode || "",
+          state: params.state || "",
+        },
+      },
     });
 
     if (initError) {
-      Alert.alert("Error", initError.message);
+      console.error(" Payment sheet init error:", initError);
+      Alert.alert("Setup Error", initError.message);
       return;
     }
 
