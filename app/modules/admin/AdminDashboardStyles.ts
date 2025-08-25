@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "400",
     // marginBottom: 35,
-    color: colors.deepSkyBlue,
+    color: colors.primary,
   },
   metricsContainer: {
     // paddingHorizontal: 8,
