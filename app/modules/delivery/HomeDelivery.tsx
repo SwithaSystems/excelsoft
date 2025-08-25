@@ -40,6 +40,8 @@ import {
   ADDRESS_NOT_SAVED,
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
+import colors from "../../../constants/colors";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -82,6 +84,7 @@ const HomeDeliveryScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
+  const newAddressAdded = useLocalSearchParams();
 
   // Initialize default time values based on new business rules
   useEffect(() => {
@@ -317,8 +320,6 @@ const HomeDeliveryScreen = () => {
   const handleSubmit = async () => {
     try {
       console.log("confirm", containers.orderSummaryScreen);
-      // Final
-      //  validation check right before submission
       if (!validateForm()) {
         return;
       }
@@ -367,9 +368,7 @@ const HomeDeliveryScreen = () => {
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteShippingAddress(
-          itemToDelete.id
-        );
+        const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
           setExistingSelectedAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
@@ -398,8 +397,9 @@ const HomeDeliveryScreen = () => {
   };
 
   const handleEditAddress = (item: Address) => {
-    redirectToPage(containers.editAddressScreen, {
+    redirectToPage(containers.addAddressScreen, {
       edit_address: JSON.stringify(item),
+      from: "homeDelivery",
     });
   };
 
@@ -653,18 +653,26 @@ const HomeDeliveryScreen = () => {
 
                 {/* Shipping Address Section */}
                 <View style={styles.inputContainer}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.inputLabel}>Shipping Address: *</Text>
-                  {/* {existingAddress.length === 0 && (
-                    <Button
-                      title="Add Address"
-                      onPress={() => {
-                        redirectToPage(containers.addAddressScreen, {
-                          from: "homeDelivery",
-                        });
-                      }}
-                    />
-                  )} */}
+                  <Text
+                    style={styles.linkText}
+                    onPress={() => {
+                      redirectToPage(containers.addAddressScreen, {
+                        from: "homeDelivery",
+                      });
+                    }}
+                  >
+                    Add Address
+                    <Ionicons
+                    name="add-circle-outline"
+                    size={16}
+                    color={colors.primary}
+                    styles={{marginLeft: 4, marginBottom: 4}}
+                  />
+                  </Text>
                 </View>
+              </View>
 
                 {/* Address List */}
                 <FlatList
@@ -684,15 +692,6 @@ const HomeDeliveryScreen = () => {
                     />
                   )}
                 />
-
-                <Text
-                  style={styles.linkText}
-                  onPress={() => {
-                    redirectToPage(containers.addAddressScreen);
-                  }}
-                >
-                  Add Address
-                </Text>
 
                 {/* Additional Instructions */}
                 <View style={styles.inputContainer}>

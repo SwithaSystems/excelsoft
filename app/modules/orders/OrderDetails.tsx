@@ -80,14 +80,15 @@ const orderDetailsScreen = () => {
     loadOrderDetails();
   }, [orderId, orderData]);
 
-  console.log("orderDetails", orderDetails);
+  console.log("orderDetails in orderDetails", orderDetails);
   console.log("shippingAddress_id", orderDetails?.shippingAddress);
 
   useEffect(() => {
     const fetchShippingAddress = async () => {
       if (!orderDetails?.shippingAddress) return;
+      console.log("fetching address", orderDetails?.shippingAddress);
       try {
-        const response = await addressService.getShippingAddressById(
+        const response = await addressService.getAddressById(
           orderDetails?.shippingAddress
         );
         console.log("response shipping address", response);
@@ -170,7 +171,6 @@ const orderDetailsScreen = () => {
 
   return (
     <>
-      {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
       <PageLayout
         hasFooter
         hasHeader
@@ -184,17 +184,7 @@ const orderDetailsScreen = () => {
         footerComponent={<Footer />}
       >
         <View style={styles.container}>
-          {/* <Header
-            headerText="Order Details"
-            needResetNavigation={from !== "myOrders"}
-          />
-          <ScrollView> */}
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-            ]}
-          >
+          <View style={[globalStyles.pt_0]}>
             <View style={{}}>
               <QRCodeDisplay
                 qrValue={orderDetails?.orderNumber}
@@ -283,6 +273,7 @@ const orderDetailsScreen = () => {
                 <Text>
                   Address:{" "}
                   {[
+                    shippingAddress_order.name,
                     shippingAddress_order.line1,
                     shippingAddress_order.line2,
                     shippingAddress_order.city,
@@ -301,7 +292,6 @@ const orderDetailsScreen = () => {
                 sectionTitleStyle={[
                   styles.orderSummaryItemText,
                   globalStyles.fontWeight500,
-                  //{marginBottom:16},
                 ]}
                 title="Would you like to see these too?"
                 showAddToCart={false}
@@ -332,10 +322,6 @@ const orderDetailsScreen = () => {
           </View>
         </View>
       </PageLayout>
-      {/* </ScrollView> */}
-      {/* <Footer /> */}
-      {/* </View> */}
-      {/* </SafeAreaView> */}
     </>
   );
 };

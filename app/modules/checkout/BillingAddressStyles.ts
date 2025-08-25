@@ -36,6 +36,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
+  checkBox: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   input: {
     backgroundColor: colors.lightgrey,
     borderRadius: 8,

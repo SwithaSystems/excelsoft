@@ -74,7 +74,7 @@ const AdminOrderDetail = () => {
     const fetchShippingAddress = async () => {
       if (!orderDetails?.shippingAddress) return;
       try {
-        const response = await addressService.getShippingAddressById(
+        const response = await addressService.getAddressById(
           orderDetails?.shippingAddress
         );
         console.log("response shipping address", response);
@@ -152,8 +152,7 @@ const AdminOrderDetail = () => {
       Alert.alert("Success", "Order updated successfully.", [
         {
           text: "OK",
-          onPress: () =>
-          router.replace("/modules/admin/AdminDashboard")
+          onPress: () => router.replace("/modules/admin/AdminDashboard"),
         },
       ]);
       await NotificationService.scheduleLocalNotification(
@@ -193,10 +192,10 @@ const AdminOrderDetail = () => {
       <PageLayout
         hasHeader
         headerComponent={
-          <Header 
+          <Header
             headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
             // needResetNavigation={false}
-           />
+          />
         }
         hasFooter
         footerComponent={<AdminFooter />}

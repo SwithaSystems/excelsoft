@@ -374,22 +374,26 @@ const addAddressScreen = () => {
         postalCode: postalcode.trim(),
         phone: phoneNumber.trim(),
         isDefault,
-        _id: addressId ?? "",
-        addressType: addressType ?? [],
+        addressType: addressType ?? ["shipping"],
       };
 
       let response;
 
       if (isEditMode) {
-        response = await addressService.updateAddress(addressId, addressData);
+        response = await addressService.updateAddress(addressId, {
+          ...addressData,
+          _id: addressId,
+        });
       } else {
         response = await addressService.addAddress(addressData);
       }
 
       if (response.status === 200 || response.status === 201) {
         alert(`Address ${isEditMode ? "updated" : "added"} successfully`);
-        if (!isEditMode && from === "homeDelivery") {
-          redirectToPage(containers.homeDeliveryScreen);
+        if (from === "homeDelivery") {
+          clearNavigationStack(containers.homeDeliveryScreen, {
+            newAddressAdded: true,
+          });
         } else {
           redirectToPage(containers.savedAddressScreen);
         }

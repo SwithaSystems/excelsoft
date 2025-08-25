@@ -149,7 +149,7 @@ const UserProfileScreen = () => {
       // await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
-      router.replace("../../home/Home");
+      router.replace("/modules/home/Home");
     } catch (error) {
       console.error("Logout error:", error);
     }
