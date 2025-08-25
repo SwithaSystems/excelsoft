@@ -105,7 +105,7 @@ const selectBillingAddressScreen = () => {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await addressService.getAllBillingAddress_userId();
+        const response = await addressService.getAllAddress();
         setAddressData(response);
         console.log("Billing addresses:", response);
         // Set initial selected address if one exists in context
@@ -127,7 +127,7 @@ const selectBillingAddressScreen = () => {
     console.log("Item to delete:", itemToDelete);
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteBillingAddress(
+        const response = await addressService.deleteAddress(
           itemToDelete.id
         );
         if (response.success) {
