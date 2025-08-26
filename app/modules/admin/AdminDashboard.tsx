@@ -312,15 +312,107 @@ const AdminDashboard = () => {
     );
   };
 
+  const ListHeaderComponent = () => (
+    <View style={[globalStyles.pt_0]}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Dashboard</Text>
+        <Text
+          style={styles.linkText}
+          onPress={() => {
+            redirectToPage(containers.fileUploadAddProductCategoryScreen);
+          }}
+        >
+          Upload Data
+        </Text>
+      </View>
+
+      <View style={styles.metricsContainer}>
+        <View style={styles.metricBox}>
+          <View style={styles.metricIconContainer}>
+            <MaterialIcons name="work-outline" size={24} color={colors.black} />
+            <Text style={styles.metricTitle}>Total Orders</Text>
+          </View>
+          <View>
+            <Text style={styles.metricValue}>
+              {dashboardMetrics.totalOrders}
+            </Text>
+            <View style={styles.salesRaiseSection}>
+              <Ionicons
+                name="trending-up-outline"
+                size={24}
+                color={colors.primary}
+                style={{ paddingRight: 8 }}
+              />
+              <Text style={styles.metricChange}>+12.5%</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.metricBox}>
+          <View style={styles.metricIconContainer}>
+            <MaterialIcons name="work-outline" size={24} color={colors.black} />
+            <Text style={styles.metricTitle}>Pending Orders</Text>
+          </View>
+          <View>
+            <Text style={styles.metricValue}>
+              {dashboardMetrics.pendingOrders.length}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.metricBox}>
+          <View style={styles.metricIconContainer}>
+            <MaterialIcons name="work-outline" size={24} color={colors.black} />
+            <Text style={styles.metricTitle}>Today's Revenue</Text>
+          </View>
+          <View>
+            <Text style={styles.metricValue}>
+              {CurrencySymbol}
+              {dashboardMetrics.todayRevenue.toFixed(2)}
+            </Text>
+            <View style={styles.salesRaiseSection}>
+              <Ionicons
+                name="trending-up-outline"
+                size={24}
+                color={colors.primary}
+                style={{ paddingRight: 8 }}
+              />
+              <Text style={styles.metricChange}>+14.5%</Text>
+            </View>
+          </View>
+        </View>
+        {isSuperAdmin && (
+          <View style={styles.metricBox}>
+            <View style={styles.metricIconContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.adminAccessControlScreen);
+                }}
+              >
+                <Text style={styles.metricTitle}>User Admin Access</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.ordersHeader}>
+        <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+        <TouchableOpacity onPress={handleSeeAllPress}>
+          <Text style={styles.seeAll}>See All</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <PageLayout
       hasHeader
       headerComponent={<BrandHeader hideUserGreeting={true} />}
       hasFooter
       footerComponent={<AdminFooter activeTab="home" />}
-      scrollable
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      {/* <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[globalStyles.pt_0]}>
           <View style={styles.headerContainer}>
             <Text style={styles.title}>Dashboard</Text>
@@ -437,10 +529,23 @@ const AdminDashboard = () => {
             })}
           />
         </View>
-      </ScrollView>
-      {/* <AdminFooter activeTab="home" />
-      </View>
-    </SafeAreaView> */}
+      </ScrollView> */}
+      <FlatList
+        data={dashboardMetrics.recentOrders}
+        renderItem={renderOrderItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={ListHeaderComponent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        initialNumToRender={3}
+        getItemLayout={(data, index) => ({
+          length: 80, // Approximate height of each order item
+          offset: 80 * index,
+          index,
+        })}
+      />
     </PageLayout>
   );
 };
