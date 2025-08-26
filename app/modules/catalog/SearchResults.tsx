@@ -51,6 +51,8 @@ const SearchResultsScreen = () => {
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<number>(parsedCategoryId);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
 
@@ -79,32 +81,92 @@ const SearchResultsScreen = () => {
     };
   }, []);
 
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const isLoadingMoreRef = useRef(false);
+  const lastPageLoadedRef = useRef(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const ITEMS_PER_PAGE = 50;
+
+  const fetchAllProducts = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      // Prevent multiple simultaneous calls
+      if (
+        isLoadMore &&
+        (isLoadingMoreRef.current || lastPageLoadedRef.current >= pageNum)
+      ) {
+        console.log(`Skipping page ${pageNum} - already loading or loaded`);
+        return;
+      }
+
+      if (isLoadMore) {
+        setLoadingMore(true);
+        isLoadingMoreRef.current = true;
+      } else if (pageNum === 1) {
+        setIsLoading(true);
+        isLoadingMoreRef.current = false;
+        lastPageLoadedRef.current = 0;
+      }
+
+      try {
+        console.log(`Fetching page ${pageNum}...`);
+        const response = await ProductsAPI.getAllProducts(
+          pageNum,
+          ITEMS_PER_PAGE
+        );
+        console.log(
+          `Page ${pageNum} loaded:`,
+          response?.data?.length,
+          "products"
+        );
+
+        if (pageNum === 1) {
+          setAllProducts(response.data);
+        } else {
+          setAllProducts((prev) => [...prev, ...response.data]);
+        }
+
+        setTotal(response?.total || 0);
+        setPage(pageNum);
+        lastPageLoadedRef.current = pageNum;
+      } catch (err) {
+        console.error(`Error fetching page ${pageNum}:`, err);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setLoadingMore(false);
+        isLoadingMoreRef.current = false;
+      }
+    },
+    [ITEMS_PER_PAGE]
+  );
+
   // FIX 1: Fetch all products with proper cleanup
   useEffect(() => {
     // if (!isFromSearch && searchQuery) {
     let cancelled = false;
 
-    const fetchAllProducts = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await ProductsAPI.getAllProducts();
+    // const fetchAllProducts = async () => {
+    //   try {
+    //     setIsLoading(true);
+    //     setError(null);
+    //     const data = await ProductsAPI.getAllProducts();
 
-        // Check if component is still mounted and request wasn't cancelled
-        if (!cancelled && isMountedRef.current) {
-          setAllProducts(data);
-        }
-      } catch (err) {
-        console.error("Error fetching all products:", err);
-        if (!cancelled && isMountedRef.current) {
-          setError("Failed to fetch products. Please try again.");
-        }
-      } finally {
-        if (!cancelled && isMountedRef.current) {
-          setIsLoading(false);
-        }
-      }
-    };
+    //     // Check if component is still mounted and request wasn't cancelled
+    //     if (!cancelled && isMountedRef.current) {
+    //       setAllProducts(data);
+    //     }
+    //   } catch (err) {
+    //     console.error("Error fetching all products:", err);
+    //     if (!cancelled && isMountedRef.current) {
+    //       setError("Failed to fetch products. Please try again.");
+    //     }
+    //   } finally {
+    //     if (!cancelled && isMountedRef.current) {
+    //       setIsLoading(false);
+    //     }
+    //   }
+    // };
 
     fetchAllProducts();
 
@@ -162,7 +224,7 @@ const SearchResultsScreen = () => {
         );
       });
 
-      console.log("filtered_products", filtered_products);
+      // console.log("filtered_products", filtered_products);
       setProducts(filtered_products);
     }
   }, [parsedSubCategoryIds, allProducts]);
