@@ -101,6 +101,7 @@ const ProductDetailScreen = () => {
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
       );
+      console.log("fetched product", fetchedProduct);
       setProduct(fetchedProduct);
       if (fetchedProduct?.productColors?.length) {
         setSelectedColor(fetchedProduct.productColors[0]);
@@ -126,7 +127,7 @@ const ProductDetailScreen = () => {
     if (!product?.image?.length || !scrollViewRef.current) return;
 
     const interval = setInterval(() => {
-      const nextIndex = (indexRef.current + 1) % product.image.length;
+      const nextIndex = (indexRef.current + 1) % product?.image?.length;
 
       scrollViewRef.current?.scrollTo({
         x: nextIndex * width,
@@ -165,7 +166,6 @@ const ProductDetailScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable
       hasHeader
@@ -175,65 +175,14 @@ const ProductDetailScreen = () => {
     >
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
-          {/* <Header headerText={"About the Product"} /> */}
-          {/* <View style={{ position: "relative" }}>
-            <ScrollView
-              ref={scrollViewRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              scrollEventThrottle={16}
-              onScroll={(event) => {
-                const index = Math.floor(
-                  event.nativeEvent.contentOffset.x / width
-                );
-                setCurrentIndex(index);
-              }}
-              onMomentumScrollEnd={(event) => {
-                const index = Math.floor(
-                  event.nativeEvent.contentOffset.x / width
-                );
-                setCurrentIndex(index);
-              }}
-            >
-              {product.image.map((imageUrl: any, index: any) => (
-                <View
-                  key={index}
-                  style={{
-                    width: width,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 20,
-                  }}
-                >
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={styles.productImage}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-            <View style={styles.dotContainer}>
-              {product.image.map((_: any, index: number) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    currentIndex === index && styles.activeDot,
-                  ]}
-                />
-              ))}
-            </View>
-          </View> */}
-
-          {product && product.image && product.image.length > 0 && (
+          {product && product?.image && product?.image?.length > 0 && (
             <HeroBanner
-              bannerData={product.image.map(
-                (imageurl: string, index: number) => ({
+              bannerData={product?.image
+                .filter((url: string) => url && url.trim() !== "")
+                .map((imageurl: string, index: number) => ({
                   id: index,
                   image: { uri: imageurl },
-                })
-              )}
+                }))}
               onBannerPress={() => {}}
             />
           )}
@@ -256,7 +205,7 @@ const ProductDetailScreen = () => {
                 <Text style={styles.ratingText}>{product.rating}</Text>
                 <Text style={styles.starIcon}> ★ </Text>
                 <Text style={styles.reviewsText}>
-                  ({product.reviews.length})
+                  ({product?.reviews?.length || 0} )
                 </Text>
               </View>
               <View style={styles.saleContainer}>
@@ -284,7 +233,7 @@ const ProductDetailScreen = () => {
             <Text style={styles.infoTitle}>Product Information</Text>
             <Text style={styles.infoText}>{product.description}</Text>
 
-            {product.productColors && product.productColors.length > 0 && (
+            {product.productColors && product.productColors?.length > 0 && (
               <>
                 <View style={styles.colorSection}>
                   <Text style={styles.colorTitle}>Select Color</Text>
@@ -388,7 +337,7 @@ const ProductDetailScreen = () => {
               <Text style={styles.reviewsTitle}>What do Customers say?</Text>
               {/* <Text style={styles.addReviewText}>see more</Text> */}
             </View>
-            {[...product.reviews]
+            {[...(product.reviews || [])]
               .sort((a, b) => Number(b.id) - Number(a.id))
               .slice(0, 5)
               .map((review: any, index: number) => (
@@ -415,10 +364,6 @@ const ProductDetailScreen = () => {
         </ScrollView>
       </View>
     </PageLayout>
-
-    /* <Footer navigation={router} />
-      </View>
-    </SafeAreaView> */
   );
 };
 

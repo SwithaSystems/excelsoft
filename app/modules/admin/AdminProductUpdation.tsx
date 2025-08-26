@@ -587,10 +587,10 @@ const AdminProductUpdation = () => {
           }
         />
       }
-      scrollable
+      scrollable={false}
     >
       <KeyBoardWrapper>
-        <ScrollView>
+        <ScrollView style={{ flex: 1 }}>
           <View
             style={[
               // globalStyles.sectionContent,

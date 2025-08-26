@@ -32,11 +32,11 @@ import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./SignUpStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
-import { 
+import {
   isValidEmail,
   isValidPhoneNumber,
   isValidPassword,
- } from "@/utilities/validations";
+} from "@/utilities/validations";
 
 const signUpScreen = () => {
   const [email, setEmail] = useState("");
@@ -113,116 +113,116 @@ const signUpScreen = () => {
     }
   };
 
-  const validateFields = () => {
-    const newErrors = {} as {
-      phone?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    };
+  // const validateFields = () => {
+  //   const newErrors = {} as {
+  //     phone?: string;
+  //     email?: string;
+  //     password?: string;
+  //     confirmPassword?: string;
+  //   };
 
-    if (mode === "email"){
-      const trimmedEmail = email.trim();
+  //   if (mode === "email") {
+  //     const trimmedEmail = email.trim();
 
-      if (!trimmedEmail) {
-        newErrors.email = "Email is required.";
-      } else if (!isValidEmail(trimmedEmail)) {
-        newErrors.email = "Enter a valid email address.";
-      }
-    }
-    // Normalize phone by removing leading 0
-    if(mode === "phone") {
-      const trimmedPhone = phone.trim();
-      if (!trimmedPhone) {
-        newErrors.phone = "Phone number is required.";
-      } else if (!isValidPhoneNumber(trimmedPhone)) {
-        newErrors.phone = "Enter a valid 10-digit phone number.";
-      }
-    }
+  //     if (!trimmedEmail) {
+  //       newErrors.email = "Email is required.";
+  //     } else if (!isValidEmail(trimmedEmail)) {
+  //       newErrors.email = "Enter a valid email address.";
+  //     }
+  //   }
+  //   // Normalize phone by removing leading 0
+  //   if (mode === "phone") {
+  //     const trimmedPhone = phone.trim();
+  //     if (!trimmedPhone) {
+  //       newErrors.phone = "Phone number is required.";
+  //     } else if (!isValidPhoneNumber(trimmedPhone)) {
+  //       newErrors.phone = "Enter a valid 10-digit phone number.";
+  //     }
+  //   }
 
-    const passwordError = isValidPassword(password);
-    if (passwordError) {
-      newErrors.password = passwordError;
-    }
+  //   const passwordError = isValidPassword(password);
+  //   if (passwordError) {
+  //     newErrors.password = passwordError;
+  //   }
 
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password.";
-    } else if (confirmPassword !== password) {
-      newErrors.confirmPassword = "Passwords do not match.";
-    }
+  //   if (!confirmPassword) {
+  //     newErrors.confirmPassword = "Please confirm your password.";
+  //   } else if (confirmPassword !== password) {
+  //     newErrors.confirmPassword = "Passwords do not match.";
+  //   }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
   const handleSignUp = async () => {
-    if (validateFields()) {
-      try {
-        if (mode === "phone") {
-          await handlePhoneSignUp();
-        } else if (mode === "email") {
-          await handleEmailSignUp();
-        }
-      } catch (error) {
-        console.error("Registration error:", error);
-        showErrorAlert({
-          title: "Registration Failed",
-          message: ACCOUNT_CREATION_FAILED,
-        });
+    // if (validateFields()) {
+    try {
+      if (mode === "phone") {
+        await handlePhoneSignUp();
+      } else if (mode === "email") {
+        await handleEmailSignUp();
       }
-    } else {
+    } catch (error) {
+      console.error("Registration error:", error);
       showErrorAlert({
-        title: "Validation Error",
-        message: FIX_VALIDATION_ERRORS,
+        title: "Registration Failed",
+        message: ACCOUNT_CREATION_FAILED,
       });
     }
+    // } else {
+    //   showErrorAlert({
+    //     title: "Validation Error",
+    //     message: FIX_VALIDATION_ERRORS,
+    //   });
+    // }
   };
   const handlePhoneSignUp = async () => {
-    if (validateFields()) {
-      let normalizedPhone = phone.trim();
-      if (normalizedPhone.startsWith("0")) {
-        normalizedPhone = normalizedPhone.slice(1);
-      }
+    // if (validateFields()) {
+    let normalizedPhone = phone.trim();
+    if (normalizedPhone.startsWith("0")) {
+      normalizedPhone = normalizedPhone.slice(1);
+    }
 
-      // Add country code
-      const formattedPhone = `+${callingCode}${normalizedPhone}`;
+    // Add country code
+    const formattedPhone = `+${callingCode}${normalizedPhone}`;
 
-      const userData = { phone: formattedPhone, email, password };
+    const userData = { phone: formattedPhone, email, password };
 
-      try {
-        const responseFromTwilio = await TwilioApi.sendOtp({
-          phone: userData.phone,
+    try {
+      const responseFromTwilio = await TwilioApi.sendOtp({
+        phone: userData.phone,
+      });
+      console.log("responseFromTwilio", responseFromTwilio);
+      if (
+        responseFromTwilio?.status === 201 &&
+        responseFromTwilio.data?.status === "pending"
+      ) {
+        // OTP sent successfully, proceed to verification screen
+        redirectToPage(containers.verificationScreen, {
+          // phoneNumber: userData.phone,
+          userData: JSON.stringify(userData),
+          from: "signup",
         });
-        console.log("responseFromTwilio", responseFromTwilio);
-        if (
-          responseFromTwilio?.status === 201 &&
-          responseFromTwilio.data?.status === "pending"
-        ) {
-          // OTP sent successfully, proceed to verification screen
-          redirectToPage(containers.verificationScreen, {
-            // phoneNumber: userData.phone,
-            userData: JSON.stringify(userData),
-            from: "signup",
-          });
-        } else {
-          showErrorAlert({
-            title: "Failed to send OTP",
-            message: OTP_SEND_FAILED,
-          });
-        }
-      } catch (error) {
-        console.error("Registration error:", error);
+      } else {
         showErrorAlert({
-          title: "Registration Failed",
-          message: ACCOUNT_CREATION_FAILED,
+          title: "Failed to send OTP",
+          message: OTP_SEND_FAILED,
         });
       }
-    } else {
+    } catch (error) {
+      console.error("Registration error:", error);
       showErrorAlert({
-        title: "Validation Error",
-        message: FIX_VALIDATION_ERRORS,
+        title: "Registration Failed",
+        message: ACCOUNT_CREATION_FAILED,
       });
     }
+    // } else {
+    //   showErrorAlert({
+    //     title: "Validation Error",
+    //     message: FIX_VALIDATION_ERRORS,
+    //   });
+    // }
   };
 
   const handleEmailSignUp = async () => {
@@ -234,7 +234,7 @@ const signUpScreen = () => {
         email: userData.email,
       });
 
-      console.log("Email verification response:", response?.data?.success);
+      console.log("Email verification response:", response);
 
       if (response?.status === 201 && response?.data?.success) {
         // Email verification sent successfully, proceed to verification screen
@@ -348,9 +348,9 @@ const signUpScreen = () => {
                   keyboardType="phone-pad"
                 />
 
-                {errors.phone && (
+                {/* {errors.phone && (
                   <Text style={globalStyles.errorText}>{errors.phone}</Text>
-                )}
+                )} */}
               </View>
             </>
           )}
