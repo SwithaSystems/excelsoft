@@ -50,8 +50,13 @@ export const ProductsAPI = {
     return response.data;
   },
 
-  getAllProducts: async (): Promise<Product[]> => {
-    const response = await jsonAxios.get(`/products`);
+  getAllProducts: async (
+    page = 1,
+    limit = 50
+  ): Promise<{ data: Product[]; total: number }> => {
+    const response = await jsonAxios.get(
+      `/products?page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 

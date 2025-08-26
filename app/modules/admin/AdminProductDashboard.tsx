@@ -1,11 +1,11 @@
+// Simplified solution without setTimeout - more reliable for React Native
 import { ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE } from "../../../constants/stringLiterals";
-// import { useFocusEffect } from "@react-navigation/native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
 import Header from "../../components/Header";
 import products from "@/data/products";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
   FlatList,
   Image,
@@ -36,51 +36,120 @@ const AdminProductDashboard = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [categories, setCategories] = useState<any>([]);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [total, setTotal] = useState(0);
+  const ITEMS_PER_PAGE = 50;
+  const [canLoader, setCanLoader] = useState(false);
+  // Simple flag to prevent multiple calls
+  const isLoadingMoreRef = useRef(false);
+  const lastPageLoadedRef = useRef(0);
 
-  const fetchAllProducts = async () => {
-    try {
-      const data = await ProductsAPI.getAllProducts();
-      console.log("Fetched products:", data);
-      setAllProductsList(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching all products:", err);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
+  const fetchAllProducts = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      // Prevent multiple simultaneous calls
+      if (
+        isLoadMore &&
+        (isLoadingMoreRef.current || lastPageLoadedRef.current >= pageNum)
+      ) {
+        console.log(`Skipping page ${pageNum} - already loading or loaded`);
+        return;
+      }
+
+      if (isLoadMore) {
+        setLoadingMore(true);
+        isLoadingMoreRef.current = true;
+      } else if (pageNum === 1) {
+        setIsLoading(true);
+        isLoadingMoreRef.current = false;
+        lastPageLoadedRef.current = 0;
+      }
+
+      try {
+        console.log(`Fetching page ${pageNum}...`);
+        const response = await ProductsAPI.getAllProducts(
+          pageNum,
+          ITEMS_PER_PAGE
+        );
+        console.log(
+          `Page ${pageNum} loaded:`,
+          response?.data?.length,
+          "products"
+        );
+
+        if (pageNum === 1) {
+          setAllProductsList(response.data);
+        } else {
+          setAllProductsList((prev) => [...prev, ...response.data]);
+        }
+
+        setTotal(response?.total || 0);
+        setPage(pageNum);
+        lastPageLoadedRef.current = pageNum;
+      } catch (err) {
+        console.error(`Error fetching page ${pageNum}:`, err);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+        setLoadingMore(false);
+        isLoadingMoreRef.current = false;
+      }
+    },
+    [ITEMS_PER_PAGE]
+  );
 
   const fetchAllCategories = async () => {
     try {
       const data = await categoryService.getAllCategories();
-      console.log("Fetched categories:", data);
       setCategories(data);
     } catch (err) {
-      console.error("Error fetching all categories:", err);
+      console.error("Error fetching categories:", err);
     }
   };
 
-  // Initial fetch
   useEffect(() => {
-    fetchAllProducts();
+    fetchAllProducts(1);
     fetchAllCategories();
     if (refresh === "true") {
-      // Remove the refresh param to prevent re-triggering
       router.replace("./AdminProductDashboard/AdminProductDashboard");
     }
   }, []);
 
-  // Refresh when screen comes into focus
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchAllProducts();
-  //   }, [])
-  // );
+  // Simple load more function
+  const handleLoadMore = useCallback(() => {
+    const nextPage = page + 1;
+    const canLoadMore =
+      !loadingMore &&
+      !isLoadingMoreRef.current &&
+      productsList.length < total &&
+      productsList.length >= page * ITEMS_PER_PAGE - ITEMS_PER_PAGE &&
+      productsList.length > 0;
+
+    console.log("Load more check:", {
+      canLoadMore,
+      loadingMore,
+      isLoadingMoreRef: isLoadingMoreRef.current,
+      currentLength: productsList.length,
+      total,
+      currentPage: page,
+      nextPage,
+      lastPageLoaded: lastPageLoadedRef.current,
+    });
+
+    if (canLoadMore) {
+      fetchAllProducts(nextPage, true);
+    }
+  }, [loadingMore, productsList.length, total, page, fetchAllProducts]);
 
   const onRefresh = useCallback(() => {
+    console.log("Refreshing...");
     setIsRefreshing(true);
-    fetchAllProducts();
-  }, []);
+    setPage(1);
+    setTotal(0);
+    isLoadingMoreRef.current = false;
+    lastPageLoadedRef.current = 0;
+    fetchAllProducts(1, false);
+  }, [fetchAllProducts]);
 
   const ProductCard = ({ item }: { item: any }) => {
     const getStockBadge = (stock: number) => {
@@ -153,7 +222,6 @@ const AdminProductDashboard = () => {
             </View>
 
             <Text style={styles.text}>
-              {" "}
               Category:{" "}
               {item.categoryId
                 ?.map((catId: number) => {
@@ -186,7 +254,9 @@ const AdminProductDashboard = () => {
                 <Text
                   style={{
                     color:
-                      badge.backgroundColor === "yellow" ? "black" : "white",
+                      badge.backgroundColor === colors.primaryYellow
+                        ? "black"
+                        : "white",
                     fontSize: 12,
                     fontWeight: "bold",
                   }}
@@ -200,6 +270,7 @@ const AdminProductDashboard = () => {
       </View>
     );
   };
+
   const maxId = productsList.reduce((max: any, product: any) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
@@ -208,9 +279,15 @@ const AdminProductDashboard = () => {
 
   const confirmDelete = async () => {
     try {
-      console.log("itemToDelete", itemToDelete);
+      console.log("Deleting product:", itemToDelete);
       await ProductsAPI.deleteProduct(itemToDelete._id);
-      fetchAllProducts();
+
+      // Reset everything and refresh
+      setPage(1);
+      setTotal(0);
+      isLoadingMoreRef.current = false;
+      lastPageLoadedRef.current = 0;
+      await fetchAllProducts(1, false);
     } catch (err) {
       console.error("Error deleting product:", err);
     } finally {
@@ -221,7 +298,11 @@ const AdminProductDashboard = () => {
 
   const cancelDelete = () => {
     setIsModalVisible(false);
+    setItemToDelete(null);
   };
+
+  // Calculate if we have more data to load
+  const hasMoreData = productsList.length < total;
 
   return (
     <PageLayout
@@ -234,13 +315,6 @@ const AdminProductDashboard = () => {
       footerComponent={<AdminFooter activeTab="products" />}
     >
       <View style={[globalStyles.pt_0, { paddingTop: 16 }]}>
-        {/* <Button
-        style={{marginBottom: 16}}
-          onPress={() => {
-            redirectToPage(containers.fileUploadAddProductCategoryScreen);
-          }}
-          title="Upload Product Data"
-        /> */}
         <Button
           onPress={() => {
             redirectToPage(containers.AdminProductUpdationScreen, {
@@ -251,28 +325,89 @@ const AdminProductDashboard = () => {
           }}
           title="Add New Product"
         />
-        {/* <TouchableOpacity
-              onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
-              style={{ paddingTop: 16 }}
-            >
-              <Text style={globalStyles.btnSmUnderLine}>View Categories</Text>
-            </TouchableOpacity>*/}
+
         <View style={{ marginTop: 16 }}>
+          <Text
+            style={{
+              marginBottom: 8,
+              fontSize: 14,
+              color: colors.secondaryText,
+            }}
+          >
+            Showing {productsList.length} of {total} products
+          </Text>
+
           <FlatList
             data={productsList}
             renderItem={ProductCard}
             keyExtractor={(item, index) =>
-              `${item.id?.toString() || "product"}-${index}`
+              `${
+                item.id?.toString() || item._id?.toString() || "product"
+              }-${index}`
             }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
+              />
+            }
+            ListFooterComponent={
+              loadingMore ? (
+                <ActivityIndicator size="large" color="blue" />
+              ) : null
+            }
+            ListEmptyComponent={() => {
+              if (!isLoading) {
+                return (
+                  <View style={{ padding: 40, alignItems: "center" }}>
+                    <Text style={{ fontSize: 16, color: colors.secondaryText }}>
+                      No products found
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            }}
+            // Performance optimizations
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={100}
+            initialNumToRender={10}
+            windowSize={5}
+            scrollEventThrottle={16}
           />
+
+          {isLoading && (
+            <View
+              style={{
+                position: "absolute",
+                top: 50,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+              }}
+            >
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={{ marginTop: 8 }}>Loading products...</Text>
+            </View>
+          )}
         </View>
+
         <ConfirmationModal
           onClose={() => {
             setIsModalVisible(false);
+            setItemToDelete(null);
           }}
           isModalVisible={isModalVisible}
-          text="Are you sure you want to delete this? You can save this item for later too."
-          submitText="Delete Item"
+          text="Are you sure you want to delete this product? This action cannot be undone."
+          submitText="Delete Product"
           handleSubmit={confirmDelete}
           handleCancel={cancelDelete}
         />
