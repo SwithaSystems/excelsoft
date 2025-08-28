@@ -118,7 +118,11 @@ const HomePage = () => {
       try {
         const data = await categoryService.getAllCategories();
         console.log("Categories:", data);
-        const sortedData = data.sort((a, b) => a.id - b.id);
+        const sortedData = data.sort((a, b) => {
+          if (a.name === "All") return -1; // put "All" at the top
+          if (b.name === "All") return 1;
+          return a.id - b.id; // otherwise sort by id
+        });
         setCategories(sortedData);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -156,7 +160,7 @@ const HomePage = () => {
                   name={item.name}
                   imageUrl={item.images?.[0] || ""}
                   onPress={() =>
-                    item.id === 2
+                    item.name === "All"
                       ? redirectToPage(containers.categoriesScreen, {
                           category: item.name,
                           categoryId: item.id,

@@ -2,6 +2,7 @@ import axiosInstance from "./axiosConfig";
 import createAxiosInstance, { jsonAxios } from "./axiosConfig";
 
 export interface Product {
+  _id: string;
   id: string;
   name: string;
   description: string;

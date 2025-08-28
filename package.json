@@ -76,6 +76,7 @@
     "@babel/core": "^7.25.2",
     "@react-native-community/cli": "^20.0.1",
     "@types/jest": "^29.5.12",
+    "@types/lodash": "^4.17.20",
     "@types/react": "~19.0.10",
     "@types/react-native-bcrypt": "^2.4.6",
     "@types/react-test-renderer": "^19.0.0",
