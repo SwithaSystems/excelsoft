@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ const Filter = () => {
   const { categoryId } = useLocalSearchParams();
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applyingFilters, setApplyingFilters] = useState(false);
 
   const [selectedCategories, setSelectedCategories] = useState<{ [key: number]: boolean }>({});
   const [selectedBrands, setSelectedBrands] = useState<{ [key: string]: boolean }>({});
@@ -45,28 +46,36 @@ const Filter = () => {
     fetchSubCategories();
   }, [categoryId]);
 
-  const handleCategorySelect = (id: number) => {
+  const handleCategorySelect = useCallback((id: number) => {
     setSelectedCategories((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  }, []);
 
-  const handleBrandSelect = (brand: string) => {
+  const handleBrandSelect = useCallback((brand: string) => {
     setSelectedBrands((prev) => ({ ...prev, [brand]: !prev[brand] }));
-  };
+  }, []);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(async() => {
+
+    setApplyingFilters(true);
+
     const selectedCategoryIds = Object.keys(selectedCategories)
       .filter((id) => selectedCategories[Number(id)])
       .map(Number);
 
     if (selectedCategoryIds.length === 0) {
+      setApplyingFilters(false);
       alert("Please select at least one category!");
       return;
     }
+    try{
     redirectToPage(containers.searchResultsScreen, {
       selectedSubCategories: selectedCategoryIds,
       fromSearch: true,
     });
-  };
+    } finally{
+      setApplyingFilters(false);
+    }
+  },[selectedCategories]);
 
   return (
     <PageLayout
