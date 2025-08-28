@@ -96,22 +96,44 @@ export const isValidState = (state: string): string | null => {
 
 export const isValidPhoneNumber = (phone: string): string | null => {
   const trimmed = phone.trim();
-  const digitsOnly = trimmed.replace(/\D/g, "");
-
+  
   if (!trimmed) return "Phone number is required";
   
-  if (digitsOnly.length === 10 || (digitsOnly.length >= 12 && digitsOnly.length <= 13)) {
-    return null; 
-  }
+  const digitsOnly = trimmed.replace(/\D/g, "");
   
-  if (digitsOnly.length < 10)
-    return "Phone number must contain at least 10 digits";
-  if (digitsOnly.length > 15)
-    return "Phone number cannot exceed 15 digits";
-  if (!/^[\+]?[\d\s()\-]+$/.test(trimmed))
-    return "Phone number can only contain digits, spaces, parentheses, hyphens, and plus sign";
   if (!/^[\+\d]/.test(trimmed))
     return "Phone number must start with a digit or plus sign";
+  
+  if (!/^[\+]?[\d\s()\-]+$/.test(trimmed))
+    return "Phone number can only contain digits, spaces, parentheses, hyphens, and plus sign";
+  
+  if (trimmed.startsWith('+')) {
+    if (digitsOnly.length < 10)
+      return "Phone number must contain at least 10 digits including country code";
+    if (digitsOnly.length > 15)
+      return "Phone number cannot exceed 15 digits including country code";
+    
+    const countryCodeMatch = trimmed.match(/^\+(\d{1,4})/);
+    if (!countryCodeMatch) {
+      return "Invalid country code format";
+    }
+    
+    const countryCode = countryCodeMatch[1];
+    const localDigits = digitsOnly.substring(countryCode.length);
+    
+    if (localDigits.length < 7) {
+      return "Phone number must have at least 7 digits after country code";
+    }
+    if (localDigits.length > 12) {
+      return "Phone number cannot have more than 12 digits after country code";
+    }
+    
+    return null;
+  }
+  
+  if (digitsOnly.length !== 10) {
+    return "Phone number must contain exactly 10 digits";
+  }
 
   return null;
 };
