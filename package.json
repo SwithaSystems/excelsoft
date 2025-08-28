@@ -34,6 +34,7 @@
     "expo-image-picker": "~16.1.4",
     "expo-linking": "~7.1.6",
     "expo-local-authentication": "~16.0.5",
+    "expo-media-library": "~17.1.7",
     "expo-notifications": "~0.31.3",
     "expo-router": "~5.1.5",
     "expo-secure-store": "~14.2.4",
@@ -69,11 +70,11 @@
     "redux-persist": "^6.0.0",
     "reselect": "^5.1.1",
     "twilio": "^5.5.0",
-    "webpack": "^5.99.9",
-    "expo-media-library": "~17.1.7"
+    "webpack": "^5.99.9"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "^20.0.1",
     "@types/jest": "^29.5.12",
     "@types/react": "~19.0.10",
     "@types/react-native-bcrypt": "^2.4.6",
