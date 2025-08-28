@@ -144,8 +144,6 @@ export const isValidProductName = (name: string): string | null => {
     return "Product name must be at least 2 characters";
   if (name.trim().length > 100)
     return "Product name cannot exceed 100 characters";
-  if (!/^[a-zA-Z0-9\s\-_'.&]+$/.test(name.trim()))
-    return "Product name contains invalid characters";
   return null;
 };
 
@@ -196,8 +194,8 @@ export const isValidDiscountPrice = (
   if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
     return "Discount price can have maximum 2 decimal places";
 
-  if (!isNaN(originalNum) && discountNum >= originalNum) {
-    return "Discount price must be less than original price";
+  if (!isNaN(originalNum) && discountNum > originalNum) {
+    return "Discount price must be less than or equal to original price";
   }
   return null;
 };
