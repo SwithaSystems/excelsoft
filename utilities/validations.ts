@@ -7,7 +7,7 @@ export const isValidPassword = (password: string): string | null => {
 
 export const isValidEmail = (email: string): boolean => {
   const trimmed = email.trim();
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return trimmed.length > 0 && emailRegex.test(trimmed);
 };
 
@@ -99,6 +99,11 @@ export const isValidPhoneNumber = (phone: string): string | null => {
   const digitsOnly = trimmed.replace(/\D/g, "");
 
   if (!trimmed) return "Phone number is required";
+  
+  if (digitsOnly.length === 10 || (digitsOnly.length >= 12 && digitsOnly.length <= 13)) {
+    return null; 
+  }
+  
   if (digitsOnly.length < 10)
     return "Phone number must contain at least 10 digits";
   if (digitsOnly.length > 15)

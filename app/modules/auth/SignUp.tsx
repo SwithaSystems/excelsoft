@@ -113,50 +113,62 @@ const signUpScreen = () => {
     }
   };
 
-  // const validateFields = () => {
-  //   const newErrors = {} as {
-  //     phone?: string;
-  //     email?: string;
-  //     password?: string;
-  //     confirmPassword?: string;
-  //   };
+  const validateFields = () => {
+    const newErrors = {} as {
+      phone?: string;
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    };
 
-  //   if (mode === "email") {
-  //     const trimmedEmail = email.trim();
+    if (mode === "email") {
+      const trimmedEmail = email.trim();
 
-  //     if (!trimmedEmail) {
-  //       newErrors.email = "Email is required.";
-  //     } else if (!isValidEmail(trimmedEmail)) {
-  //       newErrors.email = "Enter a valid email address.";
-  //     }
-  //   }
-  //   // Normalize phone by removing leading 0
-  //   if (mode === "phone") {
-  //     const trimmedPhone = phone.trim();
-  //     if (!trimmedPhone) {
-  //       newErrors.phone = "Phone number is required.";
-  //     } else if (!isValidPhoneNumber(trimmedPhone)) {
-  //       newErrors.phone = "Enter a valid 10-digit phone number.";
-  //     }
-  //   }
+      if (!trimmedEmail) {
+        newErrors.email = "Email is required.";
+      } else if (!isValidEmail(trimmedEmail)) {
+        newErrors.email = "Enter a valid email address.";
+      }
+    }
+    if (mode === "phone") {
+      const trimmedPhone = phone.trim();
+      if (!trimmedPhone) {
+        newErrors.phone = "Phone number is required.";
+      } else {
+        let normalizedPhone = trimmedPhone;
+        if (normalizedPhone.startsWith("0")) {
+          normalizedPhone = normalizedPhone.slice(1);
+        }
+        const fullPhoneNumber = `+${callingCode}${normalizedPhone}`;
+        console.log("DEBUG: Validating", fullPhoneNumber);
+        console.log("DEBUG: Digits:", fullPhoneNumber.replace(/\D/g, "").length);
+        const validationResult = isValidPhoneNumber(fullPhoneNumber);
+        console.log("DEBUG: Validation result:", validationResult);
+        
+        if (validationResult !== null) {
+          newErrors.phone = validationResult;
+        }
+      }
+    }
 
-  //   const passwordError = isValidPassword(password);
-  //   if (passwordError) {
-  //     newErrors.password = passwordError;
-  //   }
+    const passwordError = isValidPassword(password);
+    if (passwordError) {
+      newErrors.password = passwordError;
+    }
 
-  //   if (!confirmPassword) {
-  //     newErrors.confirmPassword = "Please confirm your password.";
-  //   } else if (confirmPassword !== password) {
-  //     newErrors.confirmPassword = "Passwords do not match.";
-  //   }
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password.";
+    } else if (confirmPassword !== password) {
+      newErrors.confirmPassword = "Passwords do not match.";
+    }
 
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
+    console.log("DEBUG: All validation errors:", newErrors);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSignUp = async () => {
-    // if (validateFields()) {
+    if (validateFields()) {
     try {
       if (mode === "phone") {
         await handlePhoneSignUp();
@@ -170,15 +182,15 @@ const signUpScreen = () => {
         message: ACCOUNT_CREATION_FAILED,
       });
     }
-    // } else {
-    //   showErrorAlert({
-    //     title: "Validation Error",
-    //     message: FIX_VALIDATION_ERRORS,
-    //   });
-    // }
+    } else {
+      showErrorAlert({
+        title: "Validation Error",
+        message: FIX_VALIDATION_ERRORS,
+      });
+    }
   };
   const handlePhoneSignUp = async () => {
-    // if (validateFields()) {
+    if (validateFields()) {
     let normalizedPhone = phone.trim();
     if (normalizedPhone.startsWith("0")) {
       normalizedPhone = normalizedPhone.slice(1);
@@ -217,12 +229,12 @@ const signUpScreen = () => {
         message: ACCOUNT_CREATION_FAILED,
       });
     }
-    // } else {
-    //   showErrorAlert({
-    //     title: "Validation Error",
-    //     message: FIX_VALIDATION_ERRORS,
-    //   });
-    // }
+    } else {
+      showErrorAlert({
+        title: "Validation Error",
+        message: FIX_VALIDATION_ERRORS,
+      });
+    }
   };
 
   const handleEmailSignUp = async () => {
@@ -348,9 +360,9 @@ const signUpScreen = () => {
                   keyboardType="phone-pad"
                 />
 
-                {/* {errors.phone && (
+                {errors.phone && (
                   <Text style={globalStyles.errorText}>{errors.phone}</Text>
-                )} */}
+                )}
               </View>
             </>
           )}
@@ -382,7 +394,7 @@ const signUpScreen = () => {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
-            {errors.password && (
+            {errors.confirmPassword && (
               <Text style={globalStyles.errorText}>
                 {errors.confirmPassword}
               </Text>
