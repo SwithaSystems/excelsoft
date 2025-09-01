@@ -15,7 +15,6 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../components/Header";
 import styles from "./BiometricSettingsStyles";
 import colors from "@/constants/colors";
-import colors from "@/constants/colors";
 
 const BiometricSettingsScreen = ({ navigation }: any) => {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
