@@ -28,13 +28,7 @@ function OrderSummary(props) {
         <Text style={styles.summaryQuantity}>Total Items</Text>
         <Text style={styles.summaryPrice}>Price</Text>
       </View>
-      <View
-        style={
-          {
-            // paddingHorizontal: 5
-          }
-        }
-      >
+      <View>
         {!props.hideItems &&
           cartItems.map((item) => (
             <View key={item.id} style={styles.summaryItem}>

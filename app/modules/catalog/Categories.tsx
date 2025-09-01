@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
   FlatList,
   Dimensions,
-  ScrollView,
 } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";

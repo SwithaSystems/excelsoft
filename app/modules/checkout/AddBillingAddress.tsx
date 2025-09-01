@@ -28,6 +28,15 @@ import {
   UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import { CheckBox } from "react-native-elements";
+import {
+  isValidName,
+  isValidPostalCode,
+  isValidAddressLine1,
+  isValidAddressLine2,
+  isValidTownCity,
+  isValidState,
+  isValidPhoneNumber,
+} from "@/utilities/validations";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -113,10 +122,31 @@ const addBillingAddressScreen = () => {
     if (!towncity.trim()) newErrors.towncity = "Town/City is required.";
     if (!postalcode.trim()) newErrors.postalcode = "Postal code is required.";
 
-    // Basic postal code validation
-    if (postalcode.trim() && !/^\d{5,6}$/.test(postalcode.trim())) {
-      newErrors.postalcode = "Postal code must be 5-6 digits.";
-    }
+    // // Basic postal code validation
+    // if (postalcode.trim() && !/^\d{5,6}$/.test(postalcode.trim())) {
+    //   newErrors.postalcode = "Postal code must be 5-6 digits.";
+    // }
+
+    const nameError = isValidName(address);
+    if(nameError) newErrors.name = nameError; 
+    
+    const postalError = isValidPostalCode(postalcode);
+    if(postalError) newErrors.postalcode = postalError;
+
+    const line1Error = isValidAddressLine1(line1);
+    if (line1Error) newErrors.line1 = line1Error;
+
+    const line2Error = isValidAddressLine2(line2);
+    if (line2Error) newErrors.line2 = line2Error;
+
+    const townCityError = isValidTownCity(towncity);
+    if (townCityError) newErrors.towncity = townCityError;
+
+    const stateError = isValidState(state);
+    if (stateError) newErrors.state = stateError;
+
+    const phoneError = isValidPhoneNumber(phoneNumber);
+    if (phoneError) newErrors.phoneNumber = phoneError;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -178,7 +208,6 @@ const addBillingAddressScreen = () => {
           };
 
           setSelectedBillingAddress(savedAddress);
-
           alert("Address added successfully");
         } else {
           alert("Failed to add address");
@@ -186,7 +215,6 @@ const addBillingAddressScreen = () => {
         }
       }
 
-      //  Navigate back with success flag and new address info
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -209,7 +237,6 @@ const addBillingAddressScreen = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    // Clear the specific field error when user starts typing
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({
         ...prev,
@@ -217,7 +244,6 @@ const addBillingAddressScreen = () => {
       }));
     }
 
-    // Update the field value
     switch (field) {
       case "address":
         setAddress(value);
@@ -246,14 +272,6 @@ const addBillingAddressScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <KeyBoardWrapper>
-    //     <View style={styles.container}>
-    //       <Header
-    //         headerText={
-    //           isEditMode ? "Edit Billing Address" : "Add Billing Address"
-    //         }
-    //       />
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -372,13 +390,7 @@ const addBillingAddressScreen = () => {
             </View>
           </View>
 
-          <View
-            style={[
-              // styles.submitButton,
-              isSubmitting && styles.submitButtonDisabled,
-            ]}
-          >
-            {/* <View style={globalStyles.p_3}> */}
+          <View style={[isSubmitting && styles.submitButtonDisabled]}>
             <Button
               title={
                 isSubmitting

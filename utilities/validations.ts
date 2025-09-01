@@ -29,15 +29,13 @@ export const isValidName = (name: string): string | null => {
 
 export const isValidPostalCode = (postal: string): string | null => {
   const trimmed = postal.trim();
-
   if (!trimmed) return "Postcode is required";
-  if (trimmed.length < 3) return "Postcode must be at least 3 characters long";
-  if (trimmed.length > 10) return "Postcode cannot exceed 10 characters";
-  if (!/^[a-zA-Z0-9\s\-]+$/.test(trimmed))
-    return "Postcode can only contain letters, numbers, spaces, and hyphens";
+  if (trimmed.length < 2) return "Postcode must be at least 3 characters long";
+  if (trimmed.length > 20) return "Postcode cannot exceed 20 characters";
+  if (!/^[a-zA-Z0-9\s.\-]+$/.test(trimmed))
+    return "Postcode can only contain letters, numbers, spaces, hyphens, and periods";
   if (!/[a-zA-Z0-9]/.test(trimmed))
     return "Postcode must contain at least one letter or number";
-
   return null;
 };
 
@@ -45,7 +43,7 @@ export const isValidAddressLine1 = (line: string): string | null => {
   const trimmed = line.trim();
 
   if (!trimmed) return "Address Line 1 is required";
-  if (trimmed.length < 5) return "Address must be at least 5 characters long";
+  if (trimmed.length < 3) return "Address must be at least 5 characters long";
   if (trimmed.length > 100) return "Address cannot exceed 100 characters";
   if (!/^[a-zA-Z0-9\s,.\-/#'()]+$/.test(trimmed))
     return "Address contains invalid characters. Only letters, numbers, spaces, and common punctuation (, . - / # ' ( )) are allowed";
@@ -74,11 +72,8 @@ export const isValidTownCity = (city: string): string | null => {
     return "Town/City must be at least 2 characters long";
   if (trimmed.length > 50)
     return "Town/City cannot exceed 50 characters";
-  if (!/^[a-zA-Z\s\-']+$/.test(trimmed))
-    return "Town/City can only contain letters, spaces, hyphens (-), and apostrophes (')";
-  if (!/^[a-zA-Z].*[a-zA-Z]$/.test(trimmed) && trimmed.length > 1)
-    return "Town/City must start and end with a letter";
-
+  if (!/^[a-zA-Z0-9\s\-']+$/.test(trimmed))
+    return "Town/City can only contain letters, numbers, spaces, hyphens (-), and apostrophes (')";
   return null;
 };
 

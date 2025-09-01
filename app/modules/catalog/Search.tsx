@@ -329,7 +329,6 @@ const SearchScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       scrollable
       hasHeader
@@ -339,7 +338,6 @@ const SearchScreen = () => {
     >
       <KeyBoardWrapper>
         <View style={styles.container}>
-          {/* <Header headerText={"Search"} /> */}
 
           <View style={styles.searchBarContainer}>
             <SearchBar

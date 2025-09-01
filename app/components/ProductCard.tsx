@@ -77,6 +77,11 @@ const ProductCard = ({
       dispatch(addToSavedItems(currentItem));
     }
   };
+
+  const maxTitleLength = 12;
+  let displayName = name.length > maxTitleLength ? name.substring(0, maxTitleLength - 3) + "..." : name;
+  while (displayName.length < maxTitleLength) displayName += " ";
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -98,7 +103,7 @@ const ProductCard = ({
       <View style={styles.content}>
         <View style={globalStyles.savedContainer}>
           <Text style={styles.title} numberOfLines={1}>
-            {name}
+            {displayName}
           </Text>
           <TouchableOpacity onPress={handleHeartPress}>
             <Ionicons

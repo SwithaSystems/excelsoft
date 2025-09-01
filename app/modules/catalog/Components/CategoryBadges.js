@@ -109,7 +109,6 @@ const CategoryBadges = (props) => {
                     (subCat) => subCat.name === category
                   );
                   if (selectedSubCategory) {
-                    // props.onCategorySelect &&
                     props.onCategorySelect(selectedSubCategory.id);
                   }
                 }
@@ -191,24 +190,24 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    // paddingHorizontal: 16,
     backgroundColor: colors.white,
     paddingBottom: 16,
   },
   filterWrapper: {
     flexDirection: "row",
     alignItems: "center",
+    // paddingHorizontal: 16,
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingRight: 60,
+    paddingRight: 16,
     alignItems: "center",
   },
   filterButton: {
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     marginRight: 12,
     marginLeft: 0,
   },
@@ -228,7 +227,8 @@ const styles = StyleSheet.create({
   fixedIcons: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: "auto",
+    marginLeft: 16,
+    paddingLeft:0,
   },
   iconButton: {
     padding: 2,

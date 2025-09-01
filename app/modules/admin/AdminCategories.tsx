@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
   editingCategoryItem: {
     borderColor: colors.primary,
     borderWidth: 2,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
   },
   categoryContent: {
     flexDirection: "row",

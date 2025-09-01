@@ -145,8 +145,6 @@ const UserProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      // await AsyncStorage.removeItem("user");
-      // await AsyncStorage.removeItem("token");
       await logout();
       setLogOutModalOpen(false);
       router.replace("/modules/home/Home");
@@ -169,10 +167,7 @@ const UserProfileScreen = () => {
       scrollable={true}
       contentPadding={true}
     >
-      <View
-
-      // style={[globalStyles.sectionContent, styles.pt_0]}
-      >
+      <View>
         <Text style={styles.greeting}>
           {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
         </Text>

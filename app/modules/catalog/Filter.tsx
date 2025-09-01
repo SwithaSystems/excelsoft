@@ -71,6 +71,8 @@ const Filter = () => {
     redirectToPage(containers.searchResultsScreen, {
       selectedSubCategories: selectedCategoryIds,
       fromSearch: true,
+      category: "Filtered Results",
+      categoryId: categoryId,
     });
     } finally{
       setApplyingFilters(false);
