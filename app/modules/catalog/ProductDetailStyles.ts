@@ -255,6 +255,40 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     color: colors.primary,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.black,
+    textAlign: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.black,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: colors.primaryRed,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default styles;

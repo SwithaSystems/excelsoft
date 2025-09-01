@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
   imageLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.black,
+    color: colors.primary,
     marginBottom: 16,
   },
   imagePickerButton: {

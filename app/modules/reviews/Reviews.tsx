@@ -89,12 +89,17 @@ const reviewsScreen = () => {
             </Text>
           </View>
           <View style={styles.overAllRatingContainer}>
-            <Text style={styles.rating}>{productRating}</Text>
-            <ProductStars
-              starsContainer={styles.starsContainer}
-              rating={productRating}
-              size={32}
-            />
+            {Number(productRating) > 0 ? (
+              <ProductStars
+                starsContainer={styles.starsContainer}
+                rating={productRating}
+                size={32}
+              />
+            ) : (
+              <Text style={styles.noReviewContainerHeading}>
+                No reviews yet
+              </Text>
+            )}
           </View>
           <View style={styles.reviewsContainer}>
             <Text style={styles.reviewContainerHeading}>Reviews</Text>

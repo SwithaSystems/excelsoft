@@ -1,22 +1,18 @@
 import Footer from "@/app/components/Footer";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useLocalSearchParams, useFocusEffect } from "expo-router";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Dimensions,
-  Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  SafeAreaView,
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
 import colors from "../../../constants/colors";
-// import styles from "../../../productDetail/productDetailScreenStyles";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { Product, ProductsAPI } from "@/services/productService";
@@ -27,8 +23,6 @@ const { width } = Dimensions.get("window");
 import { useAppContext } from "@/context/AppContext";
 import Toast from "react-native-toast-message";
 import { globalStyles } from "@/assets/styles/globalStyles";
-import CustomToastAlert from "@/app/components/commonComponents/CustomToastAlert";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   addToSavedItems,
   removeFromSavedItems,
@@ -47,7 +41,8 @@ const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
   const [selectedColor, setSelectedColor] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
-  const { isLoading, setIsLoading } = useAppContext();
+  // const { isLoading, setIsLoading } = useAppContext();
+  const [isProductLoading, setIsProductLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -98,6 +93,7 @@ const ProductDetailScreen = () => {
 
   const fetchProduct = useCallback(async () => {
     try {
+      setIsProductLoading(true);
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
       );
@@ -109,9 +105,9 @@ const ProductDetailScreen = () => {
     } catch (error) {
       console.error("Error fetching product:", error);
     } finally {
-      setIsLoading(false);
+      setIsProductLoading(false);
     }
-  }, [productId]);
+  }, [productId, setIsProductLoading]);
 
   useFocusEffect(
     useCallback(() => {
@@ -141,11 +137,18 @@ const ProductDetailScreen = () => {
     return () => clearInterval(interval);
   }, [product?.image?.length]);
 
-  if (isLoading) {
+  if (isProductLoading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
+      <PageLayout
+        scrollable={false}
+        hasHeader
+        hasFooter={false}
+        headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
+      >
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading product...</Text>
+        </View>
+      </PageLayout>
     );
   }
 
@@ -201,27 +204,33 @@ const ProductDetailScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{product.rating}</Text>
-                <Text style={styles.starIcon}> ★ </Text>
-                <Text style={styles.reviewsText}>
-                  ({product?.reviews?.length || 0} )
-                </Text>
-              </View>
-              <View style={styles.saleContainer}>
-                <View style={styles.saleTimeBox}>
-                  <View style={styles.saleTag}>
-                    <Text style={styles.saleText}>Sale</Text>
-                  </View>
-                  <Text style={styles.saleTime}>02:48:26</Text>
-                </View>
-                <View style={styles.discountTag}>
-                  <Text style={styles.discountText}>
-                    {(product.originalPrice - product.price).toFixed(0) + "%" ||
-                      "20%"}
+              {product.reviews.length > 0 && (
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>{product.rating}</Text>
+                  <Text style={styles.starIcon}> ★ </Text>
+                  <Text style={styles.reviewsText}>
+                    ({product?.reviews?.length || 0} )
                   </Text>
                 </View>
-              </View>
+              )}
+
+              {product.originalPrice > product.price && (
+                <View style={styles.saleContainer}>
+                  <View style={styles.saleTimeBox}>
+                    <View style={styles.saleTag}>
+                      <Text style={styles.saleText}>Sale</Text>
+                    </View>
+                    <Text style={styles.saleTime}>02:48:26</Text>
+                  </View>
+                  <View style={styles.discountTag}>
+                    <Text style={styles.discountText}>
+                      {(product.originalPrice - product.price).toFixed(0) +
+                        "%" || "20%"}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
               <View style={styles.priceContainer}>
                 <DisplayPrice
                   price={product.price}

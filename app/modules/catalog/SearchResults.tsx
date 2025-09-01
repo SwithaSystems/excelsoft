@@ -52,6 +52,8 @@ const SearchResultsScreen = () => {
     useState<number>(parsedCategoryId);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasInitialDataLoaded, setHasInitialDataLoaded] =
+    useState<boolean>(false);
 
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
@@ -129,6 +131,7 @@ const SearchResultsScreen = () => {
         setTotal(response?.total || 0);
         setPage(pageNum);
         lastPageLoadedRef.current = pageNum;
+        setHasInitialDataLoaded(true);
       } catch (err) {
         console.error(`Error fetching page ${pageNum}:`, err);
       } finally {
@@ -167,15 +170,27 @@ const SearchResultsScreen = () => {
     //     }
     //   }
     // };
+    const initializeFetch = async () => {
+      try {
+        setError(null);
+        await fetchAllProducts();
+      } catch (err) {
+        if (!cancelled && isMountedRef.current) {
+          setError("Failed to fetch products. Please try again.");
+        }
+      }
+    };
 
-    fetchAllProducts();
+    initializeFetch();
+
+    // fetchAllProducts();
 
     // Cleanup function
     return () => {
       cancelled = true;
     };
     // }
-  }, [isFromSearch, searchQuery]);
+  }, [fetchAllProducts]);
 
   // FIX 2: Fetch subcategories with proper cleanup
   useEffect(() => {
@@ -238,6 +253,7 @@ const SearchResultsScreen = () => {
     const fetchCategoryProducts = async () => {
       try {
         setIsLoading(true);
+        setHasInitialDataLoaded(false);
         setError(null);
 
         let fetchedProducts: Product[] = [];
@@ -283,6 +299,7 @@ const SearchResultsScreen = () => {
           );
 
           setProducts(validProducts);
+          setHasInitialDataLoaded(true);
         }
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -404,11 +421,11 @@ const SearchResultsScreen = () => {
   );
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !hasInitialDataLoaded) {
       return (
-        <View>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text>Loading products...</Text>
+          <Text style={styles.loadingText}>Loading products...</Text>
         </View>
       );
     }
@@ -417,7 +434,8 @@ const SearchResultsScreen = () => {
       return <NoContentFound message={error} />;
     }
 
-    if (!displayProducts.length) {
+    // Only show "no products found" if we've finished loading and have no products
+    if (!isLoading && hasInitialDataLoaded && !displayProducts.length) {
       const message = searchQuery
         ? `No products found for "${searchQuery}"`
         : "No products found";
@@ -428,25 +446,48 @@ const SearchResultsScreen = () => {
       );
     }
 
+    // if (!displayProducts.length) {
+    //   const message = searchQuery
+    //     ? `No products found for "${searchQuery}"`
+    //     : "No products found";
+    //   return (
+    //     <View style={{ flex: 1 }}>
+    //       <NoContentFound message={message} />
+    //     </View>
+    //   );
+    // }
+
+    if (displayProducts.length > 0) {
+      return (
+        <FlatList
+          data={displayProducts}
+          keyExtractor={(item, index) => {
+            // Ensure unique keys by combining ID with index as fallback
+            const key = item?.id ? `product-${item.id}` : `item-${index}`;
+            return key;
+          }}
+          renderItem={renderItem}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      );
+    }
+
+    // Show loading if we're still waiting for initial data
     return (
-      <FlatList
-        data={displayProducts}
-        keyExtractor={(item, index) => {
-          // Ensure unique keys by combining ID with index as fallback
-          const key = item?.id ? `product-${item.id}` : `item-${index}`;
-          return key;
-        }}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading products...</Text>
+      </View>
     );
   };
 
   const renderResultsInfo = () => {
-    if (isLoading || error) return null;
+    // Don't show results info while loading initial data
+    if (isLoading && !hasInitialDataLoaded) return null;
+    if (error) return null;
 
     if (!isFromSearch && searchQuery) {
       return (
@@ -462,7 +503,6 @@ const SearchResultsScreen = () => {
 
     return null;
   };
-
   return (
     <PageLayout
       hasFooter

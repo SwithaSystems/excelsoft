@@ -15,7 +15,6 @@ const EXCLUDED_APIS = [
   "/twilio/SendOtp",
   "/twilio/verifyOtp",
   "/products/category",
-  "/products",
   "/products/subCategories",
   "/products/search",
   "/categories",
@@ -176,11 +175,11 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       // Check if server sent a new token in response headers
       const newToken = response.headers["x-new-token"];
       if (newToken) {
-      try {
+        try {
           SecureStore.setItemAsync("token", newToken);
         } catch (error) {
           console.error("SecureStore setItem error:", error);
-        }      
+        }
       }
       return response;
     },
@@ -288,7 +287,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
             refreshError.response?.status === 401 ||
             refreshError.response?.status === 403
           ) {
-          try {
+            try {
               await Promise.all([
                 SecureStore.deleteItemAsync("token"),
                 SecureStore.deleteItemAsync("refreshtoken"),
@@ -296,7 +295,8 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
               ]);
             } catch (error) {
               console.error("SecureStore deleteItem error:", error);
-            }            redirectToPage(containers.signInScreen);
+            }
+            redirectToPage(containers.signInScreen);
           }
 
           return Promise.reject(refreshError);

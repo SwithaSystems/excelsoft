@@ -84,10 +84,17 @@ const ProductCard = ({
         redirectToPage(containers.productDetailScreen, { productId: id })
       }
     >
-      <Image
-        source={isRemoteImage ? { uri: image } : image}
-        style={styles.image}
-      />
+      {/* Only render image if product has one */}
+      {image ? (
+        <View style={styles.image}>
+          <Image
+            source={{ uri: image }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
+      ) : null}
+
       <View style={styles.content}>
         <View style={globalStyles.savedContainer}>
           <Text style={styles.title} numberOfLines={1}>
@@ -101,31 +108,38 @@ const ProductCard = ({
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.ratingContainer}>
-          <Text style={styles.rating}>{rating}</Text>
-          <Star filled={false} size={16} />
-          <Text style={styles.reviews}>({noOfreviews})</Text>
-        </View>
-        <View style={styles.saleContainer}>
-          <View style={styles.saleTimeBox}>
-            <View style={styles.saleTag}>
-              <Text style={styles.saleText}>Sale</Text>
-            </View>
-            <Text style={styles.time}>02:48:26</Text>
+        {noOfreviews > 0 && (
+          <View style={styles.ratingContainer}>
+            <Text style={styles.rating}>{rating}</Text>
+            <Star filled={false} size={16} />
+            <Text style={styles.reviews}>({noOfreviews})</Text>
           </View>
-          <Text style={styles.discount}>
-            {Math.round(((originalPrice - price) / originalPrice) * 100)}%
-          </Text>
-        </View>
+        )}
+        {originalPrice > price && (
+          <View style={styles.saleContainer}>
+            <View style={styles.saleTimeBox}>
+              <View style={styles.saleTag}>
+                <Text style={styles.saleText}>Sale</Text>
+              </View>
+              <Text style={styles.time}>02:48:26</Text>
+            </View>
+            <Text style={styles.discount}>
+              {Math.round(((originalPrice - price) / originalPrice) * 100)}%
+            </Text>
+          </View>
+        )}
+
         <View style={styles.priceContainer}>
           <Text style={styles.price}>
             {CurrencySymbol}
             {price}
           </Text>
-          <Text style={styles.originalPrice}>
-            {CurrencySymbol}
-            {originalPrice}
-          </Text>
+          {originalPrice > price && (
+            <Text style={styles.originalPrice}>
+              {CurrencySymbol}
+              {originalPrice}
+            </Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>

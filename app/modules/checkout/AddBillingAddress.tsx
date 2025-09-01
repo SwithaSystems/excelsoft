@@ -106,7 +106,6 @@ const addBillingAddressScreen = () => {
 
   const validateFields = () => {
     const newErrors = {} as typeof errors;
-
     if (!address.trim()) newErrors.name = "Address name is required.";
     if (!line1.trim()) newErrors.line1 = "Line 1 is required.";
     // FIXED: Make line2 optional since it's not always required
@@ -137,26 +136,24 @@ const addBillingAddressScreen = () => {
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: state.trim(), // You might want to add state field later
+        state: state.trim(),
         postalCode: postalcode.trim(),
         addressType: addressType ?? [],
         isDefault,
-        phone: phoneNumber, // Add if needed
-        email: "", // Add if needed
+        phone: phoneNumber,
+        email: "",
       };
 
       let response;
       let savedAddress;
 
       if (isEditMode && edit_address) {
-        // Update existing address
         response = await addressService.updateAddress(edit_address._id, {
           _id: edit_address._id,
           ...addressData,
         });
 
         if (response.status === 200) {
-          // FIXED: Set the updated address as selected
           savedAddress = {
             _id: edit_address._id,
             ...addressData,
@@ -170,11 +167,9 @@ const addBillingAddressScreen = () => {
           return;
         }
       } else {
-        // Add new address
         response = await addressService.addAddress(addressData);
 
         if (response.status === 200 || response.status === 201) {
-          // Get the newly created address from response and set as selected
           savedAddress = (response.data as { _id: string }) || {
             id: (response.data as { _id: string })?._id,
             ...addressData,
@@ -182,7 +177,6 @@ const addBillingAddressScreen = () => {
             updatedAt: new Date().toISOString(),
           };
 
-          //  Automatically select the newly added address
           setSelectedBillingAddress(savedAddress);
 
           alert("Address added successfully");

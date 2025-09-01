@@ -23,6 +23,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 36,
   },
+  noReviewContainerHeading: {
+    //fontWeight: 500,
+    fontSize: 26,
+    marginBottom: 16,
+    lineHeight: 26,
+  },
   addReviewContainer: {
     // flexDirection: "row-reverse",
     // flexWrap: "nowrap",
