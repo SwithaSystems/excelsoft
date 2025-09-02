@@ -3,7 +3,6 @@ import { TouchableOpacity, Text, Image, StyleSheet } from "react-native";
 import colors from "../../constants/colors";
 import { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 interface CategoryItemProps {
   title: string;
   image: ImageSourcePropType;
@@ -17,17 +16,24 @@ const CategoryItem = ({
   onPress,
   containerStyle,
 }: CategoryItemProps) => {
-  console.log("image", image);
+  console.log("image selected", image, typeof image);
   return (
     <TouchableOpacity
       style={[styles.container, containerStyle]}
       onPress={onPress}
     >
       <Image
-        source={typeof image === "string" ? { uri: image } : image}
+        source={
+          image && typeof image === "string" && image === ""
+            ? { uri: image }
+            : typeof image === "object" && image
+            ? image
+            : require("../../assets/Placeholder.png")
+        }
         style={styles.image}
         resizeMode="cover"
       />
+
       <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   );

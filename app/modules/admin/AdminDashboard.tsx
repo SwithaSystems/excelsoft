@@ -336,15 +336,15 @@ const AdminDashboard = () => {
             <Text style={styles.metricValue}>
               {dashboardMetrics.totalOrders}
             </Text>
-            <View style={styles.salesRaiseSection}>
+            {/* <View style={styles.salesRaiseSection}>
               <Ionicons
                 name="trending-up-outline"
                 size={24}
                 color={colors.primary}
                 style={{ paddingRight: 8 }}
               />
-              <Text style={styles.metricChange}>+12.5%</Text>
-            </View>
+              <Text style={styles.metricChange}>+12.5%</Text> 
+            </View> */}
           </View>
         </View>
 
@@ -370,15 +370,15 @@ const AdminDashboard = () => {
               {CurrencySymbol}
               {dashboardMetrics.todayRevenue.toFixed(2)}
             </Text>
-            <View style={styles.salesRaiseSection}>
+            {/* <View style={styles.salesRaiseSection}>
               <Ionicons
                 name="trending-up-outline"
                 size={24}
                 color={colors.primary}
                 style={{ paddingRight: 8 }}
               />
-              <Text style={styles.metricChange}>+14.5%</Text>
-            </View>
+               <Text style={styles.metricChange}>+14.5%</Text> 
+            </View> */}
           </View>
         </View>
         {isSuperAdmin && (

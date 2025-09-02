@@ -61,10 +61,12 @@ const SearchResultsScreen = () => {
   // Memoize header title to prevent unnecessary re-renders
   const headerTitle = useMemo(() => {
     if (isFromSearch) {
+      const subCat = subCategories.find((sc) => sc.id === selectedCategoryId);
+      if (subCat) return subCat.name;
       return categoryName || "Search Results";
     }
     return "Search Results";
-  }, [isFromSearch, categoryName]);
+  }, [isFromSearch, categoryName, selectedCategoryId, subCategories]);
 
   // Parse selected subcategories - moved to useMemo
   const parsedSubCategoryIds = useMemo(() => {

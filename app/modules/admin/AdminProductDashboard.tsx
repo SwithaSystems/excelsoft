@@ -132,7 +132,10 @@ const AdminProductDashboard = () => {
             onPress: async () => {
               try {
                 setIsLoading(true);
-                const id = typeof productId === "string" ? parseInt(productId) : productId;
+                const id =
+                  typeof productId === "string"
+                    ? parseInt(productId)
+                    : productId;
                 const result = await ProductsAPI.deleteProduct(id);
                 if (result) {
                   setPage(1);
@@ -235,7 +238,15 @@ const AdminProductDashboard = () => {
             ]}
           >
             <View>
-              <Image source={{ uri: item?.image[0] }} style={styles.image} />
+              {item?.image[0] && (
+                <Image source={{ uri: item?.image[0] }} style={styles.image} />
+              )}
+              {!item?.image[0] && (
+                <Image
+                  source={require("../../../assets/Placeholder.png")}
+                  style={styles.image}
+                />
+              )}
             </View>
             <View style={[styles.details, { flex: 1, paddingRight: 4 }]}>
               <View
@@ -277,7 +288,11 @@ const AdminProductDashboard = () => {
                       }
                     }}
                   >
-                    <Ionicons name="trash-outline" size={20} color={colors.error} />
+                    <Ionicons
+                      name="trash-outline"
+                      size={20}
+                      color={colors.error}
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -387,7 +402,7 @@ const AdminProductDashboard = () => {
         />
 
         <View style={{ marginTop: 16, flex: 1 }}>
-          <Text
+          {/* <Text
             style={{
               marginBottom: 8,
               fontSize: 14,
@@ -395,7 +410,7 @@ const AdminProductDashboard = () => {
             }}
           >
             Showing {productsList.length} of {total} products
-          </Text>
+          </Text> */}
 
           <FlatList
             data={productsList}
@@ -405,7 +420,12 @@ const AdminProductDashboard = () => {
                 item.id?.toString() || item._id?.toString() || "product"
               }-${index}`
             }
-            onEndReached={handleLoadMore}
+            // onEndReached={handleLoadMore}
+            onEndReached={() => {
+              if (!isLoadingMoreRef.current && page * ITEMS_PER_PAGE < total) {
+                fetchAllProducts(page + 1, true);
+              }
+            }}
             onEndReachedThreshold={0.7} // Increased to 70% from bottom
             scrollEventThrottle={200}
             refreshControl={
