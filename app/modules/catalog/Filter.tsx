@@ -117,7 +117,7 @@ const Filter = () => {
               </View>
             </View>
 
-            <View style={styles.section}>
+            {/* <View style={styles.section}>
               <Text style={styles.sectionTitle}>Brands</Text>
               <View style={styles.checkBoxRow}>
                 {brands.map((brand) => (
@@ -134,7 +134,7 @@ const Filter = () => {
                   </View>
                 ))}
               </View>
-            </View>
+            </View> */}
           </ScrollView>
         )}
 
