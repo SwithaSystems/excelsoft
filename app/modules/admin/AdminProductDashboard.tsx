@@ -120,7 +120,7 @@ const AdminProductDashboard = () => {
   }, []);
 
   const handleDeleteProduct = useCallback(
-    (productId: string | number) => {
+    (item: Product) => {
       Alert.alert(
         "Delete Product",
         "Are you sure you want to delete this product? This action cannot be undone.",
@@ -132,11 +132,11 @@ const AdminProductDashboard = () => {
             onPress: async () => {
               try {
                 setIsLoading(true);
-                const id =
-                  typeof productId === "string"
-                    ? parseInt(productId)
-                    : productId;
-                const result = await ProductsAPI.deleteProduct(id);
+                // const id =
+                //   typeof productId === "string"
+                //     ? parseInt(productId)
+                //     : productId;
+                const result = await ProductsAPI.deleteProduct(item?._id);
                 if (result) {
                   setPage(1);
                   setTotal(0);
@@ -282,9 +282,9 @@ const AdminProductDashboard = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
-                      const productId = item._id || item.id;
-                      if (productId) {
-                        handleDeleteProduct(productId);
+                      // const productId = item._id;
+                      if (item) {
+                        handleDeleteProduct(item);
                       }
                     }}
                   >
@@ -356,7 +356,7 @@ const AdminProductDashboard = () => {
     try {
       console.log("Deleting product:", itemToDelete);
       if (itemToDelete?._id) {
-        await ProductsAPI.deleteProduct(itemToDelete._id);
+        await ProductsAPI.deleteProduct(itemToDelete?._id);
         setPage(1);
         setTotal(0);
         isLoadingMoreRef.current = false;
