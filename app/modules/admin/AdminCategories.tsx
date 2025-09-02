@@ -3,15 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  FlatList,
   Alert,
   Image,
 } from "react-native";
 import Header from "../../components/Header";
-import { Button } from "react-native-elements";
 import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
@@ -684,7 +681,6 @@ const styles = StyleSheet.create({
   },
   listSection: {
     flex: 1,
-    // paddingHorizontal: 16,
   },
   listContainer: {
     paddingBottom: 20,

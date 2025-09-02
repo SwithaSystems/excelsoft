@@ -13,6 +13,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -117,6 +118,47 @@ const AdminProductDashboard = () => {
       console.error("Error fetching categories:", err);
     }
   }, []);
+
+  const handleDeleteProduct = useCallback(
+    (productId: string | number) => {
+      Alert.alert(
+        "Delete Product",
+        "Are you sure you want to delete this product? This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                setIsLoading(true);
+                const id = typeof productId === "string" ? parseInt(productId) : productId;
+                const result = await ProductsAPI.deleteProduct(id);
+                if (result) {
+                  setPage(1);
+                  setTotal(0);
+                  isLoadingMoreRef.current = false;
+                  await fetchAllProducts(1, false);
+                  Alert.alert("Success", "Product deleted successfully");
+                }
+              } catch (error: any) {
+                console.log("Delete error:", error?.response?.data);
+
+                const errorMessage =
+                  error?.response?.data?.message ||
+                  "Something went wrong while deleting the product.";
+
+                Alert.alert("Error", errorMessage);
+              } finally {
+                setIsLoading(false);
+              }
+            },
+          },
+        ]
+      );
+    },
+    [fetchAllProducts]
+  );
 
   useEffect(() => {
     fetchAllProducts(1);
@@ -229,15 +271,13 @@ const AdminProductDashboard = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
-                      setIsModalVisible(true);
-                      setItemToDelete(item);
+                      const productId = item._id || item.id;
+                      if (productId) {
+                        handleDeleteProduct(productId);
+                      }
                     }}
                   >
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
+                    <Ionicons name="trash-outline" size={20} color={colors.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -430,17 +470,18 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
-        <ConfirmationModal
+        {/* <ConfirmationModal
           onClose={() => {
             setIsModalVisible(false);
             setItemToDelete(null);
           }}
           isModalVisible={isModalVisible}
           text="Are you sure you want to delete this product? This action cannot be undone."
-          submitText="Delete Product"
+          submitText="Yes"
+          cancelText="No"
           handleSubmit={confirmDelete}
           handleCancel={cancelDelete}
-        />
+        /> */}
       </View>
     </PageLayout>
   );
