@@ -75,7 +75,9 @@ const SearchScreen = () => {
   // Load recent searches from AsyncStorage
   const loadRecentSearches = async () => {
     try {
-      const storedSearches = await SecureStore.getItemAsync(RECENT_SEARCHES_KEY);
+      const storedSearches = await SecureStore.getItemAsync(
+        RECENT_SEARCHES_KEY
+      );
       console.log("Loaded searches from storage:", storedSearches); // Debug log
       if (storedSearches !== null) {
         const parsed = JSON.parse(storedSearches);
@@ -299,19 +301,19 @@ const SearchScreen = () => {
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         {/* Recent Searches */}
         <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recent Searches</Text>
-            {recentSearches.length > 0 && (
-              <TouchableOpacity onPress={clearAllRecentSearches}>
-                <Text style={styles.clearAllText}>Clear All</Text>
-              </TouchableOpacity>
-            )}
+          <Text style={styles.sectionTitle}>Recent Searches</Text>
+          {recentSearches.length > 0 && (
+            <TouchableOpacity onPress={clearAllRecentSearches}>
+              <Text style={styles.clearAllText}>Clear All</Text>
+            </TouchableOpacity>
+          )}
           {renderRecentSearches()}
         </View>
         {/* Trending Searches */}
-        {renderTrendingSearches()}
+        {/* {renderTrendingSearches()} */}
 
         {/* Popular Categories */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Popular Categories</Text>
           <View style={styles.categoriesGrid}>
             {categories.map((category) => (
@@ -323,7 +325,7 @@ const SearchScreen = () => {
               />
             ))}
           </View>
-        </View>
+        </View> */}
       </ScrollView>
     );
   };
@@ -338,7 +340,6 @@ const SearchScreen = () => {
     >
       <KeyBoardWrapper>
         <View style={styles.container}>
-
           <View style={styles.searchBarContainer}>
             <SearchBar
               placeholder="Search..."
