@@ -354,9 +354,9 @@ const AdminCategories = () => {
           `Category ${isEditMode ? "updated" : "added"} successfully`
         );
 
-        if (!isEditMode) {
-          router.back();
-        }
+        // if (!isEditMode) {
+        //   router.back();
+        // }
       }
     } catch (error) {
       console.error(
