@@ -42,6 +42,7 @@ const CategoryBadges = (props) => {
 
         if (data && data.length > 0) {
           const setsubCategories = data
+            .filter((category) => category.id !== props.categoryId)
             .map((category) => category.name)
             .filter((name) => name.toLowerCase() !== "all");
           setsubCategoriesNames(setsubCategories);

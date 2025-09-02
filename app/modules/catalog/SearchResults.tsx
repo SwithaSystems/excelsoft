@@ -149,50 +149,50 @@ const SearchResultsScreen = () => {
 
   // FIX 1: Fetch all products with proper cleanup
   useEffect(() => {
-    // if (!isFromSearch && searchQuery) {
-    let cancelled = false;
+    if (!isFromSearch && searchQuery) {
+      let cancelled = false;
 
-    // const fetchAllProducts = async () => {
-    //   try {
-    //     setIsLoading(true);
-    //     setError(null);
-    //     const data = await ProductsAPI.getAllProducts();
+      // const fetchAllProducts = async () => {
+      //   try {
+      //     setIsLoading(true);
+      //     setError(null);
+      //     const data = await ProductsAPI.getAllProducts();
 
-    //     // Check if component is still mounted and request wasn't cancelled
-    //     if (!cancelled && isMountedRef.current) {
-    //       setAllProducts(data);
-    //     }
-    //   } catch (err) {
-    //     console.error("Error fetching all products:", err);
-    //     if (!cancelled && isMountedRef.current) {
-    //       setError("Failed to fetch products. Please try again.");
-    //     }
-    //   } finally {
-    //     if (!cancelled && isMountedRef.current) {
-    //       setIsLoading(false);
-    //     }
-    //   }
-    // };
-    const initializeFetch = async () => {
-      try {
-        setError(null);
-        await fetchAllProducts();
-      } catch (err) {
-        if (!cancelled && isMountedRef.current) {
-          setError("Failed to fetch products. Please try again.");
+      //     // Check if component is still mounted and request wasn't cancelled
+      //     if (!cancelled && isMountedRef.current) {
+      //       setAllProducts(data);
+      //     }
+      //   } catch (err) {
+      //     console.error("Error fetching all products:", err);
+      //     if (!cancelled && isMountedRef.current) {
+      //       setError("Failed to fetch products. Please try again.");
+      //     }
+      //   } finally {
+      //     if (!cancelled && isMountedRef.current) {
+      //       setIsLoading(false);
+      //     }
+      //   }
+      // };
+      const initializeFetch = async () => {
+        try {
+          setError(null);
+          await fetchAllProducts();
+        } catch (err) {
+          if (!cancelled && isMountedRef.current) {
+            setError("Failed to fetch products. Please try again.");
+          }
         }
-      }
-    };
+      };
 
-    initializeFetch();
+      initializeFetch();
 
-    // fetchAllProducts();
+      // fetchAllProducts();
 
-    // Cleanup function
-    return () => {
-      cancelled = true;
-    };
-    // }
+      // Cleanup function
+      return () => {
+        cancelled = true;
+      };
+    }
   }, [fetchAllProducts]);
 
   // FIX 2: Fetch subcategories with proper cleanup
@@ -230,22 +230,6 @@ const SearchResultsScreen = () => {
       };
     }
   }, [isFromSearch, parsedCategoryId]);
-
-  useEffect(() => {
-    if (parsedSubCategoryIds.length > 0) {
-      const filtered_products = allProducts.filter((product) => {
-        return (
-          Array.isArray(product.categoryId) &&
-          parsedSubCategoryIds.some((id) =>
-            product.categoryId.map(Number).includes(Number(id))
-          )
-        );
-      });
-
-      // console.log("filtered_products", filtered_products);
-      setProducts(filtered_products);
-    }
-  }, [parsedSubCategoryIds, allProducts]);
 
   useEffect(() => {
     // Only run if we're in category mode or have subcategory filters
@@ -370,6 +354,24 @@ const SearchResultsScreen = () => {
     }
   }, [isFromSearch, products, allProducts, searchQuery, sortOption]);
 
+  useEffect(() => {
+    if (
+      !isLoading &&
+      hasInitialDataLoaded &&
+      displayProducts.length === 0 &&
+      page * ITEMS_PER_PAGE < total
+    ) {
+      fetchAllProducts(page + 1, true);
+    }
+  }, [
+    isLoading,
+    hasInitialDataLoaded,
+    displayProducts.length,
+    page,
+    total,
+    fetchAllProducts,
+  ]);
+
   // Handle category selection from badges
   const handleCategorySelect = useCallback((catId: number) => {
     setSelectedCategoryId(catId);
@@ -433,38 +435,30 @@ const SearchResultsScreen = () => {
       );
     }
 
-    // if (error) {
-    //   return <NoContentFound message={error} />;
-    // }
-    // Only show "no products found" if we've finished loading and have no products
-    console.log(
-      "all conditions",
-      isLoading,
-      hasInitialDataLoaded,
-      displayProducts.length
-    );
-
-    if (!isLoading && hasInitialDataLoaded && displayProducts.length === 0) {
-      const message = searchQuery
-        ? `No products found for "${searchQuery}"`
-        : "Loading ...";
-      return (
-        <View style={{ flex: 1 }}>
-          <NoContentFound message={message} />
-        </View>
-      );
+    if (error) {
+      return <NoContentFound message={error} />;
     }
 
-    // if (!displayProducts.length) {
-    //   const message = searchQuery
-    //     ? `No products found for "${searchQuery}"`
-    //     : "No products found";
-    //   return (
-    //     <View style={{ flex: 1 }}>
-    //       <NoContentFound message={message} />
-    //     </View>
-    //   );
-    // }
+    // Only show "no products found" if we've finished loading and have no products
+    if (!isLoading && hasInitialDataLoaded && !displayProducts.length) {
+      const message = searchQuery
+        ? `No products found for "${searchQuery}"`
+        : "No products found";
+      if (loadingMore || page * ITEMS_PER_PAGE < total) {
+        return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Loading more products...</Text>
+          </View>
+        );
+      } else {
+        return (
+          <View style={{ flex: 1 }}>
+            <NoContentFound message={message} />
+          </View>
+        );
+      }
+    }
 
     if (displayProducts.length > 0) {
       return (
@@ -480,6 +474,17 @@ const SearchResultsScreen = () => {
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (!isLoadingMoreRef.current && page * ITEMS_PER_PAGE < total) {
+              fetchAllProducts(page + 1, true);
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() =>
+            loadingMore ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : null
+          }
         />
       );
     }
