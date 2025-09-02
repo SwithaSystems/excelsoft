@@ -305,7 +305,7 @@ const addBillingAddressScreen = () => {
               style={[styles.input, errors.postalcode && styles.inputError]}
               value={postalcode}
               onChangeText={(text) => handleInputChange("postalcode", text)}
-              placeholder="Street address, P.O. box"
+              placeholder="Postal Code..."
               maxLength={100}
             />
             {errors.postalcode && (

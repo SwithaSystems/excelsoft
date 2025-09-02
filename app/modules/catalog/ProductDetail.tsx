@@ -344,7 +344,13 @@ const ProductDetailScreen = () => {
           <View style={styles.reviewsSection}>
             <View style={styles.reviewsHeader}>
               <Text style={styles.reviewsTitle}>What do Customers say?</Text>
-              {/* <Text style={styles.addReviewText}>see more</Text> */}
+              <TouchableOpacity
+                  onPress={() =>
+                    redirectToPage(containers.feedbackScreen, { productId: productId })
+                  }
+                >
+                  <Text style={styles.addReviewText}>Add Review</Text>
+                </TouchableOpacity>
             </View>
             {[...(product.reviews || [])]
               .sort((a, b) => Number(b.id) - Number(a.id))
