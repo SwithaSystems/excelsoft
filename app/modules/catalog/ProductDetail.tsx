@@ -39,6 +39,7 @@ import styles from "./ProductDetailStyles";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
+  const { from } = useLocalSearchParams();
   const [selectedColor, setSelectedColor] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   // const { isLoading, setIsLoading } = useAppContext();
@@ -49,6 +50,7 @@ const ProductDetailScreen = () => {
   const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
     null
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
@@ -94,20 +96,52 @@ const ProductDetailScreen = () => {
   const fetchProduct = useCallback(async () => {
     try {
       setIsProductLoading(true);
+      setErrorMessage(null);
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
       );
       console.log("fetched product", fetchedProduct);
+      if (!fetchedProduct) {
+        setErrorMessage("Product not found");
+        if (from === "savedItemScreen") {
+          const savedItem = savedItems.find(
+            (item: any) => item.id === Number(productId)
+          );
+          if (savedItem) {
+            dispatch(removeFromSavedItems(savedItem.id));
+          }
+        }
+
+        return;
+      }
+
       setProduct(fetchedProduct);
+
       if (fetchedProduct?.productColors?.length) {
         setSelectedColor(fetchedProduct.productColors[0]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching product:", error);
+
+      if (error?.response?.status === 404) {
+        setErrorMessage("Product not found");
+        if (from === "saveditems") {
+          const savedItem = savedItems.find(
+            (item: any) => item.id === Number(productId)
+          );
+          if (savedItem) {
+            dispatch(removeFromSavedItems(savedItem.id));
+          }
+        }
+      } else if (error?.response?.status === 401) {
+        setErrorMessage("Unauthorized. Please login again.");
+      } else {
+        setErrorMessage("Something went wrong. Please try again later.");
+      }
     } finally {
       setIsProductLoading(false);
     }
-  }, [productId, setIsProductLoading]);
+  }, [productId, setIsProductLoading, from, savedItems, dispatch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -151,12 +185,27 @@ const ProductDetailScreen = () => {
       </PageLayout>
     );
   }
+  if (errorMessage) {
+    return (
+      <PageLayout hasHeader scrollable={false}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{errorMessage}</Text>
+          {/* <Button
+            title="Go Back"
+            onPress={() => redirectToPage(containers.homeScreen)}
+          /> */}
+        </View>
+      </PageLayout>
+    );
+  }
 
   if (!product) {
     return (
-      <View style={styles.container}>
-        <Text>Product not found</Text>
-      </View>
+      <PageLayout hasHeader scrollable={false}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Product not available</Text>
+        </View>
+      </PageLayout>
     );
   }
 
@@ -204,13 +253,12 @@ const ProductDetailScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-              {product?.reviews?.length > 0 && (
+              {product.reviews.length > 0 && (
                 <View style={styles.ratingContainer}>
                   <Text style={styles.ratingText}>{product.rating}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>
-                    ({product.reviews.length}{" "}
-                    {product.reviews.length === 1 ? "Review" : "Reviews"})
+                    ({product?.reviews?.length || 0} )
                   </Text>
                 </View>
               )}
@@ -218,10 +266,10 @@ const ProductDetailScreen = () => {
               {product.originalPrice > product.price && (
                 <View style={styles.saleContainer}>
                   <View style={styles.saleTimeBox}>
-                    {/* <View style={styles.saleTag}>
+                    <View style={styles.saleTag}>
                       <Text style={styles.saleText}>Sale</Text>
                     </View>
-                    <Text style={styles.saleTime}>02:48:26</Text> */}
+                    <Text style={styles.saleTime}>02:48:26</Text>
                   </View>
                   <View style={styles.discountTag}>
                     <Text style={styles.discountText}>
@@ -346,12 +394,14 @@ const ProductDetailScreen = () => {
             <View style={styles.reviewsHeader}>
               <Text style={styles.reviewsTitle}>What do Customers say?</Text>
               <TouchableOpacity
-                  onPress={() =>
-                    redirectToPage(containers.feedbackScreen, { productId: productId })
-                  }
-                >
-                  <Text style={styles.addReviewText}>Add Review</Text>
-                </TouchableOpacity>
+                onPress={() =>
+                  redirectToPage(containers.feedbackScreen, {
+                    productId: productId,
+                  })
+                }
+              >
+                <Text style={styles.addReviewText}>Add Review</Text>
+              </TouchableOpacity>
             </View>
             {[...(product.reviews || [])]
               .sort((a, b) => Number(b.id) - Number(a.id))

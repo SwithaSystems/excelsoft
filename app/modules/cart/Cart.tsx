@@ -111,7 +111,7 @@ const CartScreen = () => {
   useEffect(() => {
     console.log("Item to delete updated:", itemToDelete);
   }, [itemToDelete]);
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     console.log("User:", user);
     if (!user) {
       showErrorAlert({
@@ -119,8 +119,47 @@ const CartScreen = () => {
         message: SESSION_EXPIRED,
       });
       redirectToPage(containers.signInScreen);
-    } else {
+      return;
+    }
+
+    try {
+      for (let item of cartItems) {
+        try {
+          const product = await ProductsAPI.getProductBYID(Number(item.id));
+
+          if (
+            !product || // product not found (null/undefined from API)
+            product?.name.trim().toLowerCase() !==
+              item.name.trim().toLowerCase()
+          ) {
+            showErrorAlert({
+              title: "Product not available",
+              message: `The item "${item.name}" is no longer available and has been removed from your cart.`,
+            });
+            dispatch(removeFromCart(item.id));
+            return;
+          }
+        } catch (err: any) {
+          if (err.response?.status === 404) {
+            // Product deleted from DB
+            showErrorAlert({
+              title: "Product not found",
+              message: `The item "${item.name}" has been removed from your cart.`,
+            });
+            dispatch(removeFromCart(item.id));
+            return;
+          } else {
+            throw err; // rethrow other errors
+          }
+        }
+      }
+
       redirectToPage(containers.pickUpModeScreen);
+    } catch (error) {
+      showErrorAlert({
+        title: "Error",
+        message: "Something went wrong while checking product information.",
+      });
     }
   };
 

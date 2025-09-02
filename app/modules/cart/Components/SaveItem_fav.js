@@ -14,6 +14,7 @@ import { removeFromCart } from "../../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../../store/slices/cartSlice";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import savedItemScreen from "../SavedItem";
 
 const SaveItemFav = (props) => {
   const item = props.cartItem;
@@ -106,6 +107,7 @@ const SaveItemFav = (props) => {
           onPress={() =>
             redirectToPage(containers.productDetailScreen, {
               productId: item.id,
+              from: "savedItemScreen",
             })
           }
         >
@@ -157,7 +159,7 @@ const SaveItemFav = (props) => {
                   )}
                 </Text>
                 <View style={styles.quantityContainer}>
-                  <View style={styles.quantityActionContainer}>
+                  {/* <View style={styles.quantityActionContainer}>
                     {item.quantity && item.quantity > 0 ? (
                       <>
                         <TouchableOpacity
@@ -204,7 +206,9 @@ const SaveItemFav = (props) => {
                       //   title="Add"
                       // />
                     )}
-                  </View>
+                  </View> */}
+                </View>
+                <View>
                   <TouchableOpacity
                     onPress={() => {
                       console.log("Deleting item", item);
