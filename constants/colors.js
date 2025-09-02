@@ -48,7 +48,7 @@ export default {
 
   // Greys & Blacks (grouped)
   black: "#040404",
-  // pureBlack: "#000000",
+  pureBlack: "#000000",
   // textPrimary: "#11181C",
   secondaryText: "#687076",
   //textLight: "#ECEDEE",

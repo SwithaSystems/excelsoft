@@ -26,6 +26,11 @@ const CategoryBadges = (props) => {
   ];
   const [subCategoriesNames, setsubCategoriesNames] = useState([]);
 
+  const truncateName = (name, maxLength = 10) => {
+    if(name.length <= maxLength) return name;
+    return name.substring(0, maxLength-3) + "...";
+  }
+
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
@@ -120,8 +125,10 @@ const CategoryBadges = (props) => {
                   styles.filterText,
                   activeFilter === category && styles.activeFilterText,
                 ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                {category}
+                {truncateName(category)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -136,14 +143,14 @@ const CategoryBadges = (props) => {
               });
             }}
           >
-            <Feather name="filter" size={26} color={colors.black} />
+            <Feather name="filter" size={24} color={colors.black} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.iconButton, { marginLeft: 24 }]}
+            style={[styles.iconButton, { marginLeft: 16 }]}
             onPress={() => setIsDropdownVisible(true)}
           >
-            <Ionicons name="swap-vertical" size={26} color={colors.black} />
+            <Ionicons name="swap-vertical" size={24} color={colors.black} />
           </TouchableOpacity>
         </View>
       </View>
@@ -210,6 +217,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     marginRight: 12,
     marginLeft: 0,
+    maxWidth: 120,
+    shadowColor: colors.pureBlack,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
@@ -234,7 +247,11 @@ const styles = StyleSheet.create({
     padding: 2,
     borderRadius: 50,
     backgroundColor: colors.secondary,
-    //marginLeft: 12, // Space between filter and sort icon
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1, 
   },
 });
 
