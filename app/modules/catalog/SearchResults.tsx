@@ -60,11 +60,11 @@ const SearchResultsScreen = () => {
 
   // Memoize header title to prevent unnecessary re-renders
   const headerTitle = useMemo(() => {
-  if (isFromSearch) {
-    return categoryName || "Search Results";  
-  }
-  return "Search Results";
-}, [isFromSearch, categoryName]);
+    if (isFromSearch) {
+      return categoryName || "Search Results";
+    }
+    return "Search Results";
+  }, [isFromSearch, categoryName]);
 
   // Parse selected subcategories - moved to useMemo
   const parsedSubCategoryIds = useMemo(() => {
@@ -433,15 +433,21 @@ const SearchResultsScreen = () => {
       );
     }
 
-    if (error) {
-      return <NoContentFound message={error} />;
-    }
-
+    // if (error) {
+    //   return <NoContentFound message={error} />;
+    // }
     // Only show "no products found" if we've finished loading and have no products
-    if (!isLoading && hasInitialDataLoaded && !displayProducts.length) {
+    console.log(
+      "all conditions",
+      isLoading,
+      hasInitialDataLoaded,
+      displayProducts.length
+    );
+
+    if (!isLoading && hasInitialDataLoaded && displayProducts.length === 0) {
       const message = searchQuery
         ? `No products found for "${searchQuery}"`
-        : "No products found";
+        : "Loading ...";
       return (
         <View style={{ flex: 1 }}>
           <NoContentFound message={message} />
