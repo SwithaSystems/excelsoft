@@ -221,7 +221,7 @@ const CartScreen = () => {
             </View>
           </View>*/}
 
-            <SpecialOffersBanner />
+            {/* <SpecialOffersBanner /> */}
 
             {savedForLaterItems.length > 0 && (
               <SavedLaterItem
@@ -237,13 +237,13 @@ const CartScreen = () => {
                 }}
               />
             )}
-            <RecommendedProductsSlider
+            {/* <RecommendedProductsSlider
               recommendedProducts={recommendedProducts}
               sectionTitleStyle={styles.sectionHeading}
               title="Similar products to your cart"
               showAddToCart={true}
               handleAdd={(item: any) => dispatch(addToCart(item))}
-            />
+            /> */}
           </View>
 
           {/* Delete Item Modal */}
