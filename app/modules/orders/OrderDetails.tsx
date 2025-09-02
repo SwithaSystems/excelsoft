@@ -286,7 +286,7 @@ const orderDetailsScreen = () => {
                 </Text>
               )}
 
-            <View>
+            {/* <View>
               <RecommendedProductsSlider
                 recommendedProducts={recommendedProducts}
                 sectionTitleStyle={[
@@ -296,9 +296,9 @@ const orderDetailsScreen = () => {
                 title="Would you like to see these too?"
                 showAddToCart={false}
               />
-            </View>
-            <View style={styles.buttonContainer}>
-              {/* <TouchableOpacity
+            </View> */}
+            {/* <View style={styles.buttonContainer}>
+               <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => {
                     redirectToPage(containers.cancelOrderScreen, {
@@ -317,8 +317,8 @@ const orderDetailsScreen = () => {
                   }}
                 >
                   <Text style={styles.buttonText}>Request Return</Text>
-                </TouchableOpacity> */}
-            </View>
+                </TouchableOpacity> 
+            </View> */}
           </View>
         </View>
       </PageLayout>
