@@ -26,8 +26,12 @@ const Filter = () => {
   const [loading, setLoading] = useState(true);
   const [applyingFilters, setApplyingFilters] = useState(false);
 
-  const [selectedCategories, setSelectedCategories] = useState<{ [key: number]: boolean }>({});
-  const [selectedBrands, setSelectedBrands] = useState<{ [key: string]: boolean }>({});
+  const [selectedCategories, setSelectedCategories] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [selectedBrands, setSelectedBrands] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const brands = ["Brand1", "Brand2", "Brand3", "Brand4", "Brand5", "Brand6"];
   const itemWidth = (Dimensions.get("window").width - 30) / 2 - 8;
@@ -35,7 +39,9 @@ const Filter = () => {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const data = await categoryService.getAllSubCategories(Number(categoryId));
+        const data = await categoryService.getAllSubCategories(
+          Number(categoryId)
+        );
         setCategories(data || []);
       } catch (error) {
         console.error("Failed to load categories", error);
@@ -54,8 +60,7 @@ const Filter = () => {
     setSelectedBrands((prev) => ({ ...prev, [brand]: !prev[brand] }));
   }, []);
 
-  const applyFilters = useCallback(async() => {
-
+  const applyFilters = useCallback(async () => {
     setApplyingFilters(true);
 
     const selectedCategoryIds = Object.keys(selectedCategories)
@@ -67,17 +72,17 @@ const Filter = () => {
       alert("Please select at least one category!");
       return;
     }
-    try{
-    redirectToPage(containers.searchResultsScreen, {
-      selectedSubCategories: selectedCategoryIds,
-      fromSearch: true,
-      category: "Filtered Results",
-      categoryId: categoryId,
-    });
-    } finally{
+    try {
+      redirectToPage(containers.searchResultsScreen, {
+        selectedSubCategories: selectedCategoryIds,
+        fromSearch: true,
+        category: "Filtered Results",
+        categoryId: categoryId,
+      });
+    } finally {
       setApplyingFilters(false);
     }
-  },[selectedCategories]);
+  }, [selectedCategories]);
 
   return (
     <PageLayout
@@ -94,19 +99,21 @@ const Filter = () => {
             <View style={[styles.section, { marginBottom: 0 }]}>
               <Text style={styles.sectionTitle}>Categories</Text>
               <View style={styles.checkBoxRow}>
-                {categories.map((category) => (
-                  <View key={category.id} style={{ width: itemWidth }}>
-                    <CheckBox
-                      title={category.name}
-                      checked={!!selectedCategories[category.id]}
-                      onPress={() => handleCategorySelect(category.id)}
-                      containerStyle={styles.checkBoxContainer}
-                      textStyle={styles.checkBoxText}
-                      checkedColor = {colors.primary}
-                      uncheckedColor= {colors.secondary}
-                    />
-                  </View>
-                ))}
+                {categories
+                  .filter((category) => category.id !== Number(categoryId))
+                  .map((category) => (
+                    <View key={category.id} style={{ width: itemWidth }}>
+                      <CheckBox
+                        title={category.name}
+                        checked={!!selectedCategories[category.id]}
+                        onPress={() => handleCategorySelect(category.id)}
+                        containerStyle={styles.checkBoxContainer}
+                        textStyle={styles.checkBoxText}
+                        checkedColor={colors.primary}
+                        uncheckedColor={colors.secondary}
+                      />
+                    </View>
+                  ))}
               </View>
             </View>
 
@@ -121,8 +128,8 @@ const Filter = () => {
                       onPress={() => handleBrandSelect(brand)}
                       containerStyle={styles.checkBoxContainer}
                       textStyle={styles.checkBoxText}
-                      checkedColor = {colors.primary}
-                      uncheckedColor= {colors.secondary}
+                      checkedColor={colors.primary}
+                      uncheckedColor={colors.secondary}
                     />
                   </View>
                 ))}
@@ -131,7 +138,11 @@ const Filter = () => {
           </ScrollView>
         )}
 
-        <Button title="Apply Filters" onPress={applyFilters} style={styles.applyButton} />
+        <Button
+          title="Apply Filters"
+          onPress={applyFilters}
+          style={styles.applyButton}
+        />
       </View>
     </PageLayout>
   );
@@ -140,7 +151,12 @@ const Filter = () => {
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, paddingBottom: 36 },
   section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 22, fontWeight: "400", marginBottom: 16, color: colors.black },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "400",
+    marginBottom: 16,
+    color: colors.black,
+  },
   applyButton: {
     backgroundColor: colors.primary,
     padding: 15,
@@ -154,7 +170,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   checkBoxText: { color: colors.black },
-  checkBoxRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
+  checkBoxRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
 });
 
 export default Filter;
