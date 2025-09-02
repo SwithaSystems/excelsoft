@@ -519,7 +519,6 @@ Contact Number: ${pickupAddress.phone}`}
           <View
             style={{
               paddingHorizontal: 24,
-              // paddingBottom: 14
             }}
           >
             <Button
