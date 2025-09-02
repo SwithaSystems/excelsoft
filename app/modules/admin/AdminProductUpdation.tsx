@@ -759,6 +759,8 @@ const AdminProductUpdation = () => {
                     setSelectedColors([]);
                   }
                 }}
+                checkedColor = {colors.primary}
+                uncheckedColor= {colors.secondary}
               />
               <Text>Colors Available?</Text>
             </View>
@@ -897,6 +899,8 @@ const AdminProductUpdation = () => {
                                   onPress={() =>
                                     handleColorSelection(color.hex, color.name)
                                   }
+                                  checkedColor = {colors.primary}
+                                  uncheckedColor= {colors.secondary}
                                 />
                                 <View
                                   style={[
@@ -937,11 +941,15 @@ const AdminProductUpdation = () => {
             <CheckBox
               checked={isChecked}
               onPress={() => setIsChecked(!isChecked)}
+              checkedColor = {colors.primary}
+              uncheckedColor= {colors.secondary}
             />
             <Text>Returnable?</Text>
             <CheckBox
               checked={isAgeRestricted}
               onPress={() => setIsAgeRestricted(!isAgeRestricted)}
+              checkedColor = {colors.primary}
+              uncheckedColor= {colors.secondary}
             />
             <Text>Age Restricted?</Text>
           </View>

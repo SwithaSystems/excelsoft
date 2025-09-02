@@ -31,6 +31,7 @@ export default {
   secondaryYellow: "#F1E29B",
   bannerYellow: "#F0EC05",
   // warningBg: "#FFF3E0",
+  gold: "#FFD700",
 
   // Purples
   // bannerPurple: "#2E2A5C",
