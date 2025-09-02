@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   focusedContainer: {
-    borderColor: colors.linkBlue,
+    borderColor: colors.secondary,
     backgroundColor: colors.infoBg,
   },
   input: {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   focusedInput: {
-    color: colors.linkBlue,
+    color: colors.secondary,
   },
 });
 

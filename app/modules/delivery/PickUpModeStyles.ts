@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.lightSkyBlue,
+    borderColor: colors.secondary,
     elevation: 4,
     shadowColor: colors.secondary,
     shadowOffset: { width: 0, height: 0 },

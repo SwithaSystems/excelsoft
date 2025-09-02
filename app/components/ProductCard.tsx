@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   saleTimeBox: {
     flexDirection: "row",
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     //borderRadius: 5,
     alignItems: "center",
   },
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.primary,
     marginLeft: 6,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     padding: 4,
     borderRadius: 5,
   },

@@ -27,9 +27,9 @@ const CategoryBadges = (props) => {
   const [subCategoriesNames, setsubCategoriesNames] = useState([]);
 
   const truncateName = (name, maxLength = 10) => {
-    if(name.length <= maxLength) return name;
-    return name.substring(0, maxLength-3) + "...";
-  }
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + "...";
+  };
 
   useEffect(() => {
     const fetchSubCategories = async () => {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   activeSortOption: {
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
   },
   modalOverlay: {
     flex: 1,
@@ -241,17 +241,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginLeft: 16,
-    paddingLeft:0,
+    paddingLeft: 0,
   },
   iconButton: {
     padding: 2,
     borderRadius: 50,
     backgroundColor: colors.secondary,
-    shadowColor: '#000', 
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-    elevation: 1, 
+    elevation: 1,
   },
 });
 
