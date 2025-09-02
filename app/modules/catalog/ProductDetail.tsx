@@ -204,12 +204,13 @@ const ProductDetailScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-              {product.reviews.length > 0 && (
+              {product?.reviews?.length > 0 && (
                 <View style={styles.ratingContainer}>
                   <Text style={styles.ratingText}>{product.rating}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>
-                    ({product?.reviews?.length || 0} )
+                    ({product.reviews.length}{" "}
+                    {product.reviews.length === 1 ? "Review" : "Reviews"})
                   </Text>
                 </View>
               )}
@@ -217,10 +218,10 @@ const ProductDetailScreen = () => {
               {product.originalPrice > product.price && (
                 <View style={styles.saleContainer}>
                   <View style={styles.saleTimeBox}>
-                    <View style={styles.saleTag}>
+                    {/* <View style={styles.saleTag}>
                       <Text style={styles.saleText}>Sale</Text>
                     </View>
-                    <Text style={styles.saleTime}>02:48:26</Text>
+                    <Text style={styles.saleTime}>02:48:26</Text> */}
                   </View>
                   <View style={styles.discountTag}>
                     <Text style={styles.discountText}>

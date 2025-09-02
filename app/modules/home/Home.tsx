@@ -193,30 +193,30 @@ const HomePage = () => {
         {/* <View>{renderBanner()}</View> */}
 
         {/* Recommended Products */}
-        <View>
+        {/* <View>
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Recommended for You"
           />
-        </View>
+        </View> */}
 
         {/* Exclusive Offers */}
-        <View>
+        {/* <View>
           <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View>
+        </View> */}
 
         {/* Best Sellers */}
-        <View>
+        {/* <View>
           <RecommendedProductsSlider
             recommendedProducts={bestSellers}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Best Sellers"
           />
-        </View>
+        </View> */}
 
         {/* Featured Products */}
-        {renderFeaturedProducts()}
+        {/* {renderFeaturedProducts()} */}
       </View>
     </PageLayout>
   );

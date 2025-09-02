@@ -79,7 +79,10 @@ const ProductCard = ({
   };
 
   const maxTitleLength = 12;
-  let displayName = name.length > maxTitleLength ? name.substring(0, maxTitleLength - 3) + "..." : name;
+  let displayName =
+    name.length > maxTitleLength
+      ? name.substring(0, maxTitleLength - 3) + "..."
+      : name;
   while (displayName.length < maxTitleLength) displayName += " ";
 
   return (
@@ -123,10 +126,10 @@ const ProductCard = ({
         {originalPrice > price && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
-              <View style={styles.saleTag}>
+              {/* <View style={styles.saleTag}>
                 <Text style={styles.saleText}>Sale</Text>
-              </View>
-              <Text style={styles.time}>02:48:26</Text>
+              </View> */}
+              {/* <Text style={styles.time}>02:48:26</Text> */}
             </View>
             <Text style={styles.discount}>
               {Math.round(((originalPrice - price) / originalPrice) * 100)}%
