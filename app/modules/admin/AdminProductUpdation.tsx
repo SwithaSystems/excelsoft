@@ -680,12 +680,12 @@ const AdminProductUpdation = () => {
                       color={colors.primary}
                     />
                   </View>
+                  </ModalSelector>
                   {errors.category && (
                     <Text style={globalStyles.errorText}>
                       {errors.category}
                     </Text>
                   )}
-                </ModalSelector>
               </View>
             </View>
             <Text style={styles.label}>Stock *</Text>

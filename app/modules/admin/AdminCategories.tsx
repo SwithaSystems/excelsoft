@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   },
   categoryId: {
     fontSize: 12,
-    color: colors.lightgrey,
+    color: colors.darkGray,
     marginBottom: 1,
   },
   categoryActions: {
