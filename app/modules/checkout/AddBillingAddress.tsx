@@ -28,6 +28,16 @@ import {
   UPDATE_BILLING_ADDRESS_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import { CheckBox } from "react-native-elements";
+import {
+  isValidName,
+  isValidPostalCode,
+  isValidAddressLine1,
+  isValidAddressLine2,
+  isValidTownCity,
+  isValidState,
+  isValidPhoneNumber,
+} from "@/utilities/validations";
+import colors from "@/constants/colors";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -106,7 +116,6 @@ const addBillingAddressScreen = () => {
 
   const validateFields = () => {
     const newErrors = {} as typeof errors;
-
     if (!address.trim()) newErrors.name = "Address name is required.";
     if (!line1.trim()) newErrors.line1 = "Line 1 is required.";
     // FIXED: Make line2 optional since it's not always required
@@ -114,10 +123,31 @@ const addBillingAddressScreen = () => {
     if (!towncity.trim()) newErrors.towncity = "Town/City is required.";
     if (!postalcode.trim()) newErrors.postalcode = "Postal code is required.";
 
-    // Basic postal code validation
-    if (postalcode.trim() && !/^\d{5,6}$/.test(postalcode.trim())) {
-      newErrors.postalcode = "Postal code must be 5-6 digits.";
-    }
+    // // Basic postal code validation
+    // if (postalcode.trim() && !/^\d{5,6}$/.test(postalcode.trim())) {
+    //   newErrors.postalcode = "Postal code must be 5-6 digits.";
+    // }
+
+    const nameError = isValidName(address);
+    if(nameError) newErrors.name = nameError; 
+    
+    const postalError = isValidPostalCode(postalcode);
+    if(postalError) newErrors.postalcode = postalError;
+
+    const line1Error = isValidAddressLine1(line1);
+    if (line1Error) newErrors.line1 = line1Error;
+
+    const line2Error = isValidAddressLine2(line2);
+    if (line2Error) newErrors.line2 = line2Error;
+
+    const townCityError = isValidTownCity(towncity);
+    if (townCityError) newErrors.towncity = townCityError;
+
+    const stateError = isValidState(state);
+    if (stateError) newErrors.state = stateError;
+
+    const phoneError = isValidPhoneNumber(phoneNumber);
+    if (phoneError) newErrors.phoneNumber = phoneError;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -137,26 +167,24 @@ const addBillingAddressScreen = () => {
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: state.trim(), // You might want to add state field later
+        state: state.trim(),
         postalCode: postalcode.trim(),
         addressType: addressType ?? [],
         isDefault,
-        phone: phoneNumber, // Add if needed
-        email: "", // Add if needed
+        phone: phoneNumber,
+        email: "",
       };
 
       let response;
       let savedAddress;
 
       if (isEditMode && edit_address) {
-        // Update existing address
         response = await addressService.updateAddress(edit_address._id, {
           _id: edit_address._id,
           ...addressData,
         });
 
         if (response.status === 200) {
-          // FIXED: Set the updated address as selected
           savedAddress = {
             _id: edit_address._id,
             ...addressData,
@@ -170,11 +198,9 @@ const addBillingAddressScreen = () => {
           return;
         }
       } else {
-        // Add new address
         response = await addressService.addAddress(addressData);
 
         if (response.status === 200 || response.status === 201) {
-          // Get the newly created address from response and set as selected
           savedAddress = (response.data as { _id: string }) || {
             id: (response.data as { _id: string })?._id,
             ...addressData,
@@ -182,9 +208,7 @@ const addBillingAddressScreen = () => {
             updatedAt: new Date().toISOString(),
           };
 
-          //  Automatically select the newly added address
           setSelectedBillingAddress(savedAddress);
-
           alert("Address added successfully");
         } else {
           alert("Failed to add address");
@@ -192,7 +216,6 @@ const addBillingAddressScreen = () => {
         }
       }
 
-      //  Navigate back with success flag and new address info
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -215,7 +238,6 @@ const addBillingAddressScreen = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    // Clear the specific field error when user starts typing
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({
         ...prev,
@@ -223,7 +245,6 @@ const addBillingAddressScreen = () => {
       }));
     }
 
-    // Update the field value
     switch (field) {
       case "address":
         setAddress(value);
@@ -252,14 +273,6 @@ const addBillingAddressScreen = () => {
   };
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    //   <KeyBoardWrapper>
-    //     <View style={styles.container}>
-    //       <Header
-    //         headerText={
-    //           isEditMode ? "Edit Billing Address" : "Add Billing Address"
-    //         }
-    //       />
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -293,7 +306,7 @@ const addBillingAddressScreen = () => {
               style={[styles.input, errors.postalcode && styles.inputError]}
               value={postalcode}
               onChangeText={(text) => handleInputChange("postalcode", text)}
-              placeholder="Street address, P.O. box"
+              placeholder="Postal Code..."
               maxLength={100}
             />
             {errors.postalcode && (
@@ -373,18 +386,14 @@ const addBillingAddressScreen = () => {
               <CheckBox
                 checked={isDefault}
                 onPress={() => setIsDefault(!isDefault)}
+                checkedColor = {colors.primary}
+                uncheckedColor= {colors.secondary}
               />
               <Text>Mark as default address</Text>
             </View>
           </View>
 
-          <View
-            style={[
-              // styles.submitButton,
-              isSubmitting && styles.submitButtonDisabled,
-            ]}
-          >
-            {/* <View style={globalStyles.p_3}> */}
+          <View style={[isSubmitting && styles.submitButtonDisabled]}>
             <Button
               title={
                 isSubmitting

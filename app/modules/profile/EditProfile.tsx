@@ -24,8 +24,6 @@ import { Image } from "react-native";
 import styles from "./EditProfileStyles";
 import colors from "../../../constants/colors";
 import * as ImagePicker from "expo-image-picker";
-import { useDerivedValue } from "react-native-reanimated";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
@@ -44,6 +42,7 @@ import {
   GALLERY_ACCESS_REQUIRED,
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
+import { isValidName } from "@/utilities/validations";
 
 interface User {
   id: string;
@@ -69,6 +68,9 @@ const editProfileScreen = () => {
   const dispatch = useDispatch();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
+
+  const [firstNameError, setFirstNameError] = useState<string | null>(null);
+  const [lastNameError, setLastNameError] = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -99,6 +101,33 @@ const editProfileScreen = () => {
     };
     getUser();
   }, [userData]);
+
+  const validateFirstName = (name: string) => {
+    const error = isValidName(name);
+    setFirstNameError(error);
+    return !error;
+  };
+
+  const validateLastName = (name: string) => {
+    const error = isValidName(name);
+    setLastNameError(error);
+    return !error;
+  };
+
+  const handleFirstNameChange = (text: string) => {
+    setFirstName(text);
+    if (firstNameError) {
+      setFirstNameError(null);
+    }
+  };
+
+  const handleLastNameChange = (text: string) => {
+    setLastName(text);
+    if (lastNameError) {
+      setLastNameError(null);
+    }
+  };
+
 
   const openImagePickerAsync = async (type: "camera" | "gallery") => {
     let result;
@@ -180,29 +209,17 @@ const editProfileScreen = () => {
     return maxDate;
   };
   const handleEditProfile = async () => {
-    if (!firstName.trim()) {
-      showErrorAlert({
-        title: "Missing Details",
-        message: "First name is required.",
-      });
+    setFirstNameError(null);
+    setLastNameError(null);
+
+    const isFirstNameValid = validateFirstName(firstName);
+    const isLastNameValid = validateLastName(lastName);
+
+
+    if (!isFirstNameValid || !isLastNameValid) {
       return;
     }
 
-    if (!/^[A-Za-z]+$/.test(firstName.trim())) {
-      showErrorAlert({
-        title: "Invalid First Name",
-        message: "First name should contain only alphabets.",
-      });
-      return;
-    }
-
-    if (!/^[A-Za-z]+$/.test(lastName.trim())) {
-      showErrorAlert({
-        title: "Invalid Last Name",
-        message: "Last name should contain only alphabets.",
-      });
-      return;
-    }
 
     const formData = new FormData();
 
@@ -313,14 +330,21 @@ const editProfileScreen = () => {
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
+                    containerStyle={
+                      lastNameError 
+                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+                        : globalStyles.userInputContainer
+                    }
                     TextStyle={globalStyles.input}
                     placeholder="First Name"
                     value={firstName}
                     onPress={() => {}}
                     setValue={setFirstName}
-                    onChangeText={(text: any) => setFirstName(text)}
+                    onChangeText={handleFirstNameChange}
                   />
+                  {firstNameError && (
+                    <Text style={globalStyles.errorText}>{firstNameError}</Text>
+                  )}
                 </View>
               </View>
 
@@ -333,14 +357,22 @@ const editProfileScreen = () => {
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>Last Name</Text>
                   <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
+                    containerStyle={
+                      firstNameError 
+                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+                        : globalStyles.userInputContainer
+                    }
                     TextStyle={globalStyles.input}
                     placeholder="Last Name"
                     value={lastName}
                     onPress={() => {}}
                     setValue={setLastName}
-                    onChangeText={(text: any) => setLastName(text)}
+                    onChangeText={handleLastNameChange}
                   />
+                  {lastNameError && (
+                    <Text style={globalStyles.errorText}>{lastNameError}</Text>
+                  )}
+
                 </View>
               </View>
 

@@ -14,7 +14,7 @@ const Star = ({ filled = true, size = 16 }: StarProps) => {
     <Ionicons
       name={filled ? "star-sharp" : "star-sharp"}
       size={size}
-      color={filled ? colors.placeholdergrey : colors.reviewsColor}
+      color={filled ? colors.primary : colors.secondary}
     />
   );
 };

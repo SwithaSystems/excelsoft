@@ -27,52 +27,64 @@ import containers from "@/containers";
 import { categoryService, Category } from "../../../services/categoryService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 
-const recommendedProducts = products
-  .filter((p) =>
-    ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-  )
-  .map((product) => ({
-    id: product.id,
-    title: product.name,
-    rating: product.rating,
-    reviews: product.noOfreviews,
-    imageUrl: product.image,
-  }));
+// const recommendedProducts = products
+//   .filter((p) =>
+//     // ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
+//     ["SUPERKINGS LIGHT 20", "SILK CUT K/S 20", "WALKERS READY SALTED"].includes(
+//       p.name
+//     )
+//   )
+//   .map((product) => ({
+//     id: product.id,
+//     title: product.name,
+//     rating: product.rating,
+//     reviews: product.noOfreviews,
+//     imageUrl: product.image,
+//   }));
 
-const exclusiveOffers = products
-  .filter((p) => ["Baby Stroller", "Granola Bars"].includes(p.name))
-  .map((product) => ({
-    id: product.id,
-    title: product.name,
-    rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
-    reviews: product.name === "Baby Stroller" ? 120 : 130,
-    price: product.name === "Baby Stroller" ? 120 : 8,
-    originalPrice: product.name === "Baby Stroller" ? 180 : 10,
-    imageUrl: product.image,
-    discount: product.name === "Baby Stroller" ? "20%" : "15%",
-    saleEndsAt: "31-4-2024",
-  }));
+// const exclusiveOffers = products
+//   .filter((p) =>
+//     ["SUPERKINGS LIGHT 20", "WALKERS READY SALTED"].includes(p.name)
+//   )
+//   .map((product) => ({
+//     id: product.id,
+//     title: product.name,
+//     rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
+//     reviews: product.name === "Baby Stroller" ? 120 : 130,
+//     price: product.name === "Baby Stroller" ? 120 : 8,
+//     originalPrice: product.name === "Baby Stroller" ? 180 : 10,
+//     imageUrl: product.image,
+//     discount: product.name === "Baby Stroller" ? "20%" : "15%",
+//     saleEndsAt: "31-4-2024",
+//   }));
 
-const bestSellers = products
-  .filter((p) => ["Bananas", "Chicken Breast", "Baby Bicycle"].includes(p.name))
-  .map((product) => ({
-    id: product.id,
-    title: product.name,
-    rating: product.rating,
-    reviews: product.noOfreviews,
-    imageUrl: product.image,
-  }));
+// const bestSellers = products
+//   .filter((p) =>
+//     ["SOFTFRUITS", "JPS BLUE SK19", "OLD HOLBORN 50GRM"].includes(p.name)
+//   )
+//   .map((product) => ({
+//     id: product.id,
+//     title: product.name,
+//     rating: product.rating,
+//     reviews: product.noOfreviews,
+//     imageUrl: product.image,
+//   }));
 
-const featuredProducts = products
-  .filter((p) =>
-    ["Brown Teddy Bear", "Anchovies", "Baby Crib"].includes(p.name)
-  )
-  .map((product) => ({
-    id: product.id,
-    title: product.name,
-    description: product.description.slice(0, 20) + "...",
-    imageUrl: product.image,
-  }));
+// const featuredProducts = products
+//   .filter((p) =>
+//     ["CHESTERFIELD RED 20'S", "SNICKERS", "NESCAFE 100G"].includes(p.name)
+//   )
+//   .map((product) => ({
+//     id: product.id,
+//     title: product.name,
+//     description: product.description.slice(0, 20) + "...",
+//     imageUrl: product.image,
+//   }));
+
+const recommendedProducts: any = [];
+const exclusiveOffers: any = [];
+const bestSellers: any = [];
+const featuredProducts: any = [];
 
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -178,33 +190,33 @@ const HomePage = () => {
         </View>
 
         {/* Banner */}
-        <View>{renderBanner()}</View>
+        {/* <View>{renderBanner()}</View> */}
 
         {/* Recommended Products */}
-        <View>
+        {/* <View>
           <RecommendedProductsSlider
             recommendedProducts={recommendedProducts}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Recommended for You"
           />
-        </View>
+        </View> */}
 
         {/* Exclusive Offers */}
-        <View>
+        {/* <View>
           <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View>
+        </View> */}
 
         {/* Best Sellers */}
-        <View>
+        {/* <View>
           <RecommendedProductsSlider
             recommendedProducts={bestSellers}
             sectionTitleStyle={globalStyles.sectionTitleStyle}
             title="Best Sellers"
           />
-        </View>
+        </View> */}
 
         {/* Featured Products */}
-        {renderFeaturedProducts()}
+        {/* {renderFeaturedProducts()} */}
       </View>
     </PageLayout>
   );

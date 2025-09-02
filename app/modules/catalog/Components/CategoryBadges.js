@@ -26,6 +26,11 @@ const CategoryBadges = (props) => {
   ];
   const [subCategoriesNames, setsubCategoriesNames] = useState([]);
 
+  const truncateName = (name, maxLength = 10) => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength - 3) + "...";
+  };
+
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
@@ -109,7 +114,6 @@ const CategoryBadges = (props) => {
                     (subCat) => subCat.name === category
                   );
                   if (selectedSubCategory) {
-                    // props.onCategorySelect &&
                     props.onCategorySelect(selectedSubCategory.id);
                   }
                 }
@@ -121,8 +125,10 @@ const CategoryBadges = (props) => {
                   styles.filterText,
                   activeFilter === category && styles.activeFilterText,
                 ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
-                {category}
+                {truncateName(category)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -137,14 +143,14 @@ const CategoryBadges = (props) => {
               });
             }}
           >
-            <Feather name="filter" size={26} color={colors.black} />
+            <Feather name="filter" size={24} color={colors.black} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.iconButton, { marginLeft: 24 }]}
+            style={[styles.iconButton, { marginLeft: 16 }]}
             onPress={() => setIsDropdownVisible(true)}
           >
-            <Ionicons name="swap-vertical" size={26} color={colors.black} />
+            <Ionicons name="swap-vertical" size={24} color={colors.black} />
           </TouchableOpacity>
         </View>
       </View>
@@ -176,7 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   activeSortOption: {
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
   },
   modalOverlay: {
     flex: 1,
@@ -191,26 +197,32 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    // paddingHorizontal: 16,
     backgroundColor: colors.white,
     paddingBottom: 16,
   },
   filterWrapper: {
     flexDirection: "row",
     alignItems: "center",
+    // paddingHorizontal: 16,
   },
   scrollContainer: {
     flexDirection: "row",
-    paddingRight: 60,
+    paddingRight: 16,
     alignItems: "center",
   },
   filterButton: {
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     marginRight: 12,
     marginLeft: 0,
+    maxWidth: 120,
+    shadowColor: colors.pureBlack,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
@@ -228,13 +240,18 @@ const styles = StyleSheet.create({
   fixedIcons: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: "auto",
+    marginLeft: 16,
+    paddingLeft: 0,
   },
   iconButton: {
     padding: 2,
     borderRadius: 50,
     backgroundColor: colors.secondary,
-    //marginLeft: 12, // Space between filter and sort icon
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
   },
 });
 

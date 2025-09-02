@@ -194,7 +194,6 @@ const AdminOrderDetail = () => {
         headerComponent={
           <Header
             headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-            // needResetNavigation={false}
           />
         }
         hasFooter
@@ -202,7 +201,6 @@ const AdminOrderDetail = () => {
         scrollable
       >
         <KeyBoardWrapper>
-          {/* <View style={[globalStyles.pt_0, { flex: 1 }]}> */}
           <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
@@ -225,7 +223,7 @@ const AdminOrderDetail = () => {
                   globalStyles.mb_1,
                 ]}
               >
-                Total: {orderDetails?.totalAmount?.toFixed(2)}
+                Total: £ {orderDetails?.totalAmount?.toFixed(2)}
               </Text>
               <Text
                 style={[

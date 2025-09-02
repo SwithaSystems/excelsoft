@@ -29,6 +29,7 @@ import {
   ADDRESS_UPDATE_FAILED,
   DUPLICATE_ADDRESS,
 } from "../../../constants/customErrorMessages";
+import colors from "@/constants/colors";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -562,6 +563,8 @@ const addAddressScreen = () => {
             <CheckBox
               checked={isDefault}
               onPress={() => setIsDefault(!isDefault)}
+              checkedColor = {colors.primary}
+              uncheckedColor= {colors.secondary}
             />
             <Text>Mark as default address</Text>
           </View>

@@ -473,7 +473,7 @@ Contact Number: ${pickupAddress.phone}`}
                 </Text>
               </View>
             </View>
-            <View style={styles.section}>
+            {/* <View style={styles.section}>
               <Text style={styles.sectionHeading}>Substitutions</Text>
               <View style={globalStyles.pl_3}>
                 <CheckBox
@@ -492,7 +492,7 @@ Contact Number: ${pickupAddress.phone}`}
                   or brand will be picked.
                 </Text>
               </View>
-            </View>
+            </View> */}
             <View style={[styles.section, globalStyles.mb_0]}>
               <Text style={styles.sectionHeading}>Order Details</Text>
               <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>

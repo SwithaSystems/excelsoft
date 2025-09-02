@@ -53,6 +53,19 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.black,
+    textAlign: "center",
+    marginTop: 10,
+  },
 });
 
 export default styles;

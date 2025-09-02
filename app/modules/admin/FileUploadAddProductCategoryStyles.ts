@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   },
   modalSelectedItemText: {
     fontWeight: "bold",
-    color: colors.linkBlue,
+    color: colors.primary,
   },
   modalTriggerText: {
     fontSize: 16,

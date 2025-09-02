@@ -20,11 +20,11 @@ const SearchHistoryItem = ({
         style={styles.leftContent}
         onPress={() => onSelect(searchText)}
       >
-        <Ionicons name="time-outline" size={24} color={colors.secondary} />
+        <Ionicons name="time-outline" size={24} color={colors.primary} />
         <Text style={styles.searchText}>{searchText}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onRemove}>
-        <Ionicons name="close" size={20} color={colors.secondary} />
+        <Ionicons name="close" size={20} color={colors.primary} />
       </TouchableOpacity>
     </View>
   );

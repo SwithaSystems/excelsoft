@@ -3,15 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  FlatList,
   Alert,
   Image,
 } from "react-native";
 import Header from "../../components/Header";
-import { Button } from "react-native-elements";
 import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
@@ -626,7 +623,7 @@ const styles = StyleSheet.create({
   imageLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.black,
+    color: colors.primary,
     marginBottom: 16,
   },
   imagePickerButton: {
@@ -684,7 +681,6 @@ const styles = StyleSheet.create({
   },
   listSection: {
     flex: 1,
-    // paddingHorizontal: 16,
   },
   listContainer: {
     paddingBottom: 20,
@@ -696,7 +692,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
@@ -705,7 +701,7 @@ const styles = StyleSheet.create({
   editingCategoryItem: {
     borderColor: colors.primary,
     borderWidth: 2,
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
   },
   categoryContent: {
     flexDirection: "row",
@@ -734,7 +730,7 @@ const styles = StyleSheet.create({
   },
   categoryId: {
     fontSize: 12,
-    color: colors.lightgrey,
+    color: colors.darkGray,
     marginBottom: 1,
   },
   categoryActions: {

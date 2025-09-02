@@ -71,6 +71,8 @@ const Filter = () => {
     redirectToPage(containers.searchResultsScreen, {
       selectedSubCategories: selectedCategoryIds,
       fromSearch: true,
+      category: "Filtered Results",
+      categoryId: categoryId,
     });
     } finally{
       setApplyingFilters(false);
@@ -100,6 +102,8 @@ const Filter = () => {
                       onPress={() => handleCategorySelect(category.id)}
                       containerStyle={styles.checkBoxContainer}
                       textStyle={styles.checkBoxText}
+                      checkedColor = {colors.primary}
+                      uncheckedColor= {colors.secondary}
                     />
                   </View>
                 ))}
@@ -117,6 +121,8 @@ const Filter = () => {
                       onPress={() => handleBrandSelect(brand)}
                       containerStyle={styles.checkBoxContainer}
                       textStyle={styles.checkBoxText}
+                      checkedColor = {colors.primary}
+                      uncheckedColor= {colors.secondary}
                     />
                   </View>
                 ))}

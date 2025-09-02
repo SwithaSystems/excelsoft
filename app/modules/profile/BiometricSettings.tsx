@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../components/Header";
 import styles from "./BiometricSettingsStyles";
+import colors from "@/constants/colors";
 
 const BiometricSettingsScreen = ({ navigation }: any) => {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
@@ -288,7 +289,6 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         <View style={styles.settingItem}>
           <View style={styles.settingInfo}>
             <Text style={styles.settingTitle}>
-              {/* {biometricType} Authentication */}
               Biometric authenticatin
             </Text>
             <Text style={styles.settingDescription}>
@@ -301,8 +301,8 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
             value={isBiometricEnabled}
             onValueChange={toggleBiometricAuth}
             disabled={!isBiometricSupported}
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={isBiometricEnabled ? "#f5dd4b" : "#f4f3f4"}
+            trackColor={{ false: colors.inactivegrey, true: colors.primary }}
+            thumbColor={isBiometricEnabled ? colors.white : colors.inactivegrey}
           />
         </View>
 

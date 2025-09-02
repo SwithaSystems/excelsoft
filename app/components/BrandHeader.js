@@ -97,7 +97,6 @@ function BrandHeader(props) {
           justifyContent: "space-between",
           alignItems: "center",
           paddingBottom: 4,
-          //   bottom: Platform.OS === "android" ? 20 : 0,
         }}
       >
         <Image
@@ -116,14 +115,14 @@ function BrandHeader(props) {
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               {!props?.hideUserGreeting && (
-                <Text style={{ marginRight: 8 }}>
+                <Text style={{ marginRight: 8, color: colors.primary }}>
                   {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
                 </Text>
               )}
               <Ionicons
                 name="person-circle-outline"
                 size={24}
-                color={colors.black}
+                color={colors.primary}
               />
             </View>
           </TouchableOpacity>
@@ -139,7 +138,7 @@ function BrandHeader(props) {
               }}
               style={{
                 marginLeft: 14,
-                backgroundColor: colors.black,
+                backgroundColor: colors.primary,
                 borderRadius: 16,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
@@ -157,7 +156,7 @@ function BrandHeader(props) {
               redirectToPage(containers.userNotificationsScreen);
             }}
           >
-            <Ionicons name="notifications" size={24} color={colors.black} />
+            <Ionicons name="notifications" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>

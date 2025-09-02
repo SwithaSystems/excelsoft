@@ -19,6 +19,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
   },
+  errorText: {
+  color: colors.errorText,
+  fontSize: 12,
+  marginTop: 4,
+},
 });
 
 export default styles;

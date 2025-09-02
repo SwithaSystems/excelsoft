@@ -36,13 +36,13 @@ const styles = StyleSheet.create({
     borderTopColor: colors.placeholdergrey,
     paddingTop: 10,
   },
-  placeOrderButton: {
-    backgroundColor: "skyblue",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-  },
+  // placeOrderButton: {
+  //   backgroundColor: "skyblue",
+  //   padding: 15,
+  //   borderRadius: 8,
+  //   alignItems: "center",
+  //   marginTop: 20,
+  // },
   placeOrderButtonText: {
     color: "white",
     fontSize: 16,

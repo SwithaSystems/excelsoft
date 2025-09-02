@@ -12,16 +12,51 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+    emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+
+  emptyStateStar: {
+    fontSize: 48,
+    color: colors.gold,
+    marginBottom: 10,
+  },
+
+  emptyStateHeading: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.darkGray,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+    emptyStateSubText: {
+    fontSize: 14,
+    color: colors.darkGray,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+
+
   rating: {
     fontSize: 32,
     fontWeight: 500,
   },
+
   reviewsContainer: {},
   reviewContainerHeading: {
     //fontWeight: 500,
     fontSize: 36,
     marginBottom: 16,
     lineHeight: 36,
+  },
+  noReviewContainerHeading: {
+    //fontWeight: 500,
+    fontSize: 26,
+    marginBottom: 16,
+    lineHeight: 26,
   },
   addReviewContainer: {
     // flexDirection: "row-reverse",

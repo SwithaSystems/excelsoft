@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   saleTimeBox: {
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     flexDirection: "row",
   },
   saleTime: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   discountTag: {
-    backgroundColor: colors.lightSkyBlue,
+    backgroundColor: colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

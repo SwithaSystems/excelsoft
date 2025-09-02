@@ -10,6 +10,7 @@ import {
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { Ionicons } from "@expo/vector-icons";
+import colors from "@/constants/colors";
 
 interface BiometricAuthProps {
   onAuthSuccess: (token: string) => void;
@@ -123,7 +124,11 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
 
       {/* Avatar */}
       <View style={styles.avatarContainer}>
-        <Ionicons name="person-circle-outline" size={100} color="#aaa" />
+        <Ionicons
+          name="person-circle-outline"
+          size={100}
+          color={colors.primary}
+        />
         <Text style={styles.userName}>{userName}</Text>
       </View>
 
@@ -133,7 +138,11 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
           style={styles.authButton}
           onPress={handleBiometricAuth}
         >
-          <Ionicons name="finger-print-outline" size={28} color="#007AFF" />
+          <Ionicons
+            name="finger-print-outline"
+            size={28}
+            color={colors.primary}
+          />
           <Text style={styles.authButtonText}>Quick Secure Access</Text>
         </TouchableOpacity>
       ) : (
@@ -178,12 +187,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     marginTop: 10,
-    color: "#444",
+    color: colors.primary,
   },
   authButton: {
     flexDirection: "row",
     alignItems: "center",
-    borderColor: "#007AFF",
+    borderColor: colors.primary,
     borderWidth: 1.5,
     borderRadius: 8,
     paddingVertical: 14,
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
   },
   authButtonText: {
     fontSize: 16,
-    color: "#007AFF",
+    color: colors.primary,
     marginLeft: 10,
   },
   infoText: {

@@ -1,7 +1,7 @@
 export const isValidPassword = (password: string): string | null => {
   if (!password) return "Password is required.";
   if (password.length < 6) return "Password must be at least 6 characters.";
-  
+
   return null;
 };
 
@@ -29,15 +29,13 @@ export const isValidName = (name: string): string | null => {
 
 export const isValidPostalCode = (postal: string): string | null => {
   const trimmed = postal.trim();
-
   if (!trimmed) return "Postcode is required";
-  if (trimmed.length < 3) return "Postcode must be at least 3 characters long";
-  if (trimmed.length > 10) return "Postcode cannot exceed 10 characters";
-  if (!/^[a-zA-Z0-9\s\-]+$/.test(trimmed))
-    return "Postcode can only contain letters, numbers, spaces, and hyphens";
+  if (trimmed.length < 2) return "Postcode must be at least 3 characters long";
+  if (trimmed.length > 20) return "Postcode cannot exceed 20 characters";
+  if (!/^[a-zA-Z0-9\s.\-]+$/.test(trimmed))
+    return "Postcode can only contain letters, numbers, spaces, hyphens, and periods";
   if (!/[a-zA-Z0-9]/.test(trimmed))
     return "Postcode must contain at least one letter or number";
-
   return null;
 };
 
@@ -45,7 +43,7 @@ export const isValidAddressLine1 = (line: string): string | null => {
   const trimmed = line.trim();
 
   if (!trimmed) return "Address Line 1 is required";
-  if (trimmed.length < 5) return "Address must be at least 5 characters long";
+  if (trimmed.length < 3) return "Address must be at least 5 characters long";
   if (trimmed.length > 100) return "Address cannot exceed 100 characters";
   if (!/^[a-zA-Z0-9\s,.\-/#'()]+$/.test(trimmed))
     return "Address contains invalid characters. Only letters, numbers, spaces, and common punctuation (, . - / # ' ( )) are allowed";
@@ -70,15 +68,10 @@ export const isValidTownCity = (city: string): string | null => {
   const trimmed = city.trim();
 
   if (!trimmed) return "Town/City is required";
-  if (trimmed.length < 2)
-    return "Town/City must be at least 2 characters long";
-  if (trimmed.length > 50)
-    return "Town/City cannot exceed 50 characters";
-  if (!/^[a-zA-Z\s\-']+$/.test(trimmed))
-    return "Town/City can only contain letters, spaces, hyphens (-), and apostrophes (')";
-  if (!/^[a-zA-Z].*[a-zA-Z]$/.test(trimmed) && trimmed.length > 1)
-    return "Town/City must start and end with a letter";
-
+  if (trimmed.length < 2) return "Town/City must be at least 2 characters long";
+  if (trimmed.length > 50) return "Town/City cannot exceed 50 characters";
+  if (!/^[a-zA-Z0-9\s\-']+$/.test(trimmed))
+    return "Town/City can only contain letters, numbers, spaces, hyphens (-), and apostrophes (')";
   return null;
 };
 
@@ -96,41 +89,41 @@ export const isValidState = (state: string): string | null => {
 
 export const isValidPhoneNumber = (phone: string): string | null => {
   const trimmed = phone.trim();
-  
+
   if (!trimmed) return "Phone number is required";
-  
+
   const digitsOnly = trimmed.replace(/\D/g, "");
-  
+
   if (!/^[\+\d]/.test(trimmed))
     return "Phone number must start with a digit or plus sign";
-  
+
   if (!/^[\+]?[\d\s()\-]+$/.test(trimmed))
     return "Phone number can only contain digits, spaces, parentheses, hyphens, and plus sign";
-  
-  if (trimmed.startsWith('+')) {
+
+  if (trimmed.startsWith("+")) {
     if (digitsOnly.length < 10)
       return "Phone number must contain at least 10 digits including country code";
     if (digitsOnly.length > 15)
       return "Phone number cannot exceed 15 digits including country code";
-    
+
     const countryCodeMatch = trimmed.match(/^\+(\d{1,4})/);
     if (!countryCodeMatch) {
       return "Invalid country code format";
     }
-    
+
     const countryCode = countryCodeMatch[1];
     const localDigits = digitsOnly.substring(countryCode.length);
-    
+
     if (localDigits.length < 7) {
       return "Phone number must have at least 7 digits after country code";
     }
     if (localDigits.length > 12) {
       return "Phone number cannot have more than 12 digits after country code";
     }
-    
+
     return null;
   }
-  
+
   if (digitsOnly.length !== 10) {
     return "Phone number must contain exactly 10 digits";
   }
@@ -154,7 +147,9 @@ export const isValidProductTitle = (title: string): string | null => {
   return null;
 };
 
-export const isValidProductDescription = (description: string): string | null => {
+export const isValidProductDescription = (
+  description: string
+): string | null => {
   if (description.trim().length > 1000)
     return "Description cannot exceed 1000 characters";
   return null;
@@ -184,7 +179,7 @@ export const isValidDiscountPrice = (
   discountPrice: string,
   originalPrice: string
 ): string | null => {
-  if (!discountPrice.trim()) return null; 
+  if (!discountPrice.trim()) return null;
   const discountNum = parseFloat(discountPrice);
   const originalNum = parseFloat(originalPrice);
 
@@ -200,8 +195,10 @@ export const isValidDiscountPrice = (
   return null;
 };
 
-export const isValidMinimumOrderQuantity = (quantity: string): string | null => {
-  if (!quantity.trim()) return null; 
+export const isValidMinimumOrderQuantity = (
+  quantity: string
+): string | null => {
+  if (!quantity.trim()) return null;
   const qtyNum = parseInt(quantity);
   if (isNaN(qtyNum)) return "Minimum order quantity must be a valid number";
   if (qtyNum < 0) return "Minimum order quantity cannot be negative";
@@ -209,12 +206,12 @@ export const isValidMinimumOrderQuantity = (quantity: string): string | null => 
   return null;
 };
 
-export const isValidProductImages = (images: any[], maxImages: number = 5): string | null => {
-  if (images.length === 0) return "At least one product image is required";
-  if (images.length > maxImages)
-    return `Maximum ${maxImages} images allowed`;
-  return null;
-};
+// export const isValidProductImages = (images: any[], maxImages: number = 5): string | null => {
+//   if (images.length === 0) return "At least one product image is required";
+//   if (images.length > maxImages)
+//     return `Maximum ${maxImages} images allowed`;
+//   return null;
+// };
 
 export const isValidCategory = (category: string): string | null => {
   if (!category) return "Please select a category";

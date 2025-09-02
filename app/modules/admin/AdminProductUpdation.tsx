@@ -39,7 +39,7 @@ import {
   isValidPrice,
   isValidDiscountPrice,
   isValidMinimumOrderQuantity,
-  isValidProductImages,
+  // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
 
@@ -309,10 +309,10 @@ const AdminProductUpdation = () => {
     if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
 
     // Validate images (only for new products)
-    if (newProduct) {
-      const imagesError = isValidProductImages(productImages, MAX_IMAGES);
-      if (imagesError) newErrors.productImages = imagesError;
-    }
+    // if (newProduct) {
+    //   const imagesError = isValidProductImages(productImages, MAX_IMAGES);
+    //   if (imagesError) newErrors.productImages = imagesError;
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -680,12 +680,12 @@ const AdminProductUpdation = () => {
                       color={colors.primary}
                     />
                   </View>
+                  </ModalSelector>
                   {errors.category && (
                     <Text style={globalStyles.errorText}>
                       {errors.category}
                     </Text>
                   )}
-                </ModalSelector>
               </View>
             </View>
             <Text style={styles.label}>Stock *</Text>
@@ -759,6 +759,8 @@ const AdminProductUpdation = () => {
                     setSelectedColors([]);
                   }
                 }}
+                checkedColor = {colors.primary}
+                uncheckedColor= {colors.secondary}
               />
               <Text>Colors Available?</Text>
             </View>
@@ -897,6 +899,8 @@ const AdminProductUpdation = () => {
                                   onPress={() =>
                                     handleColorSelection(color.hex, color.name)
                                   }
+                                  checkedColor = {colors.primary}
+                                  uncheckedColor= {colors.secondary}
                                 />
                                 <View
                                   style={[
@@ -937,11 +941,15 @@ const AdminProductUpdation = () => {
             <CheckBox
               checked={isChecked}
               onPress={() => setIsChecked(!isChecked)}
+              checkedColor = {colors.primary}
+              uncheckedColor= {colors.secondary}
             />
             <Text>Returnable?</Text>
             <CheckBox
               checked={isAgeRestricted}
               onPress={() => setIsAgeRestricted(!isAgeRestricted)}
+              checkedColor = {colors.primary}
+              uncheckedColor= {colors.secondary}
             />
             <Text>Age Restricted?</Text>
           </View>
@@ -979,10 +987,6 @@ const AdminProductUpdation = () => {
               </TouchableOpacity>
             ))}
           </View>
-
-          {newProduct && errors.productImages && (
-            <Text style={globalStyles.errorText}>{errors.productImages}</Text>
-          )}
           {/* </View> */}
         </ScrollView>
 

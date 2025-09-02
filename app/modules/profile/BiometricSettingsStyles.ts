@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     fontSize: 16,
-    color: "#007AFF",
+    color: colors.primary,
     marginRight: 15,
   },
   headerTitle: {
