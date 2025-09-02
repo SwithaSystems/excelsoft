@@ -225,13 +225,13 @@ const orderDetailsScreen = () => {
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Shipping:</Text>
               <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.shippingCharges}
+                £{orderDetails?.shippingCharges}
               </Text>
             </View>
             <View style={styles.orderSummaryItem}>
               <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
               <Text style={styles.orderSummaryItemText}>
-                {orderDetails?.totalAmount.toFixed(2)}
+                £{orderDetails?.totalAmount.toFixed(2)}
               </Text>
             </View>
             <View>
