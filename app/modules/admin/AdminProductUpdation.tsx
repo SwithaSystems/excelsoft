@@ -33,12 +33,12 @@ import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import {
   isValidProductName,
-  isValidProductTitle,
+  // isValidProductTitle,
   isValidProductDescription,
-  isValidStock,
+  // isValidStock,
   isValidPrice,
-  isValidDiscountPrice,
-  isValidMinimumOrderQuantity,
+  // isValidDiscountPrice,
+  // isValidMinimumOrderQuantity,
   // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
@@ -84,14 +84,14 @@ const AdminProductUpdation = () => {
   const [errors, setErrors] = useState<
     Partial<{
       productName: string;
-      title: string;
-      productDescription: string;
-      stock: string;
+      // title: string;
+      // productDescription: string;
+      // stock: string;
       price: string;
-      discountPrice: string;
+      // discountPrice: string;
       category: string;
-      minimumOrderQunatity: string;
-      productImages: string;
+      // minimumOrderQunatity: string;
+      // productImages: string;
     }>
   >({});
 
@@ -282,31 +282,31 @@ const AdminProductUpdation = () => {
     if (productNameError) newErrors.productName = productNameError;
 
     // Validate title
-    const titleError = isValidProductTitle(title);
-    if (titleError) newErrors.title = titleError;
+    // const titleError = isValidProductTitle(title);
+    // if (titleError) newErrors.title = titleError;
 
-    // Validate description
-    const descriptionError = isValidProductDescription(productDescription);
-    if (descriptionError) newErrors.productDescription = descriptionError;
+    // // Validate description
+    // const descriptionError = isValidProductDescription(productDescription);
+    // if (descriptionError) newErrors.productDescription = descriptionError;
 
     // Validate stock
-    const stockError = isValidStock(stock);
-    if (stockError) newErrors.stock = stockError;
+    // const stockError = isValidStock(stock);
+    // if (stockError) newErrors.stock = stockError;
 
     // Validate price
     const priceError = isValidPrice(price);
     if (priceError) newErrors.price = priceError;
 
     // Validate discount price
-    const discountPriceError = isValidDiscountPrice(discountPrice, price);
-    if (discountPriceError) newErrors.discountPrice = discountPriceError;
+    // const discountPriceError = isValidDiscountPrice(discountPrice, price);
+    // if (discountPriceError) newErrors.discountPrice = discountPriceError;
 
     // Validate category
     if (!category) newErrors.category = "Please select a category";
 
     // Validate minimum order quantity
-    const minOrderQtyError = isValidMinimumOrderQuantity(minimumOrderQunatity);
-    if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
+    // const minOrderQtyError = isValidMinimumOrderQuantity(minimumOrderQunatity);
+    // if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
 
     // Validate images (only for new products)
     // if (newProduct) {
@@ -328,31 +328,31 @@ const AdminProductUpdation = () => {
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
-    if (errors.title) {
-      const error = isValidProductTitle(value);
-      setErrors((prev) => ({ ...prev, title: error || undefined }));
-    }
+    // if (errors.title) {
+    //   // const error = isValidProductTitle(value);
+    //   setErrors((prev) => ({ ...prev, title: error || undefined }));
+    // }
   };
 
   const handleDescriptionChange = (value: string) => {
     setProductDescription(value);
-    if (errors.productDescription) {
-      const error = isValidProductDescription(value);
-      setErrors((prev) => ({
-        ...prev,
-        productDescription: error || undefined,
-      }));
-    }
+    // if (errors.productDescription) {
+    //   const error = isValidProductDescription(value);
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     productDescription: error || undefined,
+    //   }));
+    // }
   };
 
   const handleStockChange = (value: string) => {
     // Only allow numeric input
     const numericValue = value.replace(/[^0-9]/g, "");
     setStock(numericValue);
-    if (errors.stock) {
-      const error = isValidStock(numericValue);
-      setErrors((prev) => ({ ...prev, stock: error || undefined }));
-    }
+    // if (errors.stock) {
+    //   const error = isValidStock(numericValue);
+    //   setErrors((prev) => ({ ...prev, stock: error || undefined }));
+    // }
   };
 
   const handlePriceChange = (value: string) => {
@@ -377,23 +377,23 @@ const AdminProductUpdation = () => {
     if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
     setDiscountPrice(numericValue);
-    if (errors.discountPrice) {
-      const error = isValidDiscountPrice(numericValue, price);
-      setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
-    }
+    // if (errors.discountPrice) {
+    //   const error = isValidDiscountPrice(numericValue, price);
+    //   setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
+    // }
   };
 
   const handleMinOrderQuantityChange = (value: string) => {
     // Only allow numeric input
     const numericValue = value.replace(/[^0-9]/g, "");
     setMinimumOrderQuantity(numericValue);
-    if (errors.minimumOrderQunatity) {
-      const error = isValidMinimumOrderQuantity(numericValue);
-      setErrors((prev) => ({
-        ...prev,
-        minimumOrderQunatity: error || undefined,
-      }));
-    }
+    // if (errors.minimumOrderQunatity) {
+    //   const error = isValidMinimumOrderQuantity(numericValue);
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     minimumOrderQunatity: error || undefined,
+    //   }));
+    // }
   };
 
   const handleUpdateProduct = useCallback(async () => {
@@ -612,18 +612,18 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.productName}</Text>
             )}
 
-            <Text style={styles.label}>Title *</Text>
+            <Text style={styles.label}>Title </Text>
             <CustomTextInput
               value={title}
               setValue={handleTitleChange}
               onPress={() => {}}
               placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
-              style={errors.title ? globalStyles.errorInput : undefined}
+              // style={errors.title ? globalStyles.errorInput : undefined}
               maxLength={150}
             />
-            {errors.title && (
+            {/* {errors.title && (
               <Text style={globalStyles.errorText}>{errors.title}</Text>
-            )}
+            )} */}
 
             <Text style={styles.label}>Product Description</Text>
             <TextInput
@@ -634,18 +634,18 @@ const AdminProductUpdation = () => {
               numberOfLines={6}
               style={[
                 styles.multilinetextbox,
-                errors.productDescription ? globalStyles.errorInput : undefined,
+                // errors.productDescription ? globalStyles.errorInput : undefined,
               ]}
               maxLength={1000}
             />
             <Text style={styles.characterCount}>
               {productDescription.length}/1000 characters
             </Text>
-            {errors.productDescription && (
+            {/* {errors.productDescription && (
               <Text style={globalStyles.errorText}>
                 {errors.productDescription}
               </Text>
-            )}
+            )} */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Category *</Text>
               <View style={styles.categoryContainer}>
@@ -680,27 +680,25 @@ const AdminProductUpdation = () => {
                       color={colors.primary}
                     />
                   </View>
-                  </ModalSelector>
-                  {errors.category && (
-                    <Text style={globalStyles.errorText}>
-                      {errors.category}
-                    </Text>
-                  )}
+                </ModalSelector>
+                {errors.category && (
+                  <Text style={globalStyles.errorText}>{errors.category}</Text>
+                )}
               </View>
             </View>
-            <Text style={styles.label}>Stock *</Text>
+            <Text style={styles.label}>Stock </Text>
             <CustomTextInput
               setValue={handleStockChange}
               value={stock}
               onPress={() => {}}
               placeholder="e.g., 100"
               keyboardType="numeric"
-              style={errors.stock ? globalStyles.errorInput : undefined}
+              // style={errors.stock ? globalStyles.errorInput : undefined}
               maxLength={5}
             />
-            {errors.stock && (
+            {/* {errors.stock && (
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
-            )}
+            )} */}
 
             <Text style={styles.label}>Price * (₹)</Text>
             <CustomTextInput
@@ -723,12 +721,12 @@ const AdminProductUpdation = () => {
               onPress={() => {}}
               placeholder="e.g., 2499.99 (optional - must be less than original price)"
               keyboardType="decimal-pad"
-              style={errors.discountPrice ? globalStyles.errorInput : undefined}
+              // style={errors.discountPrice ? globalStyles.errorInput : undefined}
               maxLength={10}
             />
-            {errors.discountPrice && (
+            {/* {errors.discountPrice && (
               <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
-            )}
+            )} */}
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput
@@ -737,18 +735,18 @@ const AdminProductUpdation = () => {
               onPress={() => {}}
               placeholder="e.g., 1 (optional - leave empty for no minimum)"
               keyboardType="numeric"
-              style={
-                errors.minimumOrderQunatity
-                  ? globalStyles.errorInput
-                  : undefined
-              }
+              // style={
+              //   errors.minimumOrderQunatity
+              //     ? globalStyles.errorInput
+              //     : undefined
+              // }
               maxLength={4}
             />
-            {errors.minimumOrderQunatity && (
+            {/* {errors.minimumOrderQunatity && (
               <Text style={globalStyles.errorText}>
                 {errors.minimumOrderQunatity}
               </Text>
-            )}
+            )} */}
 
             <View style={styles.checkBox}>
               <CheckBox
@@ -759,8 +757,8 @@ const AdminProductUpdation = () => {
                     setSelectedColors([]);
                   }
                 }}
-                checkedColor = {colors.primary}
-                uncheckedColor= {colors.secondary}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
               />
               <Text>Colors Available?</Text>
             </View>
@@ -899,8 +897,8 @@ const AdminProductUpdation = () => {
                                   onPress={() =>
                                     handleColorSelection(color.hex, color.name)
                                   }
-                                  checkedColor = {colors.primary}
-                                  uncheckedColor= {colors.secondary}
+                                  checkedColor={colors.primary}
+                                  uncheckedColor={colors.secondary}
                                 />
                                 <View
                                   style={[
@@ -941,15 +939,15 @@ const AdminProductUpdation = () => {
             <CheckBox
               checked={isChecked}
               onPress={() => setIsChecked(!isChecked)}
-              checkedColor = {colors.primary}
-              uncheckedColor= {colors.secondary}
+              checkedColor={colors.primary}
+              uncheckedColor={colors.secondary}
             />
             <Text>Returnable?</Text>
             <CheckBox
               checked={isAgeRestricted}
               onPress={() => setIsAgeRestricted(!isAgeRestricted)}
-              checkedColor = {colors.primary}
-              uncheckedColor= {colors.secondary}
+              checkedColor={colors.primary}
+              uncheckedColor={colors.secondary}
             />
             <Text>Age Restricted?</Text>
           </View>
