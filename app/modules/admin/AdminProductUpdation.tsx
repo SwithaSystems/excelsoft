@@ -39,7 +39,7 @@ import {
   isValidPrice,
   isValidDiscountPrice,
   isValidMinimumOrderQuantity,
-  isValidProductImages,
+  // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
 
@@ -309,10 +309,10 @@ const AdminProductUpdation = () => {
     if (minOrderQtyError) newErrors.minimumOrderQunatity = minOrderQtyError;
 
     // Validate images (only for new products)
-    if (newProduct) {
-      const imagesError = isValidProductImages(productImages, MAX_IMAGES);
-      if (imagesError) newErrors.productImages = imagesError;
-    }
+    // if (newProduct) {
+    //   const imagesError = isValidProductImages(productImages, MAX_IMAGES);
+    //   if (imagesError) newErrors.productImages = imagesError;
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -979,10 +979,6 @@ const AdminProductUpdation = () => {
               </TouchableOpacity>
             ))}
           </View>
-
-          {newProduct && errors.productImages && (
-            <Text style={globalStyles.errorText}>{errors.productImages}</Text>
-          )}
           {/* </View> */}
         </ScrollView>
 
