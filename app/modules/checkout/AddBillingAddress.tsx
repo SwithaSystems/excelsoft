@@ -37,6 +37,7 @@ import {
   isValidState,
   isValidPhoneNumber,
 } from "@/utilities/validations";
+import colors from "@/constants/colors";
 
 const addBillingAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -385,6 +386,8 @@ const addBillingAddressScreen = () => {
               <CheckBox
                 checked={isDefault}
                 onPress={() => setIsDefault(!isDefault)}
+                checkedColor = {colors.primary}
+                uncheckedColor= {colors.secondary}
               />
               <Text>Mark as default address</Text>
             </View>

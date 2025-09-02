@@ -102,6 +102,8 @@ const Filter = () => {
                       onPress={() => handleCategorySelect(category.id)}
                       containerStyle={styles.checkBoxContainer}
                       textStyle={styles.checkBoxText}
+                      checkedColor = {colors.primary}
+                      uncheckedColor= {colors.secondary}
                     />
                   </View>
                 ))}
@@ -119,6 +121,8 @@ const Filter = () => {
                       onPress={() => handleBrandSelect(brand)}
                       containerStyle={styles.checkBoxContainer}
                       textStyle={styles.checkBoxText}
+                      checkedColor = {colors.primary}
+                      uncheckedColor= {colors.secondary}
                     />
                   </View>
                 ))}
