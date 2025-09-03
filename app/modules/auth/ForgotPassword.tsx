@@ -221,6 +221,7 @@ const forgotPasswordScreen = () => {
             submitText="OK"
             handleSubmit={() => setModalOpen(false)}
             handleCancel={() => setModalOpen(false)}
+            title="Check Details" 
           />
         </View>
       </KeyBoardWrapper>

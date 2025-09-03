@@ -8,6 +8,19 @@ import {
 } from "react-native";
 import colors from "@/constants/colors";
 
+interface ConfirmationModalProps {
+  isModalVisible: boolean;
+  onClose: () => void;
+  title?: string;
+  text?: string;
+  submitText?: string;
+  cancelText?: string;
+  handleSubmit?: () => void;
+  handleCancel?: () => void;
+  animationType?: "none" | "slide" | "fade";
+}
+
+
 function ConfirmationModal({
   isModalVisible,
   onClose,
@@ -18,7 +31,7 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
-}) {
+} : ConfirmationModalProps) {
   return (
     <Modal
       visible={isModalVisible}
@@ -56,7 +69,7 @@ function ConfirmationModal({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.pureblack,
+    backgroundColor:'rgba(0, 0, 0, 0.5)',
     justifyContent: "center",
     alignItems: "center",
   },
