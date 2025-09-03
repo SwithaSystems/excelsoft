@@ -4,66 +4,96 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
 } from "react-native";
-import Button from "./Button";
+import colors from "@/constants/colors";
 
-function ConfirmationModal(props) {
+function ConfirmationModal({
+  isModalVisible,
+  onClose,
+  title,
+  text,
+  submitText,
+  cancelText,
+  handleSubmit,
+  handleCancel,
+  animationType = "fade",
+}) {
   return (
-    <>
-      {props.isModalVisible && (
-        <Modal
-          visible={props.isModalVisible}
-          transparent={true}
-          animationType={props?.animationType || "slide"}
-        >
-          <TouchableWithoutFeedback onPress={() => props.onClose()}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={{ fontWeight: 500, fontSize: 16 }}>
-                  {props.text}
-                </Text>
-                <View style={styles.modalButtons}>
-                  <Button
-                    style={{ marginBottom: 16 }}
-                    onPress={props?.handleSubmit}
-                    title={props.submitText}
-                  />
-                  {props.cancelText && (
-                    <Button
-                      onPress={props?.handleCancel}
-                      title={props.cancelText}
-                    />
-                  )}
-                </View>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      )}
-    </>
+    <Modal
+      visible={isModalVisible}
+      transparent
+      animationType={animationType}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.dialogBox}>
+          {/* Title */}
+          {title && <Text style={styles.title}>{title}</Text>}
+
+          {/* text */}
+          {text && <Text style={styles.text}>{text}</Text>}
+
+          {/* Buttons */}
+          <View style={styles.buttonRow}>
+            {cancelText && (
+              <TouchableOpacity onPress={handleCancel} style={styles.button}>
+                <Text style={styles.cancelText}>{cancelText}</Text>
+              </TouchableOpacity>
+            )}
+            {submitText && (
+              <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+                <Text style={styles.submitText}>{submitText}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: colors.pureblack,
     justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: {
-    backgroundColor: "white",
-    paddingHorizontal: 34,
-    paddingTop: 50,
-    paddingBottom: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    maxWidth: "80%",
+  dialogBox: {
+    width: "85%",
+    backgroundColor: colors.white,
+    // borderRadius: 8,
+    padding: 20,
+    elevation: 5,
   },
-  modalButtons: {
-    marginTop: 16,
-    width: "70%",
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  text: {
+    fontSize: 15,
+    color: colors.secondaryText,
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  cancelText: {
+    fontSize: 15,
+    color: colors.linkBlue, 
+    fontWeight: "500",
+  },
+  submitText: {
+    fontSize: 15,
+    color: colors.error, 
+    fontWeight: "500",
   },
 });
 

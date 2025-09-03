@@ -291,6 +291,7 @@ const CartScreen = () => {
               setIsModalVisible(false);
             }}
             isModalVisible={isModalVisible}
+            title="Delete Product"
             text="Are you sure you want to delete this? You can save this item for later too."
             submitText="Delete Item"
             handleSubmit={confirmDelete}
