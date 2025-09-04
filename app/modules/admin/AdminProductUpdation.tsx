@@ -42,6 +42,7 @@ import {
   // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -751,7 +752,7 @@ const handleGrossPriceChange = (value: string) => {};
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Net Price * (£)</Text>
+            <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={price}
@@ -765,7 +766,7 @@ const handleGrossPriceChange = (value: string) => {};
               <Text style={globalStyles.errorText}>{errors.price}</Text>
             )}
 
-            <Text style={styles.label}>Discount(£)</Text>
+            <Text style={styles.label}>Discount({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
               value={discountPrice}
@@ -815,7 +816,7 @@ const handleGrossPriceChange = (value: string) => {};
                   maxLength={6}
                 />
 
-                <Text style={styles.label}>Gross Price (£)</Text>
+                <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
                 <CustomTextInput
                   setValue={handleGrossPriceChange}
                   value={grossPrice}
@@ -827,7 +828,7 @@ const handleGrossPriceChange = (value: string) => {};
                   style={styles.readOnlyInput}
                 />
 
-                <Text style={styles.label}>VAT Amount (£)</Text>
+                <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
                 <CustomTextInput
                   setValue={handleVatAmountChange}
                   value={vatAmount}
@@ -839,7 +840,7 @@ const handleGrossPriceChange = (value: string) => {};
                   style={styles.readOnlyInput}
                 />
 
-                <Text style={styles.label}>Net Price Including VAT (₹)</Text>
+                <Text style={styles.label}>Net Price Including VAT ({CurrencySymbol})</Text>
                 <CustomTextInput
                   value={netPriceIncVAT}
                   onPress={() => {}}
