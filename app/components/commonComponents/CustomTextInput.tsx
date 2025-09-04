@@ -16,7 +16,7 @@ interface Props {
   placeholder?: string;
   value: string;
   label?: string;
-  setValue: (value: string) => void;
+  setValue?: (value: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: string;
   containerStyle?: ViewStyle;
@@ -33,6 +33,7 @@ interface Props {
   onblur?: () => void;
   style?: ViewStyle;
   maxLength?: number;
+  editable?:boolean;
 }
 
 export const CustomTextInput = (props: Props) => {
@@ -47,6 +48,7 @@ export const CustomTextInput = (props: Props) => {
         editable={!props.disabled}
         onBlur={props.onblur}
         maxLength={props.maxLength}
+        keyboardType = {props.keyboardType as any}
         style={[
           {
             flex: 1,

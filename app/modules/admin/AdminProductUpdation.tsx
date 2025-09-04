@@ -65,8 +65,10 @@ const AdminProductUpdation = () => {
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isVatApplicable, setIsVatApplicable] = useState(false);
+  const [grossPrice, setGrossPrice] = useState("");
   const [vatRate, setVatRate] = useState("");
   const [vatAmount, setVatAmount] = useState("");
+  const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -135,6 +137,11 @@ const AdminProductUpdation = () => {
       );
       setIsAgeRestricted(productData.isAgeRestricted || false);
       setIsChecked(productData.isReturnable || false);
+      setIsVatApplicable(productData.isVatApplicable || false);
+      setVatRate(productData.vatRate?.toString() || (productData.isVatApplicable ? "20.00" : " "))
+      setGrossPrice(productData.grossPrice?.toString() || "");
+      setVatAmount(productData.vatAmount?.toString()||"");
+      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "")
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
@@ -159,6 +166,26 @@ const AdminProductUpdation = () => {
       setMinutes(mins < 10 ? `0${mins}` : `${mins}`);
     }
   }, [productData]);
+
+  useEffect(() => {
+    if(isVatApplicable){
+      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0
+      const netPriceNum = parseFloat(price) || 0;
+      const discountNum = parseFloat(discountPrice) || 0;
+      const grossPriceCalc = netPriceNum - discountNum;
+
+      const calcVatAmount = (effectiveVatRate * grossPriceCalc) / 100;
+      const calcNetPriceIncVat = grossPriceCalc + calcVatAmount;
+
+      setGrossPrice(grossPriceCalc.toFixed(2));
+      setVatAmount(calcVatAmount.toFixed(2));
+      setNetPriceIncVAT(calcNetPriceIncVat.toFixed(2));
+    } else {
+      setGrossPrice("");
+      setVatAmount("");
+      setNetPriceIncVAT("");
+    }
+  }, [price, discountPrice,vatRate, isVatApplicable]);
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -398,6 +425,7 @@ const AdminProductUpdation = () => {
     //   }));
     // }
   };
+const handleGrossPriceChange = (value: string) => {};
 
   const handleVatRateChange = (value: string) => {
     const numericValue = value.replace(/[^0-9.]/g, "");
@@ -407,13 +435,8 @@ const AdminProductUpdation = () => {
     setVatRate(numericValue);
   };
 
-  const handleVatAmountChange = (value: string) => {
-    const numericValue = value.replace(/[^0-9.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    setVatAmount(numericValue);
-  };
+  const handleVatAmountChange = (value: string) => {};
+
   const handleUpdateProduct = useCallback(async () => {
     // Validate fields before submission
     if (!validateFields()) {
@@ -443,6 +466,13 @@ const AdminProductUpdation = () => {
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+
+      if(isVatApplicable){
+        formData.append("vatRate", vatRate);
+        formData.append("vatAmount", vatAmount);
+        formData.append("grossPrice", grossPrice);
+        formData.append("netPriceIncVAT", netPriceIncVAT);
+      }
 
       // Handle colors
       if (isColorsAvailable && selectedColors.length > 0) {
@@ -530,6 +560,7 @@ const AdminProductUpdation = () => {
     isVatApplicable,
     vatRate,
     vatAmount,
+    grossPrice,
     router,
     newProduct,
     productData?._id,
@@ -610,7 +641,6 @@ const AdminProductUpdation = () => {
       }
       scrollable={false}
     >
-      a
       <KeyBoardWrapper>
         <ScrollView style={{ flex: 1 }}>
           <View
@@ -721,7 +751,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Price * (₹)</Text>
+            <Text style={styles.label}>Net Price * (£)</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={price}
@@ -735,7 +765,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.price}</Text>
             )}
 
-            <Text style={styles.label}>Discount Price (₹)</Text>
+            <Text style={styles.label}>Discount(£)</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
               value={discountPrice}
@@ -749,19 +779,21 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
             )} */}
 
-                        <View style={styles.checkBox}>
+            <View style={styles.checkBox}>
               <CheckBox
                 checked={isVatApplicable}
                 onPress={() => {
                   setIsVatApplicable(!isVatApplicable);
                   if (!isVatApplicable) {
-                    setVatRate("");
+                    setVatRate("20.00");
                     setVatAmount("");
-                    setErrors((prev) => ({
-                      ...prev,
-                      vatRate: undefined,
-                      vatAmount: undefined,
-                    }));
+                    setNetPriceIncVAT("");
+                    setGrossPrice("");
+                  } else{
+                    setVatRate("");
+                    setVatAmount(" ");
+                    setNetPriceIncVAT("");
+                    setGrossPrice("");
                   }
                 }}
                 checkedColor={colors.primary}
@@ -770,9 +802,9 @@ const AdminProductUpdation = () => {
               <Text>Is VAT Applicable?</Text>
             </View>
 
-                        {isVatApplicable && (
+            {isVatApplicable && (
               <>
-                <Text style={styles.label}>VAT Rate * (%)</Text>
+                <Text style={styles.label}>VAT Rate (%)</Text>
                 <CustomTextInput
                   setValue={handleVatRateChange}
                   value={vatRate}
@@ -782,23 +814,41 @@ const AdminProductUpdation = () => {
                   style={errors.vatRate ? globalStyles.errorInput : undefined}
                   maxLength={6}
                 />
-                {errors.vatRate && (
-                  <Text style={globalStyles.errorText}>{errors.vatRate}</Text>
-                )}
 
-                <Text style={styles.label}>VAT Amount * (₹)</Text>
+                <Text style={styles.label}>Gross Price (£)</Text>
+                <CustomTextInput
+                  setValue={handleGrossPriceChange}
+                  value={grossPrice}
+                  onPress={() => {}}
+                  placeholder="Calculated Automatically"
+                  keyboardType="decimal-pad"
+                  maxLength={10}
+                  editable={false}
+                  style={styles.readOnlyInput}
+                />
+
+                <Text style={styles.label}>VAT Amount (£)</Text>
                 <CustomTextInput
                   setValue={handleVatAmountChange}
                   value={vatAmount}
                   onPress={() => {}}
-                  placeholder="e.g., 149.99"
+                  placeholder="eCalculated Automatically"
                   keyboardType="decimal-pad"
-                  style={errors.vatAmount ? globalStyles.errorInput : undefined}
                   maxLength={10}
+                  editable = {false}
+                  style={styles.readOnlyInput}
                 />
-                {errors.vatAmount && (
-                  <Text style={globalStyles.errorText}>{errors.vatAmount}</Text>
-                )}
+
+                <Text style={styles.label}>Net Price Including VAT (₹)</Text>
+                <CustomTextInput
+                  value={netPriceIncVAT}
+                  onPress={() => {}}
+                  placeholder="Calculated automatically"
+                  keyboardType="decimal-pad"
+                  maxLength={10}
+                  editable={false}
+                  style={styles.readOnlyInput}
+                />
               </>
             )}
 
@@ -1215,6 +1265,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
     color: colors.black,
+  },
+  readOnlyInput: {
+    backgroundColor: colors.lightgrey,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    padding: 10,
   },
   inputContainer: {
     // marginBottom: 20,
