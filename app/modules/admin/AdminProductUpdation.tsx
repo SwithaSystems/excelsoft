@@ -64,6 +64,9 @@ const AdminProductUpdation = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
+  const [isVatApplicable, setIsVatApplicable] = useState(false);
+  const [vatRate, setVatRate] = useState("");
+  const [vatAmount, setVatAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -92,10 +95,11 @@ const AdminProductUpdation = () => {
       category: string;
       // minimumOrderQunatity: string;
       // productImages: string;
+      vatRate: string;
+      vatAmount: string;
     }>
   >({});
 
-  // Parse product data only once when component mounts
   const productData = React.useMemo(() => {
     return typeof props.item === "string" ? JSON.parse(props.item) : props.item;
   }, [props.item]);
@@ -116,7 +120,6 @@ const AdminProductUpdation = () => {
   }, []);
 
   useEffect(() => {
-    // Only run once when component mounts
     if (productData) {
       setId(productData.id || "");
       setTitle(productData.title || "Product");
@@ -396,6 +399,21 @@ const AdminProductUpdation = () => {
     // }
   };
 
+  const handleVatRateChange = (value: string) => {
+    const numericValue = value.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
+    if (parts.length > 2) return;
+    if (parts[1] && parts[1].length > 2) return;
+    setVatRate(numericValue);
+  };
+
+  const handleVatAmountChange = (value: string) => {
+    const numericValue = value.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
+    if (parts.length > 2) return;
+    if (parts[1] && parts[1].length > 2) return;
+    setVatAmount(numericValue);
+  };
   const handleUpdateProduct = useCallback(async () => {
     // Validate fields before submission
     if (!validateFields()) {
@@ -481,7 +499,7 @@ const AdminProductUpdation = () => {
           {
             text: "OK",
             onPress: () =>
-              router.replace("/modules/admin/AdminProductDashboard"),
+              router.replace("../AdminProductDashboard"),
           },
         ]
       );
@@ -509,6 +527,9 @@ const AdminProductUpdation = () => {
     minimumOrderQunatity,
     isChecked,
     isAgeRestricted,
+    isVatApplicable,
+    vatRate,
+    vatAmount,
     router,
     newProduct,
     productData?._id,
@@ -727,6 +748,59 @@ const AdminProductUpdation = () => {
             {/* {errors.discountPrice && (
               <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
             )} */}
+
+                        <View style={styles.checkBox}>
+              <CheckBox
+                checked={isVatApplicable}
+                onPress={() => {
+                  setIsVatApplicable(!isVatApplicable);
+                  if (!isVatApplicable) {
+                    setVatRate("");
+                    setVatAmount("");
+                    setErrors((prev) => ({
+                      ...prev,
+                      vatRate: undefined,
+                      vatAmount: undefined,
+                    }));
+                  }
+                }}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
+              />
+              <Text>Is VAT Applicable?</Text>
+            </View>
+
+                        {isVatApplicable && (
+              <>
+                <Text style={styles.label}>VAT Rate * (%)</Text>
+                <CustomTextInput
+                  setValue={handleVatRateChange}
+                  value={vatRate}
+                  onPress={() => {}}
+                  placeholder="e.g., 5.00"
+                  keyboardType="decimal-pad"
+                  style={errors.vatRate ? globalStyles.errorInput : undefined}
+                  maxLength={6}
+                />
+                {errors.vatRate && (
+                  <Text style={globalStyles.errorText}>{errors.vatRate}</Text>
+                )}
+
+                <Text style={styles.label}>VAT Amount * (₹)</Text>
+                <CustomTextInput
+                  setValue={handleVatAmountChange}
+                  value={vatAmount}
+                  onPress={() => {}}
+                  placeholder="e.g., 149.99"
+                  keyboardType="decimal-pad"
+                  style={errors.vatAmount ? globalStyles.errorInput : undefined}
+                  maxLength={10}
+                />
+                {errors.vatAmount && (
+                  <Text style={globalStyles.errorText}>{errors.vatAmount}</Text>
+                )}
+              </>
+            )}
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput
