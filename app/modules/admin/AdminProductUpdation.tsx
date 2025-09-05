@@ -42,6 +42,7 @@ import {
   // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -64,6 +65,11 @@ const AdminProductUpdation = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
+  const [isVatApplicable, setIsVatApplicable] = useState(false);
+  const [grossPrice, setGrossPrice] = useState("");
+  const [vatRate, setVatRate] = useState("");
+  const [vatAmount, setVatAmount] = useState("");
+  const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -92,10 +98,11 @@ const AdminProductUpdation = () => {
       category: string;
       // minimumOrderQunatity: string;
       // productImages: string;
+      vatRate: string;
+      vatAmount: string;
     }>
   >({});
 
-  // Parse product data only once when component mounts
   const productData = React.useMemo(() => {
     return typeof props.item === "string" ? JSON.parse(props.item) : props.item;
   }, [props.item]);
@@ -116,7 +123,6 @@ const AdminProductUpdation = () => {
   }, []);
 
   useEffect(() => {
-    // Only run once when component mounts
     if (productData) {
       setId(productData.id || "");
       setTitle(productData.title || "Product");
@@ -132,6 +138,11 @@ const AdminProductUpdation = () => {
       );
       setIsAgeRestricted(productData.isAgeRestricted || false);
       setIsChecked(productData.isReturnable || false);
+      setIsVatApplicable(productData.isVatApplicable || false);
+      setVatRate(productData.vatRate?.toString() || (productData.isVatApplicable ? "20.00" : " "))
+      setGrossPrice(productData.grossPrice?.toString() || "");
+      setVatAmount(productData.vatAmount?.toString()||"");
+      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "")
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
@@ -156,6 +167,26 @@ const AdminProductUpdation = () => {
       setMinutes(mins < 10 ? `0${mins}` : `${mins}`);
     }
   }, [productData]);
+
+  useEffect(() => {
+    if(isVatApplicable){
+      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0
+      const netPriceNum = parseFloat(price) || 0;
+      const discountNum = parseFloat(discountPrice) || 0;
+      const grossPriceCalc = netPriceNum - discountNum;
+
+      const calcVatAmount = (effectiveVatRate * grossPriceCalc) / 100;
+      const calcNetPriceIncVat = grossPriceCalc + calcVatAmount;
+
+      setGrossPrice(grossPriceCalc.toFixed(2));
+      setVatAmount(calcVatAmount.toFixed(2));
+      setNetPriceIncVAT(calcNetPriceIncVat.toFixed(2));
+    } else {
+      setGrossPrice("");
+      setVatAmount("");
+      setNetPriceIncVAT("");
+    }
+  }, [price, discountPrice,vatRate, isVatApplicable]);
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -395,6 +426,17 @@ const AdminProductUpdation = () => {
     //   }));
     // }
   };
+const handleGrossPriceChange = (value: string) => {};
+
+  const handleVatRateChange = (value: string) => {
+    const numericValue = value.replace(/[^0-9.]/g, "");
+    const parts = numericValue.split(".");
+    if (parts.length > 2) return;
+    if (parts[1] && parts[1].length > 2) return;
+    setVatRate(numericValue);
+  };
+
+  const handleVatAmountChange = (value: string) => {};
 
   const handleUpdateProduct = useCallback(async () => {
     // Validate fields before submission
@@ -425,6 +467,13 @@ const AdminProductUpdation = () => {
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+
+      if(isVatApplicable){
+        formData.append("vatRate", vatRate);
+        formData.append("vatAmount", vatAmount);
+        formData.append("grossPrice", grossPrice);
+        formData.append("netPriceIncVAT", netPriceIncVAT);
+      }
 
       // Handle colors
       if (isColorsAvailable && selectedColors.length > 0) {
@@ -481,7 +530,7 @@ const AdminProductUpdation = () => {
           {
             text: "OK",
             onPress: () =>
-              router.replace("/modules/admin/AdminProductDashboard"),
+              router.replace("../AdminProductDashboard"),
           },
         ]
       );
@@ -509,6 +558,10 @@ const AdminProductUpdation = () => {
     minimumOrderQunatity,
     isChecked,
     isAgeRestricted,
+    isVatApplicable,
+    vatRate,
+    vatAmount,
+    grossPrice,
     router,
     newProduct,
     productData?._id,
@@ -589,7 +642,6 @@ const AdminProductUpdation = () => {
       }
       scrollable={false}
     >
-      a
       <KeyBoardWrapper>
         <ScrollView style={{ flex: 1 }}>
           <View
@@ -700,7 +752,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Price * (₹)</Text>
+            <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={price}
@@ -714,7 +766,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.price}</Text>
             )}
 
-            <Text style={styles.label}>Discount Price (₹)</Text>
+            <Text style={styles.label}>Discount({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
               value={discountPrice}
@@ -727,6 +779,79 @@ const AdminProductUpdation = () => {
             {/* {errors.discountPrice && (
               <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
             )} */}
+
+            <View style={styles.checkBox}>
+              <CheckBox
+                checked={isVatApplicable}
+                onPress={() => {
+                  setIsVatApplicable(!isVatApplicable);
+                  if (!isVatApplicable) {
+                    setVatRate("20.00");
+                    setVatAmount("");
+                    setNetPriceIncVAT("");
+                    setGrossPrice("");
+                  } else{
+                    setVatRate("");
+                    setVatAmount(" ");
+                    setNetPriceIncVAT("");
+                    setGrossPrice("");
+                  }
+                }}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
+              />
+              <Text>Is VAT Applicable?</Text>
+            </View>
+
+            {isVatApplicable && (
+              <>
+                <Text style={styles.label}>VAT Rate (%)</Text>
+                <CustomTextInput
+                  setValue={handleVatRateChange}
+                  value={vatRate}
+                  onPress={() => {}}
+                  placeholder="e.g., 5.00"
+                  keyboardType="decimal-pad"
+                  style={errors.vatRate ? globalStyles.errorInput : undefined}
+                  maxLength={6}
+                />
+
+                <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
+                <CustomTextInput
+                  setValue={handleGrossPriceChange}
+                  value={grossPrice}
+                  onPress={() => {}}
+                  placeholder="Calculated Automatically"
+                  keyboardType="decimal-pad"
+                  maxLength={10}
+                  editable={false}
+                  style={styles.readOnlyInput}
+                />
+
+                <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
+                <CustomTextInput
+                  setValue={handleVatAmountChange}
+                  value={vatAmount}
+                  onPress={() => {}}
+                  placeholder="eCalculated Automatically"
+                  keyboardType="decimal-pad"
+                  maxLength={10}
+                  editable = {false}
+                  style={styles.readOnlyInput}
+                />
+
+                <Text style={styles.label}>Net Price Including VAT ({CurrencySymbol})</Text>
+                <CustomTextInput
+                  value={netPriceIncVAT}
+                  onPress={() => {}}
+                  placeholder="Calculated automatically"
+                  keyboardType="decimal-pad"
+                  maxLength={10}
+                  editable={false}
+                  style={styles.readOnlyInput}
+                />
+              </>
+            )}
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput
@@ -1141,6 +1266,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
     color: colors.black,
+  },
+  readOnlyInput: {
+    backgroundColor: colors.lightgrey,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    padding: 10,
   },
   inputContainer: {
     // marginBottom: 20,

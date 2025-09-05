@@ -718,6 +718,7 @@ const HomeDeliveryScreen = () => {
                   setIsModalVisible(false);
                 }}
                 isModalVisible={isModalVisible}
+                title="Delete Address"
                 text="Are you sure you want to delete this address?"
                 submitText="Delete Address"
                 handleSubmit={confirmDelete}
