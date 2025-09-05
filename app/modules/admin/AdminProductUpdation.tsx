@@ -42,6 +42,7 @@ import {
   // isValidProductImages,
   isValidCategory,
 } from "../../../utilities/validations";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -700,7 +701,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Price * (₹)</Text>
+            <Text style={styles.label}>Price * ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={price}
@@ -714,7 +715,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.price}</Text>
             )}
 
-            <Text style={styles.label}>Discount Price (₹)</Text>
+            <Text style={styles.label}>Discount Price ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
               value={discountPrice}
