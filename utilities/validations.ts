@@ -164,33 +164,30 @@ export const isValidStock = (stock: string): string | null => {
   return null;
 };
 
-export const isValidPrice = (price: string): string | null => {
-  if (!price.trim()) return "Price is required";
-  const priceNum = parseFloat(price);
-  if (isNaN(priceNum)) return "Price must be a valid number";
-  if (priceNum <= 0) return "Price must be greater than 0";
-  if (priceNum > 999999) return "Price cannot exceed 999,999";
-  if (!/^\d+(\.\d{1,2})?$/.test(price))
-    return "Price can have maximum 2 decimal places";
+export const isValidPrice = (netPrice: number): string | null => {
+  if (!netPrice) return "Net Price is required";
+  if (isNaN(netPrice)) return "Net Price must be a valid number";
+  if (netPrice <= 0) return "Net Price must be greater than 0";
+  if (netPrice > 999999) return "Net Price cannot exceed 999,999";
   return null;
 };
 
 export const isValidDiscountPrice = (
-  discountPrice: string,
-  originalPrice: string
+  discount: string,
+  netPrice: string
 ): string | null => {
-  if (!discountPrice.trim()) return null;
-  const discountNum = parseFloat(discountPrice);
-  const originalNum = parseFloat(originalPrice);
+  if (!discount.trim()) return null;
+  const discountNum = parseFloat(discount);
+  const originalNum = parseFloat(netPrice);
 
-  if (isNaN(discountNum)) return "Discount price must be a valid number";
+  if (isNaN(discountNum)) return "Discount must be a valid number";
   if (discountNum <= 0) return "Discount price must be greater than 0";
   if (discountNum > 999999) return "Discount price cannot exceed 999,999";
-  if (!/^\d+(\.\d{1,2})?$/.test(discountPrice))
+  if (!/^\d+(\.\d{1,2})?$/.test(discount))
     return "Discount price can have maximum 2 decimal places";
 
   if (!isNaN(originalNum) && discountNum > originalNum) {
-    return "Discount price must be less than or equal to original price";
+    return "Discount price must be less than or equal to NetPrice";
   }
   return null;
 };

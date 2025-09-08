@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.black,
   },
-  originalPrice: {
+  netPrice: {
     textDecorationLine: "line-through",
     color: colors.darkGray,
     fontSize: 13,

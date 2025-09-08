@@ -13,37 +13,42 @@ import {
   addToSavedItems,
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
+import { Product } from "@/services/productService";
 
-interface ProductCardProps {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  originalPrice: number;
-  image: any;
-  productColors: string[];
-  category: string;
-  rating: number;
-  noOfreviews: number;
-  reviews: {
-    id: string;
-    name: string;
-    review: string;
-    rating: number;
-    text: string;
-  }[];
-}
+// interface ProductCardProps {
+//   id: string;
+//   name: string;
+//   description: string;
+//   discount: number;
+//   netPrice: number;
+//   image: any;
+//   productColors: string[];
+//   category: string;
+//   rating: number;
+//   noOfreviews: number;
+//   reviews: {
+//     id: string;
+//     name: string;
+//     review: string;
+//     rating: number;
+//     text: string;
+//   }[];
+// }
 
 const ProductCard = ({
   id,
   name,
+  categoryId,
   description,
   rating,
   noOfreviews,
-  price,
-  originalPrice,
+  discount,
+  netPrice,
+  isVatApplicable,
+  vatRate,
+  vatAmount,
   image,
-}: ProductCardProps) => {
+}: Product) => {
   const router = useRouter();
   const isRemoteImage = typeof image === "string";
 
@@ -62,8 +67,10 @@ const ProductCard = ({
       description,
       rating,
       noOfreviews,
-      price,
-      originalPrice,
+      netPrice,
+      isVatApplicable,
+      vatRate,
+      vatAmount,
       image,
       discount: 0,
       quantity: 1,
@@ -123,7 +130,7 @@ const ProductCard = ({
             <Text style={styles.reviews}>({noOfreviews})</Text>
           </View>
         )}
-        {originalPrice > price && (
+        {netPrice > discount && discount > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
               {/* <View style={styles.saleTag}>
@@ -132,20 +139,20 @@ const ProductCard = ({
               {/* <Text style={styles.time}>02:48:26</Text> */}
             </View>
             <Text style={styles.discount}>
-              {Math.round(((originalPrice - price) / originalPrice) * 100)}%
+              {Math.round((discount / netPrice) * 100)}%
             </Text>
           </View>
         )}
 
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>
+          <Text style={styles.discount}>
             {CurrencySymbol}
-            {price}
+            {netPrice - discount}
           </Text>
-          {originalPrice > price && (
-            <Text style={styles.originalPrice}>
+          {netPrice > discount && (
+            <Text style={styles.netPrice}>
               {CurrencySymbol}
-              {originalPrice}
+              {netPrice}
             </Text>
           )}
         </View>
@@ -221,14 +228,14 @@ const styles = StyleSheet.create({
     //borderRadius: 4,
     marginRight: 6,
   },
-  price: {
+  discount: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.primary,
     marginRight: 6,
     marginTop: 6,
   },
-  originalPrice: {
+  netPrice: {
     fontSize: 14,
     color: colors.secondaryText,
     textDecorationLine: "line-through",
@@ -245,14 +252,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginRight: 8,
   },
-  discount: {
-    fontSize: 14,
-    color: colors.primary,
-    marginLeft: 6,
-    backgroundColor: colors.secondary,
-    padding: 4,
-    borderRadius: 5,
-  },
+  // discount: {
+  //   fontSize: 14,
+  //   color: colors.primary,
+  //   marginLeft: 6,
+  //   backgroundColor: colors.secondary,
+  //   padding: 4,
+  //   borderRadius: 5,
+  // },
 });
 
 export default ProductCard;

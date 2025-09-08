@@ -34,8 +34,12 @@ interface Product {
   name: string;
   image: string[];
   categoryId: number[];
-  price: number;
+  netPrice: number;
+  discount: number;
   stock: number;
+  isVatApplicable: boolean;
+  vatRate: number;
+  vatAmount: number;
 }
 
 // Define API response interface
@@ -60,56 +64,172 @@ const AdminProductDashboard = () => {
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [total, setTotal] = useState(0);
-  const ITEMS_PER_PAGE = 50;
+  const [hasMore, setHasMore] = useState(true);
   const isLoadingMoreRef = useRef(false);
-  const { refresh } = useLocalSearchParams();
 
-  const fetchAllProducts = useCallback(
-    async (pageNum = 1, isLoadMore = false) => {
-      if (isLoadMore && isLoadingMoreRef.current) {
-        console.log(`Skipping page ${pageNum} - already loading`);
-        return;
-      }
+  const ITEMS_PER_PAGE = 50;
+  const limit = 50;
+  const fetchData = async (pageNum: number, isLoadMore: boolean = false) => {
+    try {
+      console.log(`Fetching page ${pageNum}, isLoadMore: ${isLoadMore}`);
+      const response = await ProductsAPI.getAllProducts(pageNum, limit);
 
-      if (isLoadMore) {
-        setLoadingMore(true);
-        isLoadingMoreRef.current = true;
-      } else {
-        setIsLoading(true);
-        isLoadingMoreRef.current = false;
-      }
+      if (response && response.data) {
+        const currentPageItemCount = response.data.length;
+        const totalRecords = response.total;
 
-      try {
-        console.log(`Fetching page ${pageNum}...`);
-        const response: ApiResponse = await ProductsAPI.getAllProducts(
-          pageNum,
-          ITEMS_PER_PAGE
-        );
-        console.log(`Page ${pageNum} loaded:`, {
-          productCount: response.data.length,
-          total: response.total,
+        const totalFetchedSoFar = (pageNum - 1) * limit + currentPageItemCount;
+        const hasMoreData = totalFetchedSoFar < totalRecords;
+
+        console.log(`Page ${pageNum} fetched:`, {
+          itemsReceived: currentPageItemCount,
+          totalRecords,
+          totalFetchedSoFar,
+          hasMore: hasMoreData,
         });
 
-        if (pageNum === 1) {
-          setAllProductsList(response.data);
-        } else {
-          setAllProductsList((prev) => [...prev, ...response.data]);
-        }
-
-        setTotal(response.total || 0);
-        setPage(pageNum);
-      } catch (err) {
-        console.error(`Error fetching page ${pageNum}:`, err);
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-        setLoadingMore(false);
-        isLoadingMoreRef.current = false;
+        return {
+          data: response.data,
+          totalRecords: totalRecords,
+          hasMore: hasMoreData,
+          currentPage: pageNum,
+        };
       }
-    },
-    [ITEMS_PER_PAGE]
+
+      return {
+        data: [],
+        totalRecords: 0,
+        hasMore: false,
+        currentPage: pageNum,
+      };
+    } catch (err) {
+      console.error(`Error fetching page ${pageNum}:`, err);
+      throw err;
+    }
+  };
+
+  // Initial data load
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetchData(1, false); // Initial load, not loadMore
+      console.log("Initial data loaded:", {
+        itemCount: response.data.length,
+        totalRecords: response.totalRecords,
+      });
+
+      setAllProductsList(response.data);
+      setTotal(response.totalRecords);
+      setHasMore(response.hasMore);
+      setPage(2); // Next page to load
+    } catch (err) {
+      console.error("Failed to load initial data:", err);
+      Alert.alert("Error", "Failed to load data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadMoreData = async () => {
+    if (loadingMore || !hasMore || isLoadingMoreRef.current) {
+      console.log("Load more blocked:", {
+        loadingMore,
+        hasMore,
+        isLoadingMoreRef: isLoadingMoreRef.current,
+      });
+      return;
+    }
+
+    isLoadingMoreRef.current = true;
+
+    try {
+      setLoadingMore(true);
+      console.log(`Loading more data - page ${page}...`);
+
+      const response = await fetchData(page, true);
+      console.log(`Page ${page} response:`, {
+        itemsReceived: response.data.length,
+        hasMore: response.hasMore,
+        totalRecords: response.totalRecords,
+      });
+
+      // Filter out duplicates based on unique identifier
+      setAllProductsList((prevData) => {
+        const existingIds = new Set(
+          prevData.map((item) => item._id || item.id)
+        );
+        const newItems = response.data.filter(
+          (item) => !existingIds.has(item._id || item.id)
+        );
+
+        console.log(
+          `Adding ${newItems.length} new items (${
+            response.data.length - newItems.length
+          } duplicates filtered)`
+        );
+        return [...prevData, ...newItems];
+      });
+
+      setHasMore(response.hasMore);
+      setPage((prevPage) => prevPage + 1);
+    } catch (err) {
+      console.error("Failed to load more data:", err);
+      Alert.alert("Error", "Failed to load more data");
+    } finally {
+      setLoadingMore(false);
+      isLoadingMoreRef.current = false;
+    }
+  };
+
+  const debouncedLoadMore = useCallback(
+    debounce(() => {
+      loadMoreData();
+    }, 300),
+    [loadMoreData]
   );
 
+  useEffect(() => {
+    console.log("Products list updated:", {
+      totalItems: productsList.length,
+      uniqueIds: new Set(productsList.map((p) => p._id || p.id)).size,
+      hasDuplicates:
+        productsList.length !==
+        new Set(productsList.map((p) => p._id || p.id)).size,
+    });
+  }, [productsList]);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    setPage(1);
+    setHasMore(true);
+    isLoadingMoreRef.current = false; // Reset the ref
+
+    try {
+      const response = await fetchData(1, false); // Reset, not loadMore
+      console.log("Refresh data loaded:", {
+        itemCount: response.data.length,
+        totalRecords: response.totalRecords,
+      });
+
+      setAllProductsList(response.data);
+      setTotal(response.totalRecords);
+      setHasMore(response.hasMore);
+      setPage(2);
+    } catch (err) {
+      console.error("Failed to refresh data:", err);
+      Alert.alert("Error", "Failed to refresh data");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  const getUniqueKey = (item: Product, index: number) => {
+    const id = item._id || item.id;
+    return `product-${id}-${index}-${Date.now()}`;
+  };
   const fetchAllCategories = useCallback(async () => {
     try {
       const data: Category[] = await categoryService.getAllCategories();
@@ -123,7 +243,7 @@ const AdminProductDashboard = () => {
     (item: Product) => {
       Alert.alert(
         "Delete Product",
-        "Are you sure you want to delete this product? This action cannot be undone.",
+        "Are you sure you want to delete this product?",
         [
           { text: "Cancel", style: "cancel" },
           {
@@ -132,25 +252,17 @@ const AdminProductDashboard = () => {
             onPress: async () => {
               try {
                 setIsLoading(true);
-                // const id =
-                //   typeof productId === "string"
-                //     ? parseInt(productId)
-                //     : productId;
                 const result = await ProductsAPI.deleteProduct(item?._id);
                 if (result) {
-                  setPage(1);
-                  setTotal(0);
-                  isLoadingMoreRef.current = false;
-                  await fetchAllProducts(1, false);
+                  // Simply refresh the entire list instead of manual pagination
+                  await onRefresh();
                   Alert.alert("Success", "Product deleted successfully");
                 }
               } catch (error: any) {
                 console.log("Delete error:", error?.response?.data);
-
                 const errorMessage =
                   error?.response?.data?.message ||
                   "Something went wrong while deleting the product.";
-
                 Alert.alert("Error", errorMessage);
               } finally {
                 setIsLoading(false);
@@ -160,53 +272,8 @@ const AdminProductDashboard = () => {
         ]
       );
     },
-    [fetchAllProducts]
+    [onRefresh]
   );
-
-  useEffect(() => {
-    fetchAllProducts(1);
-    fetchAllCategories();
-    if (refresh === "true") {
-      router.replace("./AdminProductDashboard/AdminProductDashboard");
-    }
-  }, [fetchAllProducts, fetchAllCategories, refresh]);
-
-  const handleLoadMore = useCallback(
-    debounce(() => {
-      if (
-        isLoading ||
-        loadingMore ||
-        isLoadingMoreRef.current ||
-        productsList.length >= total
-      ) {
-        console.log("Load more blocked:", {
-          isLoading,
-          loadingMore,
-          isLoadingMoreRef: isLoadingMoreRef.current,
-          hasMore: productsList.length < total,
-        });
-        return;
-      }
-
-      const nextPage = page + 1;
-      console.log(`Triggering load for page ${nextPage}`, {
-        currentLength: productsList.length,
-        total,
-        currentPage: page,
-      });
-      fetchAllProducts(nextPage, true);
-    }, 500),
-    [isLoading, loadingMore, productsList.length, total, page, fetchAllProducts]
-  );
-
-  const onRefresh = useCallback(() => {
-    console.log("Refreshing...");
-    setIsRefreshing(true);
-    setPage(1);
-    setTotal(0);
-    isLoadingMoreRef.current = false;
-    fetchAllProducts(1, false);
-  }, [fetchAllProducts]);
 
   const ProductCard = useCallback(
     ({ item }: { item: Product }) => {
@@ -228,7 +295,6 @@ const AdminProductDashboard = () => {
       return (
         <View style={[styles.card, { minHeight: 120 }]}>
           {" "}
-          {/* Increased minHeight */}
           <View
             style={[
               globalStyles.flexRow,
@@ -305,7 +371,7 @@ const AdminProductDashboard = () => {
                   })
                   .join(", ")}
               </Text>
-              <Text style={styles.text}>£{item.price} per unit</Text>
+              <Text style={styles.text}>£{item.netPrice} per unit</Text>
               <View
                 style={{
                   flexDirection: "row",
@@ -352,29 +418,6 @@ const AdminProductDashboard = () => {
       : max;
   }, 0);
 
-  const confirmDelete = async () => {
-    try {
-      console.log("Deleting product:", itemToDelete);
-      if (itemToDelete?._id) {
-        await ProductsAPI.deleteProduct(itemToDelete?._id);
-        setPage(1);
-        setTotal(0);
-        isLoadingMoreRef.current = false;
-        await fetchAllProducts(1, false);
-      }
-    } catch (err) {
-      console.error("Error deleting product:", err);
-    } finally {
-      setIsModalVisible(false);
-      setItemToDelete(null);
-    }
-  };
-
-  const cancelDelete = () => {
-    setIsModalVisible(false);
-    setItemToDelete(null);
-  };
-
   // Ensure minimum height for FlatList to make it scrollable
   const windowHeight = Dimensions.get("window").height;
 
@@ -387,7 +430,6 @@ const AdminProductDashboard = () => {
         <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
       }
       footerComponent={<AdminFooter activeTab="products" />}
-      // style={{ flex: 1, minHeight: windowHeight }}
     >
       <View style={[globalStyles.pt_0, { paddingTop: 16, flex: 1 }]}>
         <Button
@@ -402,7 +444,7 @@ const AdminProductDashboard = () => {
         />
 
         <View style={{ marginTop: 16, flex: 1 }}>
-          {/* <Text
+          <Text
             style={{
               marginBottom: 8,
               fontSize: 14,
@@ -410,24 +452,15 @@ const AdminProductDashboard = () => {
             }}
           >
             Showing {productsList.length} of {total} products
-          </Text> */}
-
+          </Text>
+          // Also add some debugging to your FlatList
           <FlatList
             data={productsList}
             renderItem={ProductCard}
-            keyExtractor={(item, index) =>
-              `${
-                item.id?.toString() || item._id?.toString() || "product"
-              }-${index}`
-            }
-            // onEndReached={handleLoadMore}
-            onEndReached={() => {
-              if (!isLoadingMoreRef.current && page * ITEMS_PER_PAGE < total) {
-                fetchAllProducts(page + 1, true);
-              }
-            }}
-            onEndReachedThreshold={0.7} // Increased to 70% from bottom
-            scrollEventThrottle={200}
+            keyExtractor={getUniqueKey}
+            onEndReached={debouncedLoadMore}
+            onEndReachedThreshold={0.3}
+            scrollEventThrottle={400}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
@@ -436,11 +469,19 @@ const AdminProductDashboard = () => {
                 colors={[colors.primary]}
               />
             }
-            ListFooterComponent={
-              loadingMore ? (
-                <ActivityIndicator size="large" color={colors.primary} />
-              ) : null
-            }
+            ListFooterComponent={() => {
+              if (loadingMore) {
+                return (
+                  <View style={{ padding: 20, alignItems: "center" }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{ marginTop: 8, color: colors.secondaryText }}>
+                      Loading more products...
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            }}
             ListEmptyComponent={() => {
               if (!isLoading) {
                 return (
@@ -453,24 +494,17 @@ const AdminProductDashboard = () => {
               }
               return null;
             }}
-            // Performance optimizations
+            showsVerticalScrollIndicator={false}
             removeClippedSubviews={true}
             maxToRenderPerBatch={10}
             updateCellsBatchingPeriod={100}
             initialNumToRender={10}
             windowSize={5}
             contentContainerStyle={{
-              paddingBottom: 300, // Increased padding
-              minHeight: windowHeight * 3, // Increased significantly
+              paddingBottom: 100,
+              flexGrow: 1,
             }}
-            onLayout={(e) =>
-              console.log(
-                "FlatList content height:",
-                e.nativeEvent.layout.height
-              )
-            }
           />
-
           {isLoading && (
             <View
               style={{
@@ -489,19 +523,6 @@ const AdminProductDashboard = () => {
             </View>
           )}
         </View>
-
-        {/* <ConfirmationModal
-          onClose={() => {
-            setIsModalVisible(false);
-            setItemToDelete(null);
-          }}
-          isModalVisible={isModalVisible}
-          text="Are you sure you want to delete this product? This action cannot be undone."
-          submitText="Yes"
-          cancelText="No"
-          handleSubmit={confirmDelete}
-          handleCancel={cancelDelete}
-        /> */}
       </View>
     </PageLayout>
   );

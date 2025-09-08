@@ -43,6 +43,8 @@ import {
   isValidCategory,
 } from "../../../utilities/validations";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -53,8 +55,8 @@ const AdminProductUpdation = () => {
   const [id, setId] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
-  const [price, setPrice] = useState("");
-  const [discountPrice, setDiscountPrice] = useState("");
+  const [netPrice, setNetPrice] = useState<any>();
+  const [discount, setDiscountPrice] = useState("");
   const [minimumOrderQunatity, setMinimumOrderQuantity] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
@@ -66,7 +68,7 @@ const AdminProductUpdation = () => {
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isVatApplicable, setIsVatApplicable] = useState(false);
-  const [grossPrice, setGrossPrice] = useState("");
+  const [grossPrice, setGrossPrice] = useState<any>("");
   const [vatRate, setVatRate] = useState("");
   const [vatAmount, setVatAmount] = useState("");
   const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
@@ -75,7 +77,7 @@ const AdminProductUpdation = () => {
     {
       qty: "",
       actualPrice: "",
-      discountPrice: "",
+      discount: "",
     },
   ]);
 
@@ -93,8 +95,8 @@ const AdminProductUpdation = () => {
       // title: string;
       // productDescription: string;
       // stock: string;
-      price: string;
-      // discountPrice: string;
+      netPrice: string;
+      discount: string;
       category: string;
       // minimumOrderQunatity: string;
       // productImages: string;
@@ -129,8 +131,8 @@ const AdminProductUpdation = () => {
       setProductDescription(productData.description || "");
       setProductName(productData.name || "");
       setStock(productData.stock?.toString() || "");
-      setPrice(productData.originalPrice?.toString() || "");
-      setDiscountPrice(productData.price?.toString() || "");
+      setNetPrice(productData.netPrice?.toString() || "");
+      setDiscountPrice(productData.discount?.toString() || "");
       setCategory(productData.categoryId?.[0]?.toString() || "");
       // setColor(productData.productColors?.[0] || "");
       setMinimumOrderQuantity(
@@ -139,10 +141,13 @@ const AdminProductUpdation = () => {
       setIsAgeRestricted(productData.isAgeRestricted || false);
       setIsChecked(productData.isReturnable || false);
       setIsVatApplicable(productData.isVatApplicable || false);
-      setVatRate(productData.vatRate?.toString() || (productData.isVatApplicable ? "20.00" : " "))
+      setVatRate(
+        productData.vatRate?.toString() ||
+          (productData.isVatApplicable ? "20.00" : " ")
+      );
       setGrossPrice(productData.grossPrice?.toString() || "");
-      setVatAmount(productData.vatAmount?.toString()||"");
-      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "")
+      setVatAmount(productData.vatAmount?.toString() || "");
+      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "");
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
@@ -169,24 +174,35 @@ const AdminProductUpdation = () => {
   }, [productData]);
 
   useEffect(() => {
-    if(isVatApplicable){
-      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0
-      const netPriceNum = parseFloat(price) || 0;
-      const discountNum = parseFloat(discountPrice) || 0;
-      const grossPriceCalc = netPriceNum - discountNum;
+    calculatePrices();
+  }, [netPrice, discount, vatRate, isVatApplicable]);
 
-      const calcVatAmount = (effectiveVatRate * grossPriceCalc) / 100;
-      const calcNetPriceIncVat = grossPriceCalc + calcVatAmount;
+  const calculatePrices = () => {
+    const netPriceNum = parseFloat(netPrice) || 0;
+    const discountNum = parseFloat(discount) || 0;
 
-      setGrossPrice(grossPriceCalc.toFixed(2));
-      setVatAmount(calcVatAmount.toFixed(2));
-      setNetPriceIncVAT(calcNetPriceIncVat.toFixed(2));
+    if (isVatApplicable) {
+      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
+      const VATAmount = (netPriceNum - discountNum) * (effectiveVatRate / 100);
+      const netPriceInc_Vat = netPriceNum - discountNum + VATAmount;
+
+      setVatAmount(VATAmount.toFixed(2));
+      setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
+      const grossPrice = calculateGrossPrice(netPriceInc_Vat, true);
+      setGrossPrice(grossPrice.toFixed(2));
     } else {
-      setGrossPrice("");
       setVatAmount("");
       setNetPriceIncVAT("");
+
+      const grossPrice = calculateGrossPrice(netPriceNum - discountNum, false);
+      setGrossPrice(grossPrice.toFixed(2));
     }
-  }, [price, discountPrice,vatRate, isVatApplicable]);
+  };
+
+  const calculateGrossPrice = (basePrice: number, hasVAT: boolean) => {
+    let finalPrice = basePrice;
+    return finalPrice;
+  };
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -324,13 +340,13 @@ const AdminProductUpdation = () => {
     // const stockError = isValidStock(stock);
     // if (stockError) newErrors.stock = stockError;
 
-    // Validate price
-    const priceError = isValidPrice(price);
-    if (priceError) newErrors.price = priceError;
+    // Validate netPrice
+    const netPriceError = isValidPrice(netPrice);
+    if (netPriceError) newErrors.netPrice = netPriceError;
 
-    // Validate discount price
-    // const discountPriceError = isValidDiscountPrice(discountPrice, price);
-    // if (discountPriceError) newErrors.discountPrice = discountPriceError;
+    // Validate discount
+    // const discounteError = isValidDiscountPrice(discount, discount);
+    // if (discountError) newErrors.discount = discountError;
 
     // Validate category
     if (!category) newErrors.category = "Please select a category";
@@ -393,10 +409,10 @@ const AdminProductUpdation = () => {
     if (parts.length > 2) return; // Prevent multiple decimal points
     if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
-    setPrice(numericValue);
-    if (errors.price) {
-      const error = isValidPrice(numericValue);
-      setErrors((prev) => ({ ...prev, price: error || undefined }));
+    setNetPrice(numericValue);
+    if (errors.netPrice) {
+      const error = isValidPrice(parseInt(numericValue));
+      setErrors((prev) => ({ ...prev, netPrice: error || undefined }));
     }
   };
 
@@ -408,9 +424,9 @@ const AdminProductUpdation = () => {
     if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
     setDiscountPrice(numericValue);
-    // if (errors.discountPrice) {
-    //   const error = isValidDiscountPrice(numericValue, price);
-    //   setErrors((prev) => ({ ...prev, discountPrice: error || undefined }));
+    // if (errors.discount) {
+    //   const error = isValidDiscountPrice(numericValue, discount);
+    //   setErrors((prev) => ({ ...prev, discount: error || undefined }));
     // }
   };
 
@@ -426,7 +442,6 @@ const AdminProductUpdation = () => {
     //   }));
     // }
   };
-const handleGrossPriceChange = (value: string) => {};
 
   const handleVatRateChange = (value: string) => {
     const numericValue = value.replace(/[^0-9.]/g, "");
@@ -461,19 +476,20 @@ const handleGrossPriceChange = (value: string) => {};
       formData.append("title", title.trim());
       formData.append("description", productDescription.trim());
       formData.append("stock", stock);
-      formData.append("originalPrice", price);
-      formData.append("price", discountPrice || price);
+      formData.append("netPrice", netPrice);
+      formData.append("discount", discount || "0");
       formData.append("categoryId", category);
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
 
-      if(isVatApplicable){
+      if (isVatApplicable) {
         formData.append("vatRate", vatRate);
-        formData.append("vatAmount", vatAmount);
-        formData.append("grossPrice", grossPrice);
-        formData.append("netPriceIncVAT", netPriceIncVAT);
+        // formData.append("vatAmount", vatAmount);
+        // formData.append("grossPrice", grossPrice);
+        // formData.append("netPriceIncVAT", netPriceIncVAT);
       }
+      formData.append("isVatApplicable", isVatApplicable ? "true" : "false");
 
       // Handle colors
       if (isColorsAvailable && selectedColors.length > 0) {
@@ -530,7 +546,7 @@ const handleGrossPriceChange = (value: string) => {};
           {
             text: "OK",
             onPress: () =>
-              router.replace("../AdminProductDashboard"),
+              redirectToPage(containers.AdminProductDashboardScreen),
           },
         ]
       );
@@ -546,8 +562,8 @@ const handleGrossPriceChange = (value: string) => {};
   }, [
     productName,
     stock,
-    price,
-    discountPrice,
+    netPrice,
+    discount,
     category,
     color,
     selectedColors,
@@ -755,29 +771,29 @@ const handleGrossPriceChange = (value: string) => {};
             <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
-              value={price}
+              value={netPrice}
               onPress={() => {}}
               placeholder="e.g., 2999.99"
               keyboardType="decimal-pad"
-              style={errors.price ? globalStyles.errorInput : undefined}
+              style={errors.netPrice ? globalStyles.errorInput : undefined}
               maxLength={10}
             />
-            {errors.price && (
-              <Text style={globalStyles.errorText}>{errors.price}</Text>
+            {errors.netPrice && (
+              <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
             )}
 
             <Text style={styles.label}>Discount({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handleDiscountPriceChange}
-              value={discountPrice}
+              value={discount}
               onPress={() => {}}
-              placeholder="e.g., 2499.99 (optional - must be less than original price)"
+              placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
               keyboardType="decimal-pad"
-              // style={errors.discountPrice ? globalStyles.errorInput : undefined}
+              // style={errors.discount ? globalStyles.errorInput : undefined}
               maxLength={10}
             />
-            {/* {errors.discountPrice && (
-              <Text style={globalStyles.errorText}>{errors.discountPrice}</Text>
+            {/* {errors.discount && (
+              <Text style={globalStyles.errorText}>{errors.discount}</Text>
             )} */}
 
             <View style={styles.checkBox}>
@@ -789,12 +805,12 @@ const handleGrossPriceChange = (value: string) => {};
                     setVatRate("20.00");
                     setVatAmount("");
                     setNetPriceIncVAT("");
-                    setGrossPrice("");
-                  } else{
+                    // setGrossPrice("");
+                  } else {
                     setVatRate("");
                     setVatAmount(" ");
                     setNetPriceIncVAT("");
-                    setGrossPrice("");
+                    // setGrossPrice("");
                   }
                 }}
                 checkedColor={colors.primary}
@@ -816,18 +832,6 @@ const handleGrossPriceChange = (value: string) => {};
                   maxLength={6}
                 />
 
-                <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
-                <CustomTextInput
-                  setValue={handleGrossPriceChange}
-                  value={grossPrice}
-                  onPress={() => {}}
-                  placeholder="Calculated Automatically"
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  editable={false}
-                  style={styles.readOnlyInput}
-                />
-
                 <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
                 <CustomTextInput
                   setValue={handleVatAmountChange}
@@ -836,11 +840,13 @@ const handleGrossPriceChange = (value: string) => {};
                   placeholder="eCalculated Automatically"
                   keyboardType="decimal-pad"
                   maxLength={10}
-                  editable = {false}
+                  editable={false}
                   style={styles.readOnlyInput}
                 />
 
-                <Text style={styles.label}>Net Price Including VAT ({CurrencySymbol})</Text>
+                <Text style={styles.label}>
+                  Net Price Including VAT ({CurrencySymbol})
+                </Text>
                 <CustomTextInput
                   value={netPriceIncVAT}
                   onPress={() => {}}
@@ -852,6 +858,17 @@ const handleGrossPriceChange = (value: string) => {};
                 />
               </>
             )}
+
+            <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
+            <CustomTextInput
+              value={grossPrice}
+              onPress={() => {}}
+              placeholder="Calculated Automatically"
+              keyboardType="decimal-pad"
+              maxLength={10}
+              editable={false}
+              style={styles.readOnlyInput}
+            />
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput

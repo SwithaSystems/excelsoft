@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginRight: 8,
   },
-  originalPrice: {
+  netPrice: {
     fontSize: 16,
     color: colors.lightgrey,
     textDecorationLine: "line-through",

@@ -3,10 +3,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface CartItemInterface {
   id: string;
   name: string;
-  price: number;
-  originalPrice: number;
   discount: number;
+  netPrice: number;
   quantity: number;
+  isVatApplicable: boolean;
+  vatRate: number;
+  vatAmount: number;
   image: string | any[];
 }
 
