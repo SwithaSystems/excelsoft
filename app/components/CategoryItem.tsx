@@ -24,7 +24,7 @@ const CategoryItem = ({
     >
       <Image
         source={
-          image && typeof image === "string" && image === ""
+          typeof image === "string" && image !== ""
             ? { uri: image }
             : typeof image === "object" && image
             ? image

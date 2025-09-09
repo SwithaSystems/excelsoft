@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from "react-native";
+import { Modal, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import colors from "@/constants/colors";
 
 interface ConfirmationModalProps {
@@ -20,7 +14,6 @@ interface ConfirmationModalProps {
   animationType?: "none" | "slide" | "fade";
 }
 
-
 function ConfirmationModal({
   isModalVisible,
   onClose,
@@ -31,7 +24,7 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
-} : ConfirmationModalProps) {
+}: ConfirmationModalProps) {
   return (
     <Modal
       visible={isModalVisible}
@@ -69,7 +62,7 @@ function ConfirmationModal({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor:'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -84,6 +77,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 8,
+    color: colors.primary,
   },
   text: {
     fontSize: 15,
@@ -100,12 +94,12 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     fontSize: 15,
-    color: colors.linkBlue, 
+    color: colors.primary,
     fontWeight: "500",
   },
   submitText: {
     fontSize: 15,
-    color: colors.error, 
+    color: colors.error,
     fontWeight: "500",
   },
 });

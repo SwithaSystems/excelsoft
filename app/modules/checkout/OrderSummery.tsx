@@ -41,6 +41,7 @@ import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { add, set } from "date-fns";
+import { ProductsAPI } from "@/services/productService";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -95,6 +96,27 @@ const orderSummeryScreen = () => {
   const selectedMode = params?.selectedMode || "Delivery";
 
   const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
+  const [stockAvailable, setStockAvailable] = useState<Record<string, number>>(
+    {}
+  );
+
+  useEffect(() => {
+    async function getStock() {
+      const newStock: Record<string, number> = {};
+
+      for (let item of cartItems) {
+        try {
+          const product = await ProductsAPI.getProductBYID(Number(item.id));
+          newStock[item.id] = product?.stock || 0;
+        } catch (error) {
+          newStock[item.id] = 0;
+        }
+      }
+
+      setStockAvailable(newStock);
+    }
+    getStock();
+  }, [cartItems]);
 
   // Create shipping address object properly
   const shippingAddress: shippingAddressDTo | undefined = pickupAddress
@@ -503,6 +525,7 @@ Contact Number: ${pickupAddress.phone}`}
                       handleDelete={handleDelete}
                       key={eachCartItem.id}
                       cartItem={eachCartItem}
+                      stockAvailable={stockAvailable[eachCartItem.id] || 0}
                     />
                   );
                 })}

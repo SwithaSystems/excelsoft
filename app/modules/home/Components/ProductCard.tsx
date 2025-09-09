@@ -9,11 +9,10 @@ interface ProductCardProps {
   title: string;
   rating: number;
   reviews: number;
-  price: number;
-  originalPrice?: number;
+  discount: number;
+  netPrice?: number;
   imageUrl: string;
   saleEndsAt?: string;
-  discount?: string;
   onPress: () => void;
 }
 
@@ -21,8 +20,8 @@ const ProductCard = ({
   title,
   rating,
   reviews,
-  price,
-  originalPrice,
+  discount,
+  netPrice,
   imageUrl,
   onPress,
 }: ProductCardProps) => {
@@ -45,14 +44,14 @@ const ProductCard = ({
           </Text>
         </View>
         <View style={HomeStyles.discountContainer}>
-          <Text style={HomeStyles.discountPrice}>
+          <Text style={HomeStyles.discount}>
             {CurrencySymbol}
-            {price}
+            {discount}
           </Text>
-          {originalPrice && (
-            <Text style={HomeStyles.originalPrice}>
+          {netPrice && (
+            <Text style={HomeStyles.netPrice}>
               {CurrencySymbol}
-              {originalPrice}
+              {netPrice}
             </Text>
           )}
         </View>

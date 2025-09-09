@@ -29,10 +29,7 @@ import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 
 // const recommendedProducts = products
 //   .filter((p) =>
-//     // ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-//     ["SUPERKINGS LIGHT 20", "SILK CUT K/S 20", "WALKERS READY SALTED"].includes(
-//       p.name
-//     )
+//     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
 //   )
 //   .map((product) => ({
 //     id: product.id,
@@ -51,8 +48,8 @@ import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 //     title: product.name,
 //     rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
 //     reviews: product.name === "Baby Stroller" ? 120 : 130,
-//     price: product.name === "Baby Stroller" ? 120 : 8,
-//     originalPrice: product.name === "Baby Stroller" ? 180 : 10,
+//     discount: product.name === "Baby Stroller" ? 120 : 8,
+//     netPrice: product.name === "Baby Stroller" ? 180 : 10,
 //     imageUrl: product.image,
 //     discount: product.name === "Baby Stroller" ? "20%" : "15%",
 //     saleEndsAt: "31-4-2024",
@@ -81,7 +78,7 @@ import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 //     imageUrl: product.image,
 //   }));
 
-const recommendedProducts: any = [];
+// const recommendedProducts: any = [];
 const exclusiveOffers: any = [];
 const bestSellers: any = [];
 const featuredProducts: any = [];

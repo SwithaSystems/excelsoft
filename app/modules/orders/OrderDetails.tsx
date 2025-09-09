@@ -142,19 +142,19 @@ const orderDetailsScreen = () => {
   console.log("cartItemsWithDetails", cartItemsWithDetails);
 
   console.log("orderDetails by order ID", orderDetails);
-  const recommendedProducts = products
-    .filter((p) =>
-      ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-    )
-    .map((product) => ({
-      id: product.id,
-      title: product.name,
-      rating: product.rating,
-      reviews: product.noOfreviews,
-      imageUrl: product.image,
-      price: product.price,
-      originalPrice: product.originalPrice,
-    }));
+  // const recommendedProducts = products
+  //   .filter((p) =>
+  //     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
+  //   )
+  //   .map((product) => ({
+  //     id: product.id,
+  //     title: product.name,
+  //     rating: product.rating,
+  //     reviews: product.noOfreviews,
+  //     imageUrl: product.image,
+  //     discount: product.discount,
+  //     netPrice: product.netPrice,
+  //   }));
 
   useEffect(() => {
     const handleHardwareBackPress = () => {

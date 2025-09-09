@@ -49,6 +49,9 @@ const STORE_OFFERS = "Store Offers";
 //Store Name and Address
 const STORE_NAME = "Weekes Food & Wine";
 
+//Client_Id for stripe Payment
+const CLIENT_ID = "client_abc";
+
 // Delivery Modes
 const DELIVERY_MODE_HOME = "Home Delivery";
 const DELIVERY_MODE_STORE = "Store Pickup";
@@ -88,6 +91,7 @@ const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.sssZ";
 
 // Export all constants
 export {
+  CLIENT_ID,
   STORE_NAME,
   DATE_FORMAT_Display,
   DATE_FORMAT_API,

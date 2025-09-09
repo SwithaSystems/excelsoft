@@ -157,18 +157,15 @@ function CartItem(props) {
                 <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
                 <Text style={globalStyles.h6}>
                   <DisplayPrice
-                    price={item.price}
-                    originalPrice={item.originalPrice}
+                    discount={item.discount}
+                    netPrice={item.netPrice}
                   />
                 </Text>
               </View>
             </>
           ) : (
             <View style={styles.itemDetails}>
-              <DisplayPrice
-                price={item.price}
-                originalPrice={item.originalPrice}
-              />
+              <DisplayPrice discount={item.discount} netPrice={item.netPrice} />
               <Text style={styles.itemName}>
                 {getItemName()}
                 {props.showStockStatus && (
