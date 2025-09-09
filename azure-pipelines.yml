@@ -1,83 +1,154 @@
-trigger:
+trigger: none
+pr: 
   branches:
     include:
-      - main
-  paths:
-    exclude:
-      - '**/*.md'
-
+      - development
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 variables:
-  - group: ExpoConfig
   - name: NODE_VERSION
-    value: '18.x'
-  - name: EXPO_CLI_VERSION
-    value: '6.3.10'
+    value: "18.x"
 
 stages:
-- stage: Build
-  jobs:
-  - job: BuildApp
-    displayName: 'Build Android Apps'
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: $(NODE_VERSION)
-      displayName: 'Install Node.js'
+  - stage: Build
+    jobs:
+      - job: BuildApp
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: "Install Node.js"
 
-    - script: |
-        npm install -g eas-cli@latest
-        npm install -g expo-cli@$(EXPO_CLI_VERSION)
-      displayName: 'Install EAS CLI and Expo CLI'
+          - script: |
+              npm install -g eas-cli
+              npm install
+            displayName: "Install dependencies"
 
-    - script: |
-        npm install
-      displayName: 'Install Dependencies'
+          - task: DownloadSecureFile@1
+            name: keystoreFile
+            inputs:
+              secureFile: "my-upload-key.keystore"
+            displayName: "Download Keystore file"
 
-    - task: DownloadSecureFile@1
-      name: keystorefile
-      displayName: 'Download Keystore'
-      inputs:
-        secureFile: 'keystore.jks'
+          - script: |
+              mkdir -p android/app
+              cp $(keystoreFile.secureFilePath) android/app/my-upload-key.keystore
+              chmod +x android/app/my-upload-key.keystore
+            displayName: "Copy keystore"
 
-    - script: |
-        # Create credentials directory
-        mkdir -p credentials/android
-        # Copy the keystore to the correct location
-        cp $(keystorefile.secureFilePath) credentials/android/keystore.jks
-      displayName: 'Setup Android Credentials'
-      
-    - script: |
-        eas build --platform android --profile preview --non-interactive --local
-      displayName: 'Build Android APK (Internal Testing)'
-      env:
-        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        ANDROID_KEYSTORE_PATH: credentials/android/keystore.jks
-        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
-        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
+          # Create credentials.json
+          - script: |
+              echo '{
+                "android": {
+                  "keystore": {
+                    "keystorePath": "android/app/my-upload-key.keystore",
+                    "keystorePassword": "$(ANDROID_KEYSTORE_PASSWORD)",
+                    "keyAlias": "$(ANDROID_KEY_ALIAS)",
+                    "keyPassword": "$(ANDROID_KEY_PASSWORD)"
+                  }
+                }
+              }' > credentials.json
+            displayName: "Create credentials.json"
 
-    - script: |
-        eas build --platform android --profile production --non-interactive --local
-      displayName: 'Build Android AAB (Production)'
-      env:
-        EXPO_TOKEN: $(EXPO_ACCESS_TOKEN)
-        ANDROID_KEYSTORE_PATH: credentials/android/keystore.jks
-        ANDROID_KEYSTORE_ALIAS: $(EXPO_ANDROID_KEYSTORE_ALIAS)
-        ANDROID_KEYSTORE_PASSWORD: $(EXPO_ANDROID_KEYSTORE_PASSWORD)
-        ANDROID_KEY_PASSWORD: $(EXPO_ANDROID_KEY_PASSWORD)
+          # Configure and Build
+          - script: |
+              export EXPO_TOKEN=$(EXPO_TOKEN)
 
-    - script: |
-        mkdir -p $(System.DefaultWorkingDirectory)/dist
-        echo "Build URLs can be found in the build logs above" > $(System.DefaultWorkingDirectory)/dist/build-info.txt
-      displayName: 'Create Build Info'
+              # Set working directory variable
+              WORK_DIR="$(Build.SourcesDirectory)"
+              echo "Working directory: $WORK_DIR"
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(System.DefaultWorkingDirectory)/dist'
-        artifactName: 'build-info'
-        publishLocation: 'Container'
-      displayName: 'Publish Build Info'
-      condition: succeededOrFailed()
+              # Clean any existing build artifacts
+              echo "Cleaning build artifacts..."
+              rm -rf android/app/build
+
+              # Create eas.json if it doesn't exist
+              if [ ! -f "eas.json" ]; then
+                echo '{
+                  "cli": {
+                    "version": ">= 5.9.1",
+                    "requireCommit": false
+                  },
+                  "build": {
+                    "production": {
+                      "autoIncrement": true,
+                      "android": {
+                        "buildType": "app-bundle",
+                        "gradleCommand": ":app:bundleRelease"
+                      }
+                    }
+                  }
+                }' > eas.json
+              fi
+
+              # Start build
+              echo "Starting EAS build..."
+              BUILD_OUTPUT=$(eas build --platform android --profile production --non-interactive --json 2>&1)
+              BUILD_EXIT_CODE=$?
+
+              echo "Build output: $BUILD_OUTPUT"
+
+              if [ $BUILD_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Build failed with exit code $BUILD_EXIT_CODE"
+                exit 1
+              fi
+
+              # Extract and download the artifact
+              ARTIFACT_URL=$(echo "$BUILD_OUTPUT" | grep -o '"buildUrl": *"[^"]*"' | grep -o 'https://[^"]*')
+
+              if [ -n "$ARTIFACT_URL" ]; then
+                echo "Found artifact URL: $ARTIFACT_URL"
+                
+                # Download to a specific location using absolute path
+                AAB_PATH="$WORK_DIR/app-release.aab"
+                echo "Downloading to: $AAB_PATH"
+                
+                # Add authentication header for Expo download
+                curl -L -H "Authorization: Bearer $EXPO_TOKEN" -o "$AAB_PATH" "$ARTIFACT_URL"
+                CURL_EXIT_CODE=$?
+                
+                if [ $CURL_EXIT_CODE -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]Failed to download AAB file. Curl exit code: $CURL_EXIT_CODE"
+                  echo "Attempting download with wget as fallback..."
+                  
+                  wget --header="Authorization: Bearer $EXPO_TOKEN" -O "$AAB_PATH" "$ARTIFACT_URL"
+                  WGET_EXIT_CODE=$?
+                  
+                  if [ $WGET_EXIT_CODE -ne 0 ]; then
+                    echo "##vso[task.logissue type=error]Both curl and wget failed to download the AAB file"
+                    exit 1
+                  fi
+                fi
+                
+                # Verify file exists and has size greater than 0
+                if [ -f "$AAB_PATH" ] && [ -s "$AAB_PATH" ]; then
+                  echo "Build artifact downloaded successfully"
+                  echo "File size: $(ls -lh "$AAB_PATH" | awk '{print $5}')"
+                  
+                  # Create a variable that publish task can use
+                  echo "##vso[task.setvariable variable=AAB_PATH]$AAB_PATH"
+                else
+                  echo "##vso[task.logissue type=error]AAB file is missing or empty after download"
+                  exit 1
+                fi
+              else
+                echo "##vso[task.logissue type=error]Failed to get artifact URL from build output"
+                echo "Full build output:"
+                echo "$BUILD_OUTPUT"
+                exit 1
+              fi
+            displayName: "Build and Download Android App Bundle"
+            env:
+              EXPO_TOKEN: $(EXPO_TOKEN)
+              ANDROID_KEYSTORE_PASSWORD: $(ANDROID_KEYSTORE_PASSWORD)
+              ANDROID_KEY_ALIAS: $(ANDROID_KEY_ALIAS)
+              ANDROID_KEY_PASSWORD: $(ANDROID_KEY_PASSWORD)
+
+          # Upload the build artifact
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: "$(AAB_PATH)"
+              artifactName: "android-app-bundle"
+              publishLocation: "Container"
+            displayName: "Publish Build Artifacts"

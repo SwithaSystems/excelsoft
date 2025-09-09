@@ -1,16 +1,25 @@
 {
   "cli": {
     "version": ">= 5.9.1",
-    "appVersionSource": "remote"
+    "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false,
+    "requireCommit": false
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
     "preview": {
-      "distribution": "internal",
+      "distribution": "store", 
       "android": {
-        "buildType": "apk",
-
-        "gradleCommand": ":app:assembleRelease",
-        "credentialsSource": "local"
+        "buildType": "app-bundle",
+        "credentialsSource": "local",
+        "autoIncrement": true
+      },
+      "ios": {
+        "credentialsSource": "remote" ,
+        "autoIncrement": true
       }
     },
     "production": {
@@ -18,10 +27,38 @@
       "android": {
         "buildType": "app-bundle",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "credentialsSource": "remote" 
+      }
+    },
+    "testing": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "adhoc": {
+      "ios": {
+        "distribution": "internal",
+        "credentialsSource": "remote"
       }
     }
   },
   "submit": {
-    "production": {}
+    "preview": {
+      "ios": {
+        "appleId": "saikishore1726@gmail.com",  
+        "ascAppId": "6742980956" 
+      }
+    },
+    "production": {
+      "android": {
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "saikishore1726@gmail.com",
+        "ascAppId": "6742980956"
+      }
+    }
   }
 }

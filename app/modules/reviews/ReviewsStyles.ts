@@ -1,0 +1,102 @@
+import { StyleSheet } from "react-native";
+import colors from "../../../constants/colors";
+
+const styles = StyleSheet.create({
+  heading: {
+    fontSize: 18,
+    marginBottom: 16,
+  },
+  overAllRatingContainer: {
+    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+    emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+
+  emptyStateStar: {
+    fontSize: 48,
+    color: colors.gold,
+    marginBottom: 10,
+  },
+
+  emptyStateHeading: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.darkGray,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+    emptyStateSubText: {
+    fontSize: 14,
+    color: colors.darkGray,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+
+
+  rating: {
+    fontSize: 32,
+    fontWeight: 500,
+  },
+
+  reviewsContainer: {},
+  reviewContainerHeading: {
+    //fontWeight: 500,
+    fontSize: 36,
+    marginBottom: 16,
+    lineHeight: 36,
+  },
+  noReviewContainerHeading: {
+    //fontWeight: 500,
+    fontSize: 26,
+    marginBottom: 16,
+    lineHeight: 26,
+  },
+  addReviewContainer: {
+    // flexDirection: "row-reverse",
+    // flexWrap: "nowrap",
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  addReviewBtn: {
+    borderRadius: 50,
+  },
+  starsContainer: {
+    marginBottom: 0,
+  },
+  reviewsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignContent: "center",
+    alignItems: "center",
+  },
+  addReviewText: {
+    textDecorationStyle: "solid",
+    textDecorationLine: "underline",
+    fontSize: 14,
+    // paddingTop: 8,
+    color: colors.primary,
+  },
+  // reviewsHeader:{
+  //     flexDirection:"row",
+  //     justifyContent:"space-between",
+  //     alignContent:"center",
+  //     alignItems:"center",
+  //   },
+  //   addReviewText:{
+  //     textDecorationStyle:"solid",
+  //     textDecorationLine:"underline",
+  //     fontSize:14,
+  //     paddingBottom:8,
+  //     // paddingTop: 8,
+  //     color:colors.primary,
+  //   },
+});
+
+export default styles;
