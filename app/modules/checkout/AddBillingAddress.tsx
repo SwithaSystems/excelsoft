@@ -129,10 +129,10 @@ const addBillingAddressScreen = () => {
     // }
 
     const nameError = isValidName(address);
-    if(nameError) newErrors.name = nameError; 
-    
+    if (nameError) newErrors.name = nameError;
+
     const postalError = isValidPostalCode(postalcode);
-    if(postalError) newErrors.postalcode = postalError;
+    if (postalError) newErrors.postalcode = postalError;
 
     const line1Error = isValidAddressLine1(line1);
     if (line1Error) newErrors.line1 = line1Error;
@@ -386,8 +386,8 @@ const addBillingAddressScreen = () => {
               <CheckBox
                 checked={isDefault}
                 onPress={() => setIsDefault(!isDefault)}
-                checkedColor = {colors.primary}
-                uncheckedColor= {colors.secondary}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
               />
               <Text>Mark as default address</Text>
             </View>
