@@ -4,7 +4,7 @@ import {
   DELIVERY_MODE_STORE,
   ORDER_SUMMARY_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -73,7 +73,14 @@ const orderSummeryScreen = () => {
   const params = useLocalSearchParams<any>();
   const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  // const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItemsBefore = useSelector((state: any) => state.cart.items);
+
+  const cartItems = useMemo(
+    () => cartItemsBefore.filter((item: any) => item.quantity > 0),
+    [cartItemsBefore]
+  );
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
@@ -88,11 +95,27 @@ const orderSummeryScreen = () => {
   const { handlePayment } = usePaymentHandler();
 
   // Extract pickup data from route params or use default values
-  const pickupAddress = params?.pickupAddress
-    ? JSON.parse(params.pickupAddress as string)
-    : null;
-  const pickupDetails = JSON.parse(params?.pickupDetails) || "";
-  console.log("pickup details", pickupDetails);
+  const pickupAddress = useMemo(() => {
+    try {
+      return params?.pickupAddress ? JSON.parse(params.pickupAddress) : null;
+    } catch {
+      return null;
+    }
+  }, [params?.pickupAddress]);
+
+  const pickupDetails = useMemo(() => {
+    try {
+      return JSON.parse(params?.pickupDetails || "{}");
+    } catch (e) {
+      console.error("Invalid pickupDetails JSON:", e);
+      return {};
+    }
+  }, [params?.pickupDetails]);
+
+  // useEffect(() => {
+  //   console.log("pickup details", pickupDetails);
+  // }, [pickupDetails]);
+
   const selectedMode = params?.selectedMode || "Delivery";
 
   const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
@@ -100,39 +123,57 @@ const orderSummeryScreen = () => {
     {}
   );
 
-  useEffect(() => {
-    async function getStock() {
-      const newStock: Record<string, number> = {};
-
-      for (let item of cartItems) {
-        try {
-          const product = await ProductsAPI.getProductBYID(Number(item.id));
-          newStock[item.id] = product?.stock || 0;
-        } catch (error) {
-          newStock[item.id] = 0;
+  // FIXED: Memoize shippingAddress to prevent recreating on every render
+  const shippingAddress: shippingAddressDTo | undefined = useMemo(() => {
+    return pickupAddress
+      ? {
+          name:
+            pickupAddress.name ||
+            `${pickupAddress.firstName} ${pickupAddress.lastName}`,
+          line1: pickupAddress.line1 || pickupAddress.address,
+          line2: pickupAddress.line2,
+          city: pickupAddress.city,
+          state: pickupAddress.state,
+          postalCode: pickupAddress.postalCode,
+          phone: pickupAddress.phone,
+          addressType: pickupAddress.addressType,
         }
-      }
+      : undefined;
+  }, [pickupAddress]);
 
-      setStockAvailable(newStock);
+  useEffect(() => {
+    let isActive = true;
+    if (!cartItems || cartItems.length === 0) {
+      if (isActive) setStockAvailable({});
+      return;
     }
-    getStock();
-  }, [cartItems]);
-
-  // Create shipping address object properly
-  const shippingAddress: shippingAddressDTo | undefined = pickupAddress
-    ? {
-        name:
-          pickupAddress.name ||
-          `${pickupAddress.firstName} ${pickupAddress.lastName}`,
-        line1: pickupAddress.line1 || pickupAddress.address,
-        line2: pickupAddress.line2,
-        city: pickupAddress.city,
-        state: pickupAddress.state,
-        postalCode: pickupAddress.postalCode,
-        phone: pickupAddress.phone,
-        addressType: pickupAddress.addressType,
+    (async () => {
+      try {
+        const ids = cartItems.map((i: any) => i.id);
+        const results = await Promise.all(
+          ids.map((id: any) =>
+            ProductsAPI.getProductBYID(Number(id)).catch(() => null)
+          )
+        );
+        const newStock: { [key: string]: number } = {};
+        ids.forEach((id: any, idx: any) => {
+          newStock[id] = results[idx]?.stock || 0;
+        });
+        if (isActive)
+          setStockAvailable((prev) => {
+            const hasChanges = Object.keys(newStock).some(
+              (k) => newStock[k] !== prev[k]
+            );
+            return hasChanges ? newStock : prev;
+          });
+      } catch (e) {
+        console.error(e);
       }
-    : undefined;
+    })();
+    return () => {
+      isActive = false;
+    };
+  }, [cartItems]);
 
   let displayMode = "";
   if (selectedMode === DELIVERY_MODE_CURBSIDE) {
@@ -174,8 +215,9 @@ const orderSummeryScreen = () => {
     };
 
     fetchAddresses();
-  }, [selectedBillingAddress]);
+  }, []);
 
+  // FIXED: Added selectedBillingAddress to dependency array to prevent infinite loop
   useEffect(() => {
     if (
       selectedMode === DELIVERY_MODE_HOME &&
@@ -192,10 +234,17 @@ const orderSummeryScreen = () => {
         postalCode: shippingAddress.postalCode,
       };
 
-      setSelectedBillingAddress(billingFromShipping);
-      setSelectedId(billingFromShipping._id);
+      // Avoid infinite loop by checking if already same
+      if (
+        !selectedBillingAddress ||
+        selectedBillingAddress.line1 !== billingFromShipping.line1 ||
+        selectedBillingAddress.name !== billingFromShipping.name
+      ) {
+        setSelectedBillingAddress(billingFromShipping);
+        setSelectedId(billingFromShipping._id || null);
+      }
     }
-  }, [shippingAddress, useSameAddress, selectedMode]);
+  }, [shippingAddress, useSameAddress, selectedMode, selectedBillingAddress]);
 
   const handleSameAddressToggle = () => {
     const newValue = !useSameAddress;
@@ -299,7 +348,9 @@ const orderSummeryScreen = () => {
 
   const cancelDelete = () => {
     if (itemToDelete) {
-      const itemtoSave = cartItems.find((item) => item.id === itemToDelete.id);
+      const itemtoSave = cartItems.find(
+        (item: any) => item.id === itemToDelete.id
+      );
       if (itemtoSave) {
         dispatch(addToSavedItems(itemtoSave));
         dispatch(removeFromCart(itemToDelete.id));
@@ -518,7 +569,7 @@ Contact Number: ${pickupAddress.phone}`}
             <View style={[styles.section, globalStyles.mb_0]}>
               <Text style={styles.sectionHeading}>Order Details</Text>
               <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
-                {cartItems.map((eachCartItem) => {
+                {cartItems.map((eachCartItem: any) => {
                   return (
                     <CartItem
                       itemContainerStyle={styles.cartItemContainerStyle}
