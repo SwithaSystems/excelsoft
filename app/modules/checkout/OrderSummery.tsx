@@ -315,7 +315,7 @@ const orderSummeryScreen = () => {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [selectedBillingAddress]);
   // FIXED: Added selectedBillingAddress to dependency array to prevent infinite loop
   useEffect(() => {
     if (
