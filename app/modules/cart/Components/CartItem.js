@@ -22,7 +22,8 @@ import {
 function CartItem(props) {
   const item = props.cartItem;
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => [...state.cart.items]);
+  // const cartItems = useSelector((state) => [...state.cart.items]);
+  const cartItems = useSelector((state) => state.cart.items);
   const savedForLaterItems = useSelector(
     (state) => state.savedForLaterItems.items
   );
