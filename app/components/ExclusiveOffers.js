@@ -86,8 +86,8 @@ function ExclusiveOffers(props) {
                 </View>
                 <View style={styles.priceContainer}>
                   <DisplayPrice
-                    price={item.price}
-                    originalPrice={item.originalPrice}
+                    netPrice={item.netPrice}
+                    discount={item.discount}
                   />
                 </View>
               </View>
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.primary,
   },
-  originalPrice: {
+  netPrice: {
     fontSize: 14,
     textDecorationLine: "line-through",
     color: colors.black,

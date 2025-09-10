@@ -27,7 +27,8 @@ export const usePaymentHandler = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  // const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItems = useSelector((state: any) => state.cart.items);
   // const products = cartItems.map((item) => ({
   //   productId: item.id,
   //   name: item.name,
@@ -42,7 +43,7 @@ export const usePaymentHandler = () => {
 
   // }));
   // Fixed product mapping to match OrderProductDto
-  const products = cartItems.map((item) => {
+  const products = cartItems.map((item: any) => {
     const netPrice = item.netPrice || 0;
     const discount = item.discount || 0;
     const quantity = item.quantity || 1;
