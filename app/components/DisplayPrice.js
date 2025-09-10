@@ -4,18 +4,19 @@ import { StyleSheet, Text, View } from "react-native";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 
 function DisplayPrice(props) {
+  const { discount, netPrice } = props;
   return (
     <>
       <View style={props?.priceContainerStyle || styles.priceContainerStyle}>
-        <Text style={props?.priceStyle || styles.price}>
+        <Text style={props?.priceStyle || styles.netPrice}>
           {CurrencySymbol}
-          {props?.price?.toFixed(2)}
+          {netPrice?.toFixed(2) - discount?.toFixed(2)}
         </Text>
-        {props?.originalPrice &&
-          props?.price.toFixed(2) - props?.originalPrice.toFixed(2) != 0 && (
-            <Text style={props?.strikeOffPriceStyle || styles.originalPrice}>
+        {props?.discount &&
+          props?.netPrice.toFixed(2) - props?.discount.toFixed(2) != 0 && (
+            <Text style={props?.strikeOffPriceStyle || styles.discount}>
               {CurrencySymbol}
-              {props.originalPrice.toFixed(2)}
+              {netPrice.toFixed(2)}
             </Text>
           )}
       </View>
@@ -27,12 +28,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  price: {
+  netPrice: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.primary,
   },
-  originalPrice: {
+  discount: {
     fontSize: 14,
     color: colors.secondaryText,
     textDecorationLine: "line-through",

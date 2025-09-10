@@ -9,10 +9,20 @@ export enum PickupMode {
 }
 
 export interface OrderProduct {
-  productId: string; // ObjectId will be received as a string
+  productId: string;
   name: string;
   quantity: number;
-  price: number;
+  netPrice: number;
+  discount: number;
+  isVatApplicable: boolean;
+  vatRate: number;
+  vatAmount: number;
+  netPriceIncVat: number;
+  grossPrice: number;
+  selectedColor?: {
+    colorCode: string;
+    colorName: string;
+  };
 }
 
 export interface ShippingAddress {

@@ -53,6 +53,8 @@ import styles from "./CartStyles";
 const CartScreen = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+
+  console.log("cartItems in cart page", cartItems);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
   );
@@ -63,20 +65,20 @@ const CartScreen = () => {
 
   console.log("user in cart screen", user);
 
-  const recommendedProducts = products
-    .filter((p) =>
-      ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-    )
-    .map((product) => ({
-      id: product.id,
-      name: product.name,
-      rating: product.rating,
-      reviews: product.noOfreviews,
-      imageUrl: product.image,
-      price: product.price,
-      originalPrice: product.originalPrice,
-    }));
-  console.log("Recommended Products", recommendedProducts);
+  // const recommendedProducts = products
+  //   .filter((p) =>
+  //     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
+  //   )
+  //   .map((product) => ({
+  //     id: product.id,
+  //     name: product.name,
+  //     rating: product.rating,
+  //     reviews: product.noOfreviews,
+  //     imageUrl: product.image,
+  //     discount: product.discount,
+  //     netPrice: product.netPrice,
+  //   }));
+  // console.log("Recommended Products", recommendedProducts);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
@@ -291,6 +293,7 @@ const CartScreen = () => {
               setIsModalVisible(false);
             }}
             isModalVisible={isModalVisible}
+            title="Delete Product"
             text="Are you sure you want to delete this? You can save this item for later too."
             submitText="Delete Item"
             handleSubmit={confirmDelete}

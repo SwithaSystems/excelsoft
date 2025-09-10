@@ -151,13 +151,14 @@ const savedAddressScreen = () => {
                 <ConfirmationModal
                   onClose={() => {
                     setIsModalVisible(false);
-                  }}
+                  } }
                   isModalVisible={isModalVisible}
                   text="Are you sure you want to delete this address?"
                   submitText="Delete Address"
                   handleSubmit={confirmDelete}
                   cancelText="Cancel"
-                  handleCancel={cancelDelete}
+                  handleCancel={cancelDelete} 
+                  title="Delete Address"                
                 />
               </>
             }

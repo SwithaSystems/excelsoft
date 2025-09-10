@@ -29,24 +29,24 @@ import ReturnReplaceToggle from "./Components/return_replace_radioButtons";
 //     id: 1,
 //     image: require("@/assets/baby-bicycle.png"),
 //     name: "Duck Toys",
-//     price: "£10.00",
-//     originalPrice: "£18.00",
+//     discount: "£10.00",
+//     netPrice: "£18.00",
 //     quantity: 5,
 //   },
 //   {
 //     id: 2,
 //     image: require("@/assets/baby-bicycle.png"),
 //     name: "Orange Juice",
-//     price: "£3.00",
-//     originalPrice: "£5.00",
+//     discount: "£3.00",
+//     netPrice: "£5.00",
 //     quantity: 1,
 //   },
 //   {
 //     id: 3,
 //     image: require("@/assets/baby-bicycle.png"),
 //     name: "Strawberries",
-//     price: "£12.00",
-//     originalPrice: "£18.00",
+//     discount: "£12.00",
+//     netPrice: "£18.00",
 //     quantity: 1,
 //   },
 // ];
@@ -137,8 +137,8 @@ const ReturnOrder = () => {
   //   id: item.id,
   //   image: item.image,
   //   name: item.name,
-  //   price: item.price,
-  //   originalPrice: item.originalPrice,
+  //   discount: item.discount,
+  //   netPrice: item.netPrice,
   //   quantity: item.quantity,
   // }));
 
@@ -173,8 +173,8 @@ const ReturnOrder = () => {
                   <Text style={styles.itemName}>{item.name}</Text>
                   <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
                   <Text style={styles.itemPrice}>
-                    {item.price}{" "}
-                    <Text style={styles.striked}>{item.originalPrice}</Text>
+                    {item.discount}{" "}
+                    <Text style={styles.striked}>{item.netPrice}</Text>
                   </Text>
                 </View>
                 <View

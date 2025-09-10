@@ -2,23 +2,26 @@ import axiosInstance from "./axiosConfig";
 import createAxiosInstance, { jsonAxios } from "./axiosConfig";
 
 export interface Product {
-  _id: string;
+  _id?: string;
   id: string;
   name: string;
   description: string;
-  title: string;
-  stock: number;
-  price: number;
-  originalPrice: number;
+  title?: string;
+  stock?: number;
+  discount: number;
+  netPrice: number;
   image: any;
-  productColors: string[];
+  productColors?: string[];
   categoryId: number[];
   rating: number;
   noOfreviews: number;
-  minimumOrderQuantity: number;
+  minimumOrderQuantity?: number;
   noOfReviews: number;
-  noOfLikesandDislikes: number;
+  noOfLikesandDislikes?: number;
   isReturnable: boolean;
+  isVatApplicable: boolean;
+  vatRate: number;
+  vatAmount: number;
   reviews: {
     id: string;
     name: string;

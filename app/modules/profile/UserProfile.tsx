@@ -279,6 +279,7 @@ const UserProfileScreen = () => {
         onClose={() => setLogOutModalOpen(false)}
         isModalVisible={logOutModalOpen}
         text="Are you sure you want to Log out?"
+        title="Log out"
         submitText="Yes"
         handleSubmit={handleLogout}
         cancelText="No"
@@ -287,6 +288,7 @@ const UserProfileScreen = () => {
       <ConfirmationModal
         onClose={() => setDeleteAccountModalOpen(false)}
         isModalVisible={deleteAccountModalOpen}
+        title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
         handleSubmit={() => {}}

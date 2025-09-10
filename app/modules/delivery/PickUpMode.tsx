@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -23,9 +23,47 @@ import {
   PICKUP_MODE_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { jsonAxios } from "@/services/axiosConfig";
 
-const options = [
+// const options = [
+//   {
+//     id: "store",
+//     label: "Store Pickup",
+//     description: "Pick up your order from our store",
+//     icon: "location-outline",
+//     redirectionScreen: containers.pickupScreen,
+//     params: { mode: DELIVERY_MODE_STORE },
+//   },
+//   {
+//     id: "curbside",
+//     label: "Curbside Pickup",
+//     description: "Pick up your order curbside, right from your car.",
+//     icon: "car-outline",
+//     redirectionScreen: containers.pickupScreen,
+//     params: { mode: DELIVERY_MODE_CURBSIDE },
+//   },
+//   {
+//     id: "home",
+//     label: "Home Delivery",
+//     description: "Receive your order at your doorstep.",
+//     icon: "home-outline",
+//     redirectionScreen: containers.homeDeliveryScreen,
+//     params: { mode: DELIVERY_MODE_HOME },
+//   },
+// ] as const;
+
+const modeConfig: Record<
+  string,
   {
+    id: string;
+    label: string;
+    description: string;
+    icon: string;
+    redirectionScreen: string;
+    params: { mode: string };
+  }
+> = {
+  "Store Pickup": {
     id: "store",
     label: "Store Pickup",
     description: "Pick up your order from our store",
@@ -33,7 +71,7 @@ const options = [
     redirectionScreen: containers.pickupScreen,
     params: { mode: DELIVERY_MODE_STORE },
   },
-  {
+  "Curbside Pickup": {
     id: "curbside",
     label: "Curbside Pickup",
     description: "Pick up your order curbside, right from your car.",
@@ -41,7 +79,7 @@ const options = [
     redirectionScreen: containers.pickupScreen,
     params: { mode: DELIVERY_MODE_CURBSIDE },
   },
-  {
+  "Home Delivery": {
     id: "home",
     label: "Home Delivery",
     description: "Receive your order at your doorstep.",
@@ -49,11 +87,27 @@ const options = [
     redirectionScreen: containers.homeDeliveryScreen,
     params: { mode: DELIVERY_MODE_HOME },
   },
-] as const;
+};
+
 const pickUpModescreen = () => {
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
+  const [pickupModes, setPickupModes] = useState<any>([]);
+
+  const fetchPickupModes = async () => {
+    const response = await jsonAxios.get(`/pick-up-modes`);
+    console.log("response pickup modes", response.data);
+    setPickupModes(response.data);
+  };
+
+  useEffect(() => {
+    fetchPickupModes();
+  }, []);
+
+  const options = pickupModes
+    .map((mode: any) => modeConfig[mode.name])
+    .filter(Boolean);
 
   return (
     <PageLayout
@@ -63,7 +117,7 @@ const pickUpModescreen = () => {
       scrollable={false}
     >
       <View style={[globalStyles.pt_0, { paddingHorizontal: 20 }]}>
-        {options.map((option) => (
+        {options.map((option: any) => (
           <TouchableOpacity
             key={option.id}
             style={[
