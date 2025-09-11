@@ -40,7 +40,10 @@ function OrderSummary(props) {
   );
 
   const totalDiscount = cartItems.reduce(
-    (total, item) => total + (item?.discount || 0) * item.quantity,
+    (total, item) =>
+      total +
+      (item?.discount + ((item?.discount * item.vatRate) / 100 || 0)) *
+        item.quantity,
     0
   );
 
@@ -60,7 +63,7 @@ function OrderSummary(props) {
         <Text style={[styles.itemName, styles.headerText]}>Item</Text>
         <Text style={[styles.quantity, styles.headerText]}>Qty</Text>
         <Text style={[styles.price, styles.headerText]}>Price</Text>
-        <Text style={[styles.vatamount, styles.headerText]}>Vat Amount</Text>
+        <Text style={[styles.vatamount, styles.headerText]}>VAT</Text>
         <Text style={[styles.total, styles.headerText]}>Total</Text>
       </View>
 
@@ -111,7 +114,7 @@ function OrderSummary(props) {
       <View style={styles.summarySection}>
         {/* Subtotal excluding VAT */}
         <View style={styles.tableRow}>
-          <Text style={styles.summaryLabel}>Subtotal (excl. VAT)</Text>
+          <Text style={styles.summaryLabel}>Total (excl. VAT)</Text>
           <Text style={styles.quantity}></Text>
           <Text style={styles.price}></Text>
           <Text style={styles.summaryValue}>
@@ -119,12 +122,33 @@ function OrderSummary(props) {
             {subtotalExVAT.toFixed(2)}
           </Text>
         </View>
-
-        {/* Discount Savings */}
+        <View style={styles.tableRow}>
+          <Text style={styles.summaryLabel}>Total VAT</Text>
+          <Text style={styles.quantity}></Text>
+          <Text style={styles.price}></Text>
+          <Text style={styles.summaryValue}>
+            {CurrencySymbol}
+            {totalVAT.toFixed(2)}
+          </Text>
+        </View>
+        {/* Totals Section with shared border */}
+        <View style={styles.totalsContainer}>
+          <View style={styles.tableRow}>
+            <Text style={[styles.summaryLabel, styles.totalLabel]}>
+              Grand Total (incl. VAT)
+            </Text>
+            <Text style={styles.quantity}></Text>
+            <Text style={styles.price}></Text>
+            <Text style={[styles.summaryValue, styles.totalValue]}>
+              {CurrencySymbol}
+              {totalIncVAT.toFixed(2)}
+            </Text>
+          </View>
+        </View>
         {totalDiscount > 0 && (
           <View style={styles.tableRow}>
             <Text style={[styles.summaryLabel, styles.discountText]}>
-              Discount Savings
+              Saved on this Order
             </Text>
             <Text style={styles.quantity}></Text>
             <Text style={styles.price}></Text>
@@ -134,30 +158,6 @@ function OrderSummary(props) {
             </Text>
           </View>
         )}
-
-        {/* VAT
-        <View style={styles.tableRow}>
-          <Text style={styles.summaryLabel}>VAT (20%)</Text>
-          <Text style={styles.quantity}></Text>
-          <Text style={styles.price}></Text>
-          <Text style={styles.summaryValue}>
-            {CurrencySymbol}
-            {totalVAT.toFixed(2)}
-          </Text>
-        </View> */}
-
-        {/* Total */}
-        <View style={[styles.tableRow, styles.totalRow]}>
-          <Text style={[styles.summaryLabel, styles.totalLabel]}>
-            Total (incl. VAT)
-          </Text>
-          <Text style={styles.quantity}></Text>
-          <Text style={styles.price}></Text>
-          <Text style={[styles.summaryValue, styles.totalValue]}>
-            {CurrencySymbol}
-            {totalIncVAT.toFixed(2)}
-          </Text>
-        </View>
       </View>
 
       {/* VAT Notice */}
@@ -255,11 +255,14 @@ const styles = StyleSheet.create({
   discountText: {
     color: "#22c55e",
   },
-  totalRow: {
+  totalsContainer: {
     borderTopWidth: 2,
     borderTopColor: colors.primary || "#000",
     marginTop: 8,
     paddingTop: 12,
+  },
+  totalRow: {
+    // Removed borderTopWidth, borderTopColor, marginTop, paddingTop
   },
   totalLabel: {
     fontSize: 16,

@@ -222,14 +222,14 @@ const PickupScreen = () => {
       errors.push(emailError);
     }
 
-    if (phoneError){
+    if (phoneError) {
       errors.push(phoneError);
     }
 
-    if (firstNameError){
+    if (firstNameError) {
       errors.push(firstNameError);
     }
-    if (lastNameError){ 
+    if (lastNameError) {
       errors.push(lastNameError);
     }
 
@@ -605,7 +605,9 @@ const PickupScreen = () => {
       return;
     }
     if (!isValidEmail(text)) {
-      setEmailError("Please enter a valid Gmail address (e.g., user@gmail.com)");
+      setEmailError(
+        "Please enter a valid email address (e.g., user@gmail.com)"
+      );
     } else {
       setEmailError(null);
     }
@@ -950,7 +952,7 @@ const PickupScreen = () => {
               true,
               {
                 keyboardType: "phone-pad",
-                placeholder:"e.g., 071234567789 or +447123456789"
+                placeholder: "e.g., 071234567789 or +447123456789",
               },
               phoneError,
               phoneRef

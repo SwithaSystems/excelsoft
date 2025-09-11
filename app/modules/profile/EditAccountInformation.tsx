@@ -60,7 +60,7 @@ const editAccountInformationscreen = () => {
 
   const validateEmail = (email: string) => {
     const isValid = isValidEmail(email);
-    setEmailError(isValid? null : "Please enter a valid Gmail address");
+    setEmailError(isValid ? null : "Please enter a valid email address");
     return isValid;
   };
 
@@ -119,7 +119,8 @@ const editAccountInformationscreen = () => {
           await SecureStore.setItemAsync("user", JSON.stringify(response.data));
         } catch (error) {
           console.error("SecureStore setItem error:", error);
-        }        dispatch(setUserData(response.data.user));
+        }
+        dispatch(setUserData(response.data.user));
         Alert.alert("Message", "Profile updated successfully.", [
           {
             text: "OK",

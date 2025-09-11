@@ -3,8 +3,8 @@ import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
   orderSummaryContainer: {
-    marginTop: 0,
-    paddingHorizontal: 0,
+    // marginTop: 0,
+    // paddingHorizontal: 0,
   },
   subheading: {
     fontWeight: "bold",
