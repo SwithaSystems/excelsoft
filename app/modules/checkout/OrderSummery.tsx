@@ -4,7 +4,13 @@ import {
   DELIVERY_MODE_STORE,
   ORDER_SUMMARY_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -41,6 +47,7 @@ import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { add, set } from "date-fns";
+import { ProductsAPI } from "@/services/productService";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -68,11 +75,30 @@ type shippingAddressDTo = {
 };
 
 const orderSummeryScreen = () => {
+  // Use ref to track component mount status
+  const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
   const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
   const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
+  // const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItemsBefore = useSelector((state: any) => state.cart.items);
+  // Safe cart items selection with proper typing
+  // const cartItemsFromStore = useSelector((state: RootState) => {
+  //   return Array.isArray(state?.cart?.items) ? state.cart.items : [];
+  // });
+  const cartItems = useMemo(() => {
+    try {
+      return cartItemsBefore.filter(
+        (item: any) =>
+          item && typeof item === "object" && (item.quantity || 0) > 0
+      );
+    } catch (error) {
+      console.error("Error filtering cart items:", error);
+      return [];
+    }
+  }, [cartItemsBefore]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const dispatch = useDispatch();
@@ -83,77 +109,214 @@ const orderSummeryScreen = () => {
     params?.selectedMode === DELIVERY_MODE_HOME
   );
   const [accordionOpen, setAccordionOpen] = useState(false);
-  const rotateAnimation = new Animated.Value(0);
+  const rotateAnimation = useRef(new Animated.Value(0)).current;
+
   const { handlePayment } = usePaymentHandler();
 
+  // Safe JSON parsing with comprehensive error handling
+  const parseJsonSafely = useCallback(
+    (jsonString: string | undefined, fallback: any = null) => {
+      if (!jsonString || typeof jsonString !== "string") {
+        return fallback;
+      }
+
+      try {
+        const parsed = JSON.parse(jsonString);
+        return parsed && typeof parsed === "object" ? parsed : fallback;
+      } catch (error) {
+        console.error("JSON parsing error:", error, "Input:", jsonString);
+        return fallback;
+      }
+    },
+    []
+  );
+
   // Extract pickup data from route params or use default values
-  const pickupAddress = params?.pickupAddress
-    ? JSON.parse(params.pickupAddress as string)
-    : null;
-  const pickupDetails = JSON.parse(params?.pickupDetails) || "";
-  console.log("pickup details", pickupDetails);
+  const pickupAddress = useMemo(() => {
+    try {
+      const parsed = parseJsonSafely(params?.pickupAddress);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }, [params?.pickupAddress, parseJsonSafely]);
+
+  const pickupDetails = useMemo(() => {
+    try {
+      const parsed = parseJsonSafely(params?.pickupDetails, {});
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      console.error("Invalid pickupDetails JSON:", e);
+      return {};
+    }
+  }, [params?.pickupDetails, parseJsonSafely]);
+
+  // useEffect(() => {
+  //   console.log("pickup details", pickupDetails);
+  // }, [pickupDetails]);
+
   const selectedMode = params?.selectedMode || "Delivery";
 
   const { selectedBillingAddress, setSelectedBillingAddress } = useAppContext();
+  const [stockAvailable, setStockAvailable] = useState<Record<string, number>>(
+    {}
+  );
 
-  // Create shipping address object properly
-  const shippingAddress: shippingAddressDTo | undefined = pickupAddress
-    ? {
+  // FIXED: Memoize shippingAddress to prevent recreating on every render
+  const shippingAddress: shippingAddressDTo | undefined = useMemo(() => {
+    if (!pickupAddress || typeof pickupAddress !== "object") {
+      return undefined;
+    }
+    try {
+      return {
         name:
-          pickupAddress.name ||
-          `${pickupAddress.firstName} ${pickupAddress.lastName}`,
-        line1: pickupAddress.line1 || pickupAddress.address,
-        line2: pickupAddress.line2,
-        city: pickupAddress.city,
-        state: pickupAddress.state,
-        postalCode: pickupAddress.postalCode,
-        phone: pickupAddress.phone,
-        addressType: pickupAddress.addressType,
+          String(
+            pickupAddress.name ||
+              `${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}`
+          ).trim() || "Unknown",
+        line1: String(pickupAddress.line1 || pickupAddress.address || ""),
+        line2: String(pickupAddress.line2 || ""),
+        city: String(pickupAddress.city || ""),
+        state: String(pickupAddress.state || ""),
+        postalCode: String(pickupAddress.postalCode || ""),
+        phone: String(pickupAddress.phone || ""),
+        addressType: Array.isArray(pickupAddress.addressType)
+          ? pickupAddress.addressType
+          : [],
+      };
+    } catch (error) {
+      console.error("Error creating shipping address:", error);
+      return undefined;
+    }
+  }, [pickupAddress]);
+
+  // Cleanup function
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+    if (!cartItems || cartItems.length === 0) {
+      if (isActive && isMountedRef.current) {
+        setStockAvailable({});
       }
-    : undefined;
+      return;
+    }
+    const fetchStock = async () => {
+      try {
+        const ids = cartItems
+          .map((item: any) => String(item?.id || ""))
+          .filter(Boolean);
 
-  let displayMode = "";
-  if (selectedMode === DELIVERY_MODE_CURBSIDE) {
-    displayMode = "Curbside Pickup";
-  } else if (selectedMode === DELIVERY_MODE_STORE) {
-    displayMode = "Store Pickup";
-  } else if (selectedMode === DELIVERY_MODE_HOME) {
-    displayMode = "Home Delivery";
-  } else {
-    displayMode = selectedMode;
-  }
+        if (ids.length === 0) {
+          if (isActive && isMountedRef.current) {
+            setStockAvailable({});
+          }
+          return;
+        }
 
-  const toggleAccordion = () => {
-    setAccordionOpen(!accordionOpen);
+        const results = await Promise.allSettled(
+          ids.map((id: any) => ProductsAPI.getProductBYID(Number(id)))
+        );
+
+        const newStock: Record<string, number> = {};
+        ids.forEach((id: any, idx: any) => {
+          const result = results[idx];
+          if (
+            result.status === "fulfilled" &&
+            result.value?.stock !== undefined
+          ) {
+            newStock[id] = Number(result.value.stock) || 0;
+          } else {
+            newStock[id] = 0;
+          }
+        });
+
+        if (isActive && isMountedRef.current) {
+          setStockAvailable((prev) => {
+            const hasChanges = Object.keys(newStock).some(
+              (key) => newStock[key] !== (prev[key] || 0)
+            );
+            return hasChanges ? newStock : prev;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching stock:", error);
+        if (isActive && isMountedRef.current) {
+          setStockAvailable({});
+        }
+      }
+    };
+
+    fetchStock();
+
+    return () => {
+      isActive = false;
+    };
+  }, [cartItems]);
+
+  const displayMode = useMemo(() => {
+    switch (selectedMode) {
+      case DELIVERY_MODE_CURBSIDE:
+        return "Curbside Pickup";
+      case DELIVERY_MODE_STORE:
+        return "Store Pickup";
+      case DELIVERY_MODE_HOME:
+        return "Home Delivery";
+      default:
+        return String(selectedMode || "Delivery");
+    }
+  }, [selectedMode]);
+
+  const toggleAccordion = useCallback(() => {
+    const newState = !accordionOpen;
+    setAccordionOpen(newState);
+
     Animated.timing(rotateAnimation, {
-      toValue: accordionOpen ? 0 : 1,
+      toValue: newState ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  };
+  }, [accordionOpen, rotateAnimation]);
 
   const spin = rotateAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "180deg"],
   });
 
+  // Fetch addresses with proper error handling
   useEffect(() => {
+    let isActive = true;
+
     const fetchAddresses = async () => {
       try {
         const addresses = await addressService.getAllAddress();
-        setAddressData(addresses);
 
-        if (selectedBillingAddress && selectedBillingAddress._id) {
-          setSelectedId(selectedBillingAddress._id);
+        if (isActive && isMountedRef.current) {
+          setAddressData(Array.isArray(addresses) ? addresses : []);
+
+          if (selectedBillingAddress?._id) {
+            setSelectedId(selectedBillingAddress._id);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch billing addresses:", error);
+        if (isActive && isMountedRef.current) {
+          setAddressData([]);
+        }
       }
     };
 
     fetchAddresses();
-  }, [selectedBillingAddress]);
 
+    return () => {
+      isActive = false;
+    };
+  }, [selectedBillingAddress]);
+  // FIXED: Added selectedBillingAddress to dependency array to prevent infinite loop
   useEffect(() => {
     if (
       selectedMode === DELIVERY_MODE_HOME &&
@@ -170,134 +333,260 @@ const orderSummeryScreen = () => {
         postalCode: shippingAddress.postalCode,
       };
 
-      setSelectedBillingAddress(billingFromShipping);
-      setSelectedId(billingFromShipping._id);
+      // Avoid infinite loop by checking if already same
+      if (
+        !selectedBillingAddress ||
+        selectedBillingAddress.line1 !== billingFromShipping.line1 ||
+        selectedBillingAddress.name !== billingFromShipping.name
+      ) {
+        setSelectedBillingAddress(billingFromShipping);
+        setSelectedId(billingFromShipping._id || null);
+      }
     }
-  }, [shippingAddress, useSameAddress, selectedMode]);
+  }, [shippingAddress, useSameAddress, selectedMode, selectedBillingAddress]);
 
-  const handleSameAddressToggle = () => {
+  const handleSameAddressToggle = useCallback(() => {
+    if (!isMountedRef.current) return;
+
     const newValue = !useSameAddress;
     setUseSameAddress(newValue);
 
-    if (newValue && shippingAddress) {
-      const billingFromShipping: any = {
+    if (newValue && shippingAddress?.line1) {
+      const billingFromShipping = {
+        _id: `shipping-${Date.now()}`, // Temporary ID
         name: shippingAddress.name,
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
         state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
-        addressType: shippingAddress.addressType,
+        addressType: shippingAddress.addressType || [],
         phone: shippingAddress.phone,
       };
 
-      setSelectedBillingAddress(billingFromShipping);
-      setSelectedId(billingFromShipping._id);
+      try {
+        setSelectedBillingAddress(billingFromShipping);
+        setSelectedId(billingFromShipping._id);
 
-      if (accordionOpen) {
-        setAccordionOpen(false);
-        Animated.timing(rotateAnimation, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
+        if (accordionOpen) {
+          setAccordionOpen(false);
+          Animated.timing(rotateAnimation, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        }
+      } catch (error) {
+        console.error("Error setting billing from shipping:", error);
       }
     } else {
       setSelectedBillingAddress(null);
       setSelectedId(null);
     }
-  };
+  }, [
+    useSameAddress,
+    shippingAddress,
+    accordionOpen,
+    rotateAnimation,
+    setSelectedBillingAddress,
+  ]);
 
-  const handleEdit = (item: Address) => {
-    setSelectedBillingAddress(item);
-    redirectToPage(containers.billingAddressScreen, {
-      edit_address: JSON.stringify(item),
-    });
-  };
+  const handleEdit = useCallback(
+    (item: Address) => {
+      if (!isMountedRef.current) return;
 
-  const handleAddBillingAddress = async () => {
-    redirectToPage(containers.billingAddressScreen, {
-      onAddressAdded: async () => {
-        try {
-          const addresses = await addressService.getAllAddress();
-          setAddressData(addresses);
-        } catch (error) {
-          console.error("Failed to refresh addresses:", error);
-        }
-      },
-    });
-  };
+      try {
+        setSelectedBillingAddress(item);
+        redirectToPage(containers.billingAddressScreen, {
+          edit_address: JSON.stringify(item),
+        });
+      } catch (error) {
+        console.error("Error handling edit:", error);
+        Alert.alert("Error", "Failed to edit address. Please try again.");
+      }
+    },
+    [setSelectedBillingAddress]
+  );
 
-  const handleBillingAddressDelete = async (item: Address) => {
+  const handleAddBillingAddress = useCallback(async () => {
+    if (!isMountedRef.current) return;
+
     try {
-      const { success } = await addressService.deleteAddress(item._id);
-      if (success) {
-        const addresses = await addressService.getAllAddress();
-        setAddressData(addresses);
+      redirectToPage(containers.billingAddressScreen, {
+        onAddressAdded: async () => {
+          try {
+            if (isMountedRef.current) {
+              const addresses = await addressService.getAllAddress();
+              setAddressData(Array.isArray(addresses) ? addresses : []);
+            }
+          } catch (error) {
+            console.error("Failed to refresh addresses:", error);
+          }
+        },
+      });
+    } catch (error) {
+      console.error("Error navigating to add address:", error);
+      Alert.alert("Error", "Failed to open add address screen.");
+    }
+  }, [setSelectedBillingAddress]);
 
-        // Clear selection if deleted address was selected
-        if (selectedId === item._id) {
-          setSelectedId(null);
-          setSelectedBillingAddress(null);
+  const handleBillingAddressDelete = useCallback(
+    async (item: Address) => {
+      if (!isMountedRef.current || !item?._id) return;
+
+      try {
+        const { success } = await addressService.deleteAddress(item._id);
+
+        if (success && isMountedRef.current) {
+          const addresses = await addressService.getAllAddress();
+          setAddressData(Array.isArray(addresses) ? addresses : []);
+
+          // Clear selection if deleted address was selected
+          if (selectedId === item._id) {
+            setSelectedId(null);
+            setSelectedBillingAddress(null);
+          }
+
+          Alert.alert("Success", "Billing address deleted successfully");
+        } else {
+          Alert.alert("Error", "Failed to delete billing address");
         }
-
-        Alert.alert("Success", "Billing address deleted successfully");
-      } else {
+      } catch (error) {
+        console.error("Failed to delete billing address:", error);
         Alert.alert("Error", "Failed to delete billing address");
       }
-    } catch (error) {
-      console.error("Failed to delete billing address:", error);
-      Alert.alert("Error", "Failed to delete billing address");
-    }
-  };
+    },
+    [selectedId, setSelectedBillingAddress]
+  );
 
   // Handle billing address selection
-  const handleSelectBillingAddress = (item: Address) => {
-    if (selectedMode === DELIVERY_MODE_HOME) {
-      setUseSameAddress(false);
-    }
+  const handleSelectBillingAddress = useCallback(
+    (item: Address) => {
+      if (!isMountedRef.current || !item) return;
 
-    setSelectedId(item._id);
-    setSelectedBillingAddress(item);
-    console.log("Selected billing address:", item);
-  };
+      try {
+        if (selectedMode === DELIVERY_MODE_HOME) {
+          setUseSameAddress(false);
+        }
 
-  const handleDelete = (item: any) => {
+        setSelectedId(item._id || null);
+        setSelectedBillingAddress(item);
+        console.log("Selected billing address:", item);
+      } catch (error) {
+        console.error("Error selecting billing address:", error);
+      }
+    },
+    [selectedMode, setSelectedBillingAddress]
+  );
+  const handleDelete = useCallback((item: any) => {
+    if (!isMountedRef.current) return;
     setItemToDelete(item);
     setIsModalVisible(true);
-  };
+  }, []);
 
-  const confirmDelete = () => {
-    if (itemToDelete) {
+  const confirmDelete = useCallback(() => {
+    if (!isMountedRef.current || !itemToDelete) return;
+
+    try {
       dispatch(removeFromCart(itemToDelete.id));
+    } catch (error) {
+      console.error("Error removing from cart:", error);
     }
+
     setIsModalVisible(false);
     setItemToDelete(null);
-  };
+  }, [itemToDelete, dispatch]);
 
-  const cancelDelete = () => {
-    if (itemToDelete) {
-      const itemtoSave = cartItems.find((item) => item.id === itemToDelete.id);
-      if (itemtoSave) {
-        dispatch(addToSavedItems(itemtoSave));
+  const cancelDelete = useCallback(() => {
+    if (!isMountedRef.current || !itemToDelete) return;
+
+    try {
+      const itemToSave = cartItems.find(
+        (item: any) => item?.id === itemToDelete.id
+      );
+
+      if (itemToSave) {
+        dispatch(addToSavedItems(itemToSave));
         dispatch(removeFromCart(itemToDelete.id));
       }
+    } catch (error) {
+      console.error("Error saving item for later:", error);
     }
+
     setIsModalVisible(false);
     setItemToDelete(null);
-  };
+  }, [itemToDelete, cartItems, dispatch]);
 
-  const isPickupMode =
-    selectedMode === DELIVERY_MODE_CURBSIDE ||
-    selectedMode === DELIVERY_MODE_STORE;
-  const isPaymentEnabled =
-    cartItems.length > 0 &&
-    selectedBillingAddress &&
-    (isPickupMode || shippingAddress?.line1) &&
-    pickupDetails?.date &&
-    pickupDetails?.time &&
-    selectedMode &&
-    (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
+  // Payment enablement logic
+  const isPickupMode = useMemo(() => {
+    return (
+      selectedMode === DELIVERY_MODE_CURBSIDE ||
+      selectedMode === DELIVERY_MODE_STORE
+    );
+  }, [selectedMode]);
+
+  const isPaymentEnabled = useMemo(() => {
+    try {
+      const hasCartItems = cartItems && cartItems.length > 0;
+      const hasBillingAddress =
+        selectedBillingAddress &&
+        Object.keys(selectedBillingAddress).length > 0;
+      const hasShippingForDelivery = isPickupMode || shippingAddress?.line1;
+      const hasPickupDetails = isPickupMode
+        ? pickupDetails?.date && pickupDetails?.time
+        : true;
+
+      const hasValidMode =
+        selectedMode &&
+        (Array.isArray(selectedMode) ? selectedMode[0] : selectedMode);
+
+      return (
+        hasCartItems &&
+        hasBillingAddress &&
+        hasShippingForDelivery &&
+        hasPickupDetails &&
+        hasValidMode
+      );
+    } catch (error) {
+      console.error("Error calculating payment enabled state:", error);
+      return false;
+    }
+  }, [
+    cartItems,
+    selectedBillingAddress,
+    isPickupMode,
+    shippingAddress,
+    pickupDetails,
+    selectedMode,
+  ]);
+
+  // Safe render functions
+  const renderAddressText = useCallback(() => {
+    if (!pickupAddress) return "No address available";
+
+    try {
+      if (selectedMode === DELIVERY_MODE_STORE) {
+        return `${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}
+Email: ${pickupAddress.email || ""}
+Contact Number: ${pickupAddress.phone || ""}`;
+      } else if (selectedMode === DELIVERY_MODE_CURBSIDE) {
+        return `${pickupAddress.firstName || ""} ${pickupAddress.lastName || ""}
+Vehicle Type: ${pickupAddress.vehicleType || ""}
+Vehicle Number: ${pickupAddress.vehicleNumber || ""}
+Additional Details: ${pickupAddress.additionalDetails || "None"}
+Email: ${pickupAddress.email || ""}
+Contact Number: ${pickupAddress.phone || ""}`;
+      } else {
+        return `${pickupAddress.name || ""}, ${pickupAddress.line1 || ""}${
+          pickupAddress.line2 ? `, ${pickupAddress.line2}` : ""
+        }, ${pickupAddress.city || ""}, ${pickupAddress.postalCode || ""}
+Contact Number: ${pickupAddress.phone || ""}`;
+      }
+    } catch (error) {
+      console.error("Error rendering address text:", error);
+      return "Error displaying address";
+    }
+  }, [pickupAddress, selectedMode]);
 
   return (
     <PageLayout
@@ -348,37 +637,13 @@ const orderSummeryScreen = () => {
                   ) : (
                     <Text style={styles.subheading}>Delivery Address:</Text>
                   )}
-                  {selectedMode === DELIVERY_MODE_STORE ? (
-                    <Text style={styles.addressTextBox}>
-                      {`${pickupAddress.firstName || ""} ${
-                        pickupAddress.lastName || ""
-                      }
-Email: ${pickupAddress.email}
-Contact Number: ${pickupAddress.phone}`}
-                    </Text>
-                  ) : selectedMode === DELIVERY_MODE_CURBSIDE ? (
-                    <Text style={styles.addressTextBox}>
-                      {`${pickupAddress.firstName || ""} ${
-                        pickupAddress.lastName || ""
-                      }
-Vehicle Type: ${pickupAddress.vehicleType || ""}
-Vehicle Number: ${pickupAddress.vehicleNumber || ""}
-Additional Details: ${pickupAddress.additionalDetails || "None"}
-Email: ${pickupAddress.email}
-Contact Number: ${pickupAddress.phone}`}
-                    </Text>
-                  ) : (
-                    <Text style={styles.addressTextBox}>
-                      {`${pickupAddress.name}, ${pickupAddress.line1}${
-                        pickupAddress.line2 ? `, ${pickupAddress.line2}` : ""
-                      }, ${pickupAddress.city}, ${pickupAddress.postalCode}
-Contact Number: ${pickupAddress.phone}`}
-                    </Text>
-                  )}
+                  <Text style={styles.addressTextBox}>
+                    {renderAddressText()}
+                  </Text>
                 </View>
               </View>
 
-              {/* UPDATED: Show checkbox only for home delivery */}
+              {/* Show checkbox only for home delivery */}
               {selectedMode === DELIVERY_MODE_HOME && (
                 <View style={styles.checkBox}>
                   <CheckBox
@@ -391,7 +656,8 @@ Contact Number: ${pickupAddress.phone}`}
                   />
                 </View>
               )}
-              {/* UPDATED: Show billing address section for all modes, but hide when home delivery checkbox is checked */}
+
+              {/* Show billing address section for all modes, but hide when home delivery checkbox is checked */}
               {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
                 <View>
                   <View style={styles.billingAddress}>
@@ -405,7 +671,9 @@ Contact Number: ${pickupAddress.phone}`}
                       <Text style={styles.subheading}>Billing Address: </Text>
                       {selectedBillingAddress && (
                         <Text>
-                          {`${selectedBillingAddress.name}, ${selectedBillingAddress.city}`}
+                          {`${selectedBillingAddress.name || "Unknown"}, ${
+                            selectedBillingAddress.city || "Unknown City"
+                          }`}
                         </Text>
                       )}
                       <TouchableOpacity
@@ -442,7 +710,7 @@ Contact Number: ${pickupAddress.phone}`}
                             />
                           )}
                           keyExtractor={(item, index) =>
-                            item._id?.toString() || `address-${index}`
+                            item?._id?.toString() || `address-${index}`
                           }
                           contentContainerStyle={styles.addressList}
                           showsVerticalScrollIndicator={false}
@@ -463,46 +731,35 @@ Contact Number: ${pickupAddress.phone}`}
                 </View>
               )}
             </View>
+
             <View style={styles.section}>
               <Text style={styles.sectionHeading}>Your Slot</Text>
               <View style={globalStyles.pl_3}>
                 <Text>
                   {selectedMode === DELIVERY_MODE_HOME
-                    ? `${displayMode} scheduled for ${pickupDetails?.date} at ${pickupDetails?.time}`
-                    : `${displayMode} scheduled for ${pickupAddress?.date} at ${pickupAddress?.time}`}
+                    ? `${displayMode} scheduled for ${
+                        pickupDetails?.date || "TBD"
+                      } at ${pickupDetails?.time || "TBD"}`
+                    : `${displayMode} scheduled for ${
+                        pickupAddress?.date || "TBD"
+                      } at ${pickupAddress?.time || "TBD"}`}
                 </Text>
               </View>
             </View>
-            {/* <View style={styles.section}>
-              <Text style={styles.sectionHeading}>Substitutions</Text>
-              <View style={globalStyles.pl_3}>
-                <CheckBox
-                  title="Choose Substitutions for my orders."
-                  checked={substitutionSelected}
-                  onPress={() =>
-                    setSubstitutionSelected(
-                      (substitutionSelected) => !substitutionSelected
-                    )
-                  }
-                  containerStyle={styles.checkBoxContainer}
-                  textStyle={styles.checkBoxText}
-                />
-                <Text style={styles.sectionText}>
-                  If the product you picked is not available a similar product
-                  or brand will be picked.
-                </Text>
-              </View>
-            </View> */}
+
             <View style={[styles.section, globalStyles.mb_0]}>
               <Text style={styles.sectionHeading}>Order Details</Text>
               <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
-                {cartItems.map((eachCartItem) => {
+                {cartItems.map((eachCartItem: any, index: any) => {
+                  if (!eachCartItem?.id) return null;
+
                   return (
                     <CartItem
                       itemContainerStyle={styles.cartItemContainerStyle}
                       handleDelete={handleDelete}
-                      key={eachCartItem.id}
+                      key={eachCartItem.id || `cart-item-${index}`}
                       cartItem={eachCartItem}
+                      stockAvailable={stockAvailable[eachCartItem.id] || 0}
                     />
                   );
                 })}
@@ -516,29 +773,33 @@ Contact Number: ${pickupAddress.phone}`}
             </View>
           </View>
 
-          <View
-            style={{
-              paddingHorizontal: 24,
-            }}
-          >
+          <View style={{ paddingHorizontal: 24 }}>
             <Button
               title="Proceed for Payment"
               disabled={!isPaymentEnabled}
-              onPress={() =>
-                handlePayment(cartItems, {
-                  shippingAddress: shippingAddress,
-                  billingAddress: selectedBillingAddress,
-                  pickupdetails: pickupDetails,
-                  deliveryDate: pickupDetails?.date,
-                  deliveryTime: pickupDetails?.time,
-                  selectedSlot: Array.isArray(selectedMode)
-                    ? selectedMode[0]
-                    : selectedMode,
-                  selectedMode: Array.isArray(selectedMode)
-                    ? selectedMode[0]
-                    : selectedMode,
-                })
-              }
+              onPress={() => {
+                try {
+                  handlePayment(cartItems, {
+                    shippingAddress: shippingAddress,
+                    billingAddress: selectedBillingAddress,
+                    pickupdetails: pickupDetails,
+                    deliveryDate: pickupDetails?.date,
+                    deliveryTime: pickupDetails?.time,
+                    selectedSlot: Array.isArray(selectedMode)
+                      ? selectedMode[0]
+                      : selectedMode,
+                    selectedMode: Array.isArray(selectedMode)
+                      ? selectedMode[0]
+                      : selectedMode,
+                  });
+                } catch (error) {
+                  console.error("Payment handler error:", error);
+                  Alert.alert(
+                    "Error",
+                    "Failed to process payment. Please try again."
+                  );
+                }
+              }}
               style={isPaymentEnabled ? styles.activeBtn : styles.disabledBtn}
               textStyle={styles.buttonText}
             />
@@ -546,10 +807,9 @@ Contact Number: ${pickupAddress.phone}`}
         </ScrollView>
 
         <ConfirmationModal
-          onClose={() => {
-            setIsModalVisible(false);
-          }}
+          onClose={() => setIsModalVisible(false)}
           isModalVisible={isModalVisible}
+          title="Delete Product"
           text="Are you sure you want to delete this? You can save this item for later too."
           submitText="Delete Item"
           handleSubmit={confirmDelete}
@@ -557,7 +817,6 @@ Contact Number: ${pickupAddress.phone}`}
           handleCancel={cancelDelete}
         />
       </View>
-      {/*</SafeAreaView> */}
     </PageLayout>
   );
 };

@@ -274,13 +274,14 @@ const selectBillingAddressScreen = () => {
                 <ConfirmationModal
                   onClose={() => {
                     setIsModalVisible(false);
-                  }}
+                  } }
                   isModalVisible={isModalVisible}
                   text="Are you sure you want to delete this address?"
                   submitText="Delete Address"
                   handleSubmit={() => confirmDelete(itemToDelete!)}
                   cancelText="Cancel"
-                  handleCancel={cancelDelete}
+                  handleCancel={cancelDelete} 
+                  title="Delete Address"                
                 />
               </>
             }

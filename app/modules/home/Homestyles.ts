@@ -99,12 +99,12 @@ export default StyleSheet.create({
     alignItems: "center",
     marginTop: 4,
   },
-  discountPrice: {
+  discount: {
     fontSize: 16,
     fontWeight: "bold",
     color: colors.black,
   },
-  originalPrice: {
+  netPrice: {
     fontSize: 14,
     color: colors.darkGray,
     textDecorationLine: "line-through",

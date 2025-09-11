@@ -348,9 +348,9 @@ const SearchResultsScreen = () => {
     const sorted = [...uniqueProducts];
     switch (sortOption) {
       case "lowToHigh":
-        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+        return sorted.sort((a, b) => (a.netPrice || 0) - (b.netPrice || 0));
       case "highToLow":
-        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+        return sorted.sort((a, b) => (b.netPrice || 0) - (a.netPrice || 0));
       default:
         return sorted;
     }
@@ -396,17 +396,23 @@ const SearchResultsScreen = () => {
           ]}
         >
           <ProductCard
+            _id={""}
             id={item.id}
             name={item.name}
             description={item.description}
-            price={item.price}
-            originalPrice={item.originalPrice}
+            discount={item.discount}
+            netPrice={item.netPrice}
             image={item.image?.[0] || ""}
             productColors={item.productColors}
-            category={String(item.categoryId)}
+            categoryId={item.categoryId}
             rating={item.rating}
             noOfreviews={item.noOfreviews}
             reviews={item.reviews}
+            noOfReviews={0}
+            isReturnable={false}
+            isVatApplicable={false}
+            vatRate={0}
+            vatAmount={0}
           />
         </View>
       );

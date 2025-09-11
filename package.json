@@ -36,7 +36,7 @@
     "expo-local-authentication": "~16.0.5",
     "expo-media-library": "~17.1.7",
     "expo-notifications": "~0.31.3",
-    "expo-router": "~5.1.5",
+    "expo-router": "~5.1.6",
     "expo-secure-store": "~14.2.4",
     "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",

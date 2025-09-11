@@ -223,9 +223,9 @@ const feedBackScreen = () => {
             />
           </View>
           <ConfirmationModal
-            visible={showReviewconfirmationModal}
-            message="Review Added Successfully"
-            onClose={() => setShowReviewconfirmationModal(false)}
+            isModalVisible={showReviewconfirmationModal}
+            text="Review Added Successfully"
+            onClose={() => setShowReviewconfirmationModal(false)}           
           />
         </ScrollView>
       </KeyBoardWrapper>

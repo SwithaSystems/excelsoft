@@ -9,31 +9,82 @@ import { clearCart, removeFromCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../../utilities/dateTimeFormat";
-import { DELIVERY_MODE_HOME } from "../../constants/stringLiterals";
+import { CLIENT_ID, DELIVERY_MODE_HOME } from "../../constants/stringLiterals";
 import { STORE_NAME } from "../../constants/stringLiterals";
 
 type Product = {
   productId: string;
   name: string;
   quantity: number;
-  price: number;
+  discount: number;
+  netPrice: number;
+  isVatApplicable: boolean;
+  vatRate: number;
+  vatAmount: number;
 };
 
 export const usePaymentHandler = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-  const cartItems = useSelector((state: any) => [...state.cart.items]);
-  const products = cartItems.map((item) => ({
-    productId: item.id,
-    name: item.name,
-    quantity: item.quantity,
-    price: item.price,
-  }));
+  // const cartItems = useSelector((state: any) => [...state.cart.items]);
+  const cartItems = useSelector((state: any) => state.cart.items);
+  // const products = cartItems.map((item) => ({
+  //   productId: item.id,
+  //   name: item.name,
+  //   quantity: item.quantity,
+  //   netPrice: item.netPrice,
+  //   discount: item.discount,
+  //   isVatApplicable: item.isVatApplicable ?? false,
+  //   vatRate: item.vatRate ?? 0,
+  //   vatAmount: item.isVatApplicable
+  //     ? (item.discount * item.quantity * (item.vatRate ?? 0)) / 100
+  //     : 0,
+
+  // }));
+  // Fixed product mapping to match OrderProductDto
+  const products = cartItems.map((item: any) => {
+    const netPrice = item.netPrice || 0;
+    const discount = item.discount || 0;
+    const quantity = item.quantity || 1;
+    const vatRate = item.vatRate || 0;
+
+    const discountedPrice = netPrice - discount;
+    const vatAmount = item.isVatApplicable
+      ? (discountedPrice * quantity * vatRate) / 100
+      : 0;
+    const netPriceIncVat = discountedPrice * quantity + vatAmount;
+    const grossPrice = netPriceIncVat;
+
+    return {
+      productId: parseInt(item.id),
+      name: item.name,
+      quantity: quantity,
+      netPrice: netPrice,
+      discount: discount,
+      isvatApplicable: item.isVatApplicable,
+      vatRate: vatRate,
+      vatAmount: vatAmount,
+      netPriceIncVat: netPriceIncVat,
+      grossPrice: grossPrice,
+    };
+  });
   const dispatch = useDispatch();
 
   const calculateSubtotal = (cartItems: Product[]) =>
-    cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    cartItems.reduce((total, item) => {
+      const netPrice = item.netPrice || 0;
+      const discount = item.discount || 0;
+      const quantity = item.quantity || 1;
+      const vatRate = item.vatRate || 0;
+
+      const discountedPrice = netPrice - discount;
+      const vatAmount = item.isVatApplicable
+        ? (discountedPrice * quantity * vatRate) / 100
+        : 0;
+
+      return total + discountedPrice * quantity + vatAmount;
+    }, 0);
 
   const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
@@ -64,7 +115,9 @@ export const usePaymentHandler = () => {
     console.log("all order details", params);
     console.log("cartItems", cartItems);
     const subtotal = calculateSubtotal(cartItems);
-    const paymentData = await fetchPaymentIntent(subtotal, "client_abc");
+    const shippingCharges = params.shippingCharges || 0;
+    const discounts = params.discounts || [];
+    const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
     if (!paymentData) return;
 
     const { clientSecret, ephemeralKey, customer } = paymentData;
@@ -102,10 +155,9 @@ export const usePaymentHandler = () => {
 
       const orderDetails: any = {
         products: products,
-        shippingCharges: 10,
-        discounts: [10],
-        tax: 2.99,
-        totalAmount: subtotal + 10 + 2.99 - 10,
+        shippingCharges: shippingCharges,
+        discounts: discounts,
+        totalAmount: subtotal,
         paymentMethod: "credit_card",
         pickupMode: (params.selectedMode || "Delivery") as PickupMode,
         deliveryDate: formatDateForBackend(params.deliveryDate) ?? "N/A",
@@ -195,8 +247,6 @@ export const usePaymentHandler = () => {
       } catch (error) {
         console.error("=== ORDER CREATION FAILED ===");
         console.error("Error:", error);
-        // console.error("Error message:", error?.message);
-        // console.error("Error response:", error?.response?.data);
         Alert.alert("Error", "Failed to create order. Please try again.");
       }
     }

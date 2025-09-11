@@ -47,8 +47,8 @@ function RecommendedProductsSlider(props) {
               {props.showAddToCart && (
                 <>
                   <DisplayPrice
-                    price={item.price}
-                    originalPrice={item.originalPrice}
+                    discount={item.discount}
+                    netPrice={item.netPrice}
                   />
                   <View style={[{ marginTop: 4 }, styles.button]}>
                     <Button

@@ -125,7 +125,7 @@ const ProductDetailScreen = () => {
 
       if (error?.response?.status === 404) {
         setErrorMessage("Product not found");
-        if (from === "saveditems") {
+        if (from === "savedItemScreen") {
           const savedItem = savedItems.find(
             (item: any) => item.id === Number(productId)
           );
@@ -258,12 +258,12 @@ const ProductDetailScreen = () => {
                   <Text style={styles.ratingText}>{product.rating}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>
-                    ({product?.reviews?.length || 0} )
+                    ({product?.reviews?.length || 0})
                   </Text>
                 </View>
               )}
 
-              {product.originalPrice > product.price && (
+              {/* {product.netPrice > product.discount && (
                 <View style={styles.saleContainer}>
                   <View style={styles.saleTimeBox}>
                     <View style={styles.saleTag}>
@@ -273,17 +273,18 @@ const ProductDetailScreen = () => {
                   </View>
                   <View style={styles.discountTag}>
                     <Text style={styles.discountText}>
-                      {(product.originalPrice - product.price).toFixed(0) +
-                        "%" || "20%"}
+                      {((product.discount * 100) / product.netPrice).toFixed(
+                        2
+                      ) + "%" || "20%"}
                     </Text>
                   </View>
                 </View>
-              )}
+              )} */}
 
               <View style={styles.priceContainer}>
                 <DisplayPrice
-                  price={product.price}
-                  originalPrice={product.originalPrice}
+                  discount={product.discount}
+                  netPrice={product.netPrice}
                 />
               </View>
             </View>
@@ -365,17 +366,19 @@ const ProductDetailScreen = () => {
                       addToCart({
                         id: product.id,
                         name: product.name,
-                        price: product.price,
+                        discount: product.discount,
                         quantity: quantity,
                         image: product.image,
-                        originalPrice: product.originalPrice,
-                        discount: product.originalPrice - product.price,
+                        netPrice: product.netPrice,
+                        isVatApplicable: product.isVatApplicable,
+                        vatRate: product.vatRate,
+                        vatAmount: product.vatAmount,
                       })
                     );
                     Toast.show({
                       type: "customToast",
                       text1: "Product added successfully!",
-                      text2: `${product.name} - ${product.price}`,
+                      text2: `${product.name} - ${product.discount}`,
                       visibilityTime: 1000,
                       autoHide: true,
                       onPress: () => {
