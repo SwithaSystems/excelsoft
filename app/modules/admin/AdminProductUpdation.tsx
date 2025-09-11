@@ -43,7 +43,7 @@ import {
   isValidCategory,
 } from "../../../utilities/validations";
 import CurrencySymbol from "@/constants/CurrencySymbol";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
 const AdminProductUpdation = () => {
@@ -546,7 +546,7 @@ const AdminProductUpdation = () => {
           {
             text: "OK",
             onPress: () =>
-              redirectToPage(containers.AdminProductDashboardScreen),
+              clearNavigationStack(containers.AdminProductDashboardScreen),
           },
         ]
       );
