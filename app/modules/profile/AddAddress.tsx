@@ -396,7 +396,7 @@ const addAddressScreen = () => {
             newAddressAdded: true,
           });
         } else {
-          redirectToPage(containers.savedAddressScreen);
+          clearNavigationStack(containers.savedAddressScreen);
         }
       } else {
         showErrorAlert({
