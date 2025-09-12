@@ -39,16 +39,25 @@ function OrderSummary(props) {
     0
   );
 
-  const totalDiscount = cartItems.reduce(
-    (total, item) =>
-      total +
-      (item?.discount + ((item?.discount * item.vatRate) / 100 || 0)) *
-        item.quantity,
-    0
-  );
+  const totalDiscount = cartItems.reduce((total, item) => {
+    const baseDiscount = item?.discount || 0;
+
+    const discountWithVAT = item.isVatApplicable
+      ? baseDiscount + (baseDiscount * (item.vatRate || 0)) / 100
+      : baseDiscount;
+
+    return total + discountWithVAT * item.quantity;
+  }, 0);
 
   const deliveryCharge = props?.shipping || 0;
   const totalIncVAT = subtotalExVAT + totalVAT + deliveryCharge;
+  React.useEffect(() => {
+    for (let item of cartItems) {
+      calculateItemSubtotal(item);
+      calculateItemTotal(item);
+      calculateItemVAT(item);
+    }
+  }, [cartItems]);
 
   return (
     <View style={[styles.orderSummary, props?.containerStyle]}>

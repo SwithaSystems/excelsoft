@@ -76,6 +76,14 @@ export const ProductsAPI = {
     const response = await jsonAxios.get(`/products/${id}`);
     return response.data;
   },
+  getProductBy_mongoID: async (id: string): Promise<Product> => {
+    const response = await jsonAxios.get(`/products/byId/${id}`);
+    return response.data;
+  },
+  getProductBy_multipleID: async (ids: string[]): Promise<Product[]> => {
+    const response = await jsonAxios.post(`/products/byIds`, { ids: ids });
+    return response.data;
+  },
 
   searchProducts: async (query: string): Promise<Product[]> => {
     const response = await jsonAxios.get(`/products/search?q=${query}`);
