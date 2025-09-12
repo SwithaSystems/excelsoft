@@ -218,7 +218,8 @@ const CartScreen = () => {
           const product = await ProductsAPI.getProductBy_mongoID(item._id);
 
           if (
-            !product || // product not found (null/undefined from API)
+            !product ||
+            product?.stock === 0 ||
             product?.name.trim().toLowerCase() !==
               item.name.trim().toLowerCase()
           ) {
