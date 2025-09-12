@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import DisplayPrice from "../../../components/DisplayPrice";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -11,13 +11,18 @@ import {
   updateSavedForLaterItemQuantity,
   removeFromSavedForLaterItems,
 } from "../../../../store/slices/savedForLaterSlice";
-import { removeFromCart } from "../../../../store/slices/cartSlice";
-import { updateQuantity } from "../../../../store/slices/cartSlice";
+import {
+  removeFromCart,
+  updateQuantity,
+  setCartItems,
+} from "../../../../store/slices/cartSlice";
 import { showErrorAlert } from "../../../../utilities/showErrorAlert";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
 } from "../../../../constants/customErrorMessages";
+import { ProductsAPI } from "@/services/productService";
+import { CartItemInterface } from "../../../../store/slices/cartSlice";
 
 function CartItem(props) {
   const item = props.cartItem;
@@ -28,6 +33,51 @@ function CartItem(props) {
     (state) => state.savedForLaterItems.items
   );
   console.log("props", props);
+
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+    const ids = cartItems.map((item) => item._id);
+    fetchFreshProducts(ids);
+  }, []);
+
+  const fetchFreshProducts = async (ids) => {
+    try {
+      const res = await ProductsAPI.getProductBy_multipleID(ids);
+      const products = res;
+      console.log("freshProducts", products);
+
+      const freshProducts = products.map((p) => ({
+        _id: p._id,
+        id: p.id,
+        name: p.name,
+        image: p.image,
+        netPrice: p.netPrice,
+        discount: p.discount,
+        vatRate: p.vatRate,
+        isVatApplicable: p.isVatApplicable,
+        vatAmount: p.vatAmount,
+        quantity: 1, // default if it's a new product
+      }));
+      const cartMap = new Map(cartItems.map((item) => [item._id, item]));
+
+      for (const fresh of freshProducts) {
+        const existing = cartMap.get(fresh._id);
+        if (existing) {
+          cartMap.set(fresh._id, {
+            ...existing,
+            ...fresh,
+            quantity: existing.quantity,
+          });
+        } else {
+          cartMap.set(fresh._id, fresh);
+        }
+      }
+
+      dispatch(setCartItems(Array.from(cartMap.values())));
+    } catch (err) {
+      console.error("Error fetching fresh products", err);
+    }
+  };
 
   const getImageSource = () => {
     // Check if item has image as a string (direct URL)

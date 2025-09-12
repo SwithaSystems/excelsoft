@@ -1,7 +1,7 @@
 import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, Dimensions, TextInput } from "react-native";
 import {
   FlatList,
@@ -19,6 +19,7 @@ import {
   addToCart,
   CartItemInterface,
   removeFromCart,
+  setCartItems,
 } from "../../../store/slices/cartSlice";
 import { removeFromSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import { addToSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
@@ -55,6 +56,93 @@ const CartScreen = () => {
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
 
   console.log("cartItems in cart page", cartItems);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  // const intervalRef = useRef(null);
+  const intervalRef = useRef<null | number>(null);
+  const fetchFreshProducts = async (ids: any) => {
+    try {
+      const res = await ProductsAPI.getProductBy_multipleID(ids);
+      const products = res;
+      console.log("freshProducts", products);
+
+      const freshProducts = products.map((p: any) => ({
+        _id: p._id,
+        id: p.id,
+        name: p.name,
+        image: p.image,
+        netPrice: p.netPrice,
+        discount: p.discount,
+        vatRate: p.vatRate,
+        isVatApplicable: p.isVatApplicable,
+        vatAmount: p.vatAmount,
+        quantity: 1, // default if it's a new product
+      }));
+
+      const cartMap = new Map(cartItems.map((item) => [item._id, item]));
+
+      for (const fresh of freshProducts) {
+        const existing = cartMap.get(fresh._id);
+        if (existing) {
+          cartMap.set(fresh._id, {
+            ...existing,
+            ...fresh,
+            quantity: existing.quantity,
+          });
+        } else {
+          cartMap.set(fresh._id, fresh);
+        }
+      }
+
+      dispatch(setCartItems(Array.from(cartMap.values())));
+    } catch (err) {
+      console.error("Error fetching fresh products", err);
+    }
+  };
+
+  // Refresh cart data
+  const refreshCartData = async () => {
+    if (cartItems.length === 0) return;
+
+    setIsRefreshing(true);
+    const ids = cartItems.map((item) => item._id);
+    await fetchFreshProducts(ids);
+    setIsRefreshing(false);
+  };
+
+  // Initial load
+  useEffect(() => {
+    refreshCartData();
+  }, []); // Only on mount
+
+  // Auto-refresh every 30 seconds when page is active
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      // Set up interval for auto-refresh
+      intervalRef.current = setInterval(() => {
+        console.log("Auto-refreshing cart data...");
+        const ids = cartItems.map((item) => item._id);
+        fetchFreshProducts(ids);
+      }, 30000); // Refresh every 30 seconds
+
+      // Cleanup interval
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    }
+  }, [cartItems.length]); // Re-setup interval when cart items change
+
+  // Focus listener (if using React Navigation)
+  const handleFocus = () => {
+    refreshCartData();
+  };
+
+  // Add focus listener if using React Navigation
+  // useEffect(() => {
+  //   const unsubscribe = navigation?.addListener("focus", handleFocus);
+  //   return unsubscribe;
+  // }, [navigation]);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
   );
@@ -127,7 +215,7 @@ const CartScreen = () => {
     try {
       for (let item of cartItems) {
         try {
-          const product = await ProductsAPI.getProductBYID(Number(item.id));
+          const product = await ProductsAPI.getProductBy_mongoID(item._id);
 
           if (
             !product || // product not found (null/undefined from API)
@@ -171,19 +259,20 @@ const CartScreen = () => {
 
       for (let item of cartItems) {
         try {
-          const product = await ProductsAPI.getProductBYID(Number(item.id));
-          newStock[item.id] = product?.stock || 0;
+          const product = await ProductsAPI.getProductBy_mongoID(item._id);
+          console.log("product for stcock", product?.stock);
+          newStock[item._id] = product?.stock || 0;
         } catch (error) {
-          newStock[item.id] = 0;
+          newStock[item._id] = 0;
         }
       }
 
       for (let item of savedForLaterItems) {
         try {
-          const product = await ProductsAPI.getProductBYID(Number(item.id));
-          newStock[item.id] = product?.stock || 0;
+          const product = await ProductsAPI.getProductBy_mongoID(item._id);
+          newStock[item._id] = product?.stock || 0;
         } catch (error) {
-          newStock[item.id] = 0;
+          newStock[item._id] = 0;
         }
       }
       setStockAvailable(newStock);
@@ -228,7 +317,7 @@ const CartScreen = () => {
                     handleDelete={handleDelete}
                     key={eachCartItem.id}
                     cartItem={eachCartItem}
-                    stockAvailable={stockAvailable[eachCartItem.id] || 0}
+                    stockAvailable={stockAvailable[eachCartItem._id] || 0}
                   />
                 ))}
                 <OrderSummary cartItems={cartItems} />

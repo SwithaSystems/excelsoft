@@ -364,6 +364,7 @@ const ProductDetailScreen = () => {
                     }
                     dispatch(
                       addToCart({
+                        _id: product && product._id ? product._id : "",
                         id: product.id,
                         name: product.name,
                         discount: product.discount,
@@ -415,20 +416,21 @@ const ProductDetailScreen = () => {
                   review={review}
                 />
               ))}
-
-            <TouchableOpacity
-              style={styles.seeMoreButton}
-              onPress={() =>
-                redirectToPage(containers.reviewsScreen, {
-                  productId: productId,
-                  totalReviews: JSON.stringify(product.reviews),
-                  productRating:
-                    JSON.stringify(product.rating) || product.rating,
-                })
-              }
-            >
-              <Text style={styles.seeMoreText}>See More Reviews</Text>
-            </TouchableOpacity>
+            {product.reviews?.length > 0 && (
+              <TouchableOpacity
+                style={styles.seeMoreButton}
+                onPress={() =>
+                  redirectToPage(containers.reviewsScreen, {
+                    productId: productId,
+                    totalReviews: JSON.stringify(product.reviews),
+                    productRating:
+                      JSON.stringify(product.rating) || product.rating,
+                  })
+                }
+              >
+                <Text style={styles.seeMoreText}>See More Reviews</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </View>
