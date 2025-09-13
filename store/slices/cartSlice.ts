@@ -38,6 +38,15 @@ const cartSlice = createSlice({
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
+    updateCartItemStock: (
+      state,
+      action: PayloadAction<{ id: string; availableStock: number }>
+    ) => {
+      const item = state.items.find((i) => i.id === action.payload.id);
+      if (item && item.quantity > action.payload.availableStock) {
+        item.quantity = action.payload.availableStock;
+      }
+    },
 
     updateQuantity: (
       state,
@@ -71,6 +80,8 @@ export const {
   addToCart,
   removeFromCart,
   updateQuantity,
+  refreshCartItem,
+  updateCartItemStock, // Export the new action
   clearCart,
   setCartItems,
 } = cartSlice.actions;

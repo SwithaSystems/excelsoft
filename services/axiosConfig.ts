@@ -199,7 +199,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       console.log("Response:", error.response);
 
       // Handle 401 Unauthorized errors
-      if (error.response?.status === 401 && originalRequest) {
+      if (error.response?.status === 401 && error.config) {
         // Check if this API should be excluded from token refresh
         const isExcluded = EXCLUDED_APIS.some((url) =>
           originalRequest.url?.includes(url)

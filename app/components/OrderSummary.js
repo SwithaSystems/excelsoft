@@ -51,13 +51,6 @@ function OrderSummary(props) {
 
   const deliveryCharge = props?.shipping || 0;
   const totalIncVAT = subtotalExVAT + totalVAT + deliveryCharge;
-  React.useEffect(() => {
-    for (let item of cartItems) {
-      calculateItemSubtotal(item);
-      calculateItemTotal(item);
-      calculateItemVAT(item);
-    }
-  }, [cartItems]);
 
   return (
     <View style={[styles.orderSummary, props?.containerStyle]}>
@@ -162,7 +155,7 @@ function OrderSummary(props) {
             <Text style={styles.quantity}></Text>
             <Text style={styles.price}></Text>
             <Text style={[styles.summaryValue, styles.discountText]}>
-              -{CurrencySymbol}
+              {CurrencySymbol}
               {totalDiscount.toFixed(2)}
             </Text>
           </View>
