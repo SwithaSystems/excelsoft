@@ -18,8 +18,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   addToCart,
   CartItemInterface,
+  refreshCartItem,
   removeFromCart,
-  setCartItems,
 } from "../../../store/slices/cartSlice";
 import { removeFromSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import { addToSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
@@ -48,129 +48,206 @@ import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
 } from "../../../constants/customErrorMessages";
-import { ProductsAPI } from "@/services/productService";
+import { Product, ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
-
-  console.log("cartItems in cart page", cartItems);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  // const intervalRef = useRef(null);
-  const intervalRef = useRef<null | number>(null);
-  const fetchFreshProducts = async (ids: any) => {
-    try {
-      const res = await ProductsAPI.getProductBy_multipleID(ids);
-      const products = res;
-      console.log("freshProducts", products);
-
-      const freshProducts = products.map((p: any) => ({
-        _id: p._id,
-        id: p.id,
-        name: p.name,
-        image: p.image,
-        netPrice: p.netPrice,
-        discount: p.discount,
-        vatRate: p.vatRate,
-        isVatApplicable: p.isVatApplicable,
-        vatAmount: p.vatAmount,
-        quantity: 1, // default if it's a new product
-      }));
-
-      const cartMap = new Map(cartItems.map((item) => [item._id, item]));
-
-      for (const fresh of freshProducts) {
-        const existing = cartMap.get(fresh._id);
-        if (existing) {
-          cartMap.set(fresh._id, {
-            ...existing,
-            ...fresh,
-            quantity: existing.quantity,
-          });
-        } else {
-          cartMap.set(fresh._id, fresh);
-        }
-      }
-
-      dispatch(setCartItems(Array.from(cartMap.values())));
-    } catch (err) {
-      console.error("Error fetching fresh products", err);
-    }
-  };
-
-  // Refresh cart data
-  const refreshCartData = async () => {
-    if (cartItems.length === 0) return;
-
-    setIsRefreshing(true);
-    const ids = cartItems.map((item) => item._id);
-    await fetchFreshProducts(ids);
-    setIsRefreshing(false);
-  };
-
-  // Initial load
-  useEffect(() => {
-    refreshCartData();
-  }, []); // Only on mount
-
-  // Auto-refresh every 30 seconds when page is active
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      // Set up interval for auto-refresh
-      intervalRef.current = setInterval(() => {
-        console.log("Auto-refreshing cart data...");
-        const ids = cartItems.map((item) => item._id);
-        fetchFreshProducts(ids);
-      }, 30000); // Refresh every 30 seconds
-
-      // Cleanup interval
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
-    }
-  }, [cartItems.length]); // Re-setup interval when cart items change
-
-  // Focus listener (if using React Navigation)
-  const handleFocus = () => {
-    refreshCartData();
-  };
-
-  // Add focus listener if using React Navigation
-  // useEffect(() => {
-  //   const unsubscribe = navigation?.addListener("focus", handleFocus);
-  //   return unsubscribe;
-  // }, [navigation]);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
   );
   const user = useSelector((state: RootState) => state.user.user);
+
   const [stockAvailable, setStockAvailable] = useState<Record<string, number>>(
     {}
   );
-
-  console.log("user in cart screen", user);
-
-  // const recommendedProducts = products
-  //   .filter((p) =>
-  //     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-  //   )
-  //   .map((product) => ({
-  //     id: product.id,
-  //     name: product.name,
-  //     rating: product.rating,
-  //     reviews: product.noOfreviews,
-  //     imageUrl: product.image,
-  //     discount: product.discount,
-  //     netPrice: product.netPrice,
-  //   }));
-  // console.log("Recommended Products", recommendedProducts);
-
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
 
+  // Bulk product validation using single API call
+  const validateAndRefreshProducts = async (items: any[]) => {
+    if (items.length === 0) return;
+
+    try {
+      // Extract all unique _ids from items
+      const itemIds = items.map((item) => item._id);
+
+      // Single API call to get all products
+      const products = await ProductsAPI.getProductBy_multipleID(itemIds);
+
+      // Create a map of products by _id for quick lookup
+      const productMap = new Map(
+        products.map((product) => [product._id, product])
+      );
+
+      // Process each cart item
+      for (const item of items) {
+        const product = productMap.get(item._id);
+
+        if (!product || product.stock === 0) {
+          // Product not found or out of stock - remove from cart
+          showErrorAlert({
+            title: "Product not available",
+            message: `The item "${item.name}" is no longer available and has been removed from your cart.`,
+          });
+          dispatch(removeFromCart(item.id));
+        } else {
+          // Product exists - refresh cart item with latest data
+          dispatch(refreshCartItem({ _id: item._id, data: product }));
+        }
+      }
+    } catch (error: any) {
+      console.error("Error validating products:", error);
+      showErrorAlert({
+        title: "Error",
+        message: "Something went wrong while checking product information.",
+      });
+    }
+  };
+
+  // Bulk stock validation for checkout
+  const validateCartStock = async (
+    cartItems: any[],
+    showAlerts: boolean = true
+  ): Promise<{ valid: boolean; stockMap: Record<string, number> }> => {
+    const stockMap: Record<string, number> = {};
+
+    if (cartItems.length === 0) {
+      return { valid: true, stockMap };
+    }
+
+    try {
+      // Extract all unique _ids
+      const itemIds = cartItems.map((item) => item._id);
+
+      // Single API call to get all products
+      const products = await ProductsAPI.getProductBy_multipleID(itemIds);
+
+      // Create product map for quick lookup
+      const productMap = new Map(
+        products.map((product) => [product._id, product])
+      );
+
+      // Validate each cart item
+      for (const item of cartItems) {
+        const product = productMap.get(item._id);
+        const stock = product?.stock ?? 0;
+        stockMap[item._id] = stock;
+
+        if (!product) {
+          if (showAlerts) {
+            showErrorAlert({
+              title: "Product not found",
+              message: `"${item.name}" is no longer available.`,
+            });
+          }
+          return { valid: false, stockMap };
+        }
+
+        if (showAlerts && stock === 0) {
+          showErrorAlert({
+            title: "Out of Stock",
+            message: `"${item.name}" is currently out of stock.`,
+          });
+          return { valid: false, stockMap };
+        }
+
+        if (showAlerts && item.quantity > stock) {
+          showErrorAlert({
+            title: "Insufficient Stock",
+            message: `"${item.name}" has only ${stock} in stock. Please adjust the quantity.`,
+          });
+          return { valid: false, stockMap };
+        }
+      }
+
+      return { valid: true, stockMap };
+    } catch (error) {
+      console.error("Error validating cart stock:", error);
+      if (showAlerts) {
+        showErrorAlert({
+          title: "Error",
+          message: "Something went wrong while checking stock availability.",
+        });
+      }
+      return { valid: false, stockMap };
+    }
+  };
+
+  // Bulk stock check for display (cart + saved items)
+  const updateStockAvailability = async () => {
+    const allItems = [...cartItems, ...savedForLaterItems];
+
+    if (allItems.length === 0) {
+      setStockAvailable({});
+      return;
+    }
+
+    try {
+      // Extract all unique _ids
+      const itemIds = [...new Set(allItems.map((item) => item._id))]; // Remove duplicates
+
+      // Single API call
+      const products = await ProductsAPI.getProductBy_multipleID(itemIds);
+
+      // Build stock map
+      const stockMap: Record<string, number> = {};
+      products.forEach((product) => {
+        if (product && product._id) {
+          stockMap[product._id] = product.stock ?? 0;
+        }
+      });
+
+      setStockAvailable(stockMap);
+    } catch (error) {
+      console.error("Error fetching stock availability:", error);
+      // Set all to 0 on error
+      const errorStockMap: Record<string, number> = {};
+      [...cartItems, ...savedForLaterItems].forEach((item) => {
+        errorStockMap[item._id] = 0;
+      });
+      setStockAvailable(errorStockMap);
+    }
+  };
+
+  // Initial product validation when cart items change
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      validateAndRefreshProducts(cartItems);
+    }
+  }, []); // Only run once on mount to avoid infinite loops
+
+  // Update stock availability when cart or saved items change
+  useEffect(() => {
+    updateStockAvailability();
+  }, [cartItems.length, savedForLaterItems.length]);
+
+  const handlePlaceOrder = async () => {
+    if (isPlacingOrder) return; // Prevent multiple clicks
+
+    if (!user) {
+      showErrorAlert({
+        title: "Login Required",
+        message: SESSION_EXPIRED,
+      });
+      redirectToPage(containers.signInScreen);
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    try {
+      const { valid } = await validateCartStock(cartItems, true);
+      if (valid) {
+        redirectToPage(containers.pickUpModeScreen);
+      }
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  // Rest of your component methods remain the same...
   const handleDelete = (item: any) => {
     setItemToDelete(item);
     setIsModalVisible(true);
@@ -198,89 +275,7 @@ const CartScreen = () => {
     setItemToDelete(null);
   };
 
-  useEffect(() => {
-    console.log("Item to delete updated:", itemToDelete);
-  }, [itemToDelete]);
-  const handlePlaceOrder = async () => {
-    console.log("User:", user);
-    if (!user) {
-      showErrorAlert({
-        title: "Login Required",
-        message: SESSION_EXPIRED,
-      });
-      redirectToPage(containers.signInScreen);
-      return;
-    }
-
-    try {
-      for (let item of cartItems) {
-        try {
-          const product = await ProductsAPI.getProductBy_mongoID(item._id);
-
-          if (
-            !product ||
-            product?.stock === 0 ||
-            product?.name.trim().toLowerCase() !==
-              item.name.trim().toLowerCase()
-          ) {
-            showErrorAlert({
-              title: "Product not available",
-              message: `The item "${item.name}" is no longer available and has been removed from your cart.`,
-            });
-            dispatch(removeFromCart(item.id));
-            return;
-          }
-        } catch (err: any) {
-          if (err.response?.status === 404) {
-            // Product deleted from DB
-            showErrorAlert({
-              title: "Product not found",
-              message: `The item "${item.name}" has been removed from your cart.`,
-            });
-            dispatch(removeFromCart(item.id));
-            return;
-          } else {
-            throw err; // rethrow other errors
-          }
-        }
-      }
-
-      redirectToPage(containers.pickUpModeScreen);
-    } catch (error) {
-      showErrorAlert({
-        title: "Error",
-        message: "Something went wrong while checking product information.",
-      });
-    }
-  };
-
-  useEffect(() => {
-    async function getStock() {
-      const newStock: Record<string, number> = {};
-
-      for (let item of cartItems) {
-        try {
-          const product = await ProductsAPI.getProductBy_mongoID(item._id);
-          console.log("product for stcock", product?.stock);
-          newStock[item._id] = product?.stock || 0;
-        } catch (error) {
-          newStock[item._id] = 0;
-        }
-      }
-
-      for (let item of savedForLaterItems) {
-        try {
-          const product = await ProductsAPI.getProductBy_mongoID(item._id);
-          newStock[item._id] = product?.stock || 0;
-        } catch (error) {
-          newStock[item._id] = 0;
-        }
-      }
-      setStockAvailable(newStock);
-    }
-    getStock();
-  }, [cartItems, savedForLaterItems]);
-
+  // Your JSX remains the same, just update the Place Order button:
   return (
     <PageLayout
       hasHeader
@@ -292,6 +287,7 @@ const CartScreen = () => {
         <ScrollView>
           <View style={[globalStyles.pt_0]}>
             {cartItems.length === 0 ? (
+              // Empty cart UI...
               <View style={styles.emptyCartContainer}>
                 <Ionicons
                   name="cart"
@@ -322,37 +318,21 @@ const CartScreen = () => {
                   />
                 ))}
                 <OrderSummary cartItems={cartItems} />
-
                 <View
                   style={{
                     width: "50%",
                     marginHorizontal: "auto",
-                    // marginTop: 4,
                     paddingBottom: 16,
                   }}
                 >
-                  <Button title="Place Order" onPress={handlePlaceOrder} />
+                  <Button
+                    title={isPlacingOrder ? "Processing..." : "Place Order"}
+                    onPress={handlePlaceOrder}
+                    disabled={isPlacingOrder}
+                  />
                 </View>
               </>
             )}
-            {/*<Text>Have a Discount Code?</Text>
-          <View style={globalStyles.discountSection}>
-            <View style={globalStyles.discountTextInput}>
-              <TextInput
-                style={globalStyles.discountText}
-                placeholder="Enter your discount code"
-                textSecondary=colors.primary
-              />
-              <Ionicons name="close" style={globalStyles.discountClearIcon} />
-            </View>
-            <View>
-              <TouchableOpacity>
-                <Text style={globalStyles.redeemButton}>Redeem</Text>
-              </TouchableOpacity>
-            </View>
-          </View>*/}
-
-            {/* <SpecialOffersBanner /> */}
 
             {savedForLaterItems.length > 0 && (
               <SavedLaterItem
@@ -368,16 +348,8 @@ const CartScreen = () => {
                 }}
               />
             )}
-            {/* <RecommendedProductsSlider
-              recommendedProducts={recommendedProducts}
-              sectionTitleStyle={styles.sectionHeading}
-              title="Similar products to your cart"
-              showAddToCart={true}
-              handleAdd={(item: any) => dispatch(addToCart(item))}
-            /> */}
           </View>
 
-          {/* Delete Item Modal */}
           <ConfirmationModal
             onClose={() => {
               setIsModalVisible(false);

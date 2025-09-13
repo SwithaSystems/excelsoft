@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import CartItem from "./Components/CartItem";
 import Footer from "@/app/components/Footer";
 import { useSelector, useDispatch } from "react-redux";
 import {

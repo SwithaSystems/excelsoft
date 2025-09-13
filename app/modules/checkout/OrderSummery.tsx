@@ -759,7 +759,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       handleDelete={handleDelete}
                       key={eachCartItem.id || `cart-item-${index}`}
                       cartItem={eachCartItem}
-                      stockAvailable={stockAvailable[eachCartItem.id] || 0}
+                      stockAvailable={stockAvailable[eachCartItem._id] || 0}
                     />
                   );
                 })}
