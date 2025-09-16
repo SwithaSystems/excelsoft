@@ -932,7 +932,7 @@ const PickupScreen = () => {
               firstName,
               handleFirstNameChange,
               true,
-              { editable: collector !== "myself" },
+              { editable: true },
               firstNameError,
               firstNameRef
             )}
@@ -941,7 +941,7 @@ const PickupScreen = () => {
               lastName,
               handleLastNameChange,
               true,
-              { editable: collector !== "myself" },
+              { editable: true },
               lastNameError,
               lastNameRef
             )}
