@@ -8,13 +8,11 @@ import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { authService } from "../services/auth.service";
-import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
 import Toast from "react-native-toast-message";
 import CustomToastAlert from "../app/components/commonComponents/CustomToastAlert";
 import BiometricAuth from "../app/components/Biometriauth";
 import * as SecureStore from "expo-secure-store";
-import axios from "axios";
 
 // Notifications setup
 function NotificationsHandler() {
@@ -129,53 +127,28 @@ function LayoutContent() {
   );
 }
 
-// Default exported layout
 export default function Layout() {
-  const [stripePublishableKey, setStripePublishableKey] = useState(null);
-  const clientId = "client_abc";
-
-  useEffect(() => {
-    const fetchStripeConfig = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
-        );
-        setStripePublishableKey(res.data.stripePublishableKey);
-      } catch (error) {
-        console.error("Failed to fetch Stripe config", error);
-      }
-    };
-
-    fetchStripeConfig();
-  }, []);
-
-  if (!stripePublishableKey) {
-    return <SplashScreen />;
-  }
-
   return (
-    <StripeProvider publishableKey={stripePublishableKey}>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <AppProvider>
-            <AuthProvider>
-              <NotificationsHandler />
-              <LayoutContent />
-              <Toast
-                config={{
-                  customToast: ({ text1, text2, onPress }) => (
-                    <CustomToastAlert
-                      text1={text1}
-                      text2={text2}
-                      onPress={onPress}
-                    />
-                  ),
-                }}
-              />
-            </AuthProvider>
-          </AppProvider>
-        </PersistGate>
-      </Provider>
-    </StripeProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <AppProvider>
+          <AuthProvider>
+            <NotificationsHandler />
+            <LayoutContent />
+            <Toast
+              config={{
+                customToast: ({ text1, text2, onPress }) => (
+                  <CustomToastAlert
+                    text1={text1}
+                    text2={text2}
+                    onPress={onPress}
+                  />
+                ),
+              }}
+            />
+          </AuthProvider>
+        </AppProvider>
+      </PersistGate>
+    </Provider>
   );
 }
