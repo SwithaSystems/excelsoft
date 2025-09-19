@@ -90,6 +90,13 @@ export const ProductsAPI = {
     return response.data;
   },
 
+  productsBy_Name_Id: async (query: string): Promise<Product[]> => {
+    const response = await jsonAxios.get(
+      `/products/searchByNameID/Name?q=${query}`
+    );
+    return response.data;
+  },
+
   getAllSubCategoriesProducts: async (
     categoryIds: number[]
   ): Promise<Product[]> => {

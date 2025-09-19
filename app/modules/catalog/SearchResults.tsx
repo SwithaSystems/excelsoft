@@ -396,7 +396,7 @@ const SearchResultsScreen = () => {
           ]}
         >
           <ProductCard
-            _id={""}
+            _id={item._id}
             id={item.id}
             name={item.name}
             description={item.description}
