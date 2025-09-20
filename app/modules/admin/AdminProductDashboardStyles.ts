@@ -21,31 +21,72 @@ const styles = StyleSheet.create({
     borderColor: colors.placeholdergrey,
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     backgroundColor: colors.white,
+    marginHorizontal: 16,
+    marginBottom: 16,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
     elevation: 2,
-    minHeight: 48,
+    minHeight: 52,
   },
 
+
+  separator: {
+    height: 1,
+    backgroundColor: colors.secondary,
+    // marginLeft: 8,
+    // marginRight: 8,
+    marginTop: 8,
+    marginBottom: 20, 
+  },
+
+  buttonContainer: {
+    //marginHorizontal: 32,
+    //marginBottom: 16,
+  },
+
+  categoryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal:16,
+  },
+  categoryImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  textContainer: {
+    flex: 1, 
+  },
+  categoryDetails: {
+    color: colors.secondaryText,
+    fontSize: 12,
+    marginTop: 2,
+  },
   // New category dropdown text style
   categoryDropdownText: {
     fontSize: 16,
     color: colors.black,
+    fontWeight: '400',
   },
   categorySelector: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     // height: "100%",
-    paddingHorizontal: 12,
+    //paddingHorizontal: 12,
+    minHeight: 24,
   },
   categoryText: {
     flex: 1,
     fontSize: 16,
+    fontWeight: '400',
+    color: colors.black,
   },
 
   image: {
@@ -63,10 +104,6 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: 500,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
   },
 });
 

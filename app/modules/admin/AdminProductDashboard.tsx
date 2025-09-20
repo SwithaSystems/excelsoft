@@ -563,9 +563,9 @@ const AdminProductDashboard = () => {
             data={[
               { key: "", label: "None (Show All)", value: "" },
               ...allCategories.map((cat: any) => ({
-                key: cat.id,
-                label: cat.name,
-                value: cat.id,
+              key: cat.id,
+              label: cat.name, 
+              value: cat.id,
               })),
             ]}
             initValue="Select Category"
@@ -578,14 +578,24 @@ const AdminProductDashboard = () => {
               );
             }}
             optionTextStyle={{
-              color: colors.primary,
+              color: colors.black,
               fontSize: 16,
-              paddingVertical: 12,
+              fontWeight: '400',
+              paddingVertical: 16,
+              paddingHorizontal: 16,
             }}
             optionContainerStyle={{
               backgroundColor: colors.white,
               borderBottomWidth: 0.5,
               borderBottomColor: colors.slateGrey || colors.placeholdergrey,
+            }}
+            sectionTextStyle={{
+              color: colors.primary,
+              fontSize: 18,
+              fontWeight: '600',
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              backgroundColor: '#F8F9FA',
             }}
             cancelStyle={{
               backgroundColor: colors.white,
@@ -630,11 +640,11 @@ const AdminProductDashboard = () => {
               />
             </View>
           </ModalSelector>
-          {/* {errors.category && (
-            <Text style={globalStyles.errorText}>{errors.category}</Text>
-          )} */}
         </View>
-        <View style={{ marginHorizontal: 16 }}>
+
+        <View style={styles.separator} />
+
+        <View style={styles.buttonContainer}>
           <Button
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
