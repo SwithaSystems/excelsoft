@@ -581,28 +581,30 @@ const AdminProductDashboard = () => {
               );
             }}
             optionTextStyle={{
-              color: colors.black,
+              color: colors.primary,
               fontSize: 16,
               fontWeight: '400',
-              paddingVertical: 16,
-              paddingHorizontal: 16,
+              //paddingVertical: 16,
+              paddingHorizontal: 20,
+              textAlign: 'center',
             }}
             optionContainerStyle={{
               backgroundColor: colors.white,
               borderBottomWidth: 0.5,
               borderBottomColor: colors.slateGrey || colors.placeholdergrey,
             }}
-            sectionTextStyle={{
-              color: colors.primary,
-              fontSize: 18,
-              fontWeight: '600',
-              paddingVertical: 16,
-              paddingHorizontal: 16,
-              backgroundColor: '#F8F9FA',
-            }}
+            // sectionTextStyle={{
+            //   color: colors.primary,
+            //   fontSize: 18,
+            //   fontWeight: '600',
+            //   paddingVertical: 16,
+            //   paddingHorizontal: 16,
+            //   backgroundColor: '#F8F9FA',
+            // }}
             cancelStyle={{
               backgroundColor: colors.white,
-              borderTopWidth: 1,
+              // borderTopWidth: 1,
+              borderRadius: 0,
               borderTopColor: colors.slateGrey || colors.placeholdergrey,
               paddingVertical: 16,
             }}
@@ -612,15 +614,25 @@ const AdminProductDashboard = () => {
               fontWeight: "600",
               textAlign: 'center',
             }}
+            cancelText="cancel"
             accessible={true}
             accessibilityLabel="Select Category Filter"
             animationType="slide"
             backdropPressToClose={true}
             overlayStyle={{
               backgroundColor: "rgba(0,0,0,0.5)",
+              flex: 1,
+              justifyContent: 'flex-end',
             }}
             selectStyle={styles.categoryContainer}
             selectTextStyle={styles.categoryText}
+
+              // modalStyle={{
+              //   backgroundColor: colors.white,
+              //   borderTopLeftRadius: 20,
+              //   borderTopRightRadius: 20,
+              //   maxHeight: '80%',
+              // }}
           >
             <View style={styles.categorySelector}>
               <Text
