@@ -559,6 +559,9 @@ const AdminProductDashboard = () => {
           />
         </View>
         <View>
+       <View style={styles.inputContainer}>
+          {/* <Text style={styles.label}>Category *</Text> */}
+          <View style={styles.categoryContainer}>
           <ModalSelector
             data={[
               { key: "", label: "None (Show All)", value: "" },
@@ -601,11 +604,13 @@ const AdminProductDashboard = () => {
               backgroundColor: colors.white,
               borderTopWidth: 1,
               borderTopColor: colors.slateGrey || colors.placeholdergrey,
+              paddingVertical: 16,
             }}
             cancelTextStyle={{
               color: colors.primary,
               fontSize: 16,
               fontWeight: "600",
+              textAlign: 'center',
             }}
             accessible={true}
             accessibilityLabel="Select Category Filter"
@@ -614,8 +619,8 @@ const AdminProductDashboard = () => {
             overlayStyle={{
               backgroundColor: "rgba(0,0,0,0.5)",
             }}
-            selectStyle={styles.categoryDropdown}
-            selectTextStyle={styles.categoryDropdownText}
+            selectStyle={styles.categoryContainer}
+            selectTextStyle={styles.categoryText}
           >
             <View style={styles.categorySelector}>
               <Text
@@ -641,8 +646,10 @@ const AdminProductDashboard = () => {
             </View>
           </ModalSelector>
         </View>
+        </View>
+        </View>
 
-        <View style={styles.separator} />
+        {/* <View style={styles.separator} /> */}
 
         <View style={styles.buttonContainer}>
           <Button

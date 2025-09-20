@@ -47,7 +47,46 @@ const styles = StyleSheet.create({
     //marginHorizontal: 32,
     //marginBottom: 16,
   },
+  inputContainer: {
+    marginBottom: 20,
+  },
 
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 14,
+    marginBottom: 4,
+  },
+
+  categoryContainer: {
+    backgroundColor: colors.white,
+    borderColor: colors.placeholdergrey,
+    borderWidth: 1,
+    borderRadius: 8,
+    height: 52,
+    width: "100%",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  categorySelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: "100%",
+    paddingHorizontal: 16,
+    minHeight: 24,
+  },
+
+  categoryText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    color: colors.black,
+  },
   categoryItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -74,20 +113,20 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontWeight: '400',
   },
-  categorySelector: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    // height: "100%",
-    //paddingHorizontal: 12,
-    minHeight: 24,
-  },
-  categoryText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.black,
-  },
+//categorySelector: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "space-between",
+  //   // height: "100%",
+  //   //paddingHorizontal: 12,
+  //   minHeight: 24,
+  // },
+  // categoryText: {
+  //   flex: 1,
+  //   fontSize: 16,
+  //   fontWeight: '400',
+  //   color: colors.black,
+  // },
 
   image: {
     width: 100,
