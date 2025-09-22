@@ -164,7 +164,8 @@ function OrderSummary(props) {
 
       {/* VAT Notice */}
       <Text style={styles.vatNotice}>
-        Prices include VAT where applicable • VAT Reg: GB123456789
+        Prices include VAT where applicable • 
+        {/* VAT Reg: GB123456789 */}
       </Text>
     </View>
   );

@@ -337,23 +337,26 @@ const SearchScreen = () => {
       hasFooter
       headerComponent={<Header headerText={"Search"} />}
       footerComponent={<Footer activeTab="search" />}
-    >
-      <KeyBoardWrapper>
-        <View style={styles.container}>
-          <View style={styles.searchBarContainer}>
-            <SearchBar
-              placeholder="Search..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              onPress={handleSearch}
-            />
-          </View>
+      children={
+        <KeyBoardWrapper
+          children={
+            <View style={styles.container}>
+              <View style={styles.searchBarContainer}>
+                <SearchBar
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  onPress={handleSearch}
+                />
+              </View>
 
-          {renderMainContent()}
-        </View>
-      </KeyBoardWrapper>
-    </PageLayout>
+              {renderMainContent()}
+            </View>
+          }
+        />
+      }
+    ></PageLayout>
     /*  <Footer activeTab = "search"/>
      </SafeAreaView> */
   );

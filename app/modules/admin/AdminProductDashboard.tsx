@@ -18,29 +18,34 @@ import {
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
 import colors from "../../../constants/colors";
-import { ProductsAPI } from "@/services/productService";
+import { Product, ProductsAPI } from "@/services/productService";
 import AdminFooter from "@/app/components/AdminFooter";
 import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { categoryService } from "@/services/categoryService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
-import { debounce } from "lodash";
+import useDebounce from "@/utilities/customHooks/useDebounce";
+import axios from "axios";
+import SearchBar from "@/app/components/searchBar";
+import { showErrorAlert } from "@/utilities/showErrorAlert";
+import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
+import ModalSelector from "react-native-modal-selector";
 
 // Define Product interface
-interface Product {
-  id?: number | string;
-  _id?: string;
-  name: string;
-  image: string[];
-  categoryId: number[];
-  netPrice: number;
-  discount: number;
-  stock: number;
-  isVatApplicable: boolean;
-  vatRate: number;
-  vatAmount: number;
-}
+// interface Product {
+//   id?: number | string;
+//   _id?: string;
+//   name: string;
+//   image: string[];
+//   categoryId: number[];
+//   netPrice: number;
+//   discount: number;
+//   stock: number;
+//   isVatApplicable: boolean;
+//   vatRate: number;
+//   vatAmount: number;
+// }
 
 // Define API response interface
 interface ApiResponse {
@@ -55,190 +60,250 @@ interface Category {
 }
 
 const AdminProductDashboard = () => {
-  const [productsList, setAllProductsList] = useState<Product[]>([]);
+  const [productsList, setAllProductsList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [page, setPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const isLoadingMoreRef = useRef(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const debouncedQuery = useDebounce(searchQuery, 300);
+  const [allCategories, setAllCategories] = useState<any>([]);
+  const [selectCategory, setSelectCategory] = useState("");
+
+  // Use refs to prevent multiple simultaneous requests
+  const loadingMoreRef = useRef(false);
+  const lastPageLoadedRef = useRef(0);
 
   const ITEMS_PER_PAGE = 50;
-  const limit = 50;
-  const fetchData = async (pageNum: number, isLoadMore: boolean = false) => {
+
+  async function getallCategories() {
     try {
-      console.log(`Fetching page ${pageNum}, isLoadMore: ${isLoadMore}`);
-      const response = await ProductsAPI.getAllProducts(pageNum, limit);
+      const categories = await categoryService.getAllCategories();
+      if (categories) {
+        setAllCategories(categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  }
+  useEffect(() => {
+    getallCategories();
+  }, []);
+  const category_Products = productsList.filter((product: any) =>
+    selectCategory && selectCategory !== ""
+      ? product.categoryId?.map(String).includes(String(selectCategory))
+      : true
+  );
+  const productsListToShow =
+    selectCategory && selectCategory !== "" ? category_Products : productsList;
+
+  const fetchData = async (
+    page: number
+  ): Promise<{
+    data: Product[];
+    total: number;
+    hasMore: boolean;
+  }> => {
+    try {
+      console.log(`Fetching page ${page}`);
+      const response = await ProductsAPI.getAllProducts(page, ITEMS_PER_PAGE);
 
       if (response && response.data) {
-        const currentPageItemCount = response.data.length;
-        const totalRecords = response.total;
+        const totalFetched = (page - 1) * ITEMS_PER_PAGE + response.data.length;
+        const hasMoreData = totalFetched < response.total;
 
-        const totalFetchedSoFar = (pageNum - 1) * limit + currentPageItemCount;
-        const hasMoreData = totalFetchedSoFar < totalRecords;
-
-        console.log(`Page ${pageNum} fetched:`, {
-          itemsReceived: currentPageItemCount,
-          totalRecords,
-          totalFetchedSoFar,
+        console.log(`Page ${page} response:`, {
+          itemsReceived: response.data.length,
+          totalRecords: response.total,
+          totalFetched,
           hasMore: hasMoreData,
         });
 
         return {
           data: response.data,
-          totalRecords: totalRecords,
+          total: response.total,
           hasMore: hasMoreData,
-          currentPage: pageNum,
         };
       }
 
       return {
         data: [],
-        totalRecords: 0,
+        total: 0,
         hasMore: false,
-        currentPage: pageNum,
       };
-    } catch (err) {
-      console.error(`Error fetching page ${pageNum}:`, err);
-      throw err;
+    } catch (error) {
+      console.error(`Error fetching page ${page}:`, error);
+      throw error;
     }
   };
 
-  // Initial data load
   useEffect(() => {
-    loadInitialData();
-  }, []);
+    const performSearch = async () => {
+      if (!debouncedQuery || debouncedQuery.length < 2) {
+        setSuggestions([]);
+        if (debouncedQuery.length === 0) {
+          loadInitialData(); // Reload all products when search is cleared
+        }
+        return;
+      }
 
+      // For suggestions (keep existing logic)
+      const API_URL = process.env.EXPO_PUBLIC_API_URL;
+      try {
+        const response = await axios.get(
+          `${API_URL}/products/suggestions/search?q=${debouncedQuery}`
+        );
+        const results = response.data;
+        const uniqueResults = [...new Set(results)].slice(0, 6);
+        setSuggestions(uniqueResults as string[]);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        setSuggestions([]);
+      }
+
+      // Optionally perform real-time search (uncomment if you want search-as-you-type)
+      // await searchProductsByName(debouncedQuery);
+    };
+
+    performSearch();
+  }, [debouncedQuery]);
+
+  // Load initial data
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetchData(1, false); // Initial load, not loadMore
-      console.log("Initial data loaded:", {
-        itemCount: response.data.length,
-        totalRecords: response.totalRecords,
-      });
+      const response = await fetchData(1);
 
       setAllProductsList(response.data);
-      setTotal(response.totalRecords);
+      setTotalProducts(response.total);
       setHasMore(response.hasMore);
-      setPage(2); // Next page to load
-    } catch (err) {
-      console.error("Failed to load initial data:", err);
-      Alert.alert("Error", "Failed to load data");
+      setCurrentPage(1);
+      lastPageLoadedRef.current = 1;
+
+      console.log("Initial data loaded:", {
+        itemCount: response.data.length,
+        total: response.total,
+      });
+    } catch (error) {
+      console.error("Failed to load initial data:", error);
+      Alert.alert("Error", "Failed to load products");
+      setAllProductsList([]);
+      setTotalProducts(0);
+      setHasMore(false);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Load more data for pagination
   const loadMoreData = async () => {
-    if (loadingMore || !hasMore || isLoadingMoreRef.current) {
+    // Prevent multiple simultaneous requests
+    if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
       console.log("Load more blocked:", {
-        loadingMore,
+        loadingMoreRef: loadingMoreRef.current,
+        isLoadingMore,
         hasMore,
-        isLoadingMoreRef: isLoadingMoreRef.current,
+        isLoading,
       });
       return;
     }
 
-    isLoadingMoreRef.current = true;
+    const nextPage = lastPageLoadedRef.current + 1;
+    console.log(`Loading more data - page ${nextPage}`);
+
+    loadingMoreRef.current = true;
+    setIsLoadingMore(true);
 
     try {
-      setLoadingMore(true);
-      console.log(`Loading more data - page ${page}...`);
+      const response = await fetchData(nextPage);
 
-      const response = await fetchData(page, true);
-      console.log(`Page ${page} response:`, {
-        itemsReceived: response.data.length,
-        hasMore: response.hasMore,
-        totalRecords: response.totalRecords,
-      });
+      if (response.data.length > 0) {
+        // Filter out duplicates based on unique identifier
+        setAllProductsList((prevProducts: any) => {
+          const existingIds = new Set(
+            prevProducts.map((item: any) => item._id || item.id)
+          );
 
-      // Filter out duplicates based on unique identifier
-      setAllProductsList((prevData) => {
-        const existingIds = new Set(
-          prevData.map((item) => item._id || item.id)
-        );
-        const newItems = response.data.filter(
-          (item) => !existingIds.has(item._id || item.id)
-        );
+          const newItems = response.data.filter(
+            (item) => !existingIds.has(item._id || item.id)
+          );
 
-        console.log(
-          `Adding ${newItems.length} new items (${
-            response.data.length - newItems.length
-          } duplicates filtered)`
-        );
-        return [...prevData, ...newItems];
-      });
+          console.log(
+            `Adding ${newItems.length} new items (${
+              response.data.length - newItems.length
+            } duplicates filtered)`
+          );
+          return [...prevProducts, ...newItems];
+        });
 
+        lastPageLoadedRef.current = nextPage;
+        setCurrentPage(nextPage);
+      }
+
+      setTotalProducts(response.total);
       setHasMore(response.hasMore);
-      setPage((prevPage) => prevPage + 1);
-    } catch (err) {
-      console.error("Failed to load more data:", err);
-      Alert.alert("Error", "Failed to load more data");
+    } catch (error) {
+      console.error("Failed to load more data:", error);
+      Alert.alert("Error", "Failed to load more products");
     } finally {
-      setLoadingMore(false);
-      isLoadingMoreRef.current = false;
+      setIsLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   };
 
-  const debouncedLoadMore = useCallback(
-    debounce(() => {
-      loadMoreData();
-    }, 300),
-    [loadMoreData]
-  );
-
-  useEffect(() => {
-    console.log("Products list updated:", {
-      totalItems: productsList.length,
-      uniqueIds: new Set(productsList.map((p) => p._id || p.id)).size,
-      hasDuplicates:
-        productsList.length !==
-        new Set(productsList.map((p) => p._id || p.id)).size,
-    });
-  }, [productsList]);
-
+  // Handle refresh
   const onRefresh = async () => {
     setIsRefreshing(true);
-    setPage(1);
+
+    // Reset pagination state
+    setCurrentPage(1);
     setHasMore(true);
-    isLoadingMoreRef.current = false; // Reset the ref
+    loadingMoreRef.current = false;
+    lastPageLoadedRef.current = 0;
 
     try {
-      const response = await fetchData(1, false); // Reset, not loadMore
-      console.log("Refresh data loaded:", {
-        itemCount: response.data.length,
-        totalRecords: response.totalRecords,
-      });
+      const response = await fetchData(1);
 
       setAllProductsList(response.data);
-      setTotal(response.totalRecords);
+      setTotalProducts(response.total);
       setHasMore(response.hasMore);
-      setPage(2);
-    } catch (err) {
-      console.error("Failed to refresh data:", err);
-      Alert.alert("Error", "Failed to refresh data");
+      setCurrentPage(1);
+      lastPageLoadedRef.current = 1;
+
+      console.log("Data refreshed:", {
+        itemCount: response.data.length,
+        total: response.total,
+      });
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+      Alert.alert("Error", "Failed to refresh products");
     } finally {
       setIsRefreshing(false);
     }
   };
-  const getUniqueKey = (item: Product, index: number) => {
-    const id = item._id || item.id;
-    return `product-${id}-${index}-${Date.now()}`;
-  };
+
+  // Fetch categories
   const fetchAllCategories = useCallback(async () => {
     try {
       const data: Category[] = await categoryService.getAllCategories();
       setCategories(data);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
   }, []);
 
+  // Initial load
+  useEffect(() => {
+    loadInitialData();
+    fetchAllCategories();
+  }, [fetchAllCategories]);
+
+  // Handle product deletion
   const handleDeleteProduct = useCallback(
     (item: Product) => {
       Alert.alert(
@@ -254,8 +319,7 @@ const AdminProductDashboard = () => {
                 setIsLoading(true);
                 const result = await ProductsAPI.deleteProduct(item?._id);
                 if (result) {
-                  // Simply refresh the entire list instead of manual pagination
-                  await onRefresh();
+                  await onRefresh(); // Refresh the entire list
                   Alert.alert("Success", "Product deleted successfully");
                 }
               } catch (error: any) {
@@ -275,6 +339,13 @@ const AdminProductDashboard = () => {
     [onRefresh]
   );
 
+  // Generate unique key for FlatList items
+  const getUniqueKey = useCallback((item: Product, index: number) => {
+    const id = item._id || item.id;
+    return `product-${id}-${index}`;
+  }, []);
+
+  // Product card component
   const ProductCard = useCallback(
     ({ item }: { item: Product }) => {
       const getStockBadge = (stock: number) => {
@@ -290,11 +361,10 @@ const AdminProductDashboard = () => {
         }
       };
 
-      const badge = getStockBadge(item.stock);
+      const badge = item.stock !== undefined ? getStockBadge(item.stock) : null;
 
       return (
         <View style={[styles.card, { minHeight: 120 }]}>
-          {" "}
           <View
             style={[
               globalStyles.flexRow,
@@ -304,10 +374,9 @@ const AdminProductDashboard = () => {
             ]}
           >
             <View>
-              {item?.image[0] && (
+              {item?.image[0] ? (
                 <Image source={{ uri: item?.image[0] }} style={styles.image} />
-              )}
-              {!item?.image[0] && (
+              ) : (
                 <Image
                   source={require("../../../assets/Placeholder.png")}
                   style={styles.image}
@@ -346,14 +415,7 @@ const AdminProductDashboard = () => {
                       color={colors.primary}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      // const productId = item._id;
-                      if (item) {
-                        handleDeleteProduct(item);
-                      }
-                    }}
-                  >
+                  <TouchableOpacity onPress={() => handleDeleteProduct(item)}>
                     <Ionicons
                       name="trash-outline"
                       size={20}
@@ -386,21 +448,21 @@ const AdminProductDashboard = () => {
                     paddingHorizontal: 8,
                     paddingVertical: 4,
                     borderRadius: 16,
-                    backgroundColor: badge.backgroundColor,
+                    backgroundColor: badge?.backgroundColor,
                     marginLeft: 16,
                   }}
                 >
                   <Text
                     style={{
                       color:
-                        badge.backgroundColor === colors.primaryYellow
+                        badge?.backgroundColor === colors.primaryYellow
                           ? "black"
                           : "white",
                       fontSize: 12,
                       fontWeight: "bold",
                     }}
                   >
-                    {badge.text}
+                    {badge?.text}
                   </Text>
                 </View>
               </View>
@@ -409,58 +471,218 @@ const AdminProductDashboard = () => {
         </View>
       );
     },
-    [categories]
+    [categories, handleDeleteProduct]
   );
 
+  // Calculate max ID for new products
   const maxId = productsList.reduce((max: number, product: Product) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
       : max;
   }, 0);
 
-  // Ensure minimum height for FlatList to make it scrollable
-  const windowHeight = Dimensions.get("window").height;
+  // Handle end reached with proper throttling
+  const handleEndReached = useCallback(() => {
+    if (!isLoadingMore && hasMore && !isLoading) {
+      loadMoreData();
+    }
+  }, [isLoadingMore, hasMore, isLoading]);
+
+  const searchProductsByName = async (query: string) => {
+    try {
+      setIsLoading(true);
+      const response = await ProductsAPI.productsBy_Name_Id(query);
+      console.log("Search response:", response);
+
+      if (response) {
+        setAllProductsList(response);
+        setTotalProducts(response.length);
+        setHasMore(false);
+        setCurrentPage(1);
+        lastPageLoadedRef.current = 1;
+      }
+    } catch (error) {
+      console.error("Error searching products:", error);
+      Alert.alert("Error", "Failed to search products");
+      setAllProductsList([]);
+      setTotalProducts(0);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = useCallback(async () => {
+    if (!searchQuery.trim()) {
+      showErrorAlert({
+        title: "Nothing to Search",
+        message: SEARCH_QUERY_REQUIRED_MESSAGE,
+      });
+      return;
+    }
+
+    await searchProductsByName(searchQuery.trim());
+  }, [searchQuery]);
+
+  // Add a clear search function:
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    loadInitialData();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      if (productsList.length !== totalProducts || currentPage === 1) {
+        loadInitialData();
+      }
+    }
+  }, [searchQuery]);
 
   return (
     <PageLayout
       hasFooter
       hasHeader
-      scrollable
+      scrollable={false}
       headerComponent={
         <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
       }
       footerComponent={<AdminFooter activeTab="products" />}
     >
       <View style={[globalStyles.pt_0, { paddingTop: 16, flex: 1 }]}>
-        <Button
-          onPress={() => {
-            redirectToPage(containers.AdminProductUpdationScreen, {
-              newProduct: true,
-              maxId: maxId + 1,
-              onGoBack: () => onRefresh(),
-            });
-          }}
-          title="Add New Product"
-        />
+        <View>
+          <SearchBar
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            onPress={handleSearch}
+          />
+        </View>
+        <View>
+       <View style={styles.inputContainer}>
+          {/* <Text style={styles.label}>Category *</Text> */}
+          <View style={styles.categoryContainer}>
+          <ModalSelector
+            data={[
+              { key: "", label: "None (Show All)", value: "" },
+              ...allCategories.map((cat: any) => ({
+              key: cat.id,
+              label: cat.name, 
+              value: cat.id,
+              })),
+            ]}
+            initValue="Select Category"
+            selectedKey={selectCategory}
+            onChange={(option) => {
+              setSelectCategory(option.value);
+              console.log(
+                "Selected category:",
+                option.value || "None - Show All"
+              );
+            }}
+            optionTextStyle={{
+              color: colors.primary,
+              fontSize: 16,
+              fontWeight: '400',
+              //paddingVertical: 16,
+              paddingHorizontal: 20,
+              textAlign: 'center',
+            }}
+            optionContainerStyle={{
+              backgroundColor: colors.white,
+              borderBottomWidth: 0.5,
+              borderBottomColor: colors.slateGrey || colors.placeholdergrey,
+            }}
+            // sectionTextStyle={{
+            //   color: colors.primary,
+            //   fontSize: 18,
+            //   fontWeight: '600',
+            //   paddingVertical: 16,
+            //   paddingHorizontal: 16,
+            //   backgroundColor: '#F8F9FA',
+            // }}
+            cancelStyle={{
+              backgroundColor: colors.white,
+              // borderTopWidth: 1,
+              borderRadius: 0,
+              borderTopColor: colors.slateGrey || colors.placeholdergrey,
+              paddingVertical: 16,
+            }}
+            cancelTextStyle={{
+              color: colors.primary,
+              fontSize: 16,
+              fontWeight: "600",
+              textAlign: 'center',
+            }}
+            cancelText="cancel"
+            accessible={true}
+            accessibilityLabel="Select Category Filter"
+            animationType="slide"
+            backdropPressToClose={true}
+            overlayStyle={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              flex: 1,
+              justifyContent: 'flex-end',
+            }}
+            selectStyle={styles.categoryContainer}
+            selectTextStyle={styles.categoryText}
+
+              // modalStyle={{
+              //   backgroundColor: colors.white,
+              //   borderTopLeftRadius: 20,
+              //   borderTopRightRadius: 20,
+              //   maxHeight: '80%',
+              // }}
+          >
+            <View style={styles.categorySelector}>
+              <Text
+                style={[
+                  styles.categoryText,
+                  {
+                    color:
+                      selectCategory && selectCategory !== ""
+                        ? colors.black
+                        : colors.slateGrey,
+                  },
+                ]}
+              >
+                {selectCategory && selectCategory !== ""
+                  ? allCategories.find((c: any) => c.id == selectCategory)?.name
+                  : "All Categories"}
+              </Text>
+              <Ionicons
+                name="chevron-down-outline"
+                size={20}
+                color={colors.primary}
+              />
+            </View>
+          </ModalSelector>
+        </View>
+        </View>
+        </View>
+
+        {/* <View style={styles.separator} /> */}
+
+        <View style={styles.buttonContainer}>
+          <Button
+            onPress={() => {
+              redirectToPage(containers.AdminProductUpdationScreen, {
+                newProduct: true,
+                maxId: maxId + 1,
+                onGoBack: () => onRefresh(),
+              });
+            }}
+            title="Add New Product"
+          />
+        </View>
 
         <View style={{ marginTop: 16, flex: 1 }}>
-          <Text
-            style={{
-              marginBottom: 8,
-              fontSize: 14,
-              color: colors.secondaryText,
-            }}
-          >
-            Showing {productsList.length} of {total} products
-          </Text>
-          // Also add some debugging to your FlatList
           <FlatList
-            data={productsList}
+            data={productsListToShow}
             renderItem={ProductCard}
             keyExtractor={getUniqueKey}
-            onEndReached={debouncedLoadMore}
-            onEndReachedThreshold={0.3}
-            scrollEventThrottle={400}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
@@ -470,12 +692,29 @@ const AdminProductDashboard = () => {
               />
             }
             ListFooterComponent={() => {
-              if (loadingMore) {
+              if (
+                isLoadingMore &&
+                hasMore &&
+                (!selectCategory || selectCategory === "")
+              ) {
                 return (
                   <View style={{ padding: 20, alignItems: "center" }}>
                     <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={{ marginTop: 8, color: colors.secondaryText }}>
                       Loading more products...
+                    </Text>
+                  </View>
+                );
+              }
+              if (
+                !hasMore &&
+                productsListToShow.length > 0 &&
+                (!selectCategory || selectCategory === "")
+              ) {
+                return (
+                  <View style={{ padding: 20, alignItems: "center" }}>
+                    <Text style={{ color: colors.secondaryText }}>
+                      No more products to load
                     </Text>
                   </View>
                 );
@@ -505,6 +744,7 @@ const AdminProductDashboard = () => {
               flexGrow: 1,
             }}
           />
+
           {isLoading && (
             <View
               style={{

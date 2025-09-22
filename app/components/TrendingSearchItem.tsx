@@ -4,11 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
 
 interface TrendingSearchItemProps {
+  key: number;
   text: string;
   onPress: () => void;
 }
 
-const TrendingSearchItem = ({ text, onPress }: TrendingSearchItemProps) => {
+const TrendingSearchItem = ({
+  key,
+  text,
+  onPress,
+}: TrendingSearchItemProps) => {
   const { width } = Dimensions.get("window");
   const itemWidth = (width - 30) / 2 - 8; // calculating the width of each item by screen size
   return (
