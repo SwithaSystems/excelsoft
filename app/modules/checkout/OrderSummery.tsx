@@ -32,8 +32,6 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { Alert } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
-import axios from "axios";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
@@ -46,7 +44,6 @@ import AddressItem from "../../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { add, set } from "date-fns";
 import { ProductsAPI } from "@/services/productService";
 
 type OrderSummeryScreenParams = {
