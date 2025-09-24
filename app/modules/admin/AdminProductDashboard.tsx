@@ -73,7 +73,7 @@ const AdminProductDashboard = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [allCategories, setAllCategories] = useState<any>([]);
-  const [selectCategory, setSelectCategory] = useState("");
+  const [selectCategory, setSelectCategory] = useState<string | number>("");
 
   // Use refs to prevent multiple simultaneous requests
   const loadingMoreRef = useRef(false);
@@ -96,7 +96,7 @@ const AdminProductDashboard = () => {
   }, []);
   const category_Products = productsList.filter((product: any) =>
     selectCategory && selectCategory !== ""
-      ? product.categoryId?.map(String).includes(String(selectCategory))
+      ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
       : true
   );
   const productsListToShow =
@@ -564,21 +564,18 @@ const AdminProductDashboard = () => {
           <View style={styles.categoryContainer}>
           <ModalSelector
             data={[
-              { key: "", label: "None (Show All)", value: "" },
-              ...allCategories.map((cat: any) => ({
-              key: cat.id,
+              { key: "", label: "All Categories", value: "" },
+              ...allCategories.map((cat: any, index: number) => ({
+              key: cat.id || index,
               label: cat.name, 
-              value: cat.id,
+              value: cat.id || cat._id,
               })),
             ]}
             initValue="Select Category"
-            selectedKey={selectCategory}
+            // selectedKey={selectCategory}
             onChange={(option) => {
               setSelectCategory(option.value);
-              console.log(
-                "Selected category:",
-                option.value || "None - Show All"
-              );
+              console.log("Selected category:", option.value || "All Categories");
             }}
             optionTextStyle={{
               color: colors.primary,
@@ -647,7 +644,7 @@ const AdminProductDashboard = () => {
                 ]}
               >
                 {selectCategory && selectCategory !== ""
-                  ? allCategories.find((c: any) => c.id == selectCategory)?.name
+                  ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
                   : "All Categories"}
               </Text>
               <Ionicons
