@@ -456,7 +456,7 @@ const AdminProductUpdation = () => {
 
   const handleVatAmountChange = (value: string) => {};
 
-  const handleUpdateProduct = useCallback(async () => {
+  const handleAdd_UpdateProduct = useCallback(async () => {
     // Validate fields before submission
     if (!validateFields()) {
       showErrorAlert({
@@ -475,7 +475,7 @@ const AdminProductUpdation = () => {
 
       // Append regular text fields
       formData.append("name", productName.trim());
-      formData.append("id", id ? id : maxId.toString());
+      formData.append("id", id ? id : "");
       formData.append("title", title.trim());
       formData.append("description", productDescription.trim());
       formData.append("stock", stock);
@@ -1141,7 +1141,7 @@ const AdminProductUpdation = () => {
           ]}
         >
           <Button
-            onPress={handleUpdateProduct}
+            onPress={handleAdd_UpdateProduct}
             title={newProduct ? "Add" : "Update"}
             disabled={isLoading}
           />

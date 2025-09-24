@@ -32,8 +32,6 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { Alert } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
-import axios from "axios";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
@@ -46,7 +44,6 @@ import AddressItem from "../../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { add, set } from "date-fns";
 import { ProductsAPI } from "@/services/productService";
 
 type OrderSummeryScreenParams = {
@@ -208,7 +205,7 @@ const orderSummeryScreen = () => {
     const fetchStock = async () => {
       try {
         const ids = cartItems
-          .map((item: any) => String(item?.id || ""))
+          .map((item: any) => String(item?._id || ""))
           .filter(Boolean);
 
         if (ids.length === 0) {
@@ -219,7 +216,7 @@ const orderSummeryScreen = () => {
         }
 
         const results = await Promise.allSettled(
-          ids.map((id: any) => ProductsAPI.getProductBYID(Number(id)))
+          ids.map((_id: any) => ProductsAPI.getProductBy_mongoID(_id))
         );
 
         const newStock: Record<string, number> = {};
@@ -294,6 +291,7 @@ const orderSummeryScreen = () => {
     const fetchAddresses = async () => {
       try {
         const addresses = await addressService.getAllAddress();
+        console.log("Address Data", addresses);
 
         if (isActive && isMountedRef.current) {
           setAddressData(Array.isArray(addresses) ? addresses : []);
@@ -316,7 +314,47 @@ const orderSummeryScreen = () => {
       isActive = false;
     };
   }, [selectedBillingAddress]);
-  // FIXED: Added selectedBillingAddress to dependency array to prevent infinite loop
+
+  const setBillingAddress_Default = () => {
+    if (selectedMode === DELIVERY_MODE_HOME) {
+      return;
+    }
+
+    // Only proceed if we don't already have a selected billing address
+    if (selectedBillingAddress && selectedBillingAddress._id) {
+      return;
+    }
+    let isActive = true;
+    const defaultAddress = addressData.find(
+      (address) => address.isDefault === true
+    );
+    console.log("defalut address", defaultAddress);
+    let addressToSelect = null;
+    if (addressData.length > 1) {
+      if (defaultAddress) {
+        addressToSelect = defaultAddress;
+      } else return;
+    } else if (addressData.length === 1) {
+      addressToSelect = addressData[0];
+    }
+    if (addressToSelect && isActive && isMountedRef.current) {
+      setSelectedBillingAddress(addressToSelect);
+      setSelectedId(addressToSelect._id);
+      console.log("Auto-selected billing address:", addressToSelect);
+    }
+    return () => {
+      isActive = false;
+    };
+  };
+  useEffect(() => {
+    setBillingAddress_Default();
+  }, [
+    addressData,
+    selectedMode,
+    setSelectedBillingAddress,
+    selectedBillingAddress,
+  ]);
+
   useEffect(() => {
     if (
       selectedMode === DELIVERY_MODE_HOME &&
@@ -333,7 +371,6 @@ const orderSummeryScreen = () => {
         postalCode: shippingAddress.postalCode,
       };
 
-      // Avoid infinite loop by checking if already same
       if (
         !selectedBillingAddress ||
         selectedBillingAddress.line1 !== billingFromShipping.line1 ||
@@ -353,7 +390,7 @@ const orderSummeryScreen = () => {
 
     if (newValue && shippingAddress?.line1) {
       const billingFromShipping = {
-        _id: `shipping-${Date.now()}`, // Temporary ID
+        _id: `shipping-${Date.now()}`,
         name: shippingAddress.name,
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
@@ -462,6 +499,7 @@ const orderSummeryScreen = () => {
   // Handle billing address selection
   const handleSelectBillingAddress = useCallback(
     (item: Address) => {
+      console.log("Address item", item);
       if (!isMountedRef.current || !item) return;
 
       try {
@@ -672,8 +710,8 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       {selectedBillingAddress && (
                         <Text>
                           {`${selectedBillingAddress.name || "Unknown"}, ${
-                            selectedBillingAddress.city || "Unknown City"
-                          }`}
+                            selectedBillingAddress.postalCode || "Unknown"
+                          }, ${selectedBillingAddress.city || "Unknown City"}`}
                         </Text>
                       )}
                       <TouchableOpacity
@@ -750,14 +788,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
             <View style={[styles.section, globalStyles.mb_0]}>
               <Text style={styles.sectionHeading}>Order Details</Text>
               <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
-                {cartItems.map((eachCartItem: any, index: any) => {
-                  if (!eachCartItem?.id) return null;
-
+                {cartItems.map((eachCartItem: any) => {
                   return (
                     <CartItem
-                      itemContainerStyle={styles.cartItemContainerStyle}
+                      // itemContainerStyle={styles.cartItemContainerStyle}
                       handleDelete={handleDelete}
-                      key={eachCartItem.id || `cart-item-${index}`}
+                      key={eachCartItem.id}
                       cartItem={eachCartItem}
                       stockAvailable={stockAvailable[eachCartItem._id] || 0}
                     />

@@ -187,8 +187,11 @@ const CartScreen = () => {
 
     try {
       // Extract all unique _ids
-      const itemIds = [...new Set(allItems.map((item) => item._id))]; // Remove duplicates
+      // const itemIds = [...new Set(allItems.map((item) => item._id))]; // Remove duplicates
 
+      const itemIds = allItems
+        .map((item) => item._id ?? null)
+        .filter((id) => id !== null);
       // Single API call
       const products = await ProductsAPI.getProductBy_multipleID(itemIds);
 
@@ -206,7 +209,9 @@ const CartScreen = () => {
       // Set all to 0 on error
       const errorStockMap: Record<string, number> = {};
       [...cartItems, ...savedForLaterItems].forEach((item) => {
-        errorStockMap[item._id] = 0;
+        if (item._id !== undefined) {
+          errorStockMap[item._id] = 0;
+        }
       });
       setStockAvailable(errorStockMap);
     }

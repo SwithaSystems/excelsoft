@@ -4,12 +4,14 @@ import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
 
 interface SearchHistoryItemProps {
+  key: number;
   searchText: string;
   onRemove: () => void;
   onSelect: (text: string) => void;
 }
 
 const SearchHistoryItem = ({
+  key,
   searchText,
   onRemove,
   onSelect,
