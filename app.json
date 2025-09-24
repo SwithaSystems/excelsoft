@@ -31,7 +31,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.excelsoft.app",
-      "versionCode": 7,
+      "versionCode": 8,
       "newArchEnabled": true,
       "permissions": ["NOTIFICATION", "USE_BIOMETRIC", "USE_FINGERPRINT"]
     },
