@@ -33,10 +33,10 @@ interface Props {
   onblur?: () => void;
   style?: ViewStyle;
   maxLength?: number;
-  editable?:boolean;
+  editable?: boolean;
 }
 
-export const CustomTextInput = (props: Props) => {
+const CustomTextInput = (props: Props) => {
   return (
     <View style={[styles.textInput, props?.containerStyle]}>
       <TextInput
@@ -48,7 +48,7 @@ export const CustomTextInput = (props: Props) => {
         editable={!props.disabled}
         onBlur={props.onblur}
         maxLength={props.maxLength}
-        keyboardType = {props.keyboardType as any}
+        keyboardType={props.keyboardType as any}
         style={[
           {
             flex: 1,
@@ -78,6 +78,8 @@ export const CustomTextInput = (props: Props) => {
     </View>
   );
 };
+
+export default CustomTextInput;
 
 const styles = StyleSheet.create({
   textInput: {

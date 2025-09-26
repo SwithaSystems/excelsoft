@@ -55,7 +55,7 @@ interface Category {
 }
 
 const AdminProductDashboard = () => {
-  const [productsList, setAllProductsList] = useState<Product[]>([]);
+  const [productsList, setAllProductsList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -158,9 +158,9 @@ const AdminProductDashboard = () => {
       });
 
       // Filter out duplicates based on unique identifier
-      setAllProductsList((prevData) => {
+      setAllProductsList((prevData:any) => {
         const existingIds = new Set(
-          prevData.map((item) => item._id || item.id)
+          prevData.map((item:any) => item._id || item.id)
         );
         const newItems = response.data.filter(
           (item) => !existingIds.has(item._id || item.id)
@@ -195,10 +195,10 @@ const AdminProductDashboard = () => {
   useEffect(() => {
     console.log("Products list updated:", {
       totalItems: productsList.length,
-      uniqueIds: new Set(productsList.map((p) => p._id || p.id)).size,
+      uniqueIds: new Set(productsList.map((p:any) => p._id || p.id)).size,
       hasDuplicates:
         productsList.length !==
-        new Set(productsList.map((p) => p._id || p.id)).size,
+        new Set(productsList.map((p:any) => p._id || p.id)).size,
     });
   }, [productsList]);
 

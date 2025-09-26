@@ -10,9 +10,9 @@ import {
 import styles from "./AdminStoreInformationStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
+import CustomTextInput from "@/app/components/commonComponents/CustomTextInput";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
-import { Picker } from "@react-native-picker/picker";
+// import { Picker } from "@react-native-picker/picker";
 import Button from "@/app/components/commonComponents/Button";
 
 const AdminStoreInformation = () => {
@@ -78,24 +78,6 @@ const AdminStoreInformation = () => {
                     value={minutes}
                     onChangeText={setMinutes}
                   />
-
-                  {/* AM/PM Dropdown */}
-                  <Picker
-                    selectedValue={period}
-                    style={globalStyles.picker_sm}
-                    onValueChange={(itemValue) => setPeriod(itemValue)}
-                  >
-                    <Picker.Item
-                      style={globalStyles.pickerValue_sm}
-                      label="AM"
-                      value="am"
-                    />
-                    <Picker.Item
-                      style={globalStyles.pickerValue_sm}
-                      label="PM"
-                      value="pm"
-                    />
-                  </Picker>
                 </View>
               </View>
               <View style={globalStyles.profileInputContainer}>

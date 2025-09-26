@@ -36,7 +36,7 @@ type Product = {
   vatAmount: number;
 };
 
-export const usePaymentHandler = () => {
+const usePaymentHandler = () => {
   const [isStripeInitialized, setIsStripeInitialized] = useState(
     !isStripeSupported
   );
@@ -317,3 +317,5 @@ export const usePaymentHandler = () => {
     isStripeSupported,
   };
 };
+
+export default usePaymentHandler;

@@ -19,12 +19,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import styles from "./ReplaceOrderStyles";
-import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
+// import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
-import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
+import CustomTextInput from "@/app/components/commonComponents/CustomTextInput";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   DELIVERY_MODE_CURBSIDE,
@@ -263,7 +263,7 @@ const replaceOrderScreen = () => {
             />
 
             {/* AM/PM Dropdown */}
-            <Picker
+            {/* <Picker
               selectedValue={period}
               style={globalStyles.picker_sm}
               onValueChange={(itemValue) => setPeriod(itemValue)}
@@ -278,9 +278,9 @@ const replaceOrderScreen = () => {
                 label="PM"
                 value="pm"
               />
-            </Picker>
+            </Picker> */}
           </View>
-          <View style={globalStyles.mb_3}>
+          {/* <View style={globalStyles.mb_3}>
             <Text style={styles.inputLabel}>Vehicle Type: *</Text>
             <Picker
               selectedValue={vehicleType}
@@ -299,7 +299,7 @@ const replaceOrderScreen = () => {
                 );
               })}
             </Picker>
-          </View>
+          </View> */}
           <View style={globalStyles.mb_3}>
             <Text style={styles.inputLabel}>Vehicle Number: *</Text>
             <CustomTextInput

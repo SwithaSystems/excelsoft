@@ -14,7 +14,7 @@ import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
-import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
+// import { Picker } from "@react-native-picker/picker"; // Correct picker import for cross-platform
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -286,7 +286,7 @@ const ReturnOrder = () => {
                       keyboardType="number-pad"
                     />
                     <View style={styles.amPmSelector}>
-                      <Picker
+                      {/* <Picker
                         selectedValue={period}
                         style={{
                           width: 110,
@@ -297,7 +297,7 @@ const ReturnOrder = () => {
                       >
                         <Picker.Item label="AM" value="am" />
                         <Picker.Item label="PM" value="pm" />
-                      </Picker>
+                      </Picker> */}
                     </View>
                   </View>
                 </View>
@@ -328,7 +328,7 @@ const ReturnOrder = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <Picker
+                  {/* <Picker
                     selectedValue={reason}
                     onValueChange={(itemValue) => setReason(itemValue)}
                     style={{ height: 50, color: colors.black }}
@@ -341,7 +341,7 @@ const ReturnOrder = () => {
                     <Picker.Item label="Product damaged" value="damaged" />
                     <Picker.Item label="Changed my mind" value="change_mind" />
                     <Picker.Item label="Other" value="other" />
-                  </Picker>
+                  </Picker> */}
                 </View>
               </View>
               <View style={styles.addComments}>

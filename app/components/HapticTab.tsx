@@ -6,7 +6,7 @@ const { BottomTabBarButtonProps } = require("@react-navigation/bottom-tabs");
 const { PlatformPressable } = require("@react-navigation/elements");
 const Haptics = require("expo-haptics");
 
-export function HapticTab(props: typeof BottomTabBarButtonProps) {
+function HapticTab(props: typeof BottomTabBarButtonProps) {
   return (
     <PlatformPressable
       {...props}
@@ -20,3 +20,5 @@ export function HapticTab(props: typeof BottomTabBarButtonProps) {
     />
   );
 }
+
+export default HapticTab;

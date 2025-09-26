@@ -12,7 +12,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import Header from "../../components/Header";
 import CartItem from "../cart/Components/CartItem";
-import { Picker } from "@react-native-picker/picker";
+// import { Picker } from "@react-native-picker/picker";
 import Button from "@/app/components/commonComponents/Button";
 import Footer from "@/app/components/Footer";
 import colors from "../../../constants/colors";
@@ -27,7 +27,7 @@ import {
   DELIVERY_MODE_HOME,
 } from "../../../constants/stringLiterals";
 import ModalSelector from "react-native-modal-selector";
-import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
+import CustomTextInput from "@/app/components/commonComponents/CustomTextInput";
 import { NotificationService } from "@/services/notificationService";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
@@ -192,9 +192,7 @@ const AdminOrderDetail = () => {
       <PageLayout
         hasHeader
         headerComponent={
-          <Header
-            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-          />
+          <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
         }
         hasFooter
         footerComponent={<AdminFooter />}

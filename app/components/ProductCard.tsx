@@ -62,6 +62,7 @@ const ProductCard = ({
 
     // Create the item object from the props
     const currentItem = {
+      _id: "",
       id,
       name,
       description,

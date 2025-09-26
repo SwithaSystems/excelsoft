@@ -8,9 +8,9 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 
-import { ThemedText } from "@/app/components/ThemedText";
+import ThemedText from "@/app/components/ThemedText";
 
-export function HelloWave() {
+function HelloWave() {
   const rotationAnimation = useSharedValue(0);
 
   useEffect(() => {
@@ -33,6 +33,8 @@ export function HelloWave() {
     </Animated.View>
   );
 }
+
+export default HelloWave;
 
 const styles = StyleSheet.create({
   text: {
