@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   Dimensions,
   ActivityIndicator,
@@ -84,6 +83,8 @@ const Filter = () => {
     }
   }, [selectedCategories]);
 
+  const isApplyFiltersEnabled = categories.length > 0 && Object.values(selectedCategories).some((checked) => checked);
+
   return (
     <PageLayout
       hasHeader
@@ -94,7 +95,7 @@ const Filter = () => {
       <View style={globalStyles.sectionContent}>
         {loading ? (
           <ActivityIndicator size="large" color={colors.primary} />
-        ) : (
+        ) : categories.length > 0 ? (
           <ScrollView style={styles.scrollContainer}>
             <View style={[styles.section, { marginBottom: 0 }]}>
               <Text style={styles.sectionTitle}>Categories</Text>
@@ -136,12 +137,18 @@ const Filter = () => {
               </View>
             </View> */}
           </ScrollView>
+        ) :(
+          <View style={styles.noCategoriesContainer}>
+            <Text style={styles.noCategoriesText}>No Categories Available</Text>
+          </View>
         )}
 
         <Button
           title="Apply Filters"
           onPress={applyFilters}
-          style={styles.applyButton}
+          style={isApplyFiltersEnabled ? styles.applyButton : styles.disabledButton}
+          textStyle={styles.buttonText}
+          disabled={!isApplyFiltersEnabled}
         />
       </View>
     </PageLayout>
@@ -174,6 +181,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+  },
+  disabledButton: {
+    backgroundColor: colors.placeholdergrey,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  noCategoriesContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  noCategoriesText: {
+    fontSize: 16,
+    color: colors.black,
+    fontWeight: "500",
   },
 });
 

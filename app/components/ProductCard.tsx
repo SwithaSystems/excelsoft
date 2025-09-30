@@ -36,6 +36,7 @@ import { Product } from "@/services/productService";
 // }
 
 const ProductCard = ({
+  _id,
   id,
   name,
   categoryId,
@@ -101,15 +102,26 @@ const ProductCard = ({
       }
     >
       {/* Only render image if product has one */}
-      {image ? (
-        <View style={styles.image}>
-          <Image
+      {/* {image ? ( */}
+      <View style={styles.image}>
+        {/* <Image
             source={{ uri: image }}
             style={styles.image}
             resizeMode="cover"
-          />
-        </View>
-      ) : null}
+          /> */}
+        <Image
+          source={
+            typeof image === "string" && image !== ""
+              ? { uri: image }
+              : typeof image === "object" && image
+              ? image
+              : require("../../assets/Placeholder.png")
+          }
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </View>
+      {/* ) : null} */}
 
       <View style={styles.content}>
         <View style={globalStyles.savedContainer}>
