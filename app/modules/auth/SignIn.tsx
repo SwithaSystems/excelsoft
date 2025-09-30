@@ -1,12 +1,7 @@
 import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import React, { useState } from "react";
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -24,7 +19,7 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   isValidEmail,
   isValidPhoneNumber,
-  isValidPassword
+  isValidPassword,
 } from "../../../utilities/validations";
 
 const signIn = () => {
@@ -104,6 +99,7 @@ const signIn = () => {
         }
 
         loginId = `+${callingCode}${normalizedPhone}`;
+        console.log("Login ID (Phone):", loginId);
       } else {
         loginId = email.trim().toLowerCase();
       }
@@ -128,9 +124,7 @@ const signIn = () => {
       hasHeader
       scrollable={false}
       headerComponent={
-        <Header headerText={"Sign In"} 
-        needResetNavigation={false}
-       />
+        <Header headerText={"Sign In"} needResetNavigation={false} />
       }
     >
       <KeyBoardWrapper>

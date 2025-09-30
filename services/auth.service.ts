@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
+// import * as SecureStore from "expo-secure-store";
 import containers from "@/containers";
 import { jsonAxios } from "./axiosConfig";
 import { redirectToPage } from "@/utilities/redirectionHelper";
+import { storage } from "./storage.service";
 
 export const authService = {
   /**
@@ -12,15 +13,29 @@ export const authService = {
    * @param password - The user's password.
    * @returns The response data from the login API.
    */
+  // async login(loginId: string, password: string) {
+  //   try {
+  //     const response = await jsonAxios.post("/auth/login", {
+  //       loginId,
+  //       password,
+  //     });
+  //     await SecureStore.setItemAsync("token", response.data.access_token);
+  //     await SecureStore.setItemAsync("refreshtoken", response.data.refresh_token);
+  //     await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
+  //     return response.data;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
   async login(loginId: string, password: string) {
     try {
       const response = await jsonAxios.post("/auth/login", {
         loginId,
         password,
       });
-      await SecureStore.setItemAsync("token", response.data.access_token);
-      await SecureStore.setItemAsync("refreshtoken", response.data.refresh_token);
-      await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
+      await storage.setItem("token", response.data.access_token);
+      await storage.setItem("refreshtoken", response.data.refresh_token);
+      await storage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
@@ -38,8 +53,8 @@ export const authService = {
   }) {
     try {
       const response = await jsonAxios.post("/auth/register", payload);
-      await SecureStore.setItemAsync("token", response.data.access_token);
-      await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
+      await storage.setItem("token", response.data.access_token);
+      await storage.setItem("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       throw error;
@@ -52,9 +67,9 @@ export const authService = {
    */
   async logout() {
     try {
-      await SecureStore.deleteItemAsync("token");
-      await SecureStore.deleteItemAsync("user");
-      await SecureStore.deleteItemAsync("refreshtoken");
+      await storage.removeItem("token");
+      await storage.removeItem("user");
+      await storage.removeItem("refreshtoken");
       redirectToPage(containers.signInScreen);
     } catch (error) {
       throw error;
@@ -67,7 +82,7 @@ export const authService = {
    */
   async getCurrentUser() {
     try {
-      const userStr = await SecureStore.getItemAsync("user");
+      const userStr = await storage.getItem("user");
       return userStr ? JSON.parse(userStr) : null;
     } catch (error) {
       return null;
@@ -80,7 +95,7 @@ export const authService = {
    */
   async isAuthenticated() {
     try {
-      const token = await SecureStore.getItemAsync("token");
+      const token = await storage.getItem("token");
       return !!token;
     } catch (error) {
       return false;
@@ -94,7 +109,7 @@ export const authService = {
    */
   async refreshToken() {
     try {
-      const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+      const refreshToken = await storage.getItem("refreshtoken");
       if (!refreshToken) throw new Error("Refresh token not available.");
       const response = await jsonAxios.post(
         "/auth/refresh-token",
@@ -102,9 +117,9 @@ export const authService = {
         { headers: { Authorization: `Bearer ${refreshToken}` } }
       );
       const { access_token, refresh_token } = response.data;
-      await SecureStore.setItemAsync("token", access_token);
+      await storage.setItem("token", access_token);
       if (refresh_token) {
-        await SecureStore.setItemAsync("refreshtoken", refresh_token);
+        await storage.setItem("refreshtoken", refresh_token);
       }
       return access_token;
     } catch (error) {

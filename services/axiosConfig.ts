@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
+// import * as SecureStore from "expo-secure-store";
+import { storage } from "./storage.service";
 import { router } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
@@ -92,7 +93,7 @@ const proactiveTokenRefresh = async (token: string) => {
   lastRefreshTime = now;
 
   try {
-    const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+    const refreshToken = await storage.getItem("refreshtoken");
     if (!refreshToken) {
       throw new Error("Refresh token not available.");
     }
@@ -109,9 +110,9 @@ const proactiveTokenRefresh = async (token: string) => {
     const newAccessToken = refreshResponse.data.access_token;
     const newRefreshToken = refreshResponse.data.refresh_token;
 
-    await SecureStore.setItemAsync("token", newAccessToken);
+    await storage.setItem("token", newAccessToken);
     if (newRefreshToken) {
-      await SecureStore.setItemAsync("refreshtoken", newRefreshToken);
+      await storage.setItem("refreshtoken", newRefreshToken);
     }
 
     console.log("Token proactively refreshed successfully");
@@ -139,7 +140,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
   axiosInstance.interceptors.request.use(
     async (config: InternalAxiosRequestConfig) => {
       try {
-        let token = await SecureStore.getItemAsync("token");
+        let token = await storage.getItem("token");
         // console.log("Token before setting", token);
         // const refreshToken = await AsyncStorage.getItem("refreshtoken");
         // await AsyncStorage.setItem("token", "expired");
@@ -176,7 +177,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
       const newToken = response.headers["x-new-token"];
       if (newToken) {
         try {
-          SecureStore.setItemAsync("token", newToken);
+          storage.setItem("token", newToken);
         } catch (error) {
           console.error("SecureStore setItem error:", error);
         }
@@ -229,7 +230,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
         isRefreshing = true;
 
         try {
-          const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+          const refreshToken = await storage.getItem("refreshtoken");
           console.log("refreshToken after 401", refreshToken);
 
           if (!refreshToken) {
@@ -253,9 +254,9 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
 
           // Store the new tokens
           try {
-            await SecureStore.setItemAsync("token", newAccessToken);
+            await storage.setItem("token", newAccessToken);
             if (newRefreshToken) {
-              await SecureStore.setItemAsync("refreshtoken", newRefreshToken);
+              await storage.setItem("refreshtoken", newRefreshToken);
             }
           } catch (error) {
             console.error("SecureStore setItem error:", error);
@@ -289,9 +290,9 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
           ) {
             try {
               await Promise.all([
-                SecureStore.deleteItemAsync("token"),
-                SecureStore.deleteItemAsync("refreshtoken"),
-                SecureStore.deleteItemAsync("user"),
+                storage.removeItem("token"),
+                storage.removeItem("refreshtoken"),
+                storage.removeItem("user"),
               ]);
             } catch (error) {
               console.error("SecureStore deleteItem error:", error);
