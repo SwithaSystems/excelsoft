@@ -1,0 +1,21 @@
+diff --git a/node_modules/react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule.js b/node_modules/react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule.js
+index 2ebe7ff..4fd2b71 100644
+--- a/node_modules/react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule.js
++++ b/node_modules/react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule.js
+@@ -8,9 +8,9 @@
+  * @format
+  */
+ 
+-import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
++const TurboModuleRegistry = {
++  get: () => null,
++  getEnforcing: () => null
++};
+ 
+-// The config has different keys depending on the type of the Node
+-// TODO(T54896888): Make these types strict
+-
+-export default TurboModuleRegistry.get('NativeAnimatedModule');
+\ No newline at end of file
++export default null;
+\ No newline at end of file

@@ -202,7 +202,9 @@ export const globalStyles = StyleSheet.create({
     borderColor: colors.primary,
     padding: 8,
     borderRadius: 8,
-    outline: "none",
+    outlineStyle: "none",   
+    outlineWidth: 0,          
+    outlineColor: "transparent",
   },
   dateInput: {
     borderWidth: 1,

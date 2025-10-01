@@ -41,3 +41,5 @@ const styles = StyleSheet.create({
     marginTop: -6,
   },
 });
+
+export default HelloWave;

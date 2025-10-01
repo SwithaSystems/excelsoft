@@ -59,3 +59,5 @@ const styles = StyleSheet.create({
     color: colors.brandDark,
   },
 });
+
+export default ThemedText;

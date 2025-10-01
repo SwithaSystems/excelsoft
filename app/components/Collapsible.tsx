@@ -47,3 +47,5 @@ const styles = StyleSheet.create({
     marginLeft: 24,
   },
 });
+
+export default Collapsible;
