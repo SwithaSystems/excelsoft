@@ -1,12 +1,19 @@
-const { getDefaultConfig } = require("expo/metro-config");
+// metro.config.js
 const path = require("path");
+const { getDefaultConfig } = require("expo/metro-config");
 
+// Load Expo’s default Metro config
 const config = getDefaultConfig(__dirname);
 
+// ---------------------------
+// Watch the utilities folder for stub files
+// ---------------------------
 config.watchFolders = [path.resolve(__dirname, "utilities")];
 
-// Add all the aliases
-config.resolver.alias = {
+// ---------------------------
+// Define all web stubs here
+// ---------------------------
+const alias = {
   "expo-secure-store": path.resolve(__dirname, "utilities/expo-secure-store-stub.js"),
   "react-async-hook": path.resolve(__dirname, "utilities/react-async-hook-stub.js"),
   "react-native-country-picker-modal": path.resolve(__dirname, "utilities/country-picker-stub.js"),
@@ -20,110 +27,54 @@ config.resolver.alias = {
   "react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedHelper": path.resolve(__dirname, "utilities/native-animated-helper-stub.js"),
   "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule": path.resolve(__dirname, "utilities/native-animated-module-stub.js"),
   "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedHelper": path.resolve(__dirname, "utilities/native-animated-helper-stub.js"),
+  "generator-function": path.resolve(__dirname, "utilities/generator-function-stub.js"),
 };
 
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  const emptyStubPath = path.resolve(__dirname, "utilities/empty-stub.js");
-  
-  // Intercept NativeAnimatedHelper imports (both absolute and relative)
-  if (moduleName.includes('NativeAnimatedHelper')) {
-    return {
-      filePath: path.resolve(__dirname, "utilities/native-animated-helper-stub.js"),
-      type: 'sourceFile',
-    };
-  }
-  
-  // Intercept NativeAnimatedModule imports
-  if (moduleName.includes('NativeAnimatedModule')) {
-    return {
-      filePath: path.resolve(__dirname, "utilities/native-animated-module-stub.js"),
-      type: 'sourceFile',
-    };
-  }
-  
-  if (moduleName === 'react-native/Libraries/TurboModule/TurboModuleRegistry' ||
-      moduleName.includes('/TurboModule/TurboModuleRegistry') ||
-      moduleName.endsWith('TurboModuleRegistry')) {
-    return {
-      filePath: path.resolve(__dirname, "utilities/turbo-module-stub.js"),
-      type: 'sourceFile',
-    };
-  }
-  
-  if (platform === 'web') {
-    if (moduleName.includes('expo-modules-core')) {
-      if (moduleName.includes('ensureNativeModulesAreInstalled')) {
-        return {
-          filePath: path.resolve(__dirname, "utilities/ensure-native-modules-stub.js"),
-          type: 'sourceFile',
-        };
-      }
-      if (moduleName.includes('NativeModule')) {
-        return {
-          filePath: path.resolve(__dirname, "utilities/expo-modules-core-stub.js"),
-          type: 'sourceFile',
-        };
-      }
-    }
+// Merge with any existing aliases
+config.resolver.alias = { ...(config.resolver.alias || {}), ...alias };
 
-    if (moduleName.startsWith('@stripe/stripe-react-native')) {
-      return {
-        filePath: path.resolve(__dirname, "utilities/stripe-web-stub.js"),
-        type: 'sourceFile',
-      };
-    }
-    
-    if (moduleName.startsWith('react-native/Libraries/')) {
-      return {
-        filePath: emptyStubPath,
-        type: 'sourceFile',
-      };
-    }
+// Save original resolver
+const originalResolveRequest = config.resolver.resolveRequest;
+
+// ---------------------------
+// Custom resolver for stubs and special cases
+// ---------------------------
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // ✅ Check alias first
+  if (alias[moduleName]) {
+    return { filePath: alias[moduleName], type: "sourceFile" };
   }
-  
-  if (
-    moduleName.includes('codegenNativeCommands') ||
-    moduleName.includes('codegenNativeComponent')
-  ) {
-    return {
-      filePath: emptyStubPath,
-      type: 'sourceFile',
-    };
+
+  // ✅ Special Animated cases
+  if (moduleName.includes("NativeAnimatedHelper")) {
+    return { filePath: alias["react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedHelper"], type: "sourceFile" };
   }
-  
-  if (moduleName.includes('react-async-hook')) {
-    return {
-      filePath: path.resolve(__dirname, "utilities/react-async-hook-stub.js"),
-      type: 'sourceFile',
-    };
+  if (moduleName.includes("NativeAnimatedModule")) {
+    return { filePath: alias["react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedModule"], type: "sourceFile" };
   }
-  
-  if (moduleName.includes('react-native-country-picker-modal')) {
-    return {
-      filePath: path.resolve(__dirname, "utilities/country-picker-stub.js"),
-      type: 'sourceFile',
-    };
+
+  // ✅ Fallback to original resolver
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
   }
-  
   return context.resolveRequest(context, moduleName, platform);
 };
 
-const blockList = [
-  /@stripe[\/\\]stripe-react-native[\/\\]lib[\/\\]commonjs[\/\\]specs/,
-  /@stripe[\/\\]stripe-react-native[\/\\]lib[\/\\]module[\/\\]specs/,
-  /react-native[\/\\]Libraries[\/\\]Utilities[\/\\]codegenNativeCommands/,
-  /react-native[\/\\]Libraries[\/\\]Utilities[\/\\]codegenNativeComponent/,
-  /.*[\/\\]__tests__[\/\\].*\.ignore\.tsx?$/,
-  /.*\.test\.tsx?$/,
-  /.*\.spec\.tsx?$/,
+// ---------------------------
+// Web-specific extensions
+// ---------------------------
+config.resolver.sourceExts = [
+  "web.js",
+  "web.ts",
+  "web.tsx",
+  "web.jsx",
+  ...config.resolver.sourceExts,
 ];
 
-config.resolver.blockList = Array.isArray(config.resolver.blockList)
-  ? [...config.resolver.blockList, ...blockList]
-  : blockList;
-
-config.resolver.sourceExts = ["web.js", "web.ts", "web.tsx", "web.jsx", ...config.resolver.sourceExts];
 config.resolver.resolverMainFields = ["browser", "react-native", "main"];
 config.resolver.platforms = ["web", "ios", "android", "native"];
 
+// ---------------------------
+// Export final Metro config
+// ---------------------------
 module.exports = config;

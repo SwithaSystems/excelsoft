@@ -574,7 +574,6 @@ const addAddressScreen = () => {
             onPress={handleSubmit}
             disabled={isSubmitting}
           >
-            s
             <Text style={styles.buttonText}>
               {isSubmitting
                 ? `${isEditMode ? "Updating" : "Adding"} Address...`
