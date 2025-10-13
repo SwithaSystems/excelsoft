@@ -8,6 +8,8 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  useWindowDimensions,
+  Platform,
   StatusBar,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
@@ -26,6 +28,8 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../../services/categoryService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 // const recommendedProducts = products
 //   .filter((p) =>
@@ -89,38 +93,46 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const handleBannerPress = (item: any, index: number) => {
-    redirectToPage(containers.offersScreen);
-  };
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  // const isTablet = width >= 768 && width < 1024;
+  const isTabOrDesktop = width >= 768;
 
-  const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
+  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
 
-  const renderFeaturedProducts = () => (
-    <View>
-      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
-      <FlatList
-        horizontal
-        data={featuredProducts}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.featuredCard}
-            onPress={() =>
-              redirectToPage(containers.productDetailScreen, {
-                productId: item.id,
-              })
-            }
-          >
-            <Image source={item.imageUrl} style={styles.featuredImage} />
-            <Text style={styles.featuredTitle}>{item.title}</Text>
-            <Text style={styles.featuredDescription}>{item.description}</Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  );
+  // const handleBannerPress = (item: any, index: number) => {
+  //   redirectToPage(containers.offersScreen);
+  // };
+
+  // const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
+
+  // const renderFeaturedProducts = () => (
+  //   <View>
+  //     <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
+  //     <FlatList
+  //       horizontal
+  //       data={featuredProducts}
+  //       renderItem={({ item }) => (
+  //         <TouchableOpacity
+  //           style={styles.featuredCard}
+  //           onPress={() =>
+  //             redirectToPage(containers.productDetailScreen, {
+  //               productId: item.id,
+  //             })
+  //           }
+  //         >
+  //           <Image source={item.imageUrl} style={styles.featuredImage} />
+  //           <Text style={styles.featuredTitle}>{item.title}</Text>
+  //           <Text style={styles.featuredDescription}>{item.description}</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //       keyExtractor={(item) => item.id}
+  //       showsHorizontalScrollIndicator={false}
+  //       contentContainerStyle={styles.productsList}
+  //     />
+  //   </View>
+  // );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -128,9 +140,9 @@ const HomePage = () => {
         const data = await categoryService.getAllCategories();
         console.log("Categories:", data);
         const sortedData = data.sort((a, b) => {
-          if (a.name === "All") return -1; // put "All" at the top
+          if (a.name === "All") return -1; 
           if (b.name === "All") return 1;
-          return a.id - b.id; // otherwise sort by id
+          return a.id - b.id; 
         });
         setCategories(sortedData);
       } catch (error) {
@@ -143,12 +155,14 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
+  const LayoutComponent = PageLayout;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
       hasFooter
-      headerComponent={<BrandHeader />}
-      footerComponent={<Footer activeTab="home" />}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
       scrollable
     >
       <View style={styles.container}>
@@ -215,7 +229,7 @@ const HomePage = () => {
         {/* Featured Products */}
         {/* {renderFeaturedProducts()} */}
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

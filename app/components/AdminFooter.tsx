@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import containers from "@/containers";
@@ -21,6 +22,10 @@ import colors from "@/constants/colors";
 
 const AdminFooter = ({ navigation, activeTab = "" }: any) => {
   const insets = useSafeAreaInsets();
+  const {width} = useWindowDimensions();
+
+  const isMobile = width < 768; 
+
 
   const handleHomePress = () => {
     if (activeTab === ADMINFOOTER_HOME) return;
@@ -43,12 +48,37 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
     redirectToPage(containers.AdminOrderQRScanScreen);
   };
 
+  const items = [
+    { icon: "home", label: "Home", onPress: handleHomePress, key: ADMINFOOTER_HOME },
+    { icon: "clipboard", label: "Orders", onPress: handleOrdersPress, key: ADMINFOOTER_ORDERS },
+    { icon: "cube", label: "Products", onPress: handleProductsPress, key: ADMINFOOTER_PRODUCTS },
+    { icon: "list-circle", label: "Categories", onPress: handleCategoryPress, key: ADMINFOOTER_CATEGORIES },
+    { icon: "gift", label: "Scan & Deliver", onPress: handleScanPress, key: ADMINFOOTER_SCAN },
+  ];
+
   return (
     <View
-      style={[styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }]}
+      style={[
+        // styles.absoluteFooter, { paddingBottom: insets.bottom || 10 }
+        isMobile ? styles.absoluteFooter : styles.sidebar,
+        isMobile && { paddingBottom: insets.bottom || 10 },
+      ]}
     >
-      <View style={styles.footer}>
-        <FooterButton
+      <View style={ 
+        // styles.footer
+        isMobile ? styles.footer : styles.sidebarMenu
+        }>
+        {items.map((item, idx) => (
+          <FooterButton
+            key={idx}
+            icon={item.icon}
+            label={item.label}
+            isActive={activeTab === item.key}
+            onPress={item.onPress}
+            isSidebar={!isMobile}
+          />
+        ))}
+        {/* <FooterButton
           icon="home"
           label="Home"
           isActive={activeTab === ADMINFOOTER_HOME}
@@ -86,7 +116,7 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
           onPress={handleScanPress}
 
           // onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
-        />
+        /> */}
       </View>
     </View>
   );
@@ -135,6 +165,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
+
+  // Shared Styles
+
   iconContainer: {
     position: "relative",
   },
@@ -155,6 +188,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
+
+  //Web styles 
+
+  sidebar: {
+    backgroundColor: colors.white,
+    borderTopColor: colors.placeholdergrey,
+    borderTopWidth: 1,
+    width: 220,
+    height: '100%',
+    paddingVertical: 20,
+  },
+  sidebarMenu: {
+    flexDirection: "column",
+  },
+  sidebarTab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  }
 });
 
 export default AdminFooter;

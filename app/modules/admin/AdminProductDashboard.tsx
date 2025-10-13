@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Dimensions,
   Alert,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
@@ -31,6 +30,8 @@ import SearchBar from "@/app/components/searchBar";
 import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";  
+import { Platform } from "react-native";
 
 // Define Product interface
 // interface Product {
@@ -94,6 +95,7 @@ const AdminProductDashboard = () => {
   useEffect(() => {
     getallCategories();
   }, []);
+
   const category_Products = productsList.filter((product: any) =>
     selectCategory && selectCategory !== ""
       ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
@@ -538,8 +540,10 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
+  const LayoutComponent = Platform.OS === "web" ? PageLayoutWeb : PageLayout;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasFooter
       hasHeader
       scrollable={false}
@@ -761,7 +765,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
