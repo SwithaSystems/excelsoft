@@ -94,6 +94,7 @@ const HomePage = () => {
   const router = useRouter();
 
   const { width } = useWindowDimensions();
+  //Device Breakpoints
   const isMobile = width < 768;
   // const isTablet = width >= 768 && width < 1024;
   const isTabOrDesktop = width >= 768;
