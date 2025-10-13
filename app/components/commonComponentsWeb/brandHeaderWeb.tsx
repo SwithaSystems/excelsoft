@@ -79,7 +79,7 @@ export default function BrandHeaderWeb() {
         />
 
         {(isTablet || isDesktop) && (
-          <View style = {{marginLeft: 16, flex:1}}>
+          <View style = {{marginLeft: 4, flex:1}}>
           <SearchBar
             placeholder="Search..."
             onPress={() => redirectToPage(containers.searchScreen)}
