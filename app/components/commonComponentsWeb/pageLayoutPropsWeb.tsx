@@ -101,7 +101,11 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
       </View>
 
       {/* FOOTER */}
-      {hasFooter && <View style={styles.footer}>{footerComponent}</View>}
+      {hasFooter && (
+        <View style={styles.footer}>
+          {footerComponent}
+        </View>
+        )}
     </View>
   );
 };
@@ -147,8 +151,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.lightgrey,
     borderTopWidth: 1,
     paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
 
