@@ -30,6 +30,7 @@ import { categoryService, Category } from "../../../services/categoryService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import {PageLayoutWeb} from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 
 // const recommendedProducts = products
 //   .filter((p) =>
@@ -156,7 +157,7 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
-  const LayoutComponent = PageLayout;
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
@@ -170,36 +171,39 @@ const HomePage = () => {
         <Header />
 
         {/* Categories */}
-        <View style={styles.categoriesContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <FlatList
-              data={categories}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.id}
-              renderItem={({ item }) => (
-                <CategoryItem_Home
-                  name={item.name}
-                  imageUrl={item.images?.[0] || ""}
-                  onPress={() =>
-                    item.name === "All"
-                      ? redirectToPage(containers.categoriesScreen, {
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                      : redirectToPage(containers.searchResultsScreen, {
-                          fromSearch: true,
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                  }
-                />
-              )}
-            />
-          )}
-        </View>
+        {!isTabOrDesktop && (
+          <View style={styles.categoriesContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <FlatList
+                data={categories}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }) => (
+                  <CategoryItem_Home
+                    name={item.name}
+                    imageUrl={item.images?.[0] || ""}
+                    onPress={() =>
+                      item.name === "All"
+                        ? redirectToPage(containers.categoriesScreen, {
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                        : redirectToPage(containers.searchResultsScreen, {
+                            fromSearch: true,
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                    }
+                  />
+                )}
+              />
+            )}
+          </View>
+        )}
+
 
         {/* Banner */}
         {/* <View>{renderBanner()}</View> */}

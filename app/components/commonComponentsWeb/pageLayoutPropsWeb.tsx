@@ -1,7 +1,14 @@
 // PageLayoutWeb.tsx
 import React from "react";
-import { View, ScrollView, StyleSheet, useWindowDimensions, ViewStyle } from "react-native";
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import colors from "@/constants/colors";
+import HeaderNavBar from "./HeaderNavBarWeb";
 
 interface PageLayoutWebProps {
   children: React.ReactNode;
@@ -33,15 +40,38 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const isDesktop = width >= 1024;
 
   const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
-
   const ContentWrapper = scrollable ? ScrollView : View;
 
+  const headerHeight = isDesktop ? 68 + 50 : isTablet ? 56 + 50 : 52 + 50;
+  const navBarHeight = 50;
+  const totalHeaderHeight = headerHeight + navBarHeight;
+
+  
   return (
     <View style={[styles.root, { backgroundColor, minHeight: height }]}>
-      {/* Header */}
-      {hasHeader && <View style={styles.header}>{headerComponent}</View>}
+      {/* HEADER */}
+      {hasHeader && (
+        <View style={[styles.headerContainer, Platform.OS === "web" && {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }]}>
+          <View style={styles.topHeader}>{headerComponent}</View>
+          
+          <View style={styles.navbarWrapper}>
+            <HeaderNavBar />
+          </View>
+        </View>
+      )}
 
-      <View style={styles.mainContainer}>
+       <View
+        style={[
+          styles.mainContainer,
+          hasHeader && { marginTop: totalHeaderHeight },
+        ]}
+      >
         {hasSidebar && (
           <View
             style={[
@@ -70,7 +100,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
         </ContentWrapper>
       </View>
 
-      {/* Footer */}
+      {/* FOOTER */}
       {hasFooter && <View style={styles.footer}>{footerComponent}</View>}
     </View>
   );
@@ -79,14 +109,21 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    minHeight: "100vh" as unknown as number, 
+    minHeight: "100vh" as unknown as number,
   },
-  header: {
+  headerContainer: {
+    width: "100%",
+    backgroundColor: colors.white,
+  },
+  topHeader: {
     width: "100%",
     backgroundColor: colors.white,
     borderBottomColor: colors.lightgrey,
     borderBottomWidth: 1,
-    zIndex: 10,
+  },
+  navbarWrapper: {
+    width: "100%",
+    backgroundColor: colors.primary,
   },
   mainContainer: {
     flex: 1,
