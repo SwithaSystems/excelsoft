@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -9,52 +9,18 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useSelector, useDispatch } from "react-redux";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { UserAPI } from "@/services/userService";
 import colors from "@/constants/colors";
 import SearchBar from "../searchBar";
+import { useRole } from "@/hooks/useRole";
 
 export default function BrandHeaderWeb() {
-  const user = useSelector((state: any) => state.user.user);
-
-  const [username, setUsername] = useState<string | null>(null);
-  const [isValidUser, setIsValidUser] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin, isValidUser, username, user } = useRole();
 
   const { width } = useWindowDimensions();
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (user) {
-          const userId = user?._id ? user._id : user?.id;
-          const response = await UserAPI.getUserById(userId);
-
-          if (response?.data) {
-            setIsAdmin(response.data.isAdmin);
-            setUsername(response.data.firstName || "User");
-            setIsValidUser(true);
-          } else {
-            setUsername(null);
-            setIsValidUser(false);
-          }
-        } else {
-          setUsername(null);
-          setIsValidUser(false);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setUsername(null);
-        setIsValidUser(false);
-      }
-    };
-
-    fetchUser();
-  }, [user]);
 
   return (
     <View
@@ -79,17 +45,17 @@ export default function BrandHeaderWeb() {
         />
 
         {(isTablet || isDesktop) && (
-          <View style = {{marginLeft: 4, flex:1}}>
-          <SearchBar
-            placeholder="Search..."
-            onPress={() => redirectToPage(containers.searchScreen)}
-          />
-        </View>
+          <View style={{ marginLeft: 16, flex: 1 }}>
+            <SearchBar
+              placeholder="Search..."
+              onPress={() => redirectToPage(containers.searchScreen)}
+            />
+          </View>
         )}
-       </View>
+      </View>
 
       <View style={styles.rightSection}>
-        {user && !user.isAdmin && (
+        {user && !isAdmin && (
           <View style={styles.rightIconsContainer}>
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="heart" size={24} color={colors.primary} />
@@ -106,11 +72,7 @@ export default function BrandHeaderWeb() {
           style={styles.iconButton}
           onPress={() => redirectToPage(containers.userNotificationsScreen)}
         >
-          <Ionicons
-            name="notifications"
-            size={24}
-            color={colors.primary}
-          />
+          <Ionicons name="notifications" size={24} color={colors.primary} />
           <Text>Notifications</Text>
         </TouchableOpacity>
 
@@ -164,13 +126,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderColor: colors.lightgrey,
-    ...(Platform.OS === "web" && {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-    }),
   },
   logo: {
     resizeMode: "contain",
@@ -185,6 +140,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     marginLeft: 14,
     padding: 6,
   },
@@ -209,9 +167,9 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "500",
   },
-  rightIconsContainer: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 15 
+  rightIconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
   },
 });
