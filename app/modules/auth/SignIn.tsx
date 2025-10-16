@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
@@ -26,10 +27,11 @@ import {
   isValidPhoneNumber,
   isValidPassword
 } from "../../../utilities/validations";
+import colors from "../../../constants/colors";
 
 const signIn = () => {
-  const [inputValue, setInputValue] = useState(""); // Combined input field value
-  const [isEmail, setIsEmail] = useState(true); // Track if input is email or phone
+  const [inputValue, setInputValue] = useState(""); 
+  const [isEmail, setIsEmail] = useState(true); 
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("phone");
   const [email, setEmail] = useState("");
@@ -40,6 +42,10 @@ const signIn = () => {
     Partial<{ input?: string; password?: string }>
   >({});
   const { login } = useAuth();
+  const {width} = useWindowDimensions();
+
+  const isWebOrTablet = width > 768;
+  const containerWidth = isWebOrTablet ? '60%' : '90%'; 
 
   const toggleMode = (selected: any) => {
     setMode(selected);
@@ -172,7 +178,10 @@ const signIn = () => {
               <View style={styles.emailContainer}>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    errors.input && globalStyles.errorInput,
+                  ]}
                   placeholder="Enter your email address"
                   value={email}
                   onChangeText={(text) => {
@@ -188,8 +197,17 @@ const signIn = () => {
           ) : (
             <>
               <Text style={styles.label}> Phone</Text>
-              <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
+              <View style={[
+                styles.phoneInputContainer,
+                errors.input && { borderColor: colors.error}
+              ]}>
+                <View style={{
+                  backgroundColor: colors.offWhite,
+                  paddingHorizontal: 10,
+                  borderRightWidth: 1,
+                  borderRightColor: colors.placeholdergrey,
+                  justifyContent: 'center',
+                }}>
                   <CountryPicker
                     countryCode={countryCode}
                     withFilter
@@ -199,9 +217,12 @@ const signIn = () => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
                     }}
-                    containerButtonStyle={styles.countryPickerButton}
+                    containerButtonStyle={{ 
+                      backgroundColor: 'transparent',
+                      padding: 0,
+                    }}
                   />
-                  <Text style={styles.callingCode}>+{callingCode}</Text>
+                  {/* <Text style={styles.callingCode}>+{callingCode}</Text> */}
                 </View>
 
                 <TextInput
