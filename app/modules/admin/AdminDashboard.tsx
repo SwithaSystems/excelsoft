@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminDashboardStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -26,6 +27,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import BrandHeader from "@/app/components/BrandHeader";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import HeaderNavBar from "@/app/components/commonComponentsWeb/HeaderNavBarWeb";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
@@ -34,6 +39,11 @@ const AdminDashboard = () => {
   const [loading, setLoading] = React.useState(true);
   const userData = useSelector((state: RootState) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
   const fetchUser = async () => {
     try {
       console.log("userData in admin dashboard", userData);
@@ -405,12 +415,22 @@ const AdminDashboard = () => {
     </View>
   );
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <BrandHeader hideUserGreeting={true} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="home" />;
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<BrandHeader hideUserGreeting={true} />}
+      headerComponent={HeaderComponent}
       hasFooter
-      footerComponent={<AdminFooter activeTab="home" />}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable
     >
       {/* <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[globalStyles.pt_0]}>
@@ -541,12 +561,12 @@ const AdminDashboard = () => {
         windowSize={10}
         initialNumToRender={3}
         getItemLayout={(data, index) => ({
-          length: 80, // Approximate height of each order item
+          length: 80, 
           offset: 80 * index,
           index,
         })}
       />
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
