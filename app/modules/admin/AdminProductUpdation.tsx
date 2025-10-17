@@ -18,6 +18,8 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import colors from "../../../constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -91,6 +93,10 @@ const AdminProductUpdation = () => {
   const [isColorsAvailable, setIsColorsAvailable] = useState(false);
   const [selectedColors, setSelectedColors] = useState<any>([]);
   const [showColorModal, setShowColorModal] = useState(false);
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const [errors, setErrors] = useState<
     Partial<{

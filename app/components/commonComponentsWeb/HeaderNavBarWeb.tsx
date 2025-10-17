@@ -12,8 +12,7 @@ import colors from "@/constants/colors";
 import { categoryService, Category } from "@/services/categoryService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { useRole } from "@/hooks/useRole";
-import { isAction } from "@reduxjs/toolkit";
+import { useRoleContext } from "@/context/RoleContext";
 
 type NavItem = {
   label: string;
@@ -43,18 +42,16 @@ const userNavItems: NavItem[] = [
     label: "Feedback",
     onPress: () => redirectToPage(containers.feedbackScreen),
   },
-//   {
-//     label: "Re-order",
-//     onPress: () => redirectToPage(containers.reorderScreen),
-//   },
-//   {
-//     label: "Customer Service",
-//     onPress: () => redirectToPage(containers.customerServiceScreen),
-//   },
-//   {
-//     label: "My Accounts",
-//     onPress: () => redirectToPage(containers.myAccountsScreen),
-//   },
+  {
+    label: "Re-order",
+    // onPress: () => redirectToPage(containers.reorderScreen),
+  },
+  {
+    label: "Customer Service",
+  },
+  {
+    label: "My Accounts",
+  },
 ];
 
 const adminNavItems: NavItem[] = [];
@@ -63,7 +60,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   backgroundColor = colors.primary, 
   onCategorySelect,
 }) => {
-  const {isAdmin} = useRole();
+  const {isAdmin} = useRoleContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
