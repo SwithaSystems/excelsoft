@@ -37,7 +37,7 @@ const AdminDashboard = () => {
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
   const [allOrders, setAllOrders] = React.useState<any>([]);
   const [loading, setLoading] = React.useState(true);
-  const userData = useSelector((state: RootState) => state.user.user);
+  const userData = useSelector((state: any) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
 
   const { width } = useWindowDimensions();

@@ -13,6 +13,8 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -31,7 +33,8 @@ import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";  
-import { Platform } from "react-native";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 // Define Product interface
 // interface Product {
@@ -75,6 +78,10 @@ const AdminProductDashboard = () => {
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [allCategories, setAllCategories] = useState<any>([]);
   const [selectCategory, setSelectCategory] = useState<string | number>("");
+
+   const { width } = useWindowDimensions();
+   const isTabOrDesktop = width >= 768;
+   const isWeb = Platform.OS === "web";
 
   // Use refs to prevent multiple simultaneous requests
   const loadingMoreRef = useRef(false);
@@ -540,17 +547,22 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
-  const LayoutComponent = Platform.OS === "web" ? PageLayoutWeb : PageLayout;
+ const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+  );
 
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
   return (
     <LayoutComponent
-      hasFooter
       hasHeader
-      scrollable={false}
-      headerComponent={
-        <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
-      }
-      footerComponent={<AdminFooter activeTab="products" />}
+      headerComponent={HeaderComponent}
+      hasFooter
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable
     >
       <View style={[globalStyles.pt_0, { paddingTop: 16, flex: 1 }]}>
         <View>
