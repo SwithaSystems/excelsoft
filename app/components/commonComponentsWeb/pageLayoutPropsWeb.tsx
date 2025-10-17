@@ -9,9 +9,9 @@ import {
 } from "react-native";
 import colors from "@/constants/colors";
 import HeaderNavBar from "./HeaderNavBarWeb";
-import {useRole} from "@/hooks/useRole";
 import { AdminSidebarWeb } from "./AdminSidebarWeb";
 import { UserSidebarWeb } from "./UserSidebarWeb";
+import { useRoleContext } from "@/context/RoleContext";
 
 interface PageLayoutWebProps {
   children: React.ReactNode;
@@ -39,7 +39,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   contentPadding = true,
 }) => {
   const { width, height } = useWindowDimensions();
-  const { isAdmin, loading} = useRole();
+  const { isAdmin, loading} = useRoleContext();
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 

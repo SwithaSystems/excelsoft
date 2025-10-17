@@ -15,6 +15,7 @@ import CustomToastAlert from "../app/components/commonComponents/CustomToastAler
 import BiometricAuth from "../app/components/Biometriauth";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
+import { RoleProvider } from "../context/RoleContext";
 
 // Notifications setup
 function NotificationsHandler() {
@@ -157,8 +158,9 @@ export default function Layout() {
     <StripeProvider publishableKey={stripePublishableKey}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <AppProvider>
-            <AuthProvider>
+          <AuthProvider>
+            <AppProvider>
+              <RoleProvider>
               <NotificationsHandler />
               <LayoutContent />
               <Toast
@@ -172,8 +174,9 @@ export default function Layout() {
                   ),
                 }}
               />
-            </AuthProvider>
-          </AppProvider>
+              </RoleProvider>
+            </AppProvider>
+          </AuthProvider>
         </PersistGate>
       </Provider>
     </StripeProvider>

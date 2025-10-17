@@ -13,10 +13,12 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
 import SearchBar from "../searchBar";
-import { useRole } from "@/hooks/useRole";
+import { useRoleContext } from "@/context/RoleContext";
+
 
 export default function BrandHeaderWeb() {
-  const { isAdmin, isValidUser, username, user } = useRole();
+  const { isAdmin, isValidUser, username, loading, refreshRole } = useRoleContext();
+  const user = isValidUser;
 
   const { width } = useWindowDimensions();
   const isTablet = width >= 768 && width < 1024;
