@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -155,11 +156,18 @@ const AdminOrderDetail = () => {
           onPress: () => router.replace("/modules/admin/AdminDashboard"),
         },
       ]);
-      await NotificationService.scheduleLocalNotification(
-        "Order Status Update",
-        `Your order #ORD-${orderDetails?.orderNumber} is ${status}`,
-        { orderId, type: "status_update" }
-      );
+
+      if (Platform.OS === "web") {
+        console.log("Push notifications not available on web");
+        return;
+      } else {
+        // Send notification about status update
+        await NotificationService.scheduleLocalNotification(
+          "Order Status Update",
+          `Your order #ORD-${orderDetails?.orderNumber} is ${status}`,
+          { orderId, type: "status_update" }
+        );
+      }
     } catch (err) {
       console.error("Update failed", err);
       alert("Failed to update order.");
@@ -192,9 +200,7 @@ const AdminOrderDetail = () => {
       <PageLayout
         hasHeader
         headerComponent={
-          <Header
-            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-          />
+          <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
         }
         hasFooter
         footerComponent={<AdminFooter />}

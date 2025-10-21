@@ -15,6 +15,7 @@ import {
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../../services/notificationService";
+import { Platform } from "react-native";
 import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -110,6 +111,11 @@ const UserProfileScreen = () => {
   console.log("user details fetched", user);
   useEffect(() => {
     const getToken = async () => {
+      // Only attempt to get push token on native platforms
+      if (Platform.OS === "web") {
+        console.log("Push notifications not available on web");
+        return;
+      }
       if (user?.id) {
         const token =
           await NotificationService.registerForPushNotificationsAsync(

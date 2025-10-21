@@ -11,6 +11,7 @@ import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../../utilities/dateTimeFormat";
 import { CLIENT_ID, DELIVERY_MODE_HOME } from "../../constants/stringLiterals";
 import { STORE_NAME } from "../../constants/stringLiterals";
+import { Platform } from "react-native";
 
 type Product = {
   productId: string;
@@ -239,11 +240,17 @@ export const usePaymentHandler = () => {
         redirectToPage(containers.orderSuccessfulScreen, {
           orderData: JSON.stringify(response),
         });
-        await NotificationService.scheduleLocalNotification(
-          "your Order is Placed",
-          `Your order Number is #ORD-${response?.orderNumber}`,
-          { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
-        );
+        // Only attempt to get push token on native platforms
+        if (Platform.OS === "web") {
+          console.log("Push notifications not available on web");
+          return;
+        } else {
+          await NotificationService.scheduleLocalNotification(
+            "your Order is Placed",
+            `Your order Number is #ORD-${response?.orderNumber}`,
+            { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
+          );
+        }
       } catch (error) {
         console.error("=== ORDER CREATION FAILED ===");
         console.error("Error:", error);

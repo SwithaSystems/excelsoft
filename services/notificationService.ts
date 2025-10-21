@@ -17,6 +17,12 @@ Notifications.setNotificationHandler({
 
 export class NotificationService {
   static async registerForPushNotificationsAsync(userId: string) {
+    // Skip push notification registration on web
+    if (Platform.OS === "web") {
+      console.log("Push notifications are not supported on web");
+      return null;
+    }
+
     let token;
 
     if (Platform.OS === "android") {
