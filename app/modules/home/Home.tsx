@@ -187,7 +187,7 @@ const HomePage = () => {
         </View>
 
         {/* Banner */}
-        {/* <View>{renderBanner()}</View> */}
+        {<View>{renderBanner()}</View>}
 
         {/* Recommended Products */}
         {/* <View>

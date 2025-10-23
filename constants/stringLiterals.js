@@ -14,6 +14,7 @@ const USER_PROFILE_SCREEN_TITLE = "User Profile";
 const ADMIN_PROFILE_SCREEN_TITLE = "Admin Profile";
 const ORDER_HISTORY_SCREEN_TITLE = "Order History";
 const NOTIFICATIONS_SCREEN_TITLE = "Notifications Settings";
+const GLOOBAL_SETTINGS_SCREEN_TITLE = "Global Settings";
 const CUSTOMER_SUPPORT_SCREEN_TITLE = "Customer Support";
 const SEARCH_SCREEN_TITLE = "Search";
 const ADMIN_CATEGORIES_SCREEN_TITLE = "Categories";
@@ -45,6 +46,7 @@ const SAVED_ADDRESS_SCREEN_TITLE = "Saved Address";
 const FEEDBACK_SCREEN2_TITLE = "Add Your Review";
 const FILE_UPLOAD = "File Upload";
 const STORE_OFFERS = "Store Offers";
+const STORE_DETAILS_SCREEN_TITLE = "Store Details";
 
 //Store Name and Address
 const STORE_NAME = "Weekes Food & Wine";
@@ -91,6 +93,8 @@ const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.sssZ";
 
 // Export all constants
 export {
+  STORE_DETAILS_SCREEN_TITLE,
+  GLOOBAL_SETTINGS_SCREEN_TITLE,
   CLIENT_ID,
   STORE_NAME,
   DATE_FORMAT_Display,

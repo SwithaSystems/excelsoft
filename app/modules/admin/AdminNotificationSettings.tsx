@@ -5,16 +5,13 @@ import { View, Text, Switch } from "react-native";
 import colors from "../../../constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import styles from "./NotificationsStyles";
+import styles from "./AdminnotificationSettingsStyles";
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
   orderUpdates: boolean;
-  promotions: boolean;
-  recommendations: boolean;
-  backInStock: boolean;
-  newArrivals: boolean;
-  priceDrops: boolean;
+  stock: boolean;
+  payment: boolean;
 }
 
 interface NotificationSettings {
@@ -27,29 +24,22 @@ interface SettingsState {
   emailNotifications: NotificationSettings;
 }
 
-const notificationsScreen: React.FC = () => {
-  // Initial state with default values
+const AdminNotificationSettings = () => {
   const [settings, setSettings] = useState<SettingsState>({
     pushNotifications: {
       enabled: true,
       options: {
         orderUpdates: false,
-        promotions: false,
-        recommendations: false,
-        backInStock: false,
-        newArrivals: false,
-        priceDrops: false,
+        stock: false,
+        payment: false,
       },
     },
     emailNotifications: {
       enabled: true,
       options: {
         orderUpdates: false,
-        promotions: false,
-        recommendations: false,
-        backInStock: false,
-        newArrivals: false,
-        priceDrops: false,
+        stock: false,
+        payment: false,
       },
     },
   });
@@ -86,22 +76,15 @@ const notificationsScreen: React.FC = () => {
   const formatOptionLabel = (key: string): string => {
     switch (key) {
       case "orderUpdates":
-        return "Order Updates";
-      case "promotions":
-        return "Promotions and Deals";
-      case "recommendations":
-        return "Recommendations";
-      case "backInStock":
-        return "Back in stock";
-      case "newArrivals":
-        return "New Arrivals";
-      case "priceDrops":
-        return "Price Drops";
+        return "New Order Updates";
+      case "stock":
+        return "Stock Notifications";
+      case "payment":
+        return "Payment";
       default:
         return key;
     }
   };
-
   return (
     <PageLayout
       hasFooter={false}
@@ -109,25 +92,9 @@ const notificationsScreen: React.FC = () => {
       scrollable
       headerComponent={<Header headerText={NOTIFICATIONS_SCREEN_TITLE} />}
     >
-      <View
-        style={[
-          // globalStyles.sectionContent,
-          globalStyles.pt_0,
-        ]}
-      >
-        <View
-          style={
-            [
-              // globalStyles.mb_2
-            ]
-          }
-        >
-          <View
-            style={[
-              // globalStyles.mb_2,
-              styles.eachNotificationSection,
-            ]}
-          >
+      <View style={[globalStyles.pt_0]}>
+        <View>
+          <View style={[styles.eachNotificationSection]}>
             <Text style={styles.sectionTitle}>Push Notifications</Text>
             <Switch
               trackColor={{
@@ -165,15 +132,8 @@ const notificationsScreen: React.FC = () => {
         </View>
 
         {/* Email Notifications */}
-        <View
-        // style={[globalStyles.mb_2]}
-        >
-          <View
-            style={[
-              // globalStyles.mb_2,
-              styles.eachNotificationSection,
-            ]}
-          >
+        <View>
+          <View style={[styles.eachNotificationSection]}>
             <Text style={styles.sectionTitle}>Email Notifications</Text>
             <Switch
               trackColor={{
@@ -213,5 +173,4 @@ const notificationsScreen: React.FC = () => {
     </PageLayout>
   );
 };
-
-export default notificationsScreen;
+export default AdminNotificationSettings;

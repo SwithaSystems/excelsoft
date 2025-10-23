@@ -106,7 +106,9 @@ function BrandHeader(props) {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
             onPress={() => {
-              if (isValidUser) {
+              if (isAdmin && props.hideUserGreeting) {
+                redirectToPage(containers.AdminProfileScreen);
+              } else if (isValidUser) {
                 redirectToPage(containers.userProfileScreen);
               } else {
                 redirectToPage(containers.signInScreen);
