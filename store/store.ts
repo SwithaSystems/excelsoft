@@ -16,7 +16,7 @@ const userPErsistConfig = {
 
 // Combine all reducers
 const rootReducer = combineReducers({
-  user: userReducer,
+  user: persistReducer(userPErsistConfig, userReducer),
   cart: cartReducer,
   savedItems: savedItemsReducer,
   savedForLaterItems: savedForLaterReducer,
@@ -26,7 +26,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["cart", "savedItems", "savedforLaterItems"],
+  whitelist: ["cart", "savedItems", "savedForLaterItems"],
 };
 
 // Apply persistReducer to the root reducer

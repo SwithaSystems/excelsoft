@@ -1,15 +1,10 @@
 // utilities/storage.js
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
-
-const createNoopStorage = () => ({
-  getItem: () => Promise.resolve(null),
-  setItem: (_key, value) => Promise.resolve(value),
-  removeItem: () => Promise.resolve(),
-});
 
 const storage =
   typeof window !== "undefined"
     ? createWebStorage("local") 
-    : createNoopStorage();
+    : AsyncStorage;
 
 export default storage;

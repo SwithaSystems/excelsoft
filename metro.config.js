@@ -2,17 +2,10 @@
 const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 
-// Load Expo’s default Metro config
 const config = getDefaultConfig(__dirname);
 
-// ---------------------------
-// Watch the utilities folder for stub files
-// ---------------------------
 config.watchFolders = [path.resolve(__dirname, "utilities")];
 
-// ---------------------------
-// Define all web stubs here
-// ---------------------------
 const alias = {
   "expo-secure-store": path.resolve(
     __dirname,
@@ -55,36 +48,37 @@ const alias = {
     __dirname,
     "utilities/turbo-module-stub.js"
   ),
-  "react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedModule":
-    path.resolve(__dirname, "utilities/native-animated-module-stub.js"),
-  "react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedHelper":
-    path.resolve(__dirname, "utilities/native-animated-helper-stub.js"),
-  "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule":
-    path.resolve(__dirname, "utilities/native-animated-module-stub.js"),
-  "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedHelper":
-    path.resolve(__dirname, "utilities/native-animated-helper-stub.js"),
+  "react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedModule": path.resolve(
+    __dirname, 
+    "utilities/native-animated-module-stub.js"
+  ),
+  "react-native-web/dist/cjs/vendor/react-native/Animated/NativeAnimatedHelper": path.resolve(
+    __dirname, 
+    "utilities/native-animated-helper-stub.js"
+  ),
+  "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedModule": path.resolve(
+      __dirname, 
+      "utilities/native-animated-module-stub.js"
+    ),
+  "react-native-web/dist/vendor/react-native/Animated/NativeAnimatedHelper": path.resolve(
+    __dirname, 
+    "utilities/native-animated-helper-stub.js"
+  ),
   "generator-function": path.resolve(
     __dirname,
     "utilities/generator-function-stub.js"
   ),
 };
 
-// Merge with any existing aliases
 config.resolver.alias = { ...(config.resolver.alias || {}), ...alias };
 
-// Save original resolver
 const originalResolveRequest = config.resolver.resolveRequest;
 
-// ---------------------------
-// Custom resolver for stubs and special cases
-// ---------------------------
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // ✅ Check alias first
   if (alias[moduleName]) {
     return { filePath: alias[moduleName], type: "sourceFile" };
   }
 
-  // ✅ Special Animated cases
   if (moduleName.includes("NativeAnimatedHelper")) {
     return {
       filePath:
@@ -104,16 +98,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     };
   }
 
-  // ✅ Fallback to original resolver
   if (originalResolveRequest) {
     return originalResolveRequest(context, moduleName, platform);
   }
   return context.resolveRequest(context, moduleName, platform);
 };
 
-// ---------------------------
-// Web-specific extensions
-// ---------------------------
 config.resolver.sourceExts = [
   "web.js",
   "web.ts",
@@ -125,7 +115,4 @@ config.resolver.sourceExts = [
 config.resolver.resolverMainFields = ["browser", "react-native", "main"];
 config.resolver.platforms = ["web", "ios", "android", "native"];
 
-// ---------------------------
-// Export final Metro config
-// ---------------------------
 module.exports = config;
