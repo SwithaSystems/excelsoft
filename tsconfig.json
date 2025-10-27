@@ -27,8 +27,11 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "app/welcome/welcomeScreen.jsx"
-, "app/modules/admin/components/categoryDropdown.js", "app/modules/admin/components/categoryDropdown.js"  ],
+    "app/welcome/welcomeScreen.jsx", 
+    "app/modules/admin/components/categoryDropdown.js", 
+    "app/modules/admin/components/categoryDropdown.js", 
+    "metro.config.js"  
+  ],
   "exclude": [
     "node_modules",
     "babel.config.js",
