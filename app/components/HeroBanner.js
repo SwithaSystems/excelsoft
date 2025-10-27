@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Dimensions,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   Image,
@@ -11,6 +10,7 @@ import colors from "../../constants/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Carousel from "react-native-reanimated-carousel";
+import { useAppContext } from "@/context/AppContext";
 
 const { width } = Dimensions.get("window");
 
@@ -28,6 +28,9 @@ function HeroBanner({
   scrollAnimationDuration = 300,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { settings } = useAppContext();
+
+  const shouldDisplayCarousel = settings.globalSettings.options.DisplayCarousal;
 
   const defaultBannerData = [
     {
@@ -55,6 +58,11 @@ function HeroBanner({
   };
 
   if (renderBanner.length === 0) {
+    return null;
+  }
+
+  // Don't render if carousel is disabled OR no banners
+  if (!shouldDisplayCarousel || renderBanner.length === 0) {
     return null;
   }
 

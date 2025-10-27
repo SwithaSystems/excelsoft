@@ -26,7 +26,7 @@ import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import {
   DATE_FORMAT_Display,
-  DEFAULT_PICKUP_HOURS,
+  // DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_STORE,
   STORE_CLOSING_TIMINGS,
@@ -47,6 +47,7 @@ import {
   isValidName,
   isValidPhoneNumber,
 } from "../../../utilities/validations";
+import {usePickupTime} from "../../../hooks/usePickupTime";
 
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -105,6 +106,8 @@ const PickupScreen = () => {
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
   console.log("userData in pickupscreen", userData);
+
+  const DEFAULT_PICKUP_HOURS = usePickupTime();
 
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);

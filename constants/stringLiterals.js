@@ -1,3 +1,4 @@
+
 // Screen Titles
 const VERIFICATION_SCREEN_TITLE = "Verify Your Account";
 const SELECT_BILLING_ADDRESS_SCREEN_TITLE = "Billing Address";
@@ -79,6 +80,7 @@ const ADMINFOOTER_SCAN = "scan&deliver";
 
 //DEFAULT_PICKUP_HOURS
 const DEFAULT_PICKUP_HOURS = 2;
+// const DEFAULT_PICKUP_HOURS = defaultTimimgs;
 
 //Store timings
 const STORE_OPENING_TIMINGS = 7;

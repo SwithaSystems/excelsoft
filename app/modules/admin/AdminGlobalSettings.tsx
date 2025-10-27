@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, Switch } from "react-native";
+import { View, Text, Switch, ActivityIndicator } from "react-native";
 import styles from "./AdminGlobalSettingsStyles";
 import colors from "@/constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "@/app/components/Header";
 import { GLOOBAL_SETTINGS_SCREEN_TITLE } from "@/constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
+import { useAppContext } from "@/context/AppContext";
 
 // Define TypeScript interfaces for the settings
 interface GlobalSettingsOptions {
@@ -24,33 +25,8 @@ interface SettingsState {
 }
 
 const AdminGlobalSettings = () => {
-  const [settings, setSettings] = useState<SettingsState>({
-    globalSettings: {
-      enabled: true,
-      options: {
-        DisplayCarousal: false,
-        TimeWindow: false,
-        DeliveryMode: false,
-      },
-    },
-  });
+  const { settings, toggleSetting, settingsLoading } = useAppContext();
 
-  // Function to toggle individual options within a category
-  const toggleOption = (
-    category: keyof SettingsState,
-    option: keyof GlobalSettingsOptions
-  ) => {
-    setSettings((prevSettings) => ({
-      ...prevSettings,
-      [category]: {
-        ...prevSettings[category],
-        options: {
-          ...prevSettings[category].options,
-          [option]: !prevSettings[category].options[option],
-        },
-      },
-    }));
-  };
   // Helper function to format option labels
   const formatOptionLabel = (key: string): string => {
     switch (key) {
@@ -78,6 +54,11 @@ const AdminGlobalSettings = () => {
         return "";
     }
   };
+
+  if (settingsLoading) {
+    return <ActivityIndicator />;
+  }
+
   return (
     <PageLayout
       hasFooter={false}
@@ -106,9 +87,7 @@ const AdminGlobalSettings = () => {
                     }}
                     thumbColor={colors.white}
                     value={settings.globalSettings.options[optionKey]}
-                    onValueChange={() =>
-                      toggleOption("globalSettings", optionKey)
-                    }
+                    onValueChange={() => toggleSetting(optionKey)}
                   />
                 </View>
                 <View>
