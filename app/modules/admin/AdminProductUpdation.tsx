@@ -1,5 +1,6 @@
 import {
   ADMIN_PRODUCT_ADD_SCREEN_TITLE,
+  ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE,
   ADMIN_PRODUCT_UPDATE_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -50,6 +51,10 @@ import {
   redirectToPage,
 } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import AdminFooter from "@/app/components/AdminFooter";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -152,7 +157,7 @@ const AdminProductUpdation = () => {
       setIsVatApplicable(productData.isVatApplicable || false);
       setVatRate(
         productData.vatRate?.toString() ||
-          (productData.isVatApplicable ? "20.00" : " ")
+        (productData.isVatApplicable ? "20.00" : " ")
       );
       setGrossPrice(productData.grossPrice?.toString() || "");
       setVatAmount(productData.vatAmount?.toString() || "");
@@ -460,7 +465,7 @@ const AdminProductUpdation = () => {
     setVatRate(numericValue);
   };
 
-  const handleVatAmountChange = (value: string) => {};
+  const handleVatAmountChange = (value: string) => { };
 
   const handleAdd_UpdateProduct = useCallback(async () => {
     // Validate fields before submission
@@ -652,521 +657,547 @@ const AdminProductUpdation = () => {
     return `${selectedColors.length} colors selected`;
   };
 
-  return (
-    <PageLayout
-      hasFooter={false}
-      hasHeader
-      headerComponent={
-        <Header
-          headerText={
-            newProduct
-              ? ADMIN_PRODUCT_ADD_SCREEN_TITLE
-              : ADMIN_PRODUCT_UPDATE_SCREEN_TITLE
-          }
-        />
-      }
-      scrollable={false}
-    >
-      <KeyBoardWrapper>
-        <ScrollView style={{ flex: 1 }}>
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-              globalStyles.mt_n3,
-            ]}
-          >
-            <Text style={styles.label}>Product Name *</Text>
-            <CustomTextInput
-              setValue={handleProductNameChange}
-              value={productName}
-              onPress={() => {}}
-              placeholder="e.g., Premium Wireless Headphones"
-              style={errors.productName ? globalStyles.errorInput : undefined}
-              maxLength={100}
-            />
-            {errors.productName && (
-              <Text style={globalStyles.errorText}>{errors.productName}</Text>
-            )}
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+  );
 
-            <Text style={styles.label}>Title </Text>
-            <CustomTextInput
-              value={title}
-              setValue={handleTitleChange}
-              onPress={() => {}}
-              placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
-              // style={errors.title ? globalStyles.errorInput : undefined}
-              maxLength={150}
-            />
-            {/* {errors.title && (
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+
+
+  return (
+
+
+    <LayoutComponent
+      hasHeader
+      headerComponent={HeaderComponent}
+      // hasFooter
+      footerComponent={FooterComponent}
+      scrollable={isTabOrDesktop ? false : true}
+    >
+
+      <PageLayout
+        hasFooter={false}
+        hasHeader
+        headerComponent={
+          <Header
+            headerText={
+              newProduct
+                ? ADMIN_PRODUCT_ADD_SCREEN_TITLE
+                : ADMIN_PRODUCT_UPDATE_SCREEN_TITLE
+            }
+          />
+        }
+        scrollable={false}
+      >
+        <KeyBoardWrapper>
+          <ScrollView style={{ flex: 1 }}>
+            <View
+              style={[
+                // globalStyles.sectionContent,
+                globalStyles.pt_0,
+                globalStyles.mt_n3,
+              ]}
+            >
+              <Text style={styles.label}>Product Name *</Text>
+              <CustomTextInput
+                setValue={handleProductNameChange}
+                value={productName}
+                onPress={() => { }}
+                placeholder="e.g., Premium Wireless Headphones"
+                style={errors.productName ? globalStyles.errorInput : undefined}
+                maxLength={100}
+              />
+              {errors.productName && (
+                <Text style={globalStyles.errorText}>{errors.productName}</Text>
+              )}
+
+              <Text style={styles.label}>Title </Text>
+              <CustomTextInput
+                value={title}
+                setValue={handleTitleChange}
+                onPress={() => { }}
+                placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
+                // style={errors.title ? globalStyles.errorInput : undefined}
+                maxLength={150}
+              />
+              {/* {errors.title && (
               <Text style={globalStyles.errorText}>{errors.title}</Text>
             )} */}
 
-            <Text style={styles.label}>Product Description</Text>
-            <TextInput
-              value={productDescription}
-              onChangeText={handleDescriptionChange}
-              placeholder="Describe your product features, specifications, and benefits in detail..."
-              multiline
-              numberOfLines={6}
-              style={[
-                styles.multilinetextbox,
-                // errors.productDescription ? globalStyles.errorInput : undefined,
-              ]}
-              maxLength={1000}
-            />
-            <Text style={styles.characterCount}>
-              {productDescription.length}/1000 characters
-            </Text>
-            {/* {errors.productDescription && (
+              <Text style={styles.label}>Product Description</Text>
+              <TextInput
+                value={productDescription}
+                onChangeText={handleDescriptionChange}
+                placeholder="Describe your product features, specifications, and benefits in detail..."
+                multiline
+                numberOfLines={6}
+                style={[
+                  styles.multilinetextbox,
+                  // errors.productDescription ? globalStyles.errorInput : undefined,
+                ]}
+                maxLength={1000}
+              />
+              <Text style={styles.characterCount}>
+                {productDescription.length}/1000 characters
+              </Text>
+              {/* {errors.productDescription && (
               <Text style={globalStyles.errorText}>
                 {errors.productDescription}
               </Text>
             )} */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Category *</Text>
-              <View style={styles.categoryContainer}>
-                <ModalSelector
-                  data={allCategories.map((cat: any) => ({
-                    key: cat.id,
-                    label: cat.name,
-                    value: cat.id,
-                  }))}
-                  initValue="Category"
-                  onChange={(option) => setCategory(option.value)}
-                  optionTextStyle={{ color: colors.primary }}
-                  optionContainerStyle={{ backgroundColor: colors.white }}
-                  cancelStyle={{ backgroundColor: colors.white }}
-                  accessible={true}
-                  accessibilityLabel="Select Category"
-                >
-                  <View style={styles.categorySelector}>
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        { color: category ? colors.black : colors.slateGrey },
-                      ]}
-                    >
-                      {category
-                        ? allCategories.find((c: any) => c.id == category)?.name
-                        : "Select category"}
-                    </Text>
-                    <Ionicons
-                      name="chevron-down-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </View>
-                </ModalSelector>
-                {errors.category && (
-                  <Text style={globalStyles.errorText}>{errors.category}</Text>
-                )}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Category *</Text>
+                <View style={styles.categoryContainer}>
+                  <ModalSelector
+                    data={allCategories.map((cat: any) => ({
+                      key: cat.id,
+                      label: cat.name,
+                      value: cat.id,
+                    }))}
+                    initValue="Category"
+                    onChange={(option) => setCategory(option.value)}
+                    optionTextStyle={{ color: colors.primary }}
+                    optionContainerStyle={{ backgroundColor: colors.white }}
+                    cancelStyle={{ backgroundColor: colors.white }}
+                    accessible={true}
+                    accessibilityLabel="Select Category"
+                  >
+                    <View style={styles.categorySelector}>
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          { color: category ? colors.black : colors.slateGrey },
+                        ]}
+                      >
+                        {category
+                          ? allCategories.find((c: any) => c.id == category)?.name
+                          : "Select category"}
+                      </Text>
+                      <Ionicons
+                        name="chevron-down-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </View>
+                  </ModalSelector>
+                  {errors.category && (
+                    <Text style={globalStyles.errorText}>{errors.category}</Text>
+                  )}
+                </View>
               </View>
-            </View>
-            <Text style={styles.label}>Stock </Text>
-            <CustomTextInput
-              setValue={handleStockChange}
-              value={stock}
-              onPress={() => {}}
-              placeholder="e.g., 100"
-              keyboardType="numeric"
-              // style={errors.stock ? globalStyles.errorInput : undefined}
-              maxLength={5}
-            />
-            {/* {errors.stock && (
+              <Text style={styles.label}>Stock </Text>
+              <CustomTextInput
+                setValue={handleStockChange}
+                value={stock}
+                onPress={() => { }}
+                placeholder="e.g., 100"
+                keyboardType="numeric"
+                // style={errors.stock ? globalStyles.errorInput : undefined}
+                maxLength={5}
+              />
+              {/* {errors.stock && (
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
-            <CustomTextInput
-              setValue={handlePriceChange}
-              value={netPrice}
-              onPress={() => {}}
-              placeholder="e.g., 2999.99"
-              keyboardType="decimal-pad"
-              style={errors.netPrice ? globalStyles.errorInput : undefined}
-              maxLength={10}
-            />
-            {errors.netPrice && (
-              <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
-            )}
+              <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
+              <CustomTextInput
+                setValue={handlePriceChange}
+                value={netPrice}
+                onPress={() => { }}
+                placeholder="e.g., 2999.99"
+                keyboardType="decimal-pad"
+                style={errors.netPrice ? globalStyles.errorInput : undefined}
+                maxLength={10}
+              />
+              {errors.netPrice && (
+                <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
+              )}
 
-            <Text style={styles.label}>Discount({CurrencySymbol})</Text>
-            <CustomTextInput
-              setValue={handleDiscountPriceChange}
-              value={discount}
-              onPress={() => {}}
-              placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
-              keyboardType="decimal-pad"
-              // style={errors.discount ? globalStyles.errorInput : undefined}
-              maxLength={10}
-            />
-            {/* {errors.discount && (
+              <Text style={styles.label}>Discount({CurrencySymbol})</Text>
+              <CustomTextInput
+                setValue={handleDiscountPriceChange}
+                value={discount}
+                onPress={() => { }}
+                placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
+                keyboardType="decimal-pad"
+                // style={errors.discount ? globalStyles.errorInput : undefined}
+                maxLength={10}
+              />
+              {/* {errors.discount && (
               <Text style={globalStyles.errorText}>{errors.discount}</Text>
             )} */}
 
-            <View style={styles.checkBox}>
-              <CheckBox
-                checked={isVatApplicable}
-                onPress={() => {
-                  setIsVatApplicable(!isVatApplicable);
-                  if (!isVatApplicable) {
-                    setVatRate("20.00");
-                    setVatAmount("");
-                    setNetPriceIncVAT("");
-                    // setGrossPrice("");
-                  } else {
-                    setVatRate("");
-                    setVatAmount(" ");
-                    setNetPriceIncVAT("");
-                    // setGrossPrice("");
-                  }
-                }}
-                checkedColor={colors.primary}
-                uncheckedColor={colors.secondary}
+              <View style={styles.checkBox}>
+                <CheckBox
+                  checked={isVatApplicable}
+                  onPress={() => {
+                    setIsVatApplicable(!isVatApplicable);
+                    if (!isVatApplicable) {
+                      setVatRate("20.00");
+                      setVatAmount("");
+                      setNetPriceIncVAT("");
+                      // setGrossPrice("");
+                    } else {
+                      setVatRate("");
+                      setVatAmount(" ");
+                      setNetPriceIncVAT("");
+                      // setGrossPrice("");
+                    }
+                  }}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                />
+                <Text>Is VAT Applicable?</Text>
+              </View>
+
+              {isVatApplicable && (
+                <>
+                  <Text style={styles.label}>VAT Rate (%)</Text>
+                  <CustomTextInput
+                    setValue={handleVatRateChange}
+                    value={vatRate}
+                    onPress={() => { }}
+                    placeholder="e.g., 5.00"
+                    keyboardType="decimal-pad"
+                    style={errors.vatRate ? globalStyles.errorInput : undefined}
+                    maxLength={6}
+                  />
+
+                  <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
+                  <CustomTextInput
+                    setValue={handleVatAmountChange}
+                    value={vatAmount}
+                    onPress={() => { }}
+                    placeholder="eCalculated Automatically"
+                    keyboardType="decimal-pad"
+                    maxLength={10}
+                    editable={false}
+                    style={styles.readOnlyInput}
+                  />
+
+                  <Text style={styles.label}>
+                    Net Price Including VAT ({CurrencySymbol})
+                  </Text>
+                  <CustomTextInput
+                    value={netPriceIncVAT}
+                    onPress={() => { }}
+                    placeholder="Calculated automatically"
+                    keyboardType="decimal-pad"
+                    maxLength={10}
+                    editable={false}
+                    style={styles.readOnlyInput}
+                  />
+                </>
+              )}
+
+              <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
+              <CustomTextInput
+                value={grossPrice}
+                onPress={() => { }}
+                placeholder="Calculated Automatically"
+                keyboardType="decimal-pad"
+                maxLength={10}
+                editable={false}
+                style={styles.readOnlyInput}
               />
-              <Text>Is VAT Applicable?</Text>
-            </View>
 
-            {isVatApplicable && (
-              <>
-                <Text style={styles.label}>VAT Rate (%)</Text>
-                <CustomTextInput
-                  setValue={handleVatRateChange}
-                  value={vatRate}
-                  onPress={() => {}}
-                  placeholder="e.g., 5.00"
-                  keyboardType="decimal-pad"
-                  style={errors.vatRate ? globalStyles.errorInput : undefined}
-                  maxLength={6}
-                />
-
-                <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
-                <CustomTextInput
-                  setValue={handleVatAmountChange}
-                  value={vatAmount}
-                  onPress={() => {}}
-                  placeholder="eCalculated Automatically"
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  editable={false}
-                  style={styles.readOnlyInput}
-                />
-
-                <Text style={styles.label}>
-                  Net Price Including VAT ({CurrencySymbol})
-                </Text>
-                <CustomTextInput
-                  value={netPriceIncVAT}
-                  onPress={() => {}}
-                  placeholder="Calculated automatically"
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  editable={false}
-                  style={styles.readOnlyInput}
-                />
-              </>
-            )}
-
-            <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
-            <CustomTextInput
-              value={grossPrice}
-              onPress={() => {}}
-              placeholder="Calculated Automatically"
-              keyboardType="decimal-pad"
-              maxLength={10}
-              editable={false}
-              style={styles.readOnlyInput}
-            />
-
-            <Text style={styles.label}>Minimum Order Quantity</Text>
-            <CustomTextInput
-              setValue={handleMinOrderQuantityChange}
-              value={minimumOrderQunatity}
-              onPress={() => {}}
-              placeholder="e.g., 1 (optional - leave empty for no minimum)"
-              keyboardType="numeric"
-              // style={
-              //   errors.minimumOrderQunatity
-              //     ? globalStyles.errorInput
-              //     : undefined
-              // }
-              maxLength={4}
-            />
-            {/* {errors.minimumOrderQunatity && (
+              <Text style={styles.label}>Minimum Order Quantity</Text>
+              <CustomTextInput
+                setValue={handleMinOrderQuantityChange}
+                value={minimumOrderQunatity}
+                onPress={() => { }}
+                placeholder="e.g., 1 (optional - leave empty for no minimum)"
+                keyboardType="numeric"
+                // style={
+                //   errors.minimumOrderQunatity
+                //     ? globalStyles.errorInput
+                //     : undefined
+                // }
+                maxLength={4}
+              />
+              {/* {errors.minimumOrderQunatity && (
               <Text style={globalStyles.errorText}>
                 {errors.minimumOrderQunatity}
               </Text>
             )} */}
 
+              <View style={styles.checkBox}>
+                <CheckBox
+                  checked={isColorsAvailable}
+                  onPress={() => {
+                    setIsColorsAvailable(!isColorsAvailable);
+                    if (!isColorsAvailable) {
+                      setSelectedColors([]);
+                    }
+                  }}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                />
+                <Text>Colors Available?</Text>
+              </View>
+              {!newProduct && selectedColors.length > 0 && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    marginTop: 10,
+                  }}
+                >
+                  {selectedColors.map((color: any, index: any) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: 20,
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        margin: 4,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: 6,
+                          backgroundColor: color.hex || color.colorCode,
+                          marginRight: 6,
+                        }}
+                      />
+                      <Text>{color.colorName || color.name}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {isColorsAvailable && (
+                <>
+                  <Text style={styles.label}>Select Color</Text>
+                  <View style={styles.categoryContainer}>
+                    <TouchableOpacity
+                      style={styles.categorySelector}
+                      onPress={() => setShowColorModal(true)}
+                    >
+                      <View style={styles.selectedColorsDisplay}>
+                        {selectedColors.length > 0 && (
+                          <View style={styles.selectedColorCircles}>
+                            {selectedColors
+                              .slice(0, 3)
+                              .map((colorHex: any, index: any) => (
+                                <View
+                                  key={index}
+                                  style={[
+                                    styles.smallColorCircle,
+                                    {
+                                      backgroundColor:
+                                        colorHex.hex || colorHex.colorCode,
+                                    },
+                                  ]}
+                                />
+                              ))}
+                            {selectedColors.length > 3 && (
+                              <View style={styles.moreColorsIndicator}>
+                                <Text style={styles.moreColorsText}>
+                                  +{selectedColors.length - 3}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
+                        <Text
+                          style={[
+                            styles.categoryText,
+                            {
+                              color:
+                                selectedColors.length > 0
+                                  ? selectedColors.map((c: any) => c.hex)
+                                  : colors.slateGrey,
+                            },
+                          ]}
+                        >
+                          {getSelectedColorsText()}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-down-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Modal
+                    visible={showColorModal}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setShowColorModal(false)}
+                  >
+                    <View style={styles.modalOverlay}>
+                      <View style={styles.modalContainer}>
+                        <View style={styles.modalHeader}>
+                          <Text style={styles.modalTitle}>Select Colors</Text>
+                          <TouchableOpacity
+                            onPress={() => setShowColorModal(false)}
+                            style={styles.closeButton}
+                          >
+                            <Ionicons
+                              name="close"
+                              size={24}
+                              color={colors.black}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.colorListContainer}>
+                          {predefinedColors.map((color, index) => {
+                            const isSelected = selectedColors.some(
+                              (selectedColor: any) =>
+                                (selectedColor.hex || selectedColor.colorCode) ===
+                                color.hex ||
+                                (selectedColor.name ||
+                                  selectedColor.colorName) === color.name
+                            );
+
+                            return (
+                              <TouchableOpacity
+                                key={index}
+                                style={styles.colorOptionRow}
+                                onPress={() =>
+                                  handleColorSelection(color.hex, color.name)
+                                }
+                              >
+                                <View style={styles.colorOptionContent}>
+                                  <CheckBox
+                                    checked={isSelected}
+                                    onPress={() =>
+                                      handleColorSelection(color.hex, color.name)
+                                    }
+                                    checkedColor={colors.primary}
+                                    uncheckedColor={colors.secondary}
+                                  />
+                                  <View
+                                    style={[
+                                      styles.colorCircle,
+                                      { backgroundColor: color.hex },
+                                    ]}
+                                  />
+                                  <Text style={styles.colorNameText}>
+                                    {color.name} ({color.hex})
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+
+                        <View style={styles.modalFooter}>
+                          <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={() => setSelectedColors([])}
+                          >
+                            <Text style={styles.clearButtonText}>Clear All</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.doneButton}
+                            onPress={() => setShowColorModal(false)}
+                          >
+                            <Text style={styles.doneButtonText}>Done</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </Modal>
+                </>
+              )}
+            </View>
             <View style={styles.checkBox}>
               <CheckBox
-                checked={isColorsAvailable}
-                onPress={() => {
-                  setIsColorsAvailable(!isColorsAvailable);
-                  if (!isColorsAvailable) {
-                    setSelectedColors([]);
-                  }
-                }}
+                checked={isChecked}
+                onPress={() => setIsChecked(!isChecked)}
                 checkedColor={colors.primary}
                 uncheckedColor={colors.secondary}
               />
-              <Text>Colors Available?</Text>
+              <Text>Returnable?</Text>
+              <CheckBox
+                checked={isAgeRestricted}
+                onPress={() => setIsAgeRestricted(!isAgeRestricted)}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
+              />
+              <Text>Age Restricted?</Text>
             </View>
-            {!newProduct && selectedColors.length > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginTop: 10,
-                }}
-              >
-                {selectedColors.map((color: any, index: any) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: 20,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      margin: 4,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: color.hex || color.colorCode,
-                        marginRight: 6,
-                      }}
-                    />
-                    <Text>{color.colorName || color.name}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-            {isColorsAvailable && (
-              <>
-                <Text style={styles.label}>Select Color</Text>
-                <View style={styles.categoryContainer}>
-                  <TouchableOpacity
-                    style={styles.categorySelector}
-                    onPress={() => setShowColorModal(true)}
-                  >
-                    <View style={styles.selectedColorsDisplay}>
-                      {selectedColors.length > 0 && (
-                        <View style={styles.selectedColorCircles}>
-                          {selectedColors
-                            .slice(0, 3)
-                            .map((colorHex: any, index: any) => (
-                              <View
-                                key={index}
-                                style={[
-                                  styles.smallColorCircle,
-                                  {
-                                    backgroundColor:
-                                      colorHex.hex || colorHex.colorCode,
-                                  },
-                                ]}
-                              />
-                            ))}
-                          {selectedColors.length > 3 && (
-                            <View style={styles.moreColorsIndicator}>
-                              <Text style={styles.moreColorsText}>
-                                +{selectedColors.length - 3}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      )}
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          {
-                            color:
-                              selectedColors.length > 0
-                                ? selectedColors.map((c: any) => c.hex)
-                                : colors.slateGrey,
-                          },
-                        ]}
-                      >
-                        {getSelectedColorsText()}
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-down-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <Modal
-                  visible={showColorModal}
-                  transparent={true}
-                  animationType="slide"
-                  onRequestClose={() => setShowColorModal(false)}
-                >
-                  <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                      <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Select Colors</Text>
-                        <TouchableOpacity
-                          onPress={() => setShowColorModal(false)}
-                          style={styles.closeButton}
-                        >
-                          <Ionicons
-                            name="close"
-                            size={24}
-                            color={colors.black}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <ScrollView style={styles.colorListContainer}>
-                        {predefinedColors.map((color, index) => {
-                          const isSelected = selectedColors.some(
-                            (selectedColor: any) =>
-                              (selectedColor.hex || selectedColor.colorCode) ===
-                                color.hex ||
-                              (selectedColor.name ||
-                                selectedColor.colorName) === color.name
-                          );
-
-                          return (
-                            <TouchableOpacity
-                              key={index}
-                              style={styles.colorOptionRow}
-                              onPress={() =>
-                                handleColorSelection(color.hex, color.name)
-                              }
-                            >
-                              <View style={styles.colorOptionContent}>
-                                <CheckBox
-                                  checked={isSelected}
-                                  onPress={() =>
-                                    handleColorSelection(color.hex, color.name)
-                                  }
-                                  checkedColor={colors.primary}
-                                  uncheckedColor={colors.secondary}
-                                />
-                                <View
-                                  style={[
-                                    styles.colorCircle,
-                                    { backgroundColor: color.hex },
-                                  ]}
-                                />
-                                <Text style={styles.colorNameText}>
-                                  {color.name} ({color.hex})
-                                </Text>
-                              </View>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
-
-                      <View style={styles.modalFooter}>
-                        <TouchableOpacity
-                          style={styles.clearButton}
-                          onPress={() => setSelectedColors([])}
-                        >
-                          <Text style={styles.clearButtonText}>Clear All</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.doneButton}
-                          onPress={() => setShowColorModal(false)}
-                        >
-                          <Text style={styles.doneButtonText}>Done</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </Modal>
-              </>
-            )}
-          </View>
-          <View style={styles.checkBox}>
-            <CheckBox
-              checked={isChecked}
-              onPress={() => setIsChecked(!isChecked)}
-              checkedColor={colors.primary}
-              uncheckedColor={colors.secondary}
-            />
-            <Text>Returnable?</Text>
-            <CheckBox
-              checked={isAgeRestricted}
-              onPress={() => setIsAgeRestricted(!isAgeRestricted)}
-              checkedColor={colors.primary}
-              uncheckedColor={colors.secondary}
-            />
-            <Text>Age Restricted?</Text>
-          </View>
-          {/* <View style={styles.checkBox}>
+            {/* <View style={styles.checkBox}>
            
           </View> */}
 
-          <Text style={[styles.label, globalStyles.mt_4]}>Product Images</Text>
-          <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
+            <Text style={[styles.label, globalStyles.mt_4]}>Product Images</Text>
+            <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
 
-          <View style={styles.imageContainer}>
-            {/* Display existing images */}
-            {productImages.map((img: any, index: any) => (
-              <View key={`img-${index}`} style={styles.imageWrapper}>
-                <Image source={{ uri: img.uri }} style={styles.productImage} />
+            <View style={styles.imageContainer}>
+              {/* Display existing images */}
+              {productImages.map((img: any, index: any) => (
+                <View key={`img-${index}`} style={styles.imageWrapper}>
+                  <Image source={{ uri: img.uri }} style={styles.productImage} />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeImage(index)}
+                  >
+                    <Ionicons name="close-circle" size={20} color="red" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {/* Add image placeholders */}
+              {Array.from({
+                length: MAX_IMAGES - productImages.length,
+              }).map((_, index) => (
                 <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index)}
+                  key={`placeholder-${index}`}
+                  style={styles.imagePlaceholder}
+                  onPress={showImageOptions}
                 >
-                  <Ionicons name="close-circle" size={20} color="red" />
+                  <Text style={styles.plus}>+</Text>
                 </TouchableOpacity>
-              </View>
-            ))}
+              ))}
+            </View>
+            {/* </View> */}
+          </ScrollView>
 
-            {/* Add image placeholders */}
-            {Array.from({
-              length: MAX_IMAGES - productImages.length,
-            }).map((_, index) => (
-              <TouchableOpacity
-                key={`placeholder-${index}`}
-                style={styles.imagePlaceholder}
-                onPress={showImageOptions}
-              >
-                <Text style={styles.plus}>+</Text>
-              </TouchableOpacity>
-            ))}
+          <View
+            style={[
+              globalStyles.p_3,
+              globalStyles.flexRow,
+              // globalStyles.justifyContentBetween,
+              { justifyContent: "space-between" },
+            ]}
+          >
+            <Button
+              onPress={handleAdd_UpdateProduct}
+              title={newProduct ? "Add" : "Update"}
+              disabled={isLoading}
+              style={{ flex: 0.25, marginRight: 50 }} // make it wider
+
+            />
+            <Button
+              onPress={() => router.back()}
+              title="Discard"
+              primary={false}
+              disabled={isLoading}
+              style={{ flex: 0.25, marginRight: 50 }} // make it wider
+
+            />
           </View>
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          )}
           {/* </View> */}
-        </ScrollView>
-
-        <View
-          style={[
-            globalStyles.p_3,
-            globalStyles.flexRow,
-            globalStyles.justifyContentBetween,
-          ]}
-        >
-          <Button
-            onPress={handleAdd_UpdateProduct}
-            title={newProduct ? "Add" : "Update"}
-            disabled={isLoading}
-          />
-          <Button
-            onPress={() => router.back()}
-            title="Discard"
-            primary={false}
-            disabled={isLoading}
-          />
-        </View>
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
-        )}
-        {/* </View> */}
-      </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
-    </PageLayout>
+        </KeyBoardWrapper>
+        {/* </SafeAreaView> */}
+      </PageLayout>
+    </LayoutComponent>
   );
 };
 

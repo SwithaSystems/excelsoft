@@ -32,9 +32,10 @@ import SearchBar from "@/app/components/searchBar";
 import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
-import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";  
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Pagination from "./componentsWeb/PaginationWeb";
 
 // Define Product interface
 // interface Product {
@@ -79,15 +80,32 @@ const AdminProductDashboard = () => {
   const [allCategories, setAllCategories] = useState<any>([]);
   const [selectCategory, setSelectCategory] = useState<string | number>("");
 
-   const { width } = useWindowDimensions();
-   const isTabOrDesktop = width >= 768;
-   const isWeb = Platform.OS === "web";
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   // Use refs to prevent multiple simultaneous requests
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
-  const ITEMS_PER_PAGE = 50;
+  const ITEMS_PER_PAGE = isTabOrDesktop ? 10 : 50;
+
+
+  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+  const fetchProducts = async (page: number) => {
+    try {
+      setIsLoading(true);
+      const response = await fetchData(page);
+      setAllProductsList(response.data);
+      setCurrentPage(page);
+      setTotalProducts(response.total);
+      setHasMore(response.hasMore);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load page data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   async function getallCategories() {
     try {
@@ -243,8 +261,7 @@ const AdminProductDashboard = () => {
           );
 
           console.log(
-            `Adding ${newItems.length} new items (${
-              response.data.length - newItems.length
+            `Adding ${newItems.length} new items (${response.data.length - newItems.length
             } duplicates filtered)`
           );
           return [...prevProducts, ...newItems];
@@ -392,7 +409,7 @@ const AdminProductDashboard = () => {
                 />
               )}
             </View>
-            <View style={[styles.details, { flex: 1, paddingRight: 4 }]}>
+            <View style={[styles.details, { flex: 1, paddingRight: 0 }]}>
               <View
                 style={{
                   flexDirection: "row",
@@ -492,7 +509,7 @@ const AdminProductDashboard = () => {
 
   // Handle end reached with proper throttling
   const handleEndReached = useCallback(() => {
-    if (!isLoadingMore && hasMore && !isLoading) {
+    if (!isTabOrDesktop && !isLoadingMore && hasMore && !isLoading) {
       loadMoreData();
     }
   }, [isLoadingMore, hasMore, isLoading]);
@@ -547,7 +564,7 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
- const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
     <BrandHeaderWeb />
   ) : (
@@ -562,132 +579,137 @@ const AdminProductDashboard = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable
+      scrollable={isTabOrDesktop ? false : true}
     >
-      <View style={[globalStyles.pt_0, { paddingTop: 16, flex: 1 }]}>
-        <View>
-          <SearchBar
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            onPress={handleSearch}
-          />
-        </View>
-        <View>
-       <View style={styles.inputContainer}>
-          {/* <Text style={styles.label}>Category *</Text> */}
-          <View style={styles.categoryContainer}>
-          <ModalSelector
-            data={[
-              { key: "", label: "All Categories", value: "" },
-              ...allCategories.map((cat: any, index: number) => ({
-              key: cat.id || index,
-              label: cat.name, 
-              value: cat.id || cat._id,
-              })),
-            ]}
-            initValue="Select Category"
-            // selectedKey={selectCategory}
-            onChange={(option) => {
-              setSelectCategory(option.value);
-              console.log("Selected category:", option.value || "All Categories");
-            }}
-            optionTextStyle={{
-              color: colors.primary,
-              fontSize: 16,
-              fontWeight: '400',
-              //paddingVertical: 16,
-              paddingHorizontal: 20,
-              textAlign: 'center',
-            }}
-            optionContainerStyle={{
-              backgroundColor: colors.white,
-              borderBottomWidth: 0.5,
-              borderBottomColor: colors.slateGrey || colors.placeholdergrey,
-            }}
-            // sectionTextStyle={{
-            //   color: colors.primary,
-            //   fontSize: 18,
-            //   fontWeight: '600',
-            //   paddingVertical: 16,
-            //   paddingHorizontal: 16,
-            //   backgroundColor: '#F8F9FA',
-            // }}
-            cancelStyle={{
-              backgroundColor: colors.white,
-              // borderTopWidth: 1,
-              borderRadius: 0,
-              borderTopColor: colors.slateGrey || colors.placeholdergrey,
-              paddingVertical: 16,
-            }}
-            cancelTextStyle={{
-              color: colors.primary,
-              fontSize: 16,
-              fontWeight: "600",
-              textAlign: 'center',
-            }}
-            cancelText="cancel"
-            accessible={true}
-            accessibilityLabel="Select Category Filter"
-            animationType="slide"
-            backdropPressToClose={true}
-            overlayStyle={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              flex: 1,
-              justifyContent: 'flex-end',
-            }}
-            selectStyle={styles.categoryContainer}
-            selectTextStyle={styles.categoryText}
+      <View style={[globalStyles.pt_0, { flex: 1 }]}>
+        {!isTabOrDesktop && (
+          <View>
+            <SearchBar
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+              onPress={handleSearch}
+            />
+          </View>
+        )}
 
-              // modalStyle={{
-              //   backgroundColor: colors.white,
-              //   borderTopLeftRadius: 20,
-              //   borderTopRightRadius: 20,
-              //   maxHeight: '80%',
-              // }}
-          >
-            <View style={styles.categorySelector}>
-              <Text
-                style={[
-                  styles.categoryText,
-                  {
-                    color:
-                      selectCategory && selectCategory !== ""
-                        ? colors.black
-                        : colors.slateGrey,
-                  },
+        
+       
+  <View style={[styles.headerRow, { justifyContent: "space-between",    paddingTop: 10,
+   alignItems: "center", marginBottom: 5 ,marginTop:0}]}>
+    
+    {isTabOrDesktop && (
+    <Text style={{ fontSize: 35, color: colors.black ,paddingHorizontal:0}}>
+      Product List
+    </Text>
+)}
+    <TouchableOpacity
+      style={[styles.addButton,{    paddingTop: 10}]}
+      onPress={() => {
+        redirectToPage(containers.AdminProductUpdationScreen, {
+          newProduct: true,
+          maxId: maxId + 1,
+          onGoBack: () => onRefresh(),
+        });
+      }}
+    >
+      <Text style={styles.addButtonText}>+ Add New Product</Text>
+    </TouchableOpacity>
+  </View>
+
+        <View>
+          {/* <View style={styles.inputContainer}>
+            {/* <Text style={styles.label}>Category *</Text> */}
+
+          {/* </View> */}
+          <View style={styles.stickyTopContainer}>
+
+          <View style={styles.categoryActionRow}>
+            <View style={styles.categoryContainer}>
+              <ModalSelector
+                data={[
+                  { key: "", label: "All Categories", value: "" },
+                  ...allCategories.map((cat: any, index: number) => ({
+                    key: cat.id || index,
+                    label: cat.name,
+                    value: cat.id || cat._id,
+                  })),
                 ]}
+                initValue="Select Category"
+                onChange={(option) => {
+                  setSelectCategory(option.value);
+                  console.log("Selected category:", option.value || "All Categories");
+                }}
+                optionTextStyle={{
+                  color: colors.primary,
+                  fontSize: 16,
+                  fontWeight: "400",
+                  paddingHorizontal: 20,
+                  textAlign: "center",
+                }}
+                optionContainerStyle={{
+                  backgroundColor: colors.white,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: colors.slateGrey || colors.placeholdergrey,
+                }}
+                cancelStyle={{
+                  backgroundColor: colors.white,
+                  borderRadius: 0,
+                  paddingVertical: 16,
+                }}
+                cancelTextStyle={{
+                  color: colors.primary,
+                  fontSize: 16,
+                  fontWeight: "600",
+                  textAlign: "center",
+                }}
+                cancelText="Cancel"
+                accessible={true}
+                accessibilityLabel="Select Category Filter"
+                animationType="slide"
+                backdropPressToClose={true}
+                overlayStyle={{
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  flex: 1,
+                  justifyContent: "flex-end",
+                }}
+                selectStyle={styles.categoryContainer}
+                selectTextStyle={styles.categoryText}
               >
-                {selectCategory && selectCategory !== ""
-                  ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
-                  : "All Categories"}
-              </Text>
-              <Ionicons
-                name="chevron-down-outline"
-                size={20}
-                color={colors.primary}
-              />
+                <View style={styles.categorySelector}>
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      {
+                        color:
+                          selectCategory && selectCategory !== ""
+                            ? colors.black
+                            : colors.slateGrey,
+                      },
+                    ]}
+                  >
+                    {selectCategory && selectCategory !== ""
+                      ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
+                      : "All Categories"}
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color={colors.black}
+                  />
+                </View>
+              </ModalSelector>
             </View>
-          </ModalSelector>
-        </View>
-        </View>
+
+            
+          </View>
+              </View>
         </View>
 
         {/* <View style={styles.separator} /> */}
 
-        <View style={styles.buttonContainer}>
-          <Button
-            onPress={() => {
-              redirectToPage(containers.AdminProductUpdationScreen, {
-                newProduct: true,
-                maxId: maxId + 1,
-                onGoBack: () => onRefresh(),
-              });
-            }}
-            title="Add New Product"
-          />
-        </View>
+
 
         <View style={{ marginTop: 16, flex: 1 }}>
           <FlatList
@@ -753,7 +775,7 @@ const AdminProductDashboard = () => {
             initialNumToRender={10}
             windowSize={5}
             contentContainerStyle={{
-              paddingBottom: 100,
+              paddingBottom: 0,
               flexGrow: 1,
             }}
           />
@@ -775,8 +797,24 @@ const AdminProductDashboard = () => {
               <Text style={{ marginTop: 8 }}>Loading products...</Text>
             </View>
           )}
+
+          
         </View>
+        
+        {/* {totalPages > 1 && ( */}
+           <View style={styles.stickyBottomContainer}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            fetchProducts(page);
+          }}
+        />
       </View>
+          {/* )} */}
+        </View>
+
     </LayoutComponent>
   );
 };

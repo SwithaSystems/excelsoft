@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import colors from "../../constants/colors";
 import BackArrow from "./commonComponents/BackArrow";
 import SearchBar from "@/app/components/searchBar";
@@ -12,13 +12,18 @@ function Header(props) {
     redirectToPage(containers.searchScreen);
   };
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+
   return (
     <View style={styles.headerWrapper}>
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
-          <View style={styles.leftContainer}>
-            <BackArrow needResetNavigation={props.needResetNavigation} />
-          </View>
+          {!isTabOrDesktop && (
+            <View style={styles.leftContainer}>
+              <BackArrow needResetNavigation={props.needResetNavigation} />
+            </View>)}
 
           <View style={styles.centerContainer}>
             <Text style={styles.headerTitle}>{props.headerText}</Text>

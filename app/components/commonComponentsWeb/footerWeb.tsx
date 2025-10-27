@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 40,
-    paddingVertical: 20,
-    borderTopWidth: 1,
+    paddingVertical: 8,
+    borderTopWidth: 0,
     borderTopColor: "#ddd",
   },
   footerContainerTablet: {

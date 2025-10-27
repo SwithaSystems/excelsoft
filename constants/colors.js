@@ -8,6 +8,7 @@ export default {
   paleBlue: "#EDFAFD",
   deepSkyBlue: "#00BFFF",
   brandDark: "#0A7EA4",
+  borderColorForWeb:"#095D39",
 
   // Greens
   primaryGreen: "#16A34A",

@@ -39,7 +39,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   contentPadding = true,
 }) => {
   const { width, height } = useWindowDimensions();
-  const { isAdmin, loading} = useRoleContext();
+  const { isAdmin, loading } = useRoleContext();
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
@@ -50,7 +50,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const navBarHeight = 50;
   const totalHeaderHeight = headerHeight + navBarHeight;
 
-  
+
   return (
     <View style={[styles.root, { backgroundColor, minHeight: height }]}>
       {/* HEADER */}
@@ -63,17 +63,17 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
           zIndex: 1000,
         }]}>
           <View style={styles.topHeader}>{headerComponent}</View>
-          
+
           <View style={styles.navbarWrapper}>
             <HeaderNavBar />
           </View>
         </View>
       )}
 
-       <View
+      <View
         style={[
           styles.mainContainer,
-          hasHeader && { marginTop: totalHeaderHeight },
+          hasHeader && { marginTop: Platform.OS === "web" ? headerHeight : totalHeaderHeight },
         ]}
       >
         {hasSidebar && (
@@ -115,7 +115,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
         <View style={styles.footer}>
           {footerComponent}
         </View>
-        )}
+      )}
     </View>
   );
 };

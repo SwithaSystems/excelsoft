@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   navItemActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: `${colors.black}15`,
   },
   navItemContent: {
     flexDirection: "row",

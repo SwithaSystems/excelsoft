@@ -30,7 +30,7 @@ export default function BrandHeaderWeb() {
         styles.container,
         {
           paddingHorizontal: isDesktop ? 40 : isTablet ? 24 : 16,
-          paddingVertical: isDesktop ? 14 : 10,
+          paddingVertical: isDesktop ? 8 : 10,
         },
       ]}
     >
@@ -41,13 +41,13 @@ export default function BrandHeaderWeb() {
             styles.logo,
             {
               width: isDesktop ? 140 : isTablet ? 110 : 100,
-              height: isDesktop ? 40 : 36,
+              height: isDesktop ? 60 : 36,
             },
           ]}
         />
 
         {(isTablet || isDesktop) && (
-          <View style={{ marginLeft: 16, flex: 1 }}>
+          <View style={{ marginLeft: 18, flex: 1 ,justifyContent:'center',alignSelf:'center'}}>
             <SearchBar
               placeholder="Search..."
               onPress={() => redirectToPage(containers.searchScreen)}

@@ -156,7 +156,7 @@ export default HeaderNavBar;
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 50, 
+    minHeight: 32, 
     justifyContent: "center",
     paddingVertical: 0,
     marginTop: 0,
