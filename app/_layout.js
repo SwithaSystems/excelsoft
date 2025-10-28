@@ -7,6 +7,7 @@ import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { RoleProvider } from "../context/RoleContext";
 import { authService } from "../services/auth.service";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
@@ -159,19 +160,21 @@ export default function Layout() {
         <PersistGate loading={null} persistor={persistor}>
           <AppProvider>
             <AuthProvider>
-              <NotificationsHandler />
-              <LayoutContent />
-              <Toast
-                config={{
-                  customToast: ({ text1, text2, onPress }) => (
-                    <CustomToastAlert
-                      text1={text1}
-                      text2={text2}
-                      onPress={onPress}
-                    />
-                  ),
-                }}
-              />
+              <RoleProvider>
+                <NotificationsHandler />
+                <LayoutContent />
+                <Toast
+                  config={{
+                    customToast: ({ text1, text2, onPress }) => (
+                      <CustomToastAlert
+                        text1={text1}
+                        text2={text2}
+                        onPress={onPress}
+                      />
+                    ),
+                  }}
+                />
+              </RoleProvider>
             </AuthProvider>
           </AppProvider>
         </PersistGate>

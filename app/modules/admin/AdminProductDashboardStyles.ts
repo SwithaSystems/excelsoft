@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
@@ -40,10 +40,13 @@ const styles = StyleSheet.create({
     // marginLeft: 8,
     // marginRight: 8,
     marginTop: 8,
-    marginBottom: 20, 
+    marginBottom: 20,
   },
 
   buttonContainer: {
+    height: 48,
+    width: Platform.OS === "web" ? "15%" : "100%",
+    marginTop: 8,
     //marginHorizontal: 32,
     //marginBottom: 16,
   },
@@ -58,13 +61,71 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  categoryActionRow: {
+    position: "sticky",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 0,
+    marginBottom: 16,
+    gap: 10,
+  },
+
+  addButton: {
+    height: Platform.OS === "web" ? 40 : 48,
+    paddingHorizontal: 16,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: Platform.OS === "web" ? 140 : 120,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  stickyBottomContainer: {
+    position: "sticky",
+    bottom: 0,
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 45,            // ↓ smaller height
+    paddingVertical: 0,
+    marginBottom: 0,
+    borderTopWidth: 0,     // remove line if present
+  },
+
+
+  stickyTopContainer: {
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
+    backgroundColor: colors.white,
+    paddingVertical: 6,      // ↓ reduce from 10 or 12
+    marginBottom: -20,
+    // borderBottomWidth: 1,
+    // borderBottomColor: colors.placeholdergrey,
+  },
+
+
+
   categoryContainer: {
     backgroundColor: colors.white,
     borderColor: colors.placeholdergrey,
     borderWidth: 1,
+    justifyContent: "center",
     borderRadius: 8,
-    height: 52,
-    width: "100%",
+    height: Platform.OS === "web" ? 32 : 52,
+    width: Platform.OS === "web" ? "18%" : "100%",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
@@ -91,7 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal:16,
+    paddingHorizontal: 16,
   },
   categoryImage: {
     width: 32,
@@ -100,7 +161,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   textContainer: {
-    flex: 1, 
+    flex: 1,
   },
   categoryDetails: {
     color: colors.secondaryText,
@@ -113,7 +174,7 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontWeight: '400',
   },
-//categorySelector: {
+  //categorySelector: {
   //   flexDirection: "row",
   //   alignItems: "center",
   //   justifyContent: "space-between",
@@ -135,7 +196,8 @@ const styles = StyleSheet.create({
   },
 
   details: {
-    paddingLeft: 24,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   text: {
     fontSize: 16,
