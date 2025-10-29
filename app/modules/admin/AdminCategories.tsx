@@ -7,6 +7,8 @@ import {
   ScrollView,
   Alert,
   Image,
+  useWindowDimensions,
+  Platform,
 } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
@@ -19,6 +21,9 @@ import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ADMIN_CATEGORIES_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import CategoryDropdown from "./components/categoryDropdown";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 interface Category {
   _id: any;
@@ -44,6 +49,10 @@ const AdminCategories = () => {
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
     null
   );
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -394,13 +403,23 @@ const AdminCategories = () => {
     return parentCategory ? parentCategory.name : "No Parent";
   };
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
+      headerComponent={HeaderComponent}
       hasFooter
-      headerComponent={<Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />}
-      footerComponent={<AdminFooter activeTab="categories" />}
-      scrollable
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable={isTabOrDesktop ? false : true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
@@ -574,7 +593,7 @@ const AdminCategories = () => {
           </ScrollView>
         </View>
       </ScrollView>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

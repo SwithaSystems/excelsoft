@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -22,11 +23,18 @@ import { orderService } from "@/services/orderService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import useDebounce from "@/utilities/customHooks/useDebounce";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [allOrders, setAllOrders] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -186,15 +194,24 @@ const AdminSeeAllOrders = () => {
     return filteredORders;
   };
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
+      headerComponent={HeaderComponent}
       hasFooter
-      scrollable
-      headerComponent={
-        <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
-      }
-      footerComponent={<AdminFooter activeTab="orders" />}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable={isTabOrDesktop ? false : true}
     >
       <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
         <View style={localStyles.searchBarContainer}>
@@ -250,7 +267,7 @@ const AdminSeeAllOrders = () => {
         <AdminFooter activeTab="orders" />
       </View>
     </SafeAreaView> */}
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

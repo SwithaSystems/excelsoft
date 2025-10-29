@@ -17,6 +17,7 @@ const nativeModules = [
   '@react-native-firebase/messaging',
   'react-native-gesture-handler',
   'react-async-hook',
+  'expo-notifications',
 ];
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
@@ -35,7 +36,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
         type: 'sourceFile',
       };
     }
-
+    if (moduleName === 'expo-notifications') {
+      return {
+        filePath: path.resolve(__dirname, 'stubs/expo-notifications-stub.js'),
+        type: 'sourceFile',
+      };
+    }
     if (nativeModules.includes(moduleName)) {
       return {
         filePath: path.resolve(__dirname, 'stubs/native-stub.js'),
