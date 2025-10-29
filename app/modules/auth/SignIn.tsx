@@ -2,6 +2,7 @@ import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import React, { useState } from "react";
 import {
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -201,7 +202,9 @@ const signIn = () => {
                     }}
                     containerButtonStyle={styles.countryPickerButton}
                   />
-                  <Text style={styles.callingCode}>+{callingCode}</Text>
+                  {Platform.OS !== 'web' && (
+                    <Text style={styles.callingCode}>+{callingCode}</Text>
+                  )}
                 </View>
 
                 <TextInput

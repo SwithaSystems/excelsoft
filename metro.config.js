@@ -16,7 +16,6 @@ const nativeModules = [
   '@react-native-firebase/app',
   '@react-native-firebase/messaging',
   'react-native-gesture-handler',
-  'react-native-country-picker-modal',
   'react-async-hook',
 ];
 
@@ -26,6 +25,13 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     if (moduleName === 'expo-secure-store') {
       return {
         filePath: path.resolve(__dirname, 'stubs/expo-secure-store.js'),
+        type: 'sourceFile',
+      };
+    }
+
+    if (moduleName === 'react-native-country-picker-modal') {
+      return {
+        filePath: path.resolve(__dirname, 'stubs/country-picker-modal-stub.js'),
         type: 'sourceFile',
       };
     }
