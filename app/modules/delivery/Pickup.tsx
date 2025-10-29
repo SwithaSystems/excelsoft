@@ -47,8 +47,7 @@ import {
   isValidName,
   isValidPhoneNumber,
 } from "../../../utilities/validations";
-import {usePickupTime} from "../../../hooks/usePickupTime";
-
+import { usePickupTime } from "../../../hooks/usePickupTime";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -108,6 +107,7 @@ const PickupScreen = () => {
   console.log("userData in pickupscreen", userData);
 
   const DEFAULT_PICKUP_HOURS = usePickupTime();
+  console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
 
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);
@@ -140,7 +140,7 @@ const PickupScreen = () => {
     ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
-        now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+        now.getTime() + Number(DEFAULT_PICKUP_HOURS) * 60 * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();

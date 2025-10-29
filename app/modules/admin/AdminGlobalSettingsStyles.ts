@@ -1,56 +1,56 @@
-import colors from "@/constants/colors";
 import { StyleSheet } from "react-native";
+import colors from "@/constants/colors";
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: colors.lightgrey,
-  },
-  backButton: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-  },
-  backText: {
-    fontSize: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 16,
-  },
-  eachNotificationSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    // marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
   },
   switchLabel: {
     fontSize: 16,
+    fontWeight: "600",
     color: colors.black,
-  },
-  textContainer: {
     flex: 1,
-    marginRight: 12,
+  },
+  switchWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  switchLoader: {
+    marginRight: 8,
   },
   switchDescription: {
     fontSize: 14,
-    color: colors.secondaryText,
-    alignItems: "flex-start",
+    color: colors.reviewsColor,
     paddingHorizontal: 16,
+    paddingBottom: 16,
+    lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: colors.reviewsColor,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
   },
 });
 

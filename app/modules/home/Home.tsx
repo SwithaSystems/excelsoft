@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Image,
   View,
-  TextInput,
   Text,
   TouchableOpacity,
   FlatList,
@@ -89,11 +88,13 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const handleBannerPress = (item: any, index: number) => {
-    redirectToPage(containers.offersScreen);
-  };
-
-  const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
+  //  Memoize the handler to prevent re-creating on every render
+  const handleBannerPress = useMemo(
+    () => (item: any, index: number) => {
+      redirectToPage(containers.offersScreen);
+    },
+    []
+  );
 
   const renderFeaturedProducts = () => (
     <View>
@@ -187,8 +188,8 @@ const HomePage = () => {
         </View>
 
         {/* Banner */}
-        {<View>{renderBanner()}</View>}
-
+        {/* {<View>{renderBanner()}</View>} */}
+        <HeroBanner onBannerPress={handleBannerPress} />
         {/* Recommended Products */}
         {/* <View>
           <RecommendedProductsSlider
