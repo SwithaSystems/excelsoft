@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   StyleSheet,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -15,11 +14,12 @@ import colors from "@/constants/colors";
 import SearchBar from "../searchBar";
 import { useRoleContext } from "@/context/RoleContext";
 
+interface BrandHeaderWebProps {
+  hideUserGreeting?: boolean;
+}
 
-export default function BrandHeaderWeb() {
-  const { isAdmin, isValidUser, username, loading, refreshRole } = useRoleContext();
-  const user = isValidUser;
-
+export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
+  const { isAdmin, isValidUser, username } = useRoleContext();
   const { width } = useWindowDimensions();
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
@@ -34,6 +34,7 @@ export default function BrandHeaderWeb() {
         },
       ]}
     >
+      {/* LEFT SECTION - Logo and Search */}
       <View style={styles.leftSection}>
         <Image
           source={require("@/assets/RecreatedLogo_2.png")}
@@ -45,9 +46,9 @@ export default function BrandHeaderWeb() {
             },
           ]}
         />
-
+        
         {(isTablet || isDesktop) && (
-          <View style={{ marginLeft: 16, flex: 1 ,justifyContent:'center',alignSelf:'center'}}>
+          <View style={{ marginLeft: 16, flex: 1, justifyContent: 'center', alignSelf: 'center' }}>
             <SearchBar
               placeholder="Search..."
               onPress={() => redirectToPage(containers.searchScreen)}
@@ -56,45 +57,20 @@ export default function BrandHeaderWeb() {
         )}
       </View>
 
+      {/* RIGHT SECTION */}
       <View style={styles.rightSection}>
-        {user && !isAdmin && (
-          <View style={styles.rightIconsContainer}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="heart" size={24} color={colors.primary} />
-              <Text>Favorites</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="cart" size={24} color={colors.primary} />
-              <Text>Cart</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => redirectToPage(containers.userNotificationsScreen)}
-        >
-          <Ionicons name="notifications" size={24} color={colors.primary} />
-          <Text>Notifications</Text>
-        </TouchableOpacity>
-
-        {isAdmin && (
+        {/* Notifications - Hide on admin pages (when hideUserGreeting is true) */}
+        {!hideUserGreeting && (
           <TouchableOpacity
-            style={styles.adminButton}
-            onPress={() => {
-              redirectToPage(
-                isValidUser
-                  ? containers.AdminDashboardScreen
-                  : containers.homeScreen
-              );
-            }}
+            style={styles.iconButton}
+            onPress={() => redirectToPage(containers.userNotificationsScreen)}
           >
-            <Text style={styles.adminText}>
-              {isValidUser ? "Admin" : "User"}
-            </Text>
+            <Ionicons name="notifications" size={24} color={colors.primary} />
+            <Text>Notifications</Text>
           </TouchableOpacity>
         )}
 
+        {/* Profile/Sign In */}
         <TouchableOpacity
           style={styles.profileButton}
           onPress={() => {
@@ -114,6 +90,26 @@ export default function BrandHeaderWeb() {
             color={colors.primary}
           />
         </TouchableOpacity>
+
+        {/* Admin/User Switch Button - Only for admin users */}
+        {isAdmin && (
+          <TouchableOpacity
+            style={styles.adminButton}
+            onPress={() => {
+              if (hideUserGreeting) {
+                // On admin page, go back to user
+                redirectToPage(containers.homeScreen);
+              } else {
+                // On user page, go to admin
+                redirectToPage(containers.AdminDashboardScreen);
+              }
+            }}
+          >
+            <Text style={styles.adminText}>
+              {hideUserGreeting ? "User" : "Admin"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -158,6 +154,7 @@ const styles = StyleSheet.create({
   adminText: {
     color: colors.white,
     fontSize: 12,
+    fontWeight: "500",
   },
   profileButton: {
     flexDirection: "row",
@@ -168,10 +165,5 @@ const styles = StyleSheet.create({
     marginRight: 8,
     color: colors.primary,
     fontWeight: "500",
-  },
-  rightIconsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
   },
 });

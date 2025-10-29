@@ -37,28 +37,11 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 
-// Define Product interface
-// interface Product {
-//   id?: number | string;
-//   _id?: string;
-//   name: string;
-//   image: string[];
-//   categoryId: number[];
-//   netPrice: number;
-//   discount: number;
-//   stock: number;
-//   isVatApplicable: boolean;
-//   vatRate: number;
-//   vatAmount: number;
-// }
-
-// Define API response interface
 interface ApiResponse {
   data: Product[];
   total: number;
 }
 
-// Define Category interface
 interface Category {
   id: number;
   name: string;
@@ -80,18 +63,21 @@ const AdminProductDashboard = () => {
   const [allCategories, setAllCategories] = useState<any>([]);
   const [selectCategory, setSelectCategory] = useState<string | number>("");
 
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
-  // Use refs to prevent multiple simultaneous requests
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
   const ITEMS_PER_PAGE = isTabOrDesktop ? 10 : 50;
 
-
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+
   const fetchProducts = async (page: number) => {
     try {
       setIsLoading(true);
@@ -117,6 +103,7 @@ const AdminProductDashboard = () => {
       console.error("Error fetching categories:", error);
     }
   }
+
   useEffect(() => {
     getallCategories();
   }, []);
@@ -126,6 +113,7 @@ const AdminProductDashboard = () => {
       ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
       : true
   );
+
   const productsListToShow =
     selectCategory && selectCategory !== "" ? category_Products : productsList;
 
@@ -174,12 +162,11 @@ const AdminProductDashboard = () => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         setSuggestions([]);
         if (debouncedQuery.length === 0) {
-          loadInitialData(); // Reload all products when search is cleared
+          loadInitialData();
         }
         return;
       }
 
-      // For suggestions (keep existing logic)
       const API_URL = process.env.EXPO_PUBLIC_API_URL;
       try {
         const response = await axios.get(
@@ -192,15 +179,11 @@ const AdminProductDashboard = () => {
         console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       }
-
-      // Optionally perform real-time search (uncomment if you want search-as-you-type)
-      // await searchProductsByName(debouncedQuery);
     };
 
     performSearch();
   }, [debouncedQuery]);
 
-  // Load initial data
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
@@ -227,9 +210,7 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Load more data for pagination
   const loadMoreData = async () => {
-    // Prevent multiple simultaneous requests
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
       console.log("Load more blocked:", {
         loadingMoreRef: loadingMoreRef.current,
@@ -250,7 +231,6 @@ const AdminProductDashboard = () => {
       const response = await fetchData(nextPage);
 
       if (response.data.length > 0) {
-        // Filter out duplicates based on unique identifier
         setAllProductsList((prevProducts: any) => {
           const existingIds = new Set(
             prevProducts.map((item: any) => item._id || item.id)
@@ -261,8 +241,7 @@ const AdminProductDashboard = () => {
           );
 
           console.log(
-            `Adding ${newItems.length} new items (${response.data.length - newItems.length
-            } duplicates filtered)`
+            `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
           );
           return [...prevProducts, ...newItems];
         });
@@ -282,11 +261,9 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Handle refresh
   const onRefresh = async () => {
     setIsRefreshing(true);
 
-    // Reset pagination state
     setCurrentPage(1);
     setHasMore(true);
     loadingMoreRef.current = false;
@@ -313,7 +290,6 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Fetch categories
   const fetchAllCategories = useCallback(async () => {
     try {
       const data: Category[] = await categoryService.getAllCategories();
@@ -323,55 +299,71 @@ const AdminProductDashboard = () => {
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     loadInitialData();
     fetchAllCategories();
   }, [fetchAllCategories]);
 
-  // Handle product deletion
+  const performDelete = async (item: Product) => {
+    try {
+      setIsLoading(true);
+      const result = await ProductsAPI.deleteProduct(item?._id);
+      if (result) {
+        await onRefresh();
+        if (isWeb || isTabOrDesktop) {
+          setSuccessModalVisible(true);
+        } else {
+          Alert.alert("Success", "Product deleted successfully");
+        }
+      }
+    } catch (error: any) {
+      console.log("Delete error:", error?.response?.data);
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Something went wrong while deleting the product.";
+      
+      if (isWeb) {
+        alert(errorMessage);
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setDeleteModalVisible(false);
+      setProductToDelete(null);
+    }
+  };
+
   const handleDeleteProduct = useCallback(
     (item: Product) => {
-      Alert.alert(
-        "Delete Product",
-        "Are you sure you want to delete this product?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                setIsLoading(true);
-                const result = await ProductsAPI.deleteProduct(item?._id);
-                if (result) {
-                  await onRefresh(); // Refresh the entire list
-                  Alert.alert("Success", "Product deleted successfully");
-                }
-              } catch (error: any) {
-                console.log("Delete error:", error?.response?.data);
-                const errorMessage =
-                  error?.response?.data?.message ||
-                  "Something went wrong while deleting the product.";
-                Alert.alert("Error", errorMessage);
-              } finally {
-                setIsLoading(false);
-              }
+      if (isWeb || isTabOrDesktop) {
+        setProductToDelete(item);
+        setDeleteModalVisible(true);
+      } else {
+        Alert.alert(
+          "Delete Product",
+          "Are you sure you want to delete this product?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Delete",
+              style: "destructive",
+              onPress: async () => {
+                await performDelete(item);
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
     },
-    [onRefresh]
+    [isWeb, isTabOrDesktop]
   );
 
-  // Generate unique key for FlatList items
   const getUniqueKey = useCallback((item: Product, index: number) => {
     const id = item._id || item.id;
     return `product-${id}-${index}`;
   }, []);
 
-  // Product card component
   const ProductCard = useCallback(
     ({ item }: { item: Product }) => {
       const getStockBadge = (stock: number) => {
@@ -500,14 +492,12 @@ const AdminProductDashboard = () => {
     [categories, handleDeleteProduct]
   );
 
-  // Calculate max ID for new products
   const maxId = productsList.reduce((max: number, product: Product) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
       : max;
   }, 0);
 
-  // Handle end reached with proper throttling
   const handleEndReached = useCallback(() => {
     if (!isTabOrDesktop && !isLoadingMore && hasMore && !isLoading) {
       loadMoreData();
@@ -550,7 +540,6 @@ const AdminProductDashboard = () => {
     await searchProductsByName(searchQuery.trim());
   }, [searchQuery]);
 
-  // Add a clear search function:
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
     loadInitialData();
@@ -566,12 +555,13 @@ const AdminProductDashboard = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
 
   const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+
   return (
     <LayoutComponent
       hasHeader
@@ -580,6 +570,7 @@ const AdminProductDashboard = () => {
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
       scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
       <View style={[globalStyles.pt_0, { flex: 1 }]}>
         {!isTabOrDesktop && (
@@ -594,122 +585,114 @@ const AdminProductDashboard = () => {
           </View>
         )}
 
-        
-       
-  <View style={[styles.headerRow, { justifyContent: "space-between",    paddingTop: 10,
-   alignItems: "center", marginBottom: 5 ,marginTop:0}]}>
-    
-    {isTabOrDesktop && (
-    <Text style={{ fontSize: 35, color: colors.black ,paddingHorizontal:0}}>
-      Product List
-    </Text>
-)}
-    <TouchableOpacity
-      style={[styles.addButton,{    paddingTop: 10}]}
-      onPress={() => {
-        redirectToPage(containers.AdminProductUpdationScreen, {
-          newProduct: true,
-          maxId: maxId + 1,
-          onGoBack: () => onRefresh(),
-        });
-      }}
-    >
-      <Text style={styles.addButtonText}>+ Add New Product</Text>
-    </TouchableOpacity>
-  </View>
-
-        <View>
-          {/* <View style={styles.inputContainer}>
-            {/* <Text style={styles.label}>Category *</Text> */}
-
-          {/* </View> */}
-          <View style={styles.stickyTopContainer}>
-
-          <View style={styles.categoryActionRow}>
-            <View style={styles.categoryContainer}>
-              <ModalSelector
-                data={[
-                  { key: "", label: "All Categories", value: "" },
-                  ...allCategories.map((cat: any, index: number) => ({
-                    key: cat.id || index,
-                    label: cat.name,
-                    value: cat.id || cat._id,
-                  })),
-                ]}
-                initValue="Select Category"
-                onChange={(option) => {
-                  setSelectCategory(option.value);
-                  console.log("Selected category:", option.value || "All Categories");
-                }}
-                optionTextStyle={{
-                  color: colors.primary,
-                  fontSize: 16,
-                  fontWeight: "400",
-                  paddingHorizontal: 20,
-                  textAlign: "center",
-                }}
-                optionContainerStyle={{
-                  backgroundColor: colors.white,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: colors.slateGrey || colors.placeholdergrey,
-                }}
-                cancelStyle={{
-                  backgroundColor: colors.white,
-                  borderRadius: 0,
-                  paddingVertical: 16,
-                }}
-                cancelTextStyle={{
-                  color: colors.primary,
-                  fontSize: 16,
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-                cancelText="Cancel"
-                accessible={true}
-                accessibilityLabel="Select Category Filter"
-                animationType="slide"
-                backdropPressToClose={true}
-                overlayStyle={{
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  flex: 1,
-                  justifyContent: "flex-end",
-                }}
-                selectStyle={styles.categoryContainer}
-                selectTextStyle={styles.categoryText}
-              >
-                <View style={styles.categorySelector}>
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      {
-                        color:
-                          selectCategory && selectCategory !== ""
-                            ? colors.black
-                            : colors.slateGrey,
-                      },
-                    ]}
-                  >
-                    {selectCategory && selectCategory !== ""
-                      ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
-                      : "All Categories"}
-                  </Text>
-                  <Ionicons
-                    name="chevron-down"
-                    size={20}
-                    color={colors.black}
-                  />
-                </View>
-              </ModalSelector>
-            </View>
-
-            
-          </View>
-              </View>
+        <View
+          style={[
+            styles.headerRow,
+            {
+              justifyContent: "space-between",
+              paddingTop: 10,
+              alignItems: "center",
+              marginBottom: 5,
+              marginTop: 0,
+            },
+          ]}
+        >
+          {isTabOrDesktop && (
+            <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+              Product List
+            </Text>
+          )}
+          <TouchableOpacity
+            style={[styles.addButton, !isTabOrDesktop && styles.addButtonMobile]}
+            onPress={() => {
+              redirectToPage(containers.AdminProductUpdationScreen, {
+                newProduct: true,
+                maxId: maxId + 1,
+                onGoBack: () => onRefresh(),
+              });
+            }}
+          >
+            <Text style={styles.addButtonText}>+ Add New Product</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* <View style={styles.separator} /> */}
-
-
+        <View>
+          <View style={styles.stickyTopContainer}>
+            <View style={styles.categoryActionRow}>
+              <View style={styles.categoryContainer}>
+                <ModalSelector
+                  data={[
+                    { key: "", label: "All Categories", value: "" },
+                    ...allCategories.map((cat: any, index: number) => ({
+                      key: cat.id || index,
+                      label: cat.name,
+                      value: cat.id || cat._id,
+                    })),
+                  ]}
+                  initValue="Select Category"
+                  onChange={(option) => {
+                    setSelectCategory(option.value);
+                    console.log("Selected category:", option.value || "All Categories");
+                  }}
+                  optionTextStyle={{
+                    color: colors.primary,
+                    fontSize: 16,
+                    fontWeight: "400",
+                    paddingHorizontal: 20,
+                    textAlign: "center",
+                  }}
+                  optionContainerStyle={{
+                    backgroundColor: colors.white,
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: colors.slateGrey || colors.placeholdergrey,
+                  }}
+                  cancelStyle={{
+                    backgroundColor: colors.white,
+                    borderRadius: 0,
+                    paddingVertical: 16,
+                  }}
+                  cancelTextStyle={{
+                    color: colors.primary,
+                    fontSize: 16,
+                    fontWeight: "600",
+                    textAlign: "center",
+                  }}
+                  cancelText="Cancel"
+                  accessible={true}
+                  accessibilityLabel="Select Category Filter"
+                  animationType="slide"
+                  backdropPressToClose={true}
+                  overlayStyle={{
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    flex: 1,
+                    justifyContent: "flex-end",
+                  }}
+                  selectStyle={styles.categoryContainer}
+                  selectTextStyle={styles.categoryText}
+                >
+                  <View style={styles.categorySelector}>
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        {
+                          color:
+                            selectCategory && selectCategory !== ""
+                              ? colors.black
+                              : colors.slateGrey,
+                        },
+                      ]}
+                    >
+                      {selectCategory && selectCategory !== ""
+                        ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
+                        : "All Categories"}
+                    </Text>
+                    <Ionicons name="chevron-down" size={20} color={colors.black} />
+                  </View>
+                </ModalSelector>
+              </View>
+            </View>
+          </View>
+        </View>
 
         <View style={{ marginTop: 16, flex: 1 }}>
           <FlatList
@@ -727,11 +710,7 @@ const AdminProductDashboard = () => {
               />
             }
             ListFooterComponent={() => {
-              if (
-                isLoadingMore &&
-                hasMore &&
-                (!selectCategory || selectCategory === "")
-              ) {
+              if (isLoadingMore && hasMore && (!selectCategory || selectCategory === "")) {
                 return (
                   <View style={{ padding: 20, alignItems: "center" }}>
                     <ActivityIndicator size="large" color={colors.primary} />
@@ -741,16 +720,10 @@ const AdminProductDashboard = () => {
                   </View>
                 );
               }
-              if (
-                !hasMore &&
-                productsListToShow.length > 0 &&
-                (!selectCategory || selectCategory === "")
-              ) {
+              if (!hasMore && productsListToShow.length > 0 && (!selectCategory || selectCategory === "")) {
                 return (
                   <View style={{ padding: 20, alignItems: "center" }}>
-                    <Text style={{ color: colors.secondaryText }}>
-                      No more products to load
-                    </Text>
+                    <Text style={{ color: colors.secondaryText }}>No more products to load</Text>
                   </View>
                 );
               }
@@ -797,24 +770,50 @@ const AdminProductDashboard = () => {
               <Text style={{ marginTop: 8 }}>Loading products...</Text>
             </View>
           )}
-
-          
         </View>
-        
-        {/* {totalPages > 1 && ( */}
-           <View style={styles.stickyBottomContainer}>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => {
-            setCurrentPage(page);
-            fetchProducts(page);
-          }}
-        />
+
+        <View style={styles.stickyBottomContainer}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              fetchProducts(page);
+            }}
+          />
+        </View>
       </View>
-          {/* )} */}
-        </View>
 
+      <ConfirmationModal
+        isModalVisible={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setProductToDelete(null);
+        }}
+        handleCancel={() => {
+          setDeleteModalVisible(false);
+          setProductToDelete(null);
+        }}
+        handleSubmit={() => {
+          if (productToDelete) {
+            performDelete(productToDelete);
+          }
+        }}
+        title="Delete Product"
+        text="Are you sure you want to delete this product?"
+        submitText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmationModal
+        isModalVisible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        handleSubmit={() => setSuccessModalVisible(false)}
+        title="Success"
+        text="Product deleted successfully"
+        submitText="OK"
+        cancelText=""
+      />
     </LayoutComponent>
   );
 };

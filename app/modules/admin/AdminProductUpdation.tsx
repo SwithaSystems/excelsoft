@@ -659,7 +659,7 @@ const AdminProductUpdation = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
@@ -676,6 +676,7 @@ const AdminProductUpdation = () => {
       // hasFooter
       footerComponent={FooterComponent}
       scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
 
       {/* <PageLayout 

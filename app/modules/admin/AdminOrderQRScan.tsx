@@ -31,7 +31,7 @@ const AdminOrderQRScan = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
   );
@@ -50,6 +50,7 @@ const AdminOrderQRScan = () => {
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
       scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>Scan the consumer's QR Order</Text>

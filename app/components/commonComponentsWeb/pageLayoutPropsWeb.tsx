@@ -24,6 +24,7 @@ interface PageLayoutWebProps {
   scrollable?: boolean;
   backgroundColor?: string;
   contentPadding?: boolean;
+  hideNavItems?: boolean; 
 }
 
 export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
@@ -37,6 +38,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   scrollable = true,
   backgroundColor = colors.white,
   contentPadding = true,
+  hideNavItems = false,
 }) => {
   const { width, height } = useWindowDimensions();
   const { isAdmin, loading } = useRoleContext();
@@ -60,12 +62,12 @@ console.log({isAdmin})
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
+          zIndex: 2000,
         }]}>
           <View style={styles.topHeader}>{headerComponent}</View>
 
           <View style={styles.navbarWrapper}>
-            <HeaderNavBar />
+            <HeaderNavBar hideNavItems={hideNavItems}/>
           </View>
         </View>
       )}
@@ -128,6 +130,8 @@ const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     backgroundColor: colors.white,
+    zIndex: 1000,
+    overflow: "visible",
   },
   topHeader: {
     width: "100%",

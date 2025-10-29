@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
 import { categoryService, Category } from "@/services/categoryService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -23,6 +24,7 @@ type NavItem = {
 interface HeaderNavBarProps {
   backgroundColor?: string;
   onCategorySelect?: (category: Category) => void;
+  hideNavItems?: boolean;
 }
 
 const userNavItems: NavItem[] = [
@@ -54,22 +56,22 @@ const userNavItems: NavItem[] = [
   },
 ];
 
-const adminNavItems: NavItem[] = [];
-
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   backgroundColor = colors.primary, 
   onCategorySelect,
+  hideNavItems = false,
 }) => {
-  const {isAdmin} = useRoleContext();
+  const { loading: roleLoading } = useRoleContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const navItems = isAdmin ? adminNavItems : userNavItems;
+  const navItems = !hideNavItems ? userNavItems : [];
 
   useEffect(() => {
-    const hasDropdown = navItems.some((item) => item.isDropdown);
-    if (!hasDropdown) return;
+    if (hideNavItems || roleLoading) {
+      return;
+    }
 
     const loadCategories = async () => {
       try {
@@ -87,8 +89,9 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         setLoading(false);
       }
     };
+    
     loadCategories();
-  }, [navItems]);
+  }, [hideNavItems, roleLoading]);
 
   const handleNavPress = (item: NavItem) => {
     if (item.isDropdown) {
@@ -104,50 +107,70 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     setShowDropdown(false);
   };
 
-  
+  if (roleLoading || hideNavItems) {
+    return (
+      <View style={[styles.container, { backgroundColor }]}>
+        <View style={styles.emptyBelt} />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      {navItems.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-        >
-          {navItems.map((item, index) => (
-            <View key={index} style={styles.itemWrapper}>
-              <TouchableOpacity
-                style={styles.navItem}
-                onPress={() => handleNavPress(item)}
-              >
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        {navItems.map((item, index) => (
+          <View key={index} style={styles.itemWrapper}>
+            <TouchableOpacity
+              style={styles.navItem}
+              onPress={() => handleNavPress(item)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.navItemContent}>
                 <Text style={styles.navText}>{item.label}</Text>
-              </TouchableOpacity>
+                {item.isDropdown && (
+                  <Ionicons
+                    name={showDropdown ? "chevron-up" : "chevron-down"}
+                    size={16}
+                    color={colors.white}
+                    style={styles.dropdownIcon}
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
 
-              {item.isDropdown && showDropdown && (
-                <View style={styles.dropdownMenu}>
-                  {loading ? (
+            {item.isDropdown && showDropdown && (
+              <View style={styles.dropdownMenu}>
+                {loading ? (
+                  <View style={styles.loadingContainer}>
                     <ActivityIndicator color={colors.primary} />
-                  ) : (
-                    <FlatList
-                      data={categories}
-                      keyExtractor={(cat) => String(cat.id ?? cat.name)}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity
-                          onPress={() => handleCategoryPress(item)}
-                          style={styles.dropdownItem}
-                        >
-                          <Text style={styles.dropdownText}>{item.name}</Text>
-                        </TouchableOpacity>
-                      )}
-                    />
-                  )}
-                </View>
-              )}
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
-        <View style={styles.emptyBelt} />
-      )}
+                  </View>
+                ) : (
+                  <ScrollView 
+                    style={styles.dropdownScroll}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {categories.map((cat) => (
+                      <TouchableOpacity
+                        key={String(cat.id ?? cat.name)}
+                        onPress={() => handleCategoryPress(cat)}
+                        style={styles.dropdownItem}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.dropdownText}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -160,48 +183,69 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 0,
     marginTop: 0,
+    overflow: "visible",
+    zIndex: 9999,
   },
   scrollContainer: {
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
+    paddingBottom: 4,
   },
   itemWrapper: {
     marginRight: 20,
     position: "relative",
+    zIndex: 100,
   },
   navItem: {
     paddingHorizontal: 8,
     paddingVertical: 6,
+  },
+  navItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   navText: {
     color: colors.white,
     fontSize: 15,
     fontWeight: "600",
   },
+  dropdownIcon: {
+    marginLeft: 4,
+  },
   dropdownMenu: {
     position: "absolute",
-    top: 35,
+    top: 40,
     left: 0,
-    width: 180,
+    width: 200,
     backgroundColor: colors.white,
-    borderRadius: 6,
+    borderRadius: 8,
     shadowColor: colors.black,
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    maxHeight: 250,
-    zIndex: 20,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    maxHeight: 300,
+    zIndex: 9999,
+    // overflow: "hidden",
+  },
+  dropdownScroll: {
+    maxHeight: 300,
   },
   dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.lightgrey,
   },
   dropdownText: {
     fontSize: 14,
     color: colors.black,
+  },
+  loadingContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyBelt: {
     height: 40,

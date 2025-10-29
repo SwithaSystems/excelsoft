@@ -196,7 +196,7 @@ const AdminSeeAllOrders = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
   );
@@ -212,6 +212,7 @@ const AdminSeeAllOrders = () => {
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
       scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
       <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
         <View style={localStyles.searchBarContainer}>

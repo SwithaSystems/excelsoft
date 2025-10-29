@@ -405,7 +405,7 @@ const AdminCategories = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
   );
@@ -420,6 +420,7 @@ const AdminCategories = () => {
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
       scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>

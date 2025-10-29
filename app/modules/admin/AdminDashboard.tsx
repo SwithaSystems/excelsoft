@@ -417,7 +417,7 @@ const AdminDashboard = () => {
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <BrandHeader hideUserGreeting={true} />
   );
@@ -431,6 +431,7 @@ const AdminDashboard = () => {
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
       scrollable
+      hideNavItems={true}
     >
       {/* <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[globalStyles.pt_0]}>
