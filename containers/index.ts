@@ -92,6 +92,7 @@ const routes = {
   AdminStoreInformationScreen: "modules/admin/AdminStoreInformation",
   AdminOrderQRScanScreen: "modules/admin/AdminOrderQRScan",
   AdminCategoriesScreen: "modules/admin/AdminCategories",
+  AdminAddCategoriesWebScreen: "modules/admin/componentsWeb/AdminAddCategoriesWeb",
   adminAccessControlScreen: "modules/admin/AdminAccessControl",
   adminAccessControlScreenScreen: "modules/admin/AdminAccessControl",
   fileUploadAddProductCategoryScreen:

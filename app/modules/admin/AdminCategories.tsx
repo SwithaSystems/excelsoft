@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { categoryService } from "@/services/categoryService";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ADMIN_CATEGORIES_SCREEN_TITLE } from "../../../constants/stringLiterals";
@@ -24,6 +24,8 @@ import CategoryDropdown from "./components/categoryDropdown";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 interface Category {
   _id: any;
@@ -54,14 +56,21 @@ const AdminCategories = () => {
   const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
+  // Get params to detect refresh
+  const params = useLocalSearchParams();
+
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
       try {
         if (categoryImages.length >= MAX_IMAGES) {
-          Alert.alert(
-            "Limit Reached",
-            `You can only upload up to ${MAX_IMAGES} images.`
-          );
+          if (isWeb) {
+            alert(`You can only upload up to ${MAX_IMAGES} images.`);
+          } else {
+            Alert.alert(
+              "Limit Reached",
+              `You can only upload up to ${MAX_IMAGES} images.`
+            );
+          }
           return;
         }
 
@@ -70,10 +79,14 @@ const AdminCategories = () => {
         if (type === "camera") {
           const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
           if (!cameraPerm.granted) {
-            Alert.alert(
-              "Permission Required",
-              "Permission to access camera is required!"
-            );
+            if (isWeb) {
+              alert("Permission to access camera is required!");
+            } else {
+              Alert.alert(
+                "Permission Required",
+                "Permission to access camera is required!"
+              );
+            }
             return;
           }
 
@@ -87,10 +100,14 @@ const AdminCategories = () => {
           const galleryPerm =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!galleryPerm.granted) {
-            Alert.alert(
-              "Permission Required",
-              "Permission to access gallery is required!"
-            );
+            if (isWeb) {
+              alert("Permission to access gallery is required!");
+            } else {
+              Alert.alert(
+                "Permission Required",
+                "Permission to access gallery is required!"
+              );
+            }
             return;
           }
 
@@ -115,10 +132,14 @@ const AdminCategories = () => {
             const updatedImages = [...prev, ...newImages];
 
             if (updatedImages.length > MAX_IMAGES) {
-              Alert.alert(
-                "Limit Exceeded",
-                `Only the first ${MAX_IMAGES} images have been added.`
-              );
+              if (isWeb) {
+                alert(`Only the first ${MAX_IMAGES} images have been added.`);
+              } else {
+                Alert.alert(
+                  "Limit Exceeded",
+                  `Only the first ${MAX_IMAGES} images have been added.`
+                );
+              }
               return updatedImages.slice(0, MAX_IMAGES);
             }
             return updatedImages;
@@ -126,48 +147,69 @@ const AdminCategories = () => {
         }
       } catch (error) {
         console.error("Error picking image:", error);
-        Alert.alert("Error", "Something went wrong while picking the image.");
+        if (isWeb) {
+          alert("Something went wrong while picking the image.");
+        } else {
+          Alert.alert("Error", "Something went wrong while picking the image.");
+        }
       }
     },
-    [categoryImages.length]
+    [categoryImages.length, isWeb]
   );
 
   const showImageOptions = useCallback(() => {
-    Alert.alert("Select Image", "Choose image source", [
-      {
-        text: "Take Photo",
-        onPress: () => openImagePickerAsync("camera"),
-      },
-      {
-        text: "Choose from Gallery",
-        onPress: () => openImagePickerAsync("gallery"),
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-    ]);
-  }, [openImagePickerAsync]);
+    // On web, skip the alert and directly open gallery
+    if (isWeb) {
+      openImagePickerAsync("gallery");
+    } else {
+      Alert.alert("Select Image", "Choose image source", [
+        {
+          text: "Take Photo",
+          onPress: () => openImagePickerAsync("camera"),
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: () => openImagePickerAsync("gallery"),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    }
+  }, [openImagePickerAsync, isWeb]);
 
   const removeImage = useCallback((index: any) => {
-    Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Remove",
-        onPress: () => {
-          setCategoryImages((prev: any) => {
-            const updatedImages = [...prev];
-            updatedImages.splice(index, 1);
-            return updatedImages;
-          });
+    if (isWeb) {
+      // On web, use window.confirm
+      if (window.confirm("Are you sure you want to remove this image?")) {
+        setCategoryImages((prev: any) => {
+          const updatedImages = [...prev];
+          updatedImages.splice(index, 1);
+          return updatedImages;
+        });
+      }
+    } else {
+      // On mobile, use Alert.alert
+      Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-        style: "destructive",
-      },
-    ]);
-  }, []);
+        {
+          text: "Remove",
+          onPress: () => {
+            setCategoryImages((prev: any) => {
+              const updatedImages = [...prev];
+              updatedImages.splice(index, 1);
+              return updatedImages;
+            });
+          },
+          style: "destructive",
+        },
+      ]);
+    }
+  }, [isWeb]);
 
   async function getAllCategories() {
     try {
@@ -194,71 +236,116 @@ const AdminCategories = () => {
   // Handle edit category click
   const handleEditCategory = useCallback((category: Category) => {
     console.log("Editing category:", category);
-    setCategoryName(category.name);
-    setCategoryDescription(category.description || "");
-    setParentCategory(category.parentCategory || null);
+    
+    // On desktop/tablet, redirect to AdminAddCategoriesWeb page
+    if (isTabOrDesktop) {
+      redirectToPage(containers.AdminAddCategoriesWebScreen, {
+        editCategory: JSON.stringify(category),
+      });
+    } else {
+      // On mobile, edit inline
+      setCategoryName(category.name);
+      setCategoryDescription(category.description || "");
+      setParentCategory(category.parentCategory || null);
 
-    // Convert image URLs to the format expected by the image picker
-    const imageObjects =
-      category.images?.map((imageUrl) => ({ uri: imageUrl })) || [];
-    setCategoryImages(imageObjects);
+      // Convert image URLs to the format expected by the image picker
+      const imageObjects =
+        category.images?.map((imageUrl) => ({ uri: imageUrl })) || [];
+      setCategoryImages(imageObjects);
 
-    setIsEditMode(true);
-    setEditingCategoryId(category._id);
-  }, []);
+      setIsEditMode(true);
+      setEditingCategoryId(category._id);
+    }
+  }, [isTabOrDesktop]);
 
   const handleDeleteCategory = useCallback((categoryId: number) => {
-    Alert.alert(
-      "Delete Category",
-      "Are you sure you want to delete this category?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const result = await categoryService.deleteCategory(categoryId);
-              if (result) {
-                await getAllCategories();
-                Alert.alert("Success", "Category deleted successfully");
-              }
-            } catch (error: any) {
-              console.log("Delete error:", error?.response?.data);
-
-              const errorMessage =
-                error?.response?.data?.message ||
-                "Something went wrong while deleting the category.";
-
-              Alert.alert("Error", errorMessage);
-            } finally {
-              setLoading(false);
+    if (isWeb) {
+      // On web, use window.confirm
+      if (window.confirm("Are you sure you want to delete this category?")) {
+        const performDelete = async () => {
+          try {
+            setLoading(true);
+            const result = await categoryService.deleteCategory(categoryId);
+            if (result) {
+              await getAllCategories();
+              alert("Category deleted successfully");
             }
+          } catch (error: any) {
+            console.log("Delete error:", error?.response?.data);
+
+            const errorMessage =
+              error?.response?.data?.message ||
+              "Something went wrong while deleting the category.";
+
+            alert(errorMessage);
+          } finally {
+            setLoading(false);
+          }
+        };
+        performDelete();
+      }
+    } else {
+      // On mobile, use Alert.alert
+      Alert.alert(
+        "Delete Category",
+        "Are you sure you want to delete this category?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                setLoading(true);
+                const result = await categoryService.deleteCategory(categoryId);
+                if (result) {
+                  await getAllCategories();
+                  Alert.alert("Success", "Category deleted successfully");
+                }
+              } catch (error: any) {
+                console.log("Delete error:", error?.response?.data);
+
+                const errorMessage =
+                  error?.response?.data?.message ||
+                  "Something went wrong while deleting the category.";
+
+                Alert.alert("Error", errorMessage);
+              } finally {
+                setLoading(false);
+              }
+            },
           },
-        },
-      ]
-    );
-  }, []);
+        ]
+      );
+    }
+  }, [isWeb]);
 
   // Handle cancel edit
   const handleCancelEdit = useCallback(() => {
-    Alert.alert(
-      "Cancel Edit",
-      "Are you sure you want to cancel editing? All changes will be lost.",
-      [
-        {
-          text: "Continue Editing",
-          style: "cancel",
-        },
-        {
-          text: "Cancel Edit",
-          onPress: clearForm,
-          style: "destructive",
-        },
-      ]
-    );
-  }, [clearForm]);
+    if (isWeb) {
+      // On web, use window.confirm
+      if (window.confirm("Are you sure you want to cancel editing? All changes will be lost.")) {
+        clearForm();
+      }
+    } else {
+      // On mobile, use Alert.alert
+      Alert.alert(
+        "Cancel Edit",
+        "Are you sure you want to cancel editing? All changes will be lost.",
+        [
+          {
+            text: "Continue Editing",
+            style: "cancel",
+          },
+          {
+            text: "Cancel Edit",
+            onPress: clearForm,
+            style: "destructive",
+          },
+        ]
+      );
+    }
+  }, [clearForm, isWeb]);
 
   const handleAddCategory = useCallback(async () => {
     try {
@@ -267,7 +354,12 @@ const AdminCategories = () => {
 
       // Validate required fields
       if (!categoryName.trim()) {
-        Alert.alert("Error", "Category name is required");
+        if (isWeb) {
+          alert("Category name is required");
+        } else {
+          Alert.alert("Error", "Category name is required");
+        }
+        setLoading(false);
         return;
       }
 
@@ -303,7 +395,9 @@ const AdminCategories = () => {
       }
 
       // Process images - append each image to form data
-      categoryImages.forEach((img: any, index: any) => {
+      for (let index = 0; index < categoryImages.length; index++) {
+        const img = categoryImages[index];
+        
         // Only append if there's a URI (valid image)
         if (img.uri) {
           const uri = img.uri || img.path || img;
@@ -316,14 +410,26 @@ const AdminCategories = () => {
             ? "image/jpeg"
             : "image/jpeg";
 
-          // Append image to form data
-          formData.append("image", {
-            uri: img.uri,
-            name: fileName,
-            type: fileType,
-          } as any);
+          // On web, we need to convert the blob URL to a File object
+          if (Platform.OS === "web") {
+            try {
+              const response = await fetch(img.uri);
+              const blob = await response.blob();
+              const file = new File([blob], fileName, { type: fileType });
+              formData.append("image", file);
+            } catch (error) {
+              console.error("Error converting image to file:", error);
+            }
+          } else {
+            // On mobile, use the standard format
+            formData.append("image", {
+              uri: img.uri,
+              name: fileName,
+              type: fileType,
+            } as any);
+          }
         }
-      });
+      }
 
       console.log(
         `Submitting form data for category ${
@@ -348,20 +454,28 @@ const AdminCategories = () => {
       );
 
       if (!result) {
-        Alert.alert(
-          "Error",
-          `Failed to ${isEditMode ? "update" : "add"} category`
-        );
+        if (isWeb) {
+          alert(`Failed to ${isEditMode ? "update" : "add"} category`);
+        } else {
+          Alert.alert(
+            "Error",
+            `Failed to ${isEditMode ? "update" : "add"} category`
+          );
+        }
         return;
       } else {
         await getAllCategories();
 
         clearForm();
 
-        Alert.alert(
-          "Success",
-          `Category ${isEditMode ? "updated" : "added"} successfully`
-        );
+        if (isWeb) {
+          alert(`Category ${isEditMode ? "updated" : "added"} successfully`);
+        } else {
+          Alert.alert(
+            "Success",
+            `Category ${isEditMode ? "updated" : "added"} successfully`
+          );
+        }
 
         // if (!isEditMode) {
         //   router.back();
@@ -372,10 +486,14 @@ const AdminCategories = () => {
         `Error ${isEditMode ? "updating" : "adding"} category:`,
         error
       );
-      Alert.alert(
-        "Error",
-        `Failed to ${isEditMode ? "update" : "add"} category`
-      );
+      if (isWeb) {
+        alert(`Failed to ${isEditMode ? "update" : "add"} category`);
+      } else {
+        Alert.alert(
+          "Error",
+          `Failed to ${isEditMode ? "update" : "add"} category`
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -388,11 +506,26 @@ const AdminCategories = () => {
     editingCategoryId,
     categoryList,
     clearForm,
+    isWeb,
   ]);
 
   useEffect(() => {
     getAllCategories();
   }, []);
+
+  // Refresh when returning from edit page
+  useEffect(() => {
+    if (params.refresh) {
+      getAllCategories();
+    }
+  }, [params.refresh]);
+
+  // Refresh when screen comes back into focus (after navigating back from add/edit page)
+  useFocusEffect(
+    useCallback(() => {
+      getAllCategories();
+    }, [])
+  );
 
   console.log("categoryList", categoryList);
 
@@ -422,109 +555,127 @@ const AdminCategories = () => {
       scrollable={isTabOrDesktop ? false : true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {isEditMode ? "Edit Category" : "Add New Category"}
-            </Text>
-            {isEditMode && (
+
+       
+        {!isTabOrDesktop && (
+          <View style={styles.formContainer}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {isEditMode ? "Edit Category" : "Add New Category"}
+              </Text>
+              {isEditMode && (
+                <TouchableOpacity
+                  onPress={handleCancelEdit}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <CustomTextInput
+              value={categoryName}
+              setValue={setCategoryName}
+              placeholder="Enter Category name *"
+              containerStyle={styles.input}
+              onPress={() => {}}
+            />
+
+            <CustomTextInput
+              value={categoryDescription}
+              setValue={setCategoryDescription}
+              placeholder="Enter Category description (optional)"
+              containerStyle={styles.input}
+              onPress={() => {}}
+            />
+
+            <CategoryDropdown
+              categories={categoryList.filter(
+                (cat) => cat.id !== editingCategoryId
+              )}
+              selectedCategory={parentCategory}
+              setSelectedCategory={setParentCategory}
+              containerStyle={{ borderColor: colors.primary }}
+              placeholder="Select parent category (optional)"
+            />
+
+            {/* Image Selection Section */}
+            <View style={styles.imageSection}>
+              <Text style={styles.imageLabel}>Category Images</Text>
+
               <TouchableOpacity
-                onPress={handleCancelEdit}
-                style={styles.cancelButton}
+                style={styles.imagePickerButton}
+                onPress={showImageOptions}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Ionicons name="camera" size={24} color={colors.primary} />
+                <Text style={styles.imagePickerText}>Add Image</Text>
+              </TouchableOpacity>
+
+              {/* Image Preview */}
+              {categoryImages.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.imagePreviewContainer}
+                >
+                  {categoryImages.map((image, index) => (
+                    <React.Fragment key={index}>
+                      <View style={styles.imagePreviewItem}>
+                        <Image
+                          source={{ uri: image.uri }}
+                          style={styles.previewImage}
+                        />
+                        <TouchableOpacity
+                          style={styles.removeImageButton}
+                          onPress={() => removeImage(index)}
+                        >
+                          <Ionicons
+                            name="close-circle"
+                            size={24}
+                            color={colors.primaryRed}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </React.Fragment>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.addButton, loading && styles.disabledButton]}
+              onPress={handleAddCategory}
+              disabled={loading}
+            >
+              <Text style={styles.addButtonText}>
+                {loading
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Adding..."
+                  : isEditMode
+                  ? "Update Category"
+                  : "Add Category"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.listSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            
+            {/* Desktop/Tablet: Show button to redirect to add category page */}
+            {isTabOrDesktop && (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  redirectToPage(containers.AdminAddCategoriesWebScreen);
+                }}
+              >
+                <Text style={styles.addButtonText}>+ Add New Category</Text>
               </TouchableOpacity>
             )}
           </View>
-
-          <CustomTextInput
-            value={categoryName}
-            setValue={setCategoryName}
-            placeholder="Enter Category name *"
-            containerStyle={styles.input}
-            onPress={() => {}}
-          />
-
-          <CustomTextInput
-            value={categoryDescription}
-            setValue={setCategoryDescription}
-            placeholder="Enter Category description (optional)"
-            containerStyle={styles.input}
-            onPress={() => {}}
-          />
-
-          <CategoryDropdown
-            categories={categoryList.filter(
-              (cat) => cat.id !== editingCategoryId
-            )} // Prevent self-selection as parent
-            selectedCategory={parentCategory}
-            setSelectedCategory={setParentCategory}
-            containerStyle={{ borderColor: colors.primary }}
-            placeholder="Select parent category (optional)"
-          />
-
-          {/* Image Selection Section */}
-          <View style={styles.imageSection}>
-            <Text style={styles.imageLabel}>Category Images</Text>
-
-            <TouchableOpacity
-              style={styles.imagePickerButton}
-              onPress={showImageOptions}
-            >
-              <Ionicons name="camera" size={24} color={colors.primary} />
-              <Text style={styles.imagePickerText}>Add Image</Text>
-            </TouchableOpacity>
-
-            {/* Image Preview */}
-            {categoryImages.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.imagePreviewContainer}
-              >
-                {categoryImages.map((image, index) => (
-                  <React.Fragment>
-                    <View style={styles.imagePreviewItem}>
-                      <Image
-                        source={{ uri: image.uri }}
-                        style={styles.previewImage}
-                      />
-                      <TouchableOpacity
-                        style={styles.removeImageButton}
-                        onPress={() => removeImage(index)}
-                      >
-                        <Ionicons
-                          name="close-circle"
-                          size={24}
-                          color={colors.primaryRed}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </React.Fragment>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-
-          <TouchableOpacity
-            style={[styles.addButton, loading && styles.disabledButton]}
-            onPress={handleAddCategory}
-            disabled={loading}
-          >
-            <Text style={styles.addButtonText}>
-              {loading
-                ? isEditMode
-                  ? "Updating..."
-                  : "Adding..."
-                : isEditMode
-                ? "Update Category"
-                : "Add Category"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.listSection}>
-          <Text style={styles.sectionTitle}>Existing Categories</Text>
           <ScrollView style={styles.listContainer}>
             <View>
               {categoryList.map((categoryItem: Category, index: number) => (
@@ -613,9 +764,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.primary,
+    fontSize: 35, 
+    color: colors.black,
+    paddingTop:5,
+    
   },
   cancelButton: {
     paddingHorizontal: 12,
@@ -683,12 +835,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   addButton: {
+
+    height:40 ,
+    paddingHorizontal: 16,
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: "center",
     justifyContent: "center",
-    marginTop: 8,
+    alignItems: "center",
+    minWidth: 140,
+
   },
   disabledButton: {
     opacity: 0.6,
@@ -703,7 +858,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingBottom: 20,
-    paddingTop: 16,
+    paddingTop: 2,
   },
   categoryItem: {
     flexDirection: "row",
