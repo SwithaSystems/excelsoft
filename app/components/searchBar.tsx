@@ -70,7 +70,7 @@ const SearchBar = ({
 
   const inputStyle = [
     styles.searchInput,
-    { fontSize: isMobile ? 14 : 16, paddingVertical: isMobile ? 4 : 6 },
+    { fontSize: isMobile ? 14 : 16, paddingVertical: isMobile ? 8 : 6 },
   ];
 
   return (
@@ -108,6 +108,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 25,
     paddingHorizontal: 10,
+    // minHeight: 48,
+    // paddingVertical: 8,
     // marginTop: 8,
     // marginBottom: 16,
   },
@@ -115,5 +117,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     color: colors.black,
+    // minHeight: 32,
   },
 });

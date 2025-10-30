@@ -26,6 +26,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 interface Category {
   _id: any;
@@ -46,11 +47,23 @@ const AdminCategories = () => {
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Modal states
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<any>(null);
+  const [showCancelEditModal, setShowCancelEditModal] = useState(false);
+  const [showImageLimitModal, setShowImageLimitModal] = useState(false);
+  const [showRemoveImageModal, setShowRemoveImageModal] = useState(false);
+  const [imageIndexToRemove, setImageIndexToRemove] = useState<number | null>(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [permissionMessage, setPermissionMessage] = useState("");
+
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
-    null
-  );
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -63,14 +76,8 @@ const AdminCategories = () => {
     async (type: "camera" | "gallery") => {
       try {
         if (categoryImages.length >= MAX_IMAGES) {
-          if (isWeb) {
-            alert(`You can only upload up to ${MAX_IMAGES} images.`);
-          } else {
-            Alert.alert(
-              "Limit Reached",
-              `You can only upload up to ${MAX_IMAGES} images.`
-            );
-          }
+          setErrorMessage(`You can only upload up to ${MAX_IMAGES} images.`);
+          setShowErrorModal(true);
           return;
         }
 
@@ -79,14 +86,8 @@ const AdminCategories = () => {
         if (type === "camera") {
           const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
           if (!cameraPerm.granted) {
-            if (isWeb) {
-              alert("Permission to access camera is required!");
-            } else {
-              Alert.alert(
-                "Permission Required",
-                "Permission to access camera is required!"
-              );
-            }
+            setPermissionMessage("Permission to access camera is required!");
+            setShowPermissionModal(true);
             return;
           }
 
@@ -97,17 +98,10 @@ const AdminCategories = () => {
             quality: 0.8,
           });
         } else {
-          const galleryPerm =
-            await ImagePicker.requestMediaLibraryPermissionsAsync();
+          const galleryPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!galleryPerm.granted) {
-            if (isWeb) {
-              alert("Permission to access gallery is required!");
-            } else {
-              Alert.alert(
-                "Permission Required",
-                "Permission to access gallery is required!"
-              );
-            }
+            setPermissionMessage("Permission to access gallery is required!");
+            setShowPermissionModal(true);
             return;
           }
 
@@ -120,26 +114,15 @@ const AdminCategories = () => {
           });
         }
 
-        if (
-          !result.canceled &&
-          "assets" in result &&
-          result.assets?.length > 0
-        ) {
-          // Add new images to the existing ones, limited to MAX_IMAGES
+        if (!result.canceled && "assets" in result && result.assets?.length > 0) {
           const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
 
           setCategoryImages((prev: any) => {
             const updatedImages = [...prev, ...newImages];
 
             if (updatedImages.length > MAX_IMAGES) {
-              if (isWeb) {
-                alert(`Only the first ${MAX_IMAGES} images have been added.`);
-              } else {
-                Alert.alert(
-                  "Limit Exceeded",
-                  `Only the first ${MAX_IMAGES} images have been added.`
-                );
-              }
+              setErrorMessage(`Only the first ${MAX_IMAGES} images have been added.`);
+              setShowErrorModal(true);
               return updatedImages.slice(0, MAX_IMAGES);
             }
             return updatedImages;
@@ -147,14 +130,11 @@ const AdminCategories = () => {
         }
       } catch (error) {
         console.error("Error picking image:", error);
-        if (isWeb) {
-          alert("Something went wrong while picking the image.");
-        } else {
-          Alert.alert("Error", "Something went wrong while picking the image.");
-        }
+        setErrorMessage("Something went wrong while picking the image.");
+        setShowErrorModal(true);
       }
     },
-    [categoryImages.length, isWeb]
+    [categoryImages.length]
   );
 
   const showImageOptions = useCallback(() => {
@@ -180,36 +160,21 @@ const AdminCategories = () => {
   }, [openImagePickerAsync, isWeb]);
 
   const removeImage = useCallback((index: any) => {
-    if (isWeb) {
-      // On web, use window.confirm
-      if (window.confirm("Are you sure you want to remove this image?")) {
-        setCategoryImages((prev: any) => {
-          const updatedImages = [...prev];
-          updatedImages.splice(index, 1);
-          return updatedImages;
-        });
-      }
-    } else {
-      // On mobile, use Alert.alert
-      Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Remove",
-          onPress: () => {
-            setCategoryImages((prev: any) => {
-              const updatedImages = [...prev];
-              updatedImages.splice(index, 1);
-              return updatedImages;
-            });
-          },
-          style: "destructive",
-        },
-      ]);
+    setImageIndexToRemove(index);
+    setShowRemoveImageModal(true);
+  }, []);
+
+  const confirmRemoveImage = useCallback(() => {
+    if (imageIndexToRemove !== null) {
+      setCategoryImages((prev: any) => {
+        const updatedImages = [...prev];
+        updatedImages.splice(imageIndexToRemove, 1);
+        return updatedImages;
+      });
+      setImageIndexToRemove(null);
     }
-  }, [isWeb]);
+    setShowRemoveImageModal(false);
+  }, [imageIndexToRemove]);
 
   async function getAllCategories() {
     try {
@@ -219,7 +184,8 @@ const AdminCategories = () => {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
-      Alert.alert("Error", "Failed to fetch categories");
+      setErrorMessage("Failed to fetch categories");
+      setShowErrorModal(true);
     }
   }
 
@@ -249,8 +215,7 @@ const AdminCategories = () => {
       setParentCategory(category.parentCategory || null);
 
       // Convert image URLs to the format expected by the image picker
-      const imageObjects =
-        category.images?.map((imageUrl) => ({ uri: imageUrl })) || [];
+      const imageObjects = category.images?.map((imageUrl) => ({ uri: imageUrl })) || [];
       setCategoryImages(imageObjects);
 
       setIsEditMode(true);
@@ -258,94 +223,44 @@ const AdminCategories = () => {
     }
   }, [isTabOrDesktop]);
 
-  const handleDeleteCategory = useCallback((categoryId: number) => {
-    if (isWeb) {
-      // On web, use window.confirm
-      if (window.confirm("Are you sure you want to delete this category?")) {
-        const performDelete = async () => {
-          try {
-            setLoading(true);
-            const result = await categoryService.deleteCategory(categoryId);
-            if (result) {
-              await getAllCategories();
-              alert("Category deleted successfully");
-            }
-          } catch (error: any) {
-            console.log("Delete error:", error?.response?.data);
+  const handleDeleteCategory = useCallback((categoryId: any) => {
+    setCategoryToDelete(categoryId);
+    setShowDeleteConfirmModal(true);
+  }, []);
 
-            const errorMessage =
-              error?.response?.data?.message ||
-              "Something went wrong while deleting the category.";
+  const confirmDeleteCategory = useCallback(async () => {
+    if (categoryToDelete === null) return;
 
-            alert(errorMessage);
-          } finally {
-            setLoading(false);
-          }
-        };
-        performDelete();
+    try {
+      setLoading(true);
+      const result = await categoryService.deleteCategory(categoryToDelete);
+      if (result) {
+        await getAllCategories();
+        setSuccessMessage("Category deleted successfully");
+        setShowSuccessModal(true);
       }
-    } else {
-      // On mobile, use Alert.alert
-      Alert.alert(
-        "Delete Category",
-        "Are you sure you want to delete this category?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                setLoading(true);
-                const result = await categoryService.deleteCategory(categoryId);
-                if (result) {
-                  await getAllCategories();
-                  Alert.alert("Success", "Category deleted successfully");
-                }
-              } catch (error: any) {
-                console.log("Delete error:", error?.response?.data);
+    } catch (error: any) {
+      console.log("Delete error:", error?.response?.data);
 
-                const errorMessage =
-                  error?.response?.data?.message ||
-                  "Something went wrong while deleting the category.";
-
-                Alert.alert("Error", errorMessage);
-              } finally {
-                setLoading(false);
-              }
-            },
-          },
-        ]
-      );
+      const errorMsg = error?.response?.data?.message || "Something went wrong while deleting the category.";
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirmModal(false);
+      setCategoryToDelete(null);
     }
-  }, [isWeb]);
+  }, [categoryToDelete]);
 
   // Handle cancel edit
   const handleCancelEdit = useCallback(() => {
-    if (isWeb) {
-      // On web, use window.confirm
-      if (window.confirm("Are you sure you want to cancel editing? All changes will be lost.")) {
-        clearForm();
-      }
-    } else {
-      // On mobile, use Alert.alert
-      Alert.alert(
-        "Cancel Edit",
-        "Are you sure you want to cancel editing? All changes will be lost.",
-        [
-          {
-            text: "Continue Editing",
-            style: "cancel",
-          },
-          {
-            text: "Cancel Edit",
-            onPress: clearForm,
-            style: "destructive",
-          },
-        ]
-      );
-    }
-  }, [clearForm, isWeb]);
+    setShowCancelEditModal(true);
+  }, []);
+
+  const confirmCancelEdit = useCallback(() => {
+    clearForm();
+    setShowCancelEditModal(false);
+  }, [clearForm]);
 
   const handleAddCategory = useCallback(async () => {
     try {
@@ -354,11 +269,8 @@ const AdminCategories = () => {
 
       // Validate required fields
       if (!categoryName.trim()) {
-        if (isWeb) {
-          alert("Category name is required");
-        } else {
-          Alert.alert("Error", "Category name is required");
-        }
+        setErrorMessage("Category name is required");
+        setShowErrorModal(true);
         setLoading(false);
         return;
       }
@@ -372,11 +284,7 @@ const AdminCategories = () => {
       } else {
         // Add mode - find the max id from the category list
         const maxId = categoryList.reduce((max, category) => {
-          return category.id &&
-            typeof category.id === "number" &&
-            category.id > max
-            ? category.id
-            : max;
+          return category.id && typeof category.id === "number" && category.id > max ? category.id : max;
         }, 0);
 
         const newId = maxId + 1;
@@ -431,69 +339,31 @@ const AdminCategories = () => {
         }
       }
 
-      console.log(
-        `Submitting form data for category ${
-          isEditMode ? "update" : "creation"
-        }`,
-        formData
-      );
+      console.log(`Submitting form data for category ${isEditMode ? "update" : "creation"}`, formData);
 
       let result;
       if (isEditMode && editingCategoryId) {
-        result = await categoryService.updateCategory(
-          editingCategoryId,
-          formData
-        );
+        result = await categoryService.updateCategory(editingCategoryId, formData);
       } else {
         result = await categoryService.addCategory(formData);
       }
 
-      console.log(
-        `Result for category ${isEditMode ? "update" : "creation"}`,
-        result
-      );
+      console.log(`Result for category ${isEditMode ? "update" : "creation"}`, result);
 
       if (!result) {
-        if (isWeb) {
-          alert(`Failed to ${isEditMode ? "update" : "add"} category`);
-        } else {
-          Alert.alert(
-            "Error",
-            `Failed to ${isEditMode ? "update" : "add"} category`
-          );
-        }
+        setErrorMessage(`Failed to ${isEditMode ? "update" : "add"} category`);
+        setShowErrorModal(true);
         return;
       } else {
         await getAllCategories();
-
         clearForm();
-
-        if (isWeb) {
-          alert(`Category ${isEditMode ? "updated" : "added"} successfully`);
-        } else {
-          Alert.alert(
-            "Success",
-            `Category ${isEditMode ? "updated" : "added"} successfully`
-          );
-        }
-
-        // if (!isEditMode) {
-        //   router.back();
-        // }
+        setSuccessMessage(`Category ${isEditMode ? "updated" : "added"} successfully`);
+        setShowSuccessModal(true);
       }
     } catch (error) {
-      console.error(
-        `Error ${isEditMode ? "updating" : "adding"} category:`,
-        error
-      );
-      if (isWeb) {
-        alert(`Failed to ${isEditMode ? "update" : "add"} category`);
-      } else {
-        Alert.alert(
-          "Error",
-          `Failed to ${isEditMode ? "update" : "add"} category`
-        );
-      }
+      console.error(`Error ${isEditMode ? "updating" : "adding"} category:`, error);
+      setErrorMessage(`Failed to ${isEditMode ? "update" : "add"} category`);
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -506,7 +376,6 @@ const AdminCategories = () => {
     editingCategoryId,
     categoryList,
     clearForm,
-    isWeb,
   ]);
 
   useEffect(() => {
@@ -530,15 +399,13 @@ const AdminCategories = () => {
   console.log("categoryList", categoryList);
 
   const getParentCategoryName = (parentCategoryId: any, categories: any) => {
-    const parentCategory = categories.find(
-      (cat: any) => cat.id === parentCategoryId
-    );
+    const parentCategory = categories.find((cat: any) => cat.id === parentCategoryId);
     return parentCategory ? parentCategory.name : "No Parent";
   };
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
-    <BrandHeaderWeb hideUserGreeting = {true}/>
+    <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
   );
@@ -556,19 +423,14 @@ const AdminCategories = () => {
       hideNavItems={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-
-       
         {!isTabOrDesktop && (
           <View style={styles.formContainer}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
+              <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>
                 {isEditMode ? "Edit Category" : "Add New Category"}
               </Text>
               {isEditMode && (
-                <TouchableOpacity
-                  onPress={handleCancelEdit}
-                  style={styles.cancelButton}
-                >
+                <TouchableOpacity onPress={handleCancelEdit} style={styles.cancelButton}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
               )}
@@ -591,9 +453,7 @@ const AdminCategories = () => {
             />
 
             <CategoryDropdown
-              categories={categoryList.filter(
-                (cat) => cat.id !== editingCategoryId
-              )}
+              categories={categoryList.filter((cat) => cat.id !== editingCategoryId)}
               selectedCategory={parentCategory}
               setSelectedCategory={setParentCategory}
               containerStyle={{ borderColor: colors.primary }}
@@ -604,10 +464,7 @@ const AdminCategories = () => {
             <View style={styles.imageSection}>
               <Text style={styles.imageLabel}>Category Images</Text>
 
-              <TouchableOpacity
-                style={styles.imagePickerButton}
-                onPress={showImageOptions}
-              >
+              <TouchableOpacity style={styles.imagePickerButton} onPress={showImageOptions}>
                 <Ionicons name="camera" size={24} color={colors.primary} />
                 <Text style={styles.imagePickerText}>Add Image</Text>
               </TouchableOpacity>
@@ -622,19 +479,12 @@ const AdminCategories = () => {
                   {categoryImages.map((image, index) => (
                     <React.Fragment key={index}>
                       <View style={styles.imagePreviewItem}>
-                        <Image
-                          source={{ uri: image.uri }}
-                          style={styles.previewImage}
-                        />
+                        <Image source={{ uri: image.uri }} style={styles.previewImage} />
                         <TouchableOpacity
                           style={styles.removeImageButton}
                           onPress={() => removeImage(index)}
                         >
-                          <Ionicons
-                            name="close-circle"
-                            size={24}
-                            color={colors.primaryRed}
-                          />
+                          <Ionicons name="close-circle" size={24} color={colors.primaryRed} />
                         </TouchableOpacity>
                       </View>
                     </React.Fragment>
@@ -663,7 +513,7 @@ const AdminCategories = () => {
 
         <View style={styles.listSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
             
             {/* Desktop/Tablet: Show button to redirect to add category page */}
             {isTabOrDesktop && (
@@ -684,8 +534,7 @@ const AdminCategories = () => {
                   key={categoryItem.id || index}
                   style={[
                     styles.categoryItem,
-                    editingCategoryId === categoryItem.id &&
-                      styles.editingCategoryItem,
+                    editingCategoryId === categoryItem.id && styles.editingCategoryItem,
                   ]}
                   onPress={() => handleEditCategory(categoryItem)}
                 >
@@ -698,20 +547,13 @@ const AdminCategories = () => {
                       />
                     )}
                     <View style={styles.categoryInfo}>
-                      <Text style={styles.categoryName}>
-                        {categoryItem.name}
-                      </Text>
+                      <Text style={styles.categoryName}>{categoryItem.name}</Text>
                       {categoryItem.description && (
-                        <Text style={styles.categoryDescription}>
-                          {categoryItem.description}
-                        </Text>
+                        <Text style={styles.categoryDescription}>{categoryItem.description}</Text>
                       )}
                       <Text style={styles.categoryId}>
                         ID: {categoryItem.id} | Parent:{" "}
-                        {getParentCategoryName(
-                          categoryItem.parentCategory,
-                          categoryList
-                        )}
+                        {getParentCategoryName(categoryItem.parentCategory, categoryList)}
                       </Text>
                     </View>
                   </View>
@@ -719,20 +561,10 @@ const AdminCategories = () => {
                     {editingCategoryId === categoryItem.id && (
                       <Text style={styles.editingLabel}>Editing</Text>
                     )}
-                    <Ionicons
-                      name="create-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
+                    <Ionicons name="create-outline" size={20} color={colors.primary} />
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteCategory(categoryItem._id)}
-                  >
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={colors.primaryRed}
-                    />
+                  <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                    <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
@@ -745,18 +577,85 @@ const AdminCategories = () => {
           </ScrollView>
         </View>
       </ScrollView>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isModalVisible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Success"
+        text={successMessage}
+        submitText="OK"
+        handleSubmit={() => setShowSuccessModal(false)}
+      />
+
+      {/* Error Modal */}
+      <ConfirmationModal
+        isModalVisible={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Error"
+        text={errorMessage}
+        submitText="OK"
+        handleSubmit={() => setShowErrorModal(false)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isModalVisible={showDeleteConfirmModal}
+        onClose={() => setShowDeleteConfirmModal(false)}
+        title="Delete Category"
+        text="Are you sure you want to delete this category?"
+        submitText="Delete"
+        cancelText="Cancel"
+        handleSubmit={confirmDeleteCategory}
+        handleCancel={() => {
+          setShowDeleteConfirmModal(false);
+          setCategoryToDelete(null);
+        }}
+      />
+
+      {/* Cancel Edit Modal */}
+      <ConfirmationModal
+        isModalVisible={showCancelEditModal}
+        onClose={() => setShowCancelEditModal(false)}
+        title="Cancel Edit"
+        text="Are you sure you want to cancel editing? All changes will be lost."
+        submitText="Cancel Edit"
+        cancelText="Continue Editing"
+        handleSubmit={confirmCancelEdit}
+        handleCancel={() => setShowCancelEditModal(false)}
+      />
+
+      {/* Remove Image Modal */}
+      <ConfirmationModal
+        isModalVisible={showRemoveImageModal}
+        onClose={() => setShowRemoveImageModal(false)}
+        title="Remove Image"
+        text="Are you sure you want to remove this image?"
+        submitText="Remove"
+        cancelText="Cancel"
+        handleSubmit={confirmRemoveImage}
+        handleCancel={() => {
+          setShowRemoveImageModal(false);
+          setImageIndexToRemove(null);
+        }}
+      />
+
+      {/* Permission Modal */}
+      <ConfirmationModal
+        isModalVisible={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        title="Permission Required"
+        text={permissionMessage}
+        submitText="OK"
+        handleSubmit={() => setShowPermissionModal(false)}
+      />
     </LayoutComponent>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.white,
-    flex: 1,
-  },
   formContainer: {
     marginBottom: 24,
-    // paddingHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -765,10 +664,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 35, 
+    // fontSize is set dynamically in the component
     color: colors.black,
-    paddingTop:5,
-    
+    paddingTop: 5,
   },
   cancelButton: {
     paddingHorizontal: 12,
@@ -836,15 +734,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   addButton: {
-
-    height:40 ,
+    height: 40,
     paddingHorizontal: 16,
     backgroundColor: colors.primary,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
     minWidth: 140,
-
   },
   disabledButton: {
     opacity: 0.6,

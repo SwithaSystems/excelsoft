@@ -34,6 +34,7 @@ interface Props {
   style?: ViewStyle;
   maxLength?: number;
   editable?:boolean;
+  placeholderTextColor?: string;
 }
 
 export const CustomTextInput = (props: Props) => {
@@ -41,6 +42,7 @@ export const CustomTextInput = (props: Props) => {
     <View style={[styles.textInput, props?.containerStyle]}>
       <TextInput
         placeholder={props.placeholder}
+        placeholderTextColor={props.placeholderTextColor || colors.slateGrey} 
         value={props.value}
         onChangeText={props.setValue}
         secureTextEntry={props.secureTextEntry}

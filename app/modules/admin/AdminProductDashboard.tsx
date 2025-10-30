@@ -772,6 +772,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
+        {isTabOrDesktop && (
         <View style={styles.stickyBottomContainer}>
           <Pagination
             currentPage={currentPage}
@@ -782,6 +783,7 @@ const AdminProductDashboard = () => {
             }}
           />
         </View>
+      )}
       </View>
 
       <ConfirmationModal

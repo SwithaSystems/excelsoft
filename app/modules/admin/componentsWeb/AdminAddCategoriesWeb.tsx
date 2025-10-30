@@ -24,6 +24,7 @@ import CategoryDropdown from "../components/categoryDropdown";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 interface Category {
   _id: any;
@@ -44,6 +45,10 @@ const AdminAddCategoriesWeb = () => {
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Success Modal states
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(
@@ -61,10 +66,14 @@ const AdminAddCategoriesWeb = () => {
     async (type: "camera" | "gallery") => {
       try {
         if (categoryImages.length >= MAX_IMAGES) {
-          Alert.alert(
-            "Limit Reached",
-            `You can only upload up to ${MAX_IMAGES} images.`
-          );
+          if (isWeb) {
+            alert(`You can only upload up to ${MAX_IMAGES} images.`);
+          } else {
+            Alert.alert(
+              "Limit Reached",
+              `You can only upload up to ${MAX_IMAGES} images.`
+            );
+          }
           return;
         }
 
@@ -73,10 +82,14 @@ const AdminAddCategoriesWeb = () => {
         if (type === "camera") {
           const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
           if (!cameraPerm.granted) {
-            Alert.alert(
-              "Permission Required",
-              "Permission to access camera is required!"
-            );
+            if (isWeb) {
+              alert("Permission to access camera is required!");
+            } else {
+              Alert.alert(
+                "Permission Required",
+                "Permission to access camera is required!"
+              );
+            }
             return;
           }
 
@@ -90,10 +103,14 @@ const AdminAddCategoriesWeb = () => {
           const galleryPerm =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!galleryPerm.granted) {
-            Alert.alert(
-              "Permission Required",
-              "Permission to access gallery is required!"
-            );
+            if (isWeb) {
+              alert("Permission to access gallery is required!");
+            } else {
+              Alert.alert(
+                "Permission Required",
+                "Permission to access gallery is required!"
+              );
+            }
             return;
           }
 
@@ -117,10 +134,14 @@ const AdminAddCategoriesWeb = () => {
             const updatedImages = [...prev, ...newImages];
 
             if (updatedImages.length > MAX_IMAGES) {
-              Alert.alert(
-                "Limit Exceeded",
-                `Only the first ${MAX_IMAGES} images have been added.`
-              );
+              if (isWeb) {
+                alert(`Only the first ${MAX_IMAGES} images have been added.`);
+              } else {
+                Alert.alert(
+                  "Limit Exceeded",
+                  `Only the first ${MAX_IMAGES} images have been added.`
+                );
+              }
               return updatedImages.slice(0, MAX_IMAGES);
             }
             return updatedImages;
@@ -128,10 +149,14 @@ const AdminAddCategoriesWeb = () => {
         }
       } catch (error) {
         console.error("Error picking image:", error);
-        Alert.alert("Error", "Something went wrong while picking the image.");
+        if (isWeb) {
+          alert("Something went wrong while picking the image.");
+        } else {
+          Alert.alert("Error", "Something went wrong while picking the image.");
+        }
       }
     },
-    [categoryImages.length]
+    [categoryImages.length, isWeb]
   );
 
   const showImageOptions = useCallback(() => {
@@ -355,18 +380,12 @@ const AdminAddCategoriesWeb = () => {
         return;
       } else {
         clearForm();
-
-        if (isWeb) {
-          alert(`Category ${isEditMode ? "updated" : "added"} successfully`);
-        } else {
-          Alert.alert(
-            "Success",
-            `Category ${isEditMode ? "updated" : "added"} successfully`
-          );
-        }
         
-        // Navigate back to categories page
-        router.back();
+        // Show success modal
+        setSuccessMessage(
+          `Category ${isEditMode ? "updated" : "added"} successfully`
+        );
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error(
@@ -431,7 +450,7 @@ const AdminAddCategoriesWeb = () => {
 
   const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
-    return (
+  return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
@@ -542,8 +561,24 @@ const AdminAddCategoriesWeb = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Success Modal */}
+      <ConfirmationModal
+        isModalVisible={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.back();
+        }}
+        title="Success"
+        text={successMessage}
+        submitText="OK"
+        handleSubmit={() => {
+          setShowSuccessModal(false);
+          router.back();
+        }}
+      />
     </LayoutComponent>
-    );
+  );
 };
 
 const styles = StyleSheet.create({

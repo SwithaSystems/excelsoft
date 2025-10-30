@@ -27,6 +27,9 @@ export default {
   // saturatedRed: "#FF4444",
   // deepBlueRed: "#FF231F7C",
   // warningText: "#E65100",
+  blue: "#007BFF",
+  red: "#FF4C4C",
+
 
   // Yellows
   primaryYellow: "#B5990C",

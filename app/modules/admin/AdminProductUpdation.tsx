@@ -55,6 +55,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -98,6 +99,7 @@ const AdminProductUpdation = () => {
   const [isColorsAvailable, setIsColorsAvailable] = useState(false);
   const [selectedColors, setSelectedColors] = useState<any>([]);
   const [showColorModal, setShowColorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -297,23 +299,38 @@ const AdminProductUpdation = () => {
   );
 
   const showImageOptions = useCallback(() => {
-    Alert.alert("Select Image", "Choose image source", [
-      {
-        text: "Take Photo",
-        onPress: () => openImagePickerAsync("camera"),
-      },
-      {
-        text: "Choose from Gallery",
-        onPress: () => openImagePickerAsync("gallery"),
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-    ]);
-  }, [openImagePickerAsync]);
+
+    if(isWeb){
+      openImagePickerAsync("gallery");
+    } else {
+
+      Alert.alert("Select Image", "Choose image source", [
+        {
+          text: "Take Photo",
+          onPress: () => openImagePickerAsync("camera"),
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: () => openImagePickerAsync("gallery"),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    }
+    }, [openImagePickerAsync, isWeb]);
 
   const removeImage = useCallback((index: number) => {
+  if (isWeb) {
+    if (window.confirm("Are you sure you want to remove this image?")) {
+      setProductImages((prev: any[]) => {
+        const newImages = [...prev];
+        newImages.splice(index, 1);
+        return newImages;
+      });
+    }
+  } else {
     Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
       {
         text: "Cancel",
@@ -331,7 +348,8 @@ const AdminProductUpdation = () => {
         },
       },
     ]);
-  }, []);
+  }
+}, [isWeb]);
 
   console.log("Images in product page", productImages);
 
@@ -515,31 +533,92 @@ const AdminProductUpdation = () => {
       }
 
       // Separate existing image URLs and new local image files
-      const existingImageUrls = productImages
-        .filter((img: any) => !img.uri.startsWith("file://"))
-        .map((img: any) => img.uri);
+      // const existingImageUrls = productImages
+      //   .filter((img: any) => !img.uri.startsWith("file://"))
+      //   .map((img: any) => img.uri);
 
-      const newImageFiles = productImages.filter((img: any) =>
-        img.uri.startsWith("file://")
-      );
+      // const newImageFiles = productImages.filter((img: any) =>
+      //   img.uri.startsWith("file://")
+      // );
 
-      // Send existing Cloudinary URLs to the server
-      formData.append("images", JSON.stringify(existingImageUrls));
+      // // Send existing Cloudinary URLs to the server
+      // formData.append("images", JSON.stringify(existingImageUrls));
 
-      // Send new image files (to upload)
-      newImageFiles.forEach((img: any, index: number) => {
-        const uri = img.uri;
-        const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
-        const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
+      // // Send new image files (to upload)
+      // newImageFiles.forEach((img: any, index: number) => {
+      //   const uri = img.uri;
+      //   const fileName = img.fileName || `image_${Date.now()}_${index}.jpg`;
+      //   const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg";
 
-        formData.append("imageFiles", {
-          uri,
-          name: fileName,
-          type: fileType,
-        } as any);
+      //   formData.append("imageFiles", {
+      //     uri,
+      //     name: fileName,
+      //     type: fileType,
+      //   } as any);
+      // });
+
+      const existingImageUrls: string[] = [];
+      const newImageFiles: any[] = [];
+
+      productImages.forEach((img: any) => {
+        const uri = img.uri || img.path || img;
+        
+        // Check if it's an existing URL (starts with http/https) or a new local file
+        if (uri.startsWith('http://') || uri.startsWith('https://')) {
+          // Existing image URL (already uploaded to server/cloudinary)
+          existingImageUrls.push(uri);
+        } else {
+          // New local image file (file:// or blob:)
+          newImageFiles.push(img);
+        }
       });
 
-      console.log("Submitting form data for product update", formData);
+      // Send existing image URLs (these won't be re-uploaded)
+      if (existingImageUrls.length > 0) {
+        formData.append("existingImages", JSON.stringify(existingImageUrls));
+      }
+
+      // Process and append new image files to upload
+      for (let index = 0; index < newImageFiles.length; index++) {
+        const img = newImageFiles[index];
+        
+        if (img.uri) {
+          const uri = img.uri || img.path || img;
+          const fileName = img.fileName || `product_image_${Date.now()}_${index}.jpg`;
+
+          // Determine image type
+          const fileType = fileName.includes(".png")
+            ? "image/png"
+            : fileName.includes(".jpg") || fileName.includes(".jpeg")
+            ? "image/jpeg"
+            : "image/jpeg";
+
+          // Platform-specific handling
+          if (Platform.OS === "web") {
+            try {
+              const response = await fetch(img.uri);
+              const blob = await response.blob();
+              const file = new File([blob], fileName, { type: fileType });
+              formData.append("imageFiles", file);
+            } catch (error) {
+              console.error(`Error processing image ${index}:`, error);
+            }
+          } else {
+            // Mobile - use standard format
+            formData.append("imageFiles", {
+              uri: img.uri,
+              name: fileName,
+              type: fileType,
+            } as any);
+          }
+        }
+      }
+
+      console.log("Submitting form data for product update", {
+        existingImagesCount: existingImageUrls.length,
+        newImagesCount: newImageFiles.length,
+        totalImages: productImages.length
+      });
 
       // Make API call based on whether it's a new product or update
       const response = newProduct
@@ -549,21 +628,7 @@ const AdminProductUpdation = () => {
       if (!response) {
         throw new Error("Failed to update product.");
       }
-
-      // Show success message and redirect
-      Alert.alert(
-        "Success",
-        newProduct
-          ? "Product added successfully!"
-          : "Product updated successfully!",
-        [
-          {
-            text: "OK",
-            onPress: () =>
-              clearNavigationStack(containers.AdminProductDashboardScreen),
-          },
-        ]
-      );
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating product:", error);
       showErrorAlert({
@@ -691,7 +756,11 @@ const AdminProductUpdation = () => {
         scrollable={false}
       >*/}
         <KeyBoardWrapper>
-          <ScrollView style={{ flex: 1 }}>
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={isTabOrDesktop && styles.webContentContainer}
+            showsVerticalScrollIndicator={false}
+          >
             <View
               style={[
                 // globalStyles.sectionContent,
@@ -1174,7 +1243,7 @@ const AdminProductUpdation = () => {
               onPress={handleAdd_UpdateProduct}
               title={newProduct ? "Add" : "Update"}
               disabled={isLoading}
-              style={{ flex: 0.25, marginRight: 50 }} // make it wider
+              style={{ flex: 0.25, marginRight: 50 }}
 
             />
             <Button
@@ -1182,7 +1251,7 @@ const AdminProductUpdation = () => {
               title="Discard"
               primary={false}
               disabled={isLoading}
-              style={{ flex: 0.25, marginRight: 50 }} // make it wider
+              style={{ flex: 0.25, marginRight: 50 }} 
 
             />
           </View>
@@ -1191,10 +1260,27 @@ const AdminProductUpdation = () => {
               <ActivityIndicator size="large" color={colors.primary} />
             </View>
           )}
-          {/* </View> */}
         </KeyBoardWrapper>
-        {/* </SafeAreaView> */}
-      {/* </PageLayout> */}
+
+        <ConfirmationModal
+          isModalVisible={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false);
+            clearNavigationStack(containers.AdminProductDashboardScreen);
+          }}
+          title="Success!"
+          text={newProduct 
+            ? "Product has been added successfully." 
+            : "Product has been updated successfully."
+          }
+          submitText="OK"
+          handleSubmit={() => {
+            setShowSuccessModal(false);
+            clearNavigationStack(containers.AdminProductDashboardScreen);
+          }}
+         animationType="fade"
+        />
+
     </LayoutComponent>
   );
 };
@@ -1214,6 +1300,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 14,
     marginBottom: 4,
+  },
+  webContentContainer: {
+    paddingTop: 24,
   },
   subLabel: {
     fontSize: 12,
@@ -1253,6 +1342,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     height: 60,
     width: "100%",
+    justifyContent: "center",
   },
 
   categorySelector: {
@@ -1266,6 +1356,7 @@ const styles = StyleSheet.create({
   categoryText: {
     flex: 1,
     fontSize: 16,
+    lineHeight: 20,
   },
 
   removeButton: {
