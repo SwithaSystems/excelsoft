@@ -55,6 +55,7 @@ export const CustomTextInput = (props: Props) => {
           {
             flex: 1,
             padding: 10,
+            fontSize: 16,
           },
           props?.TextStyle,
         ]}

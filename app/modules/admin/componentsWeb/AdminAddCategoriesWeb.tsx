@@ -450,7 +450,7 @@ const AdminAddCategoriesWeb = () => {
 
   const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
-  return (
+    return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
@@ -608,11 +608,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   input: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    textAlignVertical: "top",
     marginBottom: 12,
   },
   imageSection: {
