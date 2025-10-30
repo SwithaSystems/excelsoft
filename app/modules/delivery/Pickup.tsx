@@ -139,8 +139,9 @@ const PickupScreen = () => {
       currentHour < STORE_CLOSING_TIMINGS
     ) {
       // Within business hours: add 2 hours
+      const pickupHours = Math.max(Number(DEFAULT_PICKUP_HOURS) || 0, 0.5); // At least 30 minutes
       const twoHoursLater = new Date(
-        now.getTime() + Number(DEFAULT_PICKUP_HOURS) * 60 * 60 * 1000
+        now.getTime() + pickupHours * 60 * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
