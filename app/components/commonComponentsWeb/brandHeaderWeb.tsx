@@ -59,16 +59,6 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
       {/* RIGHT SECTION */}
       <View style={styles.rightSection}>
-        {/* Notifications - Hide on admin pages (when hideUserGreeting is true) */}
-        {!hideUserGreeting && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => redirectToPage(containers.userNotificationsScreen)}
-          >
-            <Ionicons name="notifications" size={24} color={colors.primary} />
-            <Text>Notifications</Text>
-          </TouchableOpacity>
-        )}
 
         {/* Profile/Sign In */}
         <TouchableOpacity
@@ -110,6 +100,16 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             </Text>
           </TouchableOpacity>
         )}
+
+         {!hideUserGreeting && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => redirectToPage(containers.userNotificationsScreen)}
+            >
+              <Ionicons name="notifications" size={24} color={colors.primary} />
+              <Text>Notifications</Text>
+            </TouchableOpacity>
+          )}
       </View>
     </View>
   );

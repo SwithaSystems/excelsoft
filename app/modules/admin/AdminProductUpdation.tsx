@@ -668,12 +668,9 @@ const AdminProductUpdation = () => {
 
 
   return (
-
-
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      // hasFooter
       footerComponent={FooterComponent}
       scrollable={isTabOrDesktop ? false : true}
       hideNavItems={true}

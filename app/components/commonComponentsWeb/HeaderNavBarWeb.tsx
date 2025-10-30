@@ -69,14 +69,20 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const navItems = !hideNavItems ? userNavItems : [];
 
   useEffect(() => {
+    console.log("🔵 HeaderNavBar - hideNavItems:", hideNavItems, "roleLoading:", roleLoading);
+    
     if (hideNavItems || roleLoading) {
       return;
     }
 
     const loadCategories = async () => {
       try {
+        console.log("📡 Fetching categories...");
         setLoading(true);
         const data = await categoryService.getAllCategories();
+        console.log("✅ Categories fetched:", data?.length, "items");
+        console.log("Categories data:", data);
+        
         const sorted = Array.isArray(data)
           ? data.sort((a, b) =>
               a.name === "All" ? -1 : (a?.id ?? 0) - (b?.id ?? 0)
@@ -84,7 +90,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           : [];
         setCategories(sorted);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("❌ Error fetching categories:", error);
       } finally {
         setLoading(false);
       }
@@ -94,7 +100,9 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   }, [hideNavItems, roleLoading]);
 
   const handleNavPress = (item: NavItem) => {
+    console.log("🖱️ Clicked:", item.label, "isDropdown:", item.isDropdown);
     if (item.isDropdown) {
+      console.log("🔄 Toggling dropdown from", showDropdown, "to", !showDropdown);
       setShowDropdown((prev) => !prev);
     } else {
       item.onPress?.();
@@ -107,6 +115,8 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     setShowDropdown(false);
   };
 
+  console.log("🎨 Rendering - showDropdown:", showDropdown, "categories:", categories.length);
+
   if (roleLoading || hideNavItems) {
     return (
       <View style={[styles.container, { backgroundColor }]}>
@@ -117,11 +127,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-      >
+      <View style={styles.scrollContainer}>
         {navItems.map((item, index) => (
           <View key={index} style={styles.itemWrapper}>
             <TouchableOpacity
@@ -170,7 +176,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
             )}
           </View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -191,6 +197,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingBottom: 4,
+    flexWrap: "wrap",
   },
   itemWrapper: {
     marginRight: 20,
@@ -227,7 +234,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     maxHeight: 300,
     zIndex: 9999,
-    // overflow: "hidden",
   },
   dropdownScroll: {
     maxHeight: 300,

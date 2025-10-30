@@ -62,7 +62,8 @@ console.log({isAdmin})
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 2000,
+          zIndex: 10000,
+          overflow: "visible",
         }]}>
           <View style={styles.topHeader}>{headerComponent}</View>
 
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     backgroundColor: colors.white,
-    zIndex: 1000,
+    zIndex: 10000,
     overflow: "visible",
   },
   topHeader: {
@@ -142,6 +143,8 @@ const styles = StyleSheet.create({
   navbarWrapper: {
     width: "100%",
     backgroundColor: colors.primary,
+    overflow: "visible",
+    zIndex: 10000,
   },
   mainContainer: {
     flex: 1,
