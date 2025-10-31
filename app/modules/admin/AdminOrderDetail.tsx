@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Keyboard,
 } from "react-native";
 import styles from "./AdminOrderDetailStyles";
@@ -46,17 +44,11 @@ const AdminOrderDetail = () => {
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
   const [reason, setReason] = useState<any>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [reasonError, setReasonError] = useState("");
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
   
   console.log("orderId", orderId);
 
   const statusesRequiringReason = ["Failed", "Rejected", "Cancelled"];
-
-  const shouldShowReasonField = useMemo(
-    () => statusesRequiringReason.includes(status),
-    [status]
-  );
 
   const getOrderdetails = async () => {
     const response = await orderService.getOrderByMongoId(String(orderId));
@@ -76,26 +68,6 @@ const AdminOrderDetail = () => {
 
   useEffect(() => {
     getAllOrderStatuses();
-  }, []);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => {
-        setKeyboardVisible(true);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardVisible(false);
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
   }, []);
 
   console.log("orderDetails in admin", orderDetails);
@@ -151,33 +123,25 @@ const AdminOrderDetail = () => {
   useEffect(() => {
     if (!statusesRequiringReason.includes(status)) {
       setReason("");
-      setReasonError("");
     }
   }, [status]);
 
-  useEffect(() => {
-    if (!shouldShowReasonField) {
-      return;
+  const validateReason = () => {
+    if (!statusesRequiringReason.includes(status)) {
+      return true;
     }
-
-    if (keyboardVisible) {
-      return;
+    
+    if (!reason || reason.trim().length < 3) {
+      return false;
     }
-
-    const timer = setTimeout(() => {
-      if (reason.trim() === "") {
-        setReasonError(`Reason is required for ${status} status`);
-      } else if (reason.trim().length < 3) {
-        setReasonError("Reason must be at least 3 characters long");
-      } else {
-        setReasonError("");
-      }
-    }, 300); 
-
-    return () => clearTimeout(timer);
-  }, [reason, status, shouldShowReasonField, keyboardVisible]);
+    
+    return true;
+  };
 
   const handleUpdate = async () => {
+    // Dismiss keyboard first
+    Keyboard.dismiss();
+    
     if (statusesRequiringReason.includes(status)) {
       if (!reason || reason.trim().length < 3) {
         if (!reason) {
@@ -222,219 +186,226 @@ const AdminOrderDetail = () => {
     }
   };
 
+  const shouldShowReasonField = statusesRequiringReason.includes(status);
+
   return (
-    <>
-      <PageLayout
-        hasHeader
-        headerComponent={
-          <Header
-            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-          />
-        }
-        hasFooter
-        footerComponent={<AdminFooter />}
-        scrollable
+    <PageLayout
+      hasHeader
+      headerComponent={
+        <Header
+          headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
+        />
+      }
+      hasFooter
+      footerComponent={<AdminFooter />}
+      scrollable={false}
+    >
+      <KeyBoardWrapper>
+      <ScrollView 
+        ref={scrollViewRef}
+        style={{ flex: 1 }} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        nestedScrollEnabled={true}
       >
-        <KeyBoardWrapper>
-          <ScrollView 
-            style={{ flex: 1 }} 
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            contentContainerStyle={{ flexGrow: 1 }}
-            removeClippedSubviews={false}
+        {cartItemsWithDetails.map((eachCartItem: any) => {
+          console.log("eachCartItem", eachCartItem);
+          return (
+            <CartItem
+              hideActions={true}
+              itemContainerStyle={{ paddingHorizontal: 0 }}
+              key={eachCartItem._id}
+              cartItem={eachCartItem}
+              showStockStatus={true}
+              stockAvailable={true}
+            />
+          );
+        })}
+        
+        <View style={{ minHeight: shouldShowReasonField ? 400 : 200 }}>
+          <Text
+            style={[
+              globalStyles.size_16,
+              globalStyles.fontWeight500,
+              globalStyles.mb_1,
+            ]}
           >
-            {cartItemsWithDetails.map((eachCartItem: any) => {
-              console.log("eachCartItem", eachCartItem);
-              return (
-                <CartItem
-                  hideActions={true}
-                  itemContainerStyle={{ paddingHorizontal: 0 }}
-                  key={eachCartItem._id}
-                  cartItem={eachCartItem}
-                  showStockStatus={true}
-                  stockAvailable={true}
-                />
-              );
-            })}
-            <View>
-              <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.mb_1,
-                ]}
-              >
-                Total: £ {orderDetails?.totalAmount?.toFixed(2)}
-              </Text>
-              <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.mb_1,
-                ]}
-              >
-                Payment: {orderDetails?.paymentStatus}
-              </Text>
+            Total: £ {orderDetails?.totalAmount?.toFixed(2)}
+          </Text>
+          <Text
+            style={[
+              globalStyles.size_16,
+              globalStyles.fontWeight500,
+              globalStyles.mb_1,
+            ]}
+          >
+            Payment: {orderDetails?.paymentStatus}
+          </Text>
 
+          <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+            <Text
+              style={[globalStyles.size_16, globalStyles.fontWeight500]}
+            >
+              Pick Up Choice:&nbsp;
+            </Text>
+            {orderDetails?.pickupMode}
+          </Text>
+
+          <Text
+            style={[
+              globalStyles.size_16,
+              globalStyles.fontWeight500,
+              globalStyles.mb_2,
+              { fontWeight: "bold" },
+            ]}
+          >
+            {orderDetails?.pickupMode === DELIVERY_MODE_HOME
+              ? "Deliver To:"
+              : "Pickup"}
+          </Text>
+          {orderDetails?.deliveryDate && (
+            <>
               <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
                 <Text
                   style={[globalStyles.size_16, globalStyles.fontWeight500]}
                 >
-                  Pick Up Choice:&nbsp;
+                  Time:
+                </Text>{" "}
+                {new Date(orderDetails.deliveryDate).toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )}
+              </Text>
+              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+                <Text
+                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
+                >
+                  Date:
+                </Text>{" "}
+                {new Date(orderDetails.deliveryDate).toLocaleDateString(
+                  "en-GB"
+                )}
+              </Text>
+            </>
+          )}
+          <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
+            <Text
+              style={[globalStyles.size_16, globalStyles.fontWeight500]}
+            ></Text>
+            {orderDetails?.pickupMode === DELIVERY_MODE_HOME &&
+              shippingAddress_order && (
+                <Text>
+                  Address:{" "}
+                  {[
+                    shippingAddress_order.line1,
+                    shippingAddress_order.line2,
+                    shippingAddress_order.city,
+                    shippingAddress_order.state,
+                    shippingAddress_order.postalCode,
+                    shippingAddress_order.phone,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </Text>
-                {orderDetails?.pickupMode}
-              </Text>
-
-              <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.mb_2,
-                  { fontWeight: "bold" },
-                ]}
-              >
-                {orderDetails?.pickupMode === DELIVERY_MODE_HOME
-                  ? "Deliver To:"
-                  : "Pickup"}
-              </Text>
-              {orderDetails?.deliveryDate && (
-                <>
-                  <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                    <Text
-                      style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                    >
-                      Time:
-                    </Text>{" "}
-                    {new Date(orderDetails.deliveryDate).toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
-                  </Text>
-                  <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                    <Text
-                      style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                    >
-                      Date:
-                    </Text>{" "}
-                    {new Date(orderDetails.deliveryDate).toLocaleDateString(
-                      "en-GB"
-                    )}
-                  </Text>
-                </>
               )}
-              <Text style={[globalStyles.size_16, globalStyles.mb_1]}>
-                <Text
-                  style={[globalStyles.size_16, globalStyles.fontWeight500]}
-                ></Text>
-                {orderDetails?.pickupMode === DELIVERY_MODE_HOME &&
-                  shippingAddress_order && (
-                    <Text>
-                      Address:{" "}
-                      {[
-                        shippingAddress_order.line1,
-                        shippingAddress_order.line2,
-                        shippingAddress_order.city,
-                        shippingAddress_order.state,
-                        shippingAddress_order.postalCode,
-                        shippingAddress_order.phone,
-                      ]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </Text>
-                  )}
-              </Text>
+          </Text>
 
+          <Text
+            style={[
+              globalStyles.size_16,
+              globalStyles.fontWeight500,
+              globalStyles.mt_2,
+              globalStyles.mb_1,
+            ]}
+          >
+            Status:
+          </Text>
+
+          <ModalSelector
+            data={allOrderStatuses.map((item, index) => ({
+              key: index,
+              label: item,
+              value: item,
+            }))}
+            initValue=""
+            onChange={(option) => setStatus(option.value)}
+            optionTextStyle={{ color: colors.primary }}
+            optionContainerStyle={{ backgroundColor: colors.white }}
+            cancelStyle={{ backgroundColor: colors.white }}
+            accessible={true}
+            accessibilityLabel="Select order status"
+          >
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "#ddd",
+                borderRadius: 8,
+                backgroundColor: "#fff",
+                height: 50,
+                justifyContent: "center",
+                paddingHorizontal: 12,
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
+            </View>
+          </ModalSelector>
+          
+          {/* Always render the reason field container to prevent layout shift */}
+          <View style={{ 
+            marginTop: 16,
+            opacity: shouldShowReasonField ? 1 : 0,
+            height: shouldShowReasonField ? 'auto' : 0,
+            overflow: 'hidden'
+          }}>
+            <Text
+              style={[
+                globalStyles.size_16,
+                globalStyles.fontWeight500,
+                globalStyles.mb_1,
+              ]}
+            >
+              Reason for {status}:{" "}
               <Text
-                style={[
-                  globalStyles.size_16,
-                  globalStyles.fontWeight500,
-                  globalStyles.mt_2,
-                  globalStyles.mb_1,
-                ]}
+                style={{
+                  color: "#ff0000",
+                  fontSize: 14,
+                  marginTop: 5,
+                  marginLeft: 5,
+                }}
               >
-                Status:
+                *
               </Text>
+            </Text>
 
-              <ModalSelector
-                data={allOrderStatuses.map((item, index) => ({
-                  key: index,
-                  label: item,
-                  value: item,
-                }))}
-                initValue=""
-                onChange={(option) => setStatus(option.value)}
-                optionTextStyle={{ color: colors.primary }}
-                optionContainerStyle={{ backgroundColor: colors.white }}
-                cancelStyle={{ backgroundColor: colors.white }}
-                accessible={true}
-                accessibilityLabel="Select order status"
-              >
-                <View
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#ddd",
-                    borderRadius: 8,
-                    backgroundColor: "#fff",
-                    height: 50,
-                    justifyContent: "center",
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
-                </View>
-              </ModalSelector>
-              
-              {shouldShowReasonField && (
-                <View style={{ marginTop: 16 }}>
-                  <Text
-                    style={[
-                      globalStyles.size_16,
-                      globalStyles.fontWeight500,
-                      globalStyles.mb_1,
-                    ]}
-                  >
-                    Reason for {status}:{" "}
-                    {reasonError && !keyboardVisible ? (
-                      <Text
-                        style={{
-                          color: "#ff0000",
-                          fontSize: 14,
-                          marginTop: 5,
-                          marginLeft: 5,
-                        }}
-                      >
-                        *
-                      </Text>
-                    ) : null}
-                  </Text>
-
-                  <CustomTextInput
-                    containerStyle={{
-                      ...globalStyles.userInputContainer,
-                    }}
-                    placeholder="Reason"
-                    TextStyle={globalStyles.input}
-                    label="Reason"
-                    value={reason}
-                    setValue={setReason}
-                    multiline={true}
-                    onPress={() => null}
-                  />
-                </View>
-              )}
-            </View>
-            
-            <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
-              <Button onPress={handleUpdate} title="Update Details" />
-            </View>
-          </ScrollView>
-        </KeyBoardWrapper>
-      </PageLayout>
-    </>
+            <CustomTextInput
+              containerStyle={{
+                ...globalStyles.userInputContainer,
+              }}
+              placeholder="Reason"
+              TextStyle={globalStyles.input}
+              label="Reason"
+              value={reason}
+              setValue={setReason}
+              multiline={true}
+              onPress={() => null}
+            />
+          </View>
+        </View>
+        
+        <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
+          <Button 
+            onPress={handleUpdate} 
+            title="Update Details"
+            disabled={isLoading}
+          />
+        </View>
+      </ScrollView>
+      </KeyBoardWrapper>
+    </PageLayout>
   );
 };
 
