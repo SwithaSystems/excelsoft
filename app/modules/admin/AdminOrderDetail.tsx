@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -34,7 +37,6 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
-  // const orderStatuses = ["Pending", "Processed", "Delivered", "Cancel"];
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const props = useLocalSearchParams();
   const orderId = props.orderId;
@@ -45,9 +47,16 @@ const AdminOrderDetail = () => {
   const [reason, setReason] = useState<any>("");
   const [isLoading, setIsLoading] = useState(false);
   const [reasonError, setReasonError] = useState("");
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  
   console.log("orderId", orderId);
 
   const statusesRequiringReason = ["Failed", "Rejected", "Cancelled"];
+
+  const shouldShowReasonField = useMemo(
+    () => statusesRequiringReason.includes(status),
+    [status]
+  );
 
   const getOrderdetails = async () => {
     const response = await orderService.getOrderByMongoId(String(orderId));
@@ -60,11 +69,33 @@ const AdminOrderDetail = () => {
     console.log("all Order statuses", orderStatuses);
     setAllOrderStatuses(orderStatuses?.statuses);
   };
+
   useEffect(() => {
     getOrderdetails();
   }, []);
+
   useEffect(() => {
     getAllOrderStatuses();
+  }, []);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
   }, []);
 
   console.log("orderDetails in admin", orderDetails);
@@ -120,8 +151,31 @@ const AdminOrderDetail = () => {
   useEffect(() => {
     if (!statusesRequiringReason.includes(status)) {
       setReason("");
+      setReasonError("");
     }
   }, [status]);
+
+  useEffect(() => {
+    if (!shouldShowReasonField) {
+      return;
+    }
+
+    if (keyboardVisible) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (reason.trim() === "") {
+        setReasonError(`Reason is required for ${status} status`);
+      } else if (reason.trim().length < 3) {
+        setReasonError("Reason must be at least 3 characters long");
+      } else {
+        setReasonError("");
+      }
+    }, 300); 
+
+    return () => clearTimeout(timer);
+  }, [reason, status, shouldShowReasonField, keyboardVisible]);
 
   const handleUpdate = async () => {
     if (statusesRequiringReason.includes(status)) {
@@ -168,25 +222,6 @@ const AdminOrderDetail = () => {
     }
   };
 
-  // Check if current status requires a reason
-  const shouldShowReasonField = statusesRequiringReason.includes(status);
-  useEffect(() => {
-    const needsReason = statusesRequiringReason.includes(status);
-
-    if (needsReason) {
-      if (reason.trim() === "") {
-        setReasonError(`Reason is required for ${status} status`);
-      } else if (reason.trim().length < 3) {
-        setReasonError("Reason must be at least 3 characters long");
-      } else {
-        setReasonError("");
-      }
-    } else {
-      setReasonError("");
-      setReason("");
-    }
-  }, [reason, status]);
-
   return (
     <>
       <PageLayout
@@ -201,7 +236,14 @@ const AdminOrderDetail = () => {
         scrollable
       >
         <KeyBoardWrapper>
-          <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            style={{ flex: 1 }} 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{ flexGrow: 1 }}
+            removeClippedSubviews={false}
+          >
             {cartItemsWithDetails.map((eachCartItem: any) => {
               console.log("eachCartItem", eachCartItem);
               return (
@@ -345,18 +387,18 @@ const AdminOrderDetail = () => {
                   <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
                 </View>
               </ModalSelector>
-              {statusesRequiringReason.includes(status) && (
-                <>
+              
+              {shouldShowReasonField && (
+                <View style={{ marginTop: 16 }}>
                   <Text
                     style={[
                       globalStyles.size_16,
                       globalStyles.fontWeight500,
-                      globalStyles.mt_2,
                       globalStyles.mb_1,
                     ]}
                   >
                     Reason for {status}:{" "}
-                    {reasonError ? (
+                    {reasonError && !keyboardVisible ? (
                       <Text
                         style={{
                           color: "#ff0000",
@@ -370,43 +412,26 @@ const AdminOrderDetail = () => {
                     ) : null}
                   </Text>
 
-                  <View>
-                    <CustomTextInput
-                      containerStyle={{
-                        ...globalStyles.userInputContainer,
-                      }}
-                      placeholder="Reason"
-                      TextStyle={globalStyles.input}
-                      label="Reason"
-                      value={reason}
-                      setValue={setReason}
-                      multiline={true}
-                      onPress={() => null}
-                    />
-                  </View>
-                </>
+                  <CustomTextInput
+                    containerStyle={{
+                      ...globalStyles.userInputContainer,
+                    }}
+                    placeholder="Reason"
+                    TextStyle={globalStyles.input}
+                    label="Reason"
+                    value={reason}
+                    setValue={setReason}
+                    multiline={true}
+                    onPress={() => null}
+                  />
+                </View>
               )}
             </View>
-            {/* {shouldShowReasonField && (
-              <CustomTextInput
-                containerStyle={{
-                  ...globalStyles.userInputContainer,
-                  marginTop: 20,
-                }}
-                placeholder="Reason"
-                TextStyle={globalStyles.input}
-                label="Reason"
-                value={reason}
-                setValue={setReason}
-                multiline={true}
-                onPress={() => null}
-              />
-            )} */}
+            
             <View style={[globalStyles.mt_4, { marginBottom: 40 }]}>
               <Button onPress={handleUpdate} title="Update Details" />
             </View>
           </ScrollView>
-          {/* </View> */}
         </KeyBoardWrapper>
       </PageLayout>
     </>

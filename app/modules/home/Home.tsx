@@ -101,7 +101,7 @@ const HomePage = () => {
   const isTabOrDesktop = width >= 768;
 
   const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer activeTab="home" />;
 
   // const handleBannerPress = (item: any, index: number) => {
   //   redirectToPage(containers.offersScreen);
