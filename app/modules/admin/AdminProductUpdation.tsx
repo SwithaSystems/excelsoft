@@ -799,6 +799,7 @@ const AdminProductUpdation = () => {
                 value={productDescription}
                 onChangeText={handleDescriptionChange}
                 placeholder="Describe your product features, specifications, and benefits in detail..."
+                placeholderTextColor={colors.slateGrey}
                 multiline
                 numberOfLines={6}
                 style={[
@@ -1439,6 +1440,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     padding: 10,
     textAlignVertical: "top",
+    fontSize: 16,
   },
   categoryStyles: {
     backgroundColor: colors.white,

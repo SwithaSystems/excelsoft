@@ -530,15 +530,18 @@ const AdminCategories = () => {
           <ScrollView style={styles.listContainer}>
             <View>
               {categoryList.map((categoryItem: Category, index: number) => (
-                <TouchableOpacity
+                <View
                   key={categoryItem.id || index}
                   style={[
                     styles.categoryItem,
                     editingCategoryId === categoryItem.id && styles.editingCategoryItem,
                   ]}
-                  onPress={() => handleEditCategory(categoryItem)}
                 >
-                  <View style={styles.categoryContent}>
+                  <TouchableOpacity
+                    style={styles.categoryContent}
+                    onPress={() => handleEditCategory(categoryItem)}
+                    activeOpacity={0.7}
+                  >
                     {categoryItem.images && categoryItem.images.length > 0 && (
                       <Image
                         source={{ uri: categoryItem.images[0] }}
@@ -556,17 +559,20 @@ const AdminCategories = () => {
                         {getParentCategoryName(categoryItem.parentCategory, categoryList)}
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
+                  
                   <View style={styles.categoryActions}>
                     {editingCategoryId === categoryItem.id && (
                       <Text style={styles.editingLabel}>Editing</Text>
                     )}
-                    <Ionicons name="create-outline" size={20} color={colors.primary} />
+                    <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                      <Ionicons name="create-outline" size={20} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                      <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
-                    <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
-                  </TouchableOpacity>
-                </TouchableOpacity>
+                </View>
               ))}
               {categoryList.length === 0 && (
                 <View style={styles.emptyState}>
@@ -680,11 +686,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   input: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    textAlignVertical: "top",
     marginBottom: 12,
   },
   imageSection: {
@@ -758,46 +759,51 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   categoryItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: colors.secondary,
-    marginBottom: 8,
-    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
+    minHeight: 120,
   },
   editingCategoryItem: {
     borderColor: colors.primary,
     borderWidth: 2,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.white,
   },
   categoryContent: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    marginTop: 12,
+    marginBottom: 12,
   },
   categoryImage: {
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     borderRadius: 8,
-    marginRight: 12,
   },
   categoryInfo: {
     flex: 1,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   categoryName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   categoryDescription: {
     fontSize: 14,
     color: colors.darkGray,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   categoryId: {
     fontSize: 12,
@@ -805,13 +811,18 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   categoryActions: {
+    flexDirection: "row",
     alignItems: "center",
+    gap: 12,
+    position: "absolute",
+    top: 12,
+    right: 20,
   },
   editingLabel: {
     fontSize: 10,
     color: colors.primary,
     fontWeight: "600",
-    marginBottom: 4,
+    marginRight: 8,
   },
   emptyState: {
     padding: 20,
