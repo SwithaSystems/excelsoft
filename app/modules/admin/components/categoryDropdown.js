@@ -89,7 +89,7 @@ const styles = {
   },
   placeholderText: {
     color: colors.slateGrey,
-    fontSize: 16,
+    fontSize: 14,
   },
   arrow: {
     fontSize: 12,

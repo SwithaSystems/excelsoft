@@ -201,7 +201,7 @@ const AdminSeeAllOrders = () => {
     <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
 
 
   return (

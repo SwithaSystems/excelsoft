@@ -804,6 +804,7 @@ const AdminProductUpdation = () => {
                 numberOfLines={6}
                 style={[
                   styles.multilinetextbox,
+                  {fontSize: 14},
                   // errors.productDescription ? globalStyles.errorInput : undefined,
                 ]}
                 maxLength={1000}
@@ -831,13 +832,13 @@ const AdminProductUpdation = () => {
                     optionContainerStyle={{ backgroundColor: colors.white }}
                     cancelStyle={{ backgroundColor: colors.white }}
                     accessible={true}
-                    accessibilityLabel="Select Category"
+                    // accessibilityLabel="Select Category"
                   >
                     <View style={styles.categorySelector}>
                       <Text
                         style={[
                           styles.categoryText,
-                          { color: category ? colors.black : colors.slateGrey },
+                          { color: category ? colors.black : colors.slateGrey, fontSize: 14 },
                         ]}
                       >
                         {category

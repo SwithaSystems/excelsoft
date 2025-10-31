@@ -58,19 +58,23 @@ const SearchBar = ({
   const { width } = useWindowDimensions();
 
   const isMobile = width < 768;
-  const barWidth = isMobile ? "90%" : width < 1280 ? "60%" : "40%";
+  const barWidth = isMobile ? "100%" : width < 1280 ? "60%" : "40%";
 
   const containerStyle = [
     styles.searchContainer,
     { 
       width: barWidth as `${number}%`, 
-      alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start"
+      alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start",
+      height: isMobile ? 52 : 40
     },
   ];
 
   const inputStyle = [
     styles.searchInput,
-    { fontSize: isMobile ? 14 : 16, paddingVertical: isMobile ? 8 : 6 },
+    { 
+      fontSize: isMobile ? 14 : 16, 
+      paddingVertical: isMobile ? 8 : 6 
+    },
   ];
 
   return (
@@ -108,10 +112,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 25,
     paddingHorizontal: 10,
-    // minHeight: 48,
-    // paddingVertical: 8,
-    // marginTop: 8,
-    // marginBottom: 16,
   },
   searchInput: {
     flex: 1,

@@ -24,31 +24,31 @@ const navItems: NavItem[] = [
     id: "dashboard", 
     label: "Dashboard", 
     icon: "stats-chart", 
-    route: containers.AdminDashboardScreen 
+    route: "/modules/admin/AdminDashboard"
   },
   { 
     id: "orders", 
     label: "Orders", 
     icon: "cart", 
-    route: containers.AdminSeeAllOrdersScreen 
+    route: "/modules/admin/AdminSeeAllOrders" 
   },
   { 
     id: "products", 
     label: "Products", 
     icon: "cube", 
-    route: containers.AdminProductDashboardScreen 
+    route: "/modules/admin/AdminProductDashboard" 
   },
   { 
     id: "categories", 
     label: "Categories", 
     icon: "folder", 
-    route: containers.AdminCategoriesScreen 
+    route: "/modules/admin/AdminCategories"
   },
   { 
     id: "scan", 
     label: "Scan & Deliver", 
     icon: "people", 
-    route: containers.AdminOrderQRScanScreen 
+    route: "/modules/admin/AdminOrderQRScan"
   },
 ];
 
@@ -59,6 +59,9 @@ export const AdminSidebarWeb: React.FC = () => {
   
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
+
+  console.log('Current pathname:', pathname);
+  console.log('Container routes:', navItems.map(item => ({ label: item.label, route: item.route })));
 
   const handleNavigation = (route: string) => {
     router.push(route as any);
@@ -91,7 +94,7 @@ export const AdminSidebarWeb: React.FC = () => {
                 <Ionicons
                   name={item.icon}
                   size={22}
-                  color={active ? colors.primary : colors.darkGray}
+                  color={active ? colors.white : colors.darkGray}
                 />
                 <Text
                   style={[
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   navItemActive: {
-    backgroundColor: `${colors.black}15`,
+    backgroundColor: colors.primary,
   },
   navItemContent: {
     flexDirection: "row",
@@ -149,7 +152,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navLabelActive: {
-    color: colors.primary,
+    color: colors.white,
     fontWeight: "600",
   },
   activeIndicator: {

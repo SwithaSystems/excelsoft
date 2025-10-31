@@ -410,7 +410,7 @@ const AdminCategories = () => {
     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="categories" />;
 
   return (
     <LayoutComponent

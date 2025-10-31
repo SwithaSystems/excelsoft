@@ -36,7 +36,7 @@ const AdminOrderQRScan = () => {
     <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="scan&deliver" />;
 
   return (
     //   <SafeAreaView style={globalStyles.safeAreaContainer}>

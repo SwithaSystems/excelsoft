@@ -572,7 +572,10 @@ const AdminProductDashboard = () => {
       scrollable={isTabOrDesktop ? false : true}
       hideNavItems={true}
     >
-      <View style={[globalStyles.pt_0, { flex: 1 }]}>
+      <View style={[
+          // globalStyles.pt_0, 
+          {flex: 1 }
+        ]}>
         {!isTabOrDesktop && (
           <View>
             <SearchBar

@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   FlatList,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
@@ -14,6 +16,7 @@ import { categoryService, Category } from "@/services/categoryService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useRoleContext } from "@/context/RoleContext";
+
 
 type NavItem = {
   label: string;
@@ -80,7 +83,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         console.log("📡 Fetching categories...");
         setLoading(true);
         const data = await categoryService.getAllCategories();
-        console.log("✅ Categories fetched:", data?.length, "items");
+        console.log("Categories fetched:", data?.length, "items");
         console.log("Categories data:", data);
         
         const sorted = Array.isArray(data)
@@ -90,7 +93,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           : [];
         setCategories(sorted);
       } catch (error) {
-        console.error("❌ Error fetching categories:", error);
+        console.error("Error fetching categories:", error);
       } finally {
         setLoading(false);
       }
@@ -100,9 +103,9 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   }, [hideNavItems, roleLoading]);
 
   const handleNavPress = (item: NavItem) => {
-    console.log("🖱️ Clicked:", item.label, "isDropdown:", item.isDropdown);
+    console.log("Clicked:", item.label, "isDropdown:", item.isDropdown);
     if (item.isDropdown) {
-      console.log("🔄 Toggling dropdown from", showDropdown, "to", !showDropdown);
+      console.log("Toggling dropdown from", showDropdown, "to", !showDropdown);
       setShowDropdown((prev) => !prev);
     } else {
       item.onPress?.();
@@ -112,6 +115,10 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   const handleCategoryPress = (cat: Category) => {
     onCategorySelect?.(cat);
+    setShowDropdown(false);
+  };
+
+  const closeDropdown = () => {
     setShowDropdown(false);
   };
 
@@ -126,58 +133,74 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
-      <View style={styles.scrollContainer}>
-        {navItems.map((item, index) => (
-          <View key={index} style={styles.itemWrapper}>
-            <TouchableOpacity
-              style={styles.navItem}
-              onPress={() => handleNavPress(item)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.navItemContent}>
-                <Text style={styles.navText}>{item.label}</Text>
-                {item.isDropdown && (
-                  <Ionicons
-                    name={showDropdown ? "chevron-up" : "chevron-down"}
-                    size={16}
-                    color={colors.white}
-                    style={styles.dropdownIcon}
-                  />
-                )}
-              </View>
-            </TouchableOpacity>
+    <>
+      <View style={[styles.container, { backgroundColor }]}>
+        <View style={styles.scrollContainer}>
+          {navItems.map((item, index) => (
+            <View key={index} style={styles.itemWrapper}>
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => handleNavPress(item)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.navItemContent}>
+                  <Text style={styles.navText}>{item.label}</Text>
+                  {item.isDropdown && (
+                    <Ionicons
+                      name={showDropdown ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color={colors.white}
+                      style={styles.dropdownIcon}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
 
-            {item.isDropdown && showDropdown && (
-              <View style={styles.dropdownMenu}>
-                {loading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator color={colors.primary} />
-                  </View>
-                ) : (
-                  <ScrollView 
-                    style={styles.dropdownScroll}
-                    nestedScrollEnabled={true}
-                    showsVerticalScrollIndicator={true}
-                  >
-                    {categories.map((cat) => (
-                      <TouchableOpacity
-                        key={String(cat.id ?? cat.name)}
-                        onPress={() => handleCategoryPress(cat)}
-                        style={styles.dropdownItem}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.dropdownText}>{cat.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
-            )}
-          </View>
-        ))}
+              {item.isDropdown && showDropdown && (
+                <View style={styles.dropdownMenu}>
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator color={colors.primary} />
+                    </View>
+                  ) : (
+                    <ScrollView 
+                      style={styles.dropdownScroll}
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={true}
+                    >
+                      {categories.map((cat) => (
+                        <TouchableOpacity
+                          key={String(cat.id ?? cat.name)}
+                          onPress={() => handleCategoryPress(cat)}
+                          style={styles.dropdownItem}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.dropdownText}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
       </View>
-    </View>
+
+      {/* Invisible overlay to close dropdown when clicking outside */}
+      {showDropdown && (
+        <Modal
+          transparent
+          visible={showDropdown}
+          onRequestClose={closeDropdown}
+          animationType="none"
+        >
+          <TouchableWithoutFeedback onPress={closeDropdown}>
+            <View style={styles.overlay} />
+          </TouchableWithoutFeedback>
+        </Modal>
+      )}
+    </>
   );
 };
 
@@ -255,5 +278,9 @@ const styles = StyleSheet.create({
   },
   emptyBelt: {
     height: 40,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "transparent",
   },
 });
