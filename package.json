@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "create": "node ./scripts/generate.js",
-    "build": "echo 'No build script needed for client; handled by EAS'"
+    "build": "echo 'No build script needed for client; handled by EAS'",
+    "vercel-build": "npx expo export"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
