@@ -2,11 +2,11 @@ import Header from "../../components/Header";
 import Button from "@/app/components/commonComponents/Button";
 import React, { useState } from "react";
 import {
-  Platform,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
@@ -27,8 +27,11 @@ import {
   isValidPhoneNumber,
   isValidPassword
 } from "../../../utilities/validations";
+import colors from "../../../constants/colors";
 
 const signIn = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const [inputValue, setInputValue] = useState(""); // Combined input field value
   const [isEmail, setIsEmail] = useState(true); // Track if input is email or phone
   const [password, setPassword] = useState("");
@@ -37,6 +40,7 @@ const signIn = () => {
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
   const [phone, setPhoneNumber] = useState("");
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [errors, setErrors] = useState<
     Partial<{ input?: string; password?: string }>
   >({});
@@ -129,13 +133,19 @@ const signIn = () => {
       hasHeader
       scrollable={false}
       headerComponent={
-        <Header headerText={"Sign In"} 
-        needResetNavigation={false}
-       />
+        <Header 
+          headerText={"Sign In"} 
+          needResetNavigation={false}
+          headerStyle={isTabOrDesktop ? styles.signInHeaderStyle : undefined}
+          headerTitleStyle={isTabOrDesktop ? styles.signInHeaderTitle : undefined}
+        />
       }
     >
       <KeyBoardWrapper>
-        <View style={styles.sectionContainer}>
+        <View style={[
+          styles.sectionContainer,
+          isTabOrDesktop && styles.sectionContainerWeb
+        ]}>
           <View style={styles.toggleContainer}>
             <TouchableOpacity
               style={[
@@ -171,10 +181,17 @@ const signIn = () => {
           {mode === "email" ? (
             <>
               <View style={styles.emailContainer}>
-                <Text style={styles.label}>Email</Text>
+                <Text style={[
+                  styles.label,
+                  isTabOrDesktop && styles.labelDesktop
+                ]}>Email</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    isTabOrDesktop && styles.inputDesktop
+                  ]}
                   placeholder="Enter your email address"
+                  placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
@@ -182,15 +199,29 @@ const signIn = () => {
                   }}
                 />
                 {errors.input && (
-                  <Text style={globalStyles.errorText}>{errors.input}</Text>
+                  <Text style={[
+                    globalStyles.errorText,
+                    isTabOrDesktop && styles.errorTextDesktop
+                  ]}>{errors.input}</Text>
                 )}
               </View>
             </>
           ) : (
             <>
-              <Text style={styles.label}> Phone</Text>
-              <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
+              <Text style={[
+                styles.label,
+                isTabOrDesktop && styles.labelDesktop
+              ]}> Phone</Text>
+              <View style={[
+                styles.phoneInputContainer,
+                errors.input && styles.phoneInputContainerError,
+                isPhoneFocused && styles.phoneInputContainerFocused,
+                isTabOrDesktop && styles.phoneInputContainerDesktop
+              ]}>
+                <View style={[
+                  styles.countryPickerContainer,
+                  isTabOrDesktop && styles.countryPickerContainerDesktop
+                ]}>
                   <CountryPicker
                     countryCode={countryCode}
                     withFilter
@@ -200,46 +231,66 @@ const signIn = () => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
                     }}
-                    containerButtonStyle={styles.countryPickerButton}
+                    containerButtonStyle={[
+                      styles.countryPickerButton,
+                      isTabOrDesktop && styles.countryPickerButtonDesktop
+                    ]}
                   />
-                  {Platform.OS !== 'web' && (
+                  {/* {!isTabOrDesktop && (
                     <Text style={styles.callingCode}>+{callingCode}</Text>
-                  )}
+                  )} */}
                 </View>
 
                 <TextInput
-                  style={styles.phoneInput}
+                  style={[
+                    styles.phoneInput,
+                    isTabOrDesktop && styles.phoneInputDesktop
+                  ]}
                   placeholder="Enter your phone number"
+                  placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
                   value={phone}
                   onChangeText={(text) => {
                     setPhoneNumber(text);
                     setEmail("");
                   }}
+                  onFocus={() => setIsPhoneFocused(true)}
+                  onBlur={() => setIsPhoneFocused(false)}
                   maxLength={11}
                   keyboardType="phone-pad"
                 />
-                {errors.input && (
-                  <Text style={globalStyles.errorText}>{errors.input}</Text>
-                )}
               </View>
+              {errors.input && (
+                <Text style={[
+                  globalStyles.errorText,
+                  isTabOrDesktop && styles.errorTextDesktop
+                ]}>{errors.input}</Text>
+              )}
             </>
           )}
 
           <View style={styles.passwordContainer}>
-            <Text style={styles.label}>Enter your Password</Text>
+            <Text style={[
+              styles.label,
+              isTabOrDesktop && styles.labelDesktop
+            ]}>Enter your Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
                 errors.password && globalStyles.errorInput,
+                isTabOrDesktop && { fontSize: 16 },
               ]}
               placeholder="Enter your password"
+              placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
               secureTextEntry
               value={password}
               onChangeText={setPassword}
               onBlur={handleBlur}
             />
             {errors.password && (
-              <Text style={globalStyles.errorText}>{errors.password}</Text>
+              <Text style={[
+                globalStyles.errorText,
+                isTabOrDesktop && styles.errorTextDesktop
+              ]}>{errors.password}</Text>
             )}
           </View>
           <TouchableOpacity

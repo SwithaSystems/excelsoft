@@ -27,6 +27,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import SearchBar from "@/app/components/searchBar";
 
 interface Category {
   _id: any;
@@ -46,6 +47,7 @@ const AdminCategories = () => {
   const [parentCategory, setParentCategory] = useState<any>(null);
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Modal states
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -398,6 +400,20 @@ const AdminCategories = () => {
 
   console.log("categoryList", categoryList);
 
+  const handleCategorySearch = useCallback(() => {
+    // Filtering is done client-side as user types; nothing to do on submit
+  }, [searchQuery]);
+
+  const filteredCategories = (searchQuery || "").trim().length
+    ? categoryList.filter((cat: any) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          (cat.name || "").toLowerCase().includes(q) ||
+          String(cat.id || "").toLowerCase().includes(q)
+        );
+      })
+    : categoryList;
+
   const getParentCategoryName = (parentCategoryId: any, categories: any) => {
     const parentCategory = categories.find((cat: any) => cat.id === parentCategoryId);
     return parentCategory ? parentCategory.name : "No Parent";
@@ -528,8 +544,21 @@ const AdminCategories = () => {
             )}
           </View>
           <ScrollView style={styles.listContainer}>
+            {isTabOrDesktop && (
+              <View style={{ marginBottom: 12 }}>
+                <SearchBar
+                  placeholder="Search categories..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleCategorySearch}
+                  onPress={handleCategorySearch}
+                  widthPercent={22}
+                  height={40}
+                />
+              </View>
+            )}
             <View>
-              {categoryList.map((categoryItem: Category, index: number) => (
+              {filteredCategories.map((categoryItem: Category, index: number) => (
                 <View
                   key={categoryItem.id || index}
                   style={[

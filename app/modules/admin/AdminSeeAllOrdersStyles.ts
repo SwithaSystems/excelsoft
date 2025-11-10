@@ -10,11 +10,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   eachOrderItem: {
+    // Mobile default look (old code)
     borderColor: colors.placeholdergrey,
     borderRadius: 10,
     borderWidth: 2,
     marginBottom: 24,
     padding: 16,
+  },
+  eachOrderItemWeb: {
+    flex: 1,
+    minWidth: 280,
+    maxWidth: 360,
+    // Web/tablet enhanced card look
+    backgroundColor: colors.white,
+    borderColor: colors.placeholdergrey,
+    borderWidth: 1,
+    borderRadius: 12,
+    // soft shadow for card look (Android uses elevation)
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   idContainer: {
     flexDirection: "row",

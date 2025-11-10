@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 2,
+    position: "relative",
   },
 
   // === Add Button ===
@@ -187,6 +188,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.black,
     fontWeight: "400",
+  },
+
+  // === Inline Dropdown List (non-modal) ===
+  dropdownList: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 40 : 52,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    borderColor: colors.placeholdergrey,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    zIndex: 20,
+    maxHeight: 260,
+    overflow: "hidden",
+  },
+  dropdownScrollArea: {
+    maxHeight: 260,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.placeholdergrey,
+    backgroundColor: colors.white,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: colors.primary,
   },
 
   // === Image & Details ===

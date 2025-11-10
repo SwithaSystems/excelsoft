@@ -62,6 +62,7 @@ const AdminProductDashboard = () => {
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [allCategories, setAllCategories] = useState<any>([]);
   const [selectCategory, setSelectCategory] = useState<string | number>("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -622,56 +623,21 @@ const AdminProductDashboard = () => {
         <View>
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
+              {isTabOrDesktop && (
+                <SearchBar
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  onPress={handleSearch}
+                  widthPercent={22}
+                  height={40}
+                />
+              )}
               <View style={styles.categoryContainer}>
-                <ModalSelector
-                  data={[
-                    { key: "", label: "All Categories", value: "" },
-                    ...allCategories.map((cat: any, index: number) => ({
-                      key: cat.id || index,
-                      label: cat.name,
-                      value: cat.id || cat._id,
-                    })),
-                  ]}
-                  initValue="Select Category"
-                  onChange={(option) => {
-                    setSelectCategory(option.value);
-                    console.log("Selected category:", option.value || "All Categories");
-                  }}
-                  optionTextStyle={{
-                    color: colors.primary,
-                    fontSize: 16,
-                    fontWeight: "400",
-                    paddingHorizontal: 20,
-                    textAlign: "center",
-                  }}
-                  optionContainerStyle={{
-                    backgroundColor: colors.white,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: colors.slateGrey || colors.placeholdergrey,
-                  }}
-                  cancelStyle={{
-                    backgroundColor: colors.white,
-                    borderRadius: 0,
-                    paddingVertical: 16,
-                  }}
-                  cancelTextStyle={{
-                    color: colors.primary,
-                    fontSize: 16,
-                    fontWeight: "600",
-                    textAlign: "center",
-                  }}
-                  cancelText="Cancel"
-                  accessible={true}
-                  accessibilityLabel="Select Category Filter"
-                  animationType="slide"
-                  backdropPressToClose={true}
-                  overlayStyle={{
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                    flex: 1,
-                    justifyContent: "flex-end",
-                  }}
-                  selectStyle={styles.categoryContainer}
-                  selectTextStyle={styles.categoryText}
+                <TouchableOpacity
+                  onPress={() => setIsCategoryOpen((prev) => !prev)}
+                  activeOpacity={0.7}
                 >
                   <View style={styles.categorySelector}>
                     <Text
@@ -689,9 +655,40 @@ const AdminProductDashboard = () => {
                         ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
                         : "All Categories"}
                     </Text>
-                    <Ionicons name="chevron-down" size={20} color={colors.black} />
+                    <Ionicons
+                      name={isCategoryOpen ? "chevron-up" : "chevron-down"}
+                      size={20}
+                      color={colors.black}
+                    />
                   </View>
-                </ModalSelector>
+                </TouchableOpacity>
+                {isCategoryOpen && (
+                  <View style={styles.dropdownList}>
+                    <View style={styles.dropdownScrollArea}>
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setSelectCategory("");
+                          setIsCategoryOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>All Categories</Text>
+                      </TouchableOpacity>
+                      {allCategories.map((cat: any, index: number) => (
+                        <TouchableOpacity
+                          key={cat.id || cat._id || index}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setSelectCategory(cat.id || cat._id);
+                            setIsCategoryOpen(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownItemText}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
               </View>
             </View>
           </View>
