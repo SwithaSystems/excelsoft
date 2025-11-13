@@ -62,10 +62,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     gap: 12,
     marginHorizontal: 0,
     marginBottom: 16,
+    position: "relative",
+    zIndex: 1000,
   },
 
   categoryContainer: {
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     position: "relative",
+    zIndex: 1000,
   },
 
   // === Add Button ===
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
   stickyTopContainer: {
     position: "sticky",
     top: 0,
-    zIndex: 10,
+    zIndex: 1000,
     backgroundColor: colors.white,
     paddingVertical: 6,
     marginBottom: -20,
@@ -202,9 +205,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    zIndex: 20,
+    zIndex: 1001,
     maxHeight: 260,
     overflow: "hidden",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: Platform.OS === "android" ? 10 : 0,
   },
   dropdownScrollArea: {
     maxHeight: 260,

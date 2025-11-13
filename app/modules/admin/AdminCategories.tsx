@@ -552,7 +552,7 @@ const AdminCategories = () => {
                   onChangeText={setSearchQuery}
                   onSubmitEditing={handleCategorySearch}
                   onPress={handleCategorySearch}
-                  widthPercent={22}
+                  widthPercent={35}
                   height={40}
                 />
               </View>

@@ -33,11 +33,12 @@ const styles = StyleSheet.create({
     height: 200,
     resizeMode: "contain",
     marginBottom: 20,
-    alignSelf: "center",
+    alignSelf: "center", 
   },
   imageDesktop: {
     width: "60%",
     height: 250,
+    marginTop: 60,
   },
   description: {
     textAlign: "center",
@@ -47,6 +48,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   descriptionDesktop: {
+    marginTop: 10,
+    marginBottom: 5,
     fontSize: 16,
     lineHeight: 24,
     paddingHorizontal: 40,
@@ -57,7 +60,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   codeContainerDesktop: {
-    marginVertical: 30,
+    marginTop: 15,
+    marginBottom: 30,
   },
   inputBox: {
     borderWidth: 1,

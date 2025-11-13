@@ -118,6 +118,10 @@ const AdminProductDashboard = () => {
   const productsListToShow =
     selectCategory && selectCategory !== "" ? category_Products : productsList;
 
+  // Calculate total pages for pagination - hide pagination when category is selected
+  // since filtering is client-side and doesn't use server pagination
+  const shouldShowPagination = (!selectCategory || selectCategory === "") && totalPages > 1;
+
   const fetchData = async (
     page: number
   ): Promise<{
@@ -620,7 +624,7 @@ const AdminProductDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        <View>
+        <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
               {isTabOrDesktop && (
@@ -630,7 +634,7 @@ const AdminProductDashboard = () => {
                   onChangeText={setSearchQuery}
                   onSubmitEditing={handleSearch}
                   onPress={handleSearch}
-                  widthPercent={22}
+                  widthPercent={35}
                   height={40}
                 />
               )}
@@ -772,7 +776,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
-        {isTabOrDesktop && (
+        {isTabOrDesktop && shouldShowPagination && (
         <View style={styles.stickyBottomContainer}>
           <Pagination
             currentPage={currentPage}

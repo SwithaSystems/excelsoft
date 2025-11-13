@@ -272,7 +272,7 @@ const AdminSeeAllOrders = () => {
             onChangeText={setSearchQuery}
               onSubmitEditing={() => {}}
               onPress={() => {}}
-              widthPercent={22}
+              widthPercent={35}
               height={40}
           />
         </View>

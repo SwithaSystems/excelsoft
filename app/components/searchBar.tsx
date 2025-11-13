@@ -12,10 +12,12 @@ import colors from "../../constants/colors";
 interface SearchBarProps {
   placeholder: string;
   onFocus?: () => void;
+  onBlur?: () => void;
   onPress?: () => void;
   value?: string;
   onChangeText?: (text: string) => void;
   onSubmitEditing?: () => void;
+  onLayout?: (event: { nativeEvent: { layout: { width: number; height: number } } }) => void; // Only used for tablet/desktop (width >= 768px) - ignored on mobile
   widthPercent?: number; // optional width override for non-mobile (0-100)
   height?: number; // optional height override
 }
@@ -52,10 +54,12 @@ const Touchable = ({ onPress, children, style }: any) => {
 const SearchBar = ({
   placeholder = "",
   onFocus,
+  onBlur,
   onPress,
   value = "",
   onChangeText = () => {},
   onSubmitEditing = () => {},
+  onLayout,
   widthPercent,
   height,
 }: SearchBarProps) => {
@@ -91,11 +95,17 @@ const SearchBar = ({
   ];
 
   return (
-    <View style={containerStyle}>
+    <View 
+      style={containerStyle} 
+      // onLayout is only used for tablet/desktop (width >= 768px) to measure width for dropdown suggestions
+      // On mobile (width < 768px), onLayout is ignored even if provided to ensure mobile functionality is unaffected
+      onLayout={!isMobile && onLayout ? onLayout : undefined}
+    >
       <TextInput
         style={inputStyle}
         placeholder={placeholder}
         onFocus={onFocus}
+        onBlur={onBlur}
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmitEditing}

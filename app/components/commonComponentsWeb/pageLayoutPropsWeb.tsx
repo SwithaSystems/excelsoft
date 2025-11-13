@@ -139,12 +139,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderBottomColor: colors.lightgrey,
     borderBottomWidth: 1,
+    position: "relative",
+    zIndex: 10001, // Higher than navbarWrapper to allow dropdown to appear above
+    overflow: "visible",
   },
   navbarWrapper: {
     width: "100%",
     backgroundColor: colors.primary,
     overflow: "visible",
-    zIndex: 10000,
+    zIndex: 9998, // Lower than topHeader to allow search dropdown above
   },
   mainContainer: {
     flex: 1,
