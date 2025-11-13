@@ -1,7 +1,9 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
-
 const config = getDefaultConfig(__dirname);
+
+//font extensions for web
+config.resolver.assetExts.push('ttf', 'otf', 'woff', 'woff2');
 
 // List of native-only packages to stub on web
 const nativeModules = [
@@ -22,14 +24,12 @@ const nativeModules = [
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (platform === 'web') {
-    
     if (moduleName === 'expo-secure-store') {
       return {
         filePath: path.resolve(__dirname, 'stubs/expo-secure-store.js'),
         type: 'sourceFile',
       };
     }
-
     if (moduleName === 'react-native-country-picker-modal') {
       return {
         filePath: path.resolve(__dirname, 'stubs/country-picker-modal-stub.js'),
@@ -48,7 +48,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
         type: 'sourceFile',
       };
     }
-    
     if (moduleName.startsWith('react-native/Libraries/')) {
       return {
         filePath: path.resolve(__dirname, 'stubs/native-stub.js'),
@@ -56,7 +55,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       };
     }
   }
-  
   return context.resolveRequest(context, moduleName, platform);
 };
 

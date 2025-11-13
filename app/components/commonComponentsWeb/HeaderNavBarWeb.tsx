@@ -6,9 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  FlatList,
-  Modal,
-  TouchableWithoutFeedback,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
@@ -16,7 +14,6 @@ import { categoryService, Category } from "@/services/categoryService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useRoleContext } from "@/context/RoleContext";
-
 
 type NavItem = {
   label: string;
@@ -71,20 +68,15 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   const navItems = !hideNavItems ? userNavItems : [];
 
-  useEffect(() => {
-    console.log("🔵 HeaderNavBar - hideNavItems:", hideNavItems, "roleLoading:", roleLoading);
-    
+  useEffect(() => {    
     if (hideNavItems || roleLoading) {
       return;
     }
 
     const loadCategories = async () => {
       try {
-        console.log("📡 Fetching categories...");
         setLoading(true);
         const data = await categoryService.getAllCategories();
-        console.log("Categories fetched:", data?.length, "items");
-        console.log("Categories data:", data);
         
         const sorted = Array.isArray(data)
           ? data.sort((a, b) =>
@@ -103,9 +95,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   }, [hideNavItems, roleLoading]);
 
   const handleNavPress = (item: NavItem) => {
-    console.log("Clicked:", item.label, "isDropdown:", item.isDropdown);
     if (item.isDropdown) {
-      console.log("Toggling dropdown from", showDropdown, "to", !showDropdown);
       setShowDropdown((prev) => !prev);
     } else {
       item.onPress?.();
@@ -115,14 +105,21 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   const handleCategoryPress = (cat: Category) => {
     onCategorySelect?.(cat);
+
+    if (cat.name === "All") {
+      redirectToPage(containers.categoriesScreen, {
+        category: cat.name,
+        categoryId: cat.id,
+      });
+    } else {
+      redirectToPage(containers.searchResultsScreen, {
+        fromSearch: true,
+        category: cat.name,
+        categoryId: cat.id,
+      });
+    }
     setShowDropdown(false);
   };
-
-  const closeDropdown = () => {
-    setShowDropdown(false);
-  };
-
-  console.log("🎨 Rendering - showDropdown:", showDropdown, "categories:", categories.length);
 
   if (roleLoading || hideNavItems) {
     return (
@@ -165,8 +162,8 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                   ) : (
                     <ScrollView 
                       style={styles.dropdownScroll}
-                      nestedScrollEnabled={true}
-                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator
                     >
                       {categories.map((cat) => (
                         <TouchableOpacity
@@ -187,18 +184,11 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         </View>
       </View>
 
-      {/* Invisible overlay to close dropdown when clicking outside */}
       {showDropdown && (
-        <Modal
-          transparent
-          visible={showDropdown}
-          onRequestClose={closeDropdown}
-          animationType="none"
-        >
-          <TouchableWithoutFeedback onPress={closeDropdown}>
-            <View style={styles.overlay} />
-          </TouchableWithoutFeedback>
-        </Modal>
+        <Pressable
+          onPress={() => setShowDropdown(false)}
+          style={styles.overlay}
+        />
       )}
     </>
   );
@@ -257,6 +247,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     maxHeight: 300,
     zIndex: 9999,
+    overflow: "hidden",
   },
   dropdownScroll: {
     maxHeight: 300,
@@ -280,7 +271,9 @@ const styles = StyleSheet.create({
     height: 40,
   },
   overlay: {
-    flex: 1,
+        position: "fixed",
+    inset: 0,
     backgroundColor: "transparent",
+    zIndex: 1,
   },
 });
