@@ -28,6 +28,21 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "stretch",
   },
+  metricsContainerWeb: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  flexWrap: "wrap",
+},
+
+orderCardWeb: {
+  backgroundColor: "#ffffff",
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#e4e4e4",
+  padding: 16,
+  marginBottom: 12,
+},
+
   metricIconContainer: {
     flexDirection: "row",
     alignItems: "center",
