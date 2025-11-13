@@ -280,8 +280,22 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   // Render recent search item
   const renderRecentSearchItem = ({ item }: { item: string }) => {
     const handleItemPress = () => {
+      // Set flag IMMEDIATELY to prevent blur from closing dropdown
+      // This must happen before any async operations or checks
+      isClickingSuggestionRef.current = true;
+      
+      // Clear any pending blur timeout immediately
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+        blurTimeoutRef.current = null;
+      }
+      
+      // Only proceed if not removing a search
       if (!isRemovingSearchRef.current) {
         handleSuggestionSelect(item, true);
+      } else {
+        // Reset flag if we can't proceed
+        isClickingSuggestionRef.current = false;
       }
     };
 
