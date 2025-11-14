@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./VerifcationStyles";
 import Header from "../../components/Header";
@@ -22,6 +23,8 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { VERIFICATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const verifcationScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const {
     userData,
     from,
@@ -244,27 +247,49 @@ const verifcationScreen = () => {
       <PageLayout
         hasFooter={false}
         hasHeader
-        headerComponent={<Header headerText={VERIFICATION_SCREEN_TITLE} />}
+        headerComponent={
+          <Header 
+            headerText={VERIFICATION_SCREEN_TITLE}
+            headerStyle={isTabOrDesktop ? styles.verificationHeaderStyle : undefined}
+            headerTitleStyle={isTabOrDesktop ? styles.verificationHeaderTitle : undefined}
+          />
+        }
       >
         <KeyBoardWrapper>
-          <Image
-            style={styles.image}
-            source={require("assets/UserVerificationSuccessful.png")}
-          />
-          <Text style={styles.description}>
+          <View style={[
+            styles.contentContainer,
+            isTabOrDesktop && styles.contentContainerDesktop
+          ]}>
+            <Image
+              style={[
+                styles.image,
+                isTabOrDesktop && styles.imageDesktop
+              ]}
+              source={require("assets/UserVerificationSuccessful.png")}
+            />
+            <Text style={[
+              styles.description,
+              isTabOrDesktop && styles.descriptionDesktop
+            ]}>
             {verificationType === "email"
               ? "We've sent a verification link to your email address. Please check your inbox and click on the link to verify your email. If you don't see the email, check your spam folder or try resending the verification email."
               : "We have sent a verification code to your mobile. Please enter the code."}
           </Text>
 
-          <View style={styles.codeContainer}>
+          <View style={[
+            styles.codeContainer,
+            isTabOrDesktop && styles.codeContainerDesktop
+          ]}>
             {code.map((digit, index) => (
               <TextInput
                 key={index}
                 ref={(ref) => {
                   if (ref) inputRefs.current[index] = ref;
                 }}
-                style={styles.inputBox}
+                style={[
+                  styles.inputBox,
+                  isTabOrDesktop && styles.inputBoxDesktop
+                ]}
                 keyboardType="numeric"
                 maxLength={1}
                 value={digit}
@@ -282,22 +307,31 @@ const verifcationScreen = () => {
               />
             ))}
           </View>
-          <View style={{ alignItems: "center" }}>
+          <View style={[
+            styles.buttonContainer,
+            isTabOrDesktop && styles.buttonContainerDesktop
+          ]}>
             <TouchableOpacity
-              style={styles.verifyButton}
+              style={[
+                styles.verifyButton,
+                isTabOrDesktop && styles.verifyButtonDesktop
+              ]}
               onPress={handleVerify}
             >
               <Text style={styles.buttonText}>Verify</Text>
             </TouchableOpacity>
 
-            <Text style={styles.resendText}>
+            <Text style={[
+              styles.resendText,
+              isTabOrDesktop && styles.resendTextDesktop
+            ]}>
               Didn't receive the code?{" "}
               <Text style={styles.resendLink} onPress={handleResend}>
                 Resend
               </Text>
             </Text>
           </View>
-          {/* </View> */}
+          </View>
         </KeyBoardWrapper>
         {/* </SafeAreaView> */}
       </PageLayout>

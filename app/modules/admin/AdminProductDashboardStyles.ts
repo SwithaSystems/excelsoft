@@ -62,10 +62,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     gap: 12,
     marginHorizontal: 0,
     marginBottom: 16,
+    position: "relative",
+    zIndex: 1000,
   },
 
   categoryContainer: {
@@ -83,6 +85,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 2,
+    position: "relative",
+    zIndex: 1000,
   },
 
   // === Add Button ===
@@ -119,7 +123,7 @@ const styles = StyleSheet.create({
   stickyTopContainer: {
     position: "sticky",
     top: 0,
-    zIndex: 10,
+    zIndex: 1000,
     backgroundColor: colors.white,
     paddingVertical: 6,
     marginBottom: -20,
@@ -187,6 +191,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.black,
     fontWeight: "400",
+  },
+
+  // === Inline Dropdown List (non-modal) ===
+  dropdownList: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 40 : 52,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    borderColor: colors.placeholdergrey,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    zIndex: 1001,
+    maxHeight: 260,
+    overflow: "hidden",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: Platform.OS === "android" ? 10 : 0,
+  },
+  dropdownScrollArea: {
+    maxHeight: 260,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.placeholdergrey,
+    backgroundColor: colors.white,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: colors.primary,
   },
 
   // === Image & Details ===

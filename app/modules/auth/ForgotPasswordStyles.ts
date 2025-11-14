@@ -22,8 +22,23 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     flex: 1,
-    // paddingHorizontal: 10,
+    paddingHorizontal: 20,
     marginTop: 10,
+  },
+  forgotPasswordHeaderStyle: {
+    marginTop: 40,
+    paddingVertical: 10,
+  },
+  sectionContainerWeb: {
+    justifyContent: 'center',
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
+    marginTop: -100,
+  },
+  forgotPasswordHeaderTitle: {
+    fontSize: 35,
+    fontWeight: '700',
   },
   toggleContainer: {
     flexDirection: "row",
@@ -59,7 +74,14 @@ const styles = StyleSheet.create({
     borderColor: colors.placeholdergrey,
     borderRadius: 5,
     overflow: "hidden",
+    height: 48,
     marginBottom: 16,
+  },
+  phoneInputContainerError: {
+    borderColor: 'red',
+  },
+  phoneInputContainerDesktop: {
+    borderRadius: 8,
   },
   countryPickerContainer: {
     flexDirection: "row",
@@ -69,15 +91,35 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: colors.placeholdergrey,
   },
+  countryPickerContainerDesktop: {
+    paddingHorizontal: 4,
+    paddingVertical: 0,
+    height: 48,
+    justifyContent: 'center',
+  },
   countryPickerButton: {
     paddingVertical: 8,
     paddingRight: 5,
+  },
+  countryPickerButtonDesktop: {
+    paddingVertical: 0,
+    paddingRight: 2,
+    paddingLeft: 2,
+    height: '100%',
+    justifyContent: 'center',
+  },
+  errorTextDesktop: {
+    marginTop: 4,
   },
   phoneInput: {
     flex: 1,
     height: 50,
     paddingHorizontal: 10,
     fontSize: 16,
+    backgroundColor: colors.lightgrey,
+  },
+  phoneInputDesktop: {
+    height: 48,
   },
 });
 

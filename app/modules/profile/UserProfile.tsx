@@ -3,7 +3,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Image, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
@@ -38,6 +38,8 @@ Notifications.setNotificationHandler({
 });
 
 const UserProfileScreen = () => {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024; // Common breakpoint for desktop
   const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
@@ -167,7 +169,7 @@ const UserProfileScreen = () => {
       scrollable={true}
       contentPadding={true}
     >
-      <View>
+      <View style={{ flex: 1, position: isDesktop ? 'relative' : 'relative' }}>
         <Text style={styles.greeting}>
           {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
         </Text>
@@ -253,7 +255,10 @@ const UserProfileScreen = () => {
           ))}
         </View>
 
-        <View style={styles.footerButtons}>
+        <View style={[
+          styles.footerButtons,
+          isDesktop && styles.desktopFooterButtons
+        ]}>
           <TouchableOpacity
             style={styles.footerButton}
             onPress={() => {
