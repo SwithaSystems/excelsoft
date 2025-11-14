@@ -9,6 +9,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
+  Image,
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
@@ -42,10 +44,10 @@ const ProductDetailScreen = () => {
   const { from } = useLocalSearchParams();
   const [selectedColor, setSelectedColor] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
-  // const { isLoading, setIsLoading } = useAppContext();
   const [isProductLoading, setIsProductLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
     null
@@ -68,31 +70,6 @@ const ProductDetailScreen = () => {
     }
   };
 
-  // const fetchProduct = async () => {
-  //   try {
-  //     const fetchedProduct = await ProductsAPI.getProductBYID(
-  //       Number(productId)
-  //     );
-  //     setProduct(fetchedProduct);
-  //     if (fetchedProduct?.productColors?.length) {
-  //       setSelectedColor(fetchedProduct.productColors[0]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching product:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // console.log("fetched product", product);
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (productId) {
-  //       fetchProduct();
-  //     }
-  //   }, [productId])
-  // );
-
   const fetchProduct = useCallback(async () => {
     try {
       setIsProductLoading(true);
@@ -111,7 +88,6 @@ const ProductDetailScreen = () => {
             dispatch(removeFromSavedItems(savedItem.id));
           }
         }
-
         return;
       }
 
@@ -154,7 +130,12 @@ const ProductDetailScreen = () => {
   const indexRef = useRef(0);
 
   useEffect(() => {
-    if (!product?.image?.length || !scrollViewRef.current) return;
+    if (
+      !product?.image?.length ||
+      !scrollViewRef.current ||
+      Platform.OS === "web"
+    )
+      return;
 
     const interval = setInterval(() => {
       const nextIndex = (indexRef.current + 1) % product?.image?.length;
@@ -185,15 +166,12 @@ const ProductDetailScreen = () => {
       </PageLayout>
     );
   }
+
   if (errorMessage) {
     return (
       <PageLayout hasHeader scrollable={false}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{errorMessage}</Text>
-          {/* <Button
-            title="Go Back"
-            onPress={() => redirectToPage(containers.homeScreen)}
-          /> */}
         </View>
       </PageLayout>
     );
@@ -211,12 +189,274 @@ const ProductDetailScreen = () => {
 
   const showToast = (text1: string, text2?: string) => {
     setToast({ text1, text2 });
-
     setTimeout(() => {
       setToast(null);
     }, 3000);
   };
 
+  const isWeb = Platform.OS === "web";
+
+  // Web Layout
+  if (isWeb) {
+    return (
+      <PageLayout
+        scrollable
+        hasHeader
+        hasFooter
+        headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
+        footerComponent={<Footer />}
+      >
+        <View style={styles.webContainer}>
+          <ScrollView style={{ flex: 1 }}>
+            <View style={styles.webContentWrapper}>
+              {/* Left Section - Images */}
+              <View style={styles.webLeftSection}>
+                {/* Thumbnail Images */}
+                <View style={styles.webThumbnailContainer}>
+                  {product?.image
+                    ?.filter((url: string) => url && url.trim() !== "")
+                    .map((imageUrl: string, index: number) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => setSelectedImageIndex(index)}
+                        style={[
+                          styles.webThumbnail,
+                          selectedImageIndex === index &&
+                            styles.webThumbnailActive,
+                        ]}
+                      >
+                        <Image
+                          source={{ uri: imageUrl }}
+                          style={styles.webThumbnailImage}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Main Image */}
+                <View style={styles.webMainImageContainer}>
+                  <Image
+                    source={{
+                      uri:
+                        product?.image?.[selectedImageIndex] ||
+                        product?.image?.[0],
+                    }}
+                    style={styles.webMainImage}
+                  />
+                </View>
+              </View>
+
+              {/* Right Section - Product Details */}
+              <View style={styles.webRightSection}>
+                <View style={styles.webProductHeader}>
+                  <Text style={styles.webProductTitle}>{product.name}</Text>
+                  <TouchableOpacity
+                    onPress={(e) => handleHeartPress(e, product)}
+                  >
+                    <Ionicons
+                      name={isItemSaved(product.id) ? "heart" : "heart-outline"}
+                      size={24}
+                      color={
+                        isItemSaved(product.id)
+                          ? colors.primaryRed
+                          : colors.black
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {product.reviews.length > 0 && (
+                  <View style={styles.webRatingContainer}>
+                    <Text style={styles.webRatingText}>{product.rating}</Text>
+                    <Text style={styles.webStarIcon}> ★ </Text>
+                    <Text style={styles.webReviewsText}>
+                      ({product?.reviews?.length || 0})
+                    </Text>
+                  </View>
+                )}
+
+                {/* Sale Badge and Discount */}
+                {product.netPrice > product.discount && (
+                  <View style={styles.webSaleContainer}>
+                    <View style={styles.webSaleTag}>
+                      <Text style={styles.webSaleText}>Sale</Text>
+                    </View>
+                    <View style={styles.webTimerBadge}>
+                      <Text style={styles.webTimerText}>02:48:26</Text>
+                    </View>
+                    <View style={styles.webDiscountBadge}>
+                      <Text style={styles.webDiscountText}>
+                        {((product.discount * 100) / product.netPrice).toFixed(
+                          0
+                        )}
+                        %
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Price */}
+                <View style={styles.webPriceContainer}>
+                  <DisplayPrice
+                    discount={product.discount}
+                    netPrice={product.netPrice}
+                  />
+                </View>
+
+                {/* Select Color */}
+                {product.productColors && product.productColors?.length > 0 && (
+                  <View style={styles.webColorSection}>
+                    <Text style={styles.webSectionTitle}>Select Color</Text>
+                    <View style={styles.webColorOptions}>
+                      {product.productColors.map((color: any) => (
+                        <TouchableOpacity
+                          key={color._id}
+                          onPress={() => setSelectedColor(color)}
+                          style={[
+                            styles.webColorOption,
+                            { backgroundColor: color.colorCode },
+                            selectedColor?._id === color._id &&
+                              styles.webColorOptionActive,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Quantity */}
+                <View style={styles.webQuantitySection}>
+                  <Text style={styles.webSectionTitle}>Quantity</Text>
+                  <View style={styles.webQuantityControl}>
+                    <TouchableOpacity
+                      style={styles.webQuantityButton}
+                      onPress={() => quantity > 1 && setQuantity(quantity - 1)}
+                    >
+                      <Ionicons name="remove" size={20} color={colors.black} />
+                    </TouchableOpacity>
+                    <Text style={styles.webQuantityText}>{quantity}</Text>
+                    <TouchableOpacity
+                      style={styles.webQuantityButton}
+                      onPress={() => {
+                        const available = product?.stock || 0;
+                        if (quantity + 1 > available) {
+                          const message = QUANTITY_NOT_AVAILABLE.replace(
+                            "{{available}}",
+                            available.toString()
+                          );
+                          showErrorAlert({
+                            title: "Limited Stock Alert",
+                            message,
+                          });
+                          return;
+                        }
+                        setQuantity(quantity + 1);
+                      }}
+                    >
+                      <Ionicons name="add" size={20} color={colors.black} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Add to Cart Button */}
+                <Button
+                  title="Add To Cart"
+                  onPress={() => {
+                    if (product) {
+                      if (product.stock === 0) {
+                        showErrorAlert({
+                          title: "Out of Stock",
+                          message: ITEM_OUT_OF_STOCK,
+                        });
+                        return;
+                      }
+                      dispatch(
+                        addToCart({
+                          _id: product && product._id ? product._id : "",
+                          id: product.id,
+                          name: product.name,
+                          discount: product.discount,
+                          quantity: quantity,
+                          image: product.image,
+                          netPrice: product.netPrice,
+                          isVatApplicable: product.isVatApplicable,
+                          vatRate: product.vatRate,
+                          vatAmount: product.vatAmount,
+                        })
+                      );
+                      Toast.show({
+                        type: "customToast",
+                        text1: "Product added successfully!",
+                        text2: `${product.name} - ${product.discount}`,
+                        visibilityTime: 1000,
+                        autoHide: true,
+                        onPress: () => {
+                          redirectToPage(containers.cartScreen);
+                        },
+                      });
+                    }
+                  }}
+                  style={styles.webAddToCartButton}
+                />
+
+                {/* Product Information */}
+                <View style={styles.webProductInfo}>
+                  <Text style={styles.webInfoTitle}>Product Information</Text>
+                  <Text style={styles.webInfoText}>{product.description}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Reviews Section - Full Width */}
+            <View style={styles.webReviewsSection}>
+              <View style={styles.webReviewsHeader}>
+                <Text style={styles.webReviewsTitle}>
+                  What do Customers say?
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    redirectToPage(containers.feedbackScreen, {
+                      productId: productId,
+                    })
+                  }
+                >
+                  <Text style={styles.webAddReviewText}>Add your Review</Text>
+                </TouchableOpacity>
+              </View>
+
+              {[...(product.reviews || [])]
+                .sort((a, b) => Number(b.id) - Number(a.id))
+                .slice(0, 5)
+                .map((review: any, index: number) => (
+                  <ProductRating
+                    key={`${review.id ?? "review"}-${index}`}
+                    review={review}
+                  />
+                ))}
+
+              {product.reviews?.length > 0 && (
+                <TouchableOpacity
+                  style={styles.webSeeMoreButton}
+                  onPress={() =>
+                    redirectToPage(containers.reviewsScreen, {
+                      productId: productId,
+                      totalReviews: JSON.stringify(product.reviews),
+                      productRating:
+                        JSON.stringify(product.rating) || product.rating,
+                    })
+                  }
+                >
+                  <Text style={styles.webSeeMoreText}>See More Reviews</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+      </PageLayout>
+    );
+  }
+
+  // Mobile Layout (Original)
   return (
     <PageLayout
       scrollable
@@ -263,24 +503,6 @@ const ProductDetailScreen = () => {
                 </View>
               )}
 
-              {/* {product.netPrice > product.discount && (
-                <View style={styles.saleContainer}>
-                  <View style={styles.saleTimeBox}>
-                    <View style={styles.saleTag}>
-                      <Text style={styles.saleText}>Sale</Text>
-                    </View>
-                    <Text style={styles.saleTime}>02:48:26</Text>
-                  </View>
-                  <View style={styles.discountTag}>
-                    <Text style={styles.discountText}>
-                      {((product.discount * 100) / product.netPrice).toFixed(
-                        2
-                      ) + "%" || "20%"}
-                    </Text>
-                  </View>
-                </View>
-              )} */}
-
               <View style={styles.priceContainer}>
                 <DisplayPrice
                   discount={product.discount}
@@ -310,7 +532,7 @@ const ProductDetailScreen = () => {
                       />
                     ))}
                   </View>
-                </View>{" "}
+                </View>
               </>
             )}
 
@@ -390,7 +612,6 @@ const ProductDetailScreen = () => {
                 }}
                 style={styles.button}
               />
-              {/*  <Button title="Buy Now" onPress={() => {}} style={styles.button} /> */}
             </View>
           </View>
 
