@@ -363,7 +363,7 @@ const AdminDashboard = () => {
         >
         <View style={[
           styles.metricBox,
-          isTabOrDesktop && { width: "32%", minHeight: 110 },
+          isTabOrDesktop && { width: "32%", minHeight: 65 },
           ]}>
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
@@ -388,7 +388,7 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 110 },
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -405,7 +405,7 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 110 },
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -432,7 +432,7 @@ const AdminDashboard = () => {
           <View
             style={[
               styles.metricBox,
-              isTabOrDesktop && { width: "32%", minHeight: 110 },
+              isTabOrDesktop && { width: "32%", minHeight: 65 },
             ]}
           > 
             <View style={styles.metricIconContainer}>
