@@ -1,57 +1,58 @@
-const { getDefaultConfig } = require('expo/metro-config');
-const path = require('path');
+const { getDefaultConfig } = require("expo/metro-config");
+const path = require("path");
 const config = getDefaultConfig(__dirname);
 
 //font extensions for web
-config.resolver.assetExts.push('ttf', 'otf', 'woff', 'woff2');
+config.resolver.assetExts.push("ttf", "otf", "woff", "woff2");
 
 // List of native-only packages to stub on web
 const nativeModules = [
-  '@stripe/stripe-react-native',
-  'react-native-purchases',
-  'react-native-camera',
-  'react-native-image-picker',
-  'react-native-permissions',
-  '@react-native-community/geolocation',
-  'react-native-push-notification',
-  'react-native-biometrics',
-  '@react-native-firebase/app',
-  '@react-native-firebase/messaging',
-  'react-native-gesture-handler',
-  'react-async-hook',
-  'expo-notifications',
+  "@stripe/stripe-react-native",
+  "react-native-reanimated-carousel",
+  "react-native-purchases",
+  "react-native-camera",
+  "react-native-image-picker",
+  "react-native-permissions",
+  "@react-native-community/geolocation",
+  "react-native-push-notification",
+  "react-native-biometrics",
+  "@react-native-firebase/app",
+  "@react-native-firebase/messaging",
+  "react-native-gesture-handler",
+  "react-async-hook",
+  "expo-notifications",
 ];
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web') {
-    if (moduleName === 'expo-secure-store') {
+  if (platform === "web") {
+    if (moduleName === "expo-secure-store") {
       return {
-        filePath: path.resolve(__dirname, 'stubs/expo-secure-store.js'),
-        type: 'sourceFile',
+        filePath: path.resolve(__dirname, "stubs/expo-secure-store.js"),
+        type: "sourceFile",
       };
     }
-    if (moduleName === 'react-native-country-picker-modal') {
+    if (moduleName === "react-native-country-picker-modal") {
       return {
-        filePath: path.resolve(__dirname, 'stubs/country-picker-modal-stub.js'),
-        type: 'sourceFile',
+        filePath: path.resolve(__dirname, "stubs/country-picker-modal-stub.js"),
+        type: "sourceFile",
       };
     }
-    if (moduleName === 'expo-notifications') {
+    if (moduleName === "expo-notifications") {
       return {
-        filePath: path.resolve(__dirname, 'stubs/expo-notifications-stub.js'),
-        type: 'sourceFile',
+        filePath: path.resolve(__dirname, "stubs/expo-notifications-stub.js"),
+        type: "sourceFile",
       };
     }
     if (nativeModules.includes(moduleName)) {
       return {
-        filePath: path.resolve(__dirname, 'stubs/native-stub.js'),
-        type: 'sourceFile',
+        filePath: path.resolve(__dirname, "stubs/native-stub.js"),
+        type: "sourceFile",
       };
     }
-    if (moduleName.startsWith('react-native/Libraries/')) {
+    if (moduleName.startsWith("react-native/Libraries/")) {
       return {
-        filePath: path.resolve(__dirname, 'stubs/native-stub.js'),
-        type: 'sourceFile',
+        filePath: path.resolve(__dirname, "stubs/native-stub.js"),
+        type: "sourceFile",
       };
     }
   }

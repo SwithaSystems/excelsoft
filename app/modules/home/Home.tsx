@@ -30,7 +30,9 @@ import { categoryService, Category } from "../../../services/categoryService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
-import {PageLayoutWeb} from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import Button from "@/app/components/commonComponents/Button";
+// at the top of App.js / index.web.js / entry file (after `import 'react-native-gesture-handler'`)
 
 // const recommendedProducts = products
 //   .filter((p) =>
@@ -101,7 +103,11 @@ const HomePage = () => {
   const isTabOrDesktop = width >= 768;
 
   const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer activeTab="home" />;
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="home" />
+  );
 
   // const handleBannerPress = (item: any, index: number) => {
   //   redirectToPage(containers.offersScreen);
@@ -142,9 +148,9 @@ const HomePage = () => {
         const data = await categoryService.getAllCategories();
         console.log("Categories:", data);
         const sortedData = data.sort((a, b) => {
-          if (a.name === "All") return -1; 
+          if (a.name === "All") return -1;
           if (b.name === "All") return 1;
-          return a.id - b.id; 
+          return a.id - b.id;
         });
         setCategories(sortedData);
       } catch (error) {
@@ -169,7 +175,6 @@ const HomePage = () => {
     >
       <View style={styles.container}>
         <Header />
-
         {/* Categories */}
         {!isTabOrDesktop && (
           <View style={styles.categoriesContainer}>
@@ -203,7 +208,6 @@ const HomePage = () => {
             )}
           </View>
         )}
-
 
         {/* Banner */}
         {/* <View>{renderBanner()}</View> */}
