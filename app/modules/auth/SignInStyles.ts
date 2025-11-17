@@ -13,6 +13,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 10,
   },
+  signInHeaderStyle: {
+    marginTop: 40, // reduced from 50
+    paddingVertical: 10, // reduced vertical padding
+  },
+  
+  sectionContainerWeb: {
+    justifyContent: 'center',
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
+    marginTop: -130, // this pulls the form slightly up for desktop
+  },
+  
+  signInHeaderTitle: {
+    fontSize: 35,
+    fontWeight: '700',
+  },
   passwordContainer: {
     paddingTop: 16,
   },
@@ -25,11 +42,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 0,
+    paddingHorizontal: 8,
     backgroundColor: colors.lightgrey,
+  },
+  inputDesktop: {
+    paddingHorizontal: 8,
+    fontSize: 16,
   },
   label: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  labelDesktop: {
+    marginLeft: 3,
   },
   forgotPassword: {
     color: colors.primary,
@@ -86,18 +111,49 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     height: 48,
   },
+  phoneInputContainerError: {
+    borderColor: 'red',
+  },
+  phoneInputContainerFocused: {
+    borderColor: colors.black,
+    borderWidth: 2,
+  },
+  phoneInputContainerDesktop: {
+    borderRadius: 8,
+  },
   countryPickerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.offWhite,
-    paddingHorizontal: 10,
+    backgroundColor: colors.lightgrey,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRightWidth: 1,
     borderRightColor: colors.placeholdergrey,
+    minWidth: 80,
     //height: 36,
+  },
+  countryPickerContainerDesktop: {
+    paddingHorizontal: 12,
+    paddingVertical: 0,
+    height: 48,
+    justifyContent: 'center',
+    minWidth: 100,
   },
   countryPickerButton: {
     paddingVertical: 8,
-    paddingRight: 5,
+    paddingRight: 8,
+    paddingLeft: 8,
+  },
+  countryPickerButtonDesktop: {
+    paddingVertical: 0,
+    paddingRight: 8,
+    paddingLeft: 8,
+    height: '100%',
+    justifyContent: 'center',
+    minWidth: 100,
+  },
+  errorTextDesktop: {
+    marginTop: 4,
   },
   phoneInput: {
     flex: 1,
@@ -105,6 +161,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     backgroundColor: colors.lightgrey,
+  },
+  phoneInputDesktop: {
+    height: 48,
+    fontSize: 16,
   },
 });
 

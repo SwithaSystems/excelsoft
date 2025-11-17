@@ -2,10 +2,8 @@ import React, { useMemo, useCallback } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
   Platform,
   StatusBar,
   useWindowDimensions,
@@ -30,7 +28,6 @@ import BrandHeader from "@/app/components/BrandHeader";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
-import HeaderNavBar from "@/app/components/commonComponentsWeb/HeaderNavBarWeb";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
@@ -63,7 +60,7 @@ const AdminDashboard = () => {
     fetchUser();
   }, []);
 
-  // Memoize date calculation
+  // Memoize date calculationjj
   const dateOnly = useMemo(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -240,7 +237,18 @@ const AdminDashboard = () => {
             });
           }}
         >
-          <View style={styles.eachOrderItem}>
+          <View style={[
+            styles.eachOrderItem,
+            isTabOrDesktop && {
+              backgroundColor: "white",
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "#e4e4e4",
+              padding: 16,
+              marginBottom: 12,
+            },
+          ]}
+        >
             <View
               style={[
                 globalStyles.flexRow,
@@ -310,6 +318,12 @@ const AdminDashboard = () => {
                       : item.status === "Returned"
                       ? styles.returned
                       : styles.defaultStatus,
+                      isTabOrDesktop && {
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      fontWeight: "600",
+                    },
                   ]}
                 >
                   {item.status}
@@ -336,8 +350,21 @@ const AdminDashboard = () => {
         </Text>
       </View>
 
-      <View style={styles.metricsContainer}>
-        <View style={styles.metricBox}>
+      <View 
+        style={[
+          styles.metricsContainer,
+          isTabOrDesktop && {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            paddingHorizontal: 16,
+          },
+        ]}
+        >
+        <View style={[
+          styles.metricBox,
+          isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}>
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Total Orders</Text>
@@ -358,19 +385,29 @@ const AdminDashboard = () => {
           </View>
         </View>
 
-        <View style={styles.metricBox}>
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
+        >
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Pending Orders</Text>
           </View>
           <View>
-            <Text style={styles.metricValue}>
+          <Text style={styles.metricValue}>
               {dashboardMetrics.pendingOrders.length}
             </Text>
           </View>
         </View>
 
-        <View style={styles.metricBox}>
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
+        >
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Today's Revenue</Text>
@@ -392,7 +429,12 @@ const AdminDashboard = () => {
           </View>
         </View>
         {isSuperAdmin && (
-          <View style={styles.metricBox}>
+          <View
+            style={[
+              styles.metricBox,
+              isTabOrDesktop && { width: "32%", minHeight: 65 },
+            ]}
+          > 
             <View style={styles.metricIconContainer}>
               <TouchableOpacity
                 onPress={() => {
@@ -403,6 +445,7 @@ const AdminDashboard = () => {
               </TouchableOpacity>
             </View>
           </View>
+          
         )}
       </View>
 

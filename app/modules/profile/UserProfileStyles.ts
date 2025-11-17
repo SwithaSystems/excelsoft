@@ -73,6 +73,14 @@ const styles = StyleSheet.create({
     gap: 32,
     marginTop: 24,
   },
+  desktopFooterButtons: {
+    position: 'absolute',
+    bottom: 80,  // Increased from 40 to 80 for more space
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    marginBottom: 24,  // Added extra margin for more spacing
+  },
   footerButton: {
     alignItems: "center",
   },

@@ -12,10 +12,14 @@ import colors from "../../constants/colors";
 interface SearchBarProps {
   placeholder: string;
   onFocus?: () => void;
+  onBlur?: () => void;
   onPress?: () => void;
   value?: string;
   onChangeText?: (text: string) => void;
   onSubmitEditing?: () => void;
+  onLayout?: (event: { nativeEvent: { layout: { width: number; height: number } } }) => void; // Only used for tablet/desktop (width >= 768px) - ignored on mobile
+  widthPercent?: number; // optional width override for non-mobile (0-100)
+  height?: number; // optional height override
 }
 
 const Touchable = ({ onPress, children, style }: any) => {
@@ -50,22 +54,31 @@ const Touchable = ({ onPress, children, style }: any) => {
 const SearchBar = ({
   placeholder = "",
   onFocus,
+  onBlur,
   onPress,
   value = "",
   onChangeText = () => {},
   onSubmitEditing = () => {},
+  onLayout,
+  widthPercent,
+  height,
 }: SearchBarProps) => {
   const { width } = useWindowDimensions();
 
   const isMobile = width < 768;
-  const barWidth = isMobile ? "100%" : width < 1280 ? "60%" : "40%";
+  const defaultBarWidth = isMobile ? "100%" : width < 1280 ? "60%" : "40%";
+  const barWidth = isMobile
+    ? "100%"
+    : typeof widthPercent === "number"
+    ? `${Math.min(100, Math.max(0, widthPercent))}%`
+    : defaultBarWidth;
 
   const containerStyle = [
     styles.searchContainer,
     { 
       width: barWidth as `${number}%`, 
       alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start",
-      height: isMobile ? 52 : 40
+      height: typeof height === "number" ? height : isMobile ? 52 : 40
     },
   ];
 
@@ -73,16 +86,26 @@ const SearchBar = ({
     styles.searchInput,
     { 
       fontSize: isMobile ? 14 : 16, 
-      paddingVertical: isMobile ? 8 : 6 
+      paddingVertical: isMobile ? 8 : 6,
+      // Only on desktop/tablet: remove default web outline to avoid half-box
+      ...(isMobile
+        ? {}
+        : ({ outlineWidth: 0, outlineColor: 'transparent', borderWidth: 0 } as any)),
     },
   ];
 
   return (
-    <View style={containerStyle}>
+    <View 
+      style={containerStyle} 
+      // onLayout is only used for tablet/desktop (width >= 768px) to measure width for dropdown suggestions
+      // On mobile (width < 768px), onLayout is ignored even if provided to ensure mobile functionality is unaffected
+      onLayout={!isMobile && onLayout ? onLayout : undefined}
+    >
       <TextInput
         style={inputStyle}
         placeholder={placeholder}
         onFocus={onFocus}
+        onBlur={onBlur}
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmitEditing}
@@ -117,6 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     color: colors.black,
+    backgroundColor: 'transparent',
     // minHeight: 32,
   },
 });
