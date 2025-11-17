@@ -175,13 +175,6 @@ const HomePage = () => {
     >
       <View style={styles.container}>
         <Header />
-        <Button
-          title="Product details"
-          onPress={() =>
-            redirectToPage(containers.productDetailScreen, { productId: 7 })
-          }
-        />
-
         {/* Categories */}
         {!isTabOrDesktop && (
           <View style={styles.categoriesContainer}>
