@@ -652,7 +652,7 @@ const SearchResultsScreen = () => {
       }
     }
 
-    if (isFromSearch) {
+    if (isFromSearch && !isTabOrDesktop) {
       return renderCategoryBadges();
     }
 

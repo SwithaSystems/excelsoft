@@ -475,16 +475,13 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           />
         </TouchableOpacity>
 
-        {/* Admin/User Switch Button - Only for admin users */}
         {isAdmin && (
           <TouchableOpacity
             style={styles.adminButton}
             onPress={() => {
               if (hideUserGreeting) {
-                // On admin page, go back to user
                 redirectToPage(containers.homeScreen);
               } else {
-                // On user page, go to admin
                 redirectToPage(containers.AdminDashboardScreen);
               }
             }}
@@ -495,13 +492,22 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </TouchableOpacity>
         )}
 
+        {!isAdmin && !hideUserGreeting && (
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => redirectToPage(containers.cartScreen)}
+          >
+            <Ionicons name="cart-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+
+
          {!hideUserGreeting && (
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => redirectToPage(containers.userNotificationsScreen)}
             >
               <Ionicons name="notifications" size={24} color={colors.primary} />
-              <Text>Notifications</Text>
             </TouchableOpacity>
           )}
       </View>
