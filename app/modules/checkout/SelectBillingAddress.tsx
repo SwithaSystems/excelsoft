@@ -127,9 +127,7 @@ const selectBillingAddressScreen = () => {
     console.log("Item to delete:", itemToDelete);
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteAddress(
-          itemToDelete.id
-        );
+        const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
           setAddressData((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
@@ -274,14 +272,14 @@ const selectBillingAddressScreen = () => {
                 <ConfirmationModal
                   onClose={() => {
                     setIsModalVisible(false);
-                  } }
+                  }}
                   isModalVisible={isModalVisible}
                   text="Are you sure you want to delete this address?"
                   submitText="Delete Address"
                   handleSubmit={() => confirmDelete(itemToDelete!)}
                   cancelText="Cancel"
-                  handleCancel={cancelDelete} 
-                  title="Delete Address"                
+                  handleCancel={cancelDelete}
+                  title="Delete Address"
                 />
               </>
             }

@@ -19,6 +19,7 @@ import {
   SafeAreaView,
   FlatList,
   Animated,
+  Platform,
 } from "react-native";
 import styles from "./OrderSummeryStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -42,23 +43,27 @@ import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import AddressItem from "../../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
-import { usePaymentHandler } from "../../components/usePaymentHandler";
+// import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ProductsAPI } from "@/services/productService";
-
-type OrderSummeryScreenParams = {
-  orderId: string;
-  address?: string;
-  pickupAddress?: string;
-  selectedDate?: string;
-  selectedSlot?: string;
-  selectedMode?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  email?: string;
-  additionalDetails?: string;
-};
+import { StripeCardInput } from "@/app/components/StripeCardInput";
+import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
+import * as All from "@/app/components/usePaymentHandlerWeb";
+import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
+import { DebugPaymentTest } from '@/app/components/DebugPaymentTest';
+// type OrderSummeryScreenParams = {
+//   orderId: string;
+//   address?: string;
+//   pickupAddress?: string;
+//   selectedDate?: string;
+//   selectedSlot?: string;
+//   selectedMode?: string;
+//   firstName?: string;
+//   lastName?: string;
+//   phone?: string;
+//   email?: string;
+//   additionalDetails?: string;
+// };
 
 type shippingAddressDTo = {
   name: string;
@@ -76,8 +81,8 @@ const orderSummeryScreen = () => {
   const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
-  const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
-  const [substitutionSelected, setSubstitutionSelected] = useState(false);
+  // const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
+  // const [substitutionSelected, setSubstitutionSelected] = useState(false);
   // const cartItems = useSelector((state: any) => [...state.cart.items]);
   const cartItemsBefore = useSelector((state: any) => state.cart.items);
   // Safe cart items selection with proper typing
@@ -107,6 +112,11 @@ const orderSummeryScreen = () => {
   );
   const [accordionOpen, setAccordionOpen] = useState(false);
   const rotateAnimation = useRef(new Animated.Value(0)).current;
+  const isWeb = Platform.OS === "web";
+
+  console.log("All module:", All);
+  // console.log("usePaymentHandlerWeb typeof:", typeof All.usePaymentHandlerWeb);
+  console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
   const { handlePayment } = usePaymentHandler();
 
@@ -809,6 +819,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
             </View>
           </View>
 
+          {isWeb && <DebugPaymentTest />}
+
+          {isWeb && <StripeCardInput />}
           <View style={{ paddingHorizontal: 24 }}>
             <Button
               title="Proceed for Payment"
