@@ -492,7 +492,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </TouchableOpacity>
         )}
 
-        {!isAdmin && !hideUserGreeting && (
+        {isValidUser && !hideUserGreeting && (
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => redirectToPage(containers.cartScreen)}

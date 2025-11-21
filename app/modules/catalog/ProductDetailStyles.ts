@@ -302,11 +302,14 @@ const styles = StyleSheet.create({
   },
   webLeftSection: {
     flex: 0.5,
-    flexDirection: "row",
+    flexDirection: "column",
+    alignItems: "center",
     gap: 16,
   },
   webThumbnailContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
+    justifyContent: "center",
+    // flexWrap: "wrap",
     gap: 12,
   },
   webThumbnail: {
@@ -326,7 +329,8 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   webMainImageContainer: {
-    flex: 1,
+    // flex: 1,
+    width: "100%",
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: colors.lightgrey,

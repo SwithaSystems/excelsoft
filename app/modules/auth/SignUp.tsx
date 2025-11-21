@@ -368,6 +368,7 @@ const signUpScreen = () => {
                     countryCode={countryCode}
                     withFilter
                     withFlag={false}
+                    withFlagButton={false}
                     withCallingCode
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");

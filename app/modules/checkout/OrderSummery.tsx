@@ -45,6 +45,10 @@ import { useAppContext } from "@/context/AppContext";
 import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ProductsAPI } from "@/services/productService";
+import { useWindowDimensions } from "react-native";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 
 type OrderSummeryScreenParams = {
   orderId: string;
@@ -626,13 +630,166 @@ Contact Number: ${pickupAddress.phone || ""}`;
     }
   }, [pickupAddress, selectedMode]);
 
-  return (
-    <PageLayout
-      hasHeader
-      headerComponent={<Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />}
-      hasFooter={false}
-      scrollable={false}
-    >
+  const { width } = useWindowDimensions();
+const isTabOrDesktop = width >= 768;
+
+const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+const HeaderComponent = isTabOrDesktop ? (
+        <BrandHeaderWeb /> 
+      ) : (
+      <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
+      );
+
+return (
+  <LayoutComponent
+    hasHeader
+    headerComponent={HeaderComponent}
+    hasFooter={isTabOrDesktop}
+    footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+    scrollable={false}
+  >
+    {isTabOrDesktop ? (
+      // WEB LAYOUT
+      <View style={styles.webContainer}>
+        <ScrollView style={{ flex: 1 }}>
+          <Text style={styles.webPageTitle}>Order Details</Text>
+          
+          <View style={styles.webContentWrapper}>
+            {/* Left Section - Cart Items */}
+            <View style={styles.webLeftSection}>
+              {cartItems.map((eachCartItem: any) => (
+                <CartItem
+                  handleDelete={handleDelete}
+                  key={eachCartItem.id}
+                  cartItem={eachCartItem}
+                  stockAvailable={stockAvailable[eachCartItem._id] || 0}
+                />
+              ))}
+            </View>
+
+            {/* Right Section - Order Summary */}
+            <View style={styles.webRightSection}>
+              {/* Address Section */}
+              <View style={styles.webSectionCard}>
+                <Text style={styles.webSectionTitle}>Address</Text>
+                <View style={styles.webAddressBox}>
+                  <Text style={styles.webAddressText}>
+                    {renderAddressText()}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Your Slot Section */}
+              <View style={styles.webSectionCard}>
+                <Text style={styles.webSectionTitle}>Your Slot</Text>
+                <Text style={styles.webSlotText}>
+                  You've selected a delivery slot for{" "}
+                  {selectedMode === DELIVERY_MODE_HOME
+                    ? pickupDetails?.date
+                    : pickupAddress?.date}{" "}
+                  from{" "}
+                  {selectedMode === DELIVERY_MODE_HOME
+                    ? pickupDetails?.time
+                    : pickupAddress?.time}{" "}
+                  with {displayMode} as your chosen mode.
+                </Text>
+                <TouchableOpacity>
+                  <Text style={styles.webChangeSlotLink}>change the slot</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Substitutions Section */}
+              <View style={styles.webSectionCard}>
+                <Text style={styles.webSectionTitle}>Substitutions</Text>
+                <View style={styles.webCheckboxRow}>
+                  <CheckBox
+                    checked={substitutionSelected}
+                    onPress={() => setSubstitutionSelected(!substitutionSelected)}
+                    checkedColor={colors.primary}
+                    uncheckedColor={colors.primary}
+                    containerStyle={styles.webCheckboxContainer}
+                  />
+                  <Text style={styles.webCheckboxLabel}>
+                    Choose Substitutions for my orders.
+                  </Text>
+                </View>
+                <Text style={styles.webSubText}>
+                  If the product you picked is not available a similar product or brand will be picked.
+                </Text>
+              </View>
+
+              {/* Order Details Section */}
+              <View style={styles.webSectionCard}>
+                <Text style={styles.webSectionTitle}>Order Details</Text>
+                
+                {/* Table Header */}
+                <View style={styles.webTableHeader}>
+                  <Text style={[styles.webTableCell, { flex: 2 }]}>Item Name</Text>
+                  <Text style={[styles.webTableCell, { flex: 1, textAlign: "center" }]}>Total Items</Text>
+                  <Text style={[styles.webTableCell, { flex: 1, textAlign: "right" }]}>Price</Text>
+                </View>
+
+                {/* Table Rows */}
+                {cartItems.map((item: any) => (
+                  <View key={item.id} style={styles.webTableRow}>
+                    <Text style={[styles.webTableCell, { flex: 2 }]}>{item.name}</Text>
+                    <Text style={[styles.webTableCell, { flex: 1, textAlign: "center" }]}>
+                      {String(item.quantity).padStart(2, "0")}
+                    </Text>
+                    <Text style={[styles.webTableCell, { flex: 1, textAlign: "right" }]}>
+                      {item.discount}$
+                    </Text>
+                  </View>
+                ))}
+
+                {/* Summary Rows */}
+                <View style={styles.webSummaryRow}>
+                  <Text style={styles.webSummaryLabel}>Total Price</Text>
+                  <Text style={styles.webSummaryValue}>
+                    {cartItems.reduce((sum: number, item: any) => sum + (item.discount * item.quantity), 0)}$
+                  </Text>
+                </View>
+                <View style={styles.webSummaryRow}>
+                  <Text style={styles.webSummaryLabel}>Discount</Text>
+                  <Text style={styles.webSummaryValue}>
+                    -{cartItems.reduce((sum: number, item: any) => sum + ((item.netPrice - item.discount) * item.quantity), 0)}$
+                  </Text>
+                </View>
+                <View style={styles.webSummaryRow}>
+                  <Text style={[styles.webSummaryLabel, { color: colors.primary }]}>Shipping</Text>
+                  <Text style={styles.webSummaryValue}>3$</Text>
+                </View>
+                <View style={[styles.webSummaryRow, styles.webSubtotalRow]}>
+                  <Text style={styles.webSubtotalLabel}>SubTotal</Text>
+                  <Text style={styles.webSubtotalValue}>
+                    {cartItems.reduce((sum: number, item: any) => sum + (item.discount * item.quantity), 0) + 3}$
+                  </Text>
+                </View>
+              </View>
+
+              {/* Place Order Button */}
+              <Button
+                title="Place Order"
+                disabled={!isPaymentEnabled}
+                onPress={() => {
+                  handlePayment(cartItems, {
+                    shippingAddress,
+                    billingAddress: selectedBillingAddress,
+                    pickupdetails: pickupDetails,
+                    deliveryDate: pickupDetails?.date,
+                    deliveryTime: pickupDetails?.time,
+                    selectedSlot: Array.isArray(selectedMode) ? selectedMode[0] : selectedMode,
+                    selectedMode: Array.isArray(selectedMode) ? selectedMode[0] : selectedMode,
+                  });
+                }}
+                style={styles.webPlaceOrderButton}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    ) : (
+      // MOBILE LAYOUT
       <View style={globalStyles.container}>
         <ScrollView>
           <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
@@ -681,7 +838,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 </View>
               </View>
 
-              {/* Show checkbox only for home delivery */}
               {selectedMode === DELIVERY_MODE_HOME && (
                 <View style={styles.checkBox}>
                   <CheckBox
@@ -695,7 +851,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 </View>
               )}
 
-              {/* Show billing address section for all modes, but hide when home delivery checkbox is checked */}
               {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
                 <View>
                   <View style={styles.billingAddress}>
@@ -791,7 +946,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 {cartItems.map((eachCartItem: any) => {
                   return (
                     <CartItem
-                      // itemContainerStyle={styles.cartItemContainerStyle}
                       handleDelete={handleDelete}
                       key={eachCartItem.id}
                       cartItem={eachCartItem}
@@ -842,6 +996,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
           </View>
         </ScrollView>
 
+
+      </View>
+    )}
         <ConfirmationModal
           onClose={() => setIsModalVisible(false)}
           isModalVisible={isModalVisible}
@@ -852,9 +1009,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
           cancelText="Save for Later"
           handleCancel={cancelDelete}
         />
-      </View>
-    </PageLayout>
-  );
-};
+  </LayoutComponent>
+);};
 
 export default orderSummeryScreen;
