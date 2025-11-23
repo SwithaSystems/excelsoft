@@ -226,6 +226,7 @@ const signIn = () => {
                     countryCode={countryCode}
                     withFilter
                     withFlag={false}
+                    withFlagButton={false}
                     withCallingCode
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");
@@ -236,9 +237,9 @@ const signIn = () => {
                       isTabOrDesktop && styles.countryPickerButtonDesktop
                     ]}
                   />
-                  {/* {!isTabOrDesktop && (
+                  {!isTabOrDesktop && (
                     <Text style={styles.callingCode}>+{callingCode}</Text>
-                  )} */}
+                  )}
                 </View>
 
                 <TextInput
