@@ -89,12 +89,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   similarProductsContainer: {
-    marginTop: 20,
+    marginTop: 24,
   },
   similarProductsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 16,
+    color: colors.black,
   },
   similarProductItem: {
     width: 150, // Adjust width as needed
@@ -126,6 +127,17 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 24,
     marginBottom: 16,
+  },
+  // Compact Order Summary for Web
+  compactOrderSummary: {
+    padding: 12,
+    marginTop: 0,
+  },
+  compactOrderSummaryHeading: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: colors.black,
   },
   emptyCartContainer: {
     flex: 1,
@@ -161,6 +173,41 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "500",
     top: 3.5,
+  },
+  // Web/Desktop Layout Styles
+  webContainer: {
+    flexDirection: "row",
+    gap: 24,
+    alignItems: "flex-start",
+  },
+  leftColumn: {
+    flex: 1,
+    minWidth: 0, // Prevents flex items from overflowing
+  },
+  rightColumn: {
+    width: 360,
+    minWidth: 320,
+    height: "20%",
+  },
+  cartHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  cartHeaderText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.black,
+  },
+  clearCartText: {
+    fontSize: 16,
+    color: colors.primary,
+    textDecorationLine: "underline",
+  },
+  placeOrderContainer: {
+    marginTop: 16,
+    width: "100%",
   },
 });
 
