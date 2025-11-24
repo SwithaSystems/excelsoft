@@ -232,6 +232,7 @@ const styles = StyleSheet.create({
   },
   dropdownIcon: {
     marginLeft: 4,
+    marginTop: 4,
   },
   dropdownMenu: {
     position: "absolute",

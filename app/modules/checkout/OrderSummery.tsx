@@ -710,6 +710,102 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   </TouchableOpacity>
                 </View>
 
+              <View style={styles.webSectionCard}>
+                <Text style={styles.webSectionTitle}>Billing Address</Text>
+                
+                {selectedMode === DELIVERY_MODE_HOME && (
+                  <View style={styles.webCheckboxRow}>
+                    <CheckBox
+                      checked={useSameAddress}
+                      onPress={handleSameAddressToggle}
+                      checkedColor={colors.primary}
+                      uncheckedColor={colors.primary}
+                      containerStyle={styles.webCheckboxContainer}
+                    />
+                    <Text style={styles.webCheckboxLabel}>
+                      Set Delivery Address as Billing Address
+                    </Text>
+                  </View>
+                )}
+
+                {/* Show selected billing address or address selector */}
+                {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+                  <View>
+                    {/* Currently Selected Billing Address */}
+                    {selectedBillingAddress && (
+                      <View style={styles.webAddressBox}>
+                        <Text style={styles.webAddressText}>
+                          {`${selectedBillingAddress.name || "Unknown"}, ${
+                            selectedBillingAddress.line1 || ""
+                          }${selectedBillingAddress.line2 ? `, ${selectedBillingAddress.line2}` : ""}, ${
+                            selectedBillingAddress.city || "Unknown City"
+                          }, ${selectedBillingAddress.state || ""} ${
+                            selectedBillingAddress.postalCode || ""
+                          }`}
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Accordion Toggle */}
+                    <TouchableOpacity
+                      style={styles.webAccordionToggle}
+                      onPress={toggleAccordion}
+                    >
+                      <Text style={styles.webChangeSlotLink}>
+                        {accordionOpen ? "Hide" : "Change"} billing address
+                      </Text>
+                      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                        <Ionicons
+                          name="chevron-down-circle"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      </Animated.View>
+                    </TouchableOpacity>
+
+                    {/* Accordion Content - Address List */}
+                    {accordionOpen && (
+                      <View style={styles.webAccordionContent}>
+                        {addressData.length > 0 ? (
+                          <View>
+                            {addressData.map((item) => (
+                              <AddressItem
+                                key={item._id?.toString() || `address-${Math.random()}`}
+                                item={item}
+                                onEdit={handleEdit}
+                                onDelete={handleBillingAddressDelete}
+                                showRadio
+                                isSelected={item._id === selectedId}
+                                onSelect={() => handleSelectBillingAddress(item)}
+                              />
+                            ))}
+                          </View>
+                        ) : (
+                          <View style={styles.webNoAddressContainer}>
+                            <Text style={styles.webNoAddressText}>
+                              No billing addresses found
+                            </Text>
+                          </View>
+                        )}
+                        <Button
+                          onPress={handleAddBillingAddress}
+                          title="Add Billing Address"
+                          style={{ marginTop: 16 }}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* Show message if using same address */}
+                {selectedMode === DELIVERY_MODE_HOME && useSameAddress && (
+                  <View style={styles.webAddressBox}>
+                    <Text style={styles.webAddressText}>
+                      Same as delivery address
+                    </Text>
+                  </View>
+                )}
+              </View>
                 {/* Substitutions Section */}
                 {/* <View style={styles.webSectionCard}>
                   <Text style={styles.webSectionTitle}>Substitutions</Text>
@@ -1026,7 +1122,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   </Text>
                 </View>
               </View>
-
+                                      
               <View style={[styles.section, globalStyles.mb_0]}>
                 <Text style={styles.sectionHeading}>Order Details</Text>
                 <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
@@ -1049,10 +1145,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 />
               </View>
             </View>
-
-            {/* {isWeb && <DebugPaymentTest />} */}
-
-            {/* {isWeb && <StripeCardInput />} */}
             <View style={{ paddingHorizontal: 24 }}>
               <Button
                 title="Proceed for Payment"
