@@ -440,35 +440,7 @@ const CartScreen = () => {
                     />
                   </View>
 
-                  {/* Similar Products */}
-                  {similarProducts.length > 0 && (
-                    <View style={styles.similarProductsContainer}>
-                      <RecommendedProductsSlider
-                        recommendedProducts={similarProducts.map((product: Product) => ({
-                          id: product._id || product.id,
-                          title: product.name,
-                          rating: product.rating || 4.5,
-                          reviews: product.noOfreviews || 0,
-                          imageUrl: Array.isArray(product.image) 
-                            ? (typeof product.image[0] === 'string' ? product.image[0] : '')
-                            : (typeof product.image === 'string' ? product.image : ''),
-                          netPrice: product.netPrice,
-                          discount: product.discount,
-                        }))}
-                        title="Similar products to your cart"
-                        sectionTitleStyle={styles.similarProductsTitle}
-                        showAddToCart={true}
-                        handleAdd={(item: any) => {
-                          const productToAdd = similarProducts.find(
-                            (p: Product) => (p._id || p.id) === item.id
-                          );
-                          if (productToAdd) {
-                            dispatch(addToCart({ ...productToAdd, quantity: 1 }));
-                          }
-                        }}
-                      />
-                    </View>
-                  )}
+                  {/* Similar Products - Hidden for web */}
                 </View>
               </View>
             )}

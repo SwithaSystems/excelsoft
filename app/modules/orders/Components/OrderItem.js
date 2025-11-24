@@ -128,17 +128,16 @@ function OrderItem(props) {
               <Text style={styles.webStatusText}>{getStatusText()}</Text>
             </View>
             <TouchableOpacity
-              style={styles.webOrderAgainButton}
               onPress={(e) => {
                 e.stopPropagation();
-                // Navigate to order details or reorder functionality
+                // Navigate to order details
                 redirectToPage(containers.orderDetailsScreen, {
                   orderId: item._id,
                   from: props.from,
                 });
               }}
             >
-              <Text style={styles.webOrderAgainText}>Order again</Text>
+              <Text style={styles.webOrderDetailsLink}>Order Details</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -330,18 +329,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: "600",
   },
-  webOrderAgainButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 6,
-    minWidth: 140,
-    alignItems: "center",
-  },
-  webOrderAgainText: {
-    color: colors.white,
+  webOrderDetailsLink: {
+    color: colors.primary,
+    textDecorationLine: "underline",
+    fontWeight: "bold",
     fontSize: 14,
-    fontWeight: "600",
   },
 });
 
