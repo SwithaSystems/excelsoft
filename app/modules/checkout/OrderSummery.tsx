@@ -50,7 +50,7 @@ import { StripeCardInput } from "@/app/components/StripeCardInput";
 import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
 import * as All from "@/app/components/usePaymentHandlerWeb";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
-import { DebugPaymentTest } from '@/app/components/DebugPaymentTest';
+import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
 // type OrderSummeryScreenParams = {
 //   orderId: string;
 //   address?: string;
@@ -819,7 +819,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
             </View>
           </View>
 
-          {isWeb && <DebugPaymentTest />}
+          {/* {isWeb && <DebugPaymentTest />} */}
 
           {isWeb && <StripeCardInput />}
           <View style={{ paddingHorizontal: 24 }}>
