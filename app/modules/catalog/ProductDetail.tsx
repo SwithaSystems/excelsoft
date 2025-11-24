@@ -11,6 +11,7 @@ import {
   View,
   Platform,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import Button from "../../components/commonComponents/Button";
 import ProductRating from "../../components/ProductRating";
@@ -38,6 +39,9 @@ import {
 } from "../../../constants/customErrorMessages";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./ProductDetailStyles";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -54,6 +58,10 @@ const ProductDetailScreen = () => {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
   const isItemSaved = (itemId: any) => {
@@ -194,23 +202,64 @@ const ProductDetailScreen = () => {
     }, 3000);
   };
 
-  const isWeb = Platform.OS === "web";
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer/>
+  );
+
 
   // Web Layout
-  if (isWeb) {
-    return (
-      <PageLayout
-        scrollable
-        hasHeader
-        hasFooter
-        headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
-        footerComponent={<Footer />}
-      >
-        <View style={styles.webContainer}>
-          <ScrollView style={{ flex: 1 }}>
+  // if (isWeb) {
+  //   return (
+  //     <PageLayout
+  //       scrollable
+  //       hasHeader
+  //       hasFooter
+  //       headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
+  //       footerComponent={<Footer />}
+  //     >
+  //       <View style={styles.webContainer}>
+          
+  //       </View>
+  //     </PageLayout>
+  //   );
+  // }
+
+  // Mobile Layout (Original)
+  return (
+  <LayoutComponent
+    scrollable
+    hasHeader
+    hasFooter
+    headerComponent={HeaderComponent}
+    footerComponent={FooterComponent}
+  >
+    {isTabOrDesktop ? (
+      <View style={styles.webContainer}>
+        <ScrollView style={{ flex: 1 }}>
             <View style={styles.webContentWrapper}>
               {/* Left Section - Images */}
               <View style={styles.webLeftSection}>
+
+                {/* Main Image */}
+                <View style={styles.webMainImageContainer}>
+                  <Image
+                    source={{
+                      uri:
+                        product?.image?.[selectedImageIndex] ||
+                        product?.image?.[0],
+                    }}
+                    style={styles.webMainImage}
+                  />
+                </View>
+
                 {/* Thumbnail Images */}
                 <View style={styles.webThumbnailContainer}>
                   {product?.image
@@ -232,19 +281,8 @@ const ProductDetailScreen = () => {
                       </TouchableOpacity>
                     ))}
                 </View>
-
-                {/* Main Image */}
-                <View style={styles.webMainImageContainer}>
-                  <Image
-                    source={{
-                      uri:
-                        product?.image?.[selectedImageIndex] ||
-                        product?.image?.[0],
-                    }}
-                    style={styles.webMainImage}
-                  />
-                </View>
               </View>
+
 
               {/* Right Section - Product Details */}
               <View style={styles.webRightSection}>
@@ -451,20 +489,10 @@ const ProductDetailScreen = () => {
               )}
             </View>
           </ScrollView>
-        </View>
-      </PageLayout>
-    );
-  }
 
-  // Mobile Layout (Original)
-  return (
-    <PageLayout
-      scrollable
-      hasHeader
-      hasFooter
-      headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
-      footerComponent={<Footer />}
-    >
+      </View>
+    ) : (
+
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
           {product && product?.image && product?.image?.length > 0 && (
@@ -655,7 +683,8 @@ const ProductDetailScreen = () => {
           </View>
         </ScrollView>
       </View>
-    </PageLayout>
+    )}
+    </LayoutComponent>
   );
 };
 
