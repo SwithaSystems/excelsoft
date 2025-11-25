@@ -19,6 +19,9 @@ import { useRoleContext } from "@/context/RoleContext";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "app_recent_searches";
@@ -33,6 +36,12 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   const { width } = useWindowDimensions();
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
+
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartItemCount = cartItems.reduce(
+    (total: any, item: any) => total + item.quantity,
+    0
+  );
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -497,7 +506,16 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             style={styles.iconButton}
             onPress={() => redirectToPage(containers.cartScreen)}
           >
-            <Ionicons name="cart-outline" size={24} color={colors.primary} />
+            <View style={styles.iconContainer}>
+              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              {cartItemCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {cartItemCount > 99 ? "99+" : cartItemCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
         )}
 
@@ -525,7 +543,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.lightgrey,
     position: "relative",
-    zIndex: 10001, // Higher than HeaderNavBarWeb (9998) to ensure dropdown appears above
+    zIndex: 10001,
     overflow: "visible",
   },
   logo: {
@@ -546,7 +564,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'center',
     position: 'relative',
-    zIndex: 10001, // Higher than HeaderNavBarWeb (9999)
+    zIndex: 10001, 
   },
   suggestionsDropdown: {
     position: 'absolute',
@@ -566,7 +584,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     maxHeight: 300,
-    zIndex: 10002, // Higher than searchContainer and HeaderNavBarWeb
+    zIndex: 10002,
     overflow: 'hidden',
   },
   suggestionItem: {
@@ -643,6 +661,26 @@ const styles = StyleSheet.create({
     gap: 4,
     marginLeft: 14,
     padding: 6,
+  },
+  iconContainer: {
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: colors.primaryRed,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: "bold",
   },
   adminButton: {
     marginLeft: 16,

@@ -78,7 +78,8 @@ const SearchBar = ({
     { 
       width: barWidth as `${number}%`, 
       alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start",
-      height: typeof height === "number" ? height : isMobile ? 52 : 40
+      height: typeof height === "number" ? height : isMobile ? 52 : 40,
+      minWidth:0,
     },
   ];
 
@@ -87,6 +88,7 @@ const SearchBar = ({
     { 
       fontSize: isMobile ? 14 : 16, 
       paddingVertical: isMobile ? 8 : 6,
+      minWidth:0,
       // Only on desktop/tablet: remove default web outline to avoid half-box
       ...(isMobile
         ? {}
@@ -104,6 +106,7 @@ const SearchBar = ({
       <TextInput
         style={inputStyle}
         placeholder={placeholder}
+        placeholderTextColor={colors.placeholdergrey}
         onFocus={onFocus}
         onBlur={onBlur}
         value={value}
@@ -113,7 +116,7 @@ const SearchBar = ({
           if (e.nativeEvent.key === "Enter") onSubmitEditing();
         }}
       />
-      <Touchable onPress={onPress}>
+      <Touchable onPress={onPress} style={styles.iconWrapper}>
         <Ionicons
           name="search"
           size={isMobile ? 18 : 22}
@@ -130,6 +133,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
+    // justifyContent: "center",
     backgroundColor: colors.white,
     borderColor: colors.primary,
     borderWidth: 0.5,
@@ -141,6 +145,17 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: colors.black,
     backgroundColor: 'transparent',
+    flexShrink: 1,
     // minHeight: 32,
   },
+iconWrapper: {
+  paddingLeft: 10,
+  paddingRight: 6,
+  minWidth: 40,
+  alignSelf: "stretch",
+  justifyContent: "center",
+  alignItems: "center",
+  flexShrink: 0,
+  flexGrow: 0,
+}
 });

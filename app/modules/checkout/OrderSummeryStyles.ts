@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
   webCheckboxRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
   },
   webCheckboxContainer: {
     padding: 0,
@@ -197,6 +198,7 @@ const styles = StyleSheet.create({
   webCheckboxLabel: {
     fontSize: 14,
     color: colors.black,
+    flex: 1,
   },
   webSubText: {
     fontSize: 12,
@@ -250,6 +252,38 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 4,
+  },
+
+  webAccordionToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    // backgroundColor: colors.lightgrey,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+
+  webAccordionContent: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: colors.lightgrey,
+    borderRadius: 8,
+    maxHeight: 400,
+    overflow: 'scroll',
+  },
+
+  webNoAddressContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  webNoAddressText: {
+    fontSize: 14,
+    color: colors.slateGrey,
+    textAlign: 'center',
   },
 
 });

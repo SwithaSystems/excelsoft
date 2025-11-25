@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     marginTop: 0,
     overflow: "visible",
-    zIndex: 9998, // Lower than search dropdown (10002) to allow dropdown to appear above
+    zIndex: 9998,
   },
   scrollContainer: {
     paddingHorizontal: 16,
@@ -232,6 +232,7 @@ const styles = StyleSheet.create({
   },
   dropdownIcon: {
     marginLeft: 4,
+    marginTop: 4,
   },
   dropdownMenu: {
     position: "absolute",
