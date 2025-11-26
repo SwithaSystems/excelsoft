@@ -148,12 +148,13 @@ const styles = StyleSheet.create({
   },
   webRightSection: {
     flex: 0.4,
-    gap: 20,
+    gap: 8,
   },
   webSectionCard: {
     backgroundColor: colors.white,
     padding: 16,
     borderRadius: 8,
+    marginBottom: 0,
   },
   webSectionTitle: {
     fontSize: 18,
@@ -252,6 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 4,
+    marginTop: 16,
   },
 
   webAccordionToggle: {

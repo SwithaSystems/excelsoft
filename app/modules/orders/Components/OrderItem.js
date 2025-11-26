@@ -110,13 +110,16 @@ function OrderItem(props) {
             {/* Order Details */}
             <View style={styles.webOrderDetails}>
               <Text style={styles.webOrderDetailText}>
-                <Text style={styles.webOrderDetailLabel}>Order ID:</Text> {item.orderId}
+                <Text style={styles.webOrderDetailLabel}>Order ID:</Text>{" "}
+                <Text style={styles.webOrderDetailValue}>{item.orderId}</Text>
               </Text>
               <Text style={styles.webOrderDetailText}>
-                <Text style={styles.webOrderDetailLabel}>Total Items:</Text> {item.totalItems}
+                <Text style={styles.webOrderDetailLabel}>Total Items:</Text>{" "}
+                <Text style={styles.webOrderDetailValue}>{item.totalItems}</Text>
               </Text>
               <Text style={styles.webOrderDetailText}>
-                <Text style={styles.webOrderDetailLabel}>Subtotal:</Text> ${item.subtotal}
+                <Text style={styles.webOrderDetailLabel}>Subtotal:</Text>{" "}
+                <Text style={styles.webOrderDetailValue}>${item.subtotal}</Text>
               </Text>
             </View>
           </View>
@@ -308,10 +311,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.black,
     marginBottom: 1,
-    fontWeight: "bold",
   },
   webOrderDetailLabel: {
     fontWeight: "bold",
+  },
+  webOrderDetailValue: {
+    fontWeight: "normal",
   },
   webRightSection: {
     alignItems: "flex-end",

@@ -14,6 +14,7 @@ import {
   SafeAreaView,
   Platform,
   BackHandler,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderDetailsStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -35,15 +36,21 @@ import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import colors from "../../../constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
   ADMIN_ORDER_DETAIL_SCREEN_TITLE,
   DELIVERY_MODE_HOME,
 } from "../../../constants/stringLiterals";
+import OrderTimeline from "../delivery/Components/OrderTimeline";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
   const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
 
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
@@ -51,6 +58,8 @@ const orderDetailsScreen = () => {
     React.useState<any>(null);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
+  const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
 
   // Use refs to prevent unnecessary re-renders and API calls
   const hasLoadedProducts = useRef(false);
@@ -64,6 +73,29 @@ const orderDetailsScreen = () => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+    };
+  }, []);
+
+  // Load all order statuses
+  useEffect(() => {
+    let isActive = true;
+
+    const getAllOrderStatuses = async () => {
+      if (!isActive || !isMounted.current) return;
+      try {
+        const orderStatuses = await orderService.getAllOrderStatuses();
+        if (isActive && isMounted.current) {
+          setAllOrderStatuses(orderStatuses?.statuses || []);
+        }
+      } catch (err) {
+        console.error("Failed to load order statuses:", err);
+      }
+    };
+
+    getAllOrderStatuses();
+
+    return () => {
+      isActive = false;
     };
   }, []);
 
@@ -234,19 +266,169 @@ const orderDetailsScreen = () => {
   console.log("cartItemsWithDetails", cartItemsWithDetails);
 
   console.log("orderDetails by order ID", orderDetails);
-  // const recommendedProducts = products
-  //   .filter((p) =>
-  //     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-  //   )
-  //   .map((product) => ({
-  //     id: product.id,
-  //     title: product.name,
-  //     rating: product.rating,
-  //     reviews: product.noOfreviews,
-  //     imageUrl: product.image,
-  //     discount: product.discount,
-  //     netPrice: product.netPrice,
-  //   }));
+
+  // Function to get ordered statuses for timeline
+  const getOrderedStatusesForTimeline = (): string[] => {
+    if (!orderDetails || !allOrderStatuses.length) return [];
+
+    const ORDER_STATUS = {
+      ORDER_PLACED: "Order Placed",
+      AWAITING_AGE_VERIFICATION: "Awaiting Age Verification",
+      PREPARING: "Preparing",
+      READY: "Ready",
+      OUT_FOR_DELIVERY: "Out for Delivery",
+      DELIVERED: "Delivered",
+      COLLECTED: "Collected",
+      CANCELLED: "Cancelled",
+      FAILED: "Failed",
+      REJECTED: "Rejected",
+      STOCK_ISSUE: "Stock Issue",
+    } as const;
+
+    const hasAgeRestrictedProducts = (order: any): boolean => {
+      if (!order?.items && !order?.products) return false;
+      const items = order.items || order.products || [];
+      return items.some(
+        (item: any) =>
+          item.isAgeRestricted ||
+          item.ageRestricted ||
+          item.requiresAgeVerification ||
+          item.product?.isAgeRestricted ||
+          item.product?.ageRestricted
+      );
+    };
+
+    const hasAgeRestriction = hasAgeRestrictedProducts(orderDetails);
+    const status = orderDetails?.status;
+
+    let flow: string[] = hasAgeRestriction
+      ? [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.AWAITING_AGE_VERIFICATION,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ]
+      : [
+          ORDER_STATUS.ORDER_PLACED,
+          ORDER_STATUS.PREPARING,
+          ORDER_STATUS.READY,
+          ORDER_STATUS.OUT_FOR_DELIVERY,
+          ORDER_STATUS.DELIVERED,
+        ];
+
+    const isPickupOrder =
+      orderDetails?.pickupMode === "Store Pickup" ||
+      orderDetails?.type === "Curbside";
+
+    if (isPickupOrder) {
+      flow = flow
+        .map((status: any) =>
+          status === ORDER_STATUS.DELIVERED ? ORDER_STATUS.COLLECTED : status
+        )
+        .filter((status: any) => status !== ORDER_STATUS.OUT_FOR_DELIVERY);
+    }
+
+    if (status === ORDER_STATUS.STOCK_ISSUE) {
+      const prepIndex = flow.indexOf(ORDER_STATUS.PREPARING);
+      if (prepIndex !== -1) {
+        flow = flow.slice(0, prepIndex + 1);
+        flow.push(ORDER_STATUS.STOCK_ISSUE);
+      }
+      return flow;
+    }
+
+    const negativeStatuses = [
+      ORDER_STATUS.CANCELLED,
+      ORDER_STATUS.FAILED,
+      ORDER_STATUS.REJECTED,
+    ];
+
+    if (negativeStatuses.includes(status)) {
+      const lastUpdatedIndex =
+        flow.indexOf(orderDetails.lastValidStatus) >= 0
+          ? flow.indexOf(orderDetails.lastValidStatus)
+          : flow.indexOf(ORDER_STATUS.PREPARING);
+
+      const truncatedFlow =
+        lastUpdatedIndex >= 0 ? flow.slice(0, lastUpdatedIndex + 1) : [];
+
+      return [...truncatedFlow, status];
+    }
+
+    return flow.filter((status: any) => allOrderStatuses.includes(status));
+  };
+
+  const displayStatuses = getOrderedStatusesForTimeline();
+
+  // Fetch recommended products from API
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchRecommendedProducts = async () => {
+      if (!isActive || !isMounted.current) return;
+
+      try {
+        const response = await ProductsAPI.getAllProducts(1, 20);
+        if (isActive && isMounted.current && response.data) {
+          // Get random products or products not in current order
+          const orderProductIds = new Set(
+            (orderDetails?.products || []).map((p: any) => p.productId?.toString())
+          );
+          
+          const availableProducts = response.data
+            .filter((product: any) => !orderProductIds.has(product.id?.toString()))
+            .slice(0, 10)
+            .map((product: any) => {
+              // Handle image URL - can be string URI or array
+              let imageUrl;
+              if (product.image) {
+                if (typeof product.image === "string") {
+                  imageUrl = { uri: product.image };
+                } else if (Array.isArray(product.image) && product.image.length > 0) {
+                  const firstImage = product.image[0];
+                  imageUrl = typeof firstImage === "string" ? { uri: firstImage } : firstImage;
+                } else {
+                  imageUrl = product.image;
+                }
+              } else if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+                const firstImage = product.images[0];
+                imageUrl = typeof firstImage === "string" ? { uri: firstImage } : firstImage;
+              } else {
+                imageUrl = require("@/assets/Placeholder.png");
+              }
+
+              return {
+                id: product.id,
+                title: product.name,
+                rating: product.rating || 4.5,
+                reviews: product.noOfreviews || 200,
+                imageUrl: imageUrl,
+                discount: product.discount || 0,
+                netPrice: product.netPrice || product.price || 0,
+              };
+            });
+          
+          setRecommendedProducts(availableProducts);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recommended products:", err);
+        // Fallback to empty array on error
+        if (isActive && isMounted.current) {
+          setRecommendedProducts([]);
+        }
+      }
+    };
+
+    if (orderDetails) {
+      fetchRecommendedProducts();
+    }
+
+    return () => {
+      isActive = false;
+    };
+  }, [orderDetails]);
 
   useEffect(() => {
     const handleHardwareBackPress = () => {
@@ -263,26 +445,213 @@ const orderDetailsScreen = () => {
 
   // Show loading state
   if (isLoadingOrder || !orderDetails) {
+    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+    const HeaderComponent = isTabOrDesktop ? (
+      <BrandHeaderWeb />
+    ) : (
+      <Header
+        headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
+        needResetNavigation={from != "myOrders"}
+      />
+    );
+    const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+
     return (
-      <PageLayout
+      <LayoutComponent
         hasFooter
         hasHeader
         scrollable
-        headerComponent={
-          <Header
-            headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE}
-            needResetNavigation={from != "myOrders"}
-          />
-        }
-        footerComponent={<Footer />}
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent}
       >
         <View style={styles.container}>
           <Text>Loading order details...</Text>
         </View>
-      </PageLayout>
+      </LayoutComponent>
     );
   }
 
+  // Web layout matching the design
+  if (isTabOrDesktop) {
+    const HeaderComponent = <BrandHeaderWeb />;
+    const FooterComponent = <FooterWeb />;
+    
+    return (
+      <>
+        <PageLayoutWeb
+          hasFooter
+          hasHeader
+          scrollable
+          headerComponent={HeaderComponent}
+          footerComponent={FooterComponent}
+        >
+          <View style={styles.container}>
+            <View style={[globalStyles.pt_0]}>
+              {/* Top Section: QR Code and Order Summary */}
+              <View style={styles.webTopSection}>
+                {/* Left: QR Code */}
+                <View style={styles.webQrCard}>
+                  <View style={styles.webQrContainer}>
+                    <QRCodeDisplay
+                      qrValue={orderDetails.orderNumber?.toString()}
+                      size={200}
+                      hideNumber={true}
+                    />
+                    <Text style={styles.webQrNumber}>
+                      QR Number: {orderDetails.orderNumber?.toString()}
+                    </Text>
+                    <Text style={styles.webQrNote}>
+                      *Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Right: Order Summary */}
+                <View style={styles.webStatusCard}>
+                  <View style={styles.orderSummaryItem}>
+                    <Text
+                      style={[
+                        styles.orderSummaryItemText,
+                        globalStyles.fontWeight500,
+                      ]}
+                    >
+                      Status
+                    </Text>
+                    <Text
+                      style={[
+                        styles.orderSummaryItemText,
+                        globalStyles.fontWeight500,
+                      ]}
+                    >
+                      {orderDetails.status}
+                    </Text>
+                  </View>
+                  <View style={styles.orderSummaryItem}>
+                    <Text style={styles.orderSummaryItemText}>
+                      Order Number:{" "}
+                    </Text>
+                    <Text style={styles.orderSummaryItemText}>
+                      {orderDetails.orderNumber}
+                    </Text>
+                  </View>
+                  <View style={styles.orderSummaryItem}>
+                    <Text style={styles.orderSummaryItemText}>
+                      Date Placed:{" "}
+                    </Text>
+                    <Text style={styles.orderSummaryItemText}>
+                      {formattedDate}
+                    </Text>
+                  </View>
+                  <View style={styles.orderSummaryItem}>
+                    <Text style={styles.orderSummaryItemText}>Shipping:</Text>
+                    <Text style={styles.orderSummaryItemText}>
+                      £{orderDetails.shippingCharges?.toFixed(2)}
+                    </Text>
+                  </View>
+                  <View style={styles.orderSummaryItem}>
+                    <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
+                    <Text style={styles.orderSummaryItemText}>
+                      £{orderDetails.totalAmount?.toFixed(2)}
+                    </Text>
+                  </View>
+                  <View style={styles.webDeliverToSection}>
+                    <Text
+                      style={[
+                        globalStyles.fontWeight500,
+                        styles.orderSummaryItemText,
+                      ]}
+                    >
+                      Deliver To:
+                    </Text>
+                    <Text style={styles.orderSummaryItemText}>
+                      Choosen Delivery:{" "}
+                      {orderDetails.pickupMode === DELIVERY_MODE_HOME
+                        ? "Home Delivery"
+                        : orderDetails.pickupMode}
+                    </Text>
+                    {orderDetails.pickupMode === DELIVERY_MODE_HOME &&
+                      shippingAddress_order && (
+                        <Text style={styles.orderSummaryItemText}>
+                          Address:{" "}
+                          {[
+                            shippingAddress_order.name &&
+                              `H.No: ${shippingAddress_order.name}`,
+                            shippingAddress_order.line1,
+                            shippingAddress_order.line2,
+                            shippingAddress_order.city,
+                            shippingAddress_order.state,
+                            shippingAddress_order.postalCode?.toString(),
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </Text>
+                      )}
+                  </View>
+                </View>
+              </View>
+
+              {/* Middle Section: Ordered Items and Tracking Timeline */}
+              <View style={styles.webMiddleSection}>
+                {/* Left: Ordered Items */}
+                <View style={styles.webOrderItemsCard}>
+                  {(cartItemsWithDetails.length > 0
+                    ? cartItemsWithDetails
+                    : orderDetails.products || []
+                  ).map((eachProduct: any, index: number) => (
+                    <CartItem
+                      hideActions={true}
+                      itemContainerStyle={styles.cartItemContainerStyle}
+                      key={`${eachProduct._id}-${eachProduct.productId}-${index}`}
+                      cartItem={eachProduct}
+                    />
+                  ))}
+                </View>
+
+                {/* Right: Order Tracking Timeline */}
+                <View style={styles.webTimelineCard}>
+                  <Text style={styles.webTimelineTitle}>
+                    Track Your Order here:
+                  </Text>
+                  <Text style={styles.webTimelineSubtitle}>
+                    Your Order packed Successfully!! Let's see the Progress!
+                  </Text>
+                  <ScrollView 
+                    style={styles.webTimelineContainer}
+                    contentContainerStyle={styles.webTimelineContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <OrderTimeline
+                      statusList={displayStatuses}
+                      actualStatus={orderDetails?.status}
+                      reason={orderDetails?.reason}
+                      compact={true}
+                    />
+                  </ScrollView>
+                </View>
+              </View>
+
+              {/* Bottom Section: Recommended Products */}
+              {recommendedProducts.length > 0 && (
+                <View style={styles.webBottomSection}>
+                  <RecommendedProductsSlider
+                    recommendedProducts={recommendedProducts}
+                    sectionTitleStyle={[
+                      styles.orderSummaryItemText,
+                      globalStyles.fontWeight500,
+                    ]}
+                    title="Would you like to see these too?"
+                    showAddToCart={false}
+                  />
+                </View>
+              )}
+            </View>
+          </View>
+        </PageLayoutWeb>
+      </>
+    );
+  }
+
+  // Mobile layout (unchanged)
   return (
     <>
       <PageLayout
@@ -399,40 +768,6 @@ const orderDetailsScreen = () => {
                     .join(", ")}
                 </Text>
               )}
-
-            {/* <View>
-              <RecommendedProductsSlider
-                recommendedProducts={recommendedProducts}
-                sectionTitleStyle={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                ]}
-                title="Would you like to see these too?"
-                showAddToCart={false}
-              />
-            </View> */}
-            {/* <View style={styles.buttonContainer}>
-               <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => {
-                    redirectToPage(containers.cancelOrderScreen, {
-                      orderDetails: orderDetails,
-                    });
-                  }}
-                >
-                  <Text style={styles.buttonText}>Request Cancellation</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.requestButton}
-                  onPress={() => {
-                    redirectToPage(containers.returnOrderScreen, {
-                      orderDetails: JSON.stringify(orderDetails),
-                    });
-                  }}
-                >
-                  <Text style={styles.buttonText}>Request Return</Text>
-                </TouchableOpacity> 
-            </View> */}
           </View>
         </View>
       </PageLayout>

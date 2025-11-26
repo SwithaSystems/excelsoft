@@ -57,6 +57,93 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     gap: 16,
   },
+  // Web-specific styles
+  webTopSection: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  webMiddleSection: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+  webBottomSection: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  webCard: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 16,
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  webQrCard: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 16,
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  webStatusCard: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 16,
+    flex: 0.7,
+    marginHorizontal: 8,
+  },
+  webOrderItemsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 16,
+    flex: 1.3,
+    marginHorizontal: 8,
+  },
+  webTimelineCard: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 16,
+    flex: 0.7,
+    marginHorizontal: 8,
+  },
+  webQrContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  webQrNumber: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  webQrNote: {
+    fontSize: 14,
+    color: colors.error,
+    textAlign: "center",
+    marginTop: 8,
+    fontWeight: 500,
+  },
+  webDeliverToSection: {
+    marginTop: 16,
+  },
+  webTimelineTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  webTimelineSubtitle: {
+    fontSize: 14,
+    color: colors.secondaryText,
+    marginBottom: 16,
+  },
+  webTimelineContainer: {
+    marginTop: 8,
+    maxHeight: 350,
+  },
+  webTimelineContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
 });
 
 export default styles;

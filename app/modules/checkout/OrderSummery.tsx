@@ -661,7 +661,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
       {isTabOrDesktop ? (
         // WEB LAYOUT
         <View style={styles.webContainer}>
-          <ScrollView style={{ flex: 1 }}>
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingRight: 0, paddingBottom: 20 }}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+          >
             <Text style={styles.webPageTitle}>Order Details</Text>
 
             <View style={styles.webContentWrapper}>
@@ -930,7 +935,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 </View>
 
                 {/* Place Order Button */}
-                {isWeb && <StripeCardInput />}
+                {!isTabOrDesktop && <StripeCardInput />}
 
                 <Button
                   title="Proceed for Payment"
@@ -959,7 +964,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     }
                   }}
                   style={
-                    isPaymentEnabled ? styles.activeBtn : styles.disabledBtn
+                    isTabOrDesktop 
+                      ? [
+                          styles.webPlaceOrderButton,
+                          !isPaymentEnabled && { backgroundColor: colors.lightgrey }
+                        ]
+                      : (isPaymentEnabled ? styles.activeBtn : styles.disabledBtn)
                   }
                   textStyle={styles.buttonText}
                 />
