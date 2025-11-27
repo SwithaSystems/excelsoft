@@ -1,6 +1,13 @@
 import { EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
-import { View, Text, Alert, DeviceEventEmitter } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  DeviceEventEmitter,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome } from "@expo/vector-icons";
@@ -18,6 +25,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { setUserData } from "@/store/slices/userSlice";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
 import { set } from "date-fns";
 
@@ -33,6 +43,16 @@ const editAccountInformationscreen = () => {
 
   const userData = useSelector((state: RootState) => state.user.user);
   console.log("userData in edit account information", userData);
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
@@ -138,16 +158,20 @@ const editAccountInformationscreen = () => {
   };
 
   return (
-    <PageLayout
-      hasFooter={false}
+    <LayoutComponent
+      hasFooter={isTabOrDesktop}
       hasHeader
-      scrollable
-      headerComponent={
-        <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />
-      }
+      scrollable={!isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
-        <View style={[globalStyles.pt_0]}>
+        <View
+          style={[
+            globalStyles.pt_0,
+            isTabOrDesktop && webStyles.contentWidth,
+          ]}
+        >
           <View style={globalStyles.profilePictureContainer}>
             <Image
               source={
@@ -226,17 +250,51 @@ const editAccountInformationscreen = () => {
             </View>
           </View>
         </View>
-        <View>
-          <Button
-            onPress={() => {
-              handleSave();
-            }}
-            title="Save"
-          />
-        </View>
+        {isTabOrDesktop ? (
+          <View style={webStyles.buttonRow}>
+            <Button
+              primary={false}
+              title="Cancel"
+              onPress={() => redirectToPage(containers.userProfileScreen)}
+              style={webStyles.buttonHalf}
+            />
+            <Button
+              onPress={() => {
+                handleSave();
+              }}
+              title="Save"
+              style={webStyles.buttonHalf}
+            />
+          </View>
+        ) : (
+          <View style={{ marginTop: 16 }}>
+            <Button
+              onPress={() => {
+                handleSave();
+              }}
+              title="Save"
+            />
+          </View>
+        )}
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
 export default editAccountInformationscreen;
+
+const webStyles = StyleSheet.create({
+  contentWidth: {
+    width: "70%",
+    alignSelf: "center",
+  },
+  buttonRow: {
+    width: "70%",
+    alignSelf: "center",
+    flexDirection: "row",
+    columnGap: 16,
+  },
+  buttonHalf: {
+    flex: 1,
+  },
+});

@@ -21,7 +21,6 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import CartItem from "../cart/Components/CartItem";
 import { router, useLocalSearchParams } from "expo-router";
-import RecommendedProductsSlider from "@/app/components/RecommendedProductsSlider";
 import products from "@/data/products";
 import Footer from "@/app/components/Footer";
 import {
@@ -59,7 +58,6 @@ const orderDetailsScreen = () => {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
-  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
 
   // Use refs to prevent unnecessary re-renders and API calls
   const hasLoadedProducts = useRef(false);
@@ -110,10 +108,33 @@ const orderDetailsScreen = () => {
         setIsLoadingOrder(true);
         let orderData_parsed = null;
 
-        if (orderData && typeof orderData === "string") {
-          orderData_parsed = JSON.parse(orderData);
-        } else if (orderId) {
-          orderData_parsed = await orderService.getOrderById(String(orderId));
+        if (orderData) {
+          try {
+            orderData_parsed =
+              typeof orderData === "string"
+                ? JSON.parse(orderData)
+                : orderData;
+          } catch (parseError) {
+            console.error("Failed to parse orderData param:", parseError);
+            orderData_parsed = null;
+          }
+        }
+
+        if (!orderData_parsed && orderId) {
+          // Some flows send the Mongo _id instead of the public orderNumber.
+          try {
+            orderData_parsed = await orderService.getOrderByMongoId(
+              String(orderId)
+            );
+          } catch (mongoErr) {
+            console.warn(
+              "getOrderByMongoId failed, falling back to getOrderById",
+              mongoErr
+            );
+            orderData_parsed = await orderService.getOrderById(
+              String(orderId)
+            );
+          }
         }
 
         if (isActive && isMounted.current && orderData_parsed) {
@@ -362,73 +383,6 @@ const orderDetailsScreen = () => {
 
   const displayStatuses = getOrderedStatusesForTimeline();
 
-  // Fetch recommended products from API
-  useEffect(() => {
-    let isActive = true;
-
-    const fetchRecommendedProducts = async () => {
-      if (!isActive || !isMounted.current) return;
-
-      try {
-        const response = await ProductsAPI.getAllProducts(1, 20);
-        if (isActive && isMounted.current && response.data) {
-          // Get random products or products not in current order
-          const orderProductIds = new Set(
-            (orderDetails?.products || []).map((p: any) => p.productId?.toString())
-          );
-          
-          const availableProducts = response.data
-            .filter((product: any) => !orderProductIds.has(product.id?.toString()))
-            .slice(0, 10)
-            .map((product: any) => {
-              // Handle image URL - can be string URI or array
-              let imageUrl;
-              if (product.image) {
-                if (typeof product.image === "string") {
-                  imageUrl = { uri: product.image };
-                } else if (Array.isArray(product.image) && product.image.length > 0) {
-                  const firstImage = product.image[0];
-                  imageUrl = typeof firstImage === "string" ? { uri: firstImage } : firstImage;
-                } else {
-                  imageUrl = product.image;
-                }
-              } else if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-                const firstImage = product.images[0];
-                imageUrl = typeof firstImage === "string" ? { uri: firstImage } : firstImage;
-              } else {
-                imageUrl = require("@/assets/Placeholder.png");
-              }
-
-              return {
-                id: product.id,
-                title: product.name,
-                rating: product.rating || 4.5,
-                reviews: product.noOfreviews || 200,
-                imageUrl: imageUrl,
-                discount: product.discount || 0,
-                netPrice: product.netPrice || product.price || 0,
-              };
-            });
-          
-          setRecommendedProducts(availableProducts);
-        }
-      } catch (err) {
-        console.error("Failed to fetch recommended products:", err);
-        // Fallback to empty array on error
-        if (isActive && isMounted.current) {
-          setRecommendedProducts([]);
-        }
-      }
-    };
-
-    if (orderDetails) {
-      fetchRecommendedProducts();
-    }
-
-    return () => {
-      isActive = false;
-    };
-  }, [orderDetails]);
 
   useEffect(() => {
     const handleHardwareBackPress = () => {
@@ -486,84 +440,91 @@ const orderDetailsScreen = () => {
           footerComponent={FooterComponent}
         >
           <View style={styles.container}>
-            <View style={[globalStyles.pt_0]}>
+            <View style={[globalStyles.pt_0, styles.webContentWrapper]}>
+              <View style={styles.webHeaderRow}>
+                <Text style={styles.webPageTitle}>Order Details</Text>
+              </View>
               {/* Top Section: QR Code and Order Summary */}
               <View style={styles.webTopSection}>
                 {/* Left: QR Code */}
                 <View style={styles.webQrCard}>
-                  <View style={styles.webQrContainer}>
-                    <QRCodeDisplay
-                      qrValue={orderDetails.orderNumber?.toString()}
-                      size={200}
-                      hideNumber={true}
-                    />
-                    <Text style={styles.webQrNumber}>
-                      QR Number: {orderDetails.orderNumber?.toString()}
-                    </Text>
-                    <Text style={styles.webQrNote}>
-                      *Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof.
-                    </Text>
+                  <View style={styles.webQrContent}>
+                    <View style={styles.webQrContainer}>
+                      <QRCodeDisplay
+                        qrValue={orderDetails.orderNumber?.toString()}
+                        size={isTabOrDesktop ? 165 : 200}
+                        hideNumber={true}
+                      />
+                    </View>
+                    <View style={styles.webQrTextWrapper}>
+                      <Text style={styles.webQrTitle}>
+                        QR Number:{" "}
+                        <Text style={styles.webQrHighlight}>
+                          {orderDetails.orderNumber?.toString()}
+                        </Text>
+                      </Text>
+                      <Text style={styles.webQrDescription}>
+                        Show this QR code to our store personnel during the
+                        pickup.
+                      </Text>
+                      <Text style={styles.webQrInstruction}>
+                        Please carry a valid ID proof for verification.
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
                 {/* Right: Order Summary */}
                 <View style={styles.webStatusCard}>
-                  <View style={styles.orderSummaryItem}>
-                    <Text
-                      style={[
-                        styles.orderSummaryItemText,
-                        globalStyles.fontWeight500,
-                      ]}
-                    >
-                      Status
-                    </Text>
-                    <Text
-                      style={[
-                        styles.orderSummaryItemText,
-                        globalStyles.fontWeight500,
-                      ]}
-                    >
-                      {orderDetails.status}
-                    </Text>
-                  </View>
-                  <View style={styles.orderSummaryItem}>
-                    <Text style={styles.orderSummaryItemText}>
-                      Order Number:{" "}
-                    </Text>
-                    <Text style={styles.orderSummaryItemText}>
-                      {orderDetails.orderNumber}
-                    </Text>
-                  </View>
-                  <View style={styles.orderSummaryItem}>
-                    <Text style={styles.orderSummaryItemText}>
-                      Date Placed:{" "}
-                    </Text>
-                    <Text style={styles.orderSummaryItemText}>
-                      {formattedDate}
-                    </Text>
-                  </View>
-                  <View style={styles.orderSummaryItem}>
-                    <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-                    <Text style={styles.orderSummaryItemText}>
-                      £{orderDetails.shippingCharges?.toFixed(2)}
-                    </Text>
-                  </View>
-                  <View style={styles.orderSummaryItem}>
-                    <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-                    <Text style={styles.orderSummaryItemText}>
-                      £{orderDetails.totalAmount?.toFixed(2)}
-                    </Text>
-                  </View>
+                  {[
+                    {
+                      label: "Status",
+                      value: orderDetails.status,
+                      bold: true,
+                    },
+                    {
+                      label: "Order Number",
+                      value: orderDetails.orderNumber,
+                    },
+                    { label: "Date Placed", value: formattedDate },
+                    {
+                      label: "Shipping",
+                      value: `£${orderDetails.shippingCharges?.toFixed(2)}`,
+                    },
+                    {
+                      label: "Sub Total",
+                      value: `£${orderDetails.totalAmount?.toFixed(2)}`,
+                    },
+                  ].map((row) => (
+                    <View style={styles.orderSummaryItemWeb} key={row.label}>
+                      <Text
+                        style={[
+                          styles.orderSummaryItemTextWeb,
+                          row.bold && globalStyles.fontWeight500,
+                        ]}
+                      >
+                        {row.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.orderSummaryItemTextWeb,
+                          row.bold && globalStyles.fontWeight500,
+                        ]}
+                      >
+                        {row.value}
+                      </Text>
+                    </View>
+                  ))}
                   <View style={styles.webDeliverToSection}>
                     <Text
                       style={[
                         globalStyles.fontWeight500,
-                        styles.orderSummaryItemText,
+                        styles.orderSummaryItemTextWeb,
                       ]}
                     >
                       Deliver To:
                     </Text>
-                    <Text style={styles.orderSummaryItemText}>
+                    <Text style={styles.orderSummaryItemTextWeb}>
                       Choosen Delivery:{" "}
                       {orderDetails.pickupMode === DELIVERY_MODE_HOME
                         ? "Home Delivery"
@@ -571,7 +532,7 @@ const orderDetailsScreen = () => {
                     </Text>
                     {orderDetails.pickupMode === DELIVERY_MODE_HOME &&
                       shippingAddress_order && (
-                        <Text style={styles.orderSummaryItemText}>
+                        <Text style={styles.orderSummaryItemTextWeb}>
                           Address:{" "}
                           {[
                             shippingAddress_order.name &&
@@ -630,20 +591,6 @@ const orderDetailsScreen = () => {
                 </View>
               </View>
 
-              {/* Bottom Section: Recommended Products */}
-              {recommendedProducts.length > 0 && (
-                <View style={styles.webBottomSection}>
-                  <RecommendedProductsSlider
-                    recommendedProducts={recommendedProducts}
-                    sectionTitleStyle={[
-                      styles.orderSummaryItemText,
-                      globalStyles.fontWeight500,
-                    ]}
-                    title="Would you like to see these too?"
-                    showAddToCart={false}
-                  />
-                </View>
-              )}
             </View>
           </View>
         </PageLayoutWeb>

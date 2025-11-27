@@ -1,7 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useState } from "react";
-import { View, Text, Switch } from "react-native";
+import { View, Text, Switch, StyleSheet, useWindowDimensions } from "react-native";
 import colors from "../../../constants/colors";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
@@ -10,6 +10,9 @@ import { Alert } from "react-native";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import styles from "./NotificationsStyles";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
@@ -106,17 +109,30 @@ const notificationsScreen: React.FC = () => {
     }
   };
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={NOTIFICATIONS_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+
   return (
-    <PageLayout
-      hasFooter={false}
+    <LayoutComponent
+      hasFooter={isTabOrDesktop}
       hasHeader
-      scrollable
-      headerComponent={<Header headerText={NOTIFICATIONS_SCREEN_TITLE} />}
+      scrollable={!isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
     >
       <View
         style={[
           // globalStyles.sectionContent,
           globalStyles.pt_0,
+          isTabOrDesktop && webStyles.contentWidth,
         ]}
       >
         <View
@@ -214,8 +230,15 @@ const notificationsScreen: React.FC = () => {
             ))}
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
 export default notificationsScreen;
+
+const webStyles = StyleSheet.create({
+  contentWidth: {
+    width: "70%",
+    alignSelf: "center",
+  },
+});

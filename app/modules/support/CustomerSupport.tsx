@@ -1,23 +1,29 @@
 import { CUSTOMER_SUPPORT_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Linking,
-  TouchableOpacity,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, Linking, TouchableOpacity, useWindowDimensions } from "react-native";
 import styles from "./CustomerSupportStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
 import Footer from "@/app/components/Footer";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const customerSupportScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+
   const handlePhonePress = () => {
     Linking.openURL("tel:+15551234567"); // Replace with your actual phone number
   };
@@ -26,14 +32,19 @@ const customerSupportScreen = () => {
     Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
   };
   return (
-    <PageLayout
+    <LayoutComponent
       hasFooter
       hasHeader
-      scrollable
-      headerComponent={<Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />}
-      footerComponent={<Footer />}
+      scrollable={!isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
     >
-      <View style={[globalStyles.pt_0]}>
+      <View
+        style={[
+          globalStyles.pt_0,
+          isTabOrDesktop && styles.contentWidthWeb,
+        ]}
+      >
         <View>
           <Text style={styles.subtitle}>Please contact us at</Text>
 
@@ -87,7 +98,7 @@ const customerSupportScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

@@ -2,6 +2,11 @@ import { StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   heading: {
     fontSize: 20,
     marginBottom: 16,
@@ -19,13 +24,13 @@ const styles = StyleSheet.create({
   },
   eachOrderItemWeb: {
     flex: 1,
-    minWidth: 280,
-    maxWidth: 360,
+    minWidth: 270,
     // Web/tablet enhanced card look
     backgroundColor: colors.white,
     borderColor: colors.placeholdergrey,
     borderWidth: 1,
     borderRadius: 12,
+    padding: 16,
     // soft shadow for card look (Android uses elevation)
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
