@@ -25,6 +25,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
+  orderSummaryItemWeb: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  orderSummaryItemTextWeb: {
+    marginTop: 0,
+    fontSize: 16,
+  },
   buttonText: {
     color: "white",
     fontSize: 16,
@@ -58,13 +67,29 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   // Web-specific styles
+  webContentWrapper: {
+    marginTop: -8,
+  },
+  webHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  webPageTitle: {
+    fontSize: 35,
+    color: colors.black,
+  },
   webTopSection: {
     flexDirection: "row",
-    marginBottom: 8,
+    marginBottom: 2,
   },
   webMiddleSection: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginTop: -12,
+    marginBottom: 4,
+    alignItems: "stretch",
   },
   webBottomSection: {
     width: "100%",
@@ -87,41 +112,59 @@ const styles = StyleSheet.create({
   webStatusCard: {
     backgroundColor: colors.white,
     borderRadius: 8,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     flex: 0.7,
     marginHorizontal: 8,
   },
   webOrderItemsCard: {
     backgroundColor: colors.white,
     borderRadius: 8,
-    padding: 16,
-    flex: 1.3,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flex: 1,
+    minWidth: 0,
     marginHorizontal: 8,
+    marginTop: -12,
   },
   webTimelineCard: {
     backgroundColor: colors.white,
     borderRadius: 8,
     padding: 16,
     flex: 0.7,
+    minWidth: 0,
     marginHorizontal: 8,
   },
   webQrContainer: {
     alignItems: "center",
     justifyContent: "center",
+    padding: 8,
+    marginRight: 16,
   },
-  webQrNumber: {
-    fontSize: 24,
+  webQrContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  webQrTextWrapper: {
+    flex: 1,
+    minWidth: 0,
+  },
+  webQrTitle: {
+    fontSize: 22,
     fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: "center",
+    marginBottom: 4,
   },
-  webQrNote: {
-    fontSize: 14,
-    color: colors.error,
-    textAlign: "center",
-    marginTop: 8,
-    fontWeight: 500,
+  webQrHighlight: {
+    color: colors.primary,
+  },
+  webQrDescription: {
+    fontSize: 15,
+    color: colors.black,
+    marginBottom: 8,
+  },
+  webQrInstruction: {
+    fontSize: 13,
+    color: colors.secondaryText,
   },
   webDeliverToSection: {
     marginTop: 16,

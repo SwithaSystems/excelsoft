@@ -19,8 +19,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
-import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
@@ -39,6 +42,7 @@ Notifications.setNotificationHandler({
 
 const UserProfileScreen = () => {
   const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const isDesktop = width >= 1024; // Common breakpoint for desktop
   const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
@@ -155,19 +159,28 @@ const UserProfileScreen = () => {
     }
   };
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header
+      headerText={USER_PROFILE_SCREEN_TITLE}
+      needResetNavigation={true}
+    />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="menu" />
+  );
+
   return (
-    <PageLayout
-      hasHeader={true}
-      hasFooter={true}
-      headerComponent={
-        <Header
-          headerText={USER_PROFILE_SCREEN_TITLE}
-          needResetNavigation={true}
-        />
-      }
-      footerComponent={<Footer activeTab="menu" />}
-      scrollable={true}
-      contentPadding={true}
+    <LayoutComponent
+      hasHeader
+      hasFooter
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
+      scrollable
     >
       <View style={{ flex: 1, position: isDesktop ? 'relative' : 'relative' }}>
         <Text style={styles.greeting}>
@@ -300,7 +313,7 @@ const UserProfileScreen = () => {
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

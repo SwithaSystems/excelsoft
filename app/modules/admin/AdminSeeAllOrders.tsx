@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
+  ScrollView,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -168,6 +169,15 @@ const AdminSeeAllOrders = () => {
     );
   };
 
+  // Helper function to sort orders by createdAt (latest first)
+  const sortOrdersByTime = (orders: any[]) => {
+    return [...orders].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // Descending order (latest first)
+    });
+  };
+
   // Filter orders based on active filter
   const getFilteredOrders = () => {
     let filteredORders = allOrders;
@@ -252,7 +262,7 @@ const AdminSeeAllOrders = () => {
       scrollable={isTabOrDesktop ? false : true}
       hideNavItems={true}
     >
-      <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
+      <View style={[globalStyles.pt_0, globalStyles.pb_0, isTabOrDesktop && { flex: 1, flexDirection: 'column' }]}>
         {!isTabOrDesktop && (
           <View>
             <SearchBar
@@ -265,106 +275,116 @@ const AdminSeeAllOrders = () => {
           </View>
         )}
         {isTabOrDesktop && (
-          <View style={{ marginTop: 16, marginBottom: 8 }}>
-            <SearchBar
-            placeholder="Search orders..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-              onSubmitEditing={() => {}}
-              onPress={() => {}}
-              widthPercent={35}
-              height={40}
-          />
-        </View>
-        )}
-
-        <View style={localStyles.badgeContainer}>
-          {statusFilters.map((status) => (
-            <TouchableOpacity
-              key={status}
-              onPress={() => setActiveFilter(status)}
+          <>
+            <View
               style={[
-                localStyles.badge,
+                styles.headerRow,
                 {
-                  backgroundColor:
-                    activeFilter === status ? colors.primary : colors.secondary,
+                  justifyContent: "space-between",
+                  paddingTop: 5,
+                  alignItems: "center",
+                  marginBottom: -5,
+                  marginTop: 0,
                 },
               ]}
             >
-              <Text style={localStyles.badgeText}>{status}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.heading}>
-          WELCOME, Let's go through the orders details!
-        </Text>
-
-        {isTabOrDesktop ? (
-          <View style={localStyles.columnsRow}>
-            {/* Order Placed */}
-            <View style={localStyles.column}>
-              <Text style={localStyles.columnTitle}>Order Placed</Text>
-              <FlatList
-                data={filteredOrders.filter((o: any) =>
-                  ["Order Placed", "OrderPlaced"].includes(o.status)
-                )}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => String(item._id)}
-                contentContainerStyle={{ gap: 16, paddingVertical: 8 }}
+              <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+                See All Orders
+              </Text>
+            </View>
+            <View style={{ marginTop: 16, marginBottom: 8 }}>
+              <SearchBar
+                placeholder="Search orders..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={() => {}}
+                onPress={() => {}}
+                widthPercent={35}
+                height={40}
               />
             </View>
 
-            {/* Pending */}
-            <View style={localStyles.column}>
-              <Text style={localStyles.columnTitle}>Pending</Text>
-              <FlatList
-                data={filteredOrders.filter((o: any) => o.status === "Pending")}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => String(item._id)}
-                contentContainerStyle={{ gap: 16, paddingVertical: 8 }}
-              />
+            <View style={localStyles.badgeContainer}>
+              {statusFilters.map((status) => (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => setActiveFilter(status)}
+                  style={[
+                    localStyles.badge,
+                    {
+                      backgroundColor:
+                        activeFilter === status ? colors.primary : colors.secondary,
+                    },
+                  ]}
+                >
+                  <Text style={localStyles.badgeText}>{status}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            {/* Completed (Delivered/Processed) */}
-            <View style={localStyles.column}>
-              <Text style={localStyles.columnTitle}>Completed</Text>
+            <Text style={styles.heading}>
+              WELCOME, Let's go through the orders details!
+            </Text>
+
+            <View style={[styles.ordersContainer, isTabOrDesktop && { paddingLeft: 0, paddingRight: 0 }, { flex: 1, minHeight: 0, overflow: 'visible' }]}>
               <FlatList
-                data={filteredOrders.filter((o: any) =>
-                  ["Delivered", "Processed", "Completed"].includes(o.status)
-                )}
+                data={sortOrdersByTime(filteredOrders)}
                 renderItem={renderOrderItem}
                 keyExtractor={(item) => String(item._id)}
-                contentContainerStyle={{ gap: 16, paddingVertical: 8 }}
+                numColumns={4}
+                columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
+                contentContainerStyle={{ paddingVertical: 8, paddingBottom: 100 }}
+                showsVerticalScrollIndicator={true}
+                ListEmptyComponent={
+                  <View style={localStyles.emptyContainer}>
+                    <Text style={localStyles.emptyText}>
+                      No orders found for "{activeFilter}"
+                    </Text>
+                  </View>
+                }
               />
+            </View>
+          </>
+        )}
+        {!isTabOrDesktop && (
+          <>
+            <View style={localStyles.badgeContainer}>
+              {statusFilters.map((status) => (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => setActiveFilter(status)}
+                  style={[
+                    localStyles.badge,
+                    {
+                      backgroundColor:
+                        activeFilter === status ? colors.primary : colors.secondary,
+                    },
+                  ]}
+                >
+                  <Text style={localStyles.badgeText}>{status}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-            {/* Cancelled */}
-            <View style={localStyles.column}>
-              <Text style={localStyles.columnTitle}>Cancelled</Text>
+            <Text style={styles.heading}>
+              WELCOME, Let's go through the orders details!
+            </Text>
+
+            <View style={styles.ordersContainer}>
               <FlatList
-                data={filteredOrders.filter((o: any) => o.status === "Cancelled")}
+                data={paginatedData}
                 renderItem={renderOrderItem}
                 keyExtractor={(item) => String(item._id)}
-                contentContainerStyle={{ gap: 16, paddingVertical: 8 }}
+                ListEmptyComponent={
+                  <View style={localStyles.emptyContainer}>
+                    <Text style={localStyles.emptyText}>
+                      No orders found for "{activeFilter}"
+                    </Text>
+                  </View>
+                }
               />
             </View>
-          </View>
-        ) : (
-          <View style={styles.ordersContainer}>
-            <FlatList
-              data={paginatedData}
-              renderItem={renderOrderItem}
-              keyExtractor={(item) => String(item._id)}
-              ListEmptyComponent={
-                <View style={localStyles.emptyContainer}>
-                  <Text style={localStyles.emptyText}>
-                    No orders found for "{activeFilter}"
-                  </Text>
-                </View>
-              }
-            />
-          </View>
+          </>
         )}
       </View>
       {/* </ScrollView>
