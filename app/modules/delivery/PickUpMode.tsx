@@ -2,10 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./PickUpModeStyles";
 import colors from "../../../constants/colors";
@@ -24,6 +22,10 @@ import {
 } from "../../../constants/stringLiterals";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { jsonAxios } from "@/services/axiosConfig";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Footer from "@/app/components/Footer";
 
 // const options = [
 //   {
@@ -109,14 +111,59 @@ const pickUpModescreen = () => {
     .map((mode: any) => modeConfig[mode.name])
     .filter(Boolean);
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={PICKUP_MODE_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer />
+  );
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
-      hasFooter={false}
+      headerComponent={HeaderComponent}
+      hasFooter={isTabOrDesktop}
+      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      <View style={[globalStyles.pt_0, { paddingHorizontal: 20 }]}>
+      {isTabOrDesktop && (
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "300",
+            marginBottom: 20,
+            color: colors.black,
+            textAlign: "center",
+            width: "100%",
+            marginTop: 20,
+          }}
+        >
+          {PICKUP_MODE_SCREEN_TITLE}
+        </Text>
+      )}
+
+      <View
+        style={[
+          globalStyles.pt_0,
+          isTabOrDesktop
+            ? {
+                width: "70%",
+                alignSelf: "center",
+                paddingVertical: 20,
+              }
+            : { paddingHorizontal: 20 },
+        ]}
+      >
+
         {options.map((option: any) => (
           <TouchableOpacity
             key={option.id}
@@ -152,7 +199,7 @@ const pickUpModescreen = () => {
           textStyle={!selected?.id ? styles.buttonText_disabled : {}}
         />
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

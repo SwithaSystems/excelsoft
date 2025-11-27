@@ -6,14 +6,15 @@ import {
   ViewStyle,
   TextStyle,
   ActivityIndicator,
+  StyleProp
 } from "react-native";
 import colors from "../../../constants/colors";
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   primary?: boolean;
   disabled?: boolean;
   loading?: boolean; // 👈 new prop

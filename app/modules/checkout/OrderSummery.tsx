@@ -20,6 +20,7 @@ import {
   FlatList,
   Animated,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderSummeryStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -46,7 +47,6 @@ import { useAppContext } from "@/context/AppContext";
 // import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ProductsAPI } from "@/services/productService";
-import { useWindowDimensions } from "react-native";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
@@ -971,6 +971,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                         ]
                       : (isPaymentEnabled ? styles.activeBtn : styles.disabledBtn)
                   }
+                  
                   textStyle={styles.buttonText}
                 />
               </View>
