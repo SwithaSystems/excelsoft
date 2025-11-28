@@ -8,12 +8,15 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import colors from "@/constants/colors";
 import { categoryService, Category } from "@/services/categoryService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useRoleContext } from "@/context/RoleContext";
+import { useAuth } from "@/context/AuthContext";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 type NavItem = {
   label: string;
@@ -62,9 +65,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   hideNavItems = false,
 }) => {
   const { loading: roleLoading } = useRoleContext();
+  const { logout, isAuthenticated } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [logOutModalOpen, setLogOutModalOpen] = useState(false);
+  const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
   const navItems = !hideNavItems ? userNavItems : [];
 
@@ -119,6 +125,16 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
       });
     }
     setShowDropdown(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setLogOutModalOpen(false);
+      router.replace("/modules/home/Home");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   if (roleLoading || hideNavItems) {
@@ -182,7 +198,30 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
             </View>
           ))}
         </View>
+
+       {isAuthenticated && (
+          <View style={styles.authButtonsContainer}>
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => setLogOutModalOpen(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.white} />
+              <Text style={styles.authButtonText}>Sign Out</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => setDeleteAccountModalOpen(true)}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="delete" size={20} color={colors.white} />
+              <Text style={styles.authButtonText}>Close Account</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
+
 
       {showDropdown && (
         <Pressable
@@ -190,6 +229,29 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           style={styles.overlay}
         />
       )}
+
+      {/* Modals */}
+      <ConfirmationModal
+        onClose={() => setLogOutModalOpen(false)}
+        isModalVisible={logOutModalOpen}
+        text="Are you sure you want to Log out?"
+        title="Log out"
+        submitText="Yes"
+        handleSubmit={handleLogout}
+        cancelText="No"
+        handleCancel={() => setLogOutModalOpen(false)}
+      />
+      
+      <ConfirmationModal
+        onClose={() => setDeleteAccountModalOpen(false)}
+        isModalVisible={deleteAccountModalOpen}
+        title="Delete Account"
+        text="Are you sure you want to delete your account? This action cannot be undone."
+        submitText="Yes"
+        handleSubmit={() => {}}
+        cancelText="No"
+        handleCancel={() => setDeleteAccountModalOpen(false)}
+      />
     </>
   );
 };
@@ -204,6 +266,8 @@ const styles = StyleSheet.create({
     marginTop: 0,
     overflow: "visible",
     zIndex: 9998,
+    flexDirection: "row",
+    alignItems: "center",
   },
   scrollContainer: {
     paddingHorizontal: 16,
@@ -211,6 +275,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 4,
     flexWrap: "wrap",
+    flex: 1,
   },
   itemWrapper: {
     marginRight: 20,
@@ -272,9 +337,27 @@ const styles = StyleSheet.create({
     height: 40,
   },
   overlay: {
-        position: "fixed",
+    position: "fixed",
     inset: 0,
     backgroundColor: "transparent",
     zIndex: 1,
+  },
+  authButtonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 16,
+    gap: 12,
+  },
+  authButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  authButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

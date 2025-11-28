@@ -48,6 +48,7 @@ import { isValidName } from "@/utilities/validations";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useRoleContext } from "@/context/RoleContext";
 
 interface User {
   id: string;
@@ -312,6 +313,8 @@ const editProfileScreen = () => {
       hasFooter={isTabOrDesktop}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <KeyBoardWrapper>
         <View

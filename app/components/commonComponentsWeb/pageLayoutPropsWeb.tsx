@@ -25,6 +25,7 @@ interface PageLayoutWebProps {
   backgroundColor?: string;
   contentPadding?: boolean;
   hideNavItems?: boolean; 
+  userSidebar?: boolean;
 }
 
 export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
@@ -39,6 +40,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   backgroundColor = colors.white,
   contentPadding = true,
   hideNavItems = false,
+  userSidebar = false,
 }) => {
   const { width, height } = useWindowDimensions();
   const { isAdmin, loading } = useRoleContext();
@@ -88,13 +90,16 @@ console.log({isAdmin})
               },
             ]}
           >
-            {sidebarComponent ? (
-              sidebarComponent
-            ) : isAdmin ? (
-              <AdminSidebarWeb />
-            ) : (
-              <UserSidebarWeb />
-            )}
+        {sidebarComponent ? (
+          sidebarComponent
+        ) : userSidebar ? (
+          <UserSidebarWeb />
+        ) : isAdmin ? (
+          <AdminSidebarWeb />
+        ) : (
+          <UserSidebarWeb />
+        )}
+
           </View>
         )}
 

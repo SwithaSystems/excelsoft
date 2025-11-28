@@ -468,7 +468,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           style={styles.profileButton}
           onPress={() => {
             if (isValidUser) {
-              redirectToPage(containers.userProfileScreen);
+              redirectToPage(containers.editProfileScreen);
             } else {
               redirectToPage(containers.signInScreen);
             }
