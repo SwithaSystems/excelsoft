@@ -257,9 +257,9 @@ const styles = StyleSheet.create({
   },
 
   webAccordionToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 16,
     // backgroundColor: colors.lightgrey,
@@ -273,21 +273,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     borderRadius: 8,
     maxHeight: 400,
-    overflow: 'scroll',
+    overflow: "scroll",
   },
 
   webNoAddressContainer: {
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   webNoAddressText: {
     fontSize: 14,
     color: colors.slateGrey,
-    textAlign: 'center',
+    textAlign: "center",
   },
-
+  compactOrderSummary: {
+    padding: 12,
+    marginTop: 0,
+  },
+  compactOrderSummaryHeading: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: colors.black,
+  },
 });
 
 export default styles;

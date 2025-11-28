@@ -661,7 +661,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
       {isTabOrDesktop ? (
         // WEB LAYOUT
         <View style={styles.webContainer}>
-          <ScrollView 
+          <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingRight: 0, paddingBottom: 20 }}
             showsVerticalScrollIndicator={true}
@@ -715,102 +715,113 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   </TouchableOpacity>
                 </View>
 
-              <View style={styles.webSectionCard}>
-                <Text style={styles.webSectionTitle}>Billing Address</Text>
-                
-                {selectedMode === DELIVERY_MODE_HOME && (
-                  <View style={styles.webCheckboxRow}>
-                    <CheckBox
-                      checked={useSameAddress}
-                      onPress={handleSameAddressToggle}
-                      checkedColor={colors.primary}
-                      uncheckedColor={colors.primary}
-                      containerStyle={styles.webCheckboxContainer}
-                    />
-                    <Text style={styles.webCheckboxLabel}>
-                      Set Delivery Address as Billing Address
-                    </Text>
-                  </View>
-                )}
+                <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Billing Address</Text>
 
-                {/* Show selected billing address or address selector */}
-                {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
-                  <View>
-                    {/* Currently Selected Billing Address */}
-                    {selectedBillingAddress && (
-                      <View style={styles.webAddressBox}>
-                        <Text style={styles.webAddressText}>
-                          {`${selectedBillingAddress.name || "Unknown"}, ${
-                            selectedBillingAddress.line1 || ""
-                          }${selectedBillingAddress.line2 ? `, ${selectedBillingAddress.line2}` : ""}, ${
-                            selectedBillingAddress.city || "Unknown City"
-                          }, ${selectedBillingAddress.state || ""} ${
-                            selectedBillingAddress.postalCode || ""
-                          }`}
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* Accordion Toggle */}
-                    <TouchableOpacity
-                      style={styles.webAccordionToggle}
-                      onPress={toggleAccordion}
-                    >
-                      <Text style={styles.webChangeSlotLink}>
-                        {accordionOpen ? "Hide" : "Change"} billing address
+                  {selectedMode === DELIVERY_MODE_HOME && (
+                    <View style={styles.webCheckboxRow}>
+                      <CheckBox
+                        checked={useSameAddress}
+                        onPress={handleSameAddressToggle}
+                        checkedColor={colors.primary}
+                        uncheckedColor={colors.primary}
+                        containerStyle={styles.webCheckboxContainer}
+                      />
+                      <Text style={styles.webCheckboxLabel}>
+                        Set Delivery Address as Billing Address
                       </Text>
-                      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                        <Ionicons
-                          name="chevron-down-circle"
-                          size={20}
-                          color={colors.primary}
-                        />
-                      </Animated.View>
-                    </TouchableOpacity>
+                    </View>
+                  )}
 
-                    {/* Accordion Content - Address List */}
-                    {accordionOpen && (
-                      <View style={styles.webAccordionContent}>
-                        {addressData.length > 0 ? (
-                          <View>
-                            {addressData.map((item) => (
-                              <AddressItem
-                                key={item._id?.toString() || `address-${Math.random()}`}
-                                item={item}
-                                onEdit={handleEdit}
-                                onDelete={handleBillingAddressDelete}
-                                showRadio
-                                isSelected={item._id === selectedId}
-                                onSelect={() => handleSelectBillingAddress(item)}
-                              />
-                            ))}
-                          </View>
-                        ) : (
-                          <View style={styles.webNoAddressContainer}>
-                            <Text style={styles.webNoAddressText}>
-                              No billing addresses found
-                            </Text>
-                          </View>
-                        )}
-                        <Button
-                          onPress={handleAddBillingAddress}
-                          title="Add Billing Address"
-                          style={{ marginTop: 16 }}
-                        />
-                      </View>
-                    )}
-                  </View>
-                )}
+                  {/* Show selected billing address or address selector */}
+                  {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+                    <View>
+                      {/* Currently Selected Billing Address */}
+                      {selectedBillingAddress && (
+                        <View style={styles.webAddressBox}>
+                          <Text style={styles.webAddressText}>
+                            {`${selectedBillingAddress.name || "Unknown"}, ${
+                              selectedBillingAddress.line1 || ""
+                            }${
+                              selectedBillingAddress.line2
+                                ? `, ${selectedBillingAddress.line2}`
+                                : ""
+                            }, ${
+                              selectedBillingAddress.city || "Unknown City"
+                            }, ${selectedBillingAddress.state || ""} ${
+                              selectedBillingAddress.postalCode || ""
+                            }`}
+                          </Text>
+                        </View>
+                      )}
 
-                {/* Show message if using same address */}
-                {selectedMode === DELIVERY_MODE_HOME && useSameAddress && (
-                  <View style={styles.webAddressBox}>
-                    <Text style={styles.webAddressText}>
-                      Same as delivery address
-                    </Text>
-                  </View>
-                )}
-              </View>
+                      {/* Accordion Toggle */}
+                      <TouchableOpacity
+                        style={styles.webAccordionToggle}
+                        onPress={toggleAccordion}
+                      >
+                        <Text style={styles.webChangeSlotLink}>
+                          {accordionOpen ? "Hide" : "Change"} billing address
+                        </Text>
+                        <Animated.View
+                          style={{ transform: [{ rotate: spin }] }}
+                        >
+                          <Ionicons
+                            name="chevron-down-circle"
+                            size={20}
+                            color={colors.primary}
+                          />
+                        </Animated.View>
+                      </TouchableOpacity>
+
+                      {/* Accordion Content - Address List */}
+                      {accordionOpen && (
+                        <View style={styles.webAccordionContent}>
+                          {addressData.length > 0 ? (
+                            <View>
+                              {addressData.map((item) => (
+                                <AddressItem
+                                  key={
+                                    item._id?.toString() ||
+                                    `address-${Math.random()}`
+                                  }
+                                  item={item}
+                                  onEdit={handleEdit}
+                                  onDelete={handleBillingAddressDelete}
+                                  showRadio
+                                  isSelected={item._id === selectedId}
+                                  onSelect={() =>
+                                    handleSelectBillingAddress(item)
+                                  }
+                                />
+                              ))}
+                            </View>
+                          ) : (
+                            <View style={styles.webNoAddressContainer}>
+                              <Text style={styles.webNoAddressText}>
+                                No billing addresses found
+                              </Text>
+                            </View>
+                          )}
+                          <Button
+                            onPress={handleAddBillingAddress}
+                            title="Add Billing Address"
+                            style={{ marginTop: 16 }}
+                          />
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Show message if using same address */}
+                  {selectedMode === DELIVERY_MODE_HOME && useSameAddress && (
+                    <View style={styles.webAddressBox}>
+                      <Text style={styles.webAddressText}>
+                        Same as delivery address
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 {/* Substitutions Section */}
                 {/* <View style={styles.webSectionCard}>
                   <Text style={styles.webSectionTitle}>Substitutions</Text>
@@ -835,11 +846,11 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 </View> */}
 
                 {/* Order Details Section */}
-                <View style={styles.webSectionCard}>
-                  <Text style={styles.webSectionTitle}>Order Details</Text>
+                {/* <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Order Details</Text> */}
 
-                  {/* Table Header */}
-                  <View style={styles.webTableHeader}>
+                {/* Table Header */}
+                {/* <View style={styles.webTableHeader}>
                     <Text style={[styles.webTableCell, { flex: 2 }]}>
                       Item Name
                     </Text>
@@ -859,10 +870,10 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     >
                       Price
                     </Text>
-                  </View>
+                  </View> */}
 
-                  {/* Table Rows */}
-                  {cartItems.map((item: any) => (
+                {/* Table Rows */}
+                {/* {cartItems.map((item: any) => (
                     <View key={item.id} style={styles.webTableRow}>
                       <Text style={[styles.webTableCell, { flex: 2 }]}>
                         {item.name}
@@ -884,10 +895,10 @@ Contact Number: ${pickupAddress.phone || ""}`;
                         {item.discount}$
                       </Text>
                     </View>
-                  ))}
+                  ))} */}
 
-                  {/* Summary Rows */}
-                  <View style={styles.webSummaryRow}>
+                {/* Summary Rows */}
+                {/* <View style={styles.webSummaryRow}>
                     <Text style={styles.webSummaryLabel}>Total Price</Text>
                     <Text style={styles.webSummaryValue}>
                       {cartItems.reduce(
@@ -931,11 +942,17 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       ) + 3}
                       $
                     </Text>
-                  </View>
-                </View>
+                  </View> */}
+                {/* </View>  */}
 
+                {/* Order Summary */}
+                <OrderSummary
+                  cartItems={cartItems}
+                  containerStyle={styles.compactOrderSummary}
+                  sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                />
                 {/* Place Order Button */}
-                {!isTabOrDesktop && <StripeCardInput />}
+                {isTabOrDesktop && <StripeCardInput />}
 
                 <Button
                   title="Proceed for Payment"
@@ -964,14 +981,17 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     }
                   }}
                   style={
-                    isTabOrDesktop 
+                    isTabOrDesktop
                       ? [
                           styles.webPlaceOrderButton,
-                          !isPaymentEnabled && { backgroundColor: colors.lightgrey }
+                          !isPaymentEnabled && {
+                            backgroundColor: colors.lightgrey,
+                          },
                         ]
-                      : (isPaymentEnabled ? styles.activeBtn : styles.disabledBtn)
+                      : isPaymentEnabled
+                      ? styles.activeBtn
+                      : styles.disabledBtn
                   }
-                  
                   textStyle={styles.buttonText}
                 />
               </View>
@@ -1133,7 +1153,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   </Text>
                 </View>
               </View>
-                                      
+
               <View style={[styles.section, globalStyles.mb_0]}>
                 <Text style={styles.sectionHeading}>Order Details</Text>
                 <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
