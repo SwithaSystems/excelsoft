@@ -39,23 +39,25 @@ const userNavItems: NavItem[] = [
     label: "Home",
     onPress: () => redirectToPage(containers.homeScreen),
   },
-  {
-    label: "Offers",
-    onPress: () => redirectToPage(containers.offersScreen),
-  },
+  // {
+  //   label: "Offers",
+  //   onPress: () => redirectToPage(containers.offersScreen),
+  // },
   {
     label: "Feedback",
     onPress: () => redirectToPage(containers.feedbackScreen),
   },
-  {
-    label: "Re-order",
-    // onPress: () => redirectToPage(containers.reorderScreen),
-  },
+  // {
+  //   label: "Re-order",
+  //    onPress: () => redirectToPage(containers.reorderScreen),
+  // },
   {
     label: "Customer Service",
+    onPress: () => redirectToPage(containers.customerSupportScreen),
   },
   {
     label: "My Accounts",
+    onPress: () => redirectToPage(containers.editProfileScreen),
   },
 ];
 

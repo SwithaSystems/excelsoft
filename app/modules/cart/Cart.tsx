@@ -501,6 +501,7 @@ const CartScreen = () => {
                       width: "50%",
                       marginHorizontal: "auto",
                       paddingBottom: 16,
+                      marginTop: 16,
                     }}
                   >
                     <Button

@@ -551,7 +551,7 @@ const HomeDeliveryScreen = () => {
       headerComponent={HeaderComponent}
       hasFooter={isTabOrDesktop}
       footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
-      scrollable={false}
+      scrollable={true}
     >
       <View
         style={[
@@ -562,7 +562,7 @@ const HomeDeliveryScreen = () => {
             alignSelf: "center",
             paddingVertical: 20,
           }
-          : { paddingHorizontal: 20 },
+          : { paddingHorizontal: 0 },
         ]}
       >
       <KeyBoardWrapper>
@@ -719,7 +719,7 @@ const HomeDeliveryScreen = () => {
                     name="add-circle-outline"
                     size={16}
                     color={colors.primary}
-                    styles={{marginLeft: 4, marginBottom: 4}}
+                    styles={{marginLeft: 4, marginBottom: 5}}
                   />
                   </Text>
                 </View>

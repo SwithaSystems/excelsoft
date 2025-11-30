@@ -160,7 +160,7 @@ const pickUpModescreen = () => {
                 alignSelf: "center",
                 paddingVertical: 20,
               }
-            : { paddingHorizontal: 20 },
+            : { paddingHorizontal: 0 },
         ]}
       >
 

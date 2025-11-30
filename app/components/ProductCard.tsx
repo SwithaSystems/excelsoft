@@ -173,12 +173,12 @@ const ProductCard = ({
         <View style={styles.priceContainer}>
           <Text style={[styles.discount, { fontSize: priceFontSize }]}>
             {CurrencySymbol}
-            {netPrice - discount}
+            {(netPrice - discount).toFixed(2)}
           </Text>
-          {netPrice > discount && (
+          {discount > 0 && (
             <Text style={[styles.netPrice, { fontSize: isTabOrDesktop ? 12 : 14 }]}>
               {CurrencySymbol}
-              {netPrice}
+              {Number(netPrice).toFixed(2)}
             </Text>
           )}
         </View>

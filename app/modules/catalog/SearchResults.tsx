@@ -9,7 +9,6 @@ import {
   View,
   Text,
   FlatList,
-  SafeAreaView,
   ActivityIndicator,
   useWindowDimensions,
   TouchableOpacity,

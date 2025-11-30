@@ -1156,7 +1156,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
               <View style={[styles.section, globalStyles.mb_0]}>
                 <Text style={styles.sectionHeading}>Order Details</Text>
-                <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
+                <View style={[globalStyles.pl_3]}>
                   {cartItems.map((eachCartItem: any) => {
                     return (
                       <CartItem
@@ -1176,7 +1176,10 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 />
               </View>
             </View>
-            <View style={{ paddingHorizontal: 24 }}>
+            <Text style={styles.noteText}>
+              *please select a billing address before proceeding to payment
+            </Text>
+            <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
               <Button
                 title="Proceed for Payment"
                 disabled={!isPaymentEnabled}

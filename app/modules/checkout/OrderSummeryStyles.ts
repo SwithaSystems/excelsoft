@@ -297,6 +297,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: colors.black,
   },
+  noteText: {
+    fontSize: 12,
+    color: colors.errorText,
+    fontStyle: "italic",
+    marginTop: 8,
+  },
 });
 
 export default styles;
