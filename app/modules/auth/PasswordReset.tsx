@@ -6,6 +6,7 @@ import {
   TextInput,
   Alert,
   SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./PasswordResetStyles";
 import Header from "../../components/Header";
@@ -21,6 +22,8 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const passwordResetScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const { phoneNumber } = useLocalSearchParams();
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,13 +79,22 @@ const passwordResetScreen = () => {
       hasFooter={false}
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
+      headerComponent={
+        <Header 
+          headerText={CHANGE_PASSWORD_SCREEN_TITLE}
+          headerStyle={isTabOrDesktop ? styles.passwordResetHeaderStyle : undefined}
+          headerTitleStyle={isTabOrDesktop ? styles.passwordResetHeaderTitle : undefined}
+        />
+      }
     >
       {" "}
       <KeyBoardWrapper>
         {/* <View style={styles.container}> */}
         {/* <Header headerText={" Reset Your Password"} /> */}
-        <View style={styles.sectionContainer}>
+        <View style={[
+          styles.sectionContainer,
+          isTabOrDesktop && styles.sectionContainerWeb
+        ]}>
           <Text style={styles.label}>Password</Text>
           <TextInput
             style={[
@@ -95,7 +107,10 @@ const passwordResetScreen = () => {
             onChangeText={setPassword}
           />
           {errors.password && (
-            <Text style={globalStyles.errorText}>{errors.password}</Text>
+            <Text style={[
+              globalStyles.errorText,
+              isTabOrDesktop && styles.errorTextDesktop
+            ]}>{errors.password}</Text>
           )}
           <Text style={styles.label}>Confirm Password</Text>
           <TextInput
@@ -109,7 +124,10 @@ const passwordResetScreen = () => {
             onChangeText={setConfirmPassword}
           />
           {errors.confirmPassword && (
-            <Text style={globalStyles.errorText}>{errors.confirmPassword}</Text>
+            <Text style={[
+              globalStyles.errorText,
+              isTabOrDesktop && styles.errorTextDesktop
+            ]}>{errors.confirmPassword}</Text>
           )}
           <Button
             title="Reset Password"

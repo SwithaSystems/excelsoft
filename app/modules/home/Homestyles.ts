@@ -110,4 +110,18 @@ export default StyleSheet.create({
     textDecorationLine: "line-through",
     marginLeft: 8,
   },
+  finalPrice: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.primary,
+    marginRight: 6,
+  },
+
+  mrpStriked: {
+    fontSize: 14,
+    color: colors.darkGray,
+    textDecorationLine: "line-through",
+  },
+
+
 });

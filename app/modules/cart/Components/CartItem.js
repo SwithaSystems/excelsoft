@@ -30,6 +30,7 @@ function CartItem(props) {
   console.log("props", props);
 
   const getImageSource = () => {
+    const placeholder = require("../../../../assets/Placeholder.png");
     // Check if item has image as a string (direct URL)
     if (item.image && typeof item.image === "string") {
       return { uri: item.image };
@@ -48,7 +49,7 @@ function CartItem(props) {
         : { uri: item.imageUrl }; // URL string
     }
     // Fallback
-    return null;
+    return placeholder;
   };
 
   const getItemName = () => {

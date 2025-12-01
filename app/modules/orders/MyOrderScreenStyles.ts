@@ -5,6 +5,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
   },
+  yourLastOrdersWeb: {
+    fontSize: 14,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
 });
 
 export default styles;

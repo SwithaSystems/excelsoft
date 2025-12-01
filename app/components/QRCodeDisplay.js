@@ -5,22 +5,25 @@ import QRCode from "react-qr-code";
 
 const QRCodeDisplay = (props) => {
   const qrValue = "5555";
+  const hideNumber = props.hideNumber || false;
 
   return (
     <>
       {props.qrValue ? (
         <View style={styles.container}>
           <QRCode value={props.qrValue.toString()} size={props.size || 200} />
-          <Text
-            style={{
-              fontWeight: 600,
-              fontSize: 36,
-              marginTop: 8,
-              marginBottom: 16,
-            }}
-          >
-            {props.qrValue}
-          </Text>
+          {!hideNumber && (
+            <Text
+              style={{
+                fontWeight: 600,
+                fontSize: 36,
+                marginTop: 8,
+                marginBottom: 16,
+              }}
+            >
+              {props.qrValue}
+            </Text>
+          )}
           {props.noteText && (
             <Text style={styles.noteText}>{props.noteText}</Text>
           )}

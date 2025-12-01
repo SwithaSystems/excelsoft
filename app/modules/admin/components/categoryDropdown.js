@@ -88,7 +88,8 @@ const styles = {
     color: "#333",
   },
   placeholderText: {
-    color: "#999",
+    color: colors.slateGrey,
+    fontSize: 14,
   },
   arrow: {
     fontSize: 12,

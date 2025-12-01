@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
     height: "80%",
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: colors.black,
     textAlign: "center",
-    paddingVertical: 8,
+    paddingVertical: 5,
     backgroundColor: colors.secondary,
   },
 });

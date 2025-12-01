@@ -11,6 +11,8 @@ import colors from "../../constants/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Carousel from "react-native-reanimated-carousel";
+import { Platform } from "react-native";
+import CarouselWeb from "./commonComponentsWeb/carousal";
 
 const { width } = Dimensions.get("window");
 
@@ -45,6 +47,7 @@ function HeroBanner({
   ];
 
   const renderBanner = bannerData.length > 0 ? bannerData : defaultBannerData;
+  const isWeb = Platform.OS === "web";
 
   const handlePress = (item, index) => {
     if (onBannerPress) {
@@ -58,9 +61,62 @@ function HeroBanner({
     return null;
   }
 
+  const getImageSource = (image) => {
+    // If it's a local require (number type in React Native)
+    if (typeof image === "number") {
+      return image;
+    }
+    // If it's already an object with uri
+    if (typeof image === "object" && image.uri) {
+      return image;
+    }
+    // If it's a string (URL), wrap it in uri object
+    if (typeof image === "string") {
+      return { uri: image };
+    }
+    return image;
+  };
+
   return (
     <>
-      <Carousel
+      {isWeb ? (
+        <CarouselWeb
+          data={renderBanner}
+          width={bannerWidth}
+          height={height}
+          autoPlay={autoPlay}
+          autoPlayInterval={autoPlayInterval}
+          loop={loop}
+          borderRadius={borderRadius}
+          showIndicators={false} // indicators handled by your HeroBanner below
+          renderItemExtras={(item, index) => null}
+        />
+      ) : (
+        <Carousel
+          width={bannerWidth}
+          height={height}
+          data={renderBanner}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              onPress={() => handlePress(item, index)}
+              style={styles.bannerWrapper}
+            >
+              <Image
+                source={getImageSource(item.image)}
+                style={[styles.bannerImage, { height, borderRadius }]}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
+          onSnapToItem={setCurrentIndex}
+          scrollAnimationDuration={scrollAnimationDuration}
+          autoPlay={autoPlay}
+          autoPlayInterval={autoPlayInterval}
+          loop={loop}
+        />
+      )}
+
+      {/* <Carousel
         width={bannerWidth}
         height={height}
         data={renderBanner}
@@ -70,8 +126,15 @@ function HeroBanner({
             style={styles.bannerWrapper}
           >
             <Image
-              source={item.image}
+              source={getImageSource(item.image) || item.image}
               style={[styles.bannerImage, { height, borderRadius }]}
+              resizeMode="cover"
+              onError={(error) => {
+                console.log("Image load error:", error.nativeEvent.error);
+              }}
+              onLoad={() => {
+                console.log("Image loaded successfully:", item.image);
+              }}
             />
           </TouchableOpacity>
         )}
@@ -98,7 +161,7 @@ function HeroBanner({
         //   loop
         //   autoPlayInterval={5000}
         //   autoPlay
-      />
+      /> */}
 
       {/* <View style={styles.indicatorContainer}>
         {bannerData.map((banner, index) => {

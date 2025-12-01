@@ -32,6 +32,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     display: "flex",
   },
+  contentWidthWeb: {
+    width: "70%",
+    alignSelf: "center",
+  },
 });
 
 export default styles;

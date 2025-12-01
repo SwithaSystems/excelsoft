@@ -19,6 +19,8 @@ import {
   ViewStyle,
   DeviceEventEmitter,
   TextInput,
+  StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
@@ -43,6 +45,10 @@ import {
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
 import { isValidName } from "@/utilities/validations";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useRoleContext } from "@/context/RoleContext";
 
 interface User {
   id: string;
@@ -73,6 +79,16 @@ const editProfileScreen = () => {
   const [lastNameError, setLastNameError] = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={EDIT_PROFILE_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
@@ -291,16 +307,26 @@ const editProfileScreen = () => {
   };
 
   return (
-    <PageLayout
+    <LayoutComponent
       scrollable={false}
       hasHeader
-      hasFooter={false}
-      headerComponent={<Header headerText={EDIT_PROFILE_SCREEN_TITLE} />}
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <KeyBoardWrapper>
-        <View style={globalStyles.container as ViewStyle}>
+        <View
+          style={[
+            globalStyles.container as ViewStyle,
+            isTabOrDesktop && webStyles.contentWidth,
+          ]}
+        >
           <ScrollView>
-            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
+            <View
+              style={[globalStyles.sectionContent, globalStyles.pt_0]}
+            >
               {/* Profile Picture */}
               <View style={globalStyles.profilePictureContainer}>
                 <Image
@@ -398,9 +424,25 @@ const editProfileScreen = () => {
             </View>
           </ScrollView>
         </View>
-        <View>
-          <Button onPress={handleEditProfile} title="Save" />
-        </View>
+        {isTabOrDesktop ? (
+          <View style={webStyles.buttonRow}>
+            <Button
+              primary={false}
+              title="Cancel"
+              onPress={() => redirectToPage(containers.userProfileScreen)}
+              style={webStyles.buttonHalf}
+            />
+            <Button
+              onPress={handleEditProfile}
+              title="Save"
+              style={webStyles.buttonHalf}
+            />
+          </View>
+        ) : (
+          <View style={{ marginTop: 16 }}>
+            <Button onPress={handleEditProfile} title="Save" />
+          </View>
+        )}
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
           mode="date"
@@ -411,8 +453,24 @@ const editProfileScreen = () => {
           onCancel={hideDatePicker}
         />
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
 export default editProfileScreen;
+
+const webStyles = StyleSheet.create({
+  contentWidth: {
+    width: "70%",
+    alignSelf: "center",
+  },
+  buttonRow: {
+    width: "70%",
+    alignSelf: "center",
+    flexDirection: "row",
+    columnGap: 16,
+  },
+  buttonHalf: {
+    flex: 1,
+  },
+});

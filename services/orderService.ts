@@ -1,5 +1,5 @@
 // import axiosInstance from "./axiosConfig";
-import { get } from "axios";
+// import { get } from "axios";
 import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {

@@ -3,16 +3,13 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
   TextInput,
-  SafeAreaView,
+  TouchableOpacity,
+  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import styles from "./AppReviewStyles";
 import Header from "../../components/Header";
-import { ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/app/components/ProductStars";
 import containers from "@/containers";
@@ -20,19 +17,38 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const appReviewScreen = () => {
   const [rating, setRating] = useState(0);
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={APP_REVIEW_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
 
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      hasFooter={false}
-      scrollable
-      headerComponent={<Header headerText={APP_REVIEW_SCREEN_TITLE} />}
+      hasFooter={isTabOrDesktop}
+      scrollable={!isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
+        <View
+          style={[
+            styles.reviewContainer,
+            isTabOrDesktop && styles.reviewContainerWeb,
+          ]}
+        >
         {/* <View style={styles.container}>
           <Header
             headerText="Feedback"
@@ -107,9 +123,10 @@ const appReviewScreen = () => {
         </TouchableOpacity>
         {/* </ScrollView> */}
         {/* </View> */}
+        </View>
       </KeyBoardWrapper>
       {/* </SafeAreaView> */}
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

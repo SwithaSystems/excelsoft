@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "Node16",
+    "module": "esnext",
     "lib": [
       "es6"
     ],
@@ -10,7 +10,7 @@
     "noEmit": true,
     "isolatedModules": true,
     "strict": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "bundler",
     "baseUrl": "./",
     "paths": {
       "@/*": [
@@ -27,8 +27,11 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "app/welcome/welcomeScreen.jsx"
-, "app/modules/admin/components/categoryDropdown.js", "app/modules/admin/components/categoryDropdown.js"  ],
+    "app/welcome/welcomeScreen.jsx", 
+    "app/modules/admin/components/categoryDropdown.js", 
+    "app/modules/admin/components/categoryDropdown.js", 
+    "metro.config.js"  
+  ],
   "exclude": [
     "node_modules",
     "babel.config.js",

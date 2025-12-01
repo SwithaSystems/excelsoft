@@ -66,6 +66,131 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
   },
+  // Web-specific styles
+  webContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingTop: 16,
+  },
+  resultsHeaderContainerWeb: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 0,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  resultsHeaderWeb: {
+    paddingHorizontal: 0,
+    paddingVertical: 16,
+    marginBottom: 8,
+  },
+  resultsTitleWeb: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colors.black,
+    flex: 1,
+  },
+  filterSortContainerWeb: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 12,
+  },
+  filterButtonWeb: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.secondary,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+    gap: 8,
+  },
+  filterButtonTextWeb: {
+    fontSize: 14,
+    color: colors.black,
+    fontWeight: "500",
+  },
+  sortButtonWeb: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.secondary,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+    gap: 8,
+  },
+  sortButtonTextWeb: {
+    fontSize: 14,
+    color: colors.black,
+    fontWeight: "500",
+  },
+  modalOverlayWeb: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  sortDropdownWeb: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    paddingVertical: 8,
+    minWidth: 200,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  sortOptionWeb: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  activeSortOptionWeb: {
+    backgroundColor: colors.secondary,
+  },
+  sortOptionTextWeb: {
+    fontSize: 14,
+    color: colors.black,
+  },
+  activeSortOptionTextWeb: {
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  loadingFooter: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  productsContainerWeb: {
+    flex: 1,
+    width: "100%",
+  },
+  listContainerWeb: {
+    padding: 0,
+    paddingTop: 0,
+  },
+  productsGridWeb: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    justifyContent: "flex-start",
+  },
+  rowWeb: {
+    justifyContent: "flex-start",
+    marginBottom: 16,
+    gap: 16,
+  },
+  productItemWeb: {
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
 });
 
 export default styles;
