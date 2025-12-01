@@ -192,7 +192,7 @@ function OrderItem(props) {
 const styles = StyleSheet.create({
   orderContainer: {
     marginBottom: 24,
-    backgroundColor: colors.paleBlue,
+    backgroundColor: colors.secondary,
     padding: 12,
     borderRadius: 10,
     borderWidth: 0.5,
