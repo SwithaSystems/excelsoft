@@ -404,22 +404,6 @@ const CartScreen = () => {
                       stockAvailable={stockAvailable[eachCartItem._id] || 0}
                     />
                   ))}
-
-                  {/* Saved for Later */}
-                  {savedForLaterItems.length > 0 && (
-                    <SavedLaterItem
-                      savedForLaterItems={savedForLaterItems}
-                      sectionHeadingStyle={styles.sectionHeading}
-                      stockAvailable={stockAvailable}
-                      handleDelete={(item: any) => {
-                        dispatch(removeFromSavedForLaterItems(item.id));
-                      }}
-                      handleMoveToCart={(item: any) => {
-                        dispatch(addToCart(item));
-                        dispatch(removeFromSavedForLaterItems(item.id));
-                      }}
-                    />
-                  )}
                 </View>
 
                 {/* Right Column: Order Details, Place Order, Similar Products */}
@@ -439,11 +423,25 @@ const CartScreen = () => {
                       disabled={isPlacingOrder}
                     />
                   </View>
-
-                  {/* Similar Products - Hidden for web */}
                 </View>
               </View>
             )}
+                {/* Saved for Later */}
+                  {savedForLaterItems.length > 0 && (
+                    <SavedLaterItem
+                      savedForLaterItems={savedForLaterItems}
+                      sectionHeadingStyle={styles.sectionHeading}
+                      stockAvailable={stockAvailable}
+                      handleDelete={(item: any) => {
+                        dispatch(removeFromSavedForLaterItems(item.id));
+                      }}
+                      handleMoveToCart={(item: any) => {
+                        dispatch(addToCart(item));
+                        dispatch(removeFromSavedForLaterItems(item.id));
+                      }}
+                    />
+                  )}
+
           </View>
 
           <ConfirmationModal
@@ -464,8 +462,10 @@ const CartScreen = () => {
         <View style={[globalStyles.container]}>
           <ScrollView>
             <View style={[globalStyles.pt_0]}>
+
+              {/* MOBILE CART SECTION */}
               {cartItems.length === 0 ? (
-                // Empty cart UI...
+                // Empty cart UI
                 <View style={styles.emptyCartContainer}>
                   <Ionicons
                     name="cart"
@@ -487,6 +487,7 @@ const CartScreen = () => {
                 </View>
               ) : (
                 <>
+                  {/* Cart Items */}
                   {cartItems.map((eachCartItem: any) => (
                     <CartItem
                       handleDelete={handleDelete}
@@ -495,7 +496,11 @@ const CartScreen = () => {
                       stockAvailable={stockAvailable[eachCartItem._id] || 0}
                     />
                   ))}
+
+                  {/* Order Summary */}
                   <OrderSummary cartItems={cartItems} />
+
+                  {/* Place Order */}
                   <View
                     style={{
                       width: "50%",
@@ -510,29 +515,29 @@ const CartScreen = () => {
                       disabled={isPlacingOrder}
                     />
                   </View>
-
-                  {savedForLaterItems.length > 0 && (
-                    <SavedLaterItem
-                      savedForLaterItems={savedForLaterItems}
-                      sectionHeadingStyle={styles.sectionHeading}
-                      stockAvailable={stockAvailable}
-                      handleDelete={(item: any) => {
-                        dispatch(removeFromSavedForLaterItems(item.id));
-                      }}
-                      handleMoveToCart={(item: any) => {
-                        dispatch(addToCart(item));
-                        dispatch(removeFromSavedForLaterItems(item.id));
-                      }}
-                    />
-                  )}
                 </>
               )}
+
+              {savedForLaterItems.length > 0 && (
+                <SavedLaterItem
+                  savedForLaterItems={savedForLaterItems}
+                  sectionHeadingStyle={styles.sectionHeading}
+                  stockAvailable={stockAvailable}
+                  handleDelete={(item: any) => {
+                    dispatch(removeFromSavedForLaterItems(item.id));
+                  }}
+                  handleMoveToCart={(item: any) => {
+                    dispatch(addToCart(item));
+                    dispatch(removeFromSavedForLaterItems(item.id));
+                  }}
+                />
+              )}
+
             </View>
 
+            {/* CONFIRMATION MODAL */}
             <ConfirmationModal
-              onClose={() => {
-                setIsModalVisible(false);
-              }}
+              onClose={() => setIsModalVisible(false)}
               isModalVisible={isModalVisible}
               title="Delete Product"
               text="Are you sure you want to delete this? You can save this item for later too."
@@ -544,6 +549,7 @@ const CartScreen = () => {
           </ScrollView>
         </View>
       )}
+
     </LayoutComponent>
   );
 };

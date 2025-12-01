@@ -42,6 +42,7 @@ import styles from "./ProductDetailStyles";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import CurrencySymbol from "@/constants/CurrencySymbol";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -214,25 +215,6 @@ const ProductDetailScreen = () => {
     <Footer/>
   );
 
-
-  // Web Layout
-  // if (isWeb) {
-  //   return (
-  //     <PageLayout
-  //       scrollable
-  //       hasHeader
-  //       hasFooter
-  //       headerComponent={<Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />}
-  //       footerComponent={<Footer />}
-  //     >
-  //       <View style={styles.webContainer}>
-          
-  //       </View>
-  //     </PageLayout>
-  //   );
-  // }
-
-  // Mobile Layout (Original)
   return (
   <LayoutComponent
     scrollable
@@ -425,7 +407,7 @@ const ProductDetailScreen = () => {
                       Toast.show({
                         type: "customToast",
                         text1: "Product added successfully!",
-                        text2: `${product.name} - ${product.discount}`,
+                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
                         visibilityTime: 1000,
                         autoHide: true,
                         onPress: () => {
@@ -629,7 +611,7 @@ const ProductDetailScreen = () => {
                     Toast.show({
                       type: "customToast",
                       text1: "Product added successfully!",
-                      text2: `${product.name} - ${product.discount}`,
+                      text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
                       visibilityTime: 1000,
                       autoHide: true,
                       onPress: () => {

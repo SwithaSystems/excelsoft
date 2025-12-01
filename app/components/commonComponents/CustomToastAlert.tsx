@@ -4,7 +4,6 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
@@ -15,7 +14,7 @@ const { height } = Dimensions.get("window");
 type MessageProps = {
   text1: string;
   text2?: string;
-  onPress?: () => {};
+  onPress?: () => void;
 };
 
 const CustomToastAlert = (props: MessageProps) => {
@@ -30,7 +29,11 @@ const CustomToastAlert = (props: MessageProps) => {
         />
         <View style={styles.textContainer}>
           <Text style={styles.Text1}>{props.text1}</Text>
-          {props.text2 ? <Text style={styles.Text2}>{props.text2}</Text> : null}
+          {props.text2 ? (
+            <Text style={styles.Text2}>
+              {props.text2}
+            </Text>
+          ) : null}
         </View>
       </View>
     </TouchableOpacity>
@@ -50,12 +53,14 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: colors.secondary,
-    padding: 10,
-    borderRadius: 50,
-    width: "70%",
+    padding: 12,
+    borderRadius: 16,
+    width: "80%",
+    maxWidth: 400,
     paddingLeft: 16,
+    paddingRight: 16,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
@@ -64,19 +69,23 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   textContainer: {
+    flex: 1,
     alignItems: "flex-start",
     marginLeft: 12,
+    flexShrink: 1,
   },
   Text1: {
     fontSize: 14,
     fontWeight: "bold",
     color: colors.primary,
+    flexWrap: "wrap",
   },
   Text2: {
     fontSize: 14,
     fontWeight: "300",
     color: colors.primary,
     paddingTop: 4,
+    flexWrap: "wrap",
   },
   Icon: {},
 });

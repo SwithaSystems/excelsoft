@@ -209,6 +209,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
     width: "100%",
   },
+  emptyCartMessage: {
+  padding: 20,
+  backgroundColor: colors.lightgrey,
+  borderRadius: 8,
+  marginBottom: 16,
+  alignItems: 'center',
+},
+emptyCartMessageText: {
+  fontSize: 16,
+  color: colors.primary,
+  textAlign: 'center',
+},
 });
 
 export default styles;
