@@ -25,7 +25,7 @@
     "@stripe/stripe-react-native": "0.45.0",
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
-    "expo": "~53.0.23",
+    "expo": "~53.0.24",
     "expo-asset": "~11.1.7",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
