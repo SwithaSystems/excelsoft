@@ -386,7 +386,7 @@ const orderDetailsScreen = () => {
 
   useEffect(() => {
     const handleHardwareBackPress = () => {
-      router.back();
+      redirectToPage(containers.homeScreen);
       return true;
     };
 

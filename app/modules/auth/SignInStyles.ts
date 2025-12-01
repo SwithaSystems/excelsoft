@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.lightgrey,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 4,
     borderRightWidth: 1,
     borderRightColor: colors.placeholdergrey,
     minWidth: 80,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     paddingHorizontal: 10,
-    fontSize: 16,
+    fontSize: 14,
     backgroundColor: colors.lightgrey,
   },
   phoneInputDesktop: {
