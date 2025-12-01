@@ -370,6 +370,7 @@ const signUpScreen = () => {
                     withFlag={false}
                     withFlagButton={false}
                     withCallingCode
+                    withCallingCodeButton = {true}
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
@@ -379,9 +380,9 @@ const signUpScreen = () => {
                       isTabOrDesktop && styles.countryPickerButtonDesktop
                     ]}
                   />
-                  {!isTabOrDesktop && (
+                  {/* {!isTabOrDesktop && (
                     <Text style={styles.callingCode}>+{callingCode}</Text>
-                  )}
+                  )} */}
                 </View>
 
                 <TextInput
