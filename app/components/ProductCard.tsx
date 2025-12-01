@@ -106,6 +106,8 @@ const ProductCard = ({
   const heartSize = isTabOrDesktop ? 16 : 20;
   const starSize = isTabOrDesktop ? 12 : 16;
   const contentPadding = isTabOrDesktop ? 6 : 8;
+  const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
+
 
   return (
     <TouchableOpacity
@@ -156,7 +158,7 @@ const ProductCard = ({
             <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
         )}
-        {netPrice > discount && discount > 0 && (
+        {netPrice > 0 && discountPercentage > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
               {/* <View style={styles.saleTag}>
@@ -165,7 +167,8 @@ const ProductCard = ({
               {/* <Text style={styles.time}>02:48:26</Text> */}
             </View>
             <Text style={[styles.discount, { fontSize: priceFontSize }]}>
-              {Math.round((discount / netPrice) * 100)}%
+              {/* {Math.round((discount / netPrice) * 100)}% */}
+              {discountPercentage}%
             </Text>
           </View>
         )}
