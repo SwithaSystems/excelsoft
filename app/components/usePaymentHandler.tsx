@@ -10,7 +10,11 @@ import { clearCart } from "@/store/slices/cartSlice";
 import { CURRENCY_CODE } from "@/constants/CurrencySymbol";
 import { NotificationService } from "@/services/notificationService";
 import { formatDateForBackend } from "../../utilities/dateTimeFormat";
-import { CLIENT_ID, DELIVERY_MODE_HOME, STORE_NAME } from "../../constants/stringLiterals";
+import {
+  CLIENT_ID,
+  DELIVERY_MODE_HOME,
+  STORE_NAME,
+} from "../../constants/stringLiterals";
 
 type Product = {
   productId: string;
@@ -78,7 +82,7 @@ export const usePaymentHandler = () => {
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: Math.round(amount * 100), // Convert to cents
+          amount: amount, // Convert to cents
           currency: CURRENCY_CODE,
           clientId: clientId,
         }
@@ -208,7 +212,7 @@ export const usePaymentHandler = () => {
       console.log("Order created successfully:", response);
 
       dispatch(clearCart());
-      
+
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
@@ -220,7 +224,10 @@ export const usePaymentHandler = () => {
       );
     } catch (error) {
       console.error("=== ORDER CREATION FAILED ===", error);
-      Alert.alert("Error", "Payment successful but failed to create order. Please contact support.");
+      Alert.alert(
+        "Error",
+        "Payment successful but failed to create order. Please contact support."
+      );
     }
   };
 
