@@ -78,6 +78,8 @@ const savedItemScreen = () => {
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
       scrollable
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <View style={globalStyles.container}>
               {isTabOrDesktop && (

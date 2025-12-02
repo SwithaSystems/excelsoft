@@ -135,6 +135,8 @@ const changePasswordScreen = () => {
       hasFooter={isTabOrDesktop}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <KeyBoardWrapper>
         <ScrollView>

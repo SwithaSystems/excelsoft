@@ -123,6 +123,8 @@ const myOrderScreen = () => {
       scrollable
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <View style={globalStyles.container}>
         <FlatList

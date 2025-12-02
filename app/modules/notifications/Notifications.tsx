@@ -127,6 +127,8 @@ const notificationsScreen: React.FC = () => {
       scrollable={!isTabOrDesktop}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <View
         style={[
