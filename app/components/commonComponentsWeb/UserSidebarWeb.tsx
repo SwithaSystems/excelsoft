@@ -6,9 +6,11 @@ import {
   StyleSheet,
   useWindowDimensions,
   Image,
+  Animated,
+  Easing,
 } from "react-native";
 import { useRouter, usePathname } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import colors from "@/constants/colors";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -22,43 +24,26 @@ interface NavItem {
   route: string;
 }
 
+interface QuickLinkItem {
+  id: string;
+  label: string;
+  icon: string;
+  route: string;
+}
+
 const navItems: NavItem[] = [
-  { 
-  id: "profile", 
-  label: "Profile Settings", 
-  icon: "person", 
-  route: containers.editProfileScreen 
-},
-  { 
-    id: "address", 
-    label: "Saved Address", 
-    icon: "location", 
-    route: containers.savedAddressScreen 
- },
-  { 
-    id: "password", 
-    label: "Change Password", 
-    icon: "lock-closed", 
-    route: containers.changePasswordScreen 
-  },
-  { 
-    id: "notification", 
-    label: "Notification", 
-    icon: "notifications", 
-    route: containers.notificationsScreen 
-  },
-  { 
-    id: "cards", 
-    label: "Saved Cards", 
-    icon: "card",  
-    route: "/saved-cards",
-  },
-//   { 
-//     id: "feedback", 
-//     label: "Feedback", 
-//     icon: "chatbox-ellipses", 
-//     route: containers.appReviewScreen 
-//   },
+  { id: "profile", label: "Profile Settings", icon: "person", route: containers.editProfileScreen },
+  { id: "address", label: "Saved Address", icon: "location", route: containers.savedAddressScreen },
+  { id: "password", label: "Change Password", icon: "lock-closed", route: containers.changePasswordScreen },
+  { id: "notification", label: "Notification", icon: "notifications", route: containers.notificationsScreen },
+  // { id: "cards", label: "Saved Cards", icon: "card", route: "/saved-cards" },
+];
+
+const quickLinks: QuickLinkItem[] = [
+  { id: "orders", label: "Your Orders", icon: "briefcase", route: containers.myOrderScreen },
+  { id: "saved-items", label: "Saved Items", icon: "heart", route: containers.savedItemScreen },
+  { id: "saved-address-quick", label: "Saved Address", icon: "map-marker", route: containers.savedAddressScreen },
+  // { id: "payments", label: "Payments", icon: "credit-card", route: "/payments" },
 ];
 
 export const UserSidebarWeb: React.FC = () => {
@@ -66,17 +51,32 @@ export const UserSidebarWeb: React.FC = () => {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const userData_redux = useSelector((state: RootState) => state.user.user);
-  
-  const [user, setUser] = useState<{
-    id?: number;
-    _id?: string;
-    firstName?: string;
-    lastName?: string;
-    profileImageUrl?: string;
-  } | null>(null);
+
+  const [user, setUser] = useState<any>(null);
+  const [showQuickLinks, setShowQuickLinks] = useState(false);
 
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
+
+  const dropdownAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    if (showQuickLinks) {
+      Animated.timing(dropdownAnim, {
+        toValue: 1,
+        duration: 250,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(dropdownAnim, {
+        toValue: 0,
+        duration: 180,
+        easing: Easing.in(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [showQuickLinks]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -84,34 +84,40 @@ export const UserSidebarWeb: React.FC = () => {
 
       try {
         const response = await UserAPI.getUserById(
-          userData_redux?._id ? userData_redux?._id : userData_redux?.id
+          userData_redux?._id ? userData_redux._id : userData_redux.id
         );
-        if (response?.data) {
-          setUser(response.data);
-        }
+        if (response?.data) setUser(response.data);
       } catch (err) {
         console.error("User fetch failed", err);
       }
     };
-
     fetchUser();
   }, [userData_redux]);
 
-  const handleNavigation = (route: string) => {
-    router.push(route as any);
+  const handleNavigation = (route: string, params?: any) => {
+    if (params) router.push({ pathname: route as any, params });
+    else router.push(route as any);
   };
 
-  const isActive = (route: string) => {
-    return pathname === route || pathname?.startsWith(route);
+  const handleQuickLinkPress = (item: QuickLinkItem) => {
+    if (item.id === "orders") {
+      handleNavigation(item.route, {
+        userId: userData_redux?._id || userData_redux?.id,
+      });
+    } else {
+      handleNavigation(item.route);
+    }
+    setShowQuickLinks(false);
   };
 
-  if (!isTablet && !isDesktop) {
-    return null;
-  }
+  const isActive = (route: string) =>
+    pathname === route || pathname?.startsWith(route);
+
+  if (!isTablet && !isDesktop) return null;
 
   return (
-    <View style={styles.container}>
-      {/* Profile Section */}
+    <View style={[styles.container, showQuickLinks && { paddingBottom: 200 }]}>
+      {/* Profile */}
       <View style={styles.profileSection}>
         <Image
           source={
@@ -128,17 +134,14 @@ export const UserSidebarWeb: React.FC = () => {
         </Text>
       </View>
 
-      {/* Navigation List */}
+      {/* Navigation */}
       <View style={styles.navList}>
         {navItems.map((item) => {
           const active = isActive(item.route);
           return (
             <TouchableOpacity
               key={item.id}
-              style={[
-                styles.navItem,
-                active && styles.navItemActive,
-              ]}
+              style={[styles.navItem, active && styles.navItemActive]}
               onPress={() => handleNavigation(item.route)}
               activeOpacity={0.7}
             >
@@ -146,7 +149,7 @@ export const UserSidebarWeb: React.FC = () => {
                 <Ionicons
                   name={item.icon}
                   size={22}
-                  color={active ? colors.primary : colors.darkGray}
+                  color={active ? colors.white : colors.darkGray}
                 />
                 <Text
                   style={[
@@ -158,10 +161,69 @@ export const UserSidebarWeb: React.FC = () => {
                   {item.label}
                 </Text>
               </View>
-              {active && <View style={styles.activeIndicator} />}
             </TouchableOpacity>
           );
         })}
+      </View>
+
+      {/* Quick Links Section */}
+      <View style={styles.quickLinksContainer}>
+        <View style={styles.divider} />
+
+        <View style={styles.quickLinksWrapper}>
+          {/* Quick Links Button */}
+          <TouchableOpacity
+            style={styles.quickLinksButton}
+            onPress={() => setShowQuickLinks(!showQuickLinks)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.quickLinksButtonContent}>
+              <Ionicons name="apps" size={22} color={colors.primary} />
+              <Text style={styles.quickLinksButtonText}>Quick Links</Text>
+              <Ionicons
+                name={showQuickLinks ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={colors.darkGray}
+              />
+            </View>
+          </TouchableOpacity>
+
+          {/* Animated Dropdown */}
+          {showQuickLinks && (
+            <Animated.View
+              style={[
+                styles.quickLinksDropdown,
+                {
+                  opacity: dropdownAnim,
+                  transform: [
+                    {
+                      translateY: dropdownAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-10, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              {quickLinks.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.quickLinkItem}
+                  onPress={() => handleQuickLinkPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <FontAwesome
+                    name={item.icon as any}
+                    size={20}
+                    color={colors.primary}
+                  />
+                  <Text style={styles.quickLinkText}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </Animated.View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -174,7 +236,9 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     borderRightWidth: 1,
     borderRightColor: colors.lightgrey,
+    overflow: "visible",
   },
+
   profileSection: {
     alignItems: "center",
     paddingHorizontal: 16,
@@ -186,58 +250,106 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 12,
     backgroundColor: colors.lightgrey,
+    marginBottom: 12,
   },
   userName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
-    textAlign: "center",
   },
+
   navList: {
-    gap: 8,
     paddingHorizontal: 12,
     paddingTop: 16,
+    gap: 8,
+    flex: 1,
   },
   navItem: {
     flexDirection: "row",
-    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
     backgroundColor: colors.white,
-    position: "relative",
+    borderRadius: 8,
   },
   navItemActive: {
     backgroundColor: colors.primary,
   },
   navItemContent: {
     flexDirection: "row",
-    alignItems: "center",
     gap: 12,
+    alignItems: "center",
     flex: 1,
   },
   navLabel: {
     fontSize: 15,
     fontWeight: "500",
     color: colors.darkGray,
-    flex: 1,
   },
   navLabelActive: {
-    color: colors.primary,
+    color: colors.white,
     fontWeight: "600",
   },
-  activeIndicator: {
+
+  quickLinksContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.lightgrey,
+    marginBottom: 12,
+  },
+
+  quickLinksWrapper: {
+    position: "relative",
+  },
+
+  quickLinksButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderWidth: 1.4,
+    borderColor: colors.primary,
+  },
+  quickLinksButtonContent: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+  },
+  quickLinksButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  quickLinksDropdown: {
     position: "absolute",
+    top: "100%",
     left: 0,
-    top: "50%",
-    width: 4,
-    height: "60%",
-    backgroundColor: colors.primary,
-    borderRadius: 2,
-    transform: [{ translateY: -12 }],
+    right: 0,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+    zIndex: 999,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+
+  quickLinkItem: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.lightgrey,
+  },
+  quickLinkText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
-
-export default UserSidebarWeb;
