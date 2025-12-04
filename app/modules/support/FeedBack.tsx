@@ -110,11 +110,12 @@ const feedBackScreen = () => {
       await ProductsAPI.addReview(Number(productId), formData);
       setShowReviewconfirmationModal(true);
 
-      // setTimeout(() => {
-      redirectToPage(containers.productDetailScreen, {
-        productId: productId,
-      });
-      // }, 1500);
+      setTimeout(() => {
+        setShowReviewconfirmationModal(false);
+        redirectToPage(containers.productDetailScreen, {
+          productId: productId,
+        });
+      }, 1500);
     } catch (error) {
       console.error("Failed to add review:", error);
       alert("Something went wrong. Please try again.");
@@ -225,7 +226,7 @@ const feedBackScreen = () => {
           <ConfirmationModal
             isModalVisible={showReviewconfirmationModal}
             text="Review Added Successfully"
-            onClose={() => setShowReviewconfirmationModal(false)}           
+            onClose={() => setShowReviewconfirmationModal(false)}
           />
         </ScrollView>
       </KeyBoardWrapper>
