@@ -208,10 +208,10 @@ const HomePage = () => {
             )}
           </View>
         )}
-        <Button
+        {/* <Button
           title="Go to Upload Page"
           onPress={() => redirectToPage(containers.uploadScreen)}
-        />
+        /> */}
 
         {/* Banner */}
         {/* <View>{renderBanner()}</View> */}

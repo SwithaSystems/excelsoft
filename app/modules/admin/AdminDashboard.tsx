@@ -237,18 +237,19 @@ const AdminDashboard = () => {
             });
           }}
         >
-          <View style={[
-            styles.eachOrderItem,
-            isTabOrDesktop && {
-              backgroundColor: "white",
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: "#e4e4e4",
-              padding: 16,
-              marginBottom: 12,
-            },
-          ]}
-        >
+          <View
+            style={[
+              styles.eachOrderItem,
+              isTabOrDesktop && {
+                backgroundColor: "white",
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "#e4e4e4",
+                padding: 16,
+                marginBottom: 12,
+              },
+            ]}
+          >
             <View
               style={[
                 globalStyles.flexRow,
@@ -318,7 +319,7 @@ const AdminDashboard = () => {
                       : item.status === "Returned"
                       ? styles.returned
                       : styles.defaultStatus,
-                      isTabOrDesktop && {
+                    isTabOrDesktop && {
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderRadius: 12,
@@ -340,17 +341,17 @@ const AdminDashboard = () => {
     <View style={[globalStyles.pt_0]}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
-        <Text
+        {/* <Text
           style={styles.linkText}
           onPress={() => {
             redirectToPage(containers.fileUploadAddProductCategoryScreen);
           }}
         >
           Upload Data
-        </Text>
+        </Text> */}
       </View>
 
-      <View 
+      <View
         style={[
           styles.metricsContainer,
           isTabOrDesktop && {
@@ -360,11 +361,13 @@ const AdminDashboard = () => {
             paddingHorizontal: 16,
           },
         ]}
+      >
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
         >
-        <View style={[
-          styles.metricBox,
-          isTabOrDesktop && { width: "32%", minHeight: 65 },
-          ]}>
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Total Orders</Text>
@@ -396,7 +399,7 @@ const AdminDashboard = () => {
             <Text style={styles.metricTitle}>Pending Orders</Text>
           </View>
           <View>
-          <Text style={styles.metricValue}>
+            <Text style={styles.metricValue}>
               {dashboardMetrics.pendingOrders.length}
             </Text>
           </View>
@@ -434,7 +437,7 @@ const AdminDashboard = () => {
               styles.metricBox,
               isTabOrDesktop && { width: "32%", minHeight: 65 },
             ]}
-          > 
+          >
             <View style={styles.metricIconContainer}>
               <TouchableOpacity
                 onPress={() => {
@@ -445,7 +448,6 @@ const AdminDashboard = () => {
               </TouchableOpacity>
             </View>
           </View>
-          
         )}
       </View>
 
@@ -465,7 +467,11 @@ const AdminDashboard = () => {
     <BrandHeader hideUserGreeting={true} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="home" />;
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <AdminFooter activeTab="home" />
+  );
   return (
     <LayoutComponent
       hasHeader
@@ -605,7 +611,7 @@ const AdminDashboard = () => {
         windowSize={10}
         initialNumToRender={3}
         getItemLayout={(data, index) => ({
-          length: 80, 
+          length: 80,
           offset: 80 * index,
           index,
         })}
