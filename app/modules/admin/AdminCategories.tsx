@@ -632,7 +632,7 @@ const AdminCategories = () => {
           
           {/* Pagination for web/tablet only */}
           {isTabOrDesktop && totalPages > 1 && (
-            <View style={styles.paginationContainer}>
+            <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -896,6 +896,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.placeholdergrey,
     backgroundColor: colors.white,
+  },
+  stickyBottomContainer: {
+    position: Platform.OS === "web" ? "sticky" : "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 45,
+    paddingVertical: 0,
+    marginBottom: 0,
+    borderTopWidth: 0,
+    borderColor: "transparent",
+    shadowOpacity: 0,
+    elevation: 0,
   },
 });
 
