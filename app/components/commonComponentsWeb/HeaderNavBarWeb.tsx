@@ -68,6 +68,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 }) => {
   const { loading: roleLoading } = useRoleContext();
   const { logout, isAuthenticated } = useAuth();
+  console.log("Auth state:", { isAuthenticated });
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
