@@ -111,6 +111,17 @@ export const usePaymentHandler = () => {
 
     console.log("Subtotal:", subtotal);
 
+    // Check Minimum Order Value (MOV)
+    const MOV = 15; // Minimum Order Value
+    if (subtotal < MOV) {
+      console.error("Order value below minimum order value");
+      Alert.alert(
+        "Minimum Order Not Met",
+        `Your order value ($${subtotal.toFixed(2)}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+      );
+      return Promise.reject(new Error("Order value below minimum order value"));
+    }
+
     // Fetch payment intent
     const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
     if (!paymentData) {

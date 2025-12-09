@@ -89,8 +89,12 @@ const MINIMUM_USER_AGE = 12;
 const DATE_FORMAT_Display = "dd/MM/yyyy";
 const DATE_FORMAT_API = "YYYY-MM-DDTHH:mm:ss.sssZ";
 
+// Minimum Order Value
+const MOV = 15;
+
 // Export all constants
 export {
+  MOV,
   CLIENT_ID,
   STORE_NAME,
   DATE_FORMAT_Display,
