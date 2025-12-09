@@ -166,6 +166,10 @@ const HomePage = () => {
             )}
           </View>
         )}
+        {/* <Button
+          title="Go to Upload Page"
+          onPress={() => redirectToPage(containers.uploadScreen)}
+        /> */}
 
         {/* Carousel */}
         <View style={styles.carouselSection}>

@@ -20,35 +20,41 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { 
-    id: "dashboard", 
-    label: "Dashboard", 
-    icon: "stats-chart", 
-    route: "/modules/admin/AdminDashboard"
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: "stats-chart",
+    route: "/modules/admin/AdminDashboard",
   },
-  { 
-    id: "orders", 
-    label: "Orders", 
-    icon: "cart", 
-    route: "/modules/admin/AdminSeeAllOrders" 
+  {
+    id: "orders",
+    label: "Orders",
+    icon: "cart",
+    route: "/modules/admin/AdminSeeAllOrders",
   },
-  { 
-    id: "products", 
-    label: "Products", 
-    icon: "cube", 
-    route: "/modules/admin/AdminProductDashboard" 
+  {
+    id: "products",
+    label: "Products",
+    icon: "cube",
+    route: "/modules/admin/AdminProductDashboard",
   },
-  { 
-    id: "categories", 
-    label: "Categories", 
-    icon: "folder", 
-    route: "/modules/admin/AdminCategories"
+  {
+    id: "categories",
+    label: "Categories",
+    icon: "folder",
+    route: "/modules/admin/AdminCategories",
   },
-  { 
-    id: "scan", 
-    label: "Scan & Deliver", 
-    icon: "people", 
-    route: "/modules/admin/AdminOrderQRScan"
+  {
+    id: "scan",
+    label: "Scan & Deliver",
+    icon: "people",
+    route: "/modules/admin/AdminOrderQRScan",
+  },
+  {
+    id: "scan",
+    label: "Upload",
+    icon: "people",
+    route: "/modules/admin/FileUploadAddProductCategory",
   },
 ];
 
@@ -56,12 +62,15 @@ export const AdminSidebarWeb: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
-  
+
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
-  console.log('Current pathname:', pathname);
-  console.log('Container routes:', navItems.map(item => ({ label: item.label, route: item.route })));
+  console.log("Current pathname:", pathname);
+  console.log(
+    "Container routes:",
+    navItems.map((item) => ({ label: item.label, route: item.route }))
+  );
 
   const handleNavigation = (route: string) => {
     router.push(route as any);
@@ -83,10 +92,7 @@ export const AdminSidebarWeb: React.FC = () => {
           return (
             <TouchableOpacity
               key={item.id}
-              style={[
-                styles.navItem,
-                active && styles.navItemActive,
-              ]}
+              style={[styles.navItem, active && styles.navItemActive]}
               onPress={() => handleNavigation(item.route)}
               activeOpacity={0.7}
             >
@@ -97,10 +103,7 @@ export const AdminSidebarWeb: React.FC = () => {
                   color={active ? colors.white : colors.darkGray}
                 />
                 <Text
-                  style={[
-                    styles.navLabel,
-                    active && styles.navLabelActive,
-                  ]}
+                  style={[styles.navLabel, active && styles.navLabelActive]}
                   numberOfLines={1}
                 >
                   {item.label}
