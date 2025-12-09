@@ -28,6 +28,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import SearchBar from "@/app/components/searchBar";
+import Pagination from "./componentsWeb/PaginationWeb";
 
 interface Category {
   _id: any;
@@ -39,6 +40,7 @@ interface Category {
 }
 
 const MAX_IMAGES = 5;
+const ITEMS_PER_PAGE = 10;
 
 const AdminCategories = () => {
   const [categoryName, setCategoryName] = useState("");
@@ -48,6 +50,7 @@ const AdminCategories = () => {
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Modal states
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -414,6 +417,22 @@ const AdminCategories = () => {
       })
     : categoryList;
 
+  // Pagination for web/tablet
+  const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
+  
+  // Get paginated categories for web/tablet, show all for mobile
+  const paginatedCategories = isTabOrDesktop
+    ? filteredCategories.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      )
+    : filteredCategories;
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   const getParentCategoryName = (parentCategoryId: any, categories: any) => {
     const parentCategory = categories.find((cat: any) => cat.id === parentCategoryId);
     return parentCategory ? parentCategory.name : "No Parent";
@@ -558,7 +577,7 @@ const AdminCategories = () => {
               </View>
             )}
             <View>
-              {filteredCategories.map((categoryItem: Category, index: number) => (
+              {paginatedCategories.map((categoryItem: Category, index: number) => (
                 <View
                   key={categoryItem.id || index}
                   style={[
@@ -610,6 +629,17 @@ const AdminCategories = () => {
               )}
             </View>
           </ScrollView>
+          
+          {/* Pagination for web/tablet only */}
+          {isTabOrDesktop && totalPages > 1 && (
+            <View style={styles.paginationContainer}>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -860,6 +890,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: colors.lightgrey,
+  },
+  paginationContainer: {
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.placeholdergrey,
+    backgroundColor: colors.white,
   },
 });
 

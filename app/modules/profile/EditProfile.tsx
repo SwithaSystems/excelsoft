@@ -357,14 +357,14 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={
-                      lastNameError 
+                      lastNameError
                         ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
                     placeholder="First Name"
                     value={firstName}
-                    onPress={() => {}}
+                    onPress={() => { }}
                     setValue={setFirstName}
                     onChangeText={handleFirstNameChange}
                   />
@@ -384,14 +384,14 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>Last Name</Text>
                   <CustomTextInput
                     containerStyle={
-                      firstNameError 
+                      firstNameError
                         ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
                     placeholder="Last Name"
                     value={lastName}
-                    onPress={() => {}}
+                    onPress={() => { }}
                     setValue={setLastName}
                     onChangeText={handleLastNameChange}
                   />
@@ -429,7 +429,7 @@ const editProfileScreen = () => {
             <Button
               primary={false}
               title="Cancel"
-              onPress={() => redirectToPage(containers.userProfileScreen)}
+              onPress={() => redirectToPage(containers.homeScreen)}
               style={webStyles.buttonHalf}
             />
             <Button
