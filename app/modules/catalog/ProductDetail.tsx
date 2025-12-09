@@ -296,7 +296,7 @@ const ProductDetailScreen = () => {
                 )}
 
                 {/* Sale Badge and Discount */}
-                {product.netPrice > product.discount && (
+                {/* {product.netPrice > product.discount && (
                   <View style={styles.webSaleContainer}>
                     <View style={styles.webSaleTag}>
                       <Text style={styles.webSaleText}>Sale</Text>
@@ -313,7 +313,7 @@ const ProductDetailScreen = () => {
                       </Text>
                     </View>
                   </View>
-                )}
+                )} */}
 
                 {/* Price */}
                 <View style={styles.webPriceContainer}>
