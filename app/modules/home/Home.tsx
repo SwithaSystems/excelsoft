@@ -32,60 +32,40 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import Button from "@/app/components/commonComponents/Button";
-// at the top of App.js / index.web.js / entry file (after `import 'react-native-gesture-handler'`)
+import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
 
-// const recommendedProducts = products
-//   .filter((p) =>
-//     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.rating,
-//     reviews: product.noOfreviews,
-//     imageUrl: product.image,
-//   }));
+interface Promotion {
+  id: number;
+  image: string;
+  link?: string;
+  title?: string;
+  description?: string;
+}
 
-// const exclusiveOffers = products
-//   .filter((p) =>
-//     ["SUPERKINGS LIGHT 20", "WALKERS READY SALTED"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
-//     reviews: product.name === "Baby Stroller" ? 120 : 130,
-//     discount: product.name === "Baby Stroller" ? 120 : 8,
-//     netPrice: product.name === "Baby Stroller" ? 180 : 10,
-//     imageUrl: product.image,
-//     discount: product.name === "Baby Stroller" ? "20%" : "15%",
-//     saleEndsAt: "31-4-2024",
-//   }));
+const TEST_PROMOTIONS: Promotion[] = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
+    link: "https://example.com/promo1",
+    title: "Summer Sale",
+    description: "Get 50% off on all items",
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
+    link: "https://example.com/promo2",
+    title: "New Arrivals",
+    description: "Check out our latest collection",
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
+    link: "https://example.com/promo3",
+    title: "Special Offer",
+    description: "Limited time only - Buy 2 Get 1 Free",
+  },
+];
 
-// const bestSellers = products
-//   .filter((p) =>
-//     ["SOFTFRUITS", "JPS BLUE SK19", "OLD HOLBORN 50GRM"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.rating,
-//     reviews: product.noOfreviews,
-//     imageUrl: product.image,
-//   }));
-
-// const featuredProducts = products
-//   .filter((p) =>
-//     ["CHESTERFIELD RED 20'S", "SNICKERS", "NESCAFE 100G"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     description: product.description.slice(0, 20) + "...",
-//     imageUrl: product.image,
-//   }));
-
-// const recommendedProducts: any = [];
 const exclusiveOffers: any = [];
 const bestSellers: any = [];
 const featuredProducts: any = [];
@@ -94,59 +74,24 @@ const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [promotionsLoading, setPromotionsLoading] = useState(false);
   const router = useRouter();
 
   const { width } = useWindowDimensions();
-  //Device Breakpoints
   const isMobile = width < 768;
-  // const isTablet = width >= 768 && width < 1024;
   const isTabOrDesktop = width >= 768;
 
   const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? (
-    <FooterWeb />
-  ) : (
-    <Footer activeTab="home" />
-  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer activeTab="home" />;
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
-  // const handleBannerPress = (item: any, index: number) => {
-  //   redirectToPage(containers.offersScreen);
-  // };
-
-  // const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
-
-  // const renderFeaturedProducts = () => (
-  //   <View>
-  //     <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
-  //     <FlatList
-  //       horizontal
-  //       data={featuredProducts}
-  //       renderItem={({ item }) => (
-  //         <TouchableOpacity
-  //           style={styles.featuredCard}
-  //           onPress={() =>
-  //             redirectToPage(containers.productDetailScreen, {
-  //               productId: item.id,
-  //             })
-  //           }
-  //         >
-  //           <Image source={item.imageUrl} style={styles.featuredImage} />
-  //           <Text style={styles.featuredTitle}>{item.title}</Text>
-  //           <Text style={styles.featuredDescription}>{item.description}</Text>
-  //         </TouchableOpacity>
-  //       )}
-  //       keyExtractor={(item) => item.id}
-  //       showsHorizontalScrollIndicator={false}
-  //       contentContainerStyle={styles.productsList}
-  //     />
-  //   </View>
-  // );
+  const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await categoryService.getAllCategories();
-        console.log("Categories:", data);
         const sortedData = data.sort((a, b) => {
           if (a.name === "All") return -1;
           if (b.name === "All") return 1;
@@ -159,11 +104,23 @@ const HomePage = () => {
         setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setPromotionsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        setPromotions(TEST_PROMOTIONS);
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
+      } finally {
+        setPromotionsLoading(false);
+      }
+    };
+    fetchPromotions();
+  }, []);
 
   return (
     <LayoutComponent
@@ -175,7 +132,8 @@ const HomePage = () => {
     >
       <View style={styles.container}>
         <Header />
-        {/* Categories */}
+
+        {/* Mobile: Categories first, carousel below */}
         {!isTabOrDesktop && (
           <View style={styles.categoriesContainer}>
             {loading ? (
@@ -213,34 +171,62 @@ const HomePage = () => {
           onPress={() => redirectToPage(containers.uploadScreen)}
         /> */}
 
-        {/* Banner */}
-        {/* <View>{renderBanner()}</View> */}
+        {/* Carousel */}
+        <View style={styles.carouselSection}>
+          {promotionsLoading ? (
+            <View style={styles.carouselLoader}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : promotions.length > 0 ? (
+            <CarouselWeb
+              data={promotions}
+              isPromotional={true}
+              showOverlay={true}
+              autoPlay={true}
+              autoPlayInterval={4500}
+              loop={true}
+              showArrows={true}
+              showIndicators={true}
+              width={carouselWidth}
+              height={isTabOrDesktop ? 300 : 230}
+              borderRadius={12}
+            />
+          ) : null}
+        </View>
 
-        {/* Recommended Products */}
-        {/* <View>
-          <RecommendedProductsSlider
-            recommendedProducts={recommendedProducts}
-            sectionTitleStyle={globalStyles.sectionTitleStyle}
-            title="Recommended for You"
-          />
-        </View> */}
-
-        {/* Exclusive Offers */}
-        {/* <View>
-          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View> */}
-
-        {/* Best Sellers */}
-        {/* <View>
-          <RecommendedProductsSlider
-            recommendedProducts={bestSellers}
-            sectionTitleStyle={globalStyles.sectionTitleStyle}
-            title="Best Sellers"
-          />
-        </View> */}
-
-        {/* Featured Products */}
-        {/* {renderFeaturedProducts()} */}
+        {/* Desktop: Categories can be elsewhere */}
+        {isTabOrDesktop && (
+          <View style={styles.categoriesContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <FlatList
+                data={categories}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }) => (
+                  <CategoryItem_Home
+                    name={item.name}
+                    imageUrl={item.images?.[0] || ""}
+                    onPress={() =>
+                      item.name === "All"
+                        ? redirectToPage(containers.categoriesScreen, {
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                        : redirectToPage(containers.searchResultsScreen, {
+                            fromSearch: true,
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                    }
+                  />
+                )}
+              />
+            )}
+          </View>
+        )}
       </View>
     </LayoutComponent>
   );
@@ -252,98 +238,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginVertical: 8,
   },
-
-  scrollView: {
-    flex: 1,
+  carouselSection: {
+    marginVertical: 16,
+    paddingHorizontal: 16,
   },
-  scrollContent: {
-    flexGrow: 1,
-  },
-
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.white,
-    borderTopColor: colors.placeholdergrey,
-    borderTopWidth: 1,
-  },
-
-  recommendedCard: {
-    width: 160,
-    height: 180,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  recommendedImage: {
-    width: "100%",
-    height: 120,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  recommendedTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  recommendedDetails: {
-    marginLeft: 16,
-  },
-  bestSellerCard: {
-    width: 160,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  bestSellerImage: {
-    width: "100%",
-    height: 130,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  bestSellerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-    marginLeft: 16,
-  },
-  featuredCard: {
-    width: 180,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  featuredImage: {
-    width: "100%",
-    height: 140,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  featuredTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginHorizontal: 16,
-  },
-  featuredDescription: {
-    fontSize: 12,
-    color: colors.reviewsColor,
-    marginHorizontal: 16,
-    paddingBottom: 8,
-  },
-  featuredDescriptionText: {
-    fontSize: 14,
-    color: colors.lightgrey,
-    marginLeft: 10,
-    marginBottom: 10,
-  },
-  productsList: {
-    paddingRight: 10,
-    paddingBottom: 10,
+  carouselLoader: {
+    height: 230,
+    justifyContent: "center",
+    alignItems: "center",
   },
   categoriesContainer: {
     paddingTop: 8,

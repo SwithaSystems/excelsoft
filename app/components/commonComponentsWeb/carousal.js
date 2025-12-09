@@ -18,6 +18,23 @@ function normalizeImage(image) {
   return image;
 }
 
+function preparePromotionalData(backendData) {
+  if (!Array.isArray(backendData) || backendData.length === 0) {
+    return [];
+  }
+
+  return backendData.map((item) => ({
+    id: item.id,
+    image: item.imageUrl || item.image || "",
+    link: item.link || null,
+    title: item.title || "",
+    description: item.description || "",
+  }));
+}
+
+/**
+ * @param {CarouselWebProps} props
+ */
 export default function CarouselWeb({
   data = [],
   width = WINDOW_WIDTH - 32,
@@ -31,13 +48,26 @@ export default function CarouselWeb({
   indicatorStyle = {},
   activeIndicatorStyle = {},
   renderItemExtras = null,
+  showOverlay = false,
+  isPromotional = false,
 }) {
   const listRef = useRef(null);
   const autoplayRef = useRef(null);
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
 
-  const items = Array.isArray(data) && data.length ? data : [];
+  // Process data based on whether it's promotional content
+  const items = React.useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) return [];
+    
+    // If promotional mode, transform the data
+    if (isPromotional) {
+      return preparePromotionalData(data);
+    }
+    
+    // Otherwise, use data as is (existing behavior)
+    return data;
+  }, [data, isPromotional]);
 
   const goTo = useCallback(
     (i, animated = true) => {
@@ -126,7 +156,15 @@ export default function CarouselWeb({
             style={[styles.slide, { width, height }]}
             onPress={() => {
               if (item.onPress) item.onPress(item, idx);
-              else if (item.link) window?.open?.(item.link, "_blank");
+              else if (item.link) {
+                if (Platform.OS === "web") {
+                  window?.open?.(item.link, "_blank");
+                } else {
+                  // For mobile, you can use Linking
+                  // Linking.openURL(item.link);
+                  console.log("Open link:", item.link);
+                }
+              }
             }}
           >
             <Image
@@ -137,6 +175,22 @@ export default function CarouselWeb({
                 console.warn("CarouselWeb image error:", e?.nativeEvent ?? e)
               }
             />
+            
+            {showOverlay && (item.title || item.description) && (
+              <View style={styles.overlay}>
+                {item.title && (
+                  <Text style={styles.title} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                )}
+                {item.description && (
+                  <Text style={styles.description} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                )}
+              </View>
+            )}
+            
             {typeof renderItemExtras === "function" && (
               <View style={styles.extrasContainer}>
                 {renderItemExtras(item, idx)}
@@ -210,6 +264,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    padding: 12,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  title: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  description: {
+    color: "#fff",
+    fontSize: 14,
+    opacity: 0.9,
   },
   arrow: {
     position: "absolute",
