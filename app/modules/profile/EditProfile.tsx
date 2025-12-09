@@ -21,6 +21,7 @@ import {
   TextInput,
   StyleSheet,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
@@ -81,6 +82,7 @@ const editProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
@@ -92,12 +94,10 @@ const editProfileScreen = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      console.log("userData", userData?.id);
       if (userData) {
         const user = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
-        console.log("user", user.data);
         if (user) {
           setUser(user.data);
           setFirstName(user?.data?.firstName);
@@ -132,18 +132,13 @@ const editProfileScreen = () => {
 
   const handleFirstNameChange = (text: string) => {
     setFirstName(text);
-    if (firstNameError) {
-      setFirstNameError(null);
-    }
+    if (firstNameError) setFirstNameError(null);
   };
 
   const handleLastNameChange = (text: string) => {
     setLastName(text);
-    if (lastNameError) {
-      setLastNameError(null);
-    }
+    if (lastNameError) setLastNameError(null);
   };
-
 
   const openImagePickerAsync = async (type: "camera" | "gallery") => {
     let result;
@@ -184,14 +179,10 @@ const editProfileScreen = () => {
         });
       }
 
-      // ✅ Handle image result safely
       if (!result.canceled && "assets" in result && result.assets?.length > 0) {
         setProfileImage(result.assets[0].uri);
-      } else {
-        console.log("Image picking was cancelled or returned no assets.");
       }
     } catch (error) {
-      console.error("Error picking image:", error);
       showErrorAlert({
         title: "Image Error",
         message: "Something went wrong while picking the image.",
@@ -201,20 +192,12 @@ const editProfileScreen = () => {
 
   const showImageOptions = () => {
     Alert.alert("Select Image", "Choose image source", [
-      {
-        text: "Take Photo",
-        onPress: () => openImagePickerAsync("camera"),
-      },
-      {
-        text: "Choose from Gallery",
-        onPress: () => openImagePickerAsync("gallery"),
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Take Photo", onPress: () => openImagePickerAsync("camera") },
+      { text: "Choose from Gallery", onPress: () => openImagePickerAsync("gallery") },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
+
   const getMaximumDate = () => {
     const today = new Date();
     const maxDate = new Date(
@@ -224,23 +207,16 @@ const editProfileScreen = () => {
     );
     return maxDate;
   };
+
   const handleEditProfile = async () => {
     setFirstNameError(null);
     setLastNameError(null);
 
     const isFirstNameValid = validateFirstName(firstName);
     const isLastNameValid = validateLastName(lastName);
-
-
-    if (!isFirstNameValid || !isLastNameValid) {
-      return;
-    }
-
+    if (!isFirstNameValid || !isLastNameValid) return;
 
     const formData = new FormData();
-
-    console.log("profileImage", profileImage);
-
     if (
       profileImage &&
       typeof profileImage === "string" &&
@@ -253,18 +229,13 @@ const editProfileScreen = () => {
       } as any);
     }
 
-    // These should work with any FormData implementation
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("dateOfBirth", dateOfBirth);
 
-    console.log("formData", formData);
-    console.log("user?.data?._id", user);
-
     try {
       setLoading(true);
       const response = await UserAPI.userEditProfile(user?._id, formData);
-      console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
@@ -280,7 +251,6 @@ const editProfileScreen = () => {
       }
       return response?.data;
     } catch (error) {
-      console.error("Profile update failed:", error);
       showErrorAlert({
         title: "Update Failed",
         message: FAILED_TO_UPDATE_DETAILS,
@@ -295,7 +265,6 @@ const editProfileScreen = () => {
 
   const uponDateSelection = (date: Date) => {
     const formatted = format(date, DATE_FORMAT_Display);
-    console.log("formatted", formatted);
     setSelectedDate(formatted);
     setDateOfBirth(formatted);
     hideDatePicker();
@@ -324,9 +293,7 @@ const editProfileScreen = () => {
           ]}
         >
           <ScrollView>
-            <View
-              style={[globalStyles.sectionContent, globalStyles.pt_0]}
-            >
+            <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Profile Picture */}
               <View style={globalStyles.profilePictureContainer}>
                 <Image
@@ -347,6 +314,8 @@ const editProfileScreen = () => {
                   Change Profile Picture
                 </Text>
               </View>
+
+              {/* First Name */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="user-o"
@@ -357,8 +326,13 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={
+<<<<<<< Updated upstream
                       lastNameError
                         ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+=======
+                      firstNameError
+                        ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
+>>>>>>> Stashed changes
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
@@ -374,6 +348,7 @@ const editProfileScreen = () => {
                 </View>
               </View>
 
+              {/* Last Name */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="user-o"
@@ -384,8 +359,13 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>Last Name</Text>
                   <CustomTextInput
                     containerStyle={
+<<<<<<< Updated upstream
                       firstNameError
                         ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+=======
+                      lastNameError
+                        ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
+>>>>>>> Stashed changes
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
@@ -398,10 +378,10 @@ const editProfileScreen = () => {
                   {lastNameError && (
                     <Text style={globalStyles.errorText}>{lastNameError}</Text>
                   )}
-
                 </View>
               </View>
 
+              {/* Date of Birth */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="calendar-o"
@@ -410,20 +390,53 @@ const editProfileScreen = () => {
                 />
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                  <TouchableOpacity onPress={showDatePicker}>
-                    <TextInput
-                      style={globalStyles.input}
-                      placeholder="--/--/----"
-                      value={dateOfBirth}
-                      editable={false}
-                      pointerEvents="none"
+
+                  {isWeb ? (
+                    <input
+                      type="date"
+                      value={
+                        selectedDate
+                          ? format(parsedDate(selectedDate), "yyyy-MM-dd")
+                          : ""
+                      }
+                      max={format(getMaximumDate(), "yyyy-MM-dd")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          const [year, month, day] = val.split("-");
+                          const formatted = `${day}/${month}/${year}`;
+                          setDateOfBirth(formatted);
+                          setSelectedDate(formatted);
+                        }
+                      }}
+                      style={{
+                        width: "98%",
+                        height: 40,
+                        borderColor: colors.darkGray,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        padding: 10,
+                        fontSize: 16,
+                        backgroundColor: colors.lightgrey,
+                      }}
                     />
-                  </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity onPress={showDatePicker}>
+                      <TextInput
+                        style={[globalStyles.input, { backgroundColor: colors.lightgrey, height: 40 }]}
+                        placeholder="--/--/----"
+                        value={dateOfBirth}
+                        editable={false}
+                        pointerEvents="none"
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
           </ScrollView>
         </View>
+
         {isTabOrDesktop ? (
           <View style={webStyles.buttonRow}>
             <Button
@@ -443,15 +456,17 @@ const editProfileScreen = () => {
             <Button onPress={handleEditProfile} title="Save" />
           </View>
         )}
-        <DateTimePickerModal
-          isVisible={isDatePickerVisible}
-          mode="date"
-          maximumDate={getMaximumDate()}
-          // date={new Date(selectedDate || Date.now())}
-          date={selectedDate ? parsedDate(selectedDate) : new Date()}
-          onConfirm={uponDateSelection}
-          onCancel={hideDatePicker}
-        />
+
+        {!isWeb && (
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            maximumDate={getMaximumDate()}
+            date={selectedDate ? parsedDate(selectedDate) : new Date()}
+            onConfirm={uponDateSelection}
+            onCancel={hideDatePicker}
+          />
+        )}
       </KeyBoardWrapper>
     </LayoutComponent>
   );

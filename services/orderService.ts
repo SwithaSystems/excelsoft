@@ -64,6 +64,10 @@ export interface Order {
   pickupDetails?: PickupDetails;
   createdAt: string;
   updatedAt: string;
+
+  status?: string;
+  reason?: string;
+  lastValidStatus?: string;
 }
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
