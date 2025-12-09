@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import { UserAPI } from "@/services/userService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -39,6 +40,8 @@ import {
 } from "@/utilities/validations";
 
 const signUpScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const [email, setEmail] = useState("");
   const [phone, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +49,7 @@ const signUpScreen = () => {
   const [mode, setMode] = useState("phone");
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
 
   const [errors, setErrors] = useState<
     Partial<{
@@ -275,10 +279,19 @@ const signUpScreen = () => {
       hasHeader
       hasFooter={false}
       scrollable={false}
-      headerComponent={<Header headerText={SIGN_UP_SCREEN_TITLE} />}
+      headerComponent={
+        <Header 
+          headerText={SIGN_UP_SCREEN_TITLE}
+          headerStyle={isTabOrDesktop ? styles.signUpHeaderStyle : undefined}
+          headerTitleStyle={isTabOrDesktop ? styles.signUpHeaderTitle : undefined}
+        />
+      }
     >
       <KeyBoardWrapper>
-        <View style={styles.sectionContainer}>
+        <View style={[
+          styles.sectionContainer,
+          isTabOrDesktop && styles.sectionContainerWeb
+        ]}>
           <View style={styles.toggleContainer}>
             <TouchableOpacity
               style={[
@@ -313,10 +326,15 @@ const signUpScreen = () => {
           </View>
           {mode === "email" ? (
             <>
-              <Text style={styles.label}>Email</Text>
+              <Text style={[styles.label, { marginLeft: 8 }]}>Email</Text>
+
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  isTabOrDesktop && styles.inputDesktop
+                ]}
                 placeholder="Enter your email address"
+                placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -324,78 +342,125 @@ const signUpScreen = () => {
                 }}
               />
               {errors.email && (
-                <Text style={globalStyles.errorText}>{errors.email}</Text>
+                <Text style={[
+                  globalStyles.errorText,
+                  isTabOrDesktop && styles.errorTextDesktop
+                ]}>{errors.email}</Text>
               )}
             </>
           ) : (
             <>
-              <Text style={styles.label}> Phone</Text>
-              <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
+              <Text style={[
+                styles.label,
+                isTabOrDesktop && styles.labelDesktop
+              ]}> Phone</Text>
+              <View style={[
+                styles.phoneInputContainer,
+                errors.phone && styles.phoneInputContainerError,
+                isPhoneFocused && styles.phoneInputContainerFocused,
+                isTabOrDesktop && styles.phoneInputContainerDesktop
+              ]}>
+                <View style={[
+                  styles.countryPickerContainer,
+                  isTabOrDesktop && styles.countryPickerContainerDesktop
+                ]}>
                   <CountryPicker
                     countryCode={countryCode}
                     withFilter
                     withFlag={false}
+                    withFlagButton={false}
                     withCallingCode
+                    withCallingCodeButton = {true}
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
                     }}
-                    containerButtonStyle={styles.countryPickerButton}
+                    containerButtonStyle={[
+                      styles.countryPickerButton,
+                      isTabOrDesktop && styles.countryPickerButtonDesktop
+                    ]}
                   />
-                  <Text style={styles.callingCode}>+{callingCode}</Text>
+                  {/* {!isTabOrDesktop && (
+                    <Text style={styles.callingCode}>+{callingCode}</Text>
+                  )} */}
                 </View>
 
                 <TextInput
-                  style={styles.phoneInput}
+                  style={[
+                    styles.phoneInput,
+                    isTabOrDesktop && styles.phoneInputDesktop
+                  ]}
                   placeholder="Enter your phone number"
+                  placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
                   value={phone}
                   onChangeText={(text) => {
                     setPhoneNumber(text);
                     setEmail("");
                     setErrors((prev) => ({ ...prev, phone: undefined }));
                   }}
-                  onBlur={checkIfUserExists}
+                  onFocus={() => setIsPhoneFocused(true)}
+                  onBlur={() => {
+                    setIsPhoneFocused(false);
+                    checkIfUserExists();
+                  }}
                   maxLength={11}
                   keyboardType="phone-pad"
                 />
-
-                {errors.phone && (
-                  <Text style={globalStyles.errorText}>{errors.phone}</Text>
-                )}
               </View>
+              {errors.phone && (
+                <Text style={[
+                  globalStyles.errorText,
+                  isTabOrDesktop && styles.errorTextDesktop
+                ]}>{errors.phone}</Text>
+              )}
             </>
           )}
 
           <View style={styles.passwordContainer}>
-            <Text style={styles.label}> Password</Text>
+            <Text style={[
+              styles.label,
+              isTabOrDesktop && styles.labelDesktop
+            ]}> Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
                 errors.password && globalStyles.errorInput,
+                isTabOrDesktop && { fontSize: 16 },
               ]}
               placeholder="Enter your password"
+              placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
               secureTextEntry
               value={password}
               onFocus={checkIfUserExists}
               onChangeText={setPassword}
             />
             {errors.password && (
-              <Text style={globalStyles.errorText}>{errors.password}</Text>
+              <Text style={[
+                globalStyles.errorText,
+                isTabOrDesktop && styles.errorTextDesktop
+              ]}>{errors.password}</Text>
             )}
-            <Text style={styles.label}> Confirm Password</Text>
+            <Text style={[
+              styles.label,
+              isTabOrDesktop && styles.labelDesktop
+            ]}> Confirm Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
                 errors.confirmPassword && globalStyles.errorInput,
+                isTabOrDesktop && { fontSize: 16 },
               ]}
               placeholder="Confirm Password"
+              placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
               secureTextEntry
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
             {errors.confirmPassword && (
-              <Text style={globalStyles.errorText}>
+              <Text style={[
+                globalStyles.errorText,
+                isTabOrDesktop && styles.errorTextDesktop
+              ]}>
                 {errors.confirmPassword}
               </Text>
             )}

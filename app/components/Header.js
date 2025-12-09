@@ -21,7 +21,7 @@ function Header(props) {
           </View>
 
           <View style={styles.centerContainer}>
-            <Text style={styles.headerTitle}>{props.headerText}</Text>
+            <Text style={[styles.headerTitle, props?.headerTitleStyle]}>{props.headerText}</Text>
           </View>
 
           <View style={styles.rightContainer}>

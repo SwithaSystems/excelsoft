@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
   },
-  // New category dropdown style (for the main selector button)
+
   categoryDropdown: {
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
@@ -33,20 +33,19 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
 
-
   separator: {
     height: 1,
     backgroundColor: colors.secondary,
-    // marginLeft: 8,
-    // marginRight: 8,
     marginTop: 8,
-    marginBottom: 20, 
+    marginBottom: 20,
   },
 
   buttonContainer: {
-    //marginHorizontal: 32,
-    //marginBottom: 16,
+    height: 48,
+    width: Platform.OS === "web" ? "15%" : "100%",
+    marginTop: 8,
   },
+
   inputContainer: {
     marginBottom: 20,
   },
@@ -58,20 +57,96 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  // === Category Row + Container ===
+  categoryActionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginHorizontal: 0,
+    marginBottom: 16,
+    position: "relative",
+    zIndex: 1000,
+  },
+
   categoryContainer: {
     backgroundColor: colors.white,
     borderColor: colors.placeholdergrey,
     borderWidth: 1,
+    justifyContent: "center",
     borderRadius: 8,
-    height: 52,
-    width: "100%",
+    height: Platform.OS === "web" ? 40 : 52,
+    width: Platform.OS === "web" ? "18%" : "100%",
+    minWidth: 220,
+    maxWidth: "100%",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 2,
+    position: "relative",
+    zIndex: 1000,
   },
 
+  // === Add Button ===
+  addButton: {
+    height: Platform.OS === "web" ? 40 : 48,
+    paddingHorizontal: 16,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: Platform.OS === "web" ? 140 : 120,
+  },
+
+  addButtonMobile: {
+    width: "100%",
+    alignSelf: "center",
+    marginVertical: 10,
+    minWidth: "auto",
+  },
+
+  addButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  // === Sticky Containers (Top & Bottom) ===
+  stickyTopContainer: {
+    position: "sticky",
+    top: 0,
+    zIndex: 1000,
+    backgroundColor: colors.white,
+    paddingVertical: 6,
+    marginBottom: -20,
+  },
+
+  stickyBottomContainer: {
+    position: Platform.OS === "web" ? "sticky" : "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 45,
+    paddingVertical: 0,
+    marginBottom: 0,
+    borderTopWidth: 0,
+    borderColor: "transparent",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+
+  // === Category Dropdown Styles ===
   categorySelector: {
     flexDirection: "row",
     alignItems: "center",
@@ -84,50 +159,77 @@ const styles = StyleSheet.create({
   categoryText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: "400",
     color: colors.black,
   },
+
   categoryItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal:16,
+    paddingHorizontal: 16,
   },
+
   categoryImage: {
     width: 32,
     height: 32,
     borderRadius: 6,
     marginRight: 12,
   },
+
   textContainer: {
-    flex: 1, 
+    flex: 1,
   },
+
   categoryDetails: {
     color: colors.secondaryText,
     fontSize: 12,
     marginTop: 2,
   },
-  // New category dropdown text style
+
   categoryDropdownText: {
     fontSize: 16,
     color: colors.black,
-    fontWeight: '400',
+    fontWeight: "400",
   },
-//categorySelector: {
-  //   flexDirection: "row",
-  //   alignItems: "center",
-  //   justifyContent: "space-between",
-  //   // height: "100%",
-  //   //paddingHorizontal: 12,
-  //   minHeight: 24,
-  // },
-  // categoryText: {
-  //   flex: 1,
-  //   fontSize: 16,
-  //   fontWeight: '400',
-  //   color: colors.black,
-  // },
 
+  // === Inline Dropdown List (non-modal) ===
+  dropdownList: {
+    position: "absolute",
+    top: Platform.OS === "web" ? 40 : 52,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    borderColor: colors.placeholdergrey,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    zIndex: 1001,
+    maxHeight: 260,
+    overflow: "hidden",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: Platform.OS === "android" ? 10 : 0,
+  },
+  dropdownScrollArea: {
+    maxHeight: 260,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.placeholdergrey,
+    backgroundColor: colors.white,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    color: colors.primary,
+  },
+
+  // === Image & Details ===
   image: {
     width: 100,
     height: 100,
@@ -135,12 +237,15 @@ const styles = StyleSheet.create({
   },
 
   details: {
-    paddingLeft: 24,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
+
   text: {
     fontSize: 16,
     marginBottom: 4,
   },
+
   bold: {
     fontWeight: 500,
   },

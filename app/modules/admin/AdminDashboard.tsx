@@ -2,12 +2,11 @@ import React, { useMemo, useCallback } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
   Platform,
   StatusBar,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminDashboardStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -26,14 +25,22 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import BrandHeader from "@/app/components/BrandHeader";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
   const [allTodayOrders, setAllTodayOrders] = React.useState<any>([]);
   const [allOrders, setAllOrders] = React.useState<any>([]);
   const [loading, setLoading] = React.useState(true);
-  const userData = useSelector((state: RootState) => state.user.user);
+  const userData = useSelector((state: any) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
   const fetchUser = async () => {
     try {
       console.log("userData in admin dashboard", userData);
@@ -53,7 +60,7 @@ const AdminDashboard = () => {
     fetchUser();
   }, []);
 
-  // Memoize date calculation
+  // Memoize date calculationjj
   const dateOnly = useMemo(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -230,7 +237,19 @@ const AdminDashboard = () => {
             });
           }}
         >
-          <View style={styles.eachOrderItem}>
+          <View
+            style={[
+              styles.eachOrderItem,
+              isTabOrDesktop && {
+                backgroundColor: "white",
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "#e4e4e4",
+                padding: 16,
+                marginBottom: 12,
+              },
+            ]}
+          >
             <View
               style={[
                 globalStyles.flexRow,
@@ -300,6 +319,12 @@ const AdminDashboard = () => {
                       : item.status === "Returned"
                       ? styles.returned
                       : styles.defaultStatus,
+                    isTabOrDesktop && {
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      fontWeight: "600",
+                    },
                   ]}
                 >
                   {item.status}
@@ -316,18 +341,33 @@ const AdminDashboard = () => {
     <View style={[globalStyles.pt_0]}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
-        <Text
+        {/* <Text
           style={styles.linkText}
           onPress={() => {
             redirectToPage(containers.fileUploadAddProductCategoryScreen);
           }}
         >
           Upload Data
-        </Text>
+        </Text> */}
       </View>
 
-      <View style={styles.metricsContainer}>
-        <View style={styles.metricBox}>
+      <View
+        style={[
+          styles.metricsContainer,
+          isTabOrDesktop && {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            paddingHorizontal: 16,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
+        >
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Total Orders</Text>
@@ -348,7 +388,12 @@ const AdminDashboard = () => {
           </View>
         </View>
 
-        <View style={styles.metricBox}>
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
+        >
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Pending Orders</Text>
@@ -360,7 +405,12 @@ const AdminDashboard = () => {
           </View>
         </View>
 
-        <View style={styles.metricBox}>
+        <View
+          style={[
+            styles.metricBox,
+            isTabOrDesktop && { width: "32%", minHeight: 65 },
+          ]}
+        >
           <View style={styles.metricIconContainer}>
             <MaterialIcons name="work-outline" size={24} color={colors.black} />
             <Text style={styles.metricTitle}>Today's Revenue</Text>
@@ -382,7 +432,12 @@ const AdminDashboard = () => {
           </View>
         </View>
         {isSuperAdmin && (
-          <View style={styles.metricBox}>
+          <View
+            style={[
+              styles.metricBox,
+              isTabOrDesktop && { width: "32%", minHeight: 65 },
+            ]}
+          >
             <View style={styles.metricIconContainer}>
               <TouchableOpacity
                 onPress={() => {
@@ -405,12 +460,27 @@ const AdminDashboard = () => {
     </View>
   );
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <BrandHeader hideUserGreeting={true} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <AdminFooter activeTab="home" />
+  );
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<BrandHeader hideUserGreeting={true} />}
+      headerComponent={HeaderComponent}
       hasFooter
-      footerComponent={<AdminFooter activeTab="home" />}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable
+      hideNavItems={true}
     >
       {/* <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[globalStyles.pt_0]}>
@@ -541,12 +611,12 @@ const AdminDashboard = () => {
         windowSize={10}
         initialNumToRender={3}
         getItemLayout={(data, index) => ({
-          length: 80, // Approximate height of each order item
+          length: 80,
           offset: 80 * index,
           index,
         })}
       />
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

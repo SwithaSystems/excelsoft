@@ -8,7 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./SavedAddressStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -20,6 +20,9 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import AddressItem from "../../components/AddressItem";
 import NoContentFound from "@/app/components/NoContentFound";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -79,16 +82,26 @@ const savedAddressScreen = () => {
     setItemToDelete({ id: item._id });
   };
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+
   return (
-    <PageLayout
-      hasHeader
+    <LayoutComponent
       scrollable={false}
-      headerComponent={
-        <Header
-          headerText={SAVED_ADDRESS_SCREEN_TITLE}
-          needResetNavigation={false}
-        />
-      }
+      hasHeader
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <View style={globalStyles.container}>
         <ScrollView>
@@ -176,7 +189,7 @@ const savedAddressScreen = () => {
           />
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

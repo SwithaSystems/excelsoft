@@ -9,7 +9,8 @@ import AdminProfile from "@/app/modules/admin/AdminProfile";
 const routes = {
   // Special routes
   index: "index",
-  // Home & Catalog
+  // Home &
+  uploadScreen: "modules/home/upload",
   homeScreen: "modules/home/Home",
   searchScreen: "modules/catalog/Search",
   productDetailScreen: "modules/catalog/ProductDetail",
@@ -97,6 +98,8 @@ const routes = {
   AdminStoreInformationScreen: "modules/admin/AdminStoreInformation",
   AdminOrderQRScanScreen: "modules/admin/AdminOrderQRScan",
   AdminCategoriesScreen: "modules/admin/AdminCategories",
+  AdminAddCategoriesWebScreen:
+    "modules/admin/componentsWeb/AdminAddCategoriesWeb",
   adminAccessControlScreen: "modules/admin/AdminAccessControl",
   adminAccessControlScreenScreen: "modules/admin/AdminAccessControl",
   fileUploadAddProductCategoryScreen:

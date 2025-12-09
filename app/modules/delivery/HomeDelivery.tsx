@@ -13,6 +13,7 @@ import {
   Platform,
   TouchableOpacity,
   FlatList,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./HomeDeliveryStyles";
 import DateTimePicker, {
@@ -42,6 +43,10 @@ import {
 import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Footer from "@/app/components/Footer";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -523,14 +528,60 @@ const HomeDeliveryScreen = () => {
     validateTime(date, hours, minutes, period);
   };
 
+      const { width } = useWindowDimensions();
+    const isTabOrDesktop = width >= 768;
+  
+    const HeaderComponent = isTabOrDesktop ? (
+      <BrandHeaderWeb />
+    ) : (
+      <Header headerText={DELIVERY_MODE_HOME}    
+    />
+    );
+    const FooterComponent = isTabOrDesktop ? (
+      <FooterWeb />
+    ) : (
+      <Footer />
+    );
+  
+    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<Header headerText={DELIVERY_MODE_HOME} />}
-      hasFooter={false}
-      scrollable
+      headerComponent={HeaderComponent}
+      hasFooter={isTabOrDesktop}
+      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      scrollable={true}
     >
+      <View
+        style={[
+            globalStyles.pt_0,
+            isTabOrDesktop
+          ? {
+            width: "70%",
+            alignSelf: "center",
+            paddingVertical: 20,
+          }
+          : { paddingHorizontal: 0 },
+        ]}
+      >
       <KeyBoardWrapper>
+              {isTabOrDesktop && (
+                <Text
+                  style={{
+                    fontSize: 28,
+                    fontWeight: "300",
+                    marginBottom: 20,
+                    color: colors.black,
+                    textAlign: "center",
+                    width: "100%",
+                    marginTop: 20,
+                  }}
+                >
+                 {DELIVERY_MODE_HOME}
+                </Text>
+              )}
+
         <FlatList
           ListHeaderComponent={
             <>
@@ -668,7 +719,7 @@ const HomeDeliveryScreen = () => {
                     name="add-circle-outline"
                     size={16}
                     color={colors.primary}
-                    styles={{marginLeft: 4, marginBottom: 4}}
+                    styles={{marginLeft: 4, marginBottom: 5}}
                   />
                   </Text>
                 </View>
@@ -731,7 +782,8 @@ const HomeDeliveryScreen = () => {
           renderItem={null}
         />
       </KeyBoardWrapper>
-    </PageLayout>
+      </View>
+    </LayoutComponent>
   );
 };
 

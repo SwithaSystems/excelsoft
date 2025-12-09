@@ -12,8 +12,9 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Dimensions,
   Alert,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -31,29 +32,16 @@ import SearchBar from "@/app/components/searchBar";
 import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Pagination from "./componentsWeb/PaginationWeb";
 
-// Define Product interface
-// interface Product {
-//   id?: number | string;
-//   _id?: string;
-//   name: string;
-//   image: string[];
-//   categoryId: number[];
-//   netPrice: number;
-//   discount: number;
-//   stock: number;
-//   isVatApplicable: boolean;
-//   vatRate: number;
-//   vatAmount: number;
-// }
-
-// Define API response interface
 interface ApiResponse {
   data: Product[];
   total: number;
 }
 
-// Define Category interface
 interface Category {
   id: number;
   name: string;
@@ -74,12 +62,37 @@ const AdminProductDashboard = () => {
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [allCategories, setAllCategories] = useState<any>([]);
   const [selectCategory, setSelectCategory] = useState<string | number>("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  // Use refs to prevent multiple simultaneous requests
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
-  const ITEMS_PER_PAGE = 50;
+  const ITEMS_PER_PAGE = isTabOrDesktop ? 10 : 50;
+
+  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+
+  const fetchProducts = async (page: number) => {
+    try {
+      setIsLoading(true);
+      const response = await fetchData(page);
+      setAllProductsList(response.data);
+      setCurrentPage(page);
+      setTotalProducts(response.total);
+      setHasMore(response.hasMore);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load page data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   async function getallCategories() {
     try {
@@ -91,16 +104,23 @@ const AdminProductDashboard = () => {
       console.error("Error fetching categories:", error);
     }
   }
+
   useEffect(() => {
     getallCategories();
   }, []);
+
   const category_Products = productsList.filter((product: any) =>
     selectCategory && selectCategory !== ""
       ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
       : true
   );
+
   const productsListToShow =
     selectCategory && selectCategory !== "" ? category_Products : productsList;
+
+  // Calculate total pages for pagination - hide pagination when category is selected
+  // since filtering is client-side and doesn't use server pagination
+  const shouldShowPagination = (!selectCategory || selectCategory === "") && totalPages > 1;
 
   const fetchData = async (
     page: number
@@ -147,12 +167,11 @@ const AdminProductDashboard = () => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         setSuggestions([]);
         if (debouncedQuery.length === 0) {
-          loadInitialData(); // Reload all products when search is cleared
+          loadInitialData();
         }
         return;
       }
 
-      // For suggestions (keep existing logic)
       const API_URL = process.env.EXPO_PUBLIC_API_URL;
       try {
         const response = await axios.get(
@@ -165,15 +184,11 @@ const AdminProductDashboard = () => {
         console.error("Error fetching suggestions:", error);
         setSuggestions([]);
       }
-
-      // Optionally perform real-time search (uncomment if you want search-as-you-type)
-      // await searchProductsByName(debouncedQuery);
     };
 
     performSearch();
   }, [debouncedQuery]);
 
-  // Load initial data
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
@@ -200,9 +215,7 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Load more data for pagination
   const loadMoreData = async () => {
-    // Prevent multiple simultaneous requests
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
       console.log("Load more blocked:", {
         loadingMoreRef: loadingMoreRef.current,
@@ -223,7 +236,6 @@ const AdminProductDashboard = () => {
       const response = await fetchData(nextPage);
 
       if (response.data.length > 0) {
-        // Filter out duplicates based on unique identifier
         setAllProductsList((prevProducts: any) => {
           const existingIds = new Set(
             prevProducts.map((item: any) => item._id || item.id)
@@ -234,9 +246,7 @@ const AdminProductDashboard = () => {
           );
 
           console.log(
-            `Adding ${newItems.length} new items (${
-              response.data.length - newItems.length
-            } duplicates filtered)`
+            `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
           );
           return [...prevProducts, ...newItems];
         });
@@ -256,11 +266,9 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Handle refresh
   const onRefresh = async () => {
     setIsRefreshing(true);
 
-    // Reset pagination state
     setCurrentPage(1);
     setHasMore(true);
     loadingMoreRef.current = false;
@@ -287,7 +295,6 @@ const AdminProductDashboard = () => {
     }
   };
 
-  // Fetch categories
   const fetchAllCategories = useCallback(async () => {
     try {
       const data: Category[] = await categoryService.getAllCategories();
@@ -297,55 +304,71 @@ const AdminProductDashboard = () => {
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     loadInitialData();
     fetchAllCategories();
   }, [fetchAllCategories]);
 
-  // Handle product deletion
+  const performDelete = async (item: Product) => {
+    try {
+      setIsLoading(true);
+      const result = await ProductsAPI.deleteProduct(item?._id);
+      if (result) {
+        await onRefresh();
+        if (isWeb || isTabOrDesktop) {
+          setSuccessModalVisible(true);
+        } else {
+          Alert.alert("Success", "Product deleted successfully");
+        }
+      }
+    } catch (error: any) {
+      console.log("Delete error:", error?.response?.data);
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Something went wrong while deleting the product.";
+      
+      if (isWeb) {
+        alert(errorMessage);
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setDeleteModalVisible(false);
+      setProductToDelete(null);
+    }
+  };
+
   const handleDeleteProduct = useCallback(
     (item: Product) => {
-      Alert.alert(
-        "Delete Product",
-        "Are you sure you want to delete this product?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                setIsLoading(true);
-                const result = await ProductsAPI.deleteProduct(item?._id);
-                if (result) {
-                  await onRefresh(); // Refresh the entire list
-                  Alert.alert("Success", "Product deleted successfully");
-                }
-              } catch (error: any) {
-                console.log("Delete error:", error?.response?.data);
-                const errorMessage =
-                  error?.response?.data?.message ||
-                  "Something went wrong while deleting the product.";
-                Alert.alert("Error", errorMessage);
-              } finally {
-                setIsLoading(false);
-              }
+      if (isWeb || isTabOrDesktop) {
+        setProductToDelete(item);
+        setDeleteModalVisible(true);
+      } else {
+        Alert.alert(
+          "Delete Product",
+          "Are you sure you want to delete this product?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Delete",
+              style: "destructive",
+              onPress: async () => {
+                await performDelete(item);
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }
     },
-    [onRefresh]
+    [isWeb, isTabOrDesktop]
   );
 
-  // Generate unique key for FlatList items
   const getUniqueKey = useCallback((item: Product, index: number) => {
     const id = item._id || item.id;
     return `product-${id}-${index}`;
   }, []);
 
-  // Product card component
   const ProductCard = useCallback(
     ({ item }: { item: Product }) => {
       const getStockBadge = (stock: number) => {
@@ -383,7 +406,7 @@ const AdminProductDashboard = () => {
                 />
               )}
             </View>
-            <View style={[styles.details, { flex: 1, paddingRight: 4 }]}>
+            <View style={[styles.details, { flex: 1, paddingRight: 0 }]}>
               <View
                 style={{
                   flexDirection: "row",
@@ -474,16 +497,14 @@ const AdminProductDashboard = () => {
     [categories, handleDeleteProduct]
   );
 
-  // Calculate max ID for new products
   const maxId = productsList.reduce((max: number, product: Product) => {
     return product.id && typeof product.id === "number" && product.id > max
       ? product.id
       : max;
   }, 0);
 
-  // Handle end reached with proper throttling
   const handleEndReached = useCallback(() => {
-    if (!isLoadingMore && hasMore && !isLoading) {
+    if (!isTabOrDesktop && !isLoadingMore && hasMore && !isLoading) {
       loadMoreData();
     }
   }, [isLoadingMore, hasMore, isLoading]);
@@ -524,7 +545,6 @@ const AdminProductDashboard = () => {
     await searchProductsByName(searchQuery.trim());
   }, [searchQuery]);
 
-  // Add a clear search function:
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
     loadInitialData();
@@ -538,130 +558,60 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+
   return (
-    <PageLayout
-      hasFooter
+    <LayoutComponent
       hasHeader
-      scrollable={false}
-      headerComponent={
-        <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
-      }
-      footerComponent={<AdminFooter activeTab="products" />}
+      headerComponent={HeaderComponent}
+      hasFooter
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable={isTabOrDesktop ? false : true}
+      hideNavItems={true}
     >
-      <View style={[globalStyles.pt_0, { paddingTop: 16, flex: 1 }]}>
-        <View>
-          <SearchBar
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            onPress={handleSearch}
-          />
-        </View>
-        <View>
-       <View style={styles.inputContainer}>
-          {/* <Text style={styles.label}>Category *</Text> */}
-          <View style={styles.categoryContainer}>
-          <ModalSelector
-            data={[
-              { key: "", label: "All Categories", value: "" },
-              ...allCategories.map((cat: any, index: number) => ({
-              key: cat.id || index,
-              label: cat.name, 
-              value: cat.id || cat._id,
-              })),
-            ]}
-            initValue="Select Category"
-            // selectedKey={selectCategory}
-            onChange={(option) => {
-              setSelectCategory(option.value);
-              console.log("Selected category:", option.value || "All Categories");
-            }}
-            optionTextStyle={{
-              color: colors.primary,
-              fontSize: 16,
-              fontWeight: '400',
-              //paddingVertical: 16,
-              paddingHorizontal: 20,
-              textAlign: 'center',
-            }}
-            optionContainerStyle={{
-              backgroundColor: colors.white,
-              borderBottomWidth: 0.5,
-              borderBottomColor: colors.slateGrey || colors.placeholdergrey,
-            }}
-            // sectionTextStyle={{
-            //   color: colors.primary,
-            //   fontSize: 18,
-            //   fontWeight: '600',
-            //   paddingVertical: 16,
-            //   paddingHorizontal: 16,
-            //   backgroundColor: '#F8F9FA',
-            // }}
-            cancelStyle={{
-              backgroundColor: colors.white,
-              // borderTopWidth: 1,
-              borderRadius: 0,
-              borderTopColor: colors.slateGrey || colors.placeholdergrey,
-              paddingVertical: 16,
-            }}
-            cancelTextStyle={{
-              color: colors.primary,
-              fontSize: 16,
-              fontWeight: "600",
-              textAlign: 'center',
-            }}
-            cancelText="cancel"
-            accessible={true}
-            accessibilityLabel="Select Category Filter"
-            animationType="slide"
-            backdropPressToClose={true}
-            overlayStyle={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              flex: 1,
-              justifyContent: 'flex-end',
-            }}
-            selectStyle={styles.categoryContainer}
-            selectTextStyle={styles.categoryText}
+      <View style={[
+          // globalStyles.pt_0, 
+          {flex: 1 }
+        ]}>
+        {!isTabOrDesktop && (
+          <View>
+            <SearchBar
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+              onPress={handleSearch}
+            />
+          </View>
+        )}
 
-              // modalStyle={{
-              //   backgroundColor: colors.white,
-              //   borderTopLeftRadius: 20,
-              //   borderTopRightRadius: 20,
-              //   maxHeight: '80%',
-              // }}
-          >
-            <View style={styles.categorySelector}>
-              <Text
-                style={[
-                  styles.categoryText,
-                  {
-                    color:
-                      selectCategory && selectCategory !== ""
-                        ? colors.black
-                        : colors.slateGrey,
-                  },
-                ]}
-              >
-                {selectCategory && selectCategory !== ""
-                  ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
-                  : "All Categories"}
-              </Text>
-              <Ionicons
-                name="chevron-down-outline"
-                size={20}
-                color={colors.primary}
-              />
-            </View>
-          </ModalSelector>
-        </View>
-        </View>
-        </View>
-
-        {/* <View style={styles.separator} /> */}
-
-        <View style={styles.buttonContainer}>
-          <Button
+        <View
+          style={[
+            styles.headerRow,
+            {
+              justifyContent: "space-between",
+              paddingTop: 10,
+              alignItems: "center",
+              marginBottom: 5,
+              marginTop: 0,
+            },
+          ]}
+        >
+          {isTabOrDesktop && (
+            <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+              Product List
+            </Text>
+          )}
+          <TouchableOpacity
+            style={[styles.addButton, !isTabOrDesktop && styles.addButtonMobile]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
                 newProduct: true,
@@ -669,8 +619,83 @@ const AdminProductDashboard = () => {
                 onGoBack: () => onRefresh(),
               });
             }}
-            title="Add New Product"
-          />
+          >
+            <Text style={styles.addButtonText}>+ Add New Product</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
+          <View style={styles.stickyTopContainer}>
+            <View style={styles.categoryActionRow}>
+              {isTabOrDesktop && (
+                <SearchBar
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  onPress={handleSearch}
+                  widthPercent={35}
+                  height={40}
+                />
+              )}
+              <View style={styles.categoryContainer}>
+                <TouchableOpacity
+                  onPress={() => setIsCategoryOpen((prev) => !prev)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.categorySelector}>
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        {
+                          color:
+                            selectCategory && selectCategory !== ""
+                              ? colors.black
+                              : colors.slateGrey,
+                        },
+                      ]}
+                    >
+                      {selectCategory && selectCategory !== ""
+                        ? allCategories.find((c: any) => (c.id || c._id) == selectCategory)?.name
+                        : "All Categories"}
+                    </Text>
+                    <Ionicons
+                      name={isCategoryOpen ? "chevron-up" : "chevron-down"}
+                      size={20}
+                      color={colors.black}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {isCategoryOpen && (
+                  <View style={styles.dropdownList}>
+                    <View style={styles.dropdownScrollArea}>
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setSelectCategory("");
+                          setIsCategoryOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>All Categories</Text>
+                      </TouchableOpacity>
+                      {allCategories.map((cat: any, index: number) => (
+                        <TouchableOpacity
+                          key={cat.id || cat._id || index}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setSelectCategory(cat.id || cat._id);
+                            setIsCategoryOpen(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownItemText}>{cat.name}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
         </View>
 
         <View style={{ marginTop: 16, flex: 1 }}>
@@ -689,11 +714,7 @@ const AdminProductDashboard = () => {
               />
             }
             ListFooterComponent={() => {
-              if (
-                isLoadingMore &&
-                hasMore &&
-                (!selectCategory || selectCategory === "")
-              ) {
+              if (isLoadingMore && hasMore && (!selectCategory || selectCategory === "")) {
                 return (
                   <View style={{ padding: 20, alignItems: "center" }}>
                     <ActivityIndicator size="large" color={colors.primary} />
@@ -703,16 +724,10 @@ const AdminProductDashboard = () => {
                   </View>
                 );
               }
-              if (
-                !hasMore &&
-                productsListToShow.length > 0 &&
-                (!selectCategory || selectCategory === "")
-              ) {
+              if (!hasMore && productsListToShow.length > 0 && (!selectCategory || selectCategory === "")) {
                 return (
                   <View style={{ padding: 20, alignItems: "center" }}>
-                    <Text style={{ color: colors.secondaryText }}>
-                      No more products to load
-                    </Text>
+                    <Text style={{ color: colors.secondaryText }}>No more products to load</Text>
                   </View>
                 );
               }
@@ -737,7 +752,7 @@ const AdminProductDashboard = () => {
             initialNumToRender={10}
             windowSize={5}
             contentContainerStyle={{
-              paddingBottom: 100,
+              paddingBottom: 0,
               flexGrow: 1,
             }}
           />
@@ -760,8 +775,52 @@ const AdminProductDashboard = () => {
             </View>
           )}
         </View>
+
+        {isTabOrDesktop && shouldShowPagination && (
+        <View style={styles.stickyBottomContainer}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              fetchProducts(page);
+            }}
+          />
+        </View>
+      )}
       </View>
-    </PageLayout>
+
+      <ConfirmationModal
+        isModalVisible={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setProductToDelete(null);
+        }}
+        handleCancel={() => {
+          setDeleteModalVisible(false);
+          setProductToDelete(null);
+        }}
+        handleSubmit={() => {
+          if (productToDelete) {
+            performDelete(productToDelete);
+          }
+        }}
+        title="Delete Product"
+        text="Are you sure you want to delete this product?"
+        submitText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmationModal
+        isModalVisible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        handleSubmit={() => setSuccessModalVisible(false)}
+        title="Success"
+        text="Product deleted successfully"
+        submitText="OK"
+        cancelText=""
+      />
+    </LayoutComponent>
   );
 };
 

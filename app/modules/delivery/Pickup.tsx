@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   TextInputProps,
+  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -47,6 +48,10 @@ import {
   isValidName,
   isValidPhoneNumber,
 } from "../../../utilities/validations";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
@@ -668,26 +673,58 @@ const PickupScreen = () => {
     </View>
   );
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header
+      headerText={
+        isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP
+      }
+    />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
-    <PageLayout
-      hasFooter={false}
+    <LayoutComponent
       hasHeader
+      headerComponent={HeaderComponent}
+      hasFooter={isTabOrDesktop}
+      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
       scrollable={false}
-      headerComponent={
-        <Header
-          headerText={
-            isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP
-          }
-        />
-      }
     >
+      {isTabOrDesktop && (
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "300",
+            marginBottom: 20,
+            color: colors.black,
+            textAlign: "center",
+            width: "100%",
+            marginTop: 20,
+          }}
+        >
+          {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
+        </Text>
+      )}
       <KeyBoardWrapper>
         <ScrollView ref={scrollViewRef}>
           <View
             style={[
-              // globalStyles.sectionContent,
               globalStyles.pt_0,
+              isTabOrDesktop
+                ? {
+                    width: "70%",
+                    alignSelf: "center",
+                    paddingVertical: 20,
+                  }
+                : { paddingHorizontal: 0 },
             ]}
           >
             {/* Instructions */}
@@ -845,7 +882,7 @@ const PickupScreen = () => {
                       accessibilityLabel="Select vehicle type"
                     >
                       <TextInput
-                        style={globalStyles.picker_50}
+                        style={[globalStyles.picker_50, { paddingLeft: 10 }]}
                         editable={false}
                         value={vehicleType}
                       />
@@ -990,7 +1027,7 @@ const PickupScreen = () => {
         {/* </View> */}
       </KeyBoardWrapper>
       {/* </SafeAreaView> */}
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

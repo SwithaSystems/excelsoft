@@ -9,9 +9,15 @@ import {
   View,
   Text,
   FlatList,
-  SafeAreaView,
   ActivityIndicator,
+  useWindowDimensions,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
 } from "react-native";
+import { Ionicons, Feather } from "@expo/vector-icons";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "../../components/Header";
 import { Product, ProductsAPI } from "@/services/productService";
@@ -21,7 +27,10 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import styles from "./SearchResultsStyles";
 import ProductCard from "@/app/components/ProductCard";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import Footer from "@/app/components/Footer";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import CategoryBadges from "./Components/CategoryBadges";
 import colors from "@/constants/colors";
 
@@ -29,6 +38,12 @@ const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
     useLocalSearchParams();
   const router = useRouter();
+  const { width } = useWindowDimensions();
+
+  // Device breakpoints
+  const isTabOrDesktop = width >= 768;
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 768 && width < 1024;
 
   // Ref to track component mount status
   const isMountedRef = useRef(true);
@@ -57,6 +72,13 @@ const SearchResultsScreen = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
+  const [isSortDropdownVisible, setIsSortDropdownVisible] = useState(false);
+  
+  const sortOptions = [
+    { label: "Relevance", value: "default" },
+    { label: "Low to High", value: "lowToHigh" },
+    { label: "High to Low", value: "highToLow" },
+  ];
 
   // Memoize header title to prevent unnecessary re-renders
   const headerTitle = useMemo(() => {
@@ -95,8 +117,17 @@ const SearchResultsScreen = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const ITEMS_PER_PAGE = 50;
 
+  // Note: fetchAllProducts is only used for category browsing (isFromSearch)
+  // For text search queries, we use server-side search API directly (see useEffect below)
   const fetchAllProducts = useCallback(
     async (pageNum = 1, isLoadMore = false) => {
+      // Only fetch paginated products for category browsing, not for text search
+      // Text search uses server-side API (productsBy_Name_Id) which returns all results
+      if (!isFromSearch) {
+        console.log("Skipping fetchAllProducts - using server-side search API instead");
+        return;
+      }
+
       // Prevent multiple simultaneous calls
       if (
         isLoadMore &&
@@ -146,56 +177,58 @@ const SearchResultsScreen = () => {
         isLoadingMoreRef.current = false;
       }
     },
-    [ITEMS_PER_PAGE]
+    [ITEMS_PER_PAGE, isFromSearch]
   );
 
-  // FIX 1: Fetch all products with proper cleanup
+  // Fetch search results using server-side search API
   useEffect(() => {
     if (!isFromSearch && searchQuery) {
       let cancelled = false;
 
-      // const fetchAllProducts = async () => {
-      //   try {
-      //     setIsLoading(true);
-      //     setError(null);
-      //     const data = await ProductsAPI.getAllProducts();
-
-      //     // Check if component is still mounted and request wasn't cancelled
-      //     if (!cancelled && isMountedRef.current) {
-      //       setAllProducts(data);
-      //     }
-      //   } catch (err) {
-      //     console.error("Error fetching all products:", err);
-      //     if (!cancelled && isMountedRef.current) {
-      //       setError("Failed to fetch products. Please try again.");
-      //     }
-      //   } finally {
-      //     if (!cancelled && isMountedRef.current) {
-      //       setIsLoading(false);
-      //     }
-      //   }
-      // };
-      const initializeFetch = async () => {
+      const fetchSearchResults = async () => {
         try {
+          setIsLoading(true);
           setError(null);
-          await fetchAllProducts();
-        } catch (err) {
+          setHasInitialDataLoaded(false);
+          
+          // Use server-side search API (same as admin) to search all products
+          const searchResults = await ProductsAPI.productsBy_Name_Id(searchQuery);
+          
+          // Check if component is still mounted and request wasn't cancelled
           if (!cancelled && isMountedRef.current) {
-            setError("Failed to fetch products. Please try again.");
+            console.log("Search results for query:", searchQuery, "Found:", searchResults?.length || 0, "products");
+            setAllProducts(searchResults || []);
+            setTotal(searchResults?.length || 0);
+            setPage(1);
+            setHasInitialDataLoaded(true);
+          }
+        } catch (err) {
+          console.error("Error searching products:", err);
+          if (!cancelled && isMountedRef.current) {
+            setError("Failed to search products. Please try again.");
+            setAllProducts([]);
+            setTotal(0);
+          }
+        } finally {
+          if (!cancelled && isMountedRef.current) {
+            setIsLoading(false);
           }
         }
       };
 
-      initializeFetch();
-
-      // fetchAllProducts();
+      fetchSearchResults();
 
       // Cleanup function
       return () => {
         cancelled = true;
       };
+    } else if (!isFromSearch && !searchQuery) {
+      // If no search query, clear products
+      setAllProducts([]);
+      setTotal(0);
+      setHasInitialDataLoaded(false);
     }
-  }, [fetchAllProducts]);
+  }, [searchQuery, isFromSearch]);
 
   // FIX 2: Fetch subcategories with proper cleanup
   useEffect(() => {
@@ -320,17 +353,11 @@ const SearchResultsScreen = () => {
     let baseProducts: Product[] = [];
 
     if (isFromSearch) {
+      // Category-based search - use products from category
       baseProducts = products;
     } else if (searchQuery) {
-      const normalizedQuery = searchQuery.toLowerCase();
-      baseProducts = allProducts.filter(
-        (product) =>
-          product &&
-          product.name &&
-          product.description &&
-          (product.name.toLowerCase().includes(normalizedQuery) ||
-            product.description.toLowerCase().includes(normalizedQuery))
-      );
+      // Text search - use server-side search results (already filtered by API)
+      baseProducts = allProducts;
     }
 
     // Apply sorting
@@ -351,28 +378,15 @@ const SearchResultsScreen = () => {
         return sorted.sort((a, b) => (a.netPrice || 0) - (b.netPrice || 0));
       case "highToLow":
         return sorted.sort((a, b) => (b.netPrice || 0) - (a.netPrice || 0));
+      case "default":
       default:
         return sorted;
     }
   }, [isFromSearch, products, allProducts, searchQuery, sortOption]);
 
-  useEffect(() => {
-    if (
-      !isLoading &&
-      hasInitialDataLoaded &&
-      displayProducts.length === 0 &&
-      page * ITEMS_PER_PAGE < total
-    ) {
-      fetchAllProducts(page + 1, true);
-    }
-  }, [
-    isLoading,
-    hasInitialDataLoaded,
-    displayProducts.length,
-    page,
-    total,
-    fetchAllProducts,
-  ]);
+  // Note: For search queries, we use server-side search API which returns all matching products
+  // No need for pagination on search results since API returns all matches
+  // Pagination is only needed for category-based browsing (isFromSearch)
 
   // Handle category selection from badges
   const handleCategorySelect = useCallback((catId: number) => {
@@ -387,37 +401,65 @@ const SearchResultsScreen = () => {
   // Render product item
   const renderItem = useCallback(
     ({ item, index }: { item: Product; index: number }) => {
-      const isEven = index % 2 === 0;
-      return (
-        <View
-          style={[
-            styles.productItem,
-            isEven ? styles.leftItem : styles.rightItem,
-          ]}
-        >
-          <ProductCard
-            _id={item._id}
-            id={item.id}
-            name={item.name}
-            description={item.description}
-            discount={item.discount}
-            netPrice={item.netPrice}
-            image={item.image?.[0] || ""}
-            productColors={item.productColors}
-            categoryId={item.categoryId}
-            rating={item.rating}
-            noOfreviews={item.noOfreviews}
-            reviews={item.reviews}
-            noOfReviews={0}
-            isReturnable={false}
-            isVatApplicable={false}
-            vatRate={0}
-            vatAmount={0}
-          />
-        </View>
-      );
+      if (isTabOrDesktop) {
+        // Web layout: no special left/right styling needed
+        return (
+          <View style={styles.productItemWeb}>
+            <ProductCard
+              _id={item._id}
+              id={item.id}
+              name={item.name}
+              description={item.description}
+              discount={item.discount}
+              netPrice={item.netPrice}
+              image={item.image?.[0] || ""}
+              productColors={item.productColors}
+              categoryId={item.categoryId}
+              rating={item.rating}
+              noOfreviews={item.noOfreviews}
+              reviews={item.reviews}
+              noOfReviews={0}
+              isReturnable={false}
+              isVatApplicable={false}
+              vatRate={0}
+              vatAmount={0}
+            />
+          </View>
+        );
+      } else {
+        // Mobile layout: existing 2-column layout
+        const isEven = index % 2 === 0;
+        return (
+          <View
+            style={[
+              styles.productItem,
+              isEven ? styles.leftItem : styles.rightItem,
+            ]}
+          >
+            <ProductCard
+              _id={item._id}
+              id={item.id}
+              name={item.name}
+              description={item.description}
+              discount={item.discount}
+              netPrice={item.netPrice}
+              image={item.image?.[0] || ""}
+              productColors={item.productColors}
+              categoryId={item.categoryId}
+              rating={item.rating}
+              noOfreviews={item.noOfreviews}
+              reviews={item.reviews}
+              noOfReviews={0}
+              isReturnable={false}
+              isVatApplicable={false}
+              vatRate={0}
+              vatAmount={0}
+            />
+          </View>
+        );
+      }
     },
-    []
+    [isTabOrDesktop]
   );
 
   // Render category badges component
@@ -452,7 +494,9 @@ const SearchResultsScreen = () => {
       const message = searchQuery
         ? `No products found for "${searchQuery}"`
         : "No products found";
-      if (loadingMore || page * ITEMS_PER_PAGE < total) {
+      // For text search, server-side API returns all results, so no need to check pagination
+      // For category browsing (isFromSearch), check if more pages need to be loaded
+      if (isFromSearch && (loadingMore || page * ITEMS_PER_PAGE < total)) {
         return (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -469,6 +513,56 @@ const SearchResultsScreen = () => {
     }
 
     if (displayProducts.length > 0) {
+      // Determine number of columns based on screen size
+      const numColumns = isDesktop ? 5 : isTablet ? 4 : 2;
+
+      if (isTabOrDesktop) {
+        // Web: Calculate card width based on number of columns and gap
+        // PageLayoutWeb applies paddingHorizontal to content, so we need to account for that
+        const numColumns = isDesktop ? 5 : 4;
+        const gap = 16;
+        // PageLayoutWeb content padding: desktop: 64px per side, tablet: 32px per side
+        const sidePadding = isDesktop ? 64 : 32;
+        // Account for content padding from PageLayoutWeb (applied to ContentWrapper)
+        // The content area is already padded, but we calculate based on full width
+        // and subtract padding to get available content width
+        const availableWidth = width - (sidePadding * 2);
+        const totalGapWidth = gap * (numColumns - 1);
+        const cardWidth = Math.max(160, Math.floor((availableWidth - totalGapWidth) / numColumns));
+        
+        // Web: Use View with flexWrap for better control
+        return (
+          <View style={styles.productsGridWeb}>
+            {displayProducts.map((item, index) => (
+              <View
+                key={item?.id ? `product-${item.id}` : `item-${index}`}
+                style={[styles.productItemWeb, { width: cardWidth, maxWidth: cardWidth, flexShrink: 0, flexGrow: 0 }]}
+              >
+                <ProductCard
+                  _id={item._id}
+                  id={item.id}
+                  name={item.name}
+                  description={item.description}
+                  discount={item.discount}
+                  netPrice={item.netPrice}
+                  image={item.image?.[0] || ""}
+                  productColors={item.productColors}
+                  categoryId={item.categoryId}
+                  rating={item.rating}
+                  noOfreviews={item.noOfreviews}
+                  reviews={item.reviews}
+                  noOfReviews={0}
+                  isReturnable={false}
+                  isVatApplicable={false}
+                  vatRate={0}
+                  vatAmount={0}
+                />
+              </View>
+            ))}
+          </View>
+        );
+      }
+
       return (
         <FlatList
           data={displayProducts}
@@ -478,19 +572,25 @@ const SearchResultsScreen = () => {
             return key;
           }}
           renderItem={renderItem}
-          numColumns={2}
+          numColumns={numColumns}
           columnWrapperStyle={styles.row}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
+          nestedScrollEnabled={true}
           onEndReached={() => {
-            if (!isLoadingMoreRef.current && page * ITEMS_PER_PAGE < total) {
+            // Only load more for category browsing (isFromSearch), not for text search
+            // Text search uses server-side API which returns all results at once
+            if (isFromSearch && !isLoadingMoreRef.current && page * ITEMS_PER_PAGE < total) {
               fetchAllProducts(page + 1, true);
             }
           }}
           onEndReachedThreshold={0.5}
           ListFooterComponent={() =>
-            loadingMore ? (
-              <ActivityIndicator size="large" color={colors.primary} />
+            loadingMore && isFromSearch ? (
+              <View style={styles.loadingFooter}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
             ) : null
           }
         />
@@ -512,19 +612,126 @@ const SearchResultsScreen = () => {
     if (error) return null;
 
     if (!isFromSearch && searchQuery) {
-      return (
-        <Text style={styles.resultsCount}>
-          {displayProducts.length} search results for "{searchQuery}"
-        </Text>
-      );
+      if (isTabOrDesktop) {
+        // Web: Title and filter/sort buttons on same line
+        return (
+          <View style={styles.resultsHeaderContainerWeb}>
+            <Text style={styles.resultsTitleWeb}>
+              Results for "{searchQuery}"
+            </Text>
+            <View style={styles.filterSortContainerWeb}>
+              <TouchableOpacity
+                style={styles.filterButtonWeb}
+                onPress={() => {
+                  redirectToPage(containers.filterScreen, {
+                    categoryId: parsedCategoryId || 0,
+                  });
+                }}
+              >
+                <Feather name="filter" size={18} color={colors.black} />
+                <Text style={styles.filterButtonTextWeb}>Filter</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.sortButtonWeb}
+                onPress={() => setIsSortDropdownVisible(true)}
+              >
+                <Ionicons name="swap-vertical" size={18} color={colors.black} />
+                <Text style={styles.sortButtonTextWeb}>Sort</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      } else {
+        // Mobile: Keep original layout
+        return (
+          <Text style={styles.resultsCount}>
+            {displayProducts.length} search results for "{searchQuery}"
+          </Text>
+        );
+      }
     }
 
-    if (isFromSearch) {
+    if (isFromSearch && !isTabOrDesktop) {
       return renderCategoryBadges();
     }
 
     return null;
   };
+
+  // Choose layout component based on screen size
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={headerTitle} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer navigation={router} />
+  );
+
+  if (isTabOrDesktop) {
+    return (
+      <LayoutComponent
+        hasFooter
+        hasHeader
+        scrollable={true}
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent}
+      >
+        <View style={styles.webContainer}>
+          {renderResultsInfo()}
+          {/* Sort Dropdown Modal - Only for web */}
+          {isTabOrDesktop && (
+            <Modal
+              visible={isSortDropdownVisible}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setIsSortDropdownVisible(false)}
+            >
+              <View style={styles.modalOverlayWeb}>
+                <TouchableOpacity
+                  style={StyleSheet.absoluteFill}
+                  activeOpacity={1}
+                  onPress={() => setIsSortDropdownVisible(false)}
+                />
+                <View style={styles.sortDropdownWeb}>
+                  {sortOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.sortOptionWeb,
+                        sortOption === option.value && styles.activeSortOptionWeb,
+                      ]}
+                      onPress={() => {
+                        setSortOption(option.value);
+                        setIsSortDropdownVisible(false);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.sortOptionTextWeb,
+                          sortOption === option.value && styles.activeSortOptionTextWeb,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </Modal>
+          )}
+          {isFromSearch && renderCategoryBadges()}
+          <View style={styles.productsContainerWeb}>
+            {renderContent()}
+          </View>
+        </View>
+      </LayoutComponent>
+    );
+  }
+
   return (
     <PageLayout
       hasFooter

@@ -2,7 +2,9 @@ import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, TextInput } from "react-native";
+import { Alert, Dimensions, TextInput, useWindowDimensions } from "react-native";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
   FlatList,
   Image,
@@ -24,12 +26,10 @@ import {
 import { removeFromSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import { addToSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import colors from "../../../constants/colors";
-import SpecialOffersBanner from "./Components/SpecialOffersBanner";
 import CartItem from "./Components/CartItem";
 import OrderSummary from "../../components/OrderSummary";
 import Button from "@/app/components/commonComponents/Button";
 import RecommendedProductsSlider from "@/app/components/RecommendedProductsSlider";
-import products from "@/data/products";
 import SavedLaterItem from "./Components/SavedLaterItem";
 import ConfirmationModal from "../../components/commonComponents/ConfirmationModal";
 import { router } from "expo-router";
@@ -42,6 +42,7 @@ import * as SecureStore from "expo-secure-store";
 import { RootState } from "@/store/store";
 import NoContentFound from "@/app/components/NoContentFound";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   SESSION_EXPIRED,
@@ -53,6 +54,8 @@ import styles from "./CartStyles";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
@@ -65,6 +68,8 @@ const CartScreen = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [isLoadingSimilarProducts, setIsLoadingSimilarProducts] = useState(false);
 
   // Bulk product validation using single API call
   const validateAndRefreshProducts = async (items: any[]) => {
@@ -229,6 +234,32 @@ const CartScreen = () => {
     updateStockAvailability();
   }, [cartItems.length, savedForLaterItems.length]);
 
+  // Fetch similar products for recommendations
+  useEffect(() => {
+    const fetchSimilarProducts = async () => {
+      try {
+        setIsLoadingSimilarProducts(true);
+        const response = await ProductsAPI.getAllProducts(1, 20);
+        // Filter out products that are already in cart
+        const cartItemIds = cartItems.map((item: any) => item._id || item.id);
+        const filteredProducts = response.data.filter(
+          (product: Product) => !cartItemIds.includes(product._id || product.id)
+        );
+        // Take first 4 products
+        setSimilarProducts(filteredProducts.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching similar products:", error);
+        setSimilarProducts([]);
+      } finally {
+        setIsLoadingSimilarProducts(false);
+      }
+    };
+
+    if (isTabOrDesktop) {
+      fetchSimilarProducts();
+    }
+  }, [cartItems, isTabOrDesktop]);
+
   const handlePlaceOrder = async () => {
     if (isPlacingOrder) return; // Prevent multiple clicks
 
@@ -280,16 +311,55 @@ const CartScreen = () => {
     setItemToDelete(null);
   };
 
+  const handleClearCart = () => {
+    Alert.alert(
+      "Clear Cart",
+      "Are you sure you want to remove all items from your cart?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: () => {
+            cartItems.forEach((item: any) => {
+              dispatch(removeFromCart(item.id));
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  // Conditional Header and Footer components
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={CART_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="cart" />
+  );
+
+  // Conditional Layout component
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
   // Your JSX remains the same, just update the Place Order button:
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
       hasFooter
-      headerComponent={<Header headerText={CART_SCREEN_TITLE} />}
-      footerComponent={<Footer activeTab="cart" />}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
+      scrollable={true}
     >
-      <View style={[globalStyles.container]}>
-        <ScrollView>
+      {isTabOrDesktop ? (
+        // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
+        <View style={[globalStyles.container]}>
           <View style={[globalStyles.pt_0]}>
             {cartItems.length === 0 ? (
               // Empty cart UI...
@@ -313,46 +383,65 @@ const CartScreen = () => {
                 </View>
               </View>
             ) : (
-              <>
-                {cartItems.map((eachCartItem: any) => (
-                  <CartItem
-                    handleDelete={handleDelete}
-                    key={eachCartItem.id}
-                    cartItem={eachCartItem}
-                    stockAvailable={stockAvailable[eachCartItem._id] || 0}
-                  />
-                ))}
-                <OrderSummary cartItems={cartItems} />
-                <View
-                  style={{
-                    width: "50%",
-                    marginHorizontal: "auto",
-                    paddingBottom: 16,
-                  }}
-                >
-                  <Button
-                    title={isPlacingOrder ? "Processing..." : "Place Order"}
-                    onPress={handlePlaceOrder}
-                    disabled={isPlacingOrder}
-                  />
-                </View>
-              </>
-            )}
+              // Web/Desktop Layout: Two-column layout
+              <View style={styles.webContainer}>
+                {/* Left Column: Cart Items and Saved for Later */}
+                <View style={styles.leftColumn}>
+                  {/* Cart Header */}
+                  <View style={styles.cartHeader}>
+                    <Text style={styles.cartHeaderText}>Cart</Text>
+                    <TouchableOpacity onPress={handleClearCart}>
+                      <Text style={styles.clearCartText}>Clear Cart</Text>
+                    </TouchableOpacity>
+                  </View>
 
-            {savedForLaterItems.length > 0 && (
-              <SavedLaterItem
-                savedForLaterItems={savedForLaterItems}
-                sectionHeadingStyle={styles.sectionHeading}
-                stockAvailable={stockAvailable}
-                handleDelete={(item: any) => {
-                  dispatch(removeFromSavedForLaterItems(item.id));
-                }}
-                handleMoveToCart={(item: any) => {
-                  dispatch(addToCart(item));
-                  dispatch(removeFromSavedForLaterItems(item.id));
-                }}
-              />
+                  {/* Cart Items */}
+                  {cartItems.map((eachCartItem: any) => (
+                    <CartItem
+                      handleDelete={handleDelete}
+                      key={eachCartItem.id}
+                      cartItem={eachCartItem}
+                      stockAvailable={stockAvailable[eachCartItem._id] || 0}
+                    />
+                  ))}
+                </View>
+
+                {/* Right Column: Order Details, Place Order, Similar Products */}
+                <View style={styles.rightColumn}>
+                  {/* Order Summary */}
+                  <OrderSummary 
+                    cartItems={cartItems} 
+                    containerStyle={styles.compactOrderSummary}
+                    sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                  />
+
+                  {/* Place Order Button */}
+                  <View style={styles.placeOrderContainer}>
+                    <Button
+                      title={isPlacingOrder ? "Processing..." : "Place Order"}
+                      onPress={handlePlaceOrder}
+                      disabled={isPlacingOrder}
+                    />
+                  </View>
+                </View>
+              </View>
             )}
+                {/* Saved for Later */}
+                  {savedForLaterItems.length > 0 && (
+                    <SavedLaterItem
+                      savedForLaterItems={savedForLaterItems}
+                      sectionHeadingStyle={styles.sectionHeading}
+                      stockAvailable={stockAvailable}
+                      handleDelete={(item: any) => {
+                        dispatch(removeFromSavedForLaterItems(item.id));
+                      }}
+                      handleMoveToCart={(item: any) => {
+                        dispatch(addToCart(item));
+                        dispatch(removeFromSavedForLaterItems(item.id));
+                      }}
+                    />
+                  )}
+
           </View>
 
           <ConfirmationModal
@@ -367,9 +456,101 @@ const CartScreen = () => {
             cancelText="Save for Later"
             handleCancel={cancelDelete}
           />
-        </ScrollView>
-      </View>
-    </PageLayout>
+        </View>
+      ) : (
+        // Mobile: Use ScrollView
+        <View style={[globalStyles.container]}>
+          <ScrollView>
+            <View style={[globalStyles.pt_0]}>
+
+              {/* MOBILE CART SECTION */}
+              {cartItems.length === 0 ? (
+                // Empty cart UI
+                <View style={styles.emptyCartContainer}>
+                  <Ionicons
+                    name="cart"
+                    size={98}
+                    color={colors.placeholdergrey}
+                    style={styles.cartIcon}
+                  />
+                  <View style={styles.textContainer}>
+                    <Text style={styles.emptyTitle}>Your page is empty</Text>
+                    <Text style={styles.emptySubtitle}>
+                      No worries! You can check our products{" "}
+                      <TouchableOpacity
+                        onPress={() => redirectToPage(containers.homeScreen)}
+                      >
+                        <Text style={styles.hereText}>here.</Text>
+                      </TouchableOpacity>
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <>
+                  {/* Cart Items */}
+                  {cartItems.map((eachCartItem: any) => (
+                    <CartItem
+                      handleDelete={handleDelete}
+                      key={eachCartItem.id}
+                      cartItem={eachCartItem}
+                      stockAvailable={stockAvailable[eachCartItem._id] || 0}
+                    />
+                  ))}
+
+                  {/* Order Summary */}
+                  <OrderSummary cartItems={cartItems} />
+
+                  {/* Place Order */}
+                  <View
+                    style={{
+                      width: "50%",
+                      marginHorizontal: "auto",
+                      paddingBottom: 16,
+                      marginTop: 16,
+                    }}
+                  >
+                    <Button
+                      title={isPlacingOrder ? "Processing..." : "Place Order"}
+                      onPress={handlePlaceOrder}
+                      disabled={isPlacingOrder}
+                    />
+                  </View>
+                </>
+              )}
+
+              {savedForLaterItems.length > 0 && (
+                <SavedLaterItem
+                  savedForLaterItems={savedForLaterItems}
+                  sectionHeadingStyle={styles.sectionHeading}
+                  stockAvailable={stockAvailable}
+                  handleDelete={(item: any) => {
+                    dispatch(removeFromSavedForLaterItems(item.id));
+                  }}
+                  handleMoveToCart={(item: any) => {
+                    dispatch(addToCart(item));
+                    dispatch(removeFromSavedForLaterItems(item.id));
+                  }}
+                />
+              )}
+
+            </View>
+
+            {/* CONFIRMATION MODAL */}
+            <ConfirmationModal
+              onClose={() => setIsModalVisible(false)}
+              isModalVisible={isModalVisible}
+              title="Delete Product"
+              text="Are you sure you want to delete this? You can save this item for later too."
+              submitText="Delete Item"
+              handleSubmit={confirmDelete}
+              cancelText="Save for Later"
+              handleCancel={cancelDelete}
+            />
+          </ScrollView>
+        </View>
+      )}
+
+    </LayoutComponent>
   );
 };
 

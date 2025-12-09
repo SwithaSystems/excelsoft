@@ -77,9 +77,6 @@ const offersScreen = () => {
       scrollable={true}
       contentPadding={true}
     >
-      {/* <SafeAreaView style={globalStyles.safeAreaContainer}> */}
-      {/* <View style={[globalStyles.container]}> */}
-      {/* <ScrollView> */}
       <FlatList
         ListHeaderComponent={
           <>
@@ -129,10 +126,6 @@ const offersScreen = () => {
         data={[]}
         renderItem={() => null}
       />
-      {/* </ScrollView> */}
-      {/* <Footer navigation={router} /> */}
-      {/* </View> */}
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

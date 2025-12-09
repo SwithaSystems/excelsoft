@@ -1,14 +1,14 @@
-import { StyleSheet,Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 
 
 const { width } = Dimensions.get('window');
-const itemWidth = (width-32 ) / 2;
+const itemWidth = (width - 32) / 2;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  categories:{
+  categories: {
     //padding: 16
   },
   categoryItem: {
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     paddingTop: 8,
-    
+
   },
   rightItem: {
     paddingLeft: 8,
@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start', 
+    justifyContent: 'flex-start',
     //marginHorizontal: -8,
-    
+
   },
 })
 

@@ -6,21 +6,27 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
 import colors from "../../../constants/colors";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Button from "@/app/components/commonComponents/Button";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { categoryService } from "@/services/categoryService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import Footer from "@/app/components/Footer";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import { FILTER_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const Filter = () => {
   const { categoryId } = useLocalSearchParams();
+  const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [applyingFilters, setApplyingFilters] = useState(false);
@@ -34,6 +40,10 @@ const Filter = () => {
 
   const brands = ["Brand1", "Brand2", "Brand3", "Brand4", "Brand5", "Brand6"];
   const itemWidth = (Dimensions.get("window").width - 30) / 2 - 8;
+
+  // Responsive design: detect if device is tablet or desktop
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
 
   useEffect(() => {
     const fetchSubCategories = async () => {
@@ -85,12 +95,79 @@ const Filter = () => {
 
   const isApplyFiltersEnabled = categories.length > 0 && Object.values(selectedCategories).some((checked) => checked);
 
+  // Choose layout component based on screen size
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={FILTER_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer navigation={router} />
+  );
+
+  if (isTabOrDesktop) {
+    return (
+      <LayoutComponent
+        hasFooter
+        hasHeader
+        scrollable={true}
+        headerComponent={HeaderComponent}
+        footerComponent={false}
+      >
+        <View style={globalStyles.sectionContent}>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : categories.length > 0 ? (
+            <ScrollView style={styles.scrollContainer}>
+              <View style={[styles.section, { marginBottom: 0 }]}>
+                <Text style={styles.sectionTitle}>Categories</Text>
+                <View style={styles.checkBoxRow}>
+                  {categories
+                    .filter((category) => category.id !== Number(categoryId))
+                    .map((category) => (
+                      <View key={category.id} style={{ width: itemWidth }}>
+                        <CheckBox
+                          title={category.name}
+                          checked={!!selectedCategories[category.id]}
+                          onPress={() => handleCategorySelect(category.id)}
+                          containerStyle={styles.checkBoxContainer}
+                          textStyle={styles.checkBoxText}
+                          checkedColor={colors.primary}
+                          uncheckedColor={colors.secondary}
+                        />
+                      </View>
+                    ))}
+                </View>
+              </View>
+            </ScrollView>
+          ) : (
+            <View style={styles.noCategoriesContainer}>
+              <Text style={styles.noCategoriesText}>No Categories Available</Text>
+            </View>
+          )}
+
+          <Button
+            title="Apply Filters"
+            onPress={applyFilters}
+            style={isApplyFiltersEnabled ? styles.applyButton : styles.disabledButton}
+            textStyle={styles.buttonText}
+            disabled={!isApplyFiltersEnabled}
+          />
+        </View>
+      </LayoutComponent>
+    );
+  }
+
   return (
     <PageLayout
+      hasFooter
       hasHeader
-      hasFooter={false}
       scrollable
       headerComponent={<Header headerText={FILTER_SCREEN_TITLE} />}
+      footerComponent={<Footer navigation={router} />}
     >
       <View style={globalStyles.sectionContent}>
         {loading ? (
@@ -117,27 +194,8 @@ const Filter = () => {
                   ))}
               </View>
             </View>
-
-            {/* <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Brands</Text>
-              <View style={styles.checkBoxRow}>
-                {brands.map((brand) => (
-                  <View key={brand} style={{ width: itemWidth }}>
-                    <CheckBox
-                      title={brand}
-                      checked={!!selectedBrands[brand]}
-                      onPress={() => handleBrandSelect(brand)}
-                      containerStyle={styles.checkBoxContainer}
-                      textStyle={styles.checkBoxText}
-                      checkedColor={colors.primary}
-                      uncheckedColor={colors.secondary}
-                    />
-                  </View>
-                ))}
-              </View>
-            </View> */}
           </ScrollView>
-        ) :(
+        ) : (
           <View style={styles.noCategoriesContainer}>
             <Text style={styles.noCategoriesText}>No Categories Available</Text>
           </View>

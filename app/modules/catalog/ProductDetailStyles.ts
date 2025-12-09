@@ -1,7 +1,8 @@
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, Platform } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
+  // Original Mobile Styles
   container: {
     flex: 1,
     backgroundColor: colors.white,
@@ -29,9 +30,7 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     borderRadius: 10,
   },
-  contentContainer: {
-    // padding: 16,
-  },
+  contentContainer: {},
   productTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -199,15 +198,12 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: "row",
-    // gap: 38,
-    //paddingHorizontal: 16,
   },
   button: {
     flex: 1,
   },
   reviewsSection: {
     marginTop: 24,
-    // paddingHorizontal: 16,
   },
   reviewsTitle: {
     fontSize: 18,
@@ -286,6 +282,242 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  // Web-specific Styles
+  webContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  webContentWrapper: {
+    flexDirection: "row",
+    maxWidth: 1200,
+    alignSelf: "center",
+    width: "100%",
+    paddingHorizontal: 40,
+    paddingVertical: 40,
+    gap: 40,
+  },
+  webLeftSection: {
+    flex: 0.5,
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 16,
+  },
+  webThumbnailContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    // flexWrap: "wrap",
+    gap: 12,
+  },
+  webThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.lightgrey,
+    overflow: "hidden",
+  },
+  webThumbnailActive: {
+    borderColor: colors.black,
+  },
+  webThumbnailImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  webMainImageContainer: {
+    // flex: 1,
+    width: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: colors.lightgrey,
+  },
+  webMainImage: {
+    width: "100%",
+    height: 500,
+    resizeMode: "contain",
+  },
+  webRightSection: {
+    flex: 0.5,
+  },
+  webProductHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 16,
+  },
+  webProductTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.black,
+    flex: 1,
+    marginRight: 16,
+  },
+  webRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  webRatingText: {
+    fontSize: 16,
+    color: colors.reviewsColor,
+    fontWeight: "600",
+  },
+  webStarIcon: {
+    color: colors.reviewsColor,
+    fontSize: 16,
+  },
+  webReviewsText: {
+    fontSize: 16,
+    color: colors.reviewsColor,
+  },
+  webSaleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 8,
+  },
+  webSaleTag: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  webSaleText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  webTimerBadge: {
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  webTimerText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  webDiscountBadge: {
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  webDiscountText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  webPriceContainer: {
+    marginBottom: 24,
+  },
+  webColorSection: {
+    marginBottom: 24,
+  },
+  webSectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 12,
+  },
+  webColorOptions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  webColorOption: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: colors.lightgrey,
+  },
+  webColorOptionActive: {
+    borderColor: colors.black,
+    borderWidth: 3,
+  },
+  webQuantitySection: {
+    marginBottom: 24,
+  },
+  webQuantityControl: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    marginTop: 12,
+  },
+  webQuantityButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: colors.lightgrey,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  webQuantityText: {
+    fontSize: 18,
+    fontWeight: "600",
+    minWidth: 30,
+    textAlign: "center",
+  },
+  webAddToCartButton: {
+    width: "100%",
+    marginBottom: 32,
+  },
+  webProductInfo: {
+    borderTopWidth: 1,
+    borderTopColor: colors.lightgrey,
+    paddingTop: 24,
+  },
+  webInfoTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 12,
+  },
+  webInfoText: {
+    fontSize: 15,
+    color: colors.black,
+    lineHeight: 24,
+  },
+  webReviewsSection: {
+    maxWidth: 1200,
+    alignSelf: "center",
+    width: "100%",
+    paddingHorizontal: 40,
+    paddingVertical: 40,
+    borderTopWidth: 1,
+    borderTopColor: colors.lightgrey,
+  },
+  webReviewsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  webReviewsTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.black,
+  },
+  webAddReviewText: {
+    fontSize: 16,
+    color: colors.primary,
+    textDecorationLine: "underline",
+  },
+  webSeeMoreButton: {
+    alignItems: "center",
+    padding: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.black,
+    marginTop: 24,
+  },
+  webSeeMoreText: {
+    color: colors.black,
     fontSize: 16,
     fontWeight: "600",
   },

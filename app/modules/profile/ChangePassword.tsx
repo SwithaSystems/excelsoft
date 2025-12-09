@@ -6,7 +6,7 @@ import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, StyleSheet, useWindowDimensions } from "react-native";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
@@ -17,6 +17,9 @@ import {
 } from "../../../constants/customErrorMessages";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { isValidPassword } from "../../../utilities/validations";
 
@@ -27,6 +30,16 @@ const changePasswordScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
   const user = useSelector((state: any) => state.user.user);
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -116,15 +129,23 @@ const changePasswordScreen = () => {
   };
 
   return (
-    <PageLayout
+    <LayoutComponent
       scrollable={false}
       hasHeader
-      hasFooter={false}
-      headerComponent={<Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />}
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <KeyBoardWrapper>
         <ScrollView>
-          <View style={[globalStyles.pt_0]}>
+          <View
+            style={[
+              globalStyles.pt_0,
+              isTabOrDesktop && webStyles.contentWidth,
+            ]}
+          >
             <View style={globalStyles.profileInputContainer}>
               <View style={{ flex: 1 }}>
                 <Text style={globalStyles.userInputLabel}>
@@ -178,8 +199,15 @@ const changePasswordScreen = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
 export default changePasswordScreen;
+
+const webStyles = StyleSheet.create({
+  contentWidth: {
+    width: "70%",
+    alignSelf: "center",
+  },
+});

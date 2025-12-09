@@ -10,6 +10,8 @@ export interface Product {
   stock?: number;
   discount: number;
   netPrice: number;
+  grossPrice?: number;
+  netPriceWithVAT?: number;
   image: any;
   productColors?: string[];
   categoryId: number[];
