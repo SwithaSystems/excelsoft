@@ -77,11 +77,15 @@ export const UserAPI = {
   //   );
   //   return response;
   // },
-  changePassword: async (body: { newPassword: string }) => {
+  changePassword: async (body: { newPassword: string; currentPassword?: string }) => {
     console.log("newPassword", body.newPassword);
-    const response = await jsonAxios.put("/users/changePassword", {
+    const requestBody: any = {
       newPassword: body.newPassword,
-    });
+    };
+    if (body.currentPassword) {
+      requestBody.currentPassword = body.currentPassword;
+    }
+    const response = await jsonAxios.put("/users/changePassword", requestBody);
     return response;
   },
 
