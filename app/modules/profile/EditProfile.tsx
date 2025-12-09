@@ -30,9 +30,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as SecureStore from "expo-secure-store";
 import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
-import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -49,7 +48,8 @@ import { isValidName } from "@/utilities/validations";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
-import { useRoleContext } from "@/context/RoleContext";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { useNavigation } from "@react-navigation/native";
 
 interface User {
   id: string;
@@ -79,6 +79,11 @@ const editProfileScreen = () => {
   const [firstNameError, setFirstNameError] = useState<string | null>(null);
   const [lastNameError, setLastNameError] = useState<string | null>(null);
 
+  // Confirmation Modal States
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -240,23 +245,31 @@ const editProfileScreen = () => {
         DeviceEventEmitter.emit("fetchUser");
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
         dispatch(setUserData(response.data.user));
-        Alert.alert("Message", "Profile updated successfully.", [
-          {
-            text: "OK",
-            onPress: () => {
-              redirectToPage(containers.userProfileScreen);
-            },
-          },
-        ]);
+        setIsSuccessModalVisible(true);
       }
       return response?.data;
     } catch (error) {
-      showErrorAlert({
-        title: "Update Failed",
-        message: FAILED_TO_UPDATE_DETAILS,
-      });
+      setIsErrorModalVisible(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSuccessModalClose = () => {
+    setIsSuccessModalVisible(false);
+    // Go back to previous screen in navigation stack
+    if (navigation) {
+      navigation.goBack();
+    } else {
+      redirectToPage(containers.userProfileScreen);
+    }
+  };
+
+  const handleErrorModalClose = () => {
+    setIsErrorModalVisible(false);
+    // Go back to previous screen in navigation stack
+    if (navigation) {
+      navigation.goBack();
     }
   };
 
@@ -326,19 +339,14 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={
-<<<<<<< Updated upstream
-                      lastNameError
-                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
-=======
                       firstNameError
                         ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
->>>>>>> Stashed changes
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
                     placeholder="First Name"
                     value={firstName}
-                    onPress={() => { }}
+                    onPress={() => {}}
                     setValue={setFirstName}
                     onChangeText={handleFirstNameChange}
                   />
@@ -359,19 +367,14 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>Last Name</Text>
                   <CustomTextInput
                     containerStyle={
-<<<<<<< Updated upstream
-                      firstNameError
-                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
-=======
                       lastNameError
                         ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
->>>>>>> Stashed changes
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
                     placeholder="Last Name"
                     value={lastName}
-                    onPress={() => { }}
+                    onPress={() => {}}
                     setValue={setLastName}
                     onChangeText={handleLastNameChange}
                   />
@@ -467,6 +470,26 @@ const editProfileScreen = () => {
             onCancel={hideDatePicker}
           />
         )}
+
+        {/* Success Modal */}
+        <ConfirmationModal
+          isModalVisible={isSuccessModalVisible}
+          onClose={handleSuccessModalClose}
+          title="Success"
+          text="Profile updated successfully."
+          submitText="OK"
+          handleSubmit={handleSuccessModalClose}
+        />
+
+        {/* Error Modal */}
+        <ConfirmationModal
+          isModalVisible={isErrorModalVisible}
+          onClose={handleErrorModalClose}
+          title="Update Failed"
+          text={FAILED_TO_UPDATE_DETAILS}
+          submitText="OK"
+          handleSubmit={handleErrorModalClose}
+        />
       </KeyBoardWrapper>
     </LayoutComponent>
   );
