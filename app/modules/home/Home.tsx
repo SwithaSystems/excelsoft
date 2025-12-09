@@ -66,14 +66,9 @@ const TEST_PROMOTIONS: Promotion[] = [
   },
 ];
 
-const exclusiveOffers: any = [];
-const bestSellers: any = [];
-const featuredProducts: any = [];
-
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [promotionsLoading, setPromotionsLoading] = useState(false);
   const router = useRouter();
@@ -133,8 +128,7 @@ const HomePage = () => {
       <View style={styles.container}>
         <Header />
 
-        {/* Mobile: Categories first, carousel below */}
-        {!isTabOrDesktop && (
+        {isMobile && (
           <View style={styles.categoriesContainer}>
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
@@ -171,8 +165,12 @@ const HomePage = () => {
           onPress={() => redirectToPage(containers.uploadScreen)}
         /> */}
 
-        {/* Carousel */}
-        <View style={styles.carouselSection}>
+        <View
+          style={[
+            styles.carouselSection,
+            isTabOrDesktop && { marginTop: 32 },
+          ]}
+        >
           {promotionsLoading ? (
             <View style={styles.carouselLoader}>
               <ActivityIndicator size="large" color={colors.primary} />
@@ -188,45 +186,12 @@ const HomePage = () => {
               showArrows={true}
               showIndicators={true}
               width={carouselWidth}
-              height={isTabOrDesktop ? 300 : 230}
+              height={isTabOrDesktop ? 420 : 230}
               borderRadius={12}
             />
           ) : null}
         </View>
 
-        {/* Desktop: Categories can be elsewhere */}
-        {isTabOrDesktop && (
-          <View style={styles.categoriesContainer}>
-            {loading ? (
-              <ActivityIndicator size="large" color={colors.primary} />
-            ) : (
-              <FlatList
-                data={categories}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item: any) => item.id}
-                renderItem={({ item }) => (
-                  <CategoryItem_Home
-                    name={item.name}
-                    imageUrl={item.images?.[0] || ""}
-                    onPress={() =>
-                      item.name === "All"
-                        ? redirectToPage(containers.categoriesScreen, {
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                        : redirectToPage(containers.searchResultsScreen, {
-                            fromSearch: true,
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                    }
-                  />
-                )}
-              />
-            )}
-          </View>
-        )}
       </View>
     </LayoutComponent>
   );
