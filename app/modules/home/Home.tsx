@@ -32,38 +32,39 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import Button from "@/app/components/commonComponents/Button";
 import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
+import { promotionService } from "@/services/promotionService";
 
 interface Promotion {
-  id: number;
-  image: string;
+  imageURL: string;
   link?: string;
+  isInternalLink: boolean;
   title?: string;
   description?: string;
 }
 
-const TEST_PROMOTIONS: Promotion[] = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
-    link: "https://example.com/promo1",
-    title: "Summer Sale",
-    description: "Get 50% off on all items",
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
-    link: "https://example.com/promo2",
-    title: "New Arrivals",
-    description: "Check out our latest collection",
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
-    link: "https://example.com/promo3",
-    title: "Special Offer",
-    description: "Limited time only - Buy 2 Get 1 Free",
-  },
-];
+// const TEST_PROMOTIONS: Promotion[] = [
+//   {
+//     id: 1,
+//     image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
+//     link: "https://example.com/promo1",
+//     title: "Summer Sale",
+//     description: "Get 50% off on all items",
+//   },
+//   {
+//     id: 2,
+//     image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
+//     link: "https://example.com/promo2",
+//     title: "New Arrivals",
+//     description: "Check out our latest collection",
+//   },
+//   {
+//     id: 3,
+//     image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
+//     link: "https://example.com/promo3",
+//     title: "Special Offer",
+//     description: "Limited time only - Buy 2 Get 1 Free",
+//   },
+// ];
 
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,13 +86,29 @@ const HomePage = () => {
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
-  //  Memoize the handler to prevent re-creating on every render
   const handleBannerPress = useMemo(
-    () => (item: any, index: number) => {
-      redirectToPage(containers.offersScreen);
+    () => (item: Promotion, index: number) => {
+      if (item.isInternalLink) {
+        redirectToPage(containers.categoriesScreen, {
+          fromSearch: true,
+          category: "Offers",
+          categoryId: item.link,
+        });
+      } else {
+        console.log("Opening external link:", item.link);
+      }
     },
     []
   );
+  const carouselData = useMemo(() => {
+    return promotions.map((promo, index) => ({
+      id: index + 1,
+      image: promo.imageURL,
+      link: promo.link,
+      title: promo.title,
+      description: "", // Add if you have description in your schema
+    }));
+  }, [promotions]);
 
   // const renderFeaturedProducts = () => (
   //   <View>
@@ -143,10 +160,13 @@ const HomePage = () => {
     const fetchPromotions = async () => {
       try {
         setPromotionsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setPromotions(TEST_PROMOTIONS);
+        const data = await promotionService.getAllPromotions();
+        setPromotions(data);
+        console.log("Fetched promotions:", data);
       } catch (error) {
         console.error("Error fetching promotions:", error);
+        // Optionally set empty array or show error message
+        setPromotions([]);
       } finally {
         setPromotionsLoading(false);
       }
@@ -211,7 +231,7 @@ const HomePage = () => {
             </View>
           ) : promotions.length > 0 ? (
             <CarouselWeb
-              data={promotions}
+              data={carouselData}
               isPromotional={true}
               showOverlay={true}
               autoPlay={true}
@@ -222,6 +242,7 @@ const HomePage = () => {
               width={carouselWidth}
               height={isTabOrDesktop ? 420 : 230}
               borderRadius={12}
+              onPress={handleBannerPress}
             />
           ) : null}
         </View>
