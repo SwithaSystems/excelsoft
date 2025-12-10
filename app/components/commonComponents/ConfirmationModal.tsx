@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
   handleSubmit?: () => void;
   handleCancel?: () => void;
   animationType?: "none" | "slide" | "fade";
+  isDestructive?: boolean;
 }
 
 function ConfirmationModal({
@@ -24,6 +25,7 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
+  isDestructive = false, // Default to non-destructive (primary color)
 }: ConfirmationModalProps) {
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -40,44 +42,43 @@ function ConfirmationModal({
         <View style={[
           styles.dialogBox,
           isTabOrDesktop && styles.dialogBoxWeb
-          ]}>
+        ]}>
           {/* Title */}
           {title && <Text style={[
             styles.title,
             isTabOrDesktop && styles.titleWeb
-            ]}>
+          ]}>
             {title}
-            </Text>}
-
+          </Text>}
+          
           {/* text */}
           {text && <Text style={[
             styles.text,
             isTabOrDesktop && styles.textWeb
           ]}>{text}</Text>}
-
-
+          
           {/* Buttons */}
           <View style={[
             styles.buttonRow,
             isTabOrDesktop && styles.buttonRowWeb
           ]}>
-
             {cancelText && (
               <TouchableOpacity onPress={handleCancel} style={styles.button}>
                 <Text style={styles.cancelText}>{cancelText}</Text>
               </TouchableOpacity>
             )}
+            
             {submitText && (
               <TouchableOpacity 
                 onPress={handleSubmit} 
                 style={[
                   styles.button,
                   isTabOrDesktop && styles.buttonWeb,
-                  isTabOrDesktop && styles.submitButton
+                  isTabOrDesktop && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
                 ]}
               >
                 <Text style={[
-                  styles.submitText,
+                  isDestructive ? styles.submitText : styles.submitTextPrimary,
                   isTabOrDesktop && styles.submitTextWeb
                 ]}>{submitText}</Text>
               </TouchableOpacity>
@@ -149,13 +150,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.primary,
     minWidth: 100,
     alignItems: "center",
   },
-  submitButton: {
+  submitButtonDestructive: {
     backgroundColor: colors.error,
     borderColor: colors.error,
+  },
+  submitButtonPrimary: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   cancelText: {
     fontSize: 15,
@@ -169,6 +173,11 @@ const styles = StyleSheet.create({
   submitText: {
     fontSize: 15,
     color: colors.error,
+    fontWeight: "500",
+  },
+  submitTextPrimary: {
+    fontSize: 15,
+    color: colors.primary,
     fontWeight: "500",
   },
   submitTextWeb: {

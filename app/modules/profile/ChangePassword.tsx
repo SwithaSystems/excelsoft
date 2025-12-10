@@ -46,7 +46,22 @@ const changePasswordScreen = () => {
       if (user) {
         console.log("user in change password", user);
         setPhoneNumber(user.phone);
-        setExistingPassword(user.password);
+        
+        // Fetch user data from API to get password hash
+        try {
+          const userId = user._id || user.id;
+          if (userId) {
+            const response = await UserAPI.getUserById(userId);
+            console.log("User data from API:", response?.data);
+            if (response?.data?.password) {
+              setExistingPassword(response.data.password);
+            } else {
+              console.warn("Password not found in user data");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
       }
     };
 
@@ -67,19 +82,30 @@ const changePasswordScreen = () => {
     });
   };
 
-  const handleBlur = async (currentPassword: string) => {
-    const isMatch = await comparePasswords(currPassword, existingPassword);
-    console.log("isMatch", isMatch);
-    if (!isMatch) {
-      showErrorAlert({
-        title: "Error",
-        message: INCORRECT_CURRENT_PASSWORD,
-      });
+  const handleBlur = async () => {
+    if (!currPassword || !existingPassword) {
+      return;
+    }
+    try {
+      const isMatch = await comparePasswords(currPassword, existingPassword);
+      console.log("isMatch", isMatch);
+      if (!isMatch) {
+        showErrorAlert({
+          title: "Error",
+          message: INCORRECT_CURRENT_PASSWORD,
+        });
+      }
+    } catch (error) {
+      console.error("Error comparing passwords:", error);
     }
   };
 
   const handleChangePassword = async () => {
+    console.log("=== Starting password change ===");
+    console.log({ currPassword, newPassword, confirmPassword, existingPassword });
+    
     if (!currPassword || !newPassword || !confirmPassword) {
+      console.log("Validation failed: Missing fields");
       showErrorAlert({
         title: "Validation Error",
         message: "All fields are required",
@@ -87,27 +113,67 @@ const changePasswordScreen = () => {
       return;
     }
 
+    // Validate current password before proceeding (if we have the password hash)
+    if (existingPassword) {
+      try {
+        console.log("Validating current password...");
+        const isCurrentPasswordValid = await comparePasswords(currPassword, existingPassword);
+        console.log("Current password validation result:", isCurrentPasswordValid);
+        if (!isCurrentPasswordValid) {
+          console.log("Current password validation failed");
+          showErrorAlert({
+            title: "Error",
+            message: INCORRECT_CURRENT_PASSWORD,
+          });
+          return;
+        }
+        console.log("Current password validated successfully");
+      } catch (error) {
+        console.error("Error validating current password:", error);
+        showErrorAlert({
+          title: "Error",
+          message: "Failed to verify current password. Please try again.",
+        });
+        return;
+      }
+    } else {
+      // If password hash not available, backend will validate it
+      console.log("Password hash not available, backend will validate current password");
+    }
+
+    console.log("Validating new password format...");
     const newPasswordError = isValidPassword(newPassword);
     if (newPasswordError) {
+      console.log("New password validation failed:", newPasswordError);
       showErrorAlert({
         title: "Validation Error",
         message: newPasswordError,
       });
       return;
     }
+    console.log("New password format validated successfully");
     
     if (newPassword !== confirmPassword) {
+      console.log("Password mismatch validation failed");
       showErrorAlert({
         title: "Validation Error",
         message: "New and Confirm passwords do not match",
       });
       return;
     }
+    console.log("Password match validated successfully");
 
     try {
-      const response = await UserAPI.changePassword({ newPassword });
-      console.log("response", response.data);
+      console.log("Calling API to change password...");
+      const response = await UserAPI.changePassword({ 
+        newPassword,
+        currentPassword: currPassword 
+      });
+      console.log("API response:", response);
+      console.log("API response data:", response.data);
+      
       if (response.data.message === "Password successfully changed") {
+        console.log("Password changed successfully");
         showErrorAlert({
           title: "Success",
           message: PASSWORD_CHANGED,
@@ -115,16 +181,23 @@ const changePasswordScreen = () => {
 
         redirectToPage(containers.signInScreen);
       } else {
+        console.log("Password change failed - unexpected response:", response.data);
         showErrorAlert({
           title: "Error",
           message: PASSWORD_CHANGE_FAILED,
         });
         redirectToPage(containers.userProfileScreen);
       }
-    } catch (err) {
-      alert("Failed to change password");
-      console.error(err);
-      redirectToPage(containers.userProfileScreen);
+    } catch (err: any) {
+      console.error("API call error:", err);
+      console.error("Error response:", err?.response);
+      console.error("Error response data:", err?.response?.data);
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to change password";
+      showErrorAlert({
+        title: "Error",
+        message: errorMessage,
+      });
+      // Don't redirect on error, let user try again
     }
   };
 
@@ -159,9 +232,7 @@ const changePasswordScreen = () => {
                   value={currPassword}
                   onPress={() => {}}
                   setValue={setCurrPassword}
-                  onblur={() => {
-                    handleBlur(currPassword);
-                  }}
+                  onblur={handleBlur}
                 />
               </View>
             </View>

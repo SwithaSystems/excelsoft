@@ -17,11 +17,19 @@ import containers from "@/containers";
 import { useRoleContext } from "@/context/RoleContext";
 import { useAuth } from "@/context/AuthContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { useSelector } from "react-redux";
 
 type NavItem = {
   label: string;
   onPress?: () => void;
-  isDropdown?: boolean; 
+  isDropdown?: boolean;
+  dropdownType?: 'categories' | 'quicklinks';
+};
+
+type QuickLinkItem = {
+  id: string;
+  label: string;
+  route: string;
 };
 
 interface HeaderNavBarProps {
@@ -30,27 +38,31 @@ interface HeaderNavBarProps {
   hideNavItems?: boolean;
 }
 
+const quickLinks: QuickLinkItem[] = [
+  { id: "orders", label: "Your Orders", route: containers.myOrderScreen },
+  { id: "saved-items", label: "Saved Items", route: containers.savedItemScreen },
+  { id: "saved-address", label: "Saved Address", route: containers.savedAddressScreen },
+];
+
 const userNavItems: NavItem[] = [
   {
     label: "Categories",
     isDropdown: true,
+    dropdownType: 'categories',
   },
   {
     label: "Home",
     onPress: () => redirectToPage(containers.homeScreen),
   },
-  // {
-  //   label: "Offers",
-  //   onPress: () => redirectToPage(containers.offersScreen),
-  // },
+  {
+    label: "Quick Links",
+    isDropdown: true,
+    dropdownType: 'quicklinks',
+  },
   {
     label: "Feedback",
     onPress: () => redirectToPage(containers.feedbackScreen),
   },
-  // {
-  //   label: "Re-order",
-  //    onPress: () => redirectToPage(containers.reorderScreen),
-  // },
   {
     label: "Customer Service",
     onPress: () => redirectToPage(containers.customerSupportScreen),
@@ -62,21 +74,37 @@ const userNavItems: NavItem[] = [
 ];
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
-  backgroundColor = colors.primary, 
+  backgroundColor = colors.primary,
   onCategorySelect,
   hideNavItems = false,
 }) => {
-  const { loading: roleLoading } = useRoleContext();
-  const { logout, isAuthenticated } = useAuth();
+  const { loading: roleLoading, isValidUser } = useRoleContext();
+  const { logout } = useAuth();
+  const userData_redux = useSelector((state: any) => state.user.user);
+  
+  // Use RoleContext's isValidUser as the primary authentication check
+  // This is more reliable than checking Redux directly since RoleContext
+  // maintains state even when Redux is temporarily cleared
+  const isAuthenticated = isValidUser;
+  
+  // Debug logs
+  console.log("=== HeaderNavBar Debug ===");
+  console.log("userData_redux:", userData_redux);
+  console.log("isValidUser (from RoleContext):", isValidUser);
+  console.log("isAuthenticated:", isAuthenticated);
+  console.log("hideNavItems:", hideNavItems);
+  console.log("roleLoading:", roleLoading);
+  console.log("========================");
+  
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
   const navItems = !hideNavItems ? userNavItems : [];
 
-  useEffect(() => {    
+  useEffect(() => {
     if (hideNavItems || roleLoading) {
       return;
     }
@@ -85,11 +113,11 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
       try {
         setLoading(true);
         const data = await categoryService.getAllCategories();
-        
+
         const sorted = Array.isArray(data)
           ? data.sort((a, b) =>
-              a.name === "All" ? -1 : (a?.id ?? 0) - (b?.id ?? 0)
-            )
+            a.name === "All" ? -1 : (a?.id ?? 0) - (b?.id ?? 0)
+          )
           : [];
         setCategories(sorted);
       } catch (error) {
@@ -98,17 +126,28 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         setLoading(false);
       }
     };
-    
+
     loadCategories();
   }, [hideNavItems, roleLoading]);
 
   const handleNavPress = (item: NavItem) => {
-    if (item.isDropdown) {
-      setShowDropdown((prev) => !prev);
+    if (item.isDropdown && item.dropdownType) {
+      setShowDropdown((prev) => prev === item.dropdownType ? null : item.dropdownType ?? null);
     } else {
       item.onPress?.();
-      setShowDropdown(false);
+      setShowDropdown(null);
     }
+  };
+
+  const handleQuickLinkPress = (item: QuickLinkItem) => {
+    if (item.id === "orders") {
+      redirectToPage(item.route, {
+        userId: userData_redux?._id || userData_redux?.id,
+      });
+    } else {
+      redirectToPage(item.route);
+    }
+    setShowDropdown(null);
   };
 
   const handleCategoryPress = (cat: Category) => {
@@ -126,7 +165,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         categoryId: cat.id,
       });
     }
-    setShowDropdown(false);
+    setShowDropdown(null);
   };
 
   const handleLogout = async () => {
@@ -139,11 +178,65 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     }
   };
 
+  // Render auth buttons component (reusable)
+  const renderAuthButtons = () => {
+    if (!isAuthenticated) return null;
+    
+    return (
+      <View style={styles.authButtonsContainer}>
+        <TouchableOpacity
+          style={styles.authButton}
+          onPress={() => setLogOutModalOpen(true)}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="log-out-outline" size={20} color={colors.white} />
+          <Text style={styles.authButtonText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.authButton}
+          onPress={() => setDeleteAccountModalOpen(true)}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="delete" size={20} color={colors.white} />
+          <Text style={styles.authButtonText}>Close Account</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Early return for loading or hidden nav items - BUT STILL SHOW AUTH BUTTONS
   if (roleLoading || hideNavItems) {
     return (
-      <View style={[styles.container, { backgroundColor }]}>
-        <View style={styles.emptyBelt} />
-      </View>
+      <>
+        <View style={[styles.container, { backgroundColor }]}>
+          <View style={styles.emptyBelt} />
+          {renderAuthButtons()}
+        </View>
+
+        {/* Modals */}
+        <ConfirmationModal
+          onClose={() => setLogOutModalOpen(false)}
+          isModalVisible={logOutModalOpen}
+          text="Are you sure you want to Log out?"
+          title="Log out"
+          submitText="Yes"
+          handleSubmit={handleLogout}
+          cancelText="No"
+          handleCancel={() => setLogOutModalOpen(false)}
+        />
+
+        <ConfirmationModal
+          onClose={() => setDeleteAccountModalOpen(false)}
+          isModalVisible={deleteAccountModalOpen}
+          title="Delete Account"
+          text="Are you sure you want to delete your account? This action cannot be undone."
+          submitText="Yes"
+          handleSubmit={() => { }}
+          cancelText="No"
+          handleCancel={() => setDeleteAccountModalOpen(false)}
+        />
+      </>
     );
   }
 
@@ -162,7 +255,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                   <Text style={styles.navText}>{item.label}</Text>
                   {item.isDropdown && (
                     <Ionicons
-                      name={showDropdown ? "chevron-up" : "chevron-down"}
+                      name={showDropdown === item.dropdownType ? "chevron-up" : "chevron-down"}
                       size={16}
                       color={colors.white}
                       style={styles.dropdownIcon}
@@ -171,63 +264,57 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                 </View>
               </TouchableOpacity>
 
-              {item.isDropdown && showDropdown && (
+              {item.isDropdown && showDropdown === item.dropdownType && (
                 <View style={styles.dropdownMenu}>
-                  {loading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator color={colors.primary} />
-                    </View>
-                  ) : (
-                    <ScrollView 
-                      style={styles.dropdownScroll}
-                      nestedScrollEnabled
-                      showsVerticalScrollIndicator
-                    >
-                      {categories.map((cat) => (
+                  {item.dropdownType === 'categories' ? (
+                    loading ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator color={colors.primary} />
+                      </View>
+                    ) : (
+                      <ScrollView
+                        style={styles.dropdownScroll}
+                        nestedScrollEnabled
+                        showsVerticalScrollIndicator
+                      >
+                        {categories.map((cat) => (
+                          <TouchableOpacity
+                            key={String(cat.id ?? cat.name)}
+                            onPress={() => handleCategoryPress(cat)}
+                            style={styles.dropdownItem}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.dropdownText}>{cat.name}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )
+                  ) : item.dropdownType === 'quicklinks' ? (
+                    <View>
+                      {quickLinks.map((link) => (
                         <TouchableOpacity
-                          key={String(cat.id ?? cat.name)}
-                          onPress={() => handleCategoryPress(cat)}
+                          key={link.id}
+                          onPress={() => handleQuickLinkPress(link)}
                           style={styles.dropdownItem}
                           activeOpacity={0.7}
                         >
-                          <Text style={styles.dropdownText}>{cat.name}</Text>
+                          <Text style={styles.dropdownText}>{link.label}</Text>
                         </TouchableOpacity>
                       ))}
-                    </ScrollView>
-                  )}
+                    </View>
+                  ) : null}
                 </View>
               )}
             </View>
           ))}
         </View>
 
-       {isAuthenticated && (
-          <View style={styles.authButtonsContainer}>
-            <TouchableOpacity
-              style={styles.authButton}
-              onPress={() => setLogOutModalOpen(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="log-out-outline" size={20} color={colors.white} />
-              <Text style={styles.authButtonText}>Sign Out</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.authButton}
-              onPress={() => setDeleteAccountModalOpen(true)}
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="delete" size={20} color={colors.white} />
-              <Text style={styles.authButtonText}>Close Account</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {renderAuthButtons()}
       </View>
-
 
       {showDropdown && (
         <Pressable
-          onPress={() => setShowDropdown(false)}
+          onPress={() => setShowDropdown(null)}
           style={styles.overlay}
         />
       )}
@@ -243,14 +330,14 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         cancelText="No"
         handleCancel={() => setLogOutModalOpen(false)}
       />
-      
+
       <ConfirmationModal
         onClose={() => setDeleteAccountModalOpen(false)}
         isModalVisible={deleteAccountModalOpen}
         title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
-        handleSubmit={() => {}}
+        handleSubmit={() => { }}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />
@@ -262,7 +349,7 @@ export default HeaderNavBar;
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 32, 
+    minHeight: 32,
     justifyContent: "center",
     paddingVertical: 0,
     marginTop: 0,
@@ -337,6 +424,7 @@ const styles = StyleSheet.create({
   },
   emptyBelt: {
     height: 40,
+    flex: 1,
   },
   overlay: {
     position: "fixed",

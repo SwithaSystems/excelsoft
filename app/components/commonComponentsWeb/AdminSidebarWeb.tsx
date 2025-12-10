@@ -51,7 +51,7 @@ const navItems: NavItem[] = [
     route: "/modules/admin/AdminOrderQRScan",
   },
   {
-    id: "scan",
+    id: "upload",
     label: "Upload",
     icon: "people",
     route: "/modules/admin/FileUploadAddProductCategory",

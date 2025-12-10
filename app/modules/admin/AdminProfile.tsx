@@ -16,9 +16,12 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions } from "react-native";
 import styles from "./AdminProfileStyle";
 import AdminFooter from "@/app/components/AdminFooter";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -47,15 +50,31 @@ const AdminProfile = () => {
   } | null>(null);
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const isTabOrDesktop = width >= 768;
+
   const settingsMenu = {
-    "Edit Profile": containers.editProfileScreen,
+    // "Edit Profile": containers.editProfileScreen,
     "Notification Settings": containers.adminNotificationSettingsScreen,
     "Store Information": containers.AdminStoreInformationScreen,
     "Promotion Management": containers.customerSupportScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
   };
 
+  // Responsive components
+  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb hideUserGreeting={true} /> : (
+    <Header
+      headerText={USER_PROFILE_SCREEN_TITLE}
+      needResetNavigation={true}
+    />
+  );
+  
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
   console.log("userData_redux in userProfilescreen", userData_redux);
+  
   useEffect(() => {
     const fetchUser = async () => {
       if (!userData_redux?.id) return;
@@ -79,6 +98,7 @@ const AdminProfile = () => {
   }, [userData_redux]);
 
   console.log("user details fetched", user);
+  
   useEffect(() => {
     const getToken = async () => {
       if (user?.id) {
@@ -115,58 +135,152 @@ const AdminProfile = () => {
   }, [user]);
 
   return (
-    <PageLayout
-      hasHeader={true}
-      hasFooter={true}
-      headerComponent={
-        <Header
-          headerText={USER_PROFILE_SCREEN_TITLE}
-          needResetNavigation={true}
-        />
-      }
-      footerComponent={<AdminFooter />}
-      scrollable={true}
-      contentPadding={true}
+    <LayoutComponent
+      hasHeader
+      headerComponent={HeaderComponent}
+      hasFooter
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable
+      hideNavItems={true}
     >
-      <View>
-        <Text style={styles.greeting}>
-          {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
-        </Text>
-        <Image
-          source={
-            user?.profileImageUrl
-              ? { uri: user?.profileImageUrl }
-              : require("@/assets/default_user_profile.png")
-          }
-          style={globalStyles.profileImage}
-        />
-        <Text style={styles.userName}>
-          {user?.firstName || ""} {user?.lastName || ""}
-        </Text>
+      <View style={[
+        responsiveStyles.container,
+        isTabOrDesktop && responsiveStyles.containerWeb
+      ]}>
+        <View style={[
+          responsiveStyles.profileCard,
+          isTabOrDesktop && responsiveStyles.profileCardWeb
+        ]}>
+          <Text style={[
+            isMobile ? styles.greeting : responsiveStyles.greetingWeb
+          ]}>
+            {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
+          </Text>
+          
+          <Image
+            source={
+              user?.profileImageUrl
+                ? { uri: user?.profileImageUrl }
+                : require("@/assets/default_user_profile.png")
+            }
+            style={[
+              isMobile ? globalStyles.profileImage : responsiveStyles.profileImageWeb
+            ]}
+          />
+          
+          <Text style={[
+            isMobile ? styles.userName : responsiveStyles.userNameWeb
+          ]}>
+            {user?.firstName || ""} {user?.lastName || ""}
+          </Text>
+        </View>
 
-        <View style={styles.settingsContainer}>
+        <View style={[
+          isMobile ? styles.settingsContainer : responsiveStyles.settingsContainerWeb
+        ]}>
           {Object.keys(settingsMenu).map((eachSetting, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.settingOption}
+              style={[
+                isMobile ? styles.settingOption : responsiveStyles.settingOptionWeb,
+                index === Object.keys(settingsMenu).length - 1 && { borderBottomWidth: 0 }
+              ]}
               onPress={() => {
                 redirectToPage(
                   settingsMenu[eachSetting as keyof typeof settingsMenu]
                 );
               }}
             >
-              <Text style={styles.settingText}>{eachSetting}</Text>
+              <Text style={[
+                isMobile ? styles.settingText : responsiveStyles.settingTextWeb
+              ]}>
+                {eachSetting}
+              </Text>
               <Ionicons
                 name="chevron-forward"
-                size={18}
+                size={isTabOrDesktop ? 22 : 18}
                 color={colors.placeholdergrey}
               />
             </TouchableOpacity>
           ))}
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
+
+const responsiveStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  containerWeb: {
+    maxWidth: 1000,
+    width: '100%',
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+  profileCard: {
+    alignItems: 'center',
+  },
+  profileCardWeb: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 40,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  greetingWeb: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: colors.black,
+    marginBottom: 20,
+  },
+  profileImageWeb: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 16,
+    backgroundColor: colors.lightgrey,
+  },
+  userNameWeb: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: colors.black,
+  },
+  settingsContainerWeb: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  settingOptionWeb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+    borderRadius: 8,
+    cursor: 'pointer',
+  },
+  settingTextWeb: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.black,
+    flex: 1,
+  },
+});
 
 export default AdminProfile;
