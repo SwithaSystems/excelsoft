@@ -27,7 +27,7 @@ import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import {
   DATE_FORMAT_Display,
-  DEFAULT_PICKUP_HOURS,
+  // DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_STORE,
   STORE_CLOSING_TIMINGS,
@@ -52,7 +52,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
-
+import { usePickupTime } from "../../../hooks/usePickupTime";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -111,6 +111,9 @@ const PickupScreen = () => {
   const userData = useSelector((state: RootState) => state.user.user);
   console.log("userData in pickupscreen", userData);
 
+  const DEFAULT_PICKUP_HOURS = usePickupTime();
+  console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
+
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);
   const minutesRef = useRef<TextInput>(null);
@@ -141,8 +144,9 @@ const PickupScreen = () => {
       currentHour < STORE_CLOSING_TIMINGS
     ) {
       // Within business hours: add 2 hours
+      const pickupHours = Math.max(Number(DEFAULT_PICKUP_HOURS) || 0, 0.5); // At least 30 minutes
       const twoHoursLater = new Date(
-        now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+        now.getTime() + pickupHours * 60 * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
@@ -669,24 +673,21 @@ const PickupScreen = () => {
     </View>
   );
 
-    const { width } = useWindowDimensions();
-    const isTabOrDesktop = width >= 768;
-  
-    const HeaderComponent = isTabOrDesktop ? (
-      <BrandHeaderWeb />
-    ) : (
-      <Header headerText={            
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header
+      headerText={
         isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP
-    } 
+      }
     />
-    );
-    const FooterComponent = isTabOrDesktop ? (
-      <FooterWeb />
-    ) : (
-      <Footer />
-    );
-  
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -697,7 +698,6 @@ const PickupScreen = () => {
       footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-
       {isTabOrDesktop && (
         <Text
           style={{
@@ -710,22 +710,22 @@ const PickupScreen = () => {
             marginTop: 20,
           }}
         >
-         {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
+          {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
         </Text>
       )}
       <KeyBoardWrapper>
         <ScrollView ref={scrollViewRef}>
           <View
             style={[
-                      globalStyles.pt_0,
-                      isTabOrDesktop
-                        ? {
-                            width: "70%",
-                            alignSelf: "center",
-                            paddingVertical: 20,
-                          }
-                        : { paddingHorizontal: 0 },
-                    ]}
+              globalStyles.pt_0,
+              isTabOrDesktop
+                ? {
+                    width: "70%",
+                    alignSelf: "center",
+                    paddingVertical: 20,
+                  }
+                : { paddingHorizontal: 0 },
+            ]}
           >
             {/* Instructions */}
             <Text style={styles.label}>
@@ -882,7 +882,7 @@ const PickupScreen = () => {
                       accessibilityLabel="Select vehicle type"
                     >
                       <TextInput
-                        style={[globalStyles.picker_50, {paddingLeft: 10}]}
+                        style={[globalStyles.picker_50, { paddingLeft: 10 }]}
                         editable={false}
                         value={vehicleType}
                       />

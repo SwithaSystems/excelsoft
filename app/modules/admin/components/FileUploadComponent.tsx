@@ -72,10 +72,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     ensureOptionShape([{ label: "Select Vendor", value: "", key: "" }])
   );
 
-  // result returned by server (same shape as ImportResult in your other screen)
   const [result, setResult] = useState<any | null>(null);
 
-  // choose enabled when at least one dropdown label changed
   const isChooseDisabled =
     selectedEntityLabel === "Select Entity" &&
     selectedVendorLabel === "Select Vendor";
@@ -97,10 +95,29 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       } as any);
 
       if (res && (res as any).assets && (res as any).assets.length > 0) {
-        setSelectedFile((res as any).assets[0]);
-        Alert.alert("Success", `File selected: ${(res as any).assets[0].name}`);
+        const file = (res as any).assets[0];
+        setSelectedFile(file);
+
+        // DEBUG: Log file details
+        console.log("=== FILE SELECTION DEBUG ===");
+        console.log("File name:", file.name);
+        console.log("File size:", file.size);
+        console.log("File type:", file.type || file.mimeType);
+        console.log("File URI:", file.uri);
+        console.log("Full file object:", JSON.stringify(file, null, 2));
+
+        Alert.alert("Success", `File selected: ${file.name}`);
       } else if (res && (res as any).name && (res as any).uri) {
         setSelectedFile(res);
+
+        // DEBUG: Log file details
+        console.log("=== FILE SELECTION DEBUG (Legacy) ===");
+        console.log("File name:", (res as any).name);
+        console.log("File size:", (res as any).size);
+        console.log("File type:", (res as any).type);
+        console.log("File URI:", (res as any).uri);
+        console.log("Full file object:", JSON.stringify(res, null, 2));
+
         Alert.alert("Success", `File selected: ${(res as any).name}`);
       } else if ((res as any).canceled) {
         console.log("User cancelled file selection");
@@ -114,7 +131,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   };
 
   const handleUpload = async () => {
-    // require at least one label-selected dropdown and a file
     if (
       (selectedEntityLabel === "Select Entity" &&
         selectedVendorLabel === "Select Vendor") ||
@@ -125,7 +141,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     }
 
     setIsUploading(true);
-    setResult(null); // clear previous result
+    setResult(null);
+
     try {
       const uploadData = {
         entityType: selectedEntity,
@@ -134,52 +151,102 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         vendor: selectedVendor,
       };
 
+      // DEBUG: Log upload data
+      console.log("=== UPLOAD DATA DEBUG ===");
+      console.log("Entity Type:", uploadData.entityType);
+      console.log("File Name:", uploadData.fileName);
+      console.log("File URI:", uploadData.fileUri);
+      console.log("Vendor:", uploadData.vendor);
+      console.log("Selected Entity Label:", selectedEntityLabel);
+      console.log("Selected Vendor Label:", selectedVendorLabel);
+
       const formData = new FormData();
       formData.append("entityType", uploadData.entityType);
       formData.append("fileName", uploadData.fileName);
       formData.append("vendor", uploadData.vendor);
 
       if (Platform.OS === "web") {
+        console.log("=== WEB PLATFORM: Fetching blob ===");
         const resp = await fetch(uploadData.fileUri);
         const blob = await resp.blob();
+        console.log("Blob size:", blob.size);
+        console.log("Blob type:", blob.type);
         formData.append("file", blob, uploadData.fileName);
       } else {
-        formData.append("file", {
+        console.log("=== MOBILE PLATFORM: Appending file ===");
+        const fileObject = {
           uri: uploadData.fileUri,
           name: uploadData.fileName,
-          type: selectedFile.type || "application/octet-stream",
-        } as any);
+          type: selectedFile.type || selectedFile.mimeType || "application/pdf",
+        };
+        console.log(
+          "File object being appended:",
+          JSON.stringify(fileObject, null, 2)
+        );
+        formData.append("file", fileObject as any);
+      }
+
+      // DEBUG: Log FormData contents (note: can't directly log FormData on mobile)
+      console.log("=== FORMDATA DEBUG ===");
+      if (Platform.OS === "web") {
+        // On web, we can iterate FormData
+        for (let pair of (formData as any).entries()) {
+          console.log(`${pair[0]}:`, pair[1]);
+        }
+      } else {
+        console.log("FormData created (cannot iterate on mobile)");
+        console.log("FormData fields: entityType, fileName, vendor, file");
       }
 
       const vendorSelected = selectedVendor && selectedVendor.trim() !== "";
       const vendorLabelSelected = selectedVendorLabel !== "Select Vendor";
 
+      console.log("=== UPLOAD BRANCH DEBUG ===");
+      console.log("Vendor selected:", vendorSelected);
+      console.log("Vendor label selected:", vendorLabelSelected);
+      console.log(
+        "Will use vendor branch:",
+        vendorSelected || vendorLabelSelected
+      );
+
       if (vendorSelected || vendorLabelSelected) {
-        // vendor branch -> call PDF import endpoint with axios
+        // VENDOR BRANCH
+        console.log("=== VENDOR PDF UPLOAD ===");
         try {
           const url = `${API_URL}/product-import/upload-pdf`;
+          console.log("Upload URL:", url);
+          console.log("Request headers:", {
+            "Content-Type": "multipart/form-data",
+          });
+          console.log("Timeout: 300000ms");
+
+          console.log("Sending request to backend...");
           const response = await axios.post(url, formData, {
             headers: { "Content-Type": "multipart/form-data" },
             timeout: 300000,
           });
 
-          // store full response (regardless of property names)
+          console.log("=== BACKEND RESPONSE ===");
+          console.log("Status:", response.status);
+          console.log("Response data:", JSON.stringify(response.data, null, 2));
+          console.log(
+            "Response headers:",
+            JSON.stringify(response.headers, null, 2)
+          );
+
           setResult(
             response.data ?? { success: false, message: "Empty response" }
           );
 
-          // show user feedback
           if (response.data?.success) {
             Alert.alert("Success", "PDF import uploaded successfully");
           } else {
-            // if backend uses different key, still show message if present
             Alert.alert(
               "Upload result",
               response.data?.message ?? "Completed with warnings"
             );
           }
 
-          // reset selects and file
           setSelectedEntity("");
           setSelectedEntityLabel("Select Entity");
           setSelectedVendor("");
@@ -188,7 +255,12 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
           if (onUploadComplete) onUploadComplete(response.data);
         } catch (err: any) {
-          console.error("Vendor upload error:", err);
+          console.error("=== VENDOR UPLOAD ERROR ===");
+          console.error("Error message:", err.message);
+          console.error("Error response:", err.response?.data);
+          console.error("Error status:", err.response?.status);
+          console.error("Full error:", err);
+
           setResult({
             success: false,
             message: err.message ?? "Vendor upload failed",
@@ -202,7 +274,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           Alert.alert("Upload Error", "Vendor PDF upload failed");
         }
       } else {
-        // entity branch -> use existing ProductsAPI method
+        // ENTITY BRANCH
+        console.log("=== ENTITY UPLOAD ===");
         try {
           const resp = await ProductsAPI.addProduct_Catagory_Upload_File(
             formData
@@ -210,7 +283,9 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           if (!resp) throw new Error("No response from server");
           const json = await resp.json();
 
-          // set result from entity response (if it contains statistics)
+          console.log("=== ENTITY RESPONSE ===");
+          console.log("Response:", JSON.stringify(json, null, 2));
+
           setResult(
             json ?? {
               success: true,
@@ -233,7 +308,9 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
           if (onUploadComplete) onUploadComplete(json);
         } catch (apiErr: any) {
-          console.error("Entity upload error:", apiErr);
+          console.error("=== ENTITY UPLOAD ERROR ===");
+          console.error("Error:", apiErr);
+
           setResult({
             success: false,
             message: apiErr.message ?? "Entity upload failed",
@@ -252,7 +329,9 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         }
       }
     } catch (err: any) {
+      console.error("=== GENERAL UPLOAD ERROR ===");
       console.error(err);
+
       setResult({
         success: false,
         message: err.message ?? String(err),
@@ -294,7 +373,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
     fetch();
   }, []);
 
-  // small local styles for result UI (keeps rendering independent of external stylesheet)
   const resultStyles = StyleSheet.create({
     container: {
       marginTop: 20,
@@ -418,7 +496,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         )}
       </TouchableOpacity>
 
-      {/* Loader */}
       {isUploading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -426,7 +503,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         </View>
       )}
 
-      {/* Result display */}
       {result && (
         <View style={resultStyles.container}>
           <View

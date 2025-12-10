@@ -31,7 +31,9 @@ type Product = {
 export default function usePaymentHandlerWeb() {
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
   const [stripe, setStripe] = useState<Stripe | null>(null);
-  const [cardElement, setCardElement] = useState<StripeCardElement | null>(null);
+  const [cardElement, setCardElement] = useState<StripeCardElement | null>(
+    null
+  );
   const [isStripeReady, setIsStripeReady] = useState(false);
 
   const cartItems = useSelector((state: any) => state.cart.items);
@@ -75,16 +77,21 @@ export default function usePaymentHandlerWeb() {
         const configResponse = await axios.get(
           `${API_BASE_URL}/stripe-config/client_abc`
         );
-        
+
         if (!configResponse.data?.stripePublishableKey) {
           console.error("No publishable key in response:", configResponse.data);
           Alert.alert("Error", "Failed to load payment system configuration");
           return;
         }
-        
-        console.log("Initializing Stripe with key:", configResponse.data.stripePublishableKey.substring(0, 20) + '...');
-        const stripeInstance = await loadStripe(configResponse.data.stripePublishableKey);
-        
+
+        console.log(
+          "Initializing Stripe with key:",
+          configResponse.data.stripePublishableKey.substring(0, 20) + "..."
+        );
+        const stripeInstance = await loadStripe(
+          configResponse.data.stripePublishableKey
+        );
+
         if (!stripeInstance) {
           console.error("Failed to initialize Stripe");
           Alert.alert("Error", "Failed to initialize payment system");
@@ -99,7 +106,7 @@ export default function usePaymentHandlerWeb() {
         const mountCard = () => {
           const cardContainer = document.getElementById("card-element");
           console.log("Looking for card-element container...", !!cardContainer);
-          
+
           if (!cardContainer) {
             console.warn("Card element container not found, retrying...");
             setTimeout(mountCard, 100);
@@ -127,23 +134,59 @@ export default function usePaymentHandlerWeb() {
               },
             },
             hidePostalCode: false,
+            disableLink:true,
+           
           });
 
           console.log("Mounting card element...");
-          card.mount("#card-element");
-          
+
+          // Clear any existing content and mount new card element
+          const container = document.getElementById("card-element");
+          if (container) {
+            container.innerHTML = ""; // Clear any existing content
+            card.mount("#card-element");
+
+            // Force focus on the card element after a short delay
+            setTimeout(() => {
+              const cardFields = container.querySelector("input");
+              if (cardFields) {
+                cardFields.focus();
+              }
+            }, 500);
+          }
+
           // Listen for ready event
-          card.on("ready", () => {
+          const onReady = () => {
             console.log("✓ Card element is ready and interactive!");
             if (mounted) {
               setCardElement(card);
               setIsStripeReady(true);
+              // Remove the ready listener after it's called
+              // Add a null check before using card
+              if (card) {
+                const onReady = () => {
+                  console.log("✓ Card element is ready and interactive!");
+                  if (mounted) {
+                    setCardElement(card);
+                    setIsStripeReady(true);
+                    // Remove the ready listener after it's called
+                    card?.off("ready", onReady);
+                  }
+                };
+
+                card.on("ready", onReady);
+              }
             }
-          });
+          };
+
+          card.on("ready", onReady);
 
           // Listen for changes
           card.on("change", (event) => {
-            console.log("Card element changed:", event.complete ? "complete" : "incomplete");
+            console.log(
+              "Card element changed:",
+              event.complete ? "complete" : "incomplete"
+            );
             const displayError = document.getElementById("card-errors");
             if (event.error && displayError) {
               displayError.textContent = event.error.message;
@@ -152,12 +195,17 @@ export default function usePaymentHandlerWeb() {
             }
           });
 
-          // Listen for focus
+          // Add focus/blur handlers for better UX
           card.on("focus", () => {
             console.log("Card element focused");
+            const container = document.getElementById("card-element");
+            if (container) {
+              container.style.border = "1px solid #2684FF";
+              container.style.borderRadius = "4px";
+              container.style.padding = "10px";
+            }
           });
 
-          // Listen for blur
           card.on("blur", () => {
             console.log("Card element blurred");
           });
@@ -165,22 +213,32 @@ export default function usePaymentHandlerWeb() {
 
         // Start trying to mount after a short delay
         setTimeout(mountCard, 300);
-
       } catch (error) {
         console.error("Failed to initialize Stripe:", error);
-        Alert.alert("Error", "Failed to initialize payment system. Please try again.");
+        Alert.alert(
+          "Error",
+          "Failed to initialize payment system. Please refresh the page and try again."
+        );
       }
     };
 
-    initStripe();
+    // Add a small delay before initializing to ensure the component is fully mounted
+    const initTimeout = setTimeout(initStripe, 100);
 
     // Cleanup
     return () => {
       mounted = false;
       if (card) {
-        console.log("Unmounting card element");
-        card.unmount();
+        try {
+          console.log("Cleaning up card element...");
+          card.unmount();
+        } catch (e) {
+          console.warn("Error during card cleanup:", e);
+        }
       }
+      setStripe(null);
+      setCardElement(null);
+      setIsStripeReady(false);
     };
   }, [API_BASE_URL]);
 
@@ -227,15 +285,38 @@ export default function usePaymentHandlerWeb() {
     console.log("=== STARTING PAYMENT PROCESS (WEB) ===");
     console.log("Order details:", params);
     console.log("Cart items:", cartItems);
-    console.log("Stripe ready status:", { isStripeReady, stripe: !!stripe, cardElement: !!cardElement });
+    console.log("Stripe ready status:", {
+      isStripeReady,
+      stripe: !!stripe,
+      cardElement: !!cardElement,
+    });
 
-    // Validate Stripe is ready
+    // Validate Stripe is ready with retry logic
     if (!isStripeReady || !stripe || !cardElement) {
-      const message = `Payment system not ready. Stripe: ${!!stripe}, Card: ${!!cardElement}, Ready: ${isStripeReady}`;
-      console.error(message);
+      // Attempt to reinitialize the card element if not ready
+      console.warn(
+        "Payment system not fully initialized, attempting recovery..."
+      );
+
+      // Force re-mount of the card element
+      const cardContainer = document.getElementById("card-element");
+      if (cardContainer) {
+        cardContainer.innerHTML = "";
+        // Trigger a re-render of the parent component to reinitialize the card element
+        setStripe(null);
+        setCardElement(null);
+        setIsStripeReady(false);
+
+        // Small delay to allow state to update
+        setTimeout(() => {
+          setStripe(stripe);
+          // The useEffect will handle reinitialization
+        }, 100);
+      }
+
       Alert.alert(
-        "Payment System Not Ready",
-        "The payment system is still loading. Please wait a moment and try again."
+        "Payment System Loading",
+        "The payment system is still initializing. Please wait a moment and try again. If the issue persists, please refresh the page."
       );
       return;
     }
@@ -247,6 +328,19 @@ export default function usePaymentHandlerWeb() {
     const discounts = params.discounts || [];
 
     console.log("Subtotal:", subtotal);
+
+    // Check Minimum Order Value (MOV)
+    const MOV = 15; // Minimum Order Value
+    if (subtotal < MOV) {
+      console.error("Order value below minimum order value");
+      window.alert(
+        
+        `Your order value ($${subtotal.toFixed(
+          2
+        )}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+      );
+      return;
+    }
 
     // Fetch payment intent
     const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
@@ -261,9 +355,8 @@ export default function usePaymentHandlerWeb() {
     try {
       // Confirm card payment
       console.log("Confirming card payment...");
-      const { error: paymentError, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
+      const { error: paymentError, paymentIntent } =
+        await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: cardElement,
             billing_details: {
@@ -276,17 +369,19 @@ export default function usePaymentHandlerWeb() {
               },
             },
           },
-        }
-      );
+        });
 
-      console.log("Payment confirmation result:", { 
-        error: paymentError, 
-        intentStatus: paymentIntent?.status 
+      console.log("Payment confirmation result:", {
+        error: paymentError,
+        intentStatus: paymentIntent?.status,
       });
 
       if (paymentError) {
         console.error("Payment error:", paymentError);
-        Alert.alert("Payment Failed", paymentError.message || "An error occurred during payment");
+        Alert.alert(
+          "Payment Failed",
+          paymentError.message || "An error occurred during payment"
+        );
         return;
       }
 
@@ -346,7 +441,7 @@ export default function usePaymentHandlerWeb() {
           console.log("Order created successfully:", response);
 
           dispatch(clearCart());
-          
+
           redirectToPage(containers.orderSuccessfulScreen, {
             orderData: JSON.stringify(response),
           });
@@ -360,7 +455,10 @@ export default function usePaymentHandlerWeb() {
           }
         } catch (error) {
           console.error("=== ORDER CREATION FAILED ===", error);
-          Alert.alert("Error", "Payment successful but failed to create order. Please contact support.");
+          Alert.alert(
+            "Error",
+            "Payment successful but failed to create order. Please contact support."
+          );
         }
       }
     } catch (error) {

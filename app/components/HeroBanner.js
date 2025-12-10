@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Dimensions,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   Image,
@@ -11,6 +10,7 @@ import colors from "../../constants/colors";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import Carousel from "react-native-reanimated-carousel";
+import globalSettingsAPI from "@/services/globalSettingsService";
 import { Platform } from "react-native";
 import CarouselWeb from "./commonComponentsWeb/carousal";
 
@@ -30,34 +30,72 @@ function HeroBanner({
   scrollAnimationDuration = 300,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [displaySettings, setDisplaySettings] = useState(null);
 
-  const defaultBannerData = [
-    {
-      id: 1,
-      image: require("@/assets/Carousal-1.png"),
+  useEffect(() => {
+    const getSettings = async () => {
+      try {
+        const response = await globalSettingsAPI.getSettings();
+        setDisplaySettings(response?.data ?? null);
+        console.log("Global Settings Response:", response?.data);
+      } catch (error) {
+        console.warn("Failed to load global settings:", error);
+      }
+    };
+    getSettings();
+  }, []);
+
+  //  Memoize banner data
+  const defaultBannerData = useMemo(
+    () => [
+      { id: 1, image: require("@/assets/Carousal-1.png") },
+      { id: 2, image: require("@/assets/Carousal-2.png") },
+      { id: 3, image: require("@/assets/Carousal-3.png") },
+    ],
+    []
+  );
+
+  const renderBanner = useMemo(
+    () => (bannerData.length > 0 ? bannerData : defaultBannerData),
+    [bannerData, defaultBannerData]
+  );
+
+  //  Memoize carousel display logic
+  const shouldDisplayCarousel = useMemo(
+    () => displaySettings?.displayCarousel ?? false,
+    [displaySettings]
+  );
+
+  // Memoize press handler
+  const handlePress = useCallback(
+    (item, index) => {
+      if (onBannerPress) {
+        onBannerPress(item, index);
+      } else {
+        redirectToPage(containers.offersScreenScreen);
+      }
     },
-    {
-      id: 2,
-      image: require("@/assets/Carousal-2.png"),
-    },
-    {
-      id: 3,
-      image: require("@/assets/Carousal-3.png"),
-    },
-  ];
+    [onBannerPress]
+  );
 
-  const renderBanner = bannerData.length > 0 ? bannerData : defaultBannerData;
-  const isWeb = Platform.OS === "web";
+  //  Memoize carousel item renderer
+  const renderItem = useCallback(
+    ({ item, index }) => (
+      <TouchableOpacity
+        onPress={() => handlePress(item, index)}
+        style={styles.bannerWrapper}
+      >
+        <Image
+          source={item.image}
+          style={[styles.bannerImage, { height, borderRadius }]}
+        />
+      </TouchableOpacity>
+    ),
+    [handlePress, height, borderRadius]
+  );
 
-  const handlePress = (item, index) => {
-    if (onBannerPress) {
-      onBannerPress(item, index);
-    } else {
-      redirectToPage(containers.offersScreenScreen);
-    }
-  };
-
-  if (renderBanner.length === 0) {
+  // Early return if settings not loaded or carousel disabled
+  if (!shouldDisplayCarousel || renderBanner.length === 0) {
     return null;
   }
 
@@ -120,6 +158,7 @@ function HeroBanner({
         width={bannerWidth}
         height={height}
         data={renderBanner}
+        renderItem={renderItem}
         renderItem={({ item, index }) => (
           <TouchableOpacity
             onPress={() => handlePress(item, index)}
@@ -180,7 +219,7 @@ function HeroBanner({
             const isActive = index === currentIndex;
             return (
               <View
-                key={index}
+                key={banner.id || index}
                 style={[
                   styles.indicator,
                   isActive && [styles.activeIndicator, activeIndicatorStyle],
@@ -193,12 +232,12 @@ function HeroBanner({
     </>
   );
 }
+
 const styles = StyleSheet.create({
   banner: {
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
-    //height: 230,
     width: "100%",
   },
   bannerWrapper: {
@@ -208,37 +247,6 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 20,
   },
-  // bannerTitle: {
-  //   color: colors.white,
-  //   fontSize: 17,
-  //   fontWeight: "bold",
-  //   textAlign: "center",
-  //   marginBottom: 10,
-  // },
-  // bannerDiscount: {
-  //   color: colors.white,
-  //   fontSize: 28,
-  //   fontWeight: "bold",
-  //   marginBottom: 10,
-  // },
-  // bannerText: {
-  //   color: colors.white,
-  //   fontSize: 16,
-  //   textAlign: "center",
-  //   marginBottom: 20,
-  // },
-  // shopNowButton: {
-  //   backgroundColor: "rgba(255, 255, 255, 0.2)",
-  //   paddingHorizontal: 30,
-  //   paddingVertical: 10,
-  //   borderRadius: 25,
-  // },
-  // shopNowText: {
-  //   color: colors.white,
-  //   fontSize: 16,
-  //   fontWeight: "500",
-  // },
-
   indicatorContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -255,4 +263,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black,
   },
 });
-export default HeroBanner;
+
+export default React.memo(HeroBanner);

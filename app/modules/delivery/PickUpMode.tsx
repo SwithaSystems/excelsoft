@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   useWindowDimensions,
+  ActivityIndicator,
 } from "react-native";
 import styles from "./PickUpModeStyles";
 import colors from "../../../constants/colors";
@@ -22,6 +23,7 @@ import {
 } from "../../../constants/stringLiterals";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { jsonAxios } from "@/services/axiosConfig";
+import globalSettingsAPI from "@/services/globalSettingsService";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
@@ -96,7 +98,19 @@ const pickUpModescreen = () => {
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
   const [pickupModes, setPickupModes] = useState<any>([]);
+  const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
+  const fetchGlobalSettings = async () => {
+    try {
+      const response = await globalSettingsAPI.getSettings();
+      console.log("response global settings", response.data);
+      setDeliveryModeEnabled(response.data?.deliveryMode);
+    } catch (error) {
+      console.error("Failed to fetch global settings:", error);
+      setDeliveryModeEnabled(true);
+    }
+  };
   const fetchPickupModes = async () => {
     const response = await jsonAxios.get(`/pick-up-modes`);
     console.log("response pickup modes", response.data);
@@ -104,13 +118,39 @@ const pickUpModescreen = () => {
   };
 
   useEffect(() => {
-    fetchPickupModes();
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([fetchGlobalSettings(), fetchPickupModes()]);
+      setLoading(false);
+    };
+
+    fetchData();
   }, []);
 
   const options = pickupModes
     .map((mode: any) => modeConfig[mode.name])
-    .filter(Boolean);
-
+    .filter((option: any) => {
+      if (option?.id === "home") {
+        return deliveryModeEnabled;
+      }
+      return Boolean(option);
+    });
+  console.log("Final options:", options);
+  if (loading) {
+    return (
+      <PageLayout
+        hasHeader
+        headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
+        hasFooter={false}
+        scrollable={false}
+      >
+        <View style={[globalStyles.pt_0, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading pickup modes...</Text>
+        </View>
+      </PageLayout>
+    );
+  }
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
 
@@ -119,11 +159,7 @@ const pickUpModescreen = () => {
   ) : (
     <Header headerText={PICKUP_MODE_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
-    <FooterWeb />
-  ) : (
-    <Footer />
-  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
@@ -163,7 +199,6 @@ const pickUpModescreen = () => {
             : { paddingHorizontal: 0 },
         ]}
       >
-
         {options.map((option: any) => (
           <TouchableOpacity
             key={option.id}

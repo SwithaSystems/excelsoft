@@ -77,6 +77,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: colors.secondaryText,
+  },
 });
 
 export default styles;

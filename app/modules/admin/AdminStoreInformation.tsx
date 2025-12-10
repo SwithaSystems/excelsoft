@@ -14,6 +14,8 @@ import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInp
 import { utilitiesStyles } from "@/assets/styles/utilitiesStyles";
 import { Picker } from "@react-native-picker/picker";
 import Button from "@/app/components/commonComponents/Button";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { STORE_DETAILS_SCREEN_TITLE } from "@/constants/stringLiterals";
 
 const AdminStoreInformation = () => {
   const [storeName, setStoreName] = useState("");
@@ -24,9 +26,13 @@ const AdminStoreInformation = () => {
   const [period, setPeriod] = useState("am");
   return (
     <>
-      <SafeAreaView style={globalStyles.safeAreaContainer}>
+      <PageLayout
+        hasFooter={false}
+        hasHeader
+        scrollable
+        headerComponent={<Header headerText={STORE_DETAILS_SCREEN_TITLE} />}
+      >
         <View style={globalStyles.container}>
-          <Header headerText="Store Details" />
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               <View style={globalStyles.profileInputContainer}>
@@ -118,7 +124,7 @@ const AdminStoreInformation = () => {
             <Button onPress={() => {}} title="Save" />
           </View>
         </View>
-      </SafeAreaView>
+      </PageLayout>
     </>
   );
 };

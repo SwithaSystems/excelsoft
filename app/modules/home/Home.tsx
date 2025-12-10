@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Image,
   View,
-  TextInput,
   Text,
   TouchableOpacity,
   FlatList,
@@ -78,10 +77,48 @@ const HomePage = () => {
   const isTabOrDesktop = width >= 768;
 
   const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer activeTab="home" />;
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="home" />
+  );
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
+  //  Memoize the handler to prevent re-creating on every render
+  const handleBannerPress = useMemo(
+    () => (item: any, index: number) => {
+      redirectToPage(containers.offersScreen);
+    },
+    []
+  );
+
+  const renderFeaturedProducts = () => (
+    <View>
+      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
+      <FlatList
+        horizontal
+        data={featuredProducts}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.featuredCard}
+            onPress={() =>
+              redirectToPage(containers.productDetailScreen, {
+                productId: item.id,
+              })
+            }
+          >
+            <Image source={item.imageUrl} style={styles.featuredImage} />
+            <Text style={styles.featuredTitle}>{item.title}</Text>
+            <Text style={styles.featuredDescription}>{item.description}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.id}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.productsList}
+      />
+    </View>
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {

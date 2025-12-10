@@ -2,6 +2,7 @@ import {
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
+  MOV,
   ORDER_SUMMARY_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import React, {
@@ -119,12 +120,20 @@ const orderSummeryScreen = () => {
   const isWeb = Platform.OS === "web";
 
   console.log("All module:", All);
-  // console.log("usePaymentHandlerWeb typeof:", typeof All.usePaymentHandlerWeb);
   console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
   const { handlePayment } = usePaymentHandler();
+  const [total, settotal] = useState(0);
 
-  // Safe JSON parsing with comprehensive error handling
+  useEffect(() => {
+    let sum = 0;
+    cartItems.forEach((item: any) => {
+      sum += item.price * item.quantity;
+    });
+    console.log("Calculated total:", sum);
+    settotal(sum);
+  }, [cartItems]);
+
   const parseJsonSafely = useCallback(
     (jsonString: string | undefined, fallback: any = null) => {
       if (!jsonString || typeof jsonString !== "string") {
@@ -959,6 +968,15 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   disabled={!isPaymentEnabled}
                   onPress={() => {
                     try {
+                      // Check if total is less than MOV
+                      if (total < MOV) {
+                        Alert.alert(
+                          "Minimum Order Not Met",
+                          `Your order value is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+                        );
+                        return;
+                      }
+
                       handlePayment(cartItems, {
                         shippingAddress: shippingAddress,
                         billingAddress: selectedBillingAddress,
@@ -1185,6 +1203,27 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 disabled={!isPaymentEnabled}
                 onPress={() => {
                   try {
+                    // Check if total is less than MOV
+                    const currentTotal = cartItems.reduce(
+                      (sum: number, item: any) => {
+                        return (
+                          sum + (item.discount || item.price) * item.quantity
+                        );
+                      },
+                      0
+                    );
+                    console.log("Current total at payment:", currentTotal); // Debug log
+
+                    if (currentTotal < MOV) {
+                      Alert.alert(
+                        "Minimum Order Not Met",
+                        `Your order value ($${currentTotal.toFixed(
+                          2
+                        )}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+                      );
+                      return;
+                    }
+
                     handlePayment(cartItems, {
                       shippingAddress: shippingAddress,
                       billingAddress: selectedBillingAddress,
