@@ -454,7 +454,7 @@ const AdminCategories = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={true}
       hideNavItems={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>

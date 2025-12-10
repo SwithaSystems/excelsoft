@@ -264,6 +264,22 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
     }, 200);
   };
 
+  // Handle profile button click - route to appropriate profile screen
+  const handleProfileClick = () => {
+    if (!isValidUser) {
+      redirectToPage(containers.signInScreen);
+      return;
+    }
+
+    // If admin is viewing admin screens (hideUserGreeting is true), go to admin profile
+    // If admin is viewing user screens (hideUserGreeting is false), go to user profile
+    if (isAdmin && hideUserGreeting) {
+      redirectToPage(containers.AdminProfileScreen);
+    } else {
+      redirectToPage(containers.editProfileScreen);
+    }
+  };
+
   // Render suggestion item
   const renderSuggestionItem = ({ item }: { item: string }) => {
     return (
@@ -466,13 +482,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
         {/* Profile/Sign In */}
         <TouchableOpacity
           style={styles.profileButton}
-          onPress={() => {
-            if (isValidUser) {
-              redirectToPage(containers.editProfileScreen);
-            } else {
-              redirectToPage(containers.signInScreen);
-            }
-          }}
+          onPress={handleProfileClick}
         >
           <Text style={styles.greetingText}>
             {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}

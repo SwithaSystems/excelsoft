@@ -259,7 +259,7 @@ const AdminSeeAllOrders = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={true}
       hideNavItems={true}
     >
       <View style={[globalStyles.pt_0, globalStyles.pb_0, isTabOrDesktop && { flex: 1, flexDirection: 'column' }]}>

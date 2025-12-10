@@ -39,12 +39,12 @@ const navItems: NavItem[] = [
   // { id: "cards", label: "Saved Cards", icon: "card", route: "/saved-cards" },
 ];
 
-const quickLinks: QuickLinkItem[] = [
-  { id: "orders", label: "Your Orders", icon: "briefcase", route: containers.myOrderScreen },
-  { id: "saved-items", label: "Saved Items", icon: "heart", route: containers.savedItemScreen },
-  { id: "saved-address-quick", label: "Saved Address", icon: "map-marker", route: containers.savedAddressScreen },
-  // { id: "payments", label: "Payments", icon: "credit-card", route: "/payments" },
-];
+// const quickLinks: QuickLinkItem[] = [
+//   { id: "orders", label: "Your Orders", icon: "briefcase", route: containers.myOrderScreen },
+//   { id: "saved-items", label: "Saved Items", icon: "heart", route: containers.savedItemScreen },
+//   { id: "saved-address-quick", label: "Saved Address", icon: "map-marker", route: containers.savedAddressScreen },
+//   // { id: "payments", label: "Payments", icon: "credit-card", route: "/payments" },
+// ];
 
 export const UserSidebarWeb: React.FC = () => {
   const router = useRouter();
@@ -53,30 +53,30 @@ export const UserSidebarWeb: React.FC = () => {
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const [user, setUser] = useState<any>(null);
-  const [showQuickLinks, setShowQuickLinks] = useState(false);
+  // const [showQuickLinks, setShowQuickLinks] = useState(false);
 
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
   const dropdownAnim = useState(new Animated.Value(0))[0];
 
-  useEffect(() => {
-    if (showQuickLinks) {
-      Animated.timing(dropdownAnim, {
-        toValue: 1,
-        duration: 250,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(dropdownAnim, {
-        toValue: 0,
-        duration: 180,
-        easing: Easing.in(Easing.ease),
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [showQuickLinks]);
+  // useEffect(() => {
+  //   if (showQuickLinks) {
+  //     Animated.timing(dropdownAnim, {
+  //       toValue: 1,
+  //       duration: 250,
+  //       easing: Easing.out(Easing.ease),
+  //       useNativeDriver: false,
+  //     }).start();
+  //   } else {
+  //     Animated.timing(dropdownAnim, {
+  //       toValue: 0,
+  //       duration: 180,
+  //       easing: Easing.in(Easing.ease),
+  //       useNativeDriver: false,
+  //     }).start();
+  //   }
+  // }, [showQuickLinks]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -99,16 +99,16 @@ export const UserSidebarWeb: React.FC = () => {
     else router.push(route as any);
   };
 
-  const handleQuickLinkPress = (item: QuickLinkItem) => {
-    if (item.id === "orders") {
-      handleNavigation(item.route, {
-        userId: userData_redux?._id || userData_redux?.id,
-      });
-    } else {
-      handleNavigation(item.route);
-    }
-    setShowQuickLinks(false);
-  };
+  // const handleQuickLinkPress = (item: QuickLinkItem) => {
+  //   if (item.id === "orders") {
+  //     handleNavigation(item.route, {
+  //       userId: userData_redux?._id || userData_redux?.id,
+  //     });
+  //   } else {
+  //     handleNavigation(item.route);
+  //   }
+  //   setShowQuickLinks(false);
+  // };
 
   const isActive = (route: string) =>
     pathname === route || pathname?.startsWith(route);
@@ -116,7 +116,7 @@ export const UserSidebarWeb: React.FC = () => {
   if (!isTablet && !isDesktop) return null;
 
   return (
-    <View style={[styles.container, showQuickLinks && { paddingBottom: 200 }]}>
+    <View style={[styles.container]}>
       {/* Profile */}
       <View style={styles.profileSection}>
         <Image
@@ -167,11 +167,10 @@ export const UserSidebarWeb: React.FC = () => {
       </View>
 
       {/* Quick Links Section */}
-      <View style={styles.quickLinksContainer}>
+      {/* <View style={styles.quickLinksContainer}>
         <View style={styles.divider} />
 
         <View style={styles.quickLinksWrapper}>
-          {/* Quick Links Button */}
           <TouchableOpacity
             style={styles.quickLinksButton}
             onPress={() => setShowQuickLinks(!showQuickLinks)}
@@ -188,7 +187,6 @@ export const UserSidebarWeb: React.FC = () => {
             </View>
           </TouchableOpacity>
 
-          {/* Animated Dropdown */}
           {showQuickLinks && (
             <Animated.View
               style={[
@@ -224,7 +222,7 @@ export const UserSidebarWeb: React.FC = () => {
             </Animated.View>
           )}
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -291,65 +289,65 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  quickLinksContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 20,
-  },
+  // quickLinksContainer: {
+  //   paddingHorizontal: 12,
+  //   paddingBottom: 20,
+  // },
   divider: {
     height: 1,
     backgroundColor: colors.lightgrey,
     marginBottom: 12,
   },
 
-  quickLinksWrapper: {
-    position: "relative",
-  },
+  // quickLinksWrapper: {
+  //   position: "relative",
+  // },
 
-  quickLinksButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: colors.white,
-    borderWidth: 1.4,
-    borderColor: colors.primary,
-  },
-  quickLinksButtonContent: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-  },
-  quickLinksButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  // quickLinksButton: {
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 16,
+  //   borderRadius: 8,
+  //   backgroundColor: colors.white,
+  //   borderWidth: 1.4,
+  //   borderColor: colors.primary,
+  // },
+  // quickLinksButtonContent: {
+  //   flexDirection: "row",
+  //   gap: 12,
+  //   alignItems: "center",
+  // },
+  // quickLinksButtonText: {
+  //   fontSize: 15,
+  //   fontWeight: "600",
+  // },
 
-  quickLinksDropdown: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.lightgrey,
-    zIndex: 999,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
+  // quickLinksDropdown: {
+  //   position: "absolute",
+  //   top: "100%",
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: colors.white,
+  //   borderRadius: 8,
+  //   borderWidth: 1,
+  //   borderColor: colors.lightgrey,
+  //   zIndex: 999,
+  //   elevation: 6,
+  //   shadowColor: "#000",
+  //   shadowOpacity: 0.15,
+  //   shadowRadius: 6,
+  // },
 
-  quickLinkItem: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.lightgrey,
-  },
-  quickLinkText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
+  // quickLinkItem: {
+  //   flexDirection: "row",
+  //   gap: 12,
+  //   alignItems: "center",
+  //   paddingVertical: 14,
+  //   paddingHorizontal: 16,
+  //   borderBottomWidth: StyleSheet.hairlineWidth,
+  //   borderBottomColor: colors.lightgrey,
+  // },
+  // quickLinkText: {
+  //   fontSize: 14,
+  //   fontWeight: "500",
+  // },
 });
