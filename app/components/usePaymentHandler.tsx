@@ -15,6 +15,7 @@ import {
   DELIVERY_MODE_HOME,
   STORE_NAME,
 } from "../../constants/stringLiterals";
+import { useEffect, useState } from "react";
 
 type Product = {
   productId: string;
@@ -33,6 +34,41 @@ export const usePaymentHandler = () => {
 
   const cartItems = useSelector((state: any) => state.cart.items);
   const dispatch = useDispatch();
+  const [MOV, setMOV] = useState<number>(0);
+
+  const getMinimumOrderValue = async (): Promise<number | null> => {
+    try {
+      const resp = await axios.get(
+        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+      );
+      const raw = resp?.data;
+      const mov =
+        typeof raw === "number"
+          ? raw
+          : typeof raw === "object" &&
+            raw !== null &&
+            typeof raw.minimumOrderValue === "number"
+          ? raw.minimumOrderValue
+          : null;
+
+      return mov === null ? null : Number(mov);
+    } catch (err) {
+      console.error("Failed to fetch MOV", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const mov = await getMinimumOrderValue();
+      if (!mounted) return;
+      if (mov !== null) setMOV(mov);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const products = cartItems.map((item: any) => {
     const netPrice = item.netPrice || 0;
@@ -112,12 +148,22 @@ export const usePaymentHandler = () => {
     console.log("Subtotal:", subtotal);
 
     // Check Minimum Order Value (MOV)
-    const MOV = 15; // Minimum Order Value
-    if (subtotal < MOV) {
+    // const MOV = 15; // Minimum Order Value
+    const currentMOV = await getMinimumOrderValue();
+    if (currentMOV === null) {
+      Alert.alert(
+        "Error",
+        "Unable to fetch minimum order value. Please try again."
+      );
+      return Promise.reject(new Error("Failed to fetch MOV"));
+    }
+    if (subtotal < currentMOV) {
       console.error("Order value below minimum order value");
       Alert.alert(
         "Minimum Order Not Met",
-        `Your order value ($${subtotal.toFixed(2)}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+        `Your order value ($${subtotal.toFixed(
+          2
+        )}) is less than the minimum order value of $${currentMOV}. Please add more items to your cart.`
       );
       return Promise.reject(new Error("Order value below minimum order value"));
     }

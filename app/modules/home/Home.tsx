@@ -93,32 +93,32 @@ const HomePage = () => {
     []
   );
 
-  const renderFeaturedProducts = () => (
-    <View>
-      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
-      <FlatList
-        horizontal
-        data={featuredProducts}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.featuredCard}
-            onPress={() =>
-              redirectToPage(containers.productDetailScreen, {
-                productId: item.id,
-              })
-            }
-          >
-            <Image source={item.imageUrl} style={styles.featuredImage} />
-            <Text style={styles.featuredTitle}>{item.title}</Text>
-            <Text style={styles.featuredDescription}>{item.description}</Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
-  );
+  // const renderFeaturedProducts = () => (
+  //   <View>
+  //     <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
+  //     <FlatList
+  //       horizontal
+  //       data={featuredProducts}
+  //       renderItem={({ item }) => (
+  //         <TouchableOpacity
+  //           style={styles.featuredCard}
+  //           onPress={() =>
+  //             redirectToPage(containers.productDetailScreen, {
+  //               productId: item.id,
+  //             })
+  //           }
+  //         >
+  //           <Image source={item.imageUrl} style={styles.featuredImage} />
+  //           <Text style={styles.featuredTitle}>{item.title}</Text>
+  //           <Text style={styles.featuredDescription}>{item.description}</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //       keyExtractor={(item) => item.id}
+  //       showsHorizontalScrollIndicator={false}
+  //       contentContainerStyle={styles.productsList}
+  //     />
+  //   </View>
+  // );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -203,10 +203,7 @@ const HomePage = () => {
         /> */}
 
         <View
-          style={[
-            styles.carouselSection,
-            isTabOrDesktop && { marginTop: 32 },
-          ]}
+          style={[styles.carouselSection, isTabOrDesktop && { marginTop: 32 }]}
         >
           {promotionsLoading ? (
             <View style={styles.carouselLoader}>
@@ -228,7 +225,6 @@ const HomePage = () => {
             />
           ) : null}
         </View>
-
       </View>
     </LayoutComponent>
   );

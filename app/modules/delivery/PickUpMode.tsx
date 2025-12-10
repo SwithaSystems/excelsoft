@@ -29,33 +29,6 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 
-// const options = [
-//   {
-//     id: "store",
-//     label: "Store Pickup",
-//     description: "Pick up your order from our store",
-//     icon: "location-outline",
-//     redirectionScreen: containers.pickupScreen,
-//     params: { mode: DELIVERY_MODE_STORE },
-//   },
-//   {
-//     id: "curbside",
-//     label: "Curbside Pickup",
-//     description: "Pick up your order curbside, right from your car.",
-//     icon: "car-outline",
-//     redirectionScreen: containers.pickupScreen,
-//     params: { mode: DELIVERY_MODE_CURBSIDE },
-//   },
-//   {
-//     id: "home",
-//     label: "Home Delivery",
-//     description: "Receive your order at your doorstep.",
-//     icon: "home-outline",
-//     redirectionScreen: containers.homeDeliveryScreen,
-//     params: { mode: DELIVERY_MODE_HOME },
-//   },
-// ] as const;
-
 const modeConfig: Record<
   string,
   {
@@ -94,6 +67,8 @@ const modeConfig: Record<
 };
 
 const pickUpModescreen = () => {
+  // MOVE ALL HOOKS TO THE TOP - before any conditional returns
+  const { width } = useWindowDimensions();
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
@@ -111,6 +86,7 @@ const pickUpModescreen = () => {
       setDeliveryModeEnabled(true);
     }
   };
+
   const fetchPickupModes = async () => {
     const response = await jsonAxios.get(`/pick-up-modes`);
     console.log("response pickup modes", response.data);
@@ -135,7 +111,12 @@ const pickUpModescreen = () => {
       }
       return Boolean(option);
     });
+
   console.log("Final options:", options);
+
+  const isTabOrDesktop = width >= 768;
+
+  // Now the loading check comes AFTER all hooks
   if (loading) {
     return (
       <PageLayout
@@ -151,8 +132,6 @@ const pickUpModescreen = () => {
       </PageLayout>
     );
   }
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
 
   const HeaderComponent = isTabOrDesktop ? (
     <BrandHeaderWeb />

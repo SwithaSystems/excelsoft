@@ -38,6 +38,7 @@ export default function usePaymentHandlerWeb() {
 
   const cartItems = useSelector((state: any) => state.cart.items);
   const dispatch = useDispatch();
+  const [MOV, setMOV] = useState<number | null>(null);
 
   const products = cartItems.map((item: any) => {
     const netPrice = item.netPrice || 0;
@@ -65,6 +66,44 @@ export default function usePaymentHandlerWeb() {
       grossPrice: grossPrice,
     };
   });
+
+  async function getMinimumOrderValue(): Promise<number | null> {
+    try {
+      const resp = await axios.get(
+        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+      );
+      const raw = resp?.data;
+
+      if (typeof raw === "number") return Number(raw);
+      if (raw && typeof raw === "object") {
+        if (typeof raw.minimumOrderValue === "number")
+          return Number(raw.minimumOrderValue);
+        if (typeof raw.value === "number") return Number(raw.value);
+      }
+
+      console.warn("Unrecognised MOV shape:", raw);
+      return null;
+    } catch (err) {
+      console.error("Failed to fetch MOV", err);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const mov = await getMinimumOrderValue();
+      if (!mounted) return;
+      if (mov !== null) setMOV(mov);
+      else {
+        // keep null so handlePayment will re-fetch and show error
+        console.warn("MOV not available on mount");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Initialize Stripe on mount
   useEffect(() => {
@@ -134,8 +173,7 @@ export default function usePaymentHandlerWeb() {
               },
             },
             hidePostalCode: false,
-            disableLink:true,
-           
+            disableLink: true,
           });
 
           console.log("Mounting card element...");
@@ -330,14 +368,24 @@ export default function usePaymentHandlerWeb() {
     console.log("Subtotal:", subtotal);
 
     // Check Minimum Order Value (MOV)
-    const MOV = 15; // Minimum Order Value
-    if (subtotal < MOV) {
+    // const MOV = 15; // Minimum Order Value
+    let currentMOV = MOV;
+    if (currentMOV == null) {
+      currentMOV = await getMinimumOrderValue();
+      if (currentMOV === null) {
+        Alert.alert(
+          "Error",
+          "Unable to fetch minimum order value. Please try again."
+        );
+        return;
+      }
+    }
+    if (subtotal < currentMOV) {
       console.error("Order value below minimum order value");
       window.alert(
-        
         `Your order value ($${subtotal.toFixed(
           2
-        )}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+        )}) is less than the minimum order value of $${currentMOV}. Please add more items to your cart.`
       );
       return;
     }
