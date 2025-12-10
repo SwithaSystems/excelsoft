@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
   Platform,
   StatusBar,
+  Linking,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -86,16 +87,134 @@ const HomePage = () => {
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
+  
+  // Helper function to normalize category names for comparison
+  // Handles hyphens, underscores, extra spaces, case differences, and trailing 's'
+  const normalizeForComparison = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[-_]/g, ' ')  // Replace hyphens and underscores with spaces
+      .replace(/\s+/g, ' ')   // Collapse multiple spaces
+      .trim();
+  };
+
+  // More flexible matching that handles singular/plural differences
+  const categoryNamesMatch = (name1: string, name2: string) => {
+    const norm1 = normalizeForComparison(name1);
+    const norm2 = normalizeForComparison(name2);
+    
+    // Exact match after normalization
+    if (norm1 === norm2) return true;
+    
+    // Handle singular/plural by removing trailing 's' from each word
+    const removePlural = (str: string) => str.split(' ').map(word => word.replace(/s$/, '')).join(' ');
+    if (removePlural(norm1) === removePlural(norm2)) return true;
+    
+    // Check if one contains the other (for partial matches like "electronic" vs "electronics")
+    const words1 = norm1.split(' ');
+    const words2 = norm2.split(' ');
+    
+    // Check if all words match (ignoring trailing 's')
+    if (words1.length === words2.length) {
+      const allMatch = words1.every((w1, i) => {
+        const w2 = words2[i];
+        return w1 === w2 || w1.replace(/s$/, '') === w2.replace(/s$/, '');
+      });
+      if (allMatch) return true;
+    }
+    
+    return false;
+  };
+
   const handleBannerPress = useMemo(
-    () => (item: Promotion, index: number) => {
-      if (item.isInternalLink) {
-        redirectToPage(containers.categoriesScreen, {
-          fromSearch: true,
-          category: "Offers",
-          categoryId: item.link,
-        });
-      } else {
+    () => async (item: any, index: number) => {
+      // item is from carouselData, which has: id, image, link, title, description, isInternalLink
+      if (item.isInternalLink && item.link) {
+        try {
+          // Parse the link format: "offers/electronics-sale" or just "offers"
+          const linkParts = item.link.split('/').filter((part: string) => part.trim() !== '');
+          const parentCategoryName = linkParts[0] || item.title || "Offers";
+          const subCategoryName = linkParts[1] || null;
+
+          console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
+
+          // Fetch all categories to find the parent category by name
+          const allCategories = await categoryService.getAllCategories();
+          const parentCategory = allCategories.find(
+            (cat) => categoryNamesMatch(cat.name, parentCategoryName)
+          );
+
+          if (!parentCategory) {
+            console.error(`Parent category "${parentCategoryName}" not found`);
+            // Fallback: redirect with the link as categoryId (original behavior)
+            redirectToPage(containers.searchResultsScreen, {
+              fromSearch: true,
+              category: parentCategoryName,
+              categoryId: item.link,
+            });
+            return;
+          }
+
+          console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
+
+          // If there's a subcategory, find it
+          if (subCategoryName) {
+            const subCategories = await categoryService.getAllSubCategories(
+              parentCategory.id
+            );
+            
+            console.log("Available subcategories:", subCategories.map(s => s.name));
+            
+            const subCategory = subCategories.find(
+              (subCat) => categoryNamesMatch(subCat.name, subCategoryName)
+            );
+
+            if (subCategory) {
+              // Navigate with parent category and selected subcategory
+              redirectToPage(containers.searchResultsScreen, {
+                fromSearch: true,
+                category: parentCategory.name,
+                categoryId: parentCategory.id,
+                selectedSubCategories: subCategory.id.toString(),
+              });
+              console.log(
+                `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
+              );
+            } else {
+              // Subcategory not found, navigate to parent category only
+              console.warn(`Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`);
+              redirectToPage(containers.searchResultsScreen, {
+                fromSearch: true,
+                category: parentCategory.name,
+                categoryId: parentCategory.id,
+              });
+            }
+          } else {
+            // No subcategory, navigate to parent category only
+            redirectToPage(containers.searchResultsScreen, {
+              fromSearch: true,
+              category: parentCategory.name,
+              categoryId: parentCategory.id,
+            });
+          }
+        } catch (error) {
+          console.error("Error processing carousel link:", error);
+          // Fallback: redirect with the link as categoryId (original behavior)
+          redirectToPage(containers.searchResultsScreen, {
+            fromSearch: true,
+            category: item.title || "Offers",
+            categoryId: item.link,
+          });
+        }
+      } else if (item.link) {
+        // External link - open in browser
         console.log("Opening external link:", item.link);
+        if (Platform.OS === "web") {
+          window.open(item.link, "_blank");
+        } else {
+          // For mobile, use Linking API
+          Linking.openURL(item.link);
+        }
       }
     },
     []
@@ -107,8 +226,10 @@ const HomePage = () => {
       link: promo.link,
       title: promo.title,
       description: "", // Add if you have description in your schema
+      isInternalLink: promo.isInternalLink, // Preserve the internal link flag
+      onPress: handleBannerPress, // Add the handler to each item
     }));
-  }, [promotions]);
+  }, [promotions, handleBannerPress]);
 
   // const renderFeaturedProducts = () => (
   //   <View>
@@ -242,7 +363,6 @@ const HomePage = () => {
               width={carouselWidth}
               height={isTabOrDesktop ? 420 : 230}
               borderRadius={12}
-              onPress={handleBannerPress}
             />
           ) : null}
         </View>

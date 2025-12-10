@@ -1207,7 +1207,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     const currentTotal = cartItems.reduce(
                       (sum: number, item: any) => {
                         return (
-                          sum + (item.discount || item.price) * item.quantity
+                          sum + (item.price) * item.quantity
                         );
                       },
                       0

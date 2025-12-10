@@ -29,6 +29,9 @@ function preparePromotionalData(backendData) {
     link: item.link || null,
     title: item.title || "",
     description: item.description || "",
+    // Preserve custom properties for internal link handling
+    onPress: item.onPress,
+    isInternalLink: item.isInternalLink,
   }));
 }
 
@@ -155,8 +158,13 @@ export default function CarouselWeb({
             activeOpacity={0.9}
             style={[styles.slide, { width, height }]}
             onPress={() => {
-              if (item.onPress) item.onPress(item, idx);
-              else if (item.link) {
+              // For internal links, only call onPress handler (don't open URL)
+              if (item.onPress) {
+                item.onPress(item, idx);
+                return; // Prevent any further URL navigation
+              }
+              // For external links without custom handler, open the URL
+              if (item.link && !item.isInternalLink) {
                 if (Platform.OS === "web") {
                   window?.open?.(item.link, "_blank");
                 } else {
