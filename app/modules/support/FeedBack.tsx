@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput, useWindowDimensions } from "react-native";
 import styles from "./FeedBackStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -23,6 +23,8 @@ import { FEEDBACK_SCREEN2_TITLE } from "../../../constants/stringLiterals";
 const MAX_IMAGES = 5;
 
 const feedBackScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -132,6 +134,7 @@ const feedBackScreen = () => {
       headerComponent={
         <Header
           headerText={FEEDBACK_SCREEN2_TITLE}
+          hideBackArrow={isTabOrDesktop}
           secondaryBtnText="Discard"
           secondaryBtnCallBack={() => {
             redirectToPage(containers.productDetailScreen, {

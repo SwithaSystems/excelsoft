@@ -282,6 +282,7 @@ const signUpScreen = () => {
       headerComponent={
         <Header 
           headerText={SIGN_UP_SCREEN_TITLE}
+          hideBackArrow={isTabOrDesktop}
           headerStyle={isTabOrDesktop ? styles.signUpHeaderStyle : undefined}
           headerTitleStyle={isTabOrDesktop ? styles.signUpHeaderTitle : undefined}
         />

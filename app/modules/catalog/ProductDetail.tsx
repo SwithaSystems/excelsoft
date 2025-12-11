@@ -43,6 +43,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+const placeholderImage = require("../../../assets/Placeholder.png");
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -233,35 +234,58 @@ const ProductDetailScreen = () => {
                 {/* Main Image */}
                 <View style={styles.webMainImageContainer}>
                   <Image
-                    source={{
-                      uri:
-                        product?.image?.[selectedImageIndex] ||
-                        product?.image?.[0],
-                    }}
+                    source={(() => {
+                      const selectedImage = product?.image?.[selectedImageIndex];
+                      const firstImage = product?.image?.[0];
+                      const imageUrl = selectedImage || firstImage;
+                      
+                      if (
+                        imageUrl &&
+                        typeof imageUrl === "string" &&
+                        imageUrl.trim() !== ""
+                      ) {
+                        return { uri: imageUrl };
+                      }
+                      return placeholderImage;
+                    })()}
                     style={styles.webMainImage}
                   />
                 </View>
 
                 {/* Thumbnail Images */}
                 <View style={styles.webThumbnailContainer}>
-                  {product?.image
-                    ?.filter((url: string) => url && url.trim() !== "")
-                    .map((imageUrl: string, index: number) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => setSelectedImageIndex(index)}
-                        style={[
-                          styles.webThumbnail,
-                          selectedImageIndex === index &&
-                            styles.webThumbnailActive,
-                        ]}
-                      >
-                        <Image
-                          source={{ uri: imageUrl }}
-                          style={styles.webThumbnailImage}
-                        />
-                      </TouchableOpacity>
-                    ))}
+                  {product?.image && product.image.length > 0 ? (
+                    product.image
+                      .filter((url: string) => url && typeof url === "string" && url.trim() !== "")
+                      .map((imageUrl: string, index: number) => (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => setSelectedImageIndex(index)}
+                          style={[
+                            styles.webThumbnail,
+                            selectedImageIndex === index &&
+                              styles.webThumbnailActive,
+                          ]}
+                        >
+                          <Image
+                            source={{ uri: imageUrl }}
+                            style={styles.webThumbnailImage}
+                          />
+                        </TouchableOpacity>
+                      ))
+                  ) : (
+                    <TouchableOpacity
+                      style={[
+                        styles.webThumbnail,
+                        styles.webThumbnailActive,
+                      ]}
+                    >
+                      <Image
+                        source={placeholderImage}
+                        style={styles.webThumbnailImage}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
 
@@ -479,12 +503,12 @@ const ProductDetailScreen = () => {
         <ScrollView style={{ flex: 1 }}>
           {product && product?.image && product?.image?.length > 0 && (
             <HeroBanner
-              bannerData={product?.image
-                .filter((url: string) => url && url.trim() !== "")
-                .map((imageurl: string, index: number) => ({
-                  id: index,
-                  image: { uri: imageurl },
-                }))}
+            bannerData={product?.image
+              .filter((url: string) => url && url.trim() !== "")
+              .map((imageurl: string, index: number) => ({
+                id: index,
+                image: imageurl,   // ✅ CORRECT
+              }))}
               onBannerPress={() => {}}
             />
           )}

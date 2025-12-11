@@ -128,6 +128,7 @@ const HomePage = () => {
 
   const handleBannerPress = useMemo(
     () => async (item: any, index: number) => {
+      console.log("item", item);
       // item is from carouselData, which has: id, image, link, title, description, isInternalLink
       if (item.isInternalLink && item.link) {
         try {
@@ -170,15 +171,14 @@ const HomePage = () => {
             );
 
             if (subCategory) {
-              // Navigate with parent category and selected subcategory
+              // Navigate directly to the subcategory as the main category
               redirectToPage(containers.searchResultsScreen, {
                 fromSearch: true,
-                category: parentCategory.name,
-                categoryId: parentCategory.id,
-                selectedSubCategories: subCategory.id.toString(),
+                category: subCategory.name,
+                categoryId: subCategory.id,
               });
               console.log(
-                `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
+                `Navigating directly to subcategory: ${subCategory.name} (ID: ${subCategory.id})`
               );
             } else {
               // Subcategory not found, navigate to parent category only

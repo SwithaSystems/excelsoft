@@ -6,6 +6,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import BrandHeader from "@/app/components/BrandHeader";
+import Header from "@/app/components/Header";
 
 const fileUploadAddProductCategory = () => {
   const handleUploadComplete = (result: any) => {
@@ -17,7 +18,7 @@ const fileUploadAddProductCategory = () => {
     const isMobile = width < 768;
     const isTabOrDesktop = width >= 768;
   
-    const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : null;
+    const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <Header headerText="File Upload" />;
     const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   return (

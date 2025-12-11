@@ -250,6 +250,7 @@ const verifcationScreen = () => {
         headerComponent={
           <Header 
             headerText={VERIFICATION_SCREEN_TITLE}
+            hideBackArrow={isTabOrDesktop}
             headerStyle={isTabOrDesktop ? styles.verificationHeaderStyle : undefined}
             headerTitleStyle={isTabOrDesktop ? styles.verificationHeaderTitle : undefined}
           />

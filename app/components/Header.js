@@ -17,7 +17,9 @@ function Header(props) {
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
           <View style={styles.leftContainer}>
+            {!props.hideBackArrow && (
             <BackArrow needResetNavigation={props.needResetNavigation} />
+            )}
           </View>
 
           <View style={styles.centerContainer}>
