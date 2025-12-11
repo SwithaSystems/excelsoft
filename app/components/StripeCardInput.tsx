@@ -8,10 +8,10 @@ export const StripeCardInput = () => {
     if (Platform.OS === "web") {
       setTimeout(() => {
         const element = document.getElementById("card-element");
-        console.log("Card element exists in DOM:", !!element);
+        // console.log("Card element exists in DOM:", !!element);
         if (element) {
-          console.log("Card element classes:", element.className);
-          console.log("Card element children:", element.children.length);
+          // console.log("Card element classes:", element.className);
+          // console.log("Card element children:", element.children.length);
         }
       }, 1000);
     }

@@ -87,7 +87,7 @@ const forgotPasswordScreen = () => {
       }
     } else {
       // TODO: Implement forgot password for email, if required
-      console.log("Email forgot password not implemented.");
+      // console.log("Email forgot password not implemented.");
     }
   };
 

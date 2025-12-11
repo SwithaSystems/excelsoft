@@ -109,10 +109,10 @@ const PickupScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
-  console.log("userData in pickupscreen", userData);
+  // console.log("userData in pickupscreen", userData);
 
   const DEFAULT_PICKUP_HOURS = usePickupTime();
-  console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
+  // console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
 
   // Refs for focusing fields
   const hoursRef = useRef<TextInput>(null);
@@ -171,7 +171,7 @@ const PickupScreen = () => {
     // Format the date for state
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
     // const formattedDate_old = targetDate.toISOString().split("T")[0];
-    // console.log("2_formattedDate", formattedDate, formattedDate_old);
+    // // console.log("2_formattedDate", formattedDate, formattedDate_old);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
@@ -275,7 +275,7 @@ const PickupScreen = () => {
         const response = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
-        console.log("response in pickup", response);
+        // console.log("response in pickup", response);
         if (response?.data) {
           const fetchedUserData = {
             firstName: response.data.firstName || "",
@@ -606,7 +606,7 @@ const PickupScreen = () => {
 
   // Handle email input change with validation
   const handleEmailChange = (text: any) => {
-    console.log("Email input: ", text);
+    // console.log("Email input: ", text);
     setEmail(text);
 
     if (!text.trim()) {

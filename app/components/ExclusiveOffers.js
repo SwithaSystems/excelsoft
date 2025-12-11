@@ -26,7 +26,7 @@ function ExclusiveOffers(props) {
   };
   const handleHeartPress = (e, item) => {
     e.stopPropagation();
-    console.log("saved item", item);
+    // console.log("saved item", item);
 
     if (isItemSaved(item.id)) {
       dispatch(removeFromSavedItems(item.id));

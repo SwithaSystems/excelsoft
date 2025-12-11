@@ -119,8 +119,8 @@ const orderSummeryScreen = () => {
   const rotateAnimation = useRef(new Animated.Value(0)).current;
   const isWeb = Platform.OS === "web";
 
-  console.log("All module:", All);
-  console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
+  // console.log("All module:", All);
+  // console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
   const { handlePayment } = usePaymentHandler();
   const [total, settotal] = useState(0);
@@ -130,7 +130,7 @@ const orderSummeryScreen = () => {
     cartItems.forEach((item: any) => {
       sum += item.price * item.quantity;
     });
-    console.log("Calculated total:", sum);
+    // console.log("Calculated total:", sum);
     settotal(sum);
   }, [cartItems]);
 
@@ -172,7 +172,7 @@ const orderSummeryScreen = () => {
   }, [params?.pickupDetails, parseJsonSafely]);
 
   // useEffect(() => {
-  //   console.log("pickup details", pickupDetails);
+  //   // console.log("pickup details", pickupDetails);
   // }, [pickupDetails]);
 
   const selectedMode = params?.selectedMode || "Delivery";
@@ -314,7 +314,7 @@ const orderSummeryScreen = () => {
     const fetchAddresses = async () => {
       try {
         const addresses = await addressService.getAllAddress();
-        console.log("Address Data", addresses);
+        // console.log("Address Data", addresses);
 
         if (isActive && isMountedRef.current) {
           setAddressData(Array.isArray(addresses) ? addresses : []);
@@ -351,7 +351,7 @@ const orderSummeryScreen = () => {
     const defaultAddress = addressData.find(
       (address) => address.isDefault === true
     );
-    console.log("defalut address", defaultAddress);
+    // console.log("defalut address", defaultAddress);
     let addressToSelect = null;
     if (addressData.length > 1) {
       if (defaultAddress) {
@@ -363,7 +363,7 @@ const orderSummeryScreen = () => {
     if (addressToSelect && isActive && isMountedRef.current) {
       setSelectedBillingAddress(addressToSelect);
       setSelectedId(addressToSelect._id);
-      console.log("Auto-selected billing address:", addressToSelect);
+      // console.log("Auto-selected billing address:", addressToSelect);
     }
     return () => {
       isActive = false;
@@ -522,7 +522,7 @@ const orderSummeryScreen = () => {
   // Handle billing address selection
   const handleSelectBillingAddress = useCallback(
     (item: Address) => {
-      console.log("Address item", item);
+      // console.log("Address item", item);
       if (!isMountedRef.current || !item) return;
 
       try {
@@ -532,7 +532,7 @@ const orderSummeryScreen = () => {
 
         setSelectedId(item._id || null);
         setSelectedBillingAddress(item);
-        console.log("Selected billing address:", item);
+        // console.log("Selected billing address:", item);
       } catch (error) {
         console.error("Error selecting billing address:", error);
       }
@@ -1212,7 +1212,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       },
                       0
                     );
-                    console.log("Current total at payment:", currentTotal); // Debug log
+                    // console.log("Current total at payment:", currentTotal); // Debug log
 
                     if (currentTotal < MOV) {
                       Alert.alert(

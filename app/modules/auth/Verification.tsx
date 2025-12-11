@@ -38,13 +38,13 @@ const verifcationScreen = () => {
   const [parsedUserData, setParsedUserData] = useState(null);
   const inputRefs = useRef<TextInput[]>([]);
 
-  console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
+  // console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
 
   useEffect(() => {
-    console.log("Source:", from);
-    console.log("Raw userData:", userData);
-    console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
-    console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
+    // console.log("Source:", from);
+    // console.log("Raw userData:", userData);
+    // console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
+    // console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
 
     // Set phone number based on source
     if (from === "signup" && userData) {
@@ -67,30 +67,30 @@ const verifcationScreen = () => {
     } else if (from === "forgotPassword" && phoneNumber_forgetPwd) {
       if (Array.isArray(phoneNumber_forgetPwd)) {
         setPhoneNumber(phoneNumber_forgetPwd[0]);
-        console.log(
-          "Set phone number (from array) for password reset:",
-          phoneNumber_forgetPwd[0]
-        );
+        // console.log(
+        //   "Set phone number (from array) for password reset:",
+        //   phoneNumber_forgetPwd[0]
+        // );
       } else {
         setPhoneNumber(phoneNumber_forgetPwd);
-        console.log(
-          "Set phone number (from string) for password reset:",
-          phoneNumber_forgetPwd
-        );
+        // console.log(
+        //   "Set phone number (from string) for password reset:",
+        //   phoneNumber_forgetPwd
+        // );
       }
     } else if (from === "verify" && phoneNumber_editAccount) {
       if (Array.isArray(phoneNumber_editAccount)) {
         setPhoneNumber(phoneNumber_editAccount[0]);
-        console.log(
-          "Set phone number (from array) for password reset:",
-          phoneNumber_editAccount[0]
-        );
+        // console.log(
+        //   "Set phone number (from array) for password reset:",
+        //   phoneNumber_editAccount[0]
+        // );
       } else {
         setPhoneNumber(phoneNumber_editAccount);
-        console.log(
-          "Set phone number (from string) for password reset:",
-          phoneNumber_editAccount
-        );
+        // console.log(
+        //   "Set phone number (from string) for password reset:",
+        //   phoneNumber_editAccount
+        // );
       }
     }
   }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount]);
@@ -108,7 +108,7 @@ const verifcationScreen = () => {
 
   // const phoneNumber = parsedUserData?.phone;
 
-  console.log("phoneNumber", phoneNumber);
+  // console.log("phoneNumber", phoneNumber);
   const handleChange = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text;
@@ -135,13 +135,13 @@ const verifcationScreen = () => {
           email: email,
           OtpNumber,
         });
-        console.log("Email OTP verification result:", res);
+        // console.log("Email OTP verification result:", res);
       } else {
         res = await TwilioApi.verifyOtp({
           phoneNumber,
           OtpNumber,
         });
-        console.log("Phone OTP verification result:", res);
+        // console.log("Phone OTP verification result:", res);
       }
 
       // Check if verification was successful
@@ -165,7 +165,7 @@ const verifcationScreen = () => {
         }
 
         if (from === "signup") {
-          console.log("ParsedUserData", parsedUserData);
+          // console.log("ParsedUserData", parsedUserData);
 
           if (!parsedUserData) {
             Alert.alert("Error", "User data is missing.");
@@ -177,7 +177,7 @@ const verifcationScreen = () => {
               userData: parsedUserData,
             });
 
-            console.log("response from verify otp", response);
+            // console.log("response from verify otp", response);
 
             if (response?.access_token && response?.user) {
               Alert.alert("Success", "User successfully registered");

@@ -23,7 +23,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../store/slices/cartSlice";
 import DisplayPrice from "@/app/components/DisplayPrice";
 const { width } = Dimensions.get("window");
-import { useAppContext } from "@/context/AppContext";
 import Toast from "react-native-toast-message";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import {
@@ -31,7 +30,6 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import HeroBanner from "../../components/HeroBanner";
 import { PRODUCT_DETAIL_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import {
   ITEM_OUT_OF_STOCK,
@@ -43,7 +41,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import CurrencySymbol from "@/constants/CurrencySymbol";
-const placeholderImage = require("../../../assets/Placeholder.png");
+import ProductImageCarousel from "@/app/components/commonComponents/ProductImageCarousal";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -52,13 +50,14 @@ const ProductDetailScreen = () => {
   const [quantity, setQuantity] = useState(1);
   const [isProductLoading, setIsProductLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView | null>(null);
   const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  // Track image load errors
+  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -66,18 +65,31 @@ const ProductDetailScreen = () => {
   
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  
   const isItemSaved = (itemId: any) => {
     return savedItems.some((savedItem: any) => savedItem.id === itemId);
   };
+  
   const handleHeartPress = (e: any, item: any) => {
     e.stopPropagation();
-    console.log("saved item", item);
 
     if (isItemSaved(item.id)) {
       dispatch(removeFromSavedItems(item.id));
     } else {
       dispatch(addToSavedItems(item));
     }
+  };
+
+  // Helper function to check if image is valid
+  const isValidImage = (imageUrl: string | undefined) => {
+    return imageUrl && 
+           imageUrl.trim() !== "" && 
+           !imageUrl.includes("Placeholder.png");
+  };
+
+  // Handler for image load errors
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
   };
 
   const fetchProduct = useCallback(async () => {
@@ -87,7 +99,7 @@ const ProductDetailScreen = () => {
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
       );
-      console.log("fetched product", fetchedProduct);
+      
       if (!fetchedProduct) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
@@ -136,31 +148,6 @@ const ProductDetailScreen = () => {
       }
     }, [fetchProduct, productId])
   );
-
-  const indexRef = useRef(0);
-
-  useEffect(() => {
-    if (
-      !product?.image?.length ||
-      !scrollViewRef.current ||
-      Platform.OS === "web"
-    )
-      return;
-
-    const interval = setInterval(() => {
-      const nextIndex = (indexRef.current + 1) % product?.image?.length;
-
-      scrollViewRef.current?.scrollTo({
-        x: nextIndex * width,
-        animated: true,
-      });
-
-      indexRef.current = nextIndex;
-      setCurrentIndex(nextIndex);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [product?.image?.length]);
 
   if (isProductLoading) {
     return (
@@ -230,62 +217,67 @@ const ProductDetailScreen = () => {
             <View style={styles.webContentWrapper}>
               {/* Left Section - Images */}
               <View style={styles.webLeftSection}>
-
                 {/* Main Image */}
                 <View style={styles.webMainImageContainer}>
-                  <Image
-                    source={(() => {
-                      const selectedImage = product?.image?.[selectedImageIndex];
-                      const firstImage = product?.image?.[0];
-                      const imageUrl = selectedImage || firstImage;
-                      
-                      if (
-                        imageUrl &&
-                        typeof imageUrl === "string" &&
-                        imageUrl.trim() !== ""
-                      ) {
-                        return { uri: imageUrl };
-                      }
-                      return placeholderImage;
-                    })()}
-                    style={styles.webMainImage}
-                  />
+                  {product?.image?.[selectedImageIndex] && 
+                   isValidImage(product.image[selectedImageIndex]) &&
+                   !imageErrors[selectedImageIndex] ? (
+                    <Image
+                      source={{ uri: product.image[selectedImageIndex] }}
+                      style={styles.webMainImage}
+                      onError={() => handleImageError(selectedImageIndex)}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={[styles.webMainImage, { 
+                      backgroundColor: '#f0f0f0', 
+                      justifyContent: 'center', 
+                      alignItems: 'center' 
+                    }]}>
+                      <Text style={{ color: '#999', fontSize: 16 }}>No Image Available</Text>
+                    </View>
+                  )}
                 </View>
 
-                {/* Thumbnail Images */}
+                {/* Thumbnails */}
                 <View style={styles.webThumbnailContainer}>
-                  {product?.image && product.image.length > 0 ? (
-                    product.image
-                      .filter((url: string) => url && typeof url === "string" && url.trim() !== "")
-                      .map((imageUrl: string, index: number) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => setSelectedImageIndex(index)}
-                          style={[
-                            styles.webThumbnail,
-                            selectedImageIndex === index &&
-                              styles.webThumbnailActive,
-                          ]}
-                        >
+                  {product?.image?.map((imageUrl: string, index: number) => {
+                    // Skip placeholder images but keep the index intact
+                    if (!isValidImage(imageUrl)) {
+                      return null;
+                    }
+                    
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => setSelectedImageIndex(index)}
+                        style={[
+                          styles.webThumbnail,
+                          selectedImageIndex === index && styles.webThumbnailActive,
+                        ]}
+                      >
+                        {!imageErrors[index] ? (
                           <Image
                             source={{ uri: imageUrl }}
                             style={styles.webThumbnailImage}
+                            onError={() => handleImageError(index)}
+                            resizeMode="cover"
                           />
-                        </TouchableOpacity>
-                      ))
-                  ) : (
-                    <TouchableOpacity
-                      style={[
-                        styles.webThumbnail,
-                        styles.webThumbnailActive,
-                      ]}
-                    >
-                      <Image
-                        source={placeholderImage}
-                        style={styles.webThumbnailImage}
-                      />
-                    </TouchableOpacity>
-                  )}
+                        ) : (
+                          <View style={[
+                            styles.webThumbnailImage, 
+                            { 
+                              backgroundColor: '#f0f0f0', 
+                              justifyContent: 'center', 
+                              alignItems: 'center' 
+                            }
+                          ]}>
+                            <Text style={{ color: '#999', fontSize: 10 }}>N/A</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -318,26 +310,6 @@ const ProductDetailScreen = () => {
                     </Text>
                   </View>
                 )}
-
-                {/* Sale Badge and Discount */}
-                {/* {product.netPrice > product.discount && (
-                  <View style={styles.webSaleContainer}>
-                    <View style={styles.webSaleTag}>
-                      <Text style={styles.webSaleText}>Sale</Text>
-                    </View>
-                    <View style={styles.webTimerBadge}>
-                      <Text style={styles.webTimerText}>02:48:26</Text>
-                    </View>
-                    <View style={styles.webDiscountBadge}>
-                      <Text style={styles.webDiscountText}>
-                        {((product.discount * 100) / product.netPrice).toFixed(
-                          0
-                        )}
-                        %
-                      </Text>
-                    </View>
-                  </View>
-                )} */}
 
                 {/* Price */}
                 <View style={styles.webPriceContainer}>
@@ -498,20 +470,15 @@ const ProductDetailScreen = () => {
 
       </View>
     ) : (
-
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }}>
-          {product && product?.image && product?.image?.length > 0 && (
-            <HeroBanner
-            bannerData={product?.image
-              .filter((url: string) => url && url.trim() !== "")
-              .map((imageurl: string, index: number) => ({
-                id: index,
-                image: imageurl,   // ✅ CORRECT
-              }))}
-              onBannerPress={() => {}}
-            />
-          )}
+          {/* Use the new ProductImageCarousel component */}
+          <ProductImageCarousel
+            images={product?.image || []}
+            height={300}
+            autoPlay={true}
+            autoPlayInterval={3000}
+          />
 
           <View style={styles.contentContainer}>
             <View style={styles.exclusiveDetails}>

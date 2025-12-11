@@ -43,11 +43,11 @@ const AdminDashboard = () => {
 
   const fetchUser = async () => {
     try {
-      console.log("userData in admin dashboard", userData);
+      // console.log("userData in admin dashboard", userData);
       const user = await UserAPI.getUserById(
         userData?._id ? userData?._id : userData?.id
       );
-      console.log("user in admin dashboard", user.data);
+      // console.log("user in admin dashboard", user.data);
       if (user) {
         setIsSuperAdmin(user?.data?.isSuperAdmin);
       }

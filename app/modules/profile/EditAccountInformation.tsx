@@ -42,7 +42,7 @@ const editAccountInformationscreen = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const userData = useSelector((state: RootState) => state.user.user);
-  console.log("userData in edit account information", userData);
+  // console.log("userData in edit account information", userData);
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
 
@@ -56,12 +56,12 @@ const editAccountInformationscreen = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      console.log("userData", userData);
+      // console.log("userData", userData);
       if (userData) {
         const user = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
-        console.log("user", user.data);
+        // console.log("user", user.data);
         if (user) {
           setId(user.data._id);
           setPhone(user.data.phone);
@@ -107,7 +107,7 @@ const editAccountInformationscreen = () => {
       const responseFromTwilio = await TwilioApi.sendOtp({
         phone: phone,
       });
-      console.log("responseFromTwilio", responseFromTwilio);
+      // console.log("responseFromTwilio", responseFromTwilio);
       if (
         responseFromTwilio?.status === 201 &&
         responseFromTwilio.data?.status === "pending"
@@ -131,9 +131,9 @@ const editAccountInformationscreen = () => {
     formData.append("email", email);
     try {
       const response = await UserAPI.userEditContact(id, formData);
-      console.log("response in edit contact", response.data);
+      // console.log("response in edit contact", response.data);
       if (response?.data) {
-        console.log("Inside");
+        // console.log("Inside");
         DeviceEventEmitter.emit("fetchUser");
         try {
           await SecureStore.setItemAsync("user", JSON.stringify(response.data));

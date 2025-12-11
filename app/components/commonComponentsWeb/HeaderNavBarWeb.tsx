@@ -88,13 +88,13 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const isAuthenticated = isValidUser;
   
   // Debug logs
-  console.log("=== HeaderNavBar Debug ===");
-  console.log("userData_redux:", userData_redux);
-  console.log("isValidUser (from RoleContext):", isValidUser);
-  console.log("isAuthenticated:", isAuthenticated);
-  console.log("hideNavItems:", hideNavItems);
-  console.log("roleLoading:", roleLoading);
-  console.log("========================");
+  // console.log("=== HeaderNavBar Debug ===");
+  // console.log("userData_redux:", userData_redux);
+  // console.log("isValidUser (from RoleContext):", isValidUser);
+  // console.log("isAuthenticated:", isAuthenticated);
+  // console.log("hideNavItems:", hideNavItems);
+  // console.log("roleLoading:", roleLoading);
+  // console.log("========================");
   
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);

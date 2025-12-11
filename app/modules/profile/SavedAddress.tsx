@@ -35,7 +35,7 @@ const savedAddressScreen = () => {
       try {
         const response = await addressService.getAllAddress();
         setAddressData(response);
-        console.log("Shipping addresses:", response);
+        // console.log("Shipping addresses:", response);
       } catch (err) {
         console.error("Error fetching shipping addresses:", err);
       }
@@ -43,7 +43,7 @@ const savedAddressScreen = () => {
 
     fetchAddresses();
   }, []);
-  console.log("shipping address saved address", addressData);
+  // console.log("shipping address saved address", addressData);
 
   const confirmDelete = async () => {
     if (itemToDelete) {

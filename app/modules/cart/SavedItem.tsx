@@ -42,14 +42,14 @@ const savedItemScreen = () => {
   const dispatch = useDispatch();
   const savedItems = useSelector(selectSavedItems);
 
-  console.log("saved Items before", savedItems);
+  // console.log("saved Items before", savedItems);
 
   const handleMoveToCart = (item: any) => {
-    console.log("item", item);
-    console.log("hi from handlemoveto cart");
+    // console.log("item", item);
+    // console.log("hi from handlemoveto cart");
     dispatch(addToCart(item));
     dispatch(moveToCart(item.id));
-    console.log("saved Items", savedItems);
+    // console.log("saved Items", savedItems);
   };
 
   const handleDelete = (item: any) => {

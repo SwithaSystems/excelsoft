@@ -74,10 +74,10 @@ const UserProfileScreen = () => {
 
   // useEffect(() => {
   //   const getUser = async () => {
-  //     console.log("userData", userData);
+  //     // console.log("userData", userData);
   //     if (userData) {
   //       const user = await UserAPI.getUserByPhonenumber(userData?.phone);
-  //       console.log("user", user.data);
+  //       // console.log("user", user.data);
   //       if (user) {
   //         setFirstName(user.data.firstName);
   //         setLastName(user.data.lastName);
@@ -90,7 +90,7 @@ const UserProfileScreen = () => {
   //   };
   //   getUser();
   // }, [userData]);
-  console.log("userData_redux in userProfilescreen", userData_redux);
+  // console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
     const fetchUser = async () => {
       if (!userData_redux?.id) return;
@@ -99,7 +99,7 @@ const UserProfileScreen = () => {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        console.log("response in userProfilescreen", response?.data);
+        // console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -113,7 +113,7 @@ const UserProfileScreen = () => {
     fetchUser();
   }, [userData_redux]);
 
-  console.log("user details fetched", user);
+  // console.log("user details fetched", user);
   useEffect(() => {
     const getToken = async () => {
       if (user?.id) {
@@ -121,7 +121,7 @@ const UserProfileScreen = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        console.log("Expo Push Token:", token);
+        // console.log("Expo Push Token:", token);
         setExpoPushToken(token ?? null);
       }
     };
@@ -129,12 +129,12 @@ const UserProfileScreen = () => {
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
+        // console.log("Notification received:", notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("User interacted with notification:", response);
+        // console.log("User interacted with notification:", response);
       });
 
     return () => {

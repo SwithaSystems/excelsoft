@@ -112,7 +112,7 @@ const addBillingAddressScreen = () => {
         const billingAddress = await addressService.getAllAddress();
         if (isActive && isMountedRef.current) {
           setBillingAddress(billingAddress || {});
-          console.log("billing addresses:", billingAddress);
+          // console.log("billing addresses:", billingAddress);
         }
       } catch (error) {
         console.error("Error fetching billing address:", error);
@@ -140,7 +140,7 @@ const addBillingAddressScreen = () => {
         setIsDefault(edit_address.isDefault || false);
 
         setInitialDataLoaded(true);
-        console.log("Editing address:", edit_address);
+        // console.log("Editing address:", edit_address);
       } catch (error) {
         console.error("Error setting edit address data:", error);
       }

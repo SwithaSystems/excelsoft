@@ -125,7 +125,7 @@ const AdminProductUpdation = () => {
     return typeof props.item === "string" ? JSON.parse(props.item) : props.item;
   }, [props.item]);
 
-  console.log("Product data in product updation", productData);
+  // console.log("Product data in product updation", productData);
   async function getallCategories() {
     try {
       const categories = await categoryService.getAllCategories();
@@ -351,7 +351,7 @@ const AdminProductUpdation = () => {
     }
   }, [isWeb]);
 
-  console.log("Images in product page", productImages);
+  // console.log("Images in product page", productImages);
 
   const validateFields = () => {
     const newErrors: typeof errors = {};
@@ -497,7 +497,7 @@ const AdminProductUpdation = () => {
 
     try {
       setIsLoading(true);
-      console.log("selectedColors", selectedColors);
+      // console.log("selectedColors", selectedColors);
 
       // Prepare form data
       const formData = new FormData();
@@ -614,11 +614,11 @@ const AdminProductUpdation = () => {
         }
       }
 
-      console.log("Submitting form data for product update", {
-        existingImagesCount: existingImageUrls.length,
-        newImagesCount: newImageFiles.length,
-        totalImages: productImages.length
-      });
+      // console.log("Submitting form data for product update", {
+      //   existingImagesCount: existingImageUrls.length,
+      //   newImagesCount: newImageFiles.length,
+      //   totalImages: productImages.length
+      // });
 
       // Make API call based on whether it's a new product or update
       const response = newProduct
@@ -712,7 +712,7 @@ const AdminProductUpdation = () => {
       ]);
     }
   };
-  console.log("selectedColors just after dropdown", selectedColors);
+  // console.log("selectedColors just after dropdown", selectedColors);
   const getSelectedColorsText = () => {
     if (selectedColors.length === 0) return "Select colors";
     if (selectedColors.length === 1) {

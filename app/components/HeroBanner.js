@@ -37,7 +37,7 @@ function HeroBanner({
       try {
         const response = await globalSettingsAPI.getSettings();
         setDisplaySettings(response?.data ?? null);
-        console.log("Global Settings Response:", response?.data);
+        // console.log("Global Settings Response:", response?.data);
       } catch (error) {
         console.warn("Failed to load global settings:", error);
       }
@@ -169,10 +169,10 @@ function HeroBanner({
               style={[styles.bannerImage, { height, borderRadius }]}
               resizeMode="cover"
               onError={(error) => {
-                console.log("Image load error:", error.nativeEvent.error);
+                // console.log("Image load error:", error.nativeEvent.error);
               }}
               onLoad={() => {
-                console.log("Image loaded successfully:", item.image);
+                // console.log("Image loaded successfully:", item.image);
               }}
             />
           </TouchableOpacity>

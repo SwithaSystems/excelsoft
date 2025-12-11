@@ -78,11 +78,11 @@ const SearchScreen = () => {
       const storedSearches = await SecureStore.getItemAsync(
         RECENT_SEARCHES_KEY
       );
-      console.log("Loaded searches from storage:", storedSearches); // Debug log
+      // console.log("Loaded searches from storage:", storedSearches); // Debug log
       if (storedSearches !== null) {
         const parsed = JSON.parse(storedSearches);
         setRecentSearches(parsed);
-        console.log("Recent searches set to:", parsed); // Debug log
+        // console.log("Recent searches set to:", parsed); // Debug log
       }
     } catch (error) {
       console.error("Error loading recent searches:", error);
@@ -115,7 +115,7 @@ const SearchScreen = () => {
         JSON.stringify(updatedSearches)
       );
 
-      console.log("Search saved to history:", query); // Add for debugging
+      // console.log("Search saved to history:", query); // Add for debugging
     } catch (error) {
       console.error("Error saving recent search:", error);
     }

@@ -17,7 +17,7 @@ const savedforLaterItemsSlice = createSlice({
       state,
       action: PayloadAction<CartItemInterface>
     ) => {
-      console.log("Reducer received:", action.payload);
+      // console.log("Reducer received:", action.payload);
 
       const existingItem = state.items.find(
         (item) => item.id === action.payload.id
@@ -27,7 +27,7 @@ const savedforLaterItemsSlice = createSlice({
         state.items.push(action.payload);
       }
 
-      console.log("Updated state after saving:", state.items);
+      // console.log("Updated state after saving:", state.items);
     },
     removeFromSavedForLaterItems: (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
@@ -36,7 +36,7 @@ const savedforLaterItemsSlice = createSlice({
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
     updateSavedForLaterItemQuantity: (state, action) => {
-      console.log("Reducer received:", action.payload);
+      // console.log("Reducer received:", action.payload);
       const { id, quantity } = action.payload;
       const item = state.items.find((item) => item.id === id);
       if (item) {

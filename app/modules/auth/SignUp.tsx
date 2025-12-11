@@ -144,10 +144,10 @@ const signUpScreen = () => {
           normalizedPhone = normalizedPhone.slice(1);
         }
         const fullPhoneNumber = `+${callingCode}${normalizedPhone}`;
-        console.log("DEBUG: Validating", fullPhoneNumber);
-        console.log("DEBUG: Digits:", fullPhoneNumber.replace(/\D/g, "").length);
+        // console.log("DEBUG: Validating", fullPhoneNumber);
+        // console.log("DEBUG: Digits:", fullPhoneNumber.replace(/\D/g, "").length);
         const validationResult = isValidPhoneNumber(fullPhoneNumber);
-        console.log("DEBUG: Validation result:", validationResult);
+        // console.log("DEBUG: Validation result:", validationResult);
         
         if (validationResult !== null) {
           newErrors.phone = validationResult;
@@ -166,7 +166,7 @@ const signUpScreen = () => {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
-    console.log("DEBUG: All validation errors:", newErrors);
+    // console.log("DEBUG: All validation errors:", newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -209,7 +209,7 @@ const signUpScreen = () => {
       const responseFromTwilio = await TwilioApi.sendOtp({
         phone: userData.phone,
       });
-      console.log("responseFromTwilio", responseFromTwilio);
+      // console.log("responseFromTwilio", responseFromTwilio);
       if (
         responseFromTwilio?.status === 201 &&
         responseFromTwilio.data?.status === "pending"
@@ -250,7 +250,7 @@ const signUpScreen = () => {
         email: userData.email,
       });
 
-      console.log("Email verification response:", response);
+      // console.log("Email verification response:", response);
 
       if (response?.status === 201 && response?.data?.success) {
         // Email verification sent successfully, proceed to verification screen

@@ -39,7 +39,7 @@ export class NotificationService {
       }
 
       if (finalStatus !== "granted") {
-        console.log("Failed to get push token for push notification!");
+        // console.log("Failed to get push token for push notification!");
         return null;
       }
 
@@ -61,7 +61,7 @@ export class NotificationService {
         }
       }
     } else {
-      console.log("Must use physical device for Push Notifications");
+      // console.log("Must use physical device for Push Notifications");
     }
 
     return token;

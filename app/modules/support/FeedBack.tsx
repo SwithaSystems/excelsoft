@@ -36,7 +36,7 @@ const feedBackScreen = () => {
     useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
   // const [mediaAssets, setMediaAssets] = useState<Media[]>([]);
-  console.log("userData_redux", userData_redux);
+  // console.log("userData_redux", userData_redux);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,7 +87,7 @@ const feedBackScreen = () => {
         : userData_redux.id;
       const user = await UserAPI.getUserById(userID);
       const UserParsed = user.data;
-      console.log("user in addreview", UserParsed);
+      // console.log("user in addreview", UserParsed);
 
       // const review = {
       //   id: (Number(reviewsArrayLength) + 1).toString(),

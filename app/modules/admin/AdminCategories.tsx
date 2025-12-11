@@ -206,7 +206,7 @@ const AdminCategories = () => {
 
   // Handle edit category click
   const handleEditCategory = useCallback((category: Category) => {
-    console.log("Editing category:", category);
+    // console.log("Editing category:", category);
     
     // On desktop/tablet, redirect to AdminAddCategoriesWeb page
     if (isTabOrDesktop) {
@@ -245,7 +245,7 @@ const AdminCategories = () => {
         setShowSuccessModal(true);
       }
     } catch (error: any) {
-      console.log("Delete error:", error?.response?.data);
+      // console.log("Delete error:", error?.response?.data);
 
       const errorMsg = error?.response?.data?.message || "Something went wrong while deleting the category.";
       setErrorMessage(errorMsg);
@@ -270,7 +270,7 @@ const AdminCategories = () => {
   const handleAddCategory = useCallback(async () => {
     try {
       setLoading(true);
-      console.log(" Parentcategory to update", parentCategory);
+      // console.log(" Parentcategory to update", parentCategory);
 
       // Validate required fields
       if (!categoryName.trim()) {
@@ -344,7 +344,7 @@ const AdminCategories = () => {
         }
       }
 
-      console.log(`Submitting form data for category ${isEditMode ? "update" : "creation"}`, formData);
+      // console.log(`Submitting form data for category ${isEditMode ? "update" : "creation"}`, formData);
 
       let result;
       if (isEditMode && editingCategoryId) {
@@ -353,7 +353,7 @@ const AdminCategories = () => {
         result = await categoryService.addCategory(formData);
       }
 
-      console.log(`Result for category ${isEditMode ? "update" : "creation"}`, result);
+      // console.log(`Result for category ${isEditMode ? "update" : "creation"}`, result);
 
       if (!result) {
         setErrorMessage(`Failed to ${isEditMode ? "update" : "add"} category`);
@@ -401,7 +401,7 @@ const AdminCategories = () => {
     }, [])
   );
 
-  console.log("categoryList", categoryList);
+  // console.log("categoryList", categoryList);
 
   const handleCategorySearch = useCallback(() => {
     // Filtering is done client-side as user types; nothing to do on submit

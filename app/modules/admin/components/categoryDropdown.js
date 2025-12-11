@@ -12,7 +12,7 @@ const CategoryDropdown = ({
   const [isVisible, setIsVisible] = useState(false);
 
   const handleSelect = (category) => {
-    console.log("Parent category", category);
+    // console.log("Parent category", category);
     setSelectedCategory(category.id);
     setIsVisible(false);
   };

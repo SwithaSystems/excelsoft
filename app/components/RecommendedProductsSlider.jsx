@@ -61,7 +61,7 @@ function RecommendedProductsSlider(props) {
                       textStyle={styles.addToCArtBtnText}
                       title="Add"
                       onPress={() => {
-                        console.log("item to be added in cart", item);
+                        // console.log("item to be added in cart", item);
                         const itemWithQuantity = { ...item, quantity: 1 };
                         props.handleAdd(itemWithQuantity);
                       }}

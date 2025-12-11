@@ -47,7 +47,7 @@ const AdminOrderDetail = () => {
   const getOrderdetails = async () => {
     try {
       const response = await orderService.getOrderByMongoId(String(orderId));
-      console.log("response", response);
+      // console.log("response", response);
       setOrderDetails(response);
 
       if (response?.status) setStatus(response.status);
@@ -60,7 +60,7 @@ const AdminOrderDetail = () => {
   const getAllOrderStatuses = async () => {
     try {
       const orderStatuses = await orderService.getAllOrderStatuses();
-      console.log("all Order statuses", orderStatuses);
+      // console.log("all Order statuses", orderStatuses);
       setAllOrderStatuses(orderStatuses?.statuses || []);
     } catch (err) {
       console.error("Failed to fetch order statuses:", err);
@@ -79,7 +79,7 @@ const AdminOrderDetail = () => {
         const response = await addressService.getAddressById(
           orderDetails.shippingAddress
         );
-        console.log("response shipping address", response);
+        // console.log("response shipping address", response);
         setShippingAddress_order(response);
       } catch (err) {
         console.error("Failed to fetch shipping address:", err);

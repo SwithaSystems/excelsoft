@@ -112,7 +112,7 @@ export default function usePaymentHandlerWeb() {
 
     const initStripe = async () => {
       try {
-        console.log("Fetching Stripe config...");
+        // console.log("Fetching Stripe config...");
         const configResponse = await axios.get(
           `${API_BASE_URL}/stripe-config/client_abc`
         );
@@ -123,10 +123,10 @@ export default function usePaymentHandlerWeb() {
           return;
         }
 
-        console.log(
-          "Initializing Stripe with key:",
-          configResponse.data.stripePublishableKey.substring(0, 20) + "..."
-        );
+        // console.log(
+        //   "Initializing Stripe with key:",
+        //   configResponse.data.stripePublishableKey.substring(0, 20) + "..."
+        // );
         const stripeInstance = await loadStripe(
           configResponse.data.stripePublishableKey
         );
@@ -139,12 +139,12 @@ export default function usePaymentHandlerWeb() {
 
         if (!mounted) return;
         setStripe(stripeInstance);
-        console.log("Stripe instance created successfully");
+        // console.log("Stripe instance created successfully");
 
         // Wait for DOM to be ready and mount card element
         const mountCard = () => {
           const cardContainer = document.getElementById("card-element");
-          console.log("Looking for card-element container...", !!cardContainer);
+          // console.log("Looking for card-element container...", !!cardContainer);
 
           if (!cardContainer) {
             console.warn("Card element container not found, retrying...");
@@ -152,7 +152,7 @@ export default function usePaymentHandlerWeb() {
             return;
           }
 
-          console.log("Card container found, creating elements...");
+          // console.log("Card container found, creating elements...");
 
           // Create card element
           const elements = stripeInstance.elements();
@@ -176,7 +176,7 @@ export default function usePaymentHandlerWeb() {
             disableLink: true,
           });
 
-          console.log("Mounting card element...");
+          // console.log("Mounting card element...");
 
           // Clear any existing content and mount new card element
           const container = document.getElementById("card-element");
@@ -195,7 +195,7 @@ export default function usePaymentHandlerWeb() {
 
           // Listen for ready event
           const onReady = () => {
-            console.log("✓ Card element is ready and interactive!");
+            // console.log("✓ Card element is ready and interactive!");
             if (mounted) {
               setCardElement(card);
               setIsStripeReady(true);
@@ -203,7 +203,7 @@ export default function usePaymentHandlerWeb() {
               // Add a null check before using card
               if (card) {
                 const onReady = () => {
-                  console.log("✓ Card element is ready and interactive!");
+                  // console.log("✓ Card element is ready and interactive!");
                   if (mounted) {
                     setCardElement(card);
                     setIsStripeReady(true);
@@ -221,10 +221,10 @@ export default function usePaymentHandlerWeb() {
 
           // Listen for changes
           card.on("change", (event) => {
-            console.log(
-              "Card element changed:",
-              event.complete ? "complete" : "incomplete"
-            );
+            // console.log(
+            //   "Card element changed:",
+            //   event.complete ? "complete" : "incomplete"
+            // );
             const displayError = document.getElementById("card-errors");
             if (event.error && displayError) {
               displayError.textContent = event.error.message;
@@ -235,7 +235,7 @@ export default function usePaymentHandlerWeb() {
 
           // Add focus/blur handlers for better UX
           card.on("focus", () => {
-            console.log("Card element focused");
+            // console.log("Card element focused");
             const container = document.getElementById("card-element");
             if (container) {
               container.style.border = "1px solid #2684FF";
@@ -245,7 +245,7 @@ export default function usePaymentHandlerWeb() {
           });
 
           card.on("blur", () => {
-            console.log("Card element blurred");
+            // console.log("Card element blurred");
           });
         };
 
@@ -268,7 +268,7 @@ export default function usePaymentHandlerWeb() {
       mounted = false;
       if (card) {
         try {
-          console.log("Cleaning up card element...");
+          // console.log("Cleaning up card element...");
           card.unmount();
         } catch (e) {
           console.warn("Error during card cleanup:", e);
@@ -297,7 +297,7 @@ export default function usePaymentHandlerWeb() {
 
   const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
-      console.log("Creating payment intent for amount:", amount);
+      // console.log("Creating payment intent for amount:", amount);
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
@@ -306,7 +306,7 @@ export default function usePaymentHandlerWeb() {
           clientId: clientId,
         }
       );
-      console.log("Payment Intent Backend response:", response.data);
+      // console.log("Payment Intent Backend response:", response.data);
       return {
         clientSecret: response.data.paymentIntent.client_secret,
         ephemeralKey: response.data.ephemeralKey,
@@ -320,14 +320,14 @@ export default function usePaymentHandlerWeb() {
   };
 
   const handlePayment = async (cartItems: Product[], params: any) => {
-    console.log("=== STARTING PAYMENT PROCESS (WEB) ===");
-    console.log("Order details:", params);
-    console.log("Cart items:", cartItems);
-    console.log("Stripe ready status:", {
-      isStripeReady,
-      stripe: !!stripe,
-      cardElement: !!cardElement,
-    });
+    // console.log("=== STARTING PAYMENT PROCESS (WEB) ===");
+    // console.log("Order details:", params);
+    // console.log("Cart items:", cartItems);
+    // console.log("Stripe ready status:", {
+    //   isStripeReady,
+    //   stripe: !!stripe,
+    //   cardElement: !!cardElement,
+    // });
 
     // Validate Stripe is ready with retry logic
     if (!isStripeReady || !stripe || !cardElement) {
@@ -359,13 +359,13 @@ export default function usePaymentHandlerWeb() {
       return;
     }
 
-    console.log("✓ Stripe validation passed");
+    // console.log("✓ Stripe validation passed");
 
     const subtotal = calculateSubtotal(cartItems);
     const shippingCharges = params.shippingCharges || 0;
     const discounts = params.discounts || [];
 
-    console.log("Subtotal:", subtotal);
+    // console.log("Subtotal:", subtotal);
 
     // Check Minimum Order Value (MOV)
     // const MOV = 15; // Minimum Order Value
@@ -398,11 +398,11 @@ export default function usePaymentHandlerWeb() {
     }
 
     const { clientSecret } = paymentData;
-    console.log("Got client secret, confirming payment...");
+    // console.log("Got client secret, confirming payment...");
 
     try {
       // Confirm card payment
-      console.log("Confirming card payment...");
+      // console.log("Confirming card payment...");
       const { error: paymentError, paymentIntent } =
         await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
@@ -419,10 +419,10 @@ export default function usePaymentHandlerWeb() {
           },
         });
 
-      console.log("Payment confirmation result:", {
-        error: paymentError,
-        intentStatus: paymentIntent?.status,
-      });
+      // console.log("Payment confirmation result:", {
+      //   error: paymentError,
+      //   intentStatus: paymentIntent?.status,
+      // });
 
       if (paymentError) {
         console.error("Payment error:", paymentError);
@@ -434,7 +434,7 @@ export default function usePaymentHandlerWeb() {
       }
 
       if (paymentIntent && paymentIntent.status === "succeeded") {
-        console.log("=== PAYMENT SUCCESSFUL ===");
+        // console.log("=== PAYMENT SUCCESSFUL ===");
         Alert.alert("Success", "Payment completed successfully!");
 
         // Create order
@@ -484,9 +484,9 @@ export default function usePaymentHandlerWeb() {
         }
 
         try {
-          console.log("Creating order...");
+          // console.log("Creating order...");
           const response = await orderService.createOrder(orderDetails);
-          console.log("Order created successfully:", response);
+          // console.log("Order created successfully:", response);
 
           dispatch(clearCart());
 

@@ -170,7 +170,7 @@ export default function CarouselWeb({
                 } else {
                   // For mobile, you can use Linking
                   // Linking.openURL(item.link);
-                  console.log("Open link:", item.link);
+                  // console.log("Open link:", item.link);
                 }
               }
             }}

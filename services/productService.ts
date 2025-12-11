@@ -35,14 +35,14 @@ export interface Product {
 
 export const ProductsAPI = {
   addProduct: async (data: any): Promise<Product> => {
-    console.log("data in product service", data);
+    // console.log("data in product service", data);
     const formDataAxios = createAxiosInstance("formdata");
     const response = await formDataAxios.post(`/products/create`, data);
     return response.data;
   },
   updateProduct: async (id: number, data: any): Promise<Product> => {
-    console.log("data in product service", data);
-    console.log("id", id);
+    // console.log("data in product service", data);
+    // console.log("id", id);
     const formDataAxios = createAxiosInstance("formdata");
     const response = await formDataAxios.put(
       `/products/updateProduct/${id}`,
@@ -52,7 +52,7 @@ export const ProductsAPI = {
   },
 
   deleteProduct: async (id: any): Promise<Product> => {
-    console.log("id", id);
+    // console.log("id", id);
     const response = await jsonAxios.delete(`/products/${id}`);
     return response.data;
   },
@@ -68,9 +68,9 @@ export const ProductsAPI = {
   },
 
   getProductByCategoryID: async (id: number): Promise<Product[]> => {
-    console.log(id);
+    // console.log(id);
     const response = await jsonAxios.get(`/products/category/${id}`);
-    console.log("AllProducts", response.data);
+    // console.log("AllProducts", response.data);
     return response.data;
   },
 
@@ -109,13 +109,13 @@ export const ProductsAPI = {
   },
 
   addReview: async (productId: Number, review: any): Promise<void> => {
-    console.log("productId", productId);
-    console.log("review", review);
+    // console.log("productId", productId);
+    // console.log("review", review);
     await jsonAxios.post(`/products/${productId}/reviews`, review);
   },
 
   addProduct_Catagory_Upload_File: async (data: any) => {
-    console.log("data in product service", data);
+    // console.log("data in product service", data);
     const formDataAxios = createAxiosInstance("formdata");
     const response = await formDataAxios.post(`/products/upload`, data);
     return response.data;

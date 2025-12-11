@@ -10,7 +10,7 @@ import Header from "@/app/components/Header";
 
 const fileUploadAddProductCategory = () => {
   const handleUploadComplete = (result: any) => {
-    console.log("Upload completed:", result);
+    // console.log("Upload completed:", result);
     // Handle successful upload
   };
 

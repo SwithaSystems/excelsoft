@@ -11,7 +11,7 @@ import { format } from "date-fns";
 function OrderItem(props) {
   const item = props.item;
   const isTabOrDesktop = props.isTabOrDesktop || false;
-  console.log("item", item);
+  // console.log("item", item);
 
   // Format delivery date for web view
   const formatDeliveryDate = (deliveryDate) => {

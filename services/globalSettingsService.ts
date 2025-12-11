@@ -10,7 +10,7 @@ export interface GlobalSettingsDto {
 export const globalSettingsAPI = {
   getSettings: async () => {
     const response = await jsonAxios.get(`/global-settings`);
-    console.log("Global Settings Response:", response);
+    // console.log("Global Settings Response:", response);
     return response;
   },
 
@@ -18,19 +18,19 @@ export const globalSettingsAPI = {
     key: keyof Omit<GlobalSettingsDto, "updatedAt">,
     value: boolean
   ) => {
-    console.log(`Settings to Update: ${key} = ${value}`);
+    // console.log(`Settings to Update: ${key} = ${value}`);
     // Key goes in the URL, value goes in the body
     const response = await jsonAxios.patch(`/global-settings/${key}`, {
       value,
     });
-    console.log("Global Settings Response:", response);
+    // console.log("Global Settings Response:", response);
     return response;
   },
 
   updateAllSettings: async (settings: any) => {
-    console.log("All Settings:", settings);
+    // console.log("All Settings:", settings);
     const response = await jsonAxios.put(`/global-settings`, settings);
-    console.log("Global Settings All Response:", response);
+    // console.log("Global Settings All Response:", response);
     return response;
   },
 };

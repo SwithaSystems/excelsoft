@@ -45,10 +45,10 @@ const addAddressScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addressId, setAddressId] = useState("");
 
-  console.log("params", params);
+  // console.log("params", params);
   const from = params.from;
   const isEditMode = !!params.edit_address;
-  console.log("isEditMode", isEditMode);
+  // console.log("isEditMode", isEditMode);
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -70,7 +70,7 @@ const addAddressScreen = () => {
             ? JSON.parse(params.edit_address)
             : params.edit_address;
 
-        console.log("Loading address for edit:", selectedAddress);
+        // console.log("Loading address for edit:", selectedAddress);
 
         setName(selectedAddress.name || "");
         setLine1(selectedAddress.line1 || "");
@@ -83,7 +83,7 @@ const addAddressScreen = () => {
         setIsDefault(selectedAddress.isDefault || false);
         setAddressId(selectedAddress._id || "");
 
-        console.log("Address data loaded successfully");
+        // console.log("Address data loaded successfully");
       } catch (error) {
         console.error("Error parsing address data:", error);
         showErrorAlert({

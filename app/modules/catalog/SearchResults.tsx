@@ -124,7 +124,7 @@ const SearchResultsScreen = () => {
       // Only fetch paginated products for category browsing, not for text search
       // Text search uses server-side API (productsBy_Name_Id) which returns all results
       if (!isFromSearch) {
-        console.log("Skipping fetchAllProducts - using server-side search API instead");
+        // console.log("Skipping fetchAllProducts - using server-side search API instead");
         return;
       }
 
@@ -133,7 +133,7 @@ const SearchResultsScreen = () => {
         isLoadMore &&
         (isLoadingMoreRef.current || lastPageLoadedRef.current >= pageNum)
       ) {
-        console.log(`Skipping page ${pageNum} - already loading or loaded`);
+        // console.log(`Skipping page ${pageNum} - already loading or loaded`);
         return;
       }
 
@@ -147,16 +147,16 @@ const SearchResultsScreen = () => {
       }
 
       try {
-        console.log(`Fetching page ${pageNum}...`);
+        // console.log(`Fetching page ${pageNum}...`);
         const response = await ProductsAPI.getAllProducts(
           pageNum,
           ITEMS_PER_PAGE
         );
-        console.log(
-          `Page ${pageNum} loaded:`,
-          response?.data?.length,
-          "products"
-        );
+        // console.log(
+        //   `Page ${pageNum} loaded:`,
+        //   response?.data?.length,
+        //   "products"
+        // );
 
         if (pageNum === 1) {
           setAllProducts(response.data);
@@ -196,7 +196,7 @@ const SearchResultsScreen = () => {
           
           // Check if component is still mounted and request wasn't cancelled
           if (!cancelled && isMountedRef.current) {
-            console.log("Search results for query:", searchQuery, "Found:", searchResults?.length || 0, "products");
+            // console.log("Search results for query:", searchQuery, "Found:", searchResults?.length || 0, "products");
             setAllProducts(searchResults || []);
             setTotal(searchResults?.length || 0);
             setPage(1);

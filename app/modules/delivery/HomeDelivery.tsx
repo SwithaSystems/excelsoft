@@ -128,10 +128,10 @@ const HomeDeliveryScreen = () => {
     }
     // Format the date for state
     // const formattedDate = targetDate.toISOString().split("T")[0];
-    console.log("target date", targetDate);
+    // console.log("target date", targetDate);
     // const formattedDate = formatToDDMMYYYY(targetDate);
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
-    console.log("formatted date", formattedDate);
+    // console.log("formatted date", formattedDate);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
@@ -226,7 +226,7 @@ const HomeDeliveryScreen = () => {
       try {
         const response = await addressService.getAllAddress();
         setExistingSelectedAddress(response);
-        console.log("Shipping addresses:", response);
+        // console.log("Shipping addresses:", response);
       } catch (err) {
         console.error("Error fetching shipping addresses:", err);
       }
@@ -324,7 +324,7 @@ const HomeDeliveryScreen = () => {
   };
   const handleSubmit = async () => {
     try {
-      console.log("confirm", containers.orderSummaryScreen);
+      // console.log("confirm", containers.orderSummaryScreen);
       if (!validateForm()) {
         return;
       }

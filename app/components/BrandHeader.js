@@ -22,23 +22,23 @@ function BrandHeader(props) {
   const [isAdmin, setIsAdmin] = useState(false);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
-  console.log("user in home page", user);
+  // console.log("user in home page", user);
   const fetchUser = async () => {
     try {
       if (user) {
         const userId = user?._id ? user?._id : user?.id;
-        console.log("userPhone", userId);
+        // console.log("userPhone", userId);
 
         // Check if user exists in DB
         const response = await UserAPI.getUserById(userId);
 
         if (response?.data) {
-          console.log("userdata", response.data);
+          // console.log("userdata", response.data);
           setIsAdmin(response?.data?.isAdmin);
           setUsername(response?.data?.firstName || "User");
           setIsValidUser(true);
         } else {
-          console.log("User not found in database");
+          // console.log("User not found in database");
           setIsValidUser(false);
           setUsername(null);
 
@@ -60,7 +60,7 @@ function BrandHeader(props) {
         // Set default username when user is not logged in
         setUsername(null);
         setIsValidUser(false);
-        console.log("user or user.phone is undefined", user);
+        // console.log("user or user.phone is undefined", user);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -85,7 +85,7 @@ function BrandHeader(props) {
       fetchUser_Listener.remove();
     };
   }, [user]);
-  console.log("isAdmin", isAdmin);
+  // console.log("isAdmin", isAdmin);
 
   return (
     <>
