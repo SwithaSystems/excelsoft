@@ -34,6 +34,7 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 import Button from "@/app/components/commonComponents/Button";
 import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
 import { promotionService } from "@/services/promotionService";
+import globalSettingsAPI from "@/services/globalSettingsService";
 
 interface Promotion {
   imageURL: string;
@@ -72,6 +73,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [promotionsLoading, setPromotionsLoading] = useState(false);
+  const [carousalEnabled, setCarousalEnabled] = useState(true);
   const router = useRouter();
 
   const { width } = useWindowDimensions();
@@ -87,14 +89,29 @@ const HomePage = () => {
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
-  
+
+  const fetchGlobalSettings = async () => {
+    try {
+      const response = await globalSettingsAPI.getSettings();
+      console.log("response global settings", response.data);
+      setCarousalEnabled(response.data?.displayCarousel);
+    } catch (error) {
+      console.error("Failed to fetch global settings:", error);
+      setCarousalEnabled(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchGlobalSettings();
+  }, []);
+
   // Helper function to normalize category names for comparison
   // Handles hyphens, underscores, extra spaces, case differences, and trailing 's'
   const normalizeForComparison = (name: string) => {
     return name
       .toLowerCase()
-      .replace(/[-_]/g, ' ')  // Replace hyphens and underscores with spaces
-      .replace(/\s+/g, ' ')   // Collapse multiple spaces
+      .replace(/[-_]/g, " ") // Replace hyphens and underscores with spaces
+      .replace(/\s+/g, " ") // Collapse multiple spaces
       .trim();
   };
 
@@ -102,27 +119,31 @@ const HomePage = () => {
   const categoryNamesMatch = (name1: string, name2: string) => {
     const norm1 = normalizeForComparison(name1);
     const norm2 = normalizeForComparison(name2);
-    
+
     // Exact match after normalization
     if (norm1 === norm2) return true;
-    
+
     // Handle singular/plural by removing trailing 's' from each word
-    const removePlural = (str: string) => str.split(' ').map(word => word.replace(/s$/, '')).join(' ');
+    const removePlural = (str: string) =>
+      str
+        .split(" ")
+        .map((word) => word.replace(/s$/, ""))
+        .join(" ");
     if (removePlural(norm1) === removePlural(norm2)) return true;
-    
+
     // Check if one contains the other (for partial matches like "electronic" vs "electronics")
-    const words1 = norm1.split(' ');
-    const words2 = norm2.split(' ');
-    
+    const words1 = norm1.split(" ");
+    const words2 = norm2.split(" ");
+
     // Check if all words match (ignoring trailing 's')
     if (words1.length === words2.length) {
       const allMatch = words1.every((w1, i) => {
         const w2 = words2[i];
-        return w1 === w2 || w1.replace(/s$/, '') === w2.replace(/s$/, '');
+        return w1 === w2 || w1.replace(/s$/, "") === w2.replace(/s$/, "");
       });
       if (allMatch) return true;
     }
-    
+
     return false;
   };
 
@@ -132,16 +153,22 @@ const HomePage = () => {
       if (item.isInternalLink && item.link) {
         try {
           // Parse the link format: "offers/electronics-sale" or just "offers"
-          const linkParts = item.link.split('/').filter((part: string) => part.trim() !== '');
+          const linkParts = item.link
+            .split("/")
+            .filter((part: string) => part.trim() !== "");
           const parentCategoryName = linkParts[0] || item.title || "Offers";
           const subCategoryName = linkParts[1] || null;
 
-          console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
+          console.log("Carousel link parsed:", {
+            parentCategoryName,
+            subCategoryName,
+            originalLink: item.link,
+          });
 
           // Fetch all categories to find the parent category by name
           const allCategories = await categoryService.getAllCategories();
-          const parentCategory = allCategories.find(
-            (cat) => categoryNamesMatch(cat.name, parentCategoryName)
+          const parentCategory = allCategories.find((cat) =>
+            categoryNamesMatch(cat.name, parentCategoryName)
           );
 
           if (!parentCategory) {
@@ -155,18 +182,26 @@ const HomePage = () => {
             return;
           }
 
-          console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
+          console.log(
+            "Found parent category:",
+            parentCategory.name,
+            "ID:",
+            parentCategory.id
+          );
 
           // If there's a subcategory, find it
           if (subCategoryName) {
             const subCategories = await categoryService.getAllSubCategories(
               parentCategory.id
             );
-            
-            console.log("Available subcategories:", subCategories.map(s => s.name));
-            
-            const subCategory = subCategories.find(
-              (subCat) => categoryNamesMatch(subCat.name, subCategoryName)
+
+            console.log(
+              "Available subcategories:",
+              subCategories.map((s) => s.name)
+            );
+
+            const subCategory = subCategories.find((subCat) =>
+              categoryNamesMatch(subCat.name, subCategoryName)
             );
 
             if (subCategory) {
@@ -182,7 +217,9 @@ const HomePage = () => {
               );
             } else {
               // Subcategory not found, navigate to parent category only
-              console.warn(`Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`);
+              console.warn(
+                `Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`
+              );
               redirectToPage(containers.searchResultsScreen, {
                 fromSearch: true,
                 category: parentCategory.name,
@@ -342,30 +379,34 @@ const HomePage = () => {
           title="Go to Upload Page"
           onPress={() => redirectToPage(containers.uploadScreen)}
         /> */}
-
-        <View
-          style={[styles.carouselSection, isTabOrDesktop && { marginTop: 32 }]}
-        >
-          {promotionsLoading ? (
-            <View style={styles.carouselLoader}>
-              <ActivityIndicator size="large" color={colors.primary} />
-            </View>
-          ) : promotions.length > 0 ? (
-            <CarouselWeb
-              data={carouselData}
-              isPromotional={true}
-              showOverlay={true}
-              autoPlay={true}
-              autoPlayInterval={4500}
-              loop={true}
-              showArrows={true}
-              showIndicators={true}
-              width={carouselWidth}
-              height={isTabOrDesktop ? 420 : 230}
-              borderRadius={12}
-            />
-          ) : null}
-        </View>
+        {carousalEnabled && (
+          <View
+            style={[
+              styles.carouselSection,
+              isTabOrDesktop && { marginTop: 32 },
+            ]}
+          >
+            {promotionsLoading ? (
+              <View style={styles.carouselLoader}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : promotions.length > 0 ? (
+              <CarouselWeb
+                data={carouselData}
+                isPromotional={true}
+                showOverlay={true}
+                autoPlay={true}
+                autoPlayInterval={4500}
+                loop={true}
+                showArrows={true}
+                showIndicators={true}
+                width={carouselWidth}
+                height={isTabOrDesktop ? 420 : 230}
+                borderRadius={12}
+              />
+            ) : null}
+          </View>
+        )}
       </View>
     </LayoutComponent>
   );
