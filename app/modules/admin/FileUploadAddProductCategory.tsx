@@ -18,7 +18,11 @@ const fileUploadAddProductCategory = () => {
     const isMobile = width < 768;
     const isTabOrDesktop = width >= 768;
   
-    const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <Header headerText="File Upload" />;
+    const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+    ) : (
+      <Header headerText="File Upload" />
+    );
     const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
   return (

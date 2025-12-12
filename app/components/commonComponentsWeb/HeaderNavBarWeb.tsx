@@ -24,6 +24,7 @@ type NavItem = {
   onPress?: () => void;
   isDropdown?: boolean;
   dropdownType?: 'categories' | 'quicklinks';
+  requiresAuth?: boolean;
 };
 
 type QuickLinkItem = {
@@ -44,32 +45,38 @@ const quickLinks: QuickLinkItem[] = [
   { id: "saved-address", label: "Saved Address", route: containers.savedAddressScreen },
 ];
 
-const userNavItems: NavItem[] = [
+const allNavItems: NavItem[] = [
   {
     label: "Categories",
     isDropdown: true,
     dropdownType: 'categories',
+    requiresAuth: false,
   },
   {
     label: "Home",
     onPress: () => redirectToPage(containers.homeScreen),
+    requiresAuth: false,
   },
   {
     label: "Quick Links",
     isDropdown: true,
     dropdownType: 'quicklinks',
+    requiresAuth: true, 
   },
   {
     label: "Feedback",
     onPress: () => redirectToPage(containers.feedbackScreen),
+    requiresAuth: false,
   },
   {
     label: "Customer Service",
     onPress: () => redirectToPage(containers.customerSupportScreen),
+    requiresAuth: false,
   },
   {
     label: "My Accounts",
     onPress: () => redirectToPage(containers.editProfileScreen),
+    requiresAuth: true, 
   },
 ];
 
@@ -81,28 +88,18 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const { loading: roleLoading, isValidUser } = useRoleContext();
   const { logout } = useAuth();
   const userData_redux = useSelector((state: any) => state.user.user);
-  
-  // Use RoleContext's isValidUser as the primary authentication check
-  // This is more reliable than checking Redux directly since RoleContext
-  // maintains state even when Redux is temporarily cleared
+
   const isAuthenticated = isValidUser;
-  
-  // Debug logs
-  // console.log("=== HeaderNavBar Debug ===");
-  // console.log("userData_redux:", userData_redux);
-  // console.log("isValidUser (from RoleContext):", isValidUser);
-  // console.log("isAuthenticated:", isAuthenticated);
-  // console.log("hideNavItems:", hideNavItems);
-  // console.log("roleLoading:", roleLoading);
-  // console.log("========================");
-  
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
-  const navItems = !hideNavItems ? userNavItems : [];
+  const navItems = !hideNavItems 
+    ? allNavItems.filter(item => !item.requiresAuth || isAuthenticated)
+    : [];
 
   useEffect(() => {
     if (hideNavItems || roleLoading) {
@@ -113,11 +110,10 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
       try {
         setLoading(true);
         const data = await categoryService.getAllCategories();
-
         const sorted = Array.isArray(data)
           ? data.sort((a, b) =>
-            a.name === "All" ? -1 : (a?.id ?? 0) - (b?.id ?? 0)
-          )
+              a.name === "All" ? -1 : (a?.id ?? 0) - (b?.id ?? 0)
+            )
           : [];
         setCategories(sorted);
       } catch (error) {
@@ -152,7 +148,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   const handleCategoryPress = (cat: Category) => {
     onCategorySelect?.(cat);
-
     if (cat.name === "All") {
       redirectToPage(containers.categoriesScreen, {
         category: cat.name,
@@ -178,10 +173,9 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     }
   };
 
-  // Render auth buttons component (reusable)
   const renderAuthButtons = () => {
     if (!isAuthenticated) return null;
-    
+
     return (
       <View style={styles.authButtonsContainer}>
         <TouchableOpacity
@@ -192,7 +186,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           <Ionicons name="log-out-outline" size={20} color={colors.white} />
           <Text style={styles.authButtonText}>Sign Out</Text>
         </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.authButton}
           onPress={() => setDeleteAccountModalOpen(true)}
@@ -205,7 +198,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     );
   };
 
-  // Early return for loading or hidden nav items - BUT STILL SHOW AUTH BUTTONS
   if (roleLoading || hideNavItems) {
     return (
       <>
@@ -213,8 +205,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           <View style={styles.emptyBelt} />
           {renderAuthButtons()}
         </View>
-
-        {/* Modals */}
         <ConfirmationModal
           onClose={() => setLogOutModalOpen(false)}
           isModalVisible={logOutModalOpen}
@@ -225,7 +215,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           cancelText="No"
           handleCancel={() => setLogOutModalOpen(false)}
         />
-
         <ConfirmationModal
           onClose={() => setDeleteAccountModalOpen(false)}
           isModalVisible={deleteAccountModalOpen}
@@ -263,7 +252,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                   )}
                 </View>
               </TouchableOpacity>
-
               {item.isDropdown && showDropdown === item.dropdownType && (
                 <View style={styles.dropdownMenu}>
                   {item.dropdownType === 'categories' ? (
@@ -308,18 +296,14 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
             </View>
           ))}
         </View>
-
         {renderAuthButtons()}
       </View>
-
       {showDropdown && (
         <Pressable
           onPress={() => setShowDropdown(null)}
           style={styles.overlay}
         />
       )}
-
-      {/* Modals */}
       <ConfirmationModal
         onClose={() => setLogOutModalOpen(false)}
         isModalVisible={logOutModalOpen}
@@ -330,7 +314,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         cancelText="No"
         handleCancel={() => setLogOutModalOpen(false)}
       />
-
       <ConfirmationModal
         onClose={() => setDeleteAccountModalOpen(false)}
         isModalVisible={deleteAccountModalOpen}

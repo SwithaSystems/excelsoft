@@ -341,14 +341,16 @@ const AdminDashboard = () => {
     <View style={[globalStyles.pt_0]}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
-        {/* <Text
-          style={styles.linkText}
-          onPress={() => {
-            redirectToPage(containers.fileUploadAddProductCategoryScreen);
-          }}
-        >
-          Upload Data
-        </Text> */}
+        {!isTabOrDesktop && (
+          <Text
+            style={styles.linkText}
+            onPress={() => {
+              redirectToPage(containers.fileUploadAddProductCategoryScreen);
+            }}
+          >
+            Upload Data
+          </Text>
+        )}
       </View>
 
       <View
