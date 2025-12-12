@@ -49,7 +49,7 @@ const AdminOrderQRScan = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={true}
       hideNavItems={true}
     >
       <View style={styles.instructionContainer}>

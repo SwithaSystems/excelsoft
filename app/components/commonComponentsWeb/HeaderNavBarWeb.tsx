@@ -232,7 +232,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
-        <View style={styles.scrollContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+
           {navItems.map((item, index) => (
             <View key={index} style={styles.itemWrapper}>
               <TouchableOpacity
@@ -295,7 +300,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               )}
             </View>
           ))}
-        </View>
+        </ScrollView>
         {renderAuthButtons()}
       </View>
       {showDropdown && (

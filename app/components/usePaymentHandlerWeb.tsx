@@ -382,10 +382,12 @@ export default function usePaymentHandlerWeb() {
     }
     if (subtotal < currentMOV) {
       console.error("Order value below minimum order value");
-      window.alert(
+      Alert.alert(
+        "Minimum Order Not Met",
         `Your order value ($${subtotal.toFixed(
           2
-        )}) is less than the minimum order value of $${currentMOV}. Please add more items to your cart.`
+        )}) is less than the minimum order value of $${currentMOV}. Please add more items to your cart.`,
+        [{ text: "OK" }]
       );
       return;
     }
