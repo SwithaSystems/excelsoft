@@ -93,7 +93,7 @@ const HomePage = () => {
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
-      console.log("response global settings", response.data);
+      // console.log("response global settings", response.data);
       setCarousalEnabled(response.data?.displayCarousel);
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
@@ -159,11 +159,11 @@ const HomePage = () => {
           const parentCategoryName = linkParts[0] || item.title || "Offers";
           const subCategoryName = linkParts[1] || null;
 
-          console.log("Carousel link parsed:", {
-            parentCategoryName,
-            subCategoryName,
-            originalLink: item.link,
-          });
+          // console.log("Carousel link parsed:", {
+          //   parentCategoryName,
+          //   subCategoryName,
+          //   originalLink: item.link,
+          // });
 
           // Fetch all categories to find the parent category by name
           const allCategories = await categoryService.getAllCategories();
@@ -182,12 +182,12 @@ const HomePage = () => {
             return;
           }
 
-          console.log(
-            "Found parent category:",
-            parentCategory.name,
-            "ID:",
-            parentCategory.id
-          );
+          // console.log(
+          //   "Found parent category:",
+          //   parentCategory.name,
+          //   "ID:",
+          //   parentCategory.id
+          // );
 
           // If there's a subcategory, find it
           if (subCategoryName) {
@@ -195,10 +195,10 @@ const HomePage = () => {
               parentCategory.id
             );
 
-            console.log(
-              "Available subcategories:",
-              subCategories.map((s) => s.name)
-            );
+            // console.log(
+            //   "Available subcategories:",
+            //   subCategories.map((s) => s.name)
+            // );
 
             const subCategory = subCategories.find((subCat) =>
               categoryNamesMatch(subCat.name, subCategoryName)
@@ -212,9 +212,9 @@ const HomePage = () => {
                 categoryId: parentCategory.id,
                 selectedSubCategories: subCategory.id.toString(),
               });
-              console.log(
-                `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
-              );
+              // console.log(
+              //   `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
+              // );
             } else {
               // Subcategory not found, navigate to parent category only
               console.warn(
@@ -245,7 +245,7 @@ const HomePage = () => {
         }
       } else if (item.link) {
         // External link - open in browser
-        console.log("Opening external link:", item.link);
+        // console.log("Opening external link:", item.link);
         if (Platform.OS === "web") {
           window.open(item.link, "_blank");
         } else {
@@ -320,7 +320,7 @@ const HomePage = () => {
         setPromotionsLoading(true);
         const data = await promotionService.getAllPromotions();
         setPromotions(data);
-        console.log("Fetched promotions:", data);
+        // console.log("Fetched promotions:", data);
       } catch (error) {
         console.error("Error fetching promotions:", error);
         // Optionally set empty array or show error message
