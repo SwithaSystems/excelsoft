@@ -28,12 +28,12 @@ const myOrderScreen = () => {
 
   const userId = params.userId;
 
-  console.log("userId in my orders", userId);
+  // console.log("userId in my orders", userId);
 
   const fetchOrders = async () => {
     try {
       const response = await orderService.getOrdersByUserId(userId as string);
-      console.log(" all my orders", response);
+      // console.log(" all my orders", response);
       setOrders(response);
       
       // Fetch product images for web view - optimized with batch fetching

@@ -13,7 +13,7 @@ export const TwilioApi = {
 
   verifyOtp: async (body: any): Promise<any> => {
     try {
-      console.log("body", body);
+      // console.log("body", body);
       const response = await jsonAxios.post(`/twilio/verifyOtp`, body);
       return response.data;
     } catch (error: any) {
@@ -39,7 +39,7 @@ export const TwilioApi = {
 
   verifyOtp_Email: async (body: any): Promise<any> => {
     try {
-      console.log("body in verifyOtp", body);
+      // console.log("body in verifyOtp", body);
       const response = await jsonAxios.post(`/sendGrid/verifyOtpEmail`, body);
       return response.data;
     } catch (error: any) {
@@ -54,7 +54,7 @@ export const TwilioApi = {
   },
   resentOtp_Email: async (body: any): Promise<any> => {
     try {
-      console.log("body", body);
+      // console.log("body", body);
       const response = await jsonAxios.post(`/sendGrid/resentOtpEmail`, body);
       return response.data;
     } catch (error: any) {

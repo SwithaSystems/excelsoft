@@ -66,11 +66,11 @@ export const AdminSidebarWeb: React.FC = () => {
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
-  console.log("Current pathname:", pathname);
-  console.log(
-    "Container routes:",
-    navItems.map((item) => ({ label: item.label, route: item.route }))
-  );
+  // console.log("Current pathname:", pathname);
+  // console.log(
+  //   "Container routes:",
+  //   navItems.map((item) => ({ label: item.label, route: item.route }))
+  // );
 
   const handleNavigation = (route: string) => {
     router.push(route as any);

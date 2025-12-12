@@ -10,8 +10,8 @@ const OrderTimeline = (props) => {
   // const from = props.from;
   const currentStatus = statusList.indexOf(props?.actualStatus);
   const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
-  console.log("currentStatus", currentStatus);
-  console.log("statusList", statusList);
+  // console.log("currentStatus", currentStatus);
+  // console.log("statusList", statusList);
 
   const icons = [
     "cart-outline",
@@ -42,9 +42,9 @@ const OrderTimeline = (props) => {
           const isActive = index <= currentStatus;
 
           if (isCurrent && isNegative) {
-            console.log("Reason received in props:", reason);
-            console.log("Actual Status:", props.actualStatus);
-            console.log("Is Negative?", isNegative);
+            // console.log("Reason received in props:", reason);
+            // console.log("Actual Status:", props.actualStatus);
+            // console.log("Is Negative?", isNegative);
           }
 
           const itemMarginBottom = compact ? 40 : 90;

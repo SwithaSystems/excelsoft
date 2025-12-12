@@ -75,8 +75,8 @@ for (const file of tsxFiles) {
     }
 
     fs.writeFileSync(file, source, "utf8");
-    console.log(`Updated ${path.relative(projectRoot, file)} – replaced ${constantsUsed.size} header titles`);
+    // console.log(`Updated ${path.relative(projectRoot, file)} – replaced ${constantsUsed.size} header titles`);
   }
 }
 
-console.log(`\nHeader title replacement complete. Total replacements: ${totalReplaced}`);
+// console.log(`\nHeader title replacement complete. Total replacements: ${totalReplaced}`);

@@ -10,15 +10,15 @@ export const DebugPaymentTest = () => {
   const [cardElementStatus, setCardElementStatus] = useState('checking...');
 
   useEffect(() => {
-    console.log("=== PAYMENT HANDLER DEBUG ===");
-    console.log("Platform:", Platform.OS);
-    console.log("Payment handler object:", paymentHandler);
-    console.log("Has handlePayment:", typeof paymentHandler?.handlePayment);
+    // console.log("=== PAYMENT HANDLER DEBUG ===");
+    // console.log("Platform:", Platform.OS);
+    // console.log("Payment handler object:", paymentHandler);
+    // console.log("Has handlePayment:", typeof paymentHandler?.handlePayment);
     
     if (Platform.OS === 'web') {
-      console.log("Stripe ready:", paymentHandler?.isStripeReady);
-      console.log("Has stripe:", !!paymentHandler?.stripe);
-      console.log("Has cardElement:", !!paymentHandler?.cardElement);
+      // console.log("Stripe ready:", paymentHandler?.isStripeReady);
+      // console.log("Has stripe:", !!paymentHandler?.stripe);
+      // console.log("Has cardElement:", !!paymentHandler?.cardElement);
     }
 
     // Check if card element exists in DOM
@@ -28,13 +28,13 @@ export const DebugPaymentTest = () => {
         const hasElement = !!cardElement;
         const hasIframe = cardElement?.querySelector('iframe');
         
-        console.log("=== CARD ELEMENT CHECK ===");
-        console.log("Card element exists:", hasElement);
-        console.log("Has iframe (Stripe mounted):", !!hasIframe);
+        // console.log("=== CARD ELEMENT CHECK ===");
+        // console.log("Card element exists:", hasElement);
+        // console.log("Has iframe (Stripe mounted):", !!hasIframe);
         
         if (cardElement) {
-          console.log("Card element HTML:", cardElement.innerHTML.substring(0, 200));
-          console.log("Card element children:", cardElement.children.length);
+          // console.log("Card element HTML:", cardElement.innerHTML.substring(0, 200));
+          // console.log("Card element children:", cardElement.children.length);
         }
         
         setCardElementStatus(
@@ -53,17 +53,17 @@ export const DebugPaymentTest = () => {
     if (Platform.OS !== 'web') return;
     
     const cardElement = document.getElementById('card-element');
-    console.log("=== MANUAL CARD ELEMENT TEST ===");
-    console.log("Element:", cardElement);
-    console.log("Parent:", cardElement?.parentElement);
-    console.log("Computed style:", cardElement ? window.getComputedStyle(cardElement) : 'N/A');
+    // console.log("=== MANUAL CARD ELEMENT TEST ===");
+    // console.log("Element:", cardElement);
+    // console.log("Parent:", cardElement?.parentElement);
+    // console.log("Computed style:", cardElement ? window.getComputedStyle(cardElement) : 'N/A');
     
     if (paymentHandler?.cardElement) {
-      console.log("Card element object exists in hook");
+      // console.log("Card element object exists in hook");
       // Try to focus the card element
       try {
         (paymentHandler.cardElement as any).focus();
-        console.log("Successfully focused card element");
+        // console.log("Successfully focused card element");
       } catch (e) {
         console.error("Failed to focus:", e);
       }

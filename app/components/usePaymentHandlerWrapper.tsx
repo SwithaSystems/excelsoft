@@ -14,13 +14,13 @@ if (Platform.OS === "web") {
 
 // Wrapper hook that uses the correct implementation
 export const usePaymentHandler = () => {
-  console.log("usePaymentHandler wrapper called, platform:", Platform.OS);
+  // console.log("usePaymentHandler wrapper called, platform:", Platform.OS);
   
   if (Platform.OS === "web") {
-    console.log("Using web payment handler");
+    // console.log("Using web payment handler");
     return usePaymentHandlerWeb();
   } else {
-    console.log("Using mobile payment handler");
+    // console.log("Using mobile payment handler");
     return usePaymentHandlerMobile();
   }
 };

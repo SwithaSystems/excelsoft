@@ -76,7 +76,7 @@ const cancelOrder = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const pickupAddress = params.pickupAddress || "";
 
-  console.log("orderDetails", orderDetails);
+  // console.log("orderDetails", orderDetails);
 
   // const cartItems = orderDetails?.products.map((item: any) => ({
   //   id: item.id,

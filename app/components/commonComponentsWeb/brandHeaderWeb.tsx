@@ -511,7 +511,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </TouchableOpacity>
         )}
 
-        {isValidUser && !hideUserGreeting && (
+        {!hideUserGreeting && (
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => redirectToPage(containers.cartScreen)}
@@ -529,15 +529,14 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </TouchableOpacity>
         )}
 
-
-         {!hideUserGreeting && (
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => redirectToPage(containers.userNotificationsScreen)}
-            >
-              <Ionicons name="notifications" size={24} color={colors.primary} />
-            </TouchableOpacity>
-          )}
+        {!hideUserGreeting && (
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => redirectToPage(containers.userNotificationsScreen)}
+          >
+            <Ionicons name="notifications" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

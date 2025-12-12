@@ -26,10 +26,10 @@ const categoriesScreen = () => {
   const isTabOrDesktop = width >= 768;
 
   useEffect(() => {
-    console.log("categoryId", categoryId);
+    // console.log("categoryId", categoryId);
     const fetchCategory = async () => {
       const data = await categoryService.getCategoryById(Number(categoryId));
-      console.log(data);
+      // console.log(data);
       setCategory(data);
     };
     fetchCategory();
@@ -39,7 +39,7 @@ const categoriesScreen = () => {
     const fetchAllCategories = async () => {
       try {
         const data = await categoryService.getAllCategories();
-        console.log(data);
+        // console.log(data);
         setAllCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);

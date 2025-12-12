@@ -130,19 +130,19 @@ const AdminProductDashboard = () => {
     hasMore: boolean;
   }> => {
     try {
-      console.log(`Fetching page ${page}`);
+      // console.log(`Fetching page ${page}`);
       const response = await ProductsAPI.getAllProducts(page, ITEMS_PER_PAGE);
 
       if (response && response.data) {
         const totalFetched = (page - 1) * ITEMS_PER_PAGE + response.data.length;
         const hasMoreData = totalFetched < response.total;
 
-        console.log(`Page ${page} response:`, {
-          itemsReceived: response.data.length,
-          totalRecords: response.total,
-          totalFetched,
-          hasMore: hasMoreData,
-        });
+        // console.log(`Page ${page} response:`, {
+        //   itemsReceived: response.data.length,
+        //   totalRecords: response.total,
+        //   totalFetched,
+        //   hasMore: hasMoreData,
+        // });
 
         return {
           data: response.data,
@@ -200,10 +200,10 @@ const AdminProductDashboard = () => {
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
 
-      console.log("Initial data loaded:", {
-        itemCount: response.data.length,
-        total: response.total,
-      });
+      // console.log("Initial data loaded:", {
+      //   
+      // }
+      //);
     } catch (error) {
       console.error("Failed to load initial data:", error);
       Alert.alert("Error", "Failed to load products");
@@ -217,17 +217,17 @@ const AdminProductDashboard = () => {
 
   const loadMoreData = async () => {
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
-      console.log("Load more blocked:", {
-        loadingMoreRef: loadingMoreRef.current,
-        isLoadingMore,
-        hasMore,
-        isLoading,
-      });
+      // console.log("Load more blocked:", {
+      //   loadingMoreRef: loadingMoreRef.current,
+      //   isLoadingMore,
+      //   hasMore,
+      //   isLoading,
+      // });
       return;
     }
 
     const nextPage = lastPageLoadedRef.current + 1;
-    console.log(`Loading more data - page ${nextPage}`);
+    // console.log(`Loading more data - page ${nextPage}`);
 
     loadingMoreRef.current = true;
     setIsLoadingMore(true);
@@ -245,9 +245,9 @@ const AdminProductDashboard = () => {
             (item) => !existingIds.has(item._id || item.id)
           );
 
-          console.log(
-            `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
-          );
+          // console.log(
+          //   `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
+          // );
           return [...prevProducts, ...newItems];
         });
 
@@ -283,10 +283,10 @@ const AdminProductDashboard = () => {
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
 
-      console.log("Data refreshed:", {
-        itemCount: response.data.length,
-        total: response.total,
-      });
+      // console.log("Data refreshed:", {
+      //   itemCount: response.data.length,
+      //   total: response.total,
+      // });
     } catch (error) {
       console.error("Failed to refresh data:", error);
       Alert.alert("Error", "Failed to refresh products");
@@ -322,7 +322,7 @@ const AdminProductDashboard = () => {
         }
       }
     } catch (error: any) {
-      console.log("Delete error:", error?.response?.data);
+      // console.log("Delete error:", error?.response?.data);
       const errorMessage =
         error?.response?.data?.message ||
         "Something went wrong while deleting the product.";
@@ -513,7 +513,7 @@ const AdminProductDashboard = () => {
     try {
       setIsLoading(true);
       const response = await ProductsAPI.productsBy_Name_Id(query);
-      console.log("Search response:", response);
+      // console.log("Search response:", response);
 
       if (response) {
         setAllProductsList(response);

@@ -32,10 +32,10 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   const checkBiometricSupport = async () => {
     let detectedType = "Biometric";
 
-    console.log(" Checking biometric support...");
+    // console.log(" Checking biometric support...");
     try {
       const compatible = await LocalAuthentication.hasHardwareAsync();
-      console.log(" Hardware compatible:", compatible);
+      // console.log(" Hardware compatible:", compatible);
 
       if (!compatible) {
         setIsBiometricSupported(false);
@@ -46,7 +46,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       if (compatible) {
         // Check if biometrics are enrolled
         const enrolled = await LocalAuthentication.isEnrolledAsync();
-        console.log("👆 Biometrics enrolled:", enrolled);
+        // console.log("👆 Biometrics enrolled:", enrolled);
 
         if (!enrolled) {
           setIsBiometricSupported(false);
@@ -61,7 +61,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         const types =
           await LocalAuthentication.supportedAuthenticationTypesAsync();
 
-        console.log("supported types", types);
+        // console.log("supported types", types);
         if (Platform.OS === "ios") {
           if (
             types.includes(
@@ -122,7 +122,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   };
 
   const enableBiometricAuth = async () => {
-    console.log(" Starting biometric authentication...");
+    // console.log(" Starting biometric authentication...");
     try {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: `Enable ${biometricType} for secure app access`,
@@ -130,7 +130,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         fallbackLabel: "Use Password",
       });
 
-      console.log("Authentication result:", result);
+      // console.log("Authentication result:", result);
 
       if (result.success) {
         await SecureStore.setItemAsync("biometric_enabled", "true");
@@ -138,13 +138,13 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         Alert.alert("Success", `${biometricType} has been enabled.`);
       } else {
         if (result.error === "user_cancel") {
-          console.log("User cancelled the authentication");
+          // console.log("User cancelled the authentication");
         } else if (result.error === "user_fallback") {
-          console.log("User chose to use passcode");
+          // console.log("User chose to use passcode");
         } else if (result.error === "system_cancel") {
-          console.log("System cancelled authentication");
+          // console.log("System cancelled authentication");
         } else {
-          console.log(" Authentication failed:", result.error);
+          // console.log(" Authentication failed:", result.error);
         }
         Alert.alert(
           "Authentication Failed",
@@ -179,7 +179,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
   // Test biometric authentication function
   const testBiometricAuth = async () => {
     try {
-      console.log("Testing biometric authentication...");
+      // console.log("Testing biometric authentication...");
 
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: `Test ${biometricType} Authentication`,
@@ -187,7 +187,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         fallbackLabel: "Use Passcode",
       });
 
-      console.log("Test result:", result);
+      // console.log("Test result:", result);
 
       if (result.success) {
         Alert.alert(

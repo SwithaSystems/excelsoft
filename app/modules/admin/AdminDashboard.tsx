@@ -43,11 +43,11 @@ const AdminDashboard = () => {
 
   const fetchUser = async () => {
     try {
-      console.log("userData in admin dashboard", userData);
+      // console.log("userData in admin dashboard", userData);
       const user = await UserAPI.getUserById(
         userData?._id ? userData?._id : userData?.id
       );
-      console.log("user in admin dashboard", user.data);
+      // console.log("user in admin dashboard", user.data);
       if (user) {
         setIsSuperAdmin(user?.data?.isSuperAdmin);
       }
@@ -341,14 +341,16 @@ const AdminDashboard = () => {
     <View style={[globalStyles.pt_0]}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
-        {/* <Text
-          style={styles.linkText}
-          onPress={() => {
-            redirectToPage(containers.fileUploadAddProductCategoryScreen);
-          }}
-        >
-          Upload Data
-        </Text> */}
+        {!isTabOrDesktop && (
+          <Text
+            style={styles.linkText}
+            onPress={() => {
+              redirectToPage(containers.fileUploadAddProductCategoryScreen);
+            }}
+          >
+            Upload Data
+          </Text>
+        )}
       </View>
 
       <View

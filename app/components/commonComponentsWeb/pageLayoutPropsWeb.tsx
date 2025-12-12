@@ -53,7 +53,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const headerHeight = isDesktop ? 68 + 50 : isTablet ? 56 + 50 : 52 + 50;
   const navBarHeight = 50;
   const totalHeaderHeight = headerHeight + navBarHeight;
-console.log({isAdmin})
+// console.log({isAdmin})
 
   return (
     <View style={[styles.root, { backgroundColor, minHeight: height }]}>

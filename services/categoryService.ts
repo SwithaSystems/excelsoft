@@ -20,7 +20,7 @@ export const categoryService = {
     }
   },
   updateCategory: async (categoryId: any, category: any): Promise<Category> => {
-    console.log("updating category", categoryId, category);
+    // console.log("updating category", categoryId, category);
     try {
       const formDataAxios = createAxiosInstance("formdata");
       const response = await formDataAxios.put(
@@ -69,7 +69,7 @@ export const categoryService = {
   deleteCategory: async (categoryId?: number) => {
     try {
       const response = await jsonAxios.delete(`/categories/${categoryId}`);
-      console.log("response after deletion", response.data);
+      // console.log("response after deletion", response.data);
       return response.data;
     } catch (error) {
       console.error("Error deleting Category:", error);

@@ -46,7 +46,7 @@ const SearchSuggestionsScreen = () => {
   }, [searchQuery]);
 
   const handleSearch = () => {
-    console.log("searchquery", searchQuery);
+    // console.log("searchquery", searchQuery);
     if (searchQuery.trim()) {
       redirectToPage(containers.searchResultsScreen, {
         query: searchQuery,

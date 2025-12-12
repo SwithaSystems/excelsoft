@@ -51,13 +51,13 @@ export const addressService = {
   // addShippingAddress: async (
   //   shippingAddressData: any
   // ): Promise<{ data: Address; status: number }> => {
-  //   console.log("AddressData ADDED", shippingAddressData);
+  //   // console.log("AddressData ADDED", shippingAddressData);
   //   try {
   //     const response = await jsonAxios.post(
   //       `${API_BASE_URL}/shippingAddress`,
   //       shippingAddressData
   //     );
-  //     console.log("shippingAddress", response);
+  //     // console.log("shippingAddress", response);
   //     return {
   //       data: response.data,
   //       status: response.status,
@@ -68,7 +68,7 @@ export const addressService = {
   // },
   // getShippingAddressById: async (id: string): Promise<Address> => {
   //   try {
-  //     console.log("id", id);
+  //     // console.log("id", id);
   //     const response = await jsonAxios.get<Address>(
   //       `${API_BASE_URL}/shippingAddress/${id}`
   //     );
@@ -86,7 +86,7 @@ export const addressService = {
   //       `${API_BASE_URL}/billingAddress`,
   //       billingAddressData
   //     );
-  //     console.log("billingAddress", response.data);
+  //     // console.log("billingAddress", response.data);
   //     return {
   //       data: response.data,
   //       status: response.status,
@@ -98,13 +98,13 @@ export const addressService = {
 
   // getAllShppingAddress_userId: async (): Promise<Address[]> => {
   //   try {
-  //     console.log("in homedelivery screen");
+  //     // console.log("in homedelivery screen");
   //     const refresh_token = await AsyncStorage.getItem("refreshtoken");
-  //     console.log("refreshtoken", refresh_token);
+  //     // console.log("refreshtoken", refresh_token);
   //     const response = await jsonAxios.get<Address[]>(
   //       `${API_BASE_URL}/shippingAddress`
   //     );
-  //     console.log("shippingAddress in service", response.data);
+  //     // console.log("shippingAddress in service", response.data);
   //     return response.data;
   //   } catch (error) {
   //     console.error("Error fetching shippingAddress:", error);
@@ -116,7 +116,7 @@ export const addressService = {
   //     const response = await jsonAxios.get<Address[]>(
   //       `${API_BASE_URL}/billingAddress`
   //     );
-  //     console.log(response.data);
+  //     // console.log(response.data);
   //     return response.data;
   //   } catch (error) {
   //     console.error("Error fetching billingAddress:", error);
@@ -166,13 +166,13 @@ export const addressService = {
   addAddress: async (
     AddressData: any
   ): Promise<{ data: Address; status: number }> => {
-    console.log("AddressData ADDED", AddressData);
+    // console.log("AddressData ADDED", AddressData);
     try {
       const response = await jsonAxios.post(
         `${API_BASE_URL}/address`,
         AddressData
       );
-      console.log("address", response.data);
+      // console.log("address", response.data);
       return {
         data: response.data,
         status: response.status,
@@ -216,11 +216,11 @@ export const addressService = {
 
   getAddressById: async (id: string): Promise<Address> => {
     try {
-      console.log("id of shippingAddress", id);
+      // console.log("id of shippingAddress", id);
       const response = await jsonAxios.get<Address>(
         `${API_BASE_URL}/address/${id}`
       );
-      console.log("address - shipping", response.data);
+      // console.log("address - shipping", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching address:", error);

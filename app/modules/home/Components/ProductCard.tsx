@@ -27,7 +27,7 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const isRemoteImage = typeof imageUrl === "string";
 
-  console.log('discount:', discount, 'netPrice:', netPrice, 'are they equal?', discount === netPrice);
+  // console.log('discount:', discount, 'netPrice:', netPrice, 'are they equal?', discount === netPrice);
 
   const hasDiscount = netPrice && discount !== netPrice;
 

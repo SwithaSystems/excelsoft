@@ -27,7 +27,7 @@ function CartItem(props) {
   const savedForLaterItems = useSelector(
     (state) => state.savedForLaterItems.items
   );
-  console.log("props", props);
+  // console.log("props", props);
 
   const getImageSource = () => {
     const placeholder = require("../../../../assets/Placeholder.png");
@@ -66,7 +66,7 @@ function CartItem(props) {
     }
   };
   const increaseQuantity = (itemId, currentQuantity) => {
-    console.log("props.stockAvailable", props.stockAvailable, currentQuantity);
+    // console.log("props.stockAvailable", props.stockAvailable, currentQuantity);
     const maxAvailable = Number(props.stockAvailable) || 0;
 
     if (maxAvailable <= 0) {
@@ -221,7 +221,7 @@ function CartItem(props) {
                 </View>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log("Deleting item", item);
+                    // console.log("Deleting item", item);
                     props.handleDelete(item);
                   }}
                 >

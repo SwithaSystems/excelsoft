@@ -114,7 +114,7 @@ export const usePaymentHandler = () => {
 
   const fetchPaymentIntent = async (amount: number, clientId: string) => {
     try {
-      console.log("Creating payment intent for amount:", amount);
+      // console.log("Creating payment intent for amount:", amount);
       const response = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
@@ -123,7 +123,7 @@ export const usePaymentHandler = () => {
           clientId: clientId,
         }
       );
-      console.log("Payment Intent Backend response:", response.data);
+      // console.log("Payment Intent Backend response:", response.data);
       return {
         clientSecret: response.data.paymentIntent.client_secret,
         ephemeralKey: response.data.ephemeralKey,
@@ -137,15 +137,15 @@ export const usePaymentHandler = () => {
   };
 
   const handlePayment = async (cartItems: Product[], params: any) => {
-    console.log("=== STARTING PAYMENT PROCESS (MOBILE) ===");
-    console.log("Order details:", params);
-    console.log("Cart items:", cartItems);
+    // console.log("=== STARTING PAYMENT PROCESS (MOBILE) ===");
+    // console.log("Order details:", params);
+    // console.log("Cart items:", cartItems);
 
     const subtotal = calculateSubtotal(cartItems);
     const shippingCharges = params.shippingCharges || 0;
     const discounts = params.discounts || [];
 
-    console.log("Subtotal:", subtotal);
+    // console.log("Subtotal:", subtotal);
 
     // Check Minimum Order Value (MOV)
     // const MOV = 15; // Minimum Order Value
@@ -176,7 +176,7 @@ export const usePaymentHandler = () => {
     }
 
     const { clientSecret, ephemeralKey, customer } = paymentData;
-    console.log("Got payment data, initializing payment sheet...");
+    // console.log("Got payment data, initializing payment sheet...");
 
     // Initialize payment sheet
     const { error: initError } = await initPaymentSheet({
@@ -202,7 +202,7 @@ export const usePaymentHandler = () => {
       return;
     }
 
-    console.log("Payment sheet initialized, presenting...");
+    // console.log("Payment sheet initialized, presenting...");
 
     // Present payment sheet
     const { error: paymentError } = await presentPaymentSheet();
@@ -214,7 +214,7 @@ export const usePaymentHandler = () => {
     }
 
     // Payment successful
-    console.log("=== PAYMENT SUCCESSFUL ===");
+    // console.log("=== PAYMENT SUCCESSFUL ===");
     Alert.alert("Success", "Payment completed successfully!");
 
     // Create order
@@ -264,9 +264,9 @@ export const usePaymentHandler = () => {
     }
 
     try {
-      console.log("Creating order...");
+      // console.log("Creating order...");
       const response = await orderService.createOrder(orderDetails);
-      console.log("Order created successfully:", response);
+      // console.log("Order created successfully:", response);
 
       dispatch(clearCart());
 

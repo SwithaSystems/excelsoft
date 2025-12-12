@@ -80,7 +80,7 @@ const ProductCard = ({
       quantity: 1,
     };
 
-    console.log("saved item", currentItem);
+    // console.log("saved item", currentItem);
 
     if (isItemSaved(id)) {
       dispatch(removeFromSavedItems(id));

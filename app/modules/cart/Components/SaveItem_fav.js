@@ -23,7 +23,7 @@ const SaveItemFav = (props) => {
   const savedForLaterItems = useSelector(
     (state) => state.savedForLaterItems.items
   );
-  console.log("props", props);
+  // console.log("props", props);
 
   const getImageSource = () => {
     // Check if item has image as a string (direct URL)
@@ -211,7 +211,7 @@ const SaveItemFav = (props) => {
                 <View>
                   <TouchableOpacity
                     onPress={() => {
-                      console.log("Deleting item", item);
+                      // console.log("Deleting item", item);
                       props.handleDelete(item);
                     }}
                   >

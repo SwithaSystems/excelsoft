@@ -290,7 +290,7 @@ const editProfileScreen = () => {
 
   return (
     <LayoutComponent
-      scrollable={false}
+      scrollable={true}
       hasHeader
       hasFooter={isTabOrDesktop}
       headerComponent={HeaderComponent}

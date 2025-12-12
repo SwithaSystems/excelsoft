@@ -136,6 +136,7 @@ const signIn = () => {
         <Header 
           headerText={"Sign In"} 
           needResetNavigation={false}
+          hideBackArrow={isTabOrDesktop}
           headerStyle={isTabOrDesktop ? styles.signInHeaderStyle : undefined}
           headerTitleStyle={isTabOrDesktop ? styles.signInHeaderTitle : undefined}
         />

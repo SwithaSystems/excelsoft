@@ -87,7 +87,7 @@ const forgotPasswordScreen = () => {
       }
     } else {
       // TODO: Implement forgot password for email, if required
-      console.log("Email forgot password not implemented.");
+      // console.log("Email forgot password not implemented.");
     }
   };
 
@@ -111,6 +111,7 @@ const forgotPasswordScreen = () => {
       headerComponent={
         <Header 
           headerText={FORGOT_PASSWORD_SCREEN_TITLE}
+          hideBackArrow={isTabOrDesktop}
           headerStyle={isTabOrDesktop ? styles.forgotPasswordHeaderStyle : undefined}
           headerTitleStyle={isTabOrDesktop ? styles.forgotPasswordHeaderTitle : undefined}
         />

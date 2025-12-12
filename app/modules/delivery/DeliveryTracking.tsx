@@ -44,13 +44,13 @@ const deliveryTrackingScreen = () => {
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
 
-  console.log("orderId", orderId.orderId);
+  // console.log("orderId", orderId.orderId);
 
   const getOrderById = async () => {
     const order_Details = await orderService.getOrderByMongoId(
       String(orderId.orderId)
     );
-    console.log("order_Details", order_Details);
+    // console.log("order_Details", order_Details);
     setOrderDetails(order_Details);
   };
 
@@ -60,7 +60,7 @@ const deliveryTrackingScreen = () => {
 
   const getAllOrderStatuses = async () => {
     const orderStatuses = await orderService.getAllOrderStatuses();
-    console.log("all Order statuses", orderStatuses);
+    // console.log("all Order statuses", orderStatuses);
     setAllOrderStatuses(orderStatuses?.statuses);
   };
 
@@ -180,11 +180,11 @@ const deliveryTrackingScreen = () => {
     return flow.filter((status: any) => allOrderStatuses.includes(status));
   };
 
-  console.log("orderDetails in tracking order", orderDetails?.status);
-  console.log(
-    "hasAgeRestrictedProducts",
-    orderDetails && hasAgeRestrictedProducts(orderDetails)
-  );
+  // console.log("orderDetails in tracking order", orderDetails?.status);
+  // console.log(
+  //   "hasAgeRestrictedProducts",
+  //   orderDetails && hasAgeRestrictedProducts(orderDetails)
+  // );
 
   // Get the appropriate statuses for display
   const displayStatuses = getOrderedStatusesForTimeline();

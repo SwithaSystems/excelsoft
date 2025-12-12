@@ -64,7 +64,7 @@ const orderDetailsScreen = () => {
   const loadedProductIds = useRef(new Set<string>());
   const isMounted = useRef(true);
 
-  console.log("orderId", orderId);
+  // console.log("orderId", orderId);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -139,7 +139,7 @@ const orderDetailsScreen = () => {
 
         if (isActive && isMounted.current && orderData_parsed) {
           setOrderDetails(orderData_parsed);
-          console.log("Order details loaded:", orderData_parsed);
+          // console.log("Order details loaded:", orderData_parsed);
         }
       } catch (err) {
         console.error("Failed to load order details:", err);
@@ -177,14 +177,14 @@ const orderDetailsScreen = () => {
     const fetchShippingAddress = async () => {
       if (!isActive || !isMounted.current) return;
 
-      console.log("fetching address", orderDetails.shippingAddress);
+      // console.log("fetching address", orderDetails.shippingAddress);
       try {
         const response = await addressService.getAddressById(
           orderDetails.shippingAddress
         );
 
         if (isActive && isMounted.current) {
-          console.log("response shipping address", response);
+          // console.log("response shipping address", response);
           setShippingAddress_order(response);
         }
       } catch (err) {
@@ -215,11 +215,11 @@ const orderDetailsScreen = () => {
     const fetchProductDetails = async () => {
       if (!isActive || !isMounted.current) return;
 
-      console.log(
-        "Starting to fetch product details for:",
-        orderDetails.products.length,
-        "products"
-      );
+      // console.log(
+      //   "Starting to fetch product details for:",
+      //   orderDetails.products.length,
+      //   "products"
+      // );
       setIsLoadingProducts(true);
       hasLoadedProducts.current = true;
 
@@ -230,12 +230,12 @@ const orderDetailsScreen = () => {
 
             // Skip if already loaded
             if (loadedProductIds.current.has(item.productId.toString())) {
-              console.log("Skipping already loaded product:", item.productId);
+              // console.log("Skipping already loaded product:", item.productId);
               return item;
             }
 
             try {
-              console.log("Fetching product details for ID:", item.productId);
+              // console.log("Fetching product details for ID:", item.productId);
               const productDetails = await ProductsAPI.getProductBYID(
                 item.productId
               );
@@ -259,7 +259,7 @@ const orderDetailsScreen = () => {
         );
 
         if (isActive && isMounted.current) {
-          console.log("Setting detailed cart items:", detailedCartItems.length);
+          // console.log("Setting detailed cart items:", detailedCartItems.length);
           setCartItemsWithDetails(detailedCartItems);
         }
       } catch (err) {
@@ -281,12 +281,12 @@ const orderDetailsScreen = () => {
     };
   }, [orderDetails?.products?.length, isLoadingOrder]); // Only depend on products length and loading state
 
-  console.log("orderDetails in orderDetails", orderDetails);
-  console.log("shippingAddress_id", orderDetails?.shippingAddress);
-  console.log("formattedDate", formattedDate);
-  console.log("cartItemsWithDetails", cartItemsWithDetails);
+  // console.log("orderDetails in orderDetails", orderDetails);
+  // console.log("shippingAddress_id", orderDetails?.shippingAddress);
+  // console.log("formattedDate", formattedDate);
+  // console.log("cartItemsWithDetails", cartItemsWithDetails);
 
-  console.log("orderDetails by order ID", orderDetails);
+  // console.log("orderDetails by order ID", orderDetails);
 
   // Function to get ordered statuses for timeline
   const getOrderedStatusesForTimeline = (): string[] => {

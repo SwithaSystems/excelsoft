@@ -99,30 +99,30 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         setSelectedFile(file);
 
         // DEBUG: Log file details
-        console.log("=== FILE SELECTION DEBUG ===");
-        console.log("File name:", file.name);
-        console.log("File size:", file.size);
-        console.log("File type:", file.type || file.mimeType);
-        console.log("File URI:", file.uri);
-        console.log("Full file object:", JSON.stringify(file, null, 2));
+        // console.log("=== FILE SELECTION DEBUG ===");
+        // console.log("File name:", file.name);
+        // console.log("File size:", file.size);
+        // console.log("File type:", file.type || file.mimeType);
+        // console.log("File URI:", file.uri);
+        // console.log("Full file object:", JSON.stringify(file, null, 2));
 
         Alert.alert("Success", `File selected: ${file.name}`);
       } else if (res && (res as any).name && (res as any).uri) {
         setSelectedFile(res);
 
         // DEBUG: Log file details
-        console.log("=== FILE SELECTION DEBUG (Legacy) ===");
-        console.log("File name:", (res as any).name);
-        console.log("File size:", (res as any).size);
-        console.log("File type:", (res as any).type);
-        console.log("File URI:", (res as any).uri);
-        console.log("Full file object:", JSON.stringify(res, null, 2));
+        // console.log("=== FILE SELECTION DEBUG (Legacy) ===");
+        // console.log("File name:", (res as any).name);
+        // console.log("File size:", (res as any).size);
+        // console.log("File type:", (res as any).type);
+        // console.log("File URI:", (res as any).uri);
+        // console.log("Full file object:", JSON.stringify(res, null, 2));
 
         Alert.alert("Success", `File selected: ${(res as any).name}`);
       } else if ((res as any).canceled) {
-        console.log("User cancelled file selection");
+        // console.log("User cancelled file selection");
       } else {
-        console.log("Unexpected picker result:", res);
+        // console.log("Unexpected picker result:", res);
       }
     } catch (err) {
       console.error("Error picking file:", err);
@@ -152,13 +152,13 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       };
 
       // DEBUG: Log upload data
-      console.log("=== UPLOAD DATA DEBUG ===");
-      console.log("Entity Type:", uploadData.entityType);
-      console.log("File Name:", uploadData.fileName);
-      console.log("File URI:", uploadData.fileUri);
-      console.log("Vendor:", uploadData.vendor);
-      console.log("Selected Entity Label:", selectedEntityLabel);
-      console.log("Selected Vendor Label:", selectedVendorLabel);
+      // console.log("=== UPLOAD DATA DEBUG ===");
+      // console.log("Entity Type:", uploadData.entityType);
+      // console.log("File Name:", uploadData.fileName);
+      // console.log("File URI:", uploadData.fileUri);
+      // console.log("Vendor:", uploadData.vendor);
+      // console.log("Selected Entity Label:", selectedEntityLabel);
+      // console.log("Selected Vendor Label:", selectedVendorLabel);
 
       const formData = new FormData();
       formData.append("entityType", uploadData.entityType);
@@ -166,73 +166,73 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       formData.append("vendor", uploadData.vendor);
 
       if (Platform.OS === "web") {
-        console.log("=== WEB PLATFORM: Fetching blob ===");
+        // console.log("=== WEB PLATFORM: Fetching blob ===");
         const resp = await fetch(uploadData.fileUri);
         const blob = await resp.blob();
-        console.log("Blob size:", blob.size);
-        console.log("Blob type:", blob.type);
+        // console.log("Blob size:", blob.size);
+        // console.log("Blob type:", blob.type);
         formData.append("file", blob, uploadData.fileName);
       } else {
-        console.log("=== MOBILE PLATFORM: Appending file ===");
+        // console.log("=== MOBILE PLATFORM: Appending file ===");
         const fileObject = {
           uri: uploadData.fileUri,
           name: uploadData.fileName,
           type: selectedFile.type || selectedFile.mimeType || "application/pdf",
         };
-        console.log(
-          "File object being appended:",
-          JSON.stringify(fileObject, null, 2)
-        );
+        // console.log(
+        //   "File object being appended:",
+        //   JSON.stringify(fileObject, null, 2)
+        // );
         formData.append("file", fileObject as any);
       }
 
       // DEBUG: Log FormData contents (note: can't directly log FormData on mobile)
-      console.log("=== FORMDATA DEBUG ===");
+      // console.log("=== FORMDATA DEBUG ===");
       if (Platform.OS === "web") {
         // On web, we can iterate FormData
         for (let pair of (formData as any).entries()) {
-          console.log(`${pair[0]}:`, pair[1]);
+          // console.log(`${pair[0]}:`, pair[1]);
         }
       } else {
-        console.log("FormData created (cannot iterate on mobile)");
-        console.log("FormData fields: entityType, fileName, vendor, file");
+        // console.log("FormData created (cannot iterate on mobile)");
+        // console.log("FormData fields: entityType, fileName, vendor, file");
       }
 
       const vendorSelected = selectedVendor && selectedVendor.trim() !== "";
       const vendorLabelSelected = selectedVendorLabel !== "Select Vendor";
 
-      console.log("=== UPLOAD BRANCH DEBUG ===");
-      console.log("Vendor selected:", vendorSelected);
-      console.log("Vendor label selected:", vendorLabelSelected);
-      console.log(
-        "Will use vendor branch:",
-        vendorSelected || vendorLabelSelected
-      );
+      // console.log("=== UPLOAD BRANCH DEBUG ===");
+      // console.log("Vendor selected:", vendorSelected);
+      // console.log("Vendor label selected:", vendorLabelSelected);
+      // console.log(
+      //   "Will use vendor branch:",
+      //   vendorSelected || vendorLabelSelected
+      // );
 
       if (vendorSelected || vendorLabelSelected) {
         // VENDOR BRANCH
-        console.log("=== VENDOR PDF UPLOAD ===");
+        // console.log("=== VENDOR PDF UPLOAD ===");
         try {
           const url = `${API_URL}/product-import/upload-pdf`;
-          console.log("Upload URL:", url);
-          console.log("Request headers:", {
-            "Content-Type": "multipart/form-data",
-          });
-          console.log("Timeout: 300000ms");
+          // console.log("Upload URL:", url);
+          // console.log("Request headers:", {
+          //   "Content-Type": "multipart/form-data",
+          // });
+          // console.log("Timeout: 300000ms");
 
-          console.log("Sending request to backend...");
+          // console.log("Sending request to backend...");
           const response = await axios.post(url, formData, {
             headers: { "Content-Type": "multipart/form-data" },
             timeout: 300000,
           });
 
-          console.log("=== BACKEND RESPONSE ===");
-          console.log("Status:", response.status);
-          console.log("Response data:", JSON.stringify(response.data, null, 2));
-          console.log(
-            "Response headers:",
-            JSON.stringify(response.headers, null, 2)
-          );
+          // console.log("=== BACKEND RESPONSE ===");
+          // console.log("Status:", response.status);
+          // console.log("Response data:", JSON.stringify(response.data, null, 2));
+          // console.log(
+          //   "Response headers:",
+          //   JSON.stringify(response.headers, null, 2)
+          // );
 
           setResult(
             response.data ?? { success: false, message: "Empty response" }
@@ -275,7 +275,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         }
       } else {
         // ENTITY BRANCH
-        console.log("=== ENTITY UPLOAD ===");
+        // console.log("=== ENTITY UPLOAD ===");
         try {
           const resp = await ProductsAPI.addProduct_Catagory_Upload_File(
             formData
@@ -283,8 +283,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           if (!resp) throw new Error("No response from server");
           const json = await resp.json();
 
-          console.log("=== ENTITY RESPONSE ===");
-          console.log("Response:", JSON.stringify(json, null, 2));
+          // console.log("=== ENTITY RESPONSE ===");
+          // console.log("Response:", JSON.stringify(json, null, 2));
 
           setResult(
             json ?? {

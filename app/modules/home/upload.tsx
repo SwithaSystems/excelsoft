@@ -51,11 +51,11 @@ const ProductImportScreen: React.FC = () => {
         type: "application/pdf",
         multiple: false,
       });
-      console.log("Document Picker Result:", res);
+      // console.log("Document Picker Result:", res);
       // if (res.type === "cancel") return;
       // Check if user canceled
       if (res.canceled) {
-        console.log("User canceled file selection");
+        // console.log("User canceled file selection");
         return;
       }
 
@@ -66,7 +66,7 @@ const ProductImportScreen: React.FC = () => {
         return;
       }
 
-      console.log("Picked File:", pickedFile);
+      // console.log("Picked File:", pickedFile);
 
       setSelectedFile(pickedFile);
       setResult(null);
@@ -78,14 +78,14 @@ const ProductImportScreen: React.FC = () => {
     }
   };
 
-  console.log("Selected File State:", selectedFile);
+  // console.log("Selected File State:", selectedFile);
 
   // Upload the PDF to backend
   const uploadPDF = async () => {
-    console.log("Selected File:", selectedFile.name);
+    // console.log("Selected File:", selectedFile.name);
 
     if (!selectedFile) {
-      console.log("No File", "Please select a PDF first");
+      // console.log("No File", "Please select a PDF first");
       return;
     }
 
@@ -133,7 +133,7 @@ const ProductImportScreen: React.FC = () => {
         }
       );
 
-      console.log("Response:", response.data);
+      // console.log("Response:", response.data);
       setResult(response.data);
 
       if (response.data.success) {

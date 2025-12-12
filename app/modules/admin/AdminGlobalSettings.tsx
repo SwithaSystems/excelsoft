@@ -72,7 +72,7 @@ const AdminGlobalSettings = () => {
 
     try {
       await globalSettingsAPI.updateSettings(key, newValue);
-      console.log(`${key} updated to ${newValue}`);
+      // console.log(`${key} updated to ${newValue}`);
     } catch (error) {
       console.error(`Failed to update ${key}:`, error);
       // Revert on error

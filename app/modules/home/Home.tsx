@@ -149,6 +149,7 @@ const HomePage = () => {
 
   const handleBannerPress = useMemo(
     () => async (item: any, index: number) => {
+      // console.log("item", item);
       // item is from carouselData, which has: id, image, link, title, description, isInternalLink
       if (item.isInternalLink && item.link) {
         try {
@@ -159,11 +160,7 @@ const HomePage = () => {
           const parentCategoryName = linkParts[0] || item.title || "Offers";
           const subCategoryName = linkParts[1] || null;
 
-          // console.log("Carousel link parsed:", {
-          //   parentCategoryName,
-          //   subCategoryName,
-          //   originalLink: item.link,
-          // });
+          // console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
 
           // Fetch all categories to find the parent category by name
           const allCategories = await categoryService.getAllCategories();
@@ -182,37 +179,28 @@ const HomePage = () => {
             return;
           }
 
-          // console.log(
-          //   "Found parent category:",
-          //   parentCategory.name,
-          //   "ID:",
-          //   parentCategory.id
-          // );
+          // console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
 
           // If there's a subcategory, find it
           if (subCategoryName) {
             const subCategories = await categoryService.getAllSubCategories(
               parentCategory.id
             );
-
-            // console.log(
-            //   "Available subcategories:",
-            //   subCategories.map((s) => s.name)
-            // );
-
-            const subCategory = subCategories.find((subCat) =>
-              categoryNamesMatch(subCat.name, subCategoryName)
+            
+            // console.log("Available subcategories:", subCategories.map(s => s.name));
+            
+            const subCategory = subCategories.find(
+              (subCat) => categoryNamesMatch(subCat.name, subCategoryName)
             );
 
             if (subCategory) {
-              // Navigate with parent category and selected subcategory
+              // Navigate directly to the subcategory as the main category
               redirectToPage(containers.searchResultsScreen, {
                 fromSearch: true,
-                category: parentCategory.name,
-                categoryId: parentCategory.id,
-                selectedSubCategories: subCategory.id.toString(),
+                category: subCategory.name,
+                categoryId: subCategory.id,
               });
-              // console.log(
+              // // console.log(
               //   `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
               // );
             } else {

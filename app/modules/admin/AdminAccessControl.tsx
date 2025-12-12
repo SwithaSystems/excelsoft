@@ -39,10 +39,10 @@ const AdminAccessControlScreen = () => {
       newAccessList[index] = newAccessValue;
       setAccessList(newAccessList);
 
-      console.log("userID and new accessValue", userId, newAccessValue);
+      // console.log("userID and new accessValue", userId, newAccessValue);
       // Make API call to update user access
       const response = await UserAPI.updateUserAccess(userId, newAccessValue);
-      console.log("response in toggleAccess", response.data);
+      // console.log("response in toggleAccess", response.data);
 
       Alert.alert(
         "Access Updated",
@@ -67,7 +67,7 @@ const AdminAccessControlScreen = () => {
     try {
       setLoading(true);
       const response = await UserAPI.getAllUsers();
-      console.log("response in userProfilescreen", response?.data);
+      // console.log("response in userProfilescreen", response?.data);
 
       const simplifiedUsers = response.data.map((user: any) => ({
         _id: user?._id,

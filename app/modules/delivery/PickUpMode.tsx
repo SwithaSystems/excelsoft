@@ -79,7 +79,7 @@ const pickUpModescreen = () => {
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
-      console.log("response global settings", response.data);
+      // console.log("response global settings", response.data);
       setDeliveryModeEnabled(response.data?.deliveryMode);
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
@@ -89,7 +89,7 @@ const pickUpModescreen = () => {
 
   const fetchPickupModes = async () => {
     const response = await jsonAxios.get(`/pick-up-modes`);
-    console.log("response pickup modes", response.data);
+    // console.log("response pickup modes", response.data);
     setPickupModes(response.data);
   };
 
@@ -112,7 +112,7 @@ const pickUpModescreen = () => {
       return Boolean(option);
     });
 
-  console.log("Final options:", options);
+  // console.log("Final options:", options);
 
   const isTabOrDesktop = width >= 768;
 

@@ -265,7 +265,7 @@ const AdminAddCategoriesWeb = () => {
   const handleAddCategory = useCallback(async () => {
     try {
       setLoading(true);
-      console.log(" Parentcategory to update", parentCategory);
+      // console.log(" Parentcategory to update", parentCategory);
 
       // Validate required fields
       if (!categoryName.trim()) {
@@ -346,12 +346,12 @@ const AdminAddCategoriesWeb = () => {
         }
       }
 
-      console.log(
-        `Submitting form data for category ${
-          isEditMode ? "update" : "creation"
-        }`,
-        formData
-      );
+      // console.log(
+        // `Submitting form data for category ${
+        //   isEditMode ? "update" : "creation"
+        // }`,
+      //   formData
+      // );
 
       let result;
       if (isEditMode && editingCategoryId) {
@@ -363,10 +363,10 @@ const AdminAddCategoriesWeb = () => {
         result = await categoryService.addCategory(formData);
       }
 
-      console.log(
-        `Result for category ${isEditMode ? "update" : "creation"}`,
-        result
-      );
+      // console.log(
+      //   `Result for category ${isEditMode ? "update" : "creation"}`,
+      //   result
+      // );
 
       if (!result) {
         if (isWeb) {

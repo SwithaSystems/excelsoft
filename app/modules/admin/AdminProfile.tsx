@@ -73,7 +73,7 @@ const AdminProfile = () => {
   const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
 
-  console.log("userData_redux in userProfilescreen", userData_redux);
+  // console.log("userData_redux in userProfilescreen", userData_redux);
   
   useEffect(() => {
     const fetchUser = async () => {
@@ -83,7 +83,7 @@ const AdminProfile = () => {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        console.log("response in userProfilescreen", response?.data);
+        // console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -97,7 +97,7 @@ const AdminProfile = () => {
     fetchUser();
   }, [userData_redux]);
 
-  console.log("user details fetched", user);
+  // console.log("user details fetched", user);
   
   useEffect(() => {
     const getToken = async () => {
@@ -106,7 +106,7 @@ const AdminProfile = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        console.log("Expo Push Token:", token);
+        // console.log("Expo Push Token:", token);
         setExpoPushToken(token ?? null);
       }
     };
@@ -114,12 +114,12 @@ const AdminProfile = () => {
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
+        // console.log("Notification received:", notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("User interacted with notification:", response);
+        // console.log("User interacted with notification:", response);
       });
 
     return () => {

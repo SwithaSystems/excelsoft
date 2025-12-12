@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   webTimelineContainer: {
     marginTop: 8,
-    maxHeight: 350,
+    maxHeight: 400,
   },
   webTimelineContent: {
     paddingHorizontal: 20,

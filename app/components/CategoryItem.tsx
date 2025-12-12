@@ -16,7 +16,7 @@ const CategoryItem = ({
   onPress,
   containerStyle,
 }: CategoryItemProps) => {
-  console.log("image selected", image, typeof image);
+  // console.log("image selected", image, typeof image);
   return (
     <TouchableOpacity
       style={[styles.container, containerStyle]}

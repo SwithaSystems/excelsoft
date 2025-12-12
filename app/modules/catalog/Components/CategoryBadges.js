@@ -34,11 +34,11 @@ const CategoryBadges = (props) => {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        console.log("categoryId", props.categoryId);
+        // console.log("categoryId", props.categoryId);
         const data = await categoryService.getAllSubCategories(
           props.categoryId
         );
-        console.log("all sub categories", data);
+        // console.log("all sub categories", data);
 
         if (data && data.length > 0) {
           const setsubCategories = data

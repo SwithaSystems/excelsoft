@@ -56,12 +56,12 @@ export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
         const superadmin = data.isSuperAdmin === true;
         const admin = data.isAdmin === true;
 
-        console.log('🔍 Role Data:', {
-          isAdmin: data.isAdmin,
-          isSuperAdmin: data.isSuperAdmin,
-          final_isAdmin: admin || superadmin,
-          final_isUser: !admin && !superadmin
-        });
+        // console.log('🔍 Role Data:', {
+        //   isAdmin: data.isAdmin,
+        //   isSuperAdmin: data.isSuperAdmin,
+        //   final_isAdmin: admin || superadmin,
+        //   final_isUser: !admin && !superadmin
+        // });
 
 
         // Login is valid
