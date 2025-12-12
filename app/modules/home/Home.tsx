@@ -128,7 +128,7 @@ const HomePage = () => {
 
   const handleBannerPress = useMemo(
     () => async (item: any, index: number) => {
-      console.log("item", item);
+      // console.log("item", item);
       // item is from carouselData, which has: id, image, link, title, description, isInternalLink
       if (item.isInternalLink && item.link) {
         try {
