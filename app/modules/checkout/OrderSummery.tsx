@@ -35,7 +35,9 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { Alert } from "react-native";
+import { showAlert } from "@/utilities/alertHelper";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import axios from "axios";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
@@ -124,15 +126,80 @@ const orderSummeryScreen = () => {
 
   const { handlePayment } = usePaymentHandler();
   const [total, settotal] = useState(0);
+  const [currentMOV, setCurrentMOV] = useState<number | null>(null);
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+  // Calculate total the same way as OrderSummary component (totalIncVAT)
+  const calculateOrderTotal = useCallback((items: any[]) => {
+    const calculateItemSubtotal = (item: any) => {
+      const basePrice = (item.netPrice || 0) - (item.discount || 0);
+      return basePrice * (item?.quantity || 1);
+    };
+
+    const calculateItemVAT = (item: any) => {
+      const subtotal = calculateItemSubtotal(item);
+      const vatRate = item.vatRate || 0;
+      return item.isVatApplicable ? (subtotal * vatRate) / 100 : 0;
+    };
+
+    const subtotalExVAT = items.reduce(
+      (total, item) => total + calculateItemSubtotal(item),
+      0
+    );
+
+    const totalVAT = items.reduce(
+      (total, item) => total + calculateItemVAT(item),
+      0
+    );
+
+    const deliveryCharge = params?.shipping || 0;
+    return subtotalExVAT + totalVAT + deliveryCharge;
+  }, [params?.shipping]);
+
+  // Fetch minimum order value dynamically
+  const getMinimumOrderValue = useCallback(async (): Promise<number | null> => {
+    try {
+      const resp = await axios.get(
+        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+      );
+      const raw = resp?.data;
+
+      if (typeof raw === "number") return Number(raw);
+      if (raw && typeof raw === "object") {
+        if (typeof raw.minimumOrderValue === "number")
+          return Number(raw.minimumOrderValue);
+        if (typeof raw.value === "number") return Number(raw.value);
+      }
+
+      console.warn("Unrecognised MOV shape:", raw);
+      return null;
+    } catch (err) {
+      console.error("Failed to fetch MOV", err);
+      return null;
+    }
+  }, [API_BASE_URL]);
 
   useEffect(() => {
-    let sum = 0;
-    cartItems.forEach((item: any) => {
-      sum += item.price * item.quantity;
-    });
-    // console.log("Calculated total:", sum);
-    settotal(sum);
-  }, [cartItems]);
+    let isActive = true;
+    (async () => {
+      const mov = await getMinimumOrderValue();
+      if (!isActive) return;
+      if (mov !== null) {
+        setCurrentMOV(mov);
+      } else {
+        // Fallback to static MOV if API fails
+        setCurrentMOV(MOV);
+      }
+    })();
+    return () => {
+      isActive = false;
+    };
+  }, [getMinimumOrderValue]);
+
+  useEffect(() => {
+    const calculatedTotal = calculateOrderTotal(cartItems);
+    settotal(calculatedTotal);
+  }, [cartItems, calculateOrderTotal]);
 
   const parseJsonSafely = useCallback(
     (jsonString: string | undefined, fallback: any = null) => {
@@ -966,13 +1033,16 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 <Button
                   title="Proceed for Payment"
                   disabled={!isPaymentEnabled}
-                  onPress={() => {
+                  onPress={async () => {
                     try {
+                      // Get current MOV (use fetched value or fallback to static)
+                      const mov = currentMOV !== null ? currentMOV : MOV;
+                      
                       // Check if total is less than MOV
-                      if (total < MOV) {
-                        Alert.alert(
+                      if (total < mov) {
+                        showAlert(
                           "Minimum Order Not Met",
-                          `Your order value is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+                          `Your order value ($${total.toFixed(2)}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
                         );
                         return;
                       }
@@ -992,7 +1062,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       });
                     } catch (error) {
                       console.error("Payment handler error:", error);
-                      Alert.alert(
+                      showAlert(
                         "Error",
                         "Failed to process payment. Please try again."
                       );
@@ -1206,23 +1276,20 @@ Contact Number: ${pickupAddress.phone || ""}`;
               <Button
                 title="Proceed for Payment"
                 disabled={!isPaymentEnabled}
-                onPress={() => {
+                onPress={async () => {
                   try {
-                    // Check if total is less than MOV
-                    const currentTotal = cartItems.reduce(
-                      (sum: number, item: any) => {
-                        return sum + item.price * item.quantity;
-                      },
-                      0
-                    );
-                    // console.log("Current total at payment:", currentTotal); // Debug log
+                    // Calculate total the same way as OrderSummary component
+                    const currentTotal = calculateOrderTotal(cartItems);
+                    
+                    // Get current MOV (use fetched value or fallback to static)
+                    const mov = currentMOV !== null ? currentMOV : MOV;
 
-                    if (currentTotal < MOV) {
-                      Alert.alert(
+                    if (currentTotal < mov) {
+                      showAlert(
                         "Minimum Order Not Met",
                         `Your order value ($${currentTotal.toFixed(
                           2
-                        )}) is less than the minimum order value of $${MOV}. Please add more items to your cart.`
+                        )}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
                       );
                       return;
                     }
@@ -1242,7 +1309,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     });
                   } catch (error) {
                     console.error("Payment handler error:", error);
-                    Alert.alert(
+                    showAlert(
                       "Error",
                       "Failed to process payment. Please try again."
                     );

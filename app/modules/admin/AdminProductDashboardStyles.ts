@@ -216,6 +216,7 @@ const styles = StyleSheet.create({
   },
   dropdownScrollArea: {
     maxHeight: 260,
+    overflow: 'scroll',
   },
   dropdownItem: {
     paddingVertical: 10,
@@ -249,6 +250,21 @@ const styles = StyleSheet.create({
   bold: {
     fontWeight: 500,
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  
+  modalDropdown: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    maxHeight: "70%",
+    paddingVertical: 8,
+  },
+  
 });
 
 export default styles;

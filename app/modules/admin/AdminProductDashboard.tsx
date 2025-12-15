@@ -15,6 +15,9 @@ import {
   Alert,
   Platform,
   useWindowDimensions,
+  ScrollView,
+  Pressable,
+  Modal,
 } from "react-native";
 import styles from "./AdminProductDashboardStyles";
 import containers from "@/containers";
@@ -189,6 +192,34 @@ const AdminProductDashboard = () => {
     performSearch();
   }, [debouncedQuery]);
 
+  const renderCategoryItems = () => (
+    <>
+      <TouchableOpacity
+        style={styles.dropdownItem}
+        onPress={() => {
+          setSelectCategory("");
+          setIsCategoryOpen(false);
+        }}
+      >
+        <Text style={styles.dropdownItemText}>All Categories</Text>
+      </TouchableOpacity>
+  
+      {allCategories.map((cat: any) => (
+        <TouchableOpacity
+          key={cat.id || cat._id}
+          style={styles.dropdownItem}
+          onPress={() => {
+            setSelectCategory(cat.id || cat._id);
+            setIsCategoryOpen(false);
+          }}
+        >
+          <Text style={styles.dropdownItemText}>{cat.name}</Text>
+        </TouchableOpacity>
+      ))}
+    </>
+  );
+
+  
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
@@ -574,7 +605,7 @@ const AdminProductDashboard = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={false}
       hideNavItems={true}
     >
       <View style={[
@@ -667,32 +698,36 @@ const AdminProductDashboard = () => {
                   </View>
                 </TouchableOpacity>
                 {isCategoryOpen && (
-                  <View style={styles.dropdownList}>
-                    <View style={styles.dropdownScrollArea}>
-                      <TouchableOpacity
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSelectCategory("");
-                          setIsCategoryOpen(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>All Categories</Text>
-                      </TouchableOpacity>
-                      {allCategories.map((cat: any, index: number) => (
-                        <TouchableOpacity
-                          key={cat.id || cat._id || index}
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            setSelectCategory(cat.id || cat._id);
-                            setIsCategoryOpen(false);
-                          }}
-                        >
-                          <Text style={styles.dropdownItemText}>{cat.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                )}
+  isTabOrDesktop ? (
+    // ===== WEB: inline dropdown (keep your current UI) =====
+    <View style={styles.dropdownList}>
+      <ScrollView style={styles.dropdownScrollArea}>
+        {renderCategoryItems()}
+      </ScrollView>
+    </View>
+  ) : (
+    // ===== MOBILE: modal dropdown =====
+    Platform.OS !== "web" && (
+      <Modal
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsCategoryOpen(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsCategoryOpen(false)}
+        >
+          <View style={styles.modalDropdown}>
+            <ScrollView>
+              {renderCategoryItems()}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
+    )
+  )
+)}
+
               </View>
             </View>
           </View>

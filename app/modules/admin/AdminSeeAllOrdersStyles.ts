@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
@@ -67,6 +67,23 @@ const styles = StyleSheet.create({
 
   searchIcon: {
     marginLeft: 10,
+  },
+  stickyBottomContainer: {
+    position: Platform.OS === "web" ? "sticky" : "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 45,
+    paddingVertical: 0,
+    marginBottom: 0,
+    borderTopWidth: 0,
+    borderColor: "transparent",
+    shadowOpacity: 0,
+    elevation: 0,
+    zIndex: 10,
   },
 });
 

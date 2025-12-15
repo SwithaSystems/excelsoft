@@ -232,7 +232,7 @@ const AdminSeeAllOrders = () => {
   };
 
   // Pagination for desktop/tablet grid
-  const ITEMS_PER_PAGE = isTabOrDesktop ? 9 : 50;
+  const ITEMS_PER_PAGE = isTabOrDesktop ? 12 : 50;
   const filteredOrders = getFilteredOrders();
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
   const paginatedData = isTabOrDesktop
@@ -241,6 +241,11 @@ const AdminSeeAllOrders = () => {
         currentPage * ITEMS_PER_PAGE
       )
     : filteredOrders;
+
+  // Reset to page 1 when search query or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, activeFilter]);
 
   const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isTabOrDesktop ? (
@@ -259,94 +264,109 @@ const AdminSeeAllOrders = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={true}
+      scrollable={!isTabOrDesktop}
       hideNavItems={true}
     >
-      <View style={[globalStyles.pt_0, globalStyles.pb_0, isTabOrDesktop && { flex: 1, flexDirection: 'column' }]}>
-        {!isTabOrDesktop && (
-          <View>
-            <SearchBar
-              placeholder="Search orders..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={() => {}}
-              onPress={() => {}}
-            />
-          </View>
-        )}
-        {isTabOrDesktop && (
-          <>
-            <View
-              style={[
-                styles.headerRow,
-                {
-                  justifyContent: "space-between",
-                  paddingTop: 5,
-                  alignItems: "center",
-                  marginBottom: -5,
-                  marginTop: 0,
-                },
-              ]}
-            >
-              <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
-                See All Orders
+      {isTabOrDesktop ? (
+        <View style={{ flex: 1 }}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+            <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
+              <View
+                style={[
+                  styles.headerRow,
+                  {
+                    justifyContent: "space-between",
+                    paddingTop: 5,
+                    alignItems: "center",
+                    marginBottom: -5,
+                    marginTop: 0,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+                  See All Orders
+                </Text>
+              </View>
+              <View style={{ marginTop: 16, marginBottom: 8 }}>
+                <SearchBar
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => {}}
+                  onPress={() => {}}
+                  widthPercent={35}
+                  height={40}
+                />
+              </View>
+
+              <View style={localStyles.badgeContainer}>
+                {statusFilters.map((status) => (
+                  <TouchableOpacity
+                    key={status}
+                    onPress={() => setActiveFilter(status)}
+                    style={[
+                      localStyles.badge,
+                      {
+                        backgroundColor:
+                          activeFilter === status ? colors.primary : colors.secondary,
+                      },
+                    ]}
+                  >
+                    <Text style={localStyles.badgeText}>{status}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.heading}>
+                WELCOME, Let's go through the orders details!
               </Text>
+
+              <View style={[styles.ordersContainer, { paddingLeft: 0, paddingRight: 0 }]}>
+                <FlatList
+                  data={sortOrdersByTime(paginatedData)}
+                  renderItem={renderOrderItem}
+                  keyExtractor={(item) => String(item._id)}
+                  numColumns={4}
+                  columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
+                  contentContainerStyle={{ paddingVertical: 8 }}
+                  showsVerticalScrollIndicator={true}
+                  scrollEnabled={false}
+                  ListEmptyComponent={
+                    <View style={localStyles.emptyContainer}>
+                      <Text style={localStyles.emptyText}>
+                        No orders found for "{activeFilter}"
+                      </Text>
+                    </View>
+                  }
+                />
+              </View>
             </View>
-            <View style={{ marginTop: 16, marginBottom: 8 }}>
+          </ScrollView>
+          
+          {/* Pagination for web/tablet only - outside ScrollView */}
+          {isTabOrDesktop && totalPages > 1 && (
+            <View style={styles.stickyBottomContainer}>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            </View>
+          )}
+        </View>
+      ) : (
+        <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
+          {!isTabOrDesktop && (
+            <View>
               <SearchBar
                 placeholder="Search orders..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onSubmitEditing={() => {}}
                 onPress={() => {}}
-                widthPercent={35}
-                height={40}
               />
             </View>
-
-            <View style={localStyles.badgeContainer}>
-              {statusFilters.map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setActiveFilter(status)}
-                  style={[
-                    localStyles.badge,
-                    {
-                      backgroundColor:
-                        activeFilter === status ? colors.primary : colors.secondary,
-                    },
-                  ]}
-                >
-                  <Text style={localStyles.badgeText}>{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.heading}>
-              WELCOME, Let's go through the orders details!
-            </Text>
-
-            <View style={[styles.ordersContainer, isTabOrDesktop && { paddingLeft: 0, paddingRight: 0 }, { flex: 1, minHeight: 0, overflow: 'visible' }]}>
-              <FlatList
-                data={sortOrdersByTime(filteredOrders)}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => String(item._id)}
-                numColumns={4}
-                columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
-                contentContainerStyle={{ paddingVertical: 8, paddingBottom: 100 }}
-                showsVerticalScrollIndicator={true}
-                ListEmptyComponent={
-                  <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>
-                      No orders found for "{activeFilter}"
-                    </Text>
-                  </View>
-                }
-              />
-            </View>
-          </>
-        )}
-        {!isTabOrDesktop && (
+          )}
           <>
             <View style={localStyles.badgeContainer}>
               {statusFilters.map((status) => (
@@ -385,8 +405,8 @@ const AdminSeeAllOrders = () => {
               />
             </View>
           </>
-        )}
-      </View>
+        </View>
+      )}
       {/* </ScrollView>
         <AdminFooter activeTab="orders" />
       </View>

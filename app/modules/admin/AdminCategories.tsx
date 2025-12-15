@@ -454,183 +454,95 @@ const AdminCategories = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={true}
+      scrollable={!isTabOrDesktop}
       hideNavItems={true}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {!isTabOrDesktop && (
-          <View style={styles.formContainer}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>
-                {isEditMode ? "Edit Category" : "Add New Category"}
-              </Text>
-              {isEditMode && (
-                <TouchableOpacity onPress={handleCancelEdit} style={styles.cancelButton}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <CustomTextInput
-              value={categoryName}
-              setValue={setCategoryName}
-              placeholder="Enter Category name *"
-              containerStyle={styles.input}
-              onPress={() => {}}
-            />
-
-            <CustomTextInput
-              value={categoryDescription}
-              setValue={setCategoryDescription}
-              placeholder="Enter Category description (optional)"
-              containerStyle={styles.input}
-              onPress={() => {}}
-            />
-
-            <CategoryDropdown
-              categories={categoryList.filter((cat) => cat.id !== editingCategoryId)}
-              selectedCategory={parentCategory}
-              setSelectedCategory={setParentCategory}
-              containerStyle={{ borderColor: colors.primary }}
-              placeholder="Select parent category (optional)"
-            />
-
-            {/* Image Selection Section */}
-            <View style={styles.imageSection}>
-              <Text style={styles.imageLabel}>Category Images</Text>
-
-              <TouchableOpacity style={styles.imagePickerButton} onPress={showImageOptions}>
-                <Ionicons name="camera" size={24} color={colors.primary} />
-                <Text style={styles.imagePickerText}>Add Image</Text>
-              </TouchableOpacity>
-
-              {/* Image Preview */}
-              {categoryImages.length > 0 && (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.imagePreviewContainer}
+      {isTabOrDesktop ? (
+        <View style={{ flex: 1 }}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+            <View style={styles.listSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
+                
+                {/* Desktop/Tablet: Show button to redirect to add category page */}
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => {
+                    redirectToPage(containers.AdminAddCategoriesWebScreen);
+                  }}
                 >
-                  {categoryImages.map((image, index) => (
-                    <React.Fragment key={index}>
-                      <View style={styles.imagePreviewItem}>
-                        <Image source={{ uri: image.uri }} style={styles.previewImage} />
-                        <TouchableOpacity
-                          style={styles.removeImageButton}
-                          onPress={() => removeImage(index)}
-                        >
-                          <Ionicons name="close-circle" size={24} color={colors.primaryRed} />
+                  <Text style={styles.addButtonText}>+ Add New Category</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.listContainer}>
+                <View style={{ marginBottom: 12 }}>
+                  <SearchBar
+                    placeholder="Search categories..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleCategorySearch}
+                    onPress={handleCategorySearch}
+                    widthPercent={35}
+                    height={40}
+                  />
+                </View>
+                <View>
+                  {paginatedCategories.map((categoryItem: Category, index: number) => (
+                    <View
+                      key={categoryItem.id || index}
+                      style={[
+                        styles.categoryItem,
+                        editingCategoryId === categoryItem.id && styles.editingCategoryItem,
+                      ]}
+                    >
+                      <TouchableOpacity
+                        style={styles.categoryContent}
+                        onPress={() => handleEditCategory(categoryItem)}
+                        activeOpacity={0.7}
+                      >
+                        {categoryItem.images && categoryItem.images.length > 0 && (
+                          <Image
+                            source={{ uri: categoryItem.images[0] }}
+                            style={styles.categoryImage}
+                            resizeMode="cover"
+                          />
+                        )}
+                        <View style={styles.categoryInfo}>
+                          <Text style={styles.categoryName}>{categoryItem.name}</Text>
+                          {categoryItem.description && (
+                            <Text style={styles.categoryDescription}>{categoryItem.description}</Text>
+                          )}
+                          <Text style={styles.categoryId}>
+                            ID: {categoryItem.id} | Parent:{" "}
+                            {getParentCategoryName(categoryItem.parentCategory, categoryList)}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                      
+                      <View style={styles.categoryActions}>
+                        {editingCategoryId === categoryItem.id && (
+                          <Text style={styles.editingLabel}>Editing</Text>
+                        )}
+                        <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                          <Ionicons name="create-outline" size={20} color={colors.primary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                          <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
                         </TouchableOpacity>
                       </View>
-                    </React.Fragment>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-
-            <TouchableOpacity
-              style={[styles.addButton, loading && styles.disabledButton]}
-              onPress={handleAddCategory}
-              disabled={loading}
-            >
-              <Text style={styles.addButtonText}>
-                {loading
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Adding..."
-                  : isEditMode
-                  ? "Update Category"
-                  : "Add Category"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.listSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
-            
-            {/* Desktop/Tablet: Show button to redirect to add category page */}
-            {isTabOrDesktop && (
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  redirectToPage(containers.AdminAddCategoriesWebScreen);
-                }}
-              >
-                <Text style={styles.addButtonText}>+ Add New Category</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <ScrollView style={styles.listContainer}>
-            {isTabOrDesktop && (
-              <View style={{ marginBottom: 12 }}>
-                <SearchBar
-                  placeholder="Search categories..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleCategorySearch}
-                  onPress={handleCategorySearch}
-                  widthPercent={35}
-                  height={40}
-                />
-              </View>
-            )}
-            <View>
-              {paginatedCategories.map((categoryItem: Category, index: number) => (
-                <View
-                  key={categoryItem.id || index}
-                  style={[
-                    styles.categoryItem,
-                    editingCategoryId === categoryItem.id && styles.editingCategoryItem,
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={styles.categoryContent}
-                    onPress={() => handleEditCategory(categoryItem)}
-                    activeOpacity={0.7}
-                  >
-                    {categoryItem.images && categoryItem.images.length > 0 && (
-                      <Image
-                        source={{ uri: categoryItem.images[0] }}
-                        style={styles.categoryImage}
-                        resizeMode="cover"
-                      />
-                    )}
-                    <View style={styles.categoryInfo}>
-                      <Text style={styles.categoryName}>{categoryItem.name}</Text>
-                      {categoryItem.description && (
-                        <Text style={styles.categoryDescription}>{categoryItem.description}</Text>
-                      )}
-                      <Text style={styles.categoryId}>
-                        ID: {categoryItem.id} | Parent:{" "}
-                        {getParentCategoryName(categoryItem.parentCategory, categoryList)}
-                      </Text>
                     </View>
-                  </TouchableOpacity>
-                  
-                  <View style={styles.categoryActions}>
-                    {editingCategoryId === categoryItem.id && (
-                      <Text style={styles.editingLabel}>Editing</Text>
-                    )}
-                    <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
-                      <Ionicons name="create-outline" size={20} color={colors.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
-                      <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
-                    </TouchableOpacity>
-                  </View>
+                  ))}
+                  {categoryList.length === 0 && (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyText}>No categories found</Text>
+                    </View>
+                  )}
                 </View>
-              ))}
-              {categoryList.length === 0 && (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyText}>No categories found</Text>
-                </View>
-              )}
+              </View>
             </View>
           </ScrollView>
           
-          {/* Pagination for web/tablet only */}
+          {/* Pagination for web/tablet only - outside ScrollView */}
           {isTabOrDesktop && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
@@ -641,7 +553,157 @@ const AdminCategories = () => {
             </View>
           )}
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {!isTabOrDesktop && (
+            <View style={styles.formContainer}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>
+                  {isEditMode ? "Edit Category" : "Add New Category"}
+                </Text>
+                {isEditMode && (
+                  <TouchableOpacity onPress={handleCancelEdit} style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <CustomTextInput
+                value={categoryName}
+                setValue={setCategoryName}
+                placeholder="Enter Category name *"
+                containerStyle={styles.input}
+                onPress={() => {}}
+              />
+
+              <CustomTextInput
+                value={categoryDescription}
+                setValue={setCategoryDescription}
+                placeholder="Enter Category description (optional)"
+                containerStyle={styles.input}
+                onPress={() => {}}
+              />
+
+              <CategoryDropdown
+                categories={categoryList.filter((cat) => cat.id !== editingCategoryId)}
+                selectedCategory={parentCategory}
+                setSelectedCategory={setParentCategory}
+                containerStyle={{ borderColor: colors.primary }}
+                placeholder="Select parent category (optional)"
+              />
+
+              {/* Image Selection Section */}
+              <View style={styles.imageSection}>
+                <Text style={styles.imageLabel}>Category Images</Text>
+
+                <TouchableOpacity style={styles.imagePickerButton} onPress={showImageOptions}>
+                  <Ionicons name="camera" size={24} color={colors.primary} />
+                  <Text style={styles.imagePickerText}>Add Image</Text>
+                </TouchableOpacity>
+
+                {/* Image Preview */}
+                {categoryImages.length > 0 && (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.imagePreviewContainer}
+                  >
+                    {categoryImages.map((image, index) => (
+                      <React.Fragment key={index}>
+                        <View style={styles.imagePreviewItem}>
+                          <Image source={{ uri: image.uri }} style={styles.previewImage} />
+                          <TouchableOpacity
+                            style={styles.removeImageButton}
+                            onPress={() => removeImage(index)}
+                          >
+                            <Ionicons name="close-circle" size={24} color={colors.primaryRed} />
+                          </TouchableOpacity>
+                        </View>
+                      </React.Fragment>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={[styles.addButton, loading && styles.disabledButton]}
+                onPress={handleAddCategory}
+                disabled={loading}
+              >
+                <Text style={styles.addButtonText}>
+                  {loading
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Adding..."
+                    : isEditMode
+                    ? "Update Category"
+                    : "Add Category"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.listSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
+            </View>
+            <ScrollView style={styles.listContainer}>
+              <View>
+                {paginatedCategories.map((categoryItem: Category, index: number) => (
+                  <View
+                    key={categoryItem.id || index}
+                    style={[
+                      styles.categoryItem,
+                      editingCategoryId === categoryItem.id && styles.editingCategoryItem,
+                    ]}
+                  >
+                    <TouchableOpacity
+                      style={styles.categoryContent}
+                      onPress={() => handleEditCategory(categoryItem)}
+                      activeOpacity={0.7}
+                    >
+                      {categoryItem.images && categoryItem.images.length > 0 && (
+                        <Image
+                          source={{ uri: categoryItem.images[0] }}
+                          style={styles.categoryImage}
+                          resizeMode="cover"
+                        />
+                      )}
+                      <View style={styles.categoryInfo}>
+                        <Text style={styles.categoryName}>{categoryItem.name}</Text>
+                        {categoryItem.description && (
+                          <Text style={styles.categoryDescription}>{categoryItem.description}</Text>
+                        )}
+                        <Text style={styles.categoryId}>
+                          ID: {categoryItem.id} | Parent:{" "}
+                          {getParentCategoryName(categoryItem.parentCategory, categoryList)}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    <View style={styles.categoryActions}>
+                      {editingCategoryId === categoryItem.id && (
+                        <Text style={styles.editingLabel}>Editing</Text>
+                      )}
+                      <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                        <Ionicons name="create-outline" size={20} color={colors.primary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                        <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+                {categoryList.length === 0 && (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyText}>No categories found</Text>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </ScrollView>
+      )}
 
       {/* Success Modal */}
       <ConfirmationModal
@@ -912,6 +974,7 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
     shadowOpacity: 0,
     elevation: 0,
+    zIndex: 10,
   },
 });
 
