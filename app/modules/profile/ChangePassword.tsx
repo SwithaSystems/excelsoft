@@ -29,6 +29,7 @@ const changePasswordScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
+  const [currentPasswordError, setCurrentPasswordError] = useState("");
   const user = useSelector((state: any) => state.user.user);
   const { width } = useWindowDimensions();
   const isTabOrDesktop = width >= 768;
@@ -90,10 +91,9 @@ const changePasswordScreen = () => {
       const isMatch = await comparePasswords(currPassword, existingPassword);
       // console.log("isMatch", isMatch);
       if (!isMatch) {
-        showErrorAlert({
-          title: "Error",
-          message: INCORRECT_CURRENT_PASSWORD,
-        });
+        setCurrentPasswordError(INCORRECT_CURRENT_PASSWORD);
+      } else {
+        setCurrentPasswordError("");
       }
     } catch (error) {
       console.error("Error comparing passwords:", error);
@@ -101,8 +101,7 @@ const changePasswordScreen = () => {
   };
 
   const handleChangePassword = async () => {
-    // console.log("=== Starting password change ===");
-    // console.log({ currPassword, newPassword, confirmPassword, existingPassword });
+    setCurrentPasswordError("");
     
     if (!currPassword || !newPassword || !confirmPassword) {
       // console.log("Validation failed: Missing fields");
@@ -120,7 +119,7 @@ const changePasswordScreen = () => {
         const isCurrentPasswordValid = await comparePasswords(currPassword, existingPassword);
         // console.log("Current password validation result:", isCurrentPasswordValid);
         if (!isCurrentPasswordValid) {
-          // console.log("Current password validation failed");
+          setCurrentPasswordError(INCORRECT_CURRENT_PASSWORD);
           showErrorAlert({
             title: "Error",
             message: INCORRECT_CURRENT_PASSWORD,
@@ -193,6 +192,12 @@ const changePasswordScreen = () => {
       console.error("Error response:", err?.response);
       console.error("Error response data:", err?.response?.data);
       const errorMessage = err?.response?.data?.message || err?.message || "Failed to change password";
+      
+      if (errorMessage.toLowerCase().includes("current password") || 
+          errorMessage.toLowerCase().includes("incorrect password")) {
+        setCurrentPasswordError(INCORRECT_CURRENT_PASSWORD);
+      }
+      
       showErrorAlert({
         title: "Error",
         message: errorMessage,
@@ -231,9 +236,17 @@ const changePasswordScreen = () => {
                   placeholder="Enter your current Password"
                   value={currPassword}
                   onPress={() => {}}
-                  setValue={setCurrPassword}
+                  setValue={(value) => {
+                    setCurrPassword(value);
+                    setCurrentPasswordError("");
+                  }}
                   onblur={handleBlur}
                 />
+                {currentPasswordError && (
+                  <Text style={[globalStyles.errorText, { marginTop: 4 }]}>
+                    {currentPasswordError}
+                  </Text>
+                )}
               </View>
             </View>
             <View style={globalStyles.profileInputContainer}>

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
@@ -30,6 +31,9 @@ import {
   DUPLICATE_ADDRESS,
 } from "../../../constants/customErrorMessages";
 import colors from "@/constants/colors";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -60,6 +64,9 @@ const addAddressScreen = () => {
     phoneNumber?: string;
     general?: string;
   }>({});
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
 
   // Load existing address data if in edit mode
   useEffect(() => {
@@ -442,18 +449,25 @@ const addAddressScreen = () => {
     }
   };
 
+    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+    const HeaderComponent = isTabOrDesktop ? (
+      <BrandHeaderWeb />
+    ) : (
+      <Header
+        headerText={
+          isEditMode ? EDIT_ADDRESS_SCREEN_TITLE : ADD_ADDRESS_SCREEN_TITLE
+        }
+      />
+    );
+    const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+
   return (
-    <PageLayout
+    <LayoutComponent
+      scrollable={true}
       hasHeader
-      hasFooter={false}
-      scrollable
-      headerComponent={
-        <Header
-          headerText={
-            isEditMode ? EDIT_ADDRESS_SCREEN_TITLE : ADD_ADDRESS_SCREEN_TITLE
-          }
-        />
-      }
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
         <ScrollView>
@@ -574,7 +588,6 @@ const addAddressScreen = () => {
             onPress={handleSubmit}
             disabled={isSubmitting}
           >
-            s
             <Text style={styles.buttonText}>
               {isSubmitting
                 ? `${isEditMode ? "Updating" : "Adding"} Address...`
@@ -583,7 +596,7 @@ const addAddressScreen = () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
