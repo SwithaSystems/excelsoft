@@ -7,7 +7,7 @@ import {
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, Platform, useWindowDimensions } from "react-native";
 import OrderTimeline from "./Components/OrderTimeline";
 import styles from "./DeliveryTrackingStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -17,6 +17,9 @@ import colors from "../../../constants/colors";
 import { orderService } from "@/services/orderService";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
@@ -189,18 +192,32 @@ const deliveryTrackingScreen = () => {
   // Get the appropriate statuses for display
   const displayStatuses = getOrderedStatusesForTimeline();
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting={from === "admin"} />
+  ) : (
+    <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} needResetNavigation={false} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : from === "admin" ? (
+    <AdminFooter />
+  ) : (
+    <Footer navigation={router} />
+  );
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasFooter
       hasHeader
       scrollable
-      headerComponent={
-        <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE}
-        needResetNavigation = {false}
-      />}
-      footerComponent={
-        from === "admin" ? <AdminFooter /> : <Footer navigation={router} />
-      }
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      hideNavItems={from === "admin"}
     >
       <View style={[globalStyles.container]}>
         <View>
@@ -252,7 +269,7 @@ const deliveryTrackingScreen = () => {
           )}
         </View>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

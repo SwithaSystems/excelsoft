@@ -6,6 +6,7 @@ import {
   Alert,
   Keyboard,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AdminOrderDetailStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -18,6 +19,9 @@ import { orderService } from "@/services/orderService";
 import { addressService } from "@/services/addressService";
 import { ProductsAPI } from "@/services/productService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
   ADMIN_ORDER_DETAIL_SCREEN_TITLE,
   DELIVERY_MODE_HOME,
@@ -175,13 +179,26 @@ const AdminOrderDetail = () => {
 
   const shouldShowReasonField = statusesRequiringReason.includes(status);
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />}
+      headerComponent={HeaderComponent}
       hasFooter
-      footerComponent={<AdminFooter />}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
       scrollable={false}
+      hideNavItems={true}
     >
       <KeyBoardWrapper>
         <ScrollView
@@ -378,7 +395,7 @@ const AdminOrderDetail = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
