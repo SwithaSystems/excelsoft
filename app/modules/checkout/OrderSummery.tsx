@@ -961,7 +961,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   sectionHeadingStyle={styles.compactOrderSummaryHeading}
                 />
                 {/* Place Order Button */}
-                {isTabOrDesktop && <StripeCardInput />}
+                {isWeb && <StripeCardInput />}
 
                 <Button
                   title="Proceed for Payment"
@@ -1197,6 +1197,11 @@ Contact Number: ${pickupAddress.phone || ""}`;
             <Text style={styles.noteText}>
               *please select a billing address before proceeding to payment
             </Text>
+            {isWeb && (
+              <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+                <StripeCardInput />
+              </View>
+            )}
             <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
               <Button
                 title="Proceed for Payment"
@@ -1206,9 +1211,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     // Check if total is less than MOV
                     const currentTotal = cartItems.reduce(
                       (sum: number, item: any) => {
-                        return (
-                          sum + (item.price) * item.quantity
-                        );
+                        return sum + item.price * item.quantity;
                       },
                       0
                     );

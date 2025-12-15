@@ -73,7 +73,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [promotionsLoading, setPromotionsLoading] = useState(false);
-  const [carousalEnabled, setCarousalEnabled] = useState(true);
+  const [carousalEnabled, setCarousalEnabled] = useState(false);
   const router = useRouter();
 
   const { width } = useWindowDimensions();
@@ -186,11 +186,11 @@ const HomePage = () => {
             const subCategories = await categoryService.getAllSubCategories(
               parentCategory.id
             );
-            
+
             // console.log("Available subcategories:", subCategories.map(s => s.name));
-            
-            const subCategory = subCategories.find(
-              (subCat) => categoryNamesMatch(subCat.name, subCategoryName)
+
+            const subCategory = subCategories.find((subCat) =>
+              categoryNamesMatch(subCat.name, subCategoryName)
             );
 
             if (subCategory) {
@@ -232,7 +232,6 @@ const HomePage = () => {
           });
         }
       } else if (item.link) {
-        // External link - open in browser
         // console.log("Opening external link:", item.link);
         if (Platform.OS === "web") {
           window.open(item.link, "_blank");
