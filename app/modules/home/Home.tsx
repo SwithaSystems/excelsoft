@@ -77,8 +77,8 @@ const HomePage = () => {
   const router = useRouter();
 
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
-  const isTabOrDesktop = width >= 768;
+const isTabOrDesktop = Platform.OS === 'web';
+const isMobile = !isTabOrDesktop;
 
   const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
   const FooterComponent = isTabOrDesktop ? (

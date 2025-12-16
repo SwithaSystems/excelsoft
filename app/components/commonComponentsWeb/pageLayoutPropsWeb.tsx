@@ -24,7 +24,7 @@ interface PageLayoutWebProps {
   scrollable?: boolean;
   backgroundColor?: string;
   contentPadding?: boolean;
-  hideNavItems?: boolean; 
+  hideNavItems?: boolean;
   userSidebar?: boolean;
 }
 
@@ -43,34 +43,26 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   userSidebar = false,
 }) => {
   const { width, height } = useWindowDimensions();
-  const { isAdmin, loading } = useRoleContext();
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
+  const { isAdmin } = useRoleContext();
 
-  const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
+  const horizontalPadding = Math.max(
+    24,
+    Math.min(width * 0.05, 80)
+  );
+
   const ContentWrapper = scrollable ? ScrollView : View;
 
-  const headerHeight = isDesktop ? 68 + 50 : isTablet ? 56 + 50 : 52 + 50;
-  const navBarHeight = 50;
-  const totalHeaderHeight = headerHeight + navBarHeight;
-// console.log({isAdmin})
+  const headerHeight = 68 + 50; 
+  const sidebarWidth = 240;
 
   return (
     <View style={[styles.root, { backgroundColor, minHeight: height }]}>
       {/* HEADER */}
       {hasHeader && (
-        <View style={[styles.headerContainer, Platform.OS === "web" && {
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10000,
-          overflow: "visible",
-        }]}>
+        <View style={styles.headerContainer}>
           <View style={styles.topHeader}>{headerComponent}</View>
-
           <View style={styles.navbarWrapper}>
-            <HeaderNavBar hideNavItems={hideNavItems}/>
+            <HeaderNavBar hideNavItems={hideNavItems} />
           </View>
         </View>
       )}
@@ -78,28 +70,20 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
       <View
         style={[
           styles.mainContainer,
-          hasHeader && { marginTop: Platform.OS === "web" ? headerHeight : totalHeaderHeight },
+          hasHeader && { marginTop: headerHeight },
         ]}
       >
         {hasSidebar && (
-          <View
-            style={[
-              styles.sidebar,
-              {
-                width: isDesktop ? 240 : isTablet ? 200 : 0,
-              },
-            ]}
-          >
-        {sidebarComponent ? (
-          sidebarComponent
-        ) : userSidebar ? (
-          <UserSidebarWeb />
-        ) : isAdmin ? (
-          <AdminSidebarWeb />
-        ) : (
-          <UserSidebarWeb />
-        )}
-
+          <View style={[styles.sidebar, { width: sidebarWidth }]}>
+            {sidebarComponent ? (
+              sidebarComponent
+            ) : userSidebar ? (
+              <UserSidebarWeb />
+            ) : isAdmin ? (
+              <AdminSidebarWeb />
+            ) : (
+              <UserSidebarWeb />
+            )}
           </View>
         )}
 
@@ -119,11 +103,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
       </View>
 
       {/* FOOTER */}
-      {hasFooter && (
-        <View style={styles.footer}>
-          {footerComponent}
-        </View>
-      )}
+      {hasFooter && <View style={styles.footer}>{footerComponent}</View>}
     </View>
   );
 };
@@ -136,23 +116,20 @@ const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     backgroundColor: colors.white,
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10000,
-    overflow: "visible",
   },
   topHeader: {
-    width: "100%",
-    backgroundColor: colors.white,
     borderBottomColor: colors.lightgrey,
     borderBottomWidth: 1,
-    position: "relative",
-    zIndex: 10001, // Higher than navbarWrapper to allow dropdown to appear above
-    overflow: "visible",
+    zIndex: 10001,
   },
   navbarWrapper: {
-    width: "100%",
     backgroundColor: colors.primary,
-    overflow: "visible",
-    zIndex: 9998, // Lower than topHeader to allow search dropdown above
+    zIndex: 9998,
   },
   mainContainer: {
     flex: 1,
@@ -161,7 +138,6 @@ const styles = StyleSheet.create({
   sidebar: {
     backgroundColor: colors.white,
     padding: 16,
-    overflow: "hidden",
   },
   content: {
     flex: 1,

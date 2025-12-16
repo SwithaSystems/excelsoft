@@ -232,7 +232,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
-        <View style={styles.scrollContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+
           {navItems.map((item, index) => (
             <View key={index} style={styles.itemWrapper}>
               <TouchableOpacity
@@ -295,7 +300,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               )}
             </View>
           ))}
-        </View>
+        </ScrollView>
         {renderAuthButtons()}
       </View>
       {showDropdown && (
@@ -346,11 +351,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingBottom: 4,
-    flexWrap: "wrap",
-    flex: 1,
+    // flexWrap: "wrap",
+    flexGrow: 1,
   },
   itemWrapper: {
-    marginRight: 20,
+    marginRight: 16,
     position: "relative",
     zIndex: 100,
   },
@@ -420,6 +425,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingRight: 16,
     gap: 12,
+    flexShrink: 0,
   },
   authButton: {
     flexDirection: "row",
