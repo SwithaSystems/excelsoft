@@ -1042,7 +1042,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       if (total < mov) {
                         showAlert(
                           "Minimum Order Not Met",
-                          `Your order value ($${total.toFixed(2)}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
+                          `Your order value (£${total.toFixed(2)}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
                         );
                         return;
                       }
@@ -1287,9 +1287,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     if (currentTotal < mov) {
                       showAlert(
                         "Minimum Order Not Met",
-                        `Your order value ($${currentTotal.toFixed(
+                        `Your order value (£${currentTotal.toFixed(
                           2
-                        )}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
+                        )}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
                       );
                       return;
                     }
