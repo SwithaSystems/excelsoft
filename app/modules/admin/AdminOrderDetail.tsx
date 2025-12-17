@@ -179,16 +179,17 @@ const AdminOrderDetail = () => {
 
   const shouldShowReasonField = statusesRequiringReason.includes(status);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const { width } = useWindowDimensions();
+  // const isTabOrDesktop = width >= 768;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const isWeb = Platform.OS === "web";
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_ORDER_DETAIL_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter />;
 
   return (
     <LayoutComponent
@@ -196,7 +197,7 @@ const AdminOrderDetail = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable={false}
       hideNavItems={true}
     >
