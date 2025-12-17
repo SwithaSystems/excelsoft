@@ -37,8 +37,8 @@ const AdminDashboard = () => {
   const userData = useSelector((state: any) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const { width } = useWindowDimensions();
+  // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   const fetchUser = async () => {
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
           <View
             style={[
               styles.eachOrderItem,
-              isTabOrDesktop && {
+              isWeb && {
                 backgroundColor: "white",
                 borderRadius: 12,
                 borderWidth: 1,
@@ -319,7 +319,7 @@ const AdminDashboard = () => {
                       : item.status === "Returned"
                       ? styles.returned
                       : styles.defaultStatus,
-                    isTabOrDesktop && {
+                    isWeb && {
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderRadius: 12,
@@ -341,7 +341,7 @@ const AdminDashboard = () => {
     <View style={[globalStyles.pt_0]}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
-        {!isTabOrDesktop && (
+        {!isWeb && (
           <Text
             style={styles.linkText}
             onPress={() => {
@@ -356,7 +356,7 @@ const AdminDashboard = () => {
       <View
         style={[
           styles.metricsContainer,
-          isTabOrDesktop && {
+          isWeb && {
             flexDirection: "row",
             justifyContent: "space-between",
             flexWrap: "wrap",
@@ -367,7 +367,7 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            isWeb && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -393,7 +393,7 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            isWeb && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -410,7 +410,7 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            isWeb && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -437,7 +437,7 @@ const AdminDashboard = () => {
           <View
             style={[
               styles.metricBox,
-              isTabOrDesktop && { width: "32%", minHeight: 65 },
+              isWeb && { width: "32%", minHeight: 65 },
             ]}
           >
             <View style={styles.metricIconContainer}>
@@ -462,14 +462,14 @@ const AdminDashboard = () => {
     </View>
   );
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <BrandHeader hideUserGreeting={true} />
   );
 
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <AdminFooter activeTab="home" />
@@ -480,7 +480,7 @@ const AdminDashboard = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >

@@ -2,17 +2,20 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
+import { Platform } from "react-native";
+
 
 const FooterWeb = () => {
-  const { width } = useWindowDimensions();
+  // const { width } = useWindowDimensions();
 
-  const isTablet = width < 900;
+  // const isTablet = width < 900;
+  const isWeb = Platform.OS === "web";
 
   return (
     <View
       style={[
         styles.footerContainer,
-        isTablet && styles.footerContainerTablet,
+        isWeb && styles.footerContainerTablet,
       ]}
     >
       <View style={styles.leftSection}>
@@ -24,7 +27,7 @@ const FooterWeb = () => {
       </View>
 
       {/* Middle Section - Links */}
-      <View style={[styles.middleSection, isTablet && styles.middleSectionTablet]}>
+      <View style={[styles.middleSection, isWeb && styles.middleSectionTablet]}>
         <TouchableOpacity>
           <Text style={styles.linkText}>Home</Text>
         </TouchableOpacity>

@@ -63,21 +63,21 @@ const allNavItems: NavItem[] = [
     dropdownType: 'quicklinks',
     requiresAuth: true, 
   },
-  {
-    label: "Feedback",
-    onPress: () => redirectToPage(containers.feedbackScreen),
-    requiresAuth: false,
-  },
+  // {
+  //   label: "Feedback",
+  //   onPress: () => redirectToPage(containers.feedbackScreen),
+  //   requiresAuth: false,
+  // },
   {
     label: "Customer Service",
     onPress: () => redirectToPage(containers.customerSupportScreen),
     requiresAuth: false,
   },
-  {
-    label: "My Accounts",
-    onPress: () => redirectToPage(containers.editProfileScreen),
-    requiresAuth: true, 
-  },
+  // {
+  //   label: "My Accounts",
+  //   onPress: () => redirectToPage(containers.editProfileScreen),
+  //   requiresAuth: true, 
+  // },
 ];
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
@@ -232,12 +232,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
-        <ScrollView
+        {/* <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
-        >
-
+        > */}
+        <View style={styles.scrollContainer}>
           {navItems.map((item, index) => (
             <View key={index} style={styles.itemWrapper}>
               <TouchableOpacity
@@ -300,7 +300,8 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               )}
             </View>
           ))}
-        </ScrollView>
+        {/* </ScrollView> */}
+        </View>
         {renderAuthButtons()}
       </View>
       {showDropdown && (
