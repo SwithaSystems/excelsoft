@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: colors.black,
+    flex: 1,
     marginBottom: 8,
   },
   exclusiveDetails: {},
@@ -343,12 +344,12 @@ const styles = StyleSheet.create({
   webRightSection: {
     flex: 0.5,
   },
-  webProductHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
+webProductHeader: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: 12,
+},
   webProductTitle: {
     fontSize: 28,
     fontWeight: "bold",
