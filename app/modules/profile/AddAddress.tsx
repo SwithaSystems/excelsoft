@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
@@ -30,6 +31,9 @@ import {
   DUPLICATE_ADDRESS,
 } from "../../../constants/customErrorMessages";
 import colors from "@/constants/colors";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const addAddressScreen = () => {
   const params = useLocalSearchParams();
@@ -45,10 +49,10 @@ const addAddressScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addressId, setAddressId] = useState("");
 
-  console.log("params", params);
+  // console.log("params", params);
   const from = params.from;
   const isEditMode = !!params.edit_address;
-  console.log("isEditMode", isEditMode);
+  // console.log("isEditMode", isEditMode);
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -61,6 +65,9 @@ const addAddressScreen = () => {
     general?: string;
   }>({});
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
   // Load existing address data if in edit mode
   useEffect(() => {
     if (isEditMode && params.edit_address) {
@@ -70,7 +77,7 @@ const addAddressScreen = () => {
             ? JSON.parse(params.edit_address)
             : params.edit_address;
 
-        console.log("Loading address for edit:", selectedAddress);
+        // console.log("Loading address for edit:", selectedAddress);
 
         setName(selectedAddress.name || "");
         setLine1(selectedAddress.line1 || "");
@@ -83,7 +90,7 @@ const addAddressScreen = () => {
         setIsDefault(selectedAddress.isDefault || false);
         setAddressId(selectedAddress._id || "");
 
-        console.log("Address data loaded successfully");
+        // console.log("Address data loaded successfully");
       } catch (error) {
         console.error("Error parsing address data:", error);
         showErrorAlert({
@@ -442,18 +449,25 @@ const addAddressScreen = () => {
     }
   };
 
+    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+    const HeaderComponent = isTabOrDesktop ? (
+      <BrandHeaderWeb />
+    ) : (
+      <Header
+        headerText={
+          isEditMode ? EDIT_ADDRESS_SCREEN_TITLE : ADD_ADDRESS_SCREEN_TITLE
+        }
+      />
+    );
+    const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+
   return (
-    <PageLayout
+    <LayoutComponent
+      scrollable={true}
       hasHeader
-      hasFooter={false}
-      scrollable
-      headerComponent={
-        <Header
-          headerText={
-            isEditMode ? EDIT_ADDRESS_SCREEN_TITLE : ADD_ADDRESS_SCREEN_TITLE
-          }
-        />
-      }
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
         <ScrollView>
@@ -574,7 +588,6 @@ const addAddressScreen = () => {
             onPress={handleSubmit}
             disabled={isSubmitting}
           >
-            s
             <Text style={styles.buttonText}>
               {isSubmitting
                 ? `${isEditMode ? "Updating" : "Adding"} Address...`
@@ -583,7 +596,7 @@ const addAddressScreen = () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

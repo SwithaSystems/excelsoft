@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, Dimensions } from "react-native";
+import { View, FlatList, Dimensions, useWindowDimensions } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
 import CategoryItem from "../../components/CategoryItem";
@@ -9,7 +9,10 @@ import Footer from "@/app/components/Footer";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService, Category } from "@/services/categoryService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import styles from "./CategoriesStyles";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -18,11 +21,15 @@ const categoriesScreen = () => {
   const [category, setCategory] = useState<Category>();
   const { categoryId } = useLocalSearchParams();
 
+  // Responsive design: detect if device is tablet or desktop
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
   useEffect(() => {
-    console.log("categoryId", categoryId);
+    // console.log("categoryId", categoryId);
     const fetchCategory = async () => {
       const data = await categoryService.getCategoryById(Number(categoryId));
-      console.log(data);
+      // console.log(data);
       setCategory(data);
     };
     fetchCategory();
@@ -32,7 +39,7 @@ const categoriesScreen = () => {
     const fetchAllCategories = async () => {
       try {
         const data = await categoryService.getAllCategories();
-        console.log(data);
+        // console.log(data);
         setAllCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -42,14 +49,21 @@ const categoriesScreen = () => {
     fetchAllCategories();
   }, []);
 
+  const numColumns = isTabOrDesktop ? 4 : 2;
+  // Use flex-basis percentage for responsive layout
+  const itemFlexBasis = isTabOrDesktop ? "23%" : "47%";
+
   const renderItem = ({ item, index }: { item: any; index: number }) => {
-    const isEven = index % 2 === 0;
     return (
       <View
         style={[
           styles.categoryItem,
-          isEven ? styles.leftItem : styles.rightItem,
-          { width: (screenWidth - 80) / 2 },
+          {
+            flexBasis: itemFlexBasis,
+            maxWidth: itemFlexBasis,
+            marginRight: isTabOrDesktop ? 15 : 0,
+            marginBottom: 16,
+          },
         ]}
       >
         <CategoryItem
@@ -67,13 +81,25 @@ const categoriesScreen = () => {
       </View>
     );
   };
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={category?.name} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer navigation={router} />
+  );
+
   return (
-    <PageLayout
+    <LayoutComponent
       scrollable
       hasHeader
       hasFooter
-      headerComponent={<Header headerText={category?.name} />}
-      footerComponent={<Footer />}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
     >
       <FlatList
         ListHeaderComponent={
@@ -82,11 +108,12 @@ const categoriesScreen = () => {
               data={allCategories}
               keyExtractor={(item: any) => item.id}
               renderItem={renderItem}
-              numColumns={2}
+              numColumns={numColumns}
+              key={numColumns}
               columnWrapperStyle={[
                 styles.row,
                 {
-                  justifyContent: "space-between",
+                  justifyContent: isTabOrDesktop ? "flex-start" : "space-between",
                 },
               ]}
               contentContainerStyle={styles.listContainer}
@@ -97,7 +124,7 @@ const categoriesScreen = () => {
         data={[]}
         renderItem={null}
       />
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

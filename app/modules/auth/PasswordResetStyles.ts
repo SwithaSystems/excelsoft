@@ -24,6 +24,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 10,
   },
+  passwordResetHeaderStyle: {
+    marginTop: 20,
+    paddingVertical: 10,
+  },
+  sectionContainerWeb: {
+    justifyContent: 'center',
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
+    marginTop: -100,
+  },
+  passwordResetHeaderTitle: {
+    fontSize: 35,
+    fontWeight: '700',
+  },
+  errorTextDesktop: {
+    marginTop: 4,
+  },
 });
 
 export default styles;

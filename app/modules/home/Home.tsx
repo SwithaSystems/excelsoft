@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Image,
   View,
-  TextInput,
   Text,
   TouchableOpacity,
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  useWindowDimensions,
+  Platform,
   StatusBar,
+  Linking,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -26,111 +28,268 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { categoryService, Category } from "../../../services/categoryService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import Button from "@/app/components/commonComponents/Button";
+import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
+import { promotionService } from "@/services/promotionService";
+import globalSettingsAPI from "@/services/globalSettingsService";
 
-// const recommendedProducts = products
-//   .filter((p) =>
-//     ["Greek Yogurt", "Baby Stroller", "Granola Bars"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.rating,
-//     reviews: product.noOfreviews,
-//     imageUrl: product.image,
-//   }));
+interface Promotion {
+  imageURL: string;
+  link?: string;
+  isInternalLink: boolean;
+  title?: string;
+  description?: string;
+}
 
-// const exclusiveOffers = products
-//   .filter((p) =>
-//     ["SUPERKINGS LIGHT 20", "WALKERS READY SALTED"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
-//     reviews: product.name === "Baby Stroller" ? 120 : 130,
-//     discount: product.name === "Baby Stroller" ? 120 : 8,
-//     netPrice: product.name === "Baby Stroller" ? 180 : 10,
-//     imageUrl: product.image,
-//     discount: product.name === "Baby Stroller" ? "20%" : "15%",
-//     saleEndsAt: "31-4-2024",
-//   }));
-
-// const bestSellers = products
-//   .filter((p) =>
-//     ["SOFTFRUITS", "JPS BLUE SK19", "OLD HOLBORN 50GRM"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     rating: product.rating,
-//     reviews: product.noOfreviews,
-//     imageUrl: product.image,
-//   }));
-
-// const featuredProducts = products
-//   .filter((p) =>
-//     ["CHESTERFIELD RED 20'S", "SNICKERS", "NESCAFE 100G"].includes(p.name)
-//   )
-//   .map((product) => ({
-//     id: product.id,
-//     title: product.name,
-//     description: product.description.slice(0, 20) + "...",
-//     imageUrl: product.image,
-//   }));
-
-// const recommendedProducts: any = [];
-const exclusiveOffers: any = [];
-const bestSellers: any = [];
-const featuredProducts: any = [];
+// const TEST_PROMOTIONS: Promotion[] = [
+//   {
+//     id: 1,
+//     image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
+//     link: "https://example.com/promo1",
+//     title: "Summer Sale",
+//     description: "Get 50% off on all items",
+//   },
+//   {
+//     id: 2,
+//     image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
+//     link: "https://example.com/promo2",
+//     title: "New Arrivals",
+//     description: "Check out our latest collection",
+//   },
+//   {
+//     id: 3,
+//     image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
+//     link: "https://example.com/promo3",
+//     title: "Special Offer",
+//     description: "Limited time only - Buy 2 Get 1 Free",
+//   },
+// ];
 
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [promotionsLoading, setPromotionsLoading] = useState(false);
+  const [carousalEnabled, setCarousalEnabled] = useState(false);
   const router = useRouter();
 
-  const handleBannerPress = (item: any, index: number) => {
-    redirectToPage(containers.offersScreen);
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const isTabOrDesktop = width >= 768;
+
+  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="home" />
+  );
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+
+  const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
+
+  const fetchGlobalSettings = async () => {
+    try {
+      const response = await globalSettingsAPI.getSettings();
+      // console.log("response global settings", response.data);
+      setCarousalEnabled(response.data?.displayCarousel);
+    } catch (error) {
+      console.error("Failed to fetch global settings:", error);
+      setCarousalEnabled(true);
+    }
   };
 
-  const renderBanner = () => <HeroBanner onBannerPress={handleBannerPress} />;
+  useEffect(() => {
+    fetchGlobalSettings();
+  }, []);
 
-  const renderFeaturedProducts = () => (
-    <View>
-      <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
-      <FlatList
-        horizontal
-        data={featuredProducts}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.featuredCard}
-            onPress={() =>
-              redirectToPage(containers.productDetailScreen, {
-                productId: item.id,
-              })
+  // Helper function to normalize category names for comparison
+  // Handles hyphens, underscores, extra spaces, case differences, and trailing 's'
+  const normalizeForComparison = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[-_]/g, " ") // Replace hyphens and underscores with spaces
+      .replace(/\s+/g, " ") // Collapse multiple spaces
+      .trim();
+  };
+
+  // More flexible matching that handles singular/plural differences
+  const categoryNamesMatch = (name1: string, name2: string) => {
+    const norm1 = normalizeForComparison(name1);
+    const norm2 = normalizeForComparison(name2);
+
+    // Exact match after normalization
+    if (norm1 === norm2) return true;
+
+    // Handle singular/plural by removing trailing 's' from each word
+    const removePlural = (str: string) =>
+      str
+        .split(" ")
+        .map((word) => word.replace(/s$/, ""))
+        .join(" ");
+    if (removePlural(norm1) === removePlural(norm2)) return true;
+
+    // Check if one contains the other (for partial matches like "electronic" vs "electronics")
+    const words1 = norm1.split(" ");
+    const words2 = norm2.split(" ");
+
+    // Check if all words match (ignoring trailing 's')
+    if (words1.length === words2.length) {
+      const allMatch = words1.every((w1, i) => {
+        const w2 = words2[i];
+        return w1 === w2 || w1.replace(/s$/, "") === w2.replace(/s$/, "");
+      });
+      if (allMatch) return true;
+    }
+
+    return false;
+  };
+
+  const handleBannerPress = useMemo(
+    () => async (item: any, index: number) => {
+      // console.log("item", item);
+      // item is from carouselData, which has: id, image, link, title, description, isInternalLink
+      if (item.isInternalLink && item.link) {
+        try {
+          // Parse the link format: "offers/electronics-sale" or just "offers"
+          const linkParts = item.link
+            .split("/")
+            .filter((part: string) => part.trim() !== "");
+          const parentCategoryName = linkParts[0] || item.title || "Offers";
+          const subCategoryName = linkParts[1] || null;
+
+          // console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
+
+          // Fetch all categories to find the parent category by name
+          const allCategories = await categoryService.getAllCategories();
+          const parentCategory = allCategories.find((cat) =>
+            categoryNamesMatch(cat.name, parentCategoryName)
+          );
+
+          if (!parentCategory) {
+            console.error(`Parent category "${parentCategoryName}" not found`);
+            // Fallback: redirect with the link as categoryId (original behavior)
+            redirectToPage(containers.searchResultsScreen, {
+              fromSearch: true,
+              category: parentCategoryName,
+              categoryId: item.link,
+            });
+            return;
+          }
+
+          // console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
+
+          // If there's a subcategory, find it
+          if (subCategoryName) {
+            const subCategories = await categoryService.getAllSubCategories(
+              parentCategory.id
+            );
+
+            // console.log("Available subcategories:", subCategories.map(s => s.name));
+
+            const subCategory = subCategories.find((subCat) =>
+              categoryNamesMatch(subCat.name, subCategoryName)
+            );
+
+            if (subCategory) {
+              // Navigate directly to the subcategory as the main category
+              redirectToPage(containers.searchResultsScreen, {
+                fromSearch: true,
+                category: subCategory.name,
+                categoryId: subCategory.id,
+              });
+              // // console.log(
+              //   `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
+              // );
+            } else {
+              // Subcategory not found, navigate to parent category only
+              console.warn(
+                `Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`
+              );
+              redirectToPage(containers.searchResultsScreen, {
+                fromSearch: true,
+                category: parentCategory.name,
+                categoryId: parentCategory.id,
+              });
             }
-          >
-            <Image source={item.imageUrl} style={styles.featuredImage} />
-            <Text style={styles.featuredTitle}>{item.title}</Text>
-            <Text style={styles.featuredDescription}>{item.description}</Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.productsList}
-      />
-    </View>
+          } else {
+            // No subcategory, navigate to parent category only
+            redirectToPage(containers.searchResultsScreen, {
+              fromSearch: true,
+              category: parentCategory.name,
+              categoryId: parentCategory.id,
+            });
+          }
+        } catch (error) {
+          console.error("Error processing carousel link:", error);
+          // Fallback: redirect with the link as categoryId (original behavior)
+          redirectToPage(containers.searchResultsScreen, {
+            fromSearch: true,
+            category: item.title || "Offers",
+            categoryId: item.link,
+          });
+        }
+      } else if (item.link) {
+        // console.log("Opening external link:", item.link);
+        if (Platform.OS === "web") {
+          window.open(item.link, "_blank");
+        } else {
+          // For mobile, use Linking API
+          Linking.openURL(item.link);
+        }
+      }
+    },
+    []
   );
+  const carouselData = useMemo(() => {
+    return promotions.map((promo, index) => ({
+      id: index + 1,
+      image: promo.imageURL,
+      link: promo.link,
+      title: promo.title,
+      description: "", // Add if you have description in your schema
+      isInternalLink: promo.isInternalLink, // Preserve the internal link flag
+      onPress: handleBannerPress, // Add the handler to each item
+    }));
+  }, [promotions, handleBannerPress]);
+
+  // const renderFeaturedProducts = () => (
+  //   <View>
+  //     <Text style={globalStyles.sectionTitleStyle}>Featured Products</Text>
+  //     <FlatList
+  //       horizontal
+  //       data={featuredProducts}
+  //       renderItem={({ item }) => (
+  //         <TouchableOpacity
+  //           style={styles.featuredCard}
+  //           onPress={() =>
+  //             redirectToPage(containers.productDetailScreen, {
+  //               productId: item.id,
+  //             })
+  //           }
+  //         >
+  //           <Image source={item.imageUrl} style={styles.featuredImage} />
+  //           <Text style={styles.featuredTitle}>{item.title}</Text>
+  //           <Text style={styles.featuredDescription}>{item.description}</Text>
+  //         </TouchableOpacity>
+  //       )}
+  //       keyExtractor={(item) => item.id}
+  //       showsHorizontalScrollIndicator={false}
+  //       contentContainerStyle={styles.productsList}
+  //     />
+  //   </View>
+  // );
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await categoryService.getAllCategories();
-        console.log("Categories:", data);
         const sortedData = data.sort((a, b) => {
-          if (a.name === "All") return -1; // put "All" at the top
+          if (a.name === "All") return -1;
           if (b.name === "All") return 1;
-          return a.id - b.id; // otherwise sort by id
+          return a.id - b.id;
         });
         setCategories(sortedData);
       } catch (error) {
@@ -139,83 +298,104 @@ const HomePage = () => {
         setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setPromotionsLoading(true);
+        const data = await promotionService.getAllPromotions();
+        setPromotions(data);
+        // console.log("Fetched promotions:", data);
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
+        // Optionally set empty array or show error message
+        setPromotions([]);
+      } finally {
+        setPromotionsLoading(false);
+      }
+    };
+    fetchPromotions();
+  }, []);
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
       hasFooter
-      headerComponent={<BrandHeader />}
-      footerComponent={<Footer activeTab="home" />}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
       scrollable
     >
       <View style={styles.container}>
         <Header />
 
-        {/* Categories */}
-        <View style={styles.categoriesContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : (
-            <FlatList
-              data={categories}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item: any) => item.id}
-              renderItem={({ item }) => (
-                <CategoryItem_Home
-                  name={item.name}
-                  imageUrl={item.images?.[0] || ""}
-                  onPress={() =>
-                    item.name === "All"
-                      ? redirectToPage(containers.categoriesScreen, {
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                      : redirectToPage(containers.searchResultsScreen, {
-                          fromSearch: true,
-                          category: item.name,
-                          categoryId: item.id,
-                        })
-                  }
-                />
-              )}
-            />
-          )}
-        </View>
-
-        {/* Banner */}
-        {/* <View>{renderBanner()}</View> */}
-
-        {/* Recommended Products */}
-        {/* <View>
-          <RecommendedProductsSlider
-            recommendedProducts={recommendedProducts}
-            sectionTitleStyle={globalStyles.sectionTitleStyle}
-            title="Recommended for You"
-          />
-        </View> */}
-
-        {/* Exclusive Offers */}
-        {/* <View>
-          <ExclusiveOffers exclusiveOffers={exclusiveOffers} />
-        </View> */}
-
-        {/* Best Sellers */}
-        {/* <View>
-          <RecommendedProductsSlider
-            recommendedProducts={bestSellers}
-            sectionTitleStyle={globalStyles.sectionTitleStyle}
-            title="Best Sellers"
-          />
-        </View> */}
-
-        {/* Featured Products */}
-        {/* {renderFeaturedProducts()} */}
+        {isMobile && (
+          <View style={styles.categoriesContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <FlatList
+                data={categories}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }) => (
+                  <CategoryItem_Home
+                    name={item.name}
+                    imageUrl={item.images?.[0] || ""}
+                    onPress={() =>
+                      item.name === "All"
+                        ? redirectToPage(containers.categoriesScreen, {
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                        : redirectToPage(containers.searchResultsScreen, {
+                            fromSearch: true,
+                            category: item.name,
+                            categoryId: item.id,
+                          })
+                    }
+                  />
+                )}
+              />
+            )}
+          </View>
+        )}
+        {/* <Button
+          title="Go to Upload Page"
+          onPress={() => redirectToPage(containers.uploadScreen)}
+        /> */}
+        {carousalEnabled && (
+          <View
+            style={[
+              styles.carouselSection,
+              isTabOrDesktop && { marginTop: 32 },
+            ]}
+          >
+            {promotionsLoading ? (
+              <View style={styles.carouselLoader}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : promotions.length > 0 ? (
+              <CarouselWeb
+                data={carouselData}
+                isPromotional={true}
+                showOverlay={true}
+                autoPlay={true}
+                autoPlayInterval={4500}
+                loop={true}
+                showArrows={true}
+                showIndicators={true}
+                width={carouselWidth}
+                height={isTabOrDesktop ? 420 : 230}
+                borderRadius={12}
+              />
+            ) : null}
+          </View>
+        )}
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
@@ -225,98 +405,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginVertical: 8,
   },
-
-  scrollView: {
-    flex: 1,
+  carouselSection: {
+    marginVertical: 16,
+    paddingHorizontal: 16,
   },
-  scrollContent: {
-    flexGrow: 1,
-  },
-
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.white,
-    borderTopColor: colors.placeholdergrey,
-    borderTopWidth: 1,
-  },
-
-  recommendedCard: {
-    width: 160,
-    height: 180,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  recommendedImage: {
-    width: "100%",
-    height: 120,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  recommendedTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  recommendedDetails: {
-    marginLeft: 16,
-  },
-  bestSellerCard: {
-    width: 160,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  bestSellerImage: {
-    width: "100%",
-    height: 130,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  bestSellerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-    marginLeft: 16,
-  },
-  featuredCard: {
-    width: 180,
-    marginRight: 15,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 10,
-  },
-  featuredImage: {
-    width: "100%",
-    height: 140,
-    marginBottom: 8,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  featuredTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginHorizontal: 16,
-  },
-  featuredDescription: {
-    fontSize: 12,
-    color: colors.reviewsColor,
-    marginHorizontal: 16,
-    paddingBottom: 8,
-  },
-  featuredDescriptionText: {
-    fontSize: 14,
-    color: colors.lightgrey,
-    marginLeft: 10,
-    marginBottom: 10,
-  },
-  productsList: {
-    paddingRight: 10,
-    paddingBottom: 10,
+  carouselLoader: {
+    height: 230,
+    justifyContent: "center",
+    alignItems: "center",
   },
   categoriesContainer: {
     paddingTop: 8,

@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -33,34 +34,69 @@ import ProductCard from "../../components/ProductCard";
 import SaveItemFav from "./Components/SaveItem_fav";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./SavedItemStyles";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
   const savedItems = useSelector(selectSavedItems);
 
-  console.log("saved Items before", savedItems);
+  // console.log("saved Items before", savedItems);
 
   const handleMoveToCart = (item: any) => {
-    console.log("item", item);
-    console.log("hi from handlemoveto cart");
+    // console.log("item", item);
+    // console.log("hi from handlemoveto cart");
     dispatch(addToCart(item));
     dispatch(moveToCart(item.id));
-    console.log("saved Items", savedItems);
+    // console.log("saved Items", savedItems);
   };
 
   const handleDelete = (item: any) => {
     dispatch(removeFromSavedItems(item.id));
   };
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={SAVED_ITEMS_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="saved" />
+  );
+
   return (
-    <PageLayout
-      scrollable
-      hasFooter
+    <LayoutComponent
       hasHeader
-      footerComponent={<Footer activeTab="saved" />}
-      headerComponent={<Header headerText={SAVED_ITEMS_SCREEN_TITLE} />}
+      hasFooter
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
+      scrollable
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <View style={globalStyles.container}>
+              {isTabOrDesktop && (
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "300",
+            marginBottom: 20,
+            color: colors.black,
+            textAlign: "center",
+            width: "100%",
+            // marginTop: 20,
+          }}
+        >
+          {SAVED_ITEMS_SCREEN_TITLE}
+        </Text>
+      )}
         <ScrollView>
           <View style={[globalStyles.pt_0]}>
             {savedItems.map((item: any) => {
@@ -99,7 +135,7 @@ const savedItemScreen = () => {
           </View>
         </ScrollView>
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

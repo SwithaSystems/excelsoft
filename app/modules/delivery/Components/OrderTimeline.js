@@ -6,11 +6,12 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 const OrderTimeline = (props) => {
   const statusList = props.statusList;
   const reason = props.reason;
+  const compact = props.compact || false;
   // const from = props.from;
   const currentStatus = statusList.indexOf(props?.actualStatus);
   const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
-  console.log("currentStatus", currentStatus);
-  console.log("statusList", statusList);
+  // console.log("currentStatus", currentStatus);
+  // console.log("statusList", statusList);
 
   const icons = [
     "cart-outline",
@@ -41,18 +42,27 @@ const OrderTimeline = (props) => {
           const isActive = index <= currentStatus;
 
           if (isCurrent && isNegative) {
-            console.log("Reason received in props:", reason);
-            console.log("Actual Status:", props.actualStatus);
-            console.log("Is Negative?", isNegative);
+            // console.log("Reason received in props:", reason);
+            // console.log("Actual Status:", props.actualStatus);
+            // console.log("Is Negative?", isNegative);
           }
 
+          const itemMarginBottom = compact ? 40 : 90;
+          const lineHeight = compact ? 40 : 90;
+          const circleSize = compact ? 32 : 40;
+          const iconSize = compact ? 18 : 24;
+          const fontSize = compact ? 14 : 16;
+
           return (
-            <View style={styles.itemContainer}>
+            <View style={[styles.itemContainer, { marginBottom: itemMarginBottom }]}>
               {/* Timeline Circle */}
               <View
                 style={[
                   styles.circle,
                   {
+                    width: circleSize,
+                    height: circleSize,
+                    borderRadius: circleSize / 2,
                     backgroundColor: isActive
                       ? colors.primary
                       : colors.inactivegrey,
@@ -62,7 +72,7 @@ const OrderTimeline = (props) => {
                 {/*Icon for each status */}
                 <Ionicons
                   name={icons[index]}
-                  size={24}
+                  size={iconSize}
                   color={isActive ? colors.white : colors.white}
                 />
               </View>
@@ -72,6 +82,7 @@ const OrderTimeline = (props) => {
                   style={[
                     styles.statusText,
                     {
+                      fontSize: fontSize,
                       color: isActive ? colors.primary : colors.secondaryText,
                     },
                   ]}
@@ -94,6 +105,9 @@ const OrderTimeline = (props) => {
                   style={[
                     styles.line,
                     {
+                      left: compact ? 15 : 18,
+                      top: circleSize,
+                      height: lineHeight,
                       backgroundColor: isActive
                         ? colors.primary
                         : colors.inactivegrey,

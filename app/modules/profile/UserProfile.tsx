@@ -3,7 +3,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Image, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
@@ -19,8 +19,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
-import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
@@ -38,6 +41,9 @@ Notifications.setNotificationHandler({
 });
 
 const UserProfileScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isDesktop = width >= 1024; // Common breakpoint for desktop
   const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
@@ -68,10 +74,10 @@ const UserProfileScreen = () => {
 
   // useEffect(() => {
   //   const getUser = async () => {
-  //     console.log("userData", userData);
+  //     // console.log("userData", userData);
   //     if (userData) {
   //       const user = await UserAPI.getUserByPhonenumber(userData?.phone);
-  //       console.log("user", user.data);
+  //       // console.log("user", user.data);
   //       if (user) {
   //         setFirstName(user.data.firstName);
   //         setLastName(user.data.lastName);
@@ -84,7 +90,7 @@ const UserProfileScreen = () => {
   //   };
   //   getUser();
   // }, [userData]);
-  console.log("userData_redux in userProfilescreen", userData_redux);
+  // console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
     const fetchUser = async () => {
       if (!userData_redux?.id) return;
@@ -93,7 +99,7 @@ const UserProfileScreen = () => {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        console.log("response in userProfilescreen", response?.data);
+        // console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -107,7 +113,7 @@ const UserProfileScreen = () => {
     fetchUser();
   }, [userData_redux]);
 
-  console.log("user details fetched", user);
+  // console.log("user details fetched", user);
   useEffect(() => {
     const getToken = async () => {
       if (user?.id) {
@@ -115,7 +121,7 @@ const UserProfileScreen = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        console.log("Expo Push Token:", token);
+        // console.log("Expo Push Token:", token);
         setExpoPushToken(token ?? null);
       }
     };
@@ -123,12 +129,12 @@ const UserProfileScreen = () => {
 
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
+        // console.log("Notification received:", notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("User interacted with notification:", response);
+        // console.log("User interacted with notification:", response);
       });
 
     return () => {
@@ -153,21 +159,30 @@ const UserProfileScreen = () => {
     }
   };
 
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header
+      headerText={USER_PROFILE_SCREEN_TITLE}
+      needResetNavigation={true}
+    />
+  );
+  const FooterComponent = isTabOrDesktop ? (
+    <FooterWeb />
+  ) : (
+    <Footer activeTab="menu" />
+  );
+
   return (
-    <PageLayout
-      hasHeader={true}
-      hasFooter={true}
-      headerComponent={
-        <Header
-          headerText={USER_PROFILE_SCREEN_TITLE}
-          needResetNavigation={true}
-        />
-      }
-      footerComponent={<Footer activeTab="menu" />}
-      scrollable={true}
-      contentPadding={true}
+    <LayoutComponent
+      hasHeader
+      hasFooter
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent}
+      scrollable
     >
-      <View>
+      <View style={{ flex: 1, position: isDesktop ? 'relative' : 'relative' }}>
         <Text style={styles.greeting}>
           {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
         </Text>
@@ -253,7 +268,10 @@ const UserProfileScreen = () => {
           ))}
         </View>
 
-        <View style={styles.footerButtons}>
+        <View style={[
+          styles.footerButtons,
+          isDesktop && styles.desktopFooterButtons
+        ]}>
           <TouchableOpacity
             style={styles.footerButton}
             onPress={() => {
@@ -295,7 +313,7 @@ const UserProfileScreen = () => {
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

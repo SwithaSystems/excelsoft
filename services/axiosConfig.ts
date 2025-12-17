@@ -6,11 +6,11 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-console.log(
-  "Environment Variable EXPO_PUBLIC_API_URL:",
-  process.env.EXPO_PUBLIC_API_URL
-);
-console.log("Using API_BASE_URL:", API_BASE_URL);
+// console.log(
+//   "Environment Variable EXPO_PUBLIC_API_URL:",
+//   process.env.EXPO_PUBLIC_API_URL
+// );
+// console.log("Using API_BASE_URL:", API_BASE_URL);
 const EXCLUDED_APIS = [
   "/twilio/SendOtp",
   "/twilio/verifyOtp",
@@ -87,7 +87,7 @@ const proactiveTokenRefresh = async (token: string) => {
     return token; // Token is still valid for a while
   }
 
-  console.log("Proactively refreshing token...");
+  // console.log("Proactively refreshing token...");
   isRefreshing = true;
   lastRefreshTime = now;
 
@@ -114,11 +114,11 @@ const proactiveTokenRefresh = async (token: string) => {
       await SecureStore.setItemAsync("refreshtoken", newRefreshToken);
     }
 
-    console.log("Token proactively refreshed successfully");
+    // console.log("Token proactively refreshed successfully");
     isRefreshing = false;
     return newAccessToken;
   } catch (error) {
-    console.log("Proactive token refresh failed:", error);
+    // console.log("Proactive token refresh failed:", error);
     isRefreshing = false;
     return token; // Return original token if refresh fails
   }
@@ -140,10 +140,10 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
     async (config: InternalAxiosRequestConfig) => {
       try {
         let token = await SecureStore.getItemAsync("token");
-        // console.log("Token before setting", token);
+        // // console.log("Token before setting", token);
         // const refreshToken = await AsyncStorage.getItem("refreshtoken");
         // await AsyncStorage.setItem("token", "expired");
-        // console.log("Token after setting", token);
+        // // console.log("Token after setting", token);
         const isExcluded = EXCLUDED_APIS.some((url) =>
           config.url?.includes(url)
         );
@@ -154,11 +154,11 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
           config.headers.Authorization = `Bearer ${token}`;
         }
 
-        console.log(
-          "Request config:",
-          config.url,
-          config.headers.Authorization ? "with token" : "without token"
-        );
+        // console.log(
+        //   "Request config:",
+        //   config.url,
+        //   config.headers.Authorization ? "with token" : "without token"
+        // );
         return config;
       } catch (error) {
         return Promise.reject(error);
@@ -192,11 +192,11 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
 
       const status = error.response?.status;
 
-      console.log("=== Axios Error Interceptor ===");
-      console.log("Error:", error);
-      console.log("Status:", status);
-      console.log("Config:", originalRequest);
-      console.log("Response:", error.response);
+      // console.log("=== Axios Error Interceptor ===");
+      // console.log("Error:", error);
+      // console.log("Status:", status);
+      // console.log("Config:", originalRequest);
+      // console.log("Response:", error.response);
 
       // Handle 401 Unauthorized errors
       if (error.response?.status === 401 && error.config) {
@@ -230,7 +230,7 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
 
         try {
           const refreshToken = await SecureStore.getItemAsync("refreshtoken");
-          console.log("refreshToken after 401", refreshToken);
+          // console.log("refreshToken after 401", refreshToken);
 
           if (!refreshToken) {
             throw new Error("Refresh token not available.");
@@ -245,11 +245,11 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
               timeout: 10000,
             }
           );
-          console.log("refreshResponse", refreshResponse.data);
+          // console.log("refreshResponse", refreshResponse.data);
           const newAccessToken = refreshResponse.data.access_token;
           const newRefreshToken = refreshResponse.data.refresh_token;
 
-          console.log("newAccessToken", newAccessToken);
+          // console.log("newAccessToken", newAccessToken);
 
           // Store the new tokens
           try {
@@ -270,14 +270,14 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
           processQueue(null, newAccessToken);
           isRefreshing = false;
           lastRefreshTime = Date.now();
-          console.log(
-            "Token refreshed successfully, retrying original request"
-          );
+          // console.log(
+          //   "Token refreshed successfully, retrying original request"
+          // );
 
           // Retry the original request
           return axiosInstance(originalRequest);
         } catch (refreshError: any) {
-          console.log("Token refresh failed:", refreshError);
+          // console.log("Token refresh failed:", refreshError);
 
           processQueue(refreshError, null);
           isRefreshing = false;

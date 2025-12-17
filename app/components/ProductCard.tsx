@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import colors from "../../constants/colors";
 import Star from "./Star";
@@ -51,6 +51,8 @@ const ProductCard = ({
   image,
 }: Product) => {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const isRemoteImage = typeof image === "string";
 
   const dispatch = useDispatch();
@@ -78,7 +80,7 @@ const ProductCard = ({
       quantity: 1,
     };
 
-    console.log("saved item", currentItem);
+    // console.log("saved item", currentItem);
 
     if (isItemSaved(id)) {
       dispatch(removeFromSavedItems(id));
@@ -87,12 +89,25 @@ const ProductCard = ({
     }
   };
 
-  const maxTitleLength = 12;
+  const maxTitleLength = isTabOrDesktop ? 20 : 12;
   let displayName =
     name.length > maxTitleLength
       ? name.substring(0, maxTitleLength - 3) + "..."
       : name;
-  while (displayName.length < maxTitleLength) displayName += " ";
+  if (!isTabOrDesktop) {
+    while (displayName.length < maxTitleLength) displayName += " ";
+  }
+
+  // Web-specific dimensions - smaller for compact grid layout
+  const imageHeight = isTabOrDesktop ? 150 : 203;
+  const titleFontSize = isTabOrDesktop ? 13 : 18;
+  const ratingFontSize = isTabOrDesktop ? 11 : 16;
+  const priceFontSize = isTabOrDesktop ? 13 : 16;
+  const heartSize = isTabOrDesktop ? 16 : 20;
+  const starSize = isTabOrDesktop ? 12 : 16;
+  const contentPadding = isTabOrDesktop ? 6 : 8;
+  const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
+
 
   return (
     <TouchableOpacity
@@ -103,7 +118,7 @@ const ProductCard = ({
     >
       {/* Only render image if product has one */}
       {/* {image ? ( */}
-      <View style={styles.image}>
+      <View style={[styles.image, { height: imageHeight }]}>
         {/* <Image
             source={{ uri: image }}
             style={styles.image}
@@ -117,33 +132,33 @@ const ProductCard = ({
               ? image
               : require("../../assets/Placeholder.png")
           }
-          style={styles.image}
+          style={[styles.image, { height: imageHeight }]}
           resizeMode="cover"
         />
       </View>
       {/* ) : null} */}
 
-      <View style={styles.content}>
+      <View style={[styles.content, { padding: contentPadding }]}>
         <View style={globalStyles.savedContainer}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isTabOrDesktop ? 2 : 1}>
             {displayName}
           </Text>
           <TouchableOpacity onPress={handleHeartPress}>
             <Ionicons
               name={isItemSaved(id) ? "heart" : "heart-outline"}
-              size={20}
+              size={heartSize}
               color={isItemSaved(id) ? colors.primaryRed : colors.black}
             />
           </TouchableOpacity>
         </View>
         {noOfreviews > 0 && (
           <View style={styles.ratingContainer}>
-            <Text style={styles.rating}>{rating}</Text>
-            <Star filled={false} size={16} />
-            <Text style={styles.reviews}>({noOfreviews})</Text>
+            <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{rating}</Text>
+            <Star filled={false} size={starSize} />
+            <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
         )}
-        {netPrice > discount && discount > 0 && (
+        {netPrice > 0 && discountPercentage > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
               {/* <View style={styles.saleTag}>
@@ -151,21 +166,22 @@ const ProductCard = ({
               </View> */}
               {/* <Text style={styles.time}>02:48:26</Text> */}
             </View>
-            <Text style={styles.discount}>
-              {Math.round((discount / netPrice) * 100)}%
+            <Text style={[styles.discount, { fontSize: priceFontSize }]}>
+              {/* {Math.round((discount / netPrice) * 100)}% */}
+              {discountPercentage}%
             </Text>
           </View>
         )}
 
         <View style={styles.priceContainer}>
-          <Text style={styles.discount}>
+          <Text style={[styles.discount, { fontSize: priceFontSize }]}>
             {CurrencySymbol}
-            {netPrice - discount}
+            {(netPrice - discount).toFixed(2)}
           </Text>
-          {netPrice > discount && (
-            <Text style={styles.netPrice}>
+          {discount > 0 && (
+            <Text style={[styles.netPrice, { fontSize: isTabOrDesktop ? 12 : 14 }]}>
               {CurrencySymbol}
-              {netPrice}
+              {Number(netPrice).toFixed(2)}
             </Text>
           )}
         </View>
@@ -179,20 +195,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
     overflow: "hidden",
+    width: "100%",
+    flex: 1,
   },
   image: {
     width: "100%",
-    height: 203,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     resizeMode: "cover",
   },
   content: {
     flex: 1,
-    padding: 8,
   },
   title: {
-    fontSize: 18,
     fontWeight: "600",
     marginBottom: 4,
     color: colors.black,
@@ -203,24 +218,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   rating: {
-    fontSize: 16,
     fontWeight: "500",
     marginRight: 4,
     color: colors.reviewsColor,
   },
   reviews: {
     margin: 4,
-    fontSize: 16,
     color: colors.reviewsColor,
   },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    padding: 4,
+    marginTop: 4,
   },
   saleContainer: {
     flexDirection: "row",
+    marginBottom: 4,
   },
   saleTimeBox: {
     flexDirection: "row",
@@ -242,19 +256,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   discount: {
-    fontSize: 16,
     fontWeight: "600",
     color: colors.primary,
     marginRight: 6,
-    marginTop: 6,
   },
   netPrice: {
-    fontSize: 14,
     color: colors.secondaryText,
     textDecorationLine: "line-through",
     marginLeft: 6,
     marginRight: 6,
-    marginTop: 6,
   },
   time: {
     fontSize: 14,

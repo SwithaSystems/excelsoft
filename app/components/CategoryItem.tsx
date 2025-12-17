@@ -16,7 +16,7 @@ const CategoryItem = ({
   onPress,
   containerStyle,
 }: CategoryItemProps) => {
-  console.log("image selected", image, typeof image);
+  // console.log("image selected", image, typeof image);
   return (
     <TouchableOpacity
       style={[styles.container, containerStyle]}
@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
     height: "80%",
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: colors.black,
     textAlign: "center",
-    paddingVertical: 8,
+    paddingVertical: 5,
     backgroundColor: colors.secondary,
   },
 });

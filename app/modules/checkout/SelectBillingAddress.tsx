@@ -59,7 +59,7 @@ const selectBillingAddressScreen = () => {
   const { handlePayment } = usePaymentHandler();
   const params = useLocalSearchParams();
 
-  console.log("params in billing screen", params);
+  // console.log("params in billing screen", params);
 
   const selectedMode = params?.selectedMode;
   // const selectShippingAddress = params?.shippingAddress;
@@ -99,15 +99,15 @@ const selectBillingAddressScreen = () => {
     shippingAddress = undefined;
   }
 
-  console.log("selectShippingAddress", shippingAddress);
-  console.log("pickupDetails", pickupDetails);
+  // console.log("selectShippingAddress", shippingAddress);
+  // console.log("pickupDetails", pickupDetails);
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
         const response = await addressService.getAllAddress();
         setAddressData(response);
-        console.log("Billing addresses:", response);
+        // console.log("Billing addresses:", response);
         // Set initial selected address if one exists in context
         if (selectedBillingAddress?._id) {
           setSelectedId(selectedBillingAddress._id);
@@ -121,15 +121,13 @@ const selectBillingAddressScreen = () => {
     };
     fetchAddresses();
   }, []);
-  console.log("Billingaddress saved address", addressData);
-  console.log("Selected address ID:", selectedId);
+  // console.log("Billingaddress saved address", addressData);
+  // console.log("Selected address ID:", selectedId);
   const confirmDelete = async (itemToDelete: any) => {
-    console.log("Item to delete:", itemToDelete);
+    // console.log("Item to delete:", itemToDelete);
     if (itemToDelete) {
       try {
-        const response = await addressService.deleteAddress(
-          itemToDelete.id
-        );
+        const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
           setAddressData((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
@@ -164,16 +162,16 @@ const selectBillingAddressScreen = () => {
   const handleSelectBillingAddress = (item: Address) => {
     setSelectedId(item._id);
     setSelectedBillingAddress(item);
-    console.log("Selected address:", item);
+    // console.log("Selected address:", item);
   };
-  console.log("isPaymentEnabled Breakdown:", {
-    cartItemsCount: cartItems.length,
-    billingAddressExists: !!selectedBillingAddress,
-    shippingAddressExists: !!shippingAddress,
-    pickupDate: pickupDetails?.date,
-    pickupTime: pickupDetails?.time,
-    selectedMode: selectedMode,
-  });
+  // console.log("isPaymentEnabled Breakdown:", {
+  //   cartItemsCount: cartItems.length,
+  //   billingAddressExists: !!selectedBillingAddress,
+  //   shippingAddressExists: !!shippingAddress,
+  //   pickupDate: pickupDetails?.date,
+  //   pickupTime: pickupDetails?.time,
+  //   selectedMode: selectedMode,
+  // });
 
   const isPickupMode =
     selectedMode === DELIVERY_MODE_CURBSIDE ||
@@ -274,14 +272,14 @@ const selectBillingAddressScreen = () => {
                 <ConfirmationModal
                   onClose={() => {
                     setIsModalVisible(false);
-                  } }
+                  }}
                   isModalVisible={isModalVisible}
                   text="Are you sure you want to delete this address?"
                   submitText="Delete Address"
                   handleSubmit={() => confirmDelete(itemToDelete!)}
                   cancelText="Cancel"
-                  handleCancel={cancelDelete} 
-                  title="Delete Address"                
+                  handleCancel={cancelDelete}
+                  title="Delete Address"
                 />
               </>
             }

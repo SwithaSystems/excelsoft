@@ -88,9 +88,9 @@ const updateContainers = async () => {
       }
       
       await fs.promises.writeFile(containersFilePath, newContent);
-      console.log(`📄 Updated containers/index.ts with '${exportLine}'.`);
+      // console.log(`📄 Updated containers/index.ts with '${exportLine}'.`);
     } else {
-      console.log(`ℹ️ '${exportLine}' already exists in containers/index.ts.`);
+      // console.log(`ℹ️ '${exportLine}' already exists in containers/index.ts.`);
     }
     
     return screenKey; // Return the screen key for use in layout file
@@ -117,10 +117,10 @@ const updateLayout = async (screenKey) => {
         if (stackInsertionPoint !== -1) {
           layoutContent = `${layoutContent.slice(0, stackInsertionPoint)}  ${stackScreenEntry}\n${layoutContent.slice(stackInsertionPoint)}`;
           await fs.promises.writeFile(layoutFilePath, layoutContent);
-          console.log(`📄 Updated _layout.js with route for '${screenKey}'.`);
+          // console.log(`📄 Updated _layout.js with route for '${screenKey}'.`);
         }
       } else {
-        console.log(`ℹ️ Route for '${screenKey}' already exists in _layout.js.`);
+        // console.log(`ℹ️ Route for '${screenKey}' already exists in _layout.js.`);
       }
     } else {
       console.error("❌ _layout.js file not found.");
@@ -139,22 +139,22 @@ const createFiles = async () => {
 
     // Create folder
     await fs.promises.mkdir(folderPath, { recursive: true });
-    console.log(`📁 Folder '${folderName}' created.`);
+    // console.log(`📁 Folder '${folderName}' created.`);
 
     // Create component file
     const componentFilePath = path.join(folderPath, componentFileName);
     await fs.promises.writeFile(componentFilePath, componentContent);
-    console.log(`📄 File '${componentFileName}' created.`);
+    // console.log(`📄 File '${componentFileName}' created.`);
 
     // Create styles file
     const stylesFilePath = path.join(folderPath, stylesFileName);
     await fs.promises.writeFile(stylesFilePath, stylesContent);
-    console.log(`📄 File '${stylesFileName}' created.`);
+    // console.log(`📄 File '${stylesFileName}' created.`);
 
     // Update layout file with the container reference
     await updateLayout(screenKey);
 
-    console.log(`\n✅ Component '${folderName}' created successfully.`);
+    // console.log(`\n✅ Component '${folderName}' created successfully.`);
   } catch (error) {
     console.error(`❌ Error creating component: ${error.message}`);
   }

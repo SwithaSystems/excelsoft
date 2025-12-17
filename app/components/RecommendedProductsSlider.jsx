@@ -32,6 +32,7 @@ function RecommendedProductsSlider(props) {
                 productId: item.id,
               })
             }
+            activeOpacity={0.7}
           >
             <Image
               source={item.imageUrl}
@@ -39,30 +40,34 @@ function RecommendedProductsSlider(props) {
               resizeMode="cover"
             />
             <View style={styles.recommendedDetails}>
-              <Text style={styles.recommendedTitle}>{item.title}</Text>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingText}>{item.rating} ★ </Text>
-                <Text style={styles.reviewsText}>({item.reviews})</Text>
+              <View style={styles.topContent}>
+                <Text style={styles.recommendedTitle} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>{item.rating} ★ </Text>
+                  <Text style={styles.reviewsText}>({item.reviews})</Text>
+                </View>
               </View>
               {props.showAddToCart && (
-                <>
+                <View style={styles.priceButtonContainer}>
                   <DisplayPrice
                     discount={item.discount}
                     netPrice={item.netPrice}
                   />
-                  <View style={[{ marginTop: 4 }, styles.button]}>
+                  <View style={styles.button}>
                     <Button
                       style={styles.addToCArtBtn}
                       textStyle={styles.addToCArtBtnText}
                       title="Add"
                       onPress={() => {
-                        console.log("item to be added in cart", item);
+                        // console.log("item to be added in cart", item);
                         const itemWithQuantity = { ...item, quantity: 1 };
                         props.handleAdd(itemWithQuantity);
                       }}
                     />
                   </View>
-                </>
+                </View>
               )}
             </View>
           </TouchableOpacity>
@@ -82,10 +87,11 @@ const styles = StyleSheet.create({
   addToCArtBtnText: {
     fontSize: 12,
   },
+  priceButtonContainer: {
+    paddingTop: 8,
+  },
   button: {
-    //alignItems: "center",
-    //justifyContent: "center",
-    //alignSelf: "center",
+    marginTop: 8,
     paddingRight: 10,
   },
   productsList: {
@@ -103,14 +109,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
+    minHeight: 20,
+  },
+  topContent: {
+    flex: 0,
   },
   recommendedTitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 4,
+    minHeight: 40,
   },
   recommendedDetails: {
     marginLeft: 12,
+    marginRight: 12,
+    paddingBottom: 8,
+    paddingTop: 4,
+    flexDirection: "column",
+    flex: 1,
+    justifyContent: "space-between",
   },
   recommendedCard: {
     width: 160,
@@ -118,6 +135,8 @@ const styles = StyleSheet.create({
     marginRight: 16,
     backgroundColor: colors.lightgrey,
     borderRadius: 10,
+    flexDirection: "column",
+    height: 280,
   },
   recommendedImage: {
     width: "100%",

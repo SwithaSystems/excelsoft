@@ -133,6 +133,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  loadingContainer: { marginTop: 25, alignItems: "center" },
+  loadingText: { marginTop: 10, fontSize: 16, color: "#555" },
+  resultContainer: {
+    backgroundColor: "white",
+    marginTop: 25,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  resultHeader: { padding: 15 },
+  successHeader: { backgroundColor: "#daf5d9" },
+  errorHeader: { backgroundColor: "#ffdada" },
+  resultTitle: { fontSize: 20, fontWeight: "bold", textAlign: "center" },
+  statisticsContainer: { padding: 15 },
+  statisticsTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },
+  statLine: { fontSize: 15, marginBottom: 6 },
 });
 
 export default styles;

@@ -1,11 +1,16 @@
 // This file maps route names to their corresponding module paths
 // Used for navigation throughout the app
 
+import AdminGlobalSettings from "@/app/modules/admin/AdminGlobalSettings";
+import AdminNotificationSettings from "@/app/modules/admin/AdminNotificationSettings";
+import AdminProfile from "@/app/modules/admin/AdminProfile";
+
 // Ensure all route names are properly defined and match the file structure
 const routes = {
   // Special routes
   index: "index",
-  // Home & Catalog
+  // Home &
+  uploadScreen: "modules/home/upload",
   homeScreen: "modules/home/Home",
   searchScreen: "modules/catalog/Search",
   productDetailScreen: "modules/catalog/ProductDetail",
@@ -73,6 +78,7 @@ const routes = {
   notificationListingScreen: "modules/notifications/NotificationListing",
   userNotificationsScreen: "modules/notifications/UserNotifications",
   notificationsScreen: "modules/notifications/Notifications",
+  adminNotificationSettingsScreen: "modules/admin/AdminNotificationSettings",
 
   // Support
   customerSupportScreen: "modules/support/CustomerSupport",
@@ -92,10 +98,14 @@ const routes = {
   AdminStoreInformationScreen: "modules/admin/AdminStoreInformation",
   AdminOrderQRScanScreen: "modules/admin/AdminOrderQRScan",
   AdminCategoriesScreen: "modules/admin/AdminCategories",
+  AdminAddCategoriesWebScreen:
+    "modules/admin/componentsWeb/AdminAddCategoriesWeb",
   adminAccessControlScreen: "modules/admin/AdminAccessControl",
   adminAccessControlScreenScreen: "modules/admin/AdminAccessControl",
   fileUploadAddProductCategoryScreen:
     "modules/admin/FileUploadAddProductCategory",
+  AdminGlobalSettingsScreen: "modules/admin/AdminGlobalSettings",
+  AdminProfileScreen: "modules/admin/AdminProfile",
 
   // Category
   catagoryScreenScreen: "modules/catalog/Categories",

@@ -18,7 +18,7 @@ import {
 
 const orderSuccessfulScreen = () => {
   const { orderData } = useLocalSearchParams();
-  console.log("orderData", orderData);
+  // console.log("orderData", orderData);
   const isOrderPlacedSuccess = true;
   const successCartImg = require("@/assets/checkmark.png");
   const failedCartImg = require("@/assets/CancelOrder.png");

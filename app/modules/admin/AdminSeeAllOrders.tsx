@@ -4,9 +4,10 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TextInput,
   TouchableOpacity,
   Platform,
+  useWindowDimensions,
+  ScrollView,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -22,11 +23,21 @@ import { orderService } from "@/services/orderService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import useDebounce from "@/utilities/customHooks/useDebounce";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import Pagination from "./componentsWeb/PaginationWeb";
+import SearchBar from "@/app/components/searchBar";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [allOrders, setAllOrders] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -69,7 +80,12 @@ const AdminSeeAllOrders = () => {
             });
           }}
         >
-          <View style={styles.eachOrderItem}>
+          <View
+            style={[
+              styles.eachOrderItem,
+              isTabOrDesktop ? styles.eachOrderItemWeb : null,
+            ]}
+          >
             <View
               style={[
                 globalStyles.flexRow,
@@ -134,6 +150,12 @@ const AdminSeeAllOrders = () => {
                       ? localStyles.replaced
                       : item.status === "Returned"
                       ? localStyles.returned
+                      : item.status === "Delivered"
+                      ? localStyles.delivered
+                      : item.status === "Processed"
+                      ? localStyles.processed
+                      : item.status === "Pending"
+                      ? localStyles.pending
                       : localStyles.defaultStatus,
                   ]}
                 >
@@ -147,6 +169,15 @@ const AdminSeeAllOrders = () => {
     );
   };
 
+  // Helper function to sort orders by createdAt (latest first)
+  const sortOrdersByTime = (orders: any[]) => {
+    return [...orders].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // Descending order (latest first)
+    });
+  };
+
   // Filter orders based on active filter
   const getFilteredOrders = () => {
     let filteredORders = allOrders;
@@ -158,11 +189,25 @@ const AdminSeeAllOrders = () => {
     }
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase().trim();
+      const queryDigits = query.replace(/\D/g, "");
       filteredORders = filteredORders.filter((order: any) => {
-        const orderNumber = order.orderNumber || order._id || "";
-        const orderMatches = orderNumber
-          ? orderNumber.toString().includes(query)
-          : false;
+        const orderNumberRaw = order.orderNumber ?? "";
+        const orderNumberStr = orderNumberRaw.toString();
+        const orderIdStr = (order._id ?? "").toString().toLowerCase();
+
+        // Normalize common input formats like "ORD-123" or "#ORD-123"
+        const ordTag = `ord-${orderNumberStr}`.toLowerCase();
+        const hashOrdTag = `#ord-${orderNumberStr}`.toLowerCase();
+        const orderNumDigits = orderNumberStr.replace(/\D/g, "");
+
+        const orderMatches =
+          // match pure digits against order number digits
+          (queryDigits.length > 0 && orderNumDigits.includes(queryDigits)) ||
+          // match textual tags against full query
+          ordTag.includes(query) ||
+          hashOrdTag.includes(query) ||
+          // match objectId or alphanumeric id directly
+          orderIdStr.includes(query);
 
         const customerName =
           typeof order.userId === "object" && order.userId?.firstName
@@ -177,7 +222,7 @@ const AdminSeeAllOrders = () => {
         const totalAmount =
           typeof order.totalAmount === "number" ? order.totalAmount : "0";
 
-        const amountMatches = totalAmount.toString().includes(query);
+        const amountMatches = totalAmount.toString().includes(queryDigits || query);
         return (
           orderMatches || customerMatches || statusMatches || amountMatches
         );
@@ -186,71 +231,187 @@ const AdminSeeAllOrders = () => {
     return filteredORders;
   };
 
+  // Pagination for desktop/tablet grid
+  const ITEMS_PER_PAGE = isTabOrDesktop ? 12 : 50;
+  const filteredOrders = getFilteredOrders();
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
+  const paginatedData = isTabOrDesktop
+    ? filteredOrders.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      )
+    : filteredOrders;
+
+  // Reset to page 1 when search query or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, activeFilter]);
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting = {true}/>
+  ) : (
+    <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
+
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
+      headerComponent={HeaderComponent}
       hasFooter
-      scrollable
-      headerComponent={
-        <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
-      }
-      footerComponent={<AdminFooter activeTab="orders" />}
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable={!isTabOrDesktop}
+      hideNavItems={true}
     >
-      <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
-        <View style={localStyles.searchBarContainer}>
-          <TextInput
-            placeholder="Search orders..."
-            placeholderTextColor={colors.placeholdergrey}
-            style={localStyles.searchInput}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={localStyles.searchIcon}>
-            <Ionicons name="search" size={20} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={localStyles.badgeContainer}>
-          {statusFilters.map((status) => (
-            <TouchableOpacity
-              key={status}
-              onPress={() => setActiveFilter(status)}
-              style={[
-                localStyles.badge,
-                {
-                  backgroundColor:
-                    activeFilter === status ? colors.primary : colors.secondary,
-                },
-              ]}
-            >
-              <Text style={localStyles.badgeText}>{status}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.heading}>
-          WELCOME, Let's go through the orders details!
-        </Text>
-        <View style={styles.ordersContainer}>
-          <FlatList
-            data={getFilteredOrders()}
-            renderItem={renderOrderItem}
-            keyExtractor={(item) => item._id}
-            ListEmptyComponent={
-              <View style={localStyles.emptyContainer}>
-                <Text style={localStyles.emptyText}>
-                  No orders found for "{activeFilter}"
+      {isTabOrDesktop ? (
+        <View style={{ flex: 1 }}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+            <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
+              <View
+                style={[
+                  styles.headerRow,
+                  {
+                    justifyContent: "space-between",
+                    paddingTop: 5,
+                    alignItems: "center",
+                    marginBottom: -5,
+                    marginTop: 0,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+                  See All Orders
                 </Text>
               </View>
-            }
-          />
+              <View style={{ marginTop: 16, marginBottom: 8 }}>
+                <SearchBar
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => {}}
+                  onPress={() => {}}
+                  widthPercent={35}
+                  height={40}
+                />
+              </View>
+
+              <View style={localStyles.badgeContainer}>
+                {statusFilters.map((status) => (
+                  <TouchableOpacity
+                    key={status}
+                    onPress={() => setActiveFilter(status)}
+                    style={[
+                      localStyles.badge,
+                      {
+                        backgroundColor:
+                          activeFilter === status ? colors.primary : colors.secondary,
+                      },
+                    ]}
+                  >
+                    <Text style={localStyles.badgeText}>{status}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.heading}>
+                WELCOME, Let's go through the orders details!
+              </Text>
+
+              <View style={[styles.ordersContainer, { paddingLeft: 0, paddingRight: 0 }]}>
+                <FlatList
+                  data={sortOrdersByTime(paginatedData)}
+                  renderItem={renderOrderItem}
+                  keyExtractor={(item) => String(item._id)}
+                  numColumns={4}
+                  columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
+                  contentContainerStyle={{ paddingVertical: 8 }}
+                  showsVerticalScrollIndicator={true}
+                  scrollEnabled={false}
+                  ListEmptyComponent={
+                    <View style={localStyles.emptyContainer}>
+                      <Text style={localStyles.emptyText}>
+                        No orders found for "{activeFilter}"
+                      </Text>
+                    </View>
+                  }
+                />
+              </View>
+            </View>
+          </ScrollView>
+          
+          {/* Pagination for web/tablet only - outside ScrollView */}
+          {isTabOrDesktop && totalPages > 1 && (
+            <View style={styles.stickyBottomContainer}>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            </View>
+          )}
         </View>
-      </View>
+      ) : (
+        <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
+          {!isTabOrDesktop && (
+            <View>
+              <SearchBar
+                placeholder="Search orders..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={() => {}}
+                onPress={() => {}}
+              />
+            </View>
+          )}
+          <>
+            <View style={localStyles.badgeContainer}>
+              {statusFilters.map((status) => (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => setActiveFilter(status)}
+                  style={[
+                    localStyles.badge,
+                    {
+                      backgroundColor:
+                        activeFilter === status ? colors.primary : colors.secondary,
+                    },
+                  ]}
+                >
+                  <Text style={localStyles.badgeText}>{status}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.heading}>
+              WELCOME, Let's go through the orders details!
+            </Text>
+
+            <View style={styles.ordersContainer}>
+              <FlatList
+                data={paginatedData}
+                renderItem={renderOrderItem}
+                keyExtractor={(item) => String(item._id)}
+                ListEmptyComponent={
+                  <View style={localStyles.emptyContainer}>
+                    <Text style={localStyles.emptyText}>
+                      No orders found for "{activeFilter}"
+                    </Text>
+                  </View>
+                }
+              />
+            </View>
+          </>
+        </View>
+      )}
       {/* </ScrollView>
         <AdminFooter activeTab="orders" />
       </View>
     </SafeAreaView> */}
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
@@ -263,15 +424,11 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: 25,
-    // marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === "ios" ? 12 : 8,
     shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -324,6 +481,18 @@ const localStyles = StyleSheet.create({
     backgroundColor: colors.secondaryPurple,
     color: colors.primaryPurple,
   },
+  delivered: {
+    backgroundColor: colors.secondaryGreen,
+    color: colors.primaryGreen,
+  },
+  processed: {
+    backgroundColor: colors.infoBg,
+    color: colors.infoText,
+  },
+  pending: {
+    backgroundColor: colors.secondaryYellow,
+    color: colors.primaryYellow,
+  },
   defaultStatus: {
     backgroundColor: colors.placeholdergrey,
     color: colors.black,
@@ -356,5 +525,19 @@ const localStyles = StyleSheet.create({
     fontSize: 16,
     color: colors.placeholdergrey,
     textAlign: "center",
+  },
+  // Web/tablet 4-column layout
+  columnsRow: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  column: {
+    flex: 1,
+  },
+  columnTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 8,
   },
 });

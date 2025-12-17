@@ -99,14 +99,14 @@ const ReturnOrder = () => {
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
   const [reason, setReason] = useState("");
 
-  console.log("raw orderDetials", rawOrderDetails);
+  // console.log("raw orderDetials", rawOrderDetails);
 
   const orderDetails =
     typeof rawOrderDetails === "string"
       ? JSON.parse(rawOrderDetails)
       : rawOrderDetails;
 
-  console.log("orderDetails parsed:", orderDetails);
+  // console.log("orderDetails parsed:", orderDetails);
   useEffect(() => {
     const fetchProductDetails = async () => {
       if (!orderDetails?.products?.length) return;
@@ -132,7 +132,7 @@ const ReturnOrder = () => {
     fetchProductDetails();
   }, [orderDetails?.products]);
 
-  console.log("cartItemsWithDetails", cartItemsWithDetails);
+  // console.log("cartItemsWithDetails", cartItemsWithDetails);
   // const cartItems = orderDetails?.products.map((item: any) => ({
   //   id: item.id,
   //   image: item.image,

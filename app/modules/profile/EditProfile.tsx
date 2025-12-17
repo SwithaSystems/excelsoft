@@ -19,6 +19,9 @@ import {
   ViewStyle,
   DeviceEventEmitter,
   TextInput,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
@@ -27,9 +30,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as SecureStore from "expo-secure-store";
 import { UserAPI } from "@/services/userService";
 import { Text } from "react-native-elements";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
-import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -43,6 +45,11 @@ import {
 } from "../../../constants/customErrorMessages";
 import { format } from "date-fns";
 import { isValidName } from "@/utilities/validations";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { useNavigation } from "@react-navigation/native";
 
 interface User {
   id: string;
@@ -72,16 +79,30 @@ const editProfileScreen = () => {
   const [firstNameError, setFirstNameError] = useState<string | null>(null);
   const [lastNameError, setLastNameError] = useState<string | null>(null);
 
+  // Confirmation Modal States
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={EDIT_PROFILE_SCREEN_TITLE} />
+  );
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
-      console.log("userData", userData?.id);
       if (userData) {
         const user = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
-        console.log("user", user.data);
         if (user) {
           setUser(user.data);
           setFirstName(user?.data?.firstName);
@@ -116,18 +137,13 @@ const editProfileScreen = () => {
 
   const handleFirstNameChange = (text: string) => {
     setFirstName(text);
-    if (firstNameError) {
-      setFirstNameError(null);
-    }
+    if (firstNameError) setFirstNameError(null);
   };
 
   const handleLastNameChange = (text: string) => {
     setLastName(text);
-    if (lastNameError) {
-      setLastNameError(null);
-    }
+    if (lastNameError) setLastNameError(null);
   };
-
 
   const openImagePickerAsync = async (type: "camera" | "gallery") => {
     let result;
@@ -168,14 +184,10 @@ const editProfileScreen = () => {
         });
       }
 
-      // ✅ Handle image result safely
       if (!result.canceled && "assets" in result && result.assets?.length > 0) {
         setProfileImage(result.assets[0].uri);
-      } else {
-        console.log("Image picking was cancelled or returned no assets.");
       }
     } catch (error) {
-      console.error("Error picking image:", error);
       showErrorAlert({
         title: "Image Error",
         message: "Something went wrong while picking the image.",
@@ -185,20 +197,12 @@ const editProfileScreen = () => {
 
   const showImageOptions = () => {
     Alert.alert("Select Image", "Choose image source", [
-      {
-        text: "Take Photo",
-        onPress: () => openImagePickerAsync("camera"),
-      },
-      {
-        text: "Choose from Gallery",
-        onPress: () => openImagePickerAsync("gallery"),
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Take Photo", onPress: () => openImagePickerAsync("camera") },
+      { text: "Choose from Gallery", onPress: () => openImagePickerAsync("gallery") },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
+
   const getMaximumDate = () => {
     const today = new Date();
     const maxDate = new Date(
@@ -208,23 +212,16 @@ const editProfileScreen = () => {
     );
     return maxDate;
   };
+
   const handleEditProfile = async () => {
     setFirstNameError(null);
     setLastNameError(null);
 
     const isFirstNameValid = validateFirstName(firstName);
     const isLastNameValid = validateLastName(lastName);
-
-
-    if (!isFirstNameValid || !isLastNameValid) {
-      return;
-    }
-
+    if (!isFirstNameValid || !isLastNameValid) return;
 
     const formData = new FormData();
-
-    console.log("profileImage", profileImage);
-
     if (
       profileImage &&
       typeof profileImage === "string" &&
@@ -237,40 +234,42 @@ const editProfileScreen = () => {
       } as any);
     }
 
-    // These should work with any FormData implementation
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("dateOfBirth", dateOfBirth);
 
-    console.log("formData", formData);
-    console.log("user?.data?._id", user);
-
     try {
       setLoading(true);
       const response = await UserAPI.userEditProfile(user?._id, formData);
-      console.log("Profile updated successfully:", response?.data);
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
         dispatch(setUserData(response.data.user));
-        Alert.alert("Message", "Profile updated successfully.", [
-          {
-            text: "OK",
-            onPress: () => {
-              redirectToPage(containers.userProfileScreen);
-            },
-          },
-        ]);
+        setIsSuccessModalVisible(true);
       }
       return response?.data;
     } catch (error) {
-      console.error("Profile update failed:", error);
-      showErrorAlert({
-        title: "Update Failed",
-        message: FAILED_TO_UPDATE_DETAILS,
-      });
+      setIsErrorModalVisible(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSuccessModalClose = () => {
+    setIsSuccessModalVisible(false);
+    // Go back to previous screen in navigation stack
+    if (navigation) {
+      navigation.goBack();
+    } else {
+      redirectToPage(containers.userProfileScreen);
+    }
+  };
+
+  const handleErrorModalClose = () => {
+    setIsErrorModalVisible(false);
+    // Go back to previous screen in navigation stack
+    if (navigation) {
+      navigation.goBack();
     }
   };
 
@@ -279,7 +278,6 @@ const editProfileScreen = () => {
 
   const uponDateSelection = (date: Date) => {
     const formatted = format(date, DATE_FORMAT_Display);
-    console.log("formatted", formatted);
     setSelectedDate(formatted);
     setDateOfBirth(formatted);
     hideDatePicker();
@@ -291,14 +289,22 @@ const editProfileScreen = () => {
   };
 
   return (
-    <PageLayout
-      scrollable={false}
+    <LayoutComponent
+      scrollable={true}
       hasHeader
-      hasFooter={false}
-      headerComponent={<Header headerText={EDIT_PROFILE_SCREEN_TITLE} />}
+      hasFooter={isTabOrDesktop}
+      headerComponent={HeaderComponent}
+      footerComponent={FooterComponent || undefined}
+      hasSidebar={isTabOrDesktop}
+      userSidebar={true}
     >
       <KeyBoardWrapper>
-        <View style={globalStyles.container as ViewStyle}>
+        <View
+          style={[
+            globalStyles.container as ViewStyle,
+            isTabOrDesktop && webStyles.contentWidth,
+          ]}
+        >
           <ScrollView>
             <View style={[globalStyles.sectionContent, globalStyles.pt_0]}>
               {/* Profile Picture */}
@@ -321,6 +327,8 @@ const editProfileScreen = () => {
                   Change Profile Picture
                 </Text>
               </View>
+
+              {/* First Name */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="user-o"
@@ -331,8 +339,8 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>First Name</Text>
                   <CustomTextInput
                     containerStyle={
-                      lastNameError 
-                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+                      firstNameError
+                        ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
@@ -348,6 +356,7 @@ const editProfileScreen = () => {
                 </View>
               </View>
 
+              {/* Last Name */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="user-o"
@@ -358,8 +367,8 @@ const editProfileScreen = () => {
                   <Text style={globalStyles.userInputLabel}>Last Name</Text>
                   <CustomTextInput
                     containerStyle={
-                      firstNameError 
-                        ? { ...globalStyles.userInputContainer, borderColor: 'red', borderWidth: 1 }
+                      lastNameError
+                        ? { ...globalStyles.userInputContainer, borderColor: "red", borderWidth: 1 }
                         : globalStyles.userInputContainer
                     }
                     TextStyle={globalStyles.input}
@@ -372,10 +381,10 @@ const editProfileScreen = () => {
                   {lastNameError && (
                     <Text style={globalStyles.errorText}>{lastNameError}</Text>
                   )}
-
                 </View>
               </View>
 
+              {/* Date of Birth */}
               <View style={globalStyles.profileInputContainer}>
                 <FontAwesome
                   name="calendar-o"
@@ -384,35 +393,122 @@ const editProfileScreen = () => {
                 />
                 <View style={{ flex: 1, paddingLeft: 14 }}>
                   <Text style={globalStyles.userInputLabel}>Date of Birth</Text>
-                  <TouchableOpacity onPress={showDatePicker}>
-                    <TextInput
-                      style={globalStyles.input}
-                      placeholder="--/--/----"
-                      value={dateOfBirth}
-                      editable={false}
-                      pointerEvents="none"
+
+                  {isWeb ? (
+                    <input
+                      type="date"
+                      value={
+                        selectedDate
+                          ? format(parsedDate(selectedDate), "yyyy-MM-dd")
+                          : ""
+                      }
+                      max={format(getMaximumDate(), "yyyy-MM-dd")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          const [year, month, day] = val.split("-");
+                          const formatted = `${day}/${month}/${year}`;
+                          setDateOfBirth(formatted);
+                          setSelectedDate(formatted);
+                        }
+                      }}
+                      style={{
+                        width: "98%",
+                        height: 40,
+                        borderColor: colors.darkGray,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        padding: 10,
+                        fontSize: 16,
+                        backgroundColor: colors.lightgrey,
+                      }}
                     />
-                  </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity onPress={showDatePicker}>
+                      <TextInput
+                        style={[globalStyles.input, { backgroundColor: colors.lightgrey, height: 40 }]}
+                        placeholder="--/--/----"
+                        value={dateOfBirth}
+                        editable={false}
+                        pointerEvents="none"
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
           </ScrollView>
         </View>
-        <View>
-          <Button onPress={handleEditProfile} title="Save" />
-        </View>
-        <DateTimePickerModal
-          isVisible={isDatePickerVisible}
-          mode="date"
-          maximumDate={getMaximumDate()}
-          // date={new Date(selectedDate || Date.now())}
-          date={selectedDate ? parsedDate(selectedDate) : new Date()}
-          onConfirm={uponDateSelection}
-          onCancel={hideDatePicker}
+
+        {isTabOrDesktop ? (
+          <View style={webStyles.buttonRow}>
+            <Button
+              primary={false}
+              title="Cancel"
+              onPress={() => redirectToPage(containers.homeScreen)}
+              style={webStyles.buttonHalf}
+            />
+            <Button
+              onPress={handleEditProfile}
+              title="Save"
+              style={webStyles.buttonHalf}
+            />
+          </View>
+        ) : (
+          <View style={{ marginTop: 16 }}>
+            <Button onPress={handleEditProfile} title="Save" />
+          </View>
+        )}
+
+        {!isWeb && (
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            maximumDate={getMaximumDate()}
+            date={selectedDate ? parsedDate(selectedDate) : new Date()}
+            onConfirm={uponDateSelection}
+            onCancel={hideDatePicker}
+          />
+        )}
+
+        {/* Success Modal */}
+        <ConfirmationModal
+          isModalVisible={isSuccessModalVisible}
+          onClose={handleSuccessModalClose}
+          title="Success"
+          text="Profile updated successfully."
+          submitText="OK"
+          handleSubmit={handleSuccessModalClose}
+        />
+
+        {/* Error Modal */}
+        <ConfirmationModal
+          isModalVisible={isErrorModalVisible}
+          onClose={handleErrorModalClose}
+          title="Update Failed"
+          text={FAILED_TO_UPDATE_DETAILS}
+          submitText="OK"
+          handleSubmit={handleErrorModalClose}
         />
       </KeyBoardWrapper>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 
 export default editProfileScreen;
+
+const webStyles = StyleSheet.create({
+  contentWidth: {
+    width: "70%",
+    alignSelf: "center",
+  },
+  buttonRow: {
+    width: "70%",
+    alignSelf: "center",
+    flexDirection: "row",
+    columnGap: 16,
+  },
+  buttonHalf: {
+    flex: 1,
+  },
+});

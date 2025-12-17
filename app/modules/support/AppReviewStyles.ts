@@ -72,6 +72,11 @@ const styles = StyleSheet.create({
   reviewContainer: {
     padding: 16,
     marginBottom: 64,
+    marginTop: -15,
+  },
+  reviewContainerWeb: {
+    width: "70%",
+    alignSelf: "center",
   },
   label: {
     fontSize: 16,

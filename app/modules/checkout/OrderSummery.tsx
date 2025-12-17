@@ -2,6 +2,7 @@ import {
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_HOME,
   DELIVERY_MODE_STORE,
+  MOV,
   ORDER_SUMMARY_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import React, {
@@ -19,6 +20,8 @@ import {
   SafeAreaView,
   FlatList,
   Animated,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderSummeryStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -32,7 +35,9 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
 import { Alert } from "react-native";
+import { showAlert } from "@/utilities/alertHelper";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import axios from "axios";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
 import { orderService, PickupMode } from "@/services/orderService";
@@ -42,23 +47,30 @@ import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import AddressItem from "../../components/AddressItem";
 import { useAppContext } from "@/context/AppContext";
-import { usePaymentHandler } from "../../components/usePaymentHandler";
+// import { usePaymentHandler } from "../../components/usePaymentHandler";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { ProductsAPI } from "@/services/productService";
-
-type OrderSummeryScreenParams = {
-  orderId: string;
-  address?: string;
-  pickupAddress?: string;
-  selectedDate?: string;
-  selectedSlot?: string;
-  selectedMode?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  email?: string;
-  additionalDetails?: string;
-};
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import { StripeCardInput } from "@/app/components/StripeCardInput";
+import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
+import * as All from "@/app/components/usePaymentHandlerWeb";
+import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
+import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
+// type OrderSummeryScreenParams = {
+//   orderId: string;
+//   address?: string;
+//   pickupAddress?: string;
+//   selectedDate?: string;
+//   selectedSlot?: string;
+//   selectedMode?: string;
+//   firstName?: string;
+//   lastName?: string;
+//   phone?: string;
+//   email?: string;
+//   additionalDetails?: string;
+// };
 
 type shippingAddressDTo = {
   name: string;
@@ -76,8 +88,8 @@ const orderSummeryScreen = () => {
   const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
-  const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
-  const [substitutionSelected, setSubstitutionSelected] = useState(false);
+  // const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
+  // const [substitutionSelected, setSubstitutionSelected] = useState(false);
   // const cartItems = useSelector((state: any) => [...state.cart.items]);
   const cartItemsBefore = useSelector((state: any) => state.cart.items);
   // Safe cart items selection with proper typing
@@ -107,10 +119,88 @@ const orderSummeryScreen = () => {
   );
   const [accordionOpen, setAccordionOpen] = useState(false);
   const rotateAnimation = useRef(new Animated.Value(0)).current;
+  const isWeb = Platform.OS === "web";
+
+  // console.log("All module:", All);
+  // console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
   const { handlePayment } = usePaymentHandler();
+  const [total, settotal] = useState(0);
+  const [currentMOV, setCurrentMOV] = useState<number | null>(null);
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-  // Safe JSON parsing with comprehensive error handling
+  // Calculate total the same way as OrderSummary component (totalIncVAT)
+  const calculateOrderTotal = useCallback((items: any[]) => {
+    const calculateItemSubtotal = (item: any) => {
+      const basePrice = (item.netPrice || 0) - (item.discount || 0);
+      return basePrice * (item?.quantity || 1);
+    };
+
+    const calculateItemVAT = (item: any) => {
+      const subtotal = calculateItemSubtotal(item);
+      const vatRate = item.vatRate || 0;
+      return item.isVatApplicable ? (subtotal * vatRate) / 100 : 0;
+    };
+
+    const subtotalExVAT = items.reduce(
+      (total, item) => total + calculateItemSubtotal(item),
+      0
+    );
+
+    const totalVAT = items.reduce(
+      (total, item) => total + calculateItemVAT(item),
+      0
+    );
+
+    const deliveryCharge = params?.shipping || 0;
+    return subtotalExVAT + totalVAT + deliveryCharge;
+  }, [params?.shipping]);
+
+  // Fetch minimum order value dynamically
+  const getMinimumOrderValue = useCallback(async (): Promise<number | null> => {
+    try {
+      const resp = await axios.get(
+        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+      );
+      const raw = resp?.data;
+
+      if (typeof raw === "number") return Number(raw);
+      if (raw && typeof raw === "object") {
+        if (typeof raw.minimumOrderValue === "number")
+          return Number(raw.minimumOrderValue);
+        if (typeof raw.value === "number") return Number(raw.value);
+      }
+
+      console.warn("Unrecognised MOV shape:", raw);
+      return null;
+    } catch (err) {
+      console.error("Failed to fetch MOV", err);
+      return null;
+    }
+  }, [API_BASE_URL]);
+
+  useEffect(() => {
+    let isActive = true;
+    (async () => {
+      const mov = await getMinimumOrderValue();
+      if (!isActive) return;
+      if (mov !== null) {
+        setCurrentMOV(mov);
+      } else {
+        // Fallback to static MOV if API fails
+        setCurrentMOV(MOV);
+      }
+    })();
+    return () => {
+      isActive = false;
+    };
+  }, [getMinimumOrderValue]);
+
+  useEffect(() => {
+    const calculatedTotal = calculateOrderTotal(cartItems);
+    settotal(calculatedTotal);
+  }, [cartItems, calculateOrderTotal]);
+
   const parseJsonSafely = useCallback(
     (jsonString: string | undefined, fallback: any = null) => {
       if (!jsonString || typeof jsonString !== "string") {
@@ -149,7 +239,7 @@ const orderSummeryScreen = () => {
   }, [params?.pickupDetails, parseJsonSafely]);
 
   // useEffect(() => {
-  //   console.log("pickup details", pickupDetails);
+  //   // console.log("pickup details", pickupDetails);
   // }, [pickupDetails]);
 
   const selectedMode = params?.selectedMode || "Delivery";
@@ -291,7 +381,7 @@ const orderSummeryScreen = () => {
     const fetchAddresses = async () => {
       try {
         const addresses = await addressService.getAllAddress();
-        console.log("Address Data", addresses);
+        // console.log("Address Data", addresses);
 
         if (isActive && isMountedRef.current) {
           setAddressData(Array.isArray(addresses) ? addresses : []);
@@ -328,7 +418,7 @@ const orderSummeryScreen = () => {
     const defaultAddress = addressData.find(
       (address) => address.isDefault === true
     );
-    console.log("defalut address", defaultAddress);
+    // console.log("defalut address", defaultAddress);
     let addressToSelect = null;
     if (addressData.length > 1) {
       if (defaultAddress) {
@@ -340,7 +430,7 @@ const orderSummeryScreen = () => {
     if (addressToSelect && isActive && isMountedRef.current) {
       setSelectedBillingAddress(addressToSelect);
       setSelectedId(addressToSelect._id);
-      console.log("Auto-selected billing address:", addressToSelect);
+      // console.log("Auto-selected billing address:", addressToSelect);
     }
     return () => {
       isActive = false;
@@ -499,7 +589,7 @@ const orderSummeryScreen = () => {
   // Handle billing address selection
   const handleSelectBillingAddress = useCallback(
     (item: Address) => {
-      console.log("Address item", item);
+      // console.log("Address item", item);
       if (!isMountedRef.current || !item) return;
 
       try {
@@ -509,7 +599,7 @@ const orderSummeryScreen = () => {
 
         setSelectedId(item._id || null);
         setSelectedBillingAddress(item);
-        console.log("Selected billing address:", item);
+        // console.log("Selected billing address:", item);
       } catch (error) {
         console.error("Error selecting billing address:", error);
       }
@@ -626,234 +716,623 @@ Contact Number: ${pickupAddress.phone || ""}`;
     }
   }, [pickupAddress, selectedMode]);
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
+  );
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      headerComponent={<Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />}
-      hasFooter={false}
+      headerComponent={HeaderComponent}
+      hasFooter={isTabOrDesktop}
+      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      <View style={globalStyles.container}>
-        <ScrollView>
-          <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
-            <View style={styles.section}>
-              {selectedMode === DELIVERY_MODE_STORE ||
-              selectedMode === DELIVERY_MODE_CURBSIDE ? (
-                <Text style={styles.sectionHeading}>User Details</Text>
-              ) : (
-                <Text style={styles.sectionHeading}>Address:</Text>
-              )}
+      {isTabOrDesktop ? (
+        // WEB LAYOUT
+        <View style={styles.webContainer}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingRight: 0, paddingBottom: 20 }}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+          >
+            <Text style={styles.webPageTitle}>Order Details</Text>
 
-              <View style={[globalStyles.pl_3, styles.deliverAddress]}>
-                {selectedMode === DELIVERY_MODE_STORE ? (
-                  <Ionicons
-                    name="storefront"
-                    size={24}
-                    color={colors.primary}
-                    style={{ marginRight: 10 }}
+            <View style={styles.webContentWrapper}>
+              {/* Left Section - Cart Items */}
+              <View style={styles.webLeftSection}>
+                {cartItems.map((eachCartItem: any) => (
+                  <CartItem
+                    handleDelete={handleDelete}
+                    key={eachCartItem.id}
+                    cartItem={eachCartItem}
+                    stockAvailable={stockAvailable[eachCartItem._id] || 0}
                   />
-                ) : selectedMode === DELIVERY_MODE_CURBSIDE ? (
-                  <Ionicons
-                    name="car"
-                    size={24}
-                    color={colors.primary}
-                    style={{ marginRight: 10 }}
-                  />
-                ) : (
-                  <Ionicons
-                    name="home"
-                    size={24}
-                    color={colors.primary}
-                    style={{ marginRight: 10 }}
-                  />
-                )}
-
-                <View style={styles.addressContainer}>
-                  {selectedMode === DELIVERY_MODE_STORE ||
-                  selectedMode === DELIVERY_MODE_CURBSIDE ? (
-                    <Text style={styles.subheading}>Pickup Details:</Text>
-                  ) : (
-                    <Text style={styles.subheading}>Delivery Address:</Text>
-                  )}
-                  <Text style={styles.addressTextBox}>
-                    {renderAddressText()}
-                  </Text>
-                </View>
+                ))}
               </View>
 
-              {/* Show checkbox only for home delivery */}
-              {selectedMode === DELIVERY_MODE_HOME && (
-                <View style={styles.checkBox}>
-                  <CheckBox
-                    title="Set Delivery Address as Billing Address?"
-                    checked={useSameAddress}
-                    onPress={handleSameAddressToggle}
-                    checkedColor={colors.primary}
-                    uncheckedColor={colors.primary}
-                    containerStyle={styles.checkBoxContainer}
-                  />
+              {/* Right Section - Order Summary */}
+              <View style={styles.webRightSection}>
+                {/* Address Section */}
+                <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Address</Text>
+                  <View style={styles.webAddressBox}>
+                    <Text style={styles.webAddressText}>
+                      {renderAddressText()}
+                    </Text>
+                  </View>
                 </View>
-              )}
 
-              {/* Show billing address section for all modes, but hide when home delivery checkbox is checked */}
-              {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
-                <View>
-                  <View style={styles.billingAddress}>
-                    <Ionicons
-                      name="receipt"
-                      size={24}
-                      color={colors.primary}
-                      style={{ marginRight: 10 }}
-                    />
-                    <View style={styles.billingAddressAccordian}>
-                      <Text style={styles.subheading}>Billing Address: </Text>
+                {/* Your Slot Section */}
+                <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Your Slot</Text>
+                  <Text style={styles.webSlotText}>
+                    You've selected a delivery slot for{" "}
+                    {selectedMode === DELIVERY_MODE_HOME
+                      ? pickupDetails?.date
+                      : pickupAddress?.date}{" "}
+                    from{" "}
+                    {selectedMode === DELIVERY_MODE_HOME
+                      ? pickupDetails?.time
+                      : pickupAddress?.time}{" "}
+                    with {displayMode} as your chosen mode.
+                  </Text>
+                  <TouchableOpacity>
+                    <Text style={styles.webChangeSlotLink}>
+                      change the slot
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Billing Address</Text>
+
+                  {selectedMode === DELIVERY_MODE_HOME && (
+                    <View style={styles.webCheckboxRow}>
+                      <CheckBox
+                        checked={useSameAddress}
+                        onPress={handleSameAddressToggle}
+                        checkedColor={colors.primary}
+                        uncheckedColor={colors.primary}
+                        containerStyle={styles.webCheckboxContainer}
+                      />
+                      <Text style={styles.webCheckboxLabel}>
+                        Set Delivery Address as Billing Address
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Show selected billing address or address selector */}
+                  {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+                    <View>
+                      {/* Currently Selected Billing Address */}
                       {selectedBillingAddress && (
-                        <Text>
-                          {`${selectedBillingAddress.name || "Unknown"}, ${
-                            selectedBillingAddress.postalCode || "Unknown"
-                          }, ${selectedBillingAddress.city || "Unknown City"}`}
-                        </Text>
+                        <View style={styles.webAddressBox}>
+                          <Text style={styles.webAddressText}>
+                            {`${selectedBillingAddress.name || "Unknown"}, ${
+                              selectedBillingAddress.line1 || ""
+                            }${
+                              selectedBillingAddress.line2
+                                ? `, ${selectedBillingAddress.line2}`
+                                : ""
+                            }, ${
+                              selectedBillingAddress.city || "Unknown City"
+                            }, ${selectedBillingAddress.state || ""} ${
+                              selectedBillingAddress.postalCode || ""
+                            }`}
+                          </Text>
+                        </View>
                       )}
+
+                      {/* Accordion Toggle */}
                       <TouchableOpacity
-                        style={styles.accordian}
+                        style={styles.webAccordionToggle}
                         onPress={toggleAccordion}
                       >
+                        <Text style={styles.webChangeSlotLink}>
+                          {accordionOpen ? "Hide" : "Change"} billing address
+                        </Text>
                         <Animated.View
                           style={{ transform: [{ rotate: spin }] }}
                         >
                           <Ionicons
                             name="chevron-down-circle"
-                            size={24}
+                            size={20}
                             color={colors.primary}
-                            style={styles.accordianIcon}
                           />
                         </Animated.View>
                       </TouchableOpacity>
-                    </View>
-                  </View>
 
-                  {accordionOpen && (
-                    <View style={styles.accordionContent}>
-                      {addressData.length > 0 ? (
-                        <FlatList
-                          data={addressData}
-                          renderItem={({ item }) => (
-                            <AddressItem
-                              item={item}
-                              onEdit={handleEdit}
-                              onDelete={handleBillingAddressDelete}
-                              showRadio
-                              isSelected={item._id === selectedId}
-                              onSelect={() => handleSelectBillingAddress(item)}
-                            />
+                      {/* Accordion Content - Address List */}
+                      {accordionOpen && (
+                        <View style={styles.webAccordionContent}>
+                          {addressData.length > 0 ? (
+                            <View>
+                              {addressData.map((item) => (
+                                <AddressItem
+                                  key={
+                                    item._id?.toString() ||
+                                    `address-${Math.random()}`
+                                  }
+                                  item={item}
+                                  onEdit={handleEdit}
+                                  onDelete={handleBillingAddressDelete}
+                                  showRadio
+                                  isSelected={item._id === selectedId}
+                                  onSelect={() =>
+                                    handleSelectBillingAddress(item)
+                                  }
+                                />
+                              ))}
+                            </View>
+                          ) : (
+                            <View style={styles.webNoAddressContainer}>
+                              <Text style={styles.webNoAddressText}>
+                                No billing addresses found
+                              </Text>
+                            </View>
                           )}
-                          keyExtractor={(item, index) =>
-                            item?._id?.toString() || `address-${index}`
-                          }
-                          contentContainerStyle={styles.addressList}
-                          showsVerticalScrollIndicator={false}
-                        />
-                      ) : (
-                        <View style={styles.noAddressContainer}>
-                          <Text style={styles.noAddressText}>
-                            No billing addresses found
-                          </Text>
+                          <Button
+                            onPress={handleAddBillingAddress}
+                            title="Add Billing Address"
+                            style={{ marginTop: 16 }}
+                          />
                         </View>
                       )}
-                      <Button
-                        onPress={handleAddBillingAddress}
-                        title="Add Billing Address"
-                      />
+                    </View>
+                  )}
+
+                  {/* Show message if using same address */}
+                  {selectedMode === DELIVERY_MODE_HOME && useSameAddress && (
+                    <View style={styles.webAddressBox}>
+                      <Text style={styles.webAddressText}>
+                        Same as delivery address
+                      </Text>
                     </View>
                   )}
                 </View>
-              )}
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionHeading}>Your Slot</Text>
-              <View style={globalStyles.pl_3}>
-                <Text>
-                  {selectedMode === DELIVERY_MODE_HOME
-                    ? `${displayMode} scheduled for ${
-                        pickupDetails?.date || "TBD"
-                      } at ${pickupDetails?.time || "TBD"}`
-                    : `${displayMode} scheduled for ${
-                        pickupAddress?.date || "TBD"
-                      } at ${pickupAddress?.time || "TBD"}`}
-                </Text>
-              </View>
-            </View>
-
-            <View style={[styles.section, globalStyles.mb_0]}>
-              <Text style={styles.sectionHeading}>Order Details</Text>
-              <View style={[globalStyles.pl_3, { marginBottom: 16 }]}>
-                {cartItems.map((eachCartItem: any) => {
-                  return (
-                    <CartItem
-                      // itemContainerStyle={styles.cartItemContainerStyle}
-                      handleDelete={handleDelete}
-                      key={eachCartItem.id}
-                      cartItem={eachCartItem}
-                      stockAvailable={stockAvailable[eachCartItem._id] || 0}
+                {/* Substitutions Section */}
+                {/* <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Substitutions</Text>
+                  <View style={styles.webCheckboxRow}>
+                    <CheckBox
+                      checked={substitutionSelected}
+                      onPress={() =>
+                        setSubstitutionSelected(!substitutionSelected)
+                      }
+                      checkedColor={colors.primary}
+                      uncheckedColor={colors.primary}
+                      containerStyle={styles.webCheckboxContainer}
                     />
-                  );
-                })}
+                    <Text style={styles.webCheckboxLabel}>
+                      Choose Substitutions for my orders.
+                    </Text>
+                  </View>
+                  <Text style={styles.webSubText}>
+                    If the product you picked is not available a similar product
+                    or brand will be picked.
+                  </Text>
+                </View> */}
+
+                {/* Order Details Section */}
+                {/* <View style={styles.webSectionCard}>
+                  <Text style={styles.webSectionTitle}>Order Details</Text> */}
+
+                {/* Table Header */}
+                {/* <View style={styles.webTableHeader}>
+                    <Text style={[styles.webTableCell, { flex: 2 }]}>
+                      Item Name
+                    </Text>
+                    <Text
+                      style={[
+                        styles.webTableCell,
+                        { flex: 1, textAlign: "center" },
+                      ]}
+                    >
+                      Total Items
+                    </Text>
+                    <Text
+                      style={[
+                        styles.webTableCell,
+                        { flex: 1, textAlign: "right" },
+                      ]}
+                    >
+                      Price
+                    </Text>
+                  </View> */}
+
+                {/* Table Rows */}
+                {/* {cartItems.map((item: any) => (
+                    <View key={item.id} style={styles.webTableRow}>
+                      <Text style={[styles.webTableCell, { flex: 2 }]}>
+                        {item.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.webTableCell,
+                          { flex: 1, textAlign: "center" },
+                        ]}
+                      >
+                        {String(item.quantity).padStart(2, "0")}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.webTableCell,
+                          { flex: 1, textAlign: "right" },
+                        ]}
+                      >
+                        {item.discount}$
+                      </Text>
+                    </View>
+                  ))} */}
+
+                {/* Summary Rows */}
+                {/* <View style={styles.webSummaryRow}>
+                    <Text style={styles.webSummaryLabel}>Total Price</Text>
+                    <Text style={styles.webSummaryValue}>
+                      {cartItems.reduce(
+                        (sum: number, item: any) =>
+                          sum + item.discount * item.quantity,
+                        0
+                      )}
+                      $
+                    </Text>
+                  </View>
+                  <View style={styles.webSummaryRow}>
+                    <Text style={styles.webSummaryLabel}>Discount</Text>
+                    <Text style={styles.webSummaryValue}>
+                      -
+                      {cartItems.reduce(
+                        (sum: number, item: any) =>
+                          sum + (item.netPrice - item.discount) * item.quantity,
+                        0
+                      )}
+                      $
+                    </Text>
+                  </View>
+                  <View style={styles.webSummaryRow}>
+                    <Text
+                      style={[
+                        styles.webSummaryLabel,
+                        { color: colors.primary },
+                      ]}
+                    >
+                      Shipping
+                    </Text>
+                    <Text style={styles.webSummaryValue}>3$</Text>
+                  </View>
+                  <View style={[styles.webSummaryRow, styles.webSubtotalRow]}>
+                    <Text style={styles.webSubtotalLabel}>SubTotal</Text>
+                    <Text style={styles.webSubtotalValue}>
+                      {cartItems.reduce(
+                        (sum: number, item: any) =>
+                          sum + item.discount * item.quantity,
+                        0
+                      ) + 3}
+                      $
+                    </Text>
+                  </View> */}
+                {/* </View>  */}
+
+                {/* Order Summary */}
+                <OrderSummary
+                  cartItems={cartItems}
+                  containerStyle={styles.compactOrderSummary}
+                  sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                />
+                {/* Place Order Button */}
+                {isWeb && <StripeCardInput />}
+
+                <Button
+                  title="Proceed for Payment"
+                  disabled={!isPaymentEnabled}
+                  onPress={async () => {
+                    try {
+                      // Get current MOV (use fetched value or fallback to static)
+                      const mov = currentMOV !== null ? currentMOV : MOV;
+                      
+                      // Check if total is less than MOV
+                      if (total < mov) {
+                        showAlert(
+                          "Minimum Order Not Met",
+                          `Your order value (£${total.toFixed(2)}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
+                        );
+                        return;
+                      }
+
+                      handlePayment(cartItems, {
+                        shippingAddress: shippingAddress,
+                        billingAddress: selectedBillingAddress,
+                        pickupdetails: pickupDetails,
+                        deliveryDate: pickupDetails?.date,
+                        deliveryTime: pickupDetails?.time,
+                        selectedSlot: Array.isArray(selectedMode)
+                          ? selectedMode[0]
+                          : selectedMode,
+                        selectedMode: Array.isArray(selectedMode)
+                          ? selectedMode[0]
+                          : selectedMode,
+                      });
+                    } catch (error) {
+                      console.error("Payment handler error:", error);
+                      showAlert(
+                        "Error",
+                        "Failed to process payment. Please try again."
+                      );
+                    }
+                  }}
+                  style={
+                    isTabOrDesktop
+                      ? [
+                          styles.webPlaceOrderButton,
+                          !isPaymentEnabled && {
+                            backgroundColor: colors.lightgrey,
+                          },
+                        ]
+                      : isPaymentEnabled
+                      ? styles.activeBtn
+                      : styles.disabledBtn
+                  }
+                  textStyle={styles.buttonText}
+                />
               </View>
-              <OrderSummary
-                cartItems={cartItems}
-                sectionHeadingStyle={styles.sectionHeading}
-                hideHeading={true}
-                containerStyle={styles.orderSummaryContainer}
+            </View>
+          </ScrollView>
+        </View>
+      ) : (
+        // MOBILE LAYOUT
+        <View style={globalStyles.container}>
+          <ScrollView>
+            <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
+              <View style={styles.section}>
+                {selectedMode === DELIVERY_MODE_STORE ||
+                selectedMode === DELIVERY_MODE_CURBSIDE ? (
+                  <Text style={styles.sectionHeading}>User Details</Text>
+                ) : (
+                  <Text style={styles.sectionHeading}>Address:</Text>
+                )}
+
+                <View style={[globalStyles.pl_3, styles.deliverAddress]}>
+                  {selectedMode === DELIVERY_MODE_STORE ? (
+                    <Ionicons
+                      name="storefront"
+                      size={24}
+                      color={colors.primary}
+                      style={{ marginRight: 10 }}
+                    />
+                  ) : selectedMode === DELIVERY_MODE_CURBSIDE ? (
+                    <Ionicons
+                      name="car"
+                      size={24}
+                      color={colors.primary}
+                      style={{ marginRight: 10 }}
+                    />
+                  ) : (
+                    <Ionicons
+                      name="home"
+                      size={24}
+                      color={colors.primary}
+                      style={{ marginRight: 10 }}
+                    />
+                  )}
+
+                  <View style={styles.addressContainer}>
+                    {selectedMode === DELIVERY_MODE_STORE ||
+                    selectedMode === DELIVERY_MODE_CURBSIDE ? (
+                      <Text style={styles.subheading}>Pickup Details:</Text>
+                    ) : (
+                      <Text style={styles.subheading}>Delivery Address:</Text>
+                    )}
+                    <Text style={styles.addressTextBox}>
+                      {renderAddressText()}
+                    </Text>
+                  </View>
+                </View>
+
+                {selectedMode === DELIVERY_MODE_HOME && (
+                  <View style={styles.checkBox}>
+                    <CheckBox
+                      title="Set Delivery Address as Billing Address?"
+                      checked={useSameAddress}
+                      onPress={handleSameAddressToggle}
+                      checkedColor={colors.primary}
+                      uncheckedColor={colors.primary}
+                      containerStyle={styles.checkBoxContainer}
+                    />
+                  </View>
+                )}
+
+                {!(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+                  <View>
+                    <View style={styles.billingAddress}>
+                      <Ionicons
+                        name="receipt"
+                        size={24}
+                        color={colors.primary}
+                        style={{ marginRight: 10 }}
+                      />
+                      <View style={styles.billingAddressAccordian}>
+                        <Text style={styles.subheading}>Billing Address: </Text>
+                        {selectedBillingAddress && (
+                          <Text>
+                            {`${selectedBillingAddress.name || "Unknown"}, ${
+                              selectedBillingAddress.postalCode || "Unknown"
+                            }, ${
+                              selectedBillingAddress.city || "Unknown City"
+                            }`}
+                          </Text>
+                        )}
+                        <TouchableOpacity
+                          style={styles.accordian}
+                          onPress={toggleAccordion}
+                        >
+                          <Animated.View
+                            style={{ transform: [{ rotate: spin }] }}
+                          >
+                            <Ionicons
+                              name="chevron-down-circle"
+                              size={24}
+                              color={colors.primary}
+                              style={styles.accordianIcon}
+                            />
+                          </Animated.View>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {accordionOpen && (
+                      <View style={styles.accordionContent}>
+                        {addressData.length > 0 ? (
+                          <FlatList
+                            data={addressData}
+                            renderItem={({ item }) => (
+                              <AddressItem
+                                item={item}
+                                onEdit={handleEdit}
+                                onDelete={handleBillingAddressDelete}
+                                showRadio
+                                isSelected={item._id === selectedId}
+                                onSelect={() =>
+                                  handleSelectBillingAddress(item)
+                                }
+                              />
+                            )}
+                            keyExtractor={(item, index) =>
+                              item?._id?.toString() || `address-${index}`
+                            }
+                            contentContainerStyle={styles.addressList}
+                            showsVerticalScrollIndicator={false}
+                          />
+                        ) : (
+                          <View style={styles.noAddressContainer}>
+                            <Text style={styles.noAddressText}>
+                              No billing addresses found
+                            </Text>
+                          </View>
+                        )}
+                        <Button
+                          onPress={handleAddBillingAddress}
+                          title="Add Billing Address"
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Your Slot</Text>
+                <View style={globalStyles.pl_3}>
+                  <Text>
+                    {selectedMode === DELIVERY_MODE_HOME
+                      ? `${displayMode} scheduled for ${
+                          pickupDetails?.date || "TBD"
+                        } at ${pickupDetails?.time || "TBD"}`
+                      : `${displayMode} scheduled for ${
+                          pickupAddress?.date || "TBD"
+                        } at ${pickupAddress?.time || "TBD"}`}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.section, globalStyles.mb_0]}>
+                <Text style={styles.sectionHeading}>Order Details</Text>
+                <View style={[globalStyles.pl_3]}>
+                  {cartItems.map((eachCartItem: any) => {
+                    return (
+                      <CartItem
+                        handleDelete={handleDelete}
+                        key={eachCartItem.id}
+                        cartItem={eachCartItem}
+                        stockAvailable={stockAvailable[eachCartItem._id] || 0}
+                      />
+                    );
+                  })}
+                </View>
+                <OrderSummary
+                  cartItems={cartItems}
+                  sectionHeadingStyle={styles.sectionHeading}
+                  hideHeading={true}
+                  containerStyle={styles.orderSummaryContainer}
+                />
+              </View>
+            </View>
+            <Text style={styles.noteText}>
+              *please select a billing address before proceeding to payment
+            </Text>
+            {isWeb && (
+              <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+                <StripeCardInput />
+              </View>
+            )}
+            <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+              <Button
+                title="Proceed for Payment"
+                disabled={!isPaymentEnabled}
+                onPress={async () => {
+                  try {
+                    // Calculate total the same way as OrderSummary component
+                    const currentTotal = calculateOrderTotal(cartItems);
+                    
+                    // Get current MOV (use fetched value or fallback to static)
+                    const mov = currentMOV !== null ? currentMOV : MOV;
+
+                    if (currentTotal < mov) {
+                      showAlert(
+                        "Minimum Order Not Met",
+                        `Your order value (£${currentTotal.toFixed(
+                          2
+                        )}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
+                      );
+                      return;
+                    }
+
+                    handlePayment(cartItems, {
+                      shippingAddress: shippingAddress,
+                      billingAddress: selectedBillingAddress,
+                      pickupdetails: pickupDetails,
+                      deliveryDate: pickupDetails?.date,
+                      deliveryTime: pickupDetails?.time,
+                      selectedSlot: Array.isArray(selectedMode)
+                        ? selectedMode[0]
+                        : selectedMode,
+                      selectedMode: Array.isArray(selectedMode)
+                        ? selectedMode[0]
+                        : selectedMode,
+                    });
+                  } catch (error) {
+                    console.error("Payment handler error:", error);
+                    showAlert(
+                      "Error",
+                      "Failed to process payment. Please try again."
+                    );
+                  }
+                }}
+                style={isPaymentEnabled ? styles.activeBtn : styles.disabledBtn}
+                textStyle={styles.buttonText}
               />
             </View>
-          </View>
-
-          <View style={{ paddingHorizontal: 24 }}>
-            <Button
-              title="Proceed for Payment"
-              disabled={!isPaymentEnabled}
-              onPress={() => {
-                try {
-                  handlePayment(cartItems, {
-                    shippingAddress: shippingAddress,
-                    billingAddress: selectedBillingAddress,
-                    pickupdetails: pickupDetails,
-                    deliveryDate: pickupDetails?.date,
-                    deliveryTime: pickupDetails?.time,
-                    selectedSlot: Array.isArray(selectedMode)
-                      ? selectedMode[0]
-                      : selectedMode,
-                    selectedMode: Array.isArray(selectedMode)
-                      ? selectedMode[0]
-                      : selectedMode,
-                  });
-                } catch (error) {
-                  console.error("Payment handler error:", error);
-                  Alert.alert(
-                    "Error",
-                    "Failed to process payment. Please try again."
-                  );
-                }
-              }}
-              style={isPaymentEnabled ? styles.activeBtn : styles.disabledBtn}
-              textStyle={styles.buttonText}
-            />
-          </View>
-        </ScrollView>
-
-        <ConfirmationModal
-          onClose={() => setIsModalVisible(false)}
-          isModalVisible={isModalVisible}
-          title="Delete Product"
-          text="Are you sure you want to delete this? You can save this item for later too."
-          submitText="Delete Item"
-          handleSubmit={confirmDelete}
-          cancelText="Save for Later"
-          handleCancel={cancelDelete}
-        />
-      </View>
-    </PageLayout>
+          </ScrollView>
+        </View>
+      )}
+      <ConfirmationModal
+        onClose={() => setIsModalVisible(false)}
+        isModalVisible={isModalVisible}
+        title="Delete Product"
+        text="Are you sure you want to delete this? You can save this item for later too."
+        submitText="Delete Item"
+        handleSubmit={confirmDelete}
+        cancelText="Save for Later"
+        handleCancel={cancelDelete}
+      />
+    </LayoutComponent>
   );
 };
 

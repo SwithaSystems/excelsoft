@@ -1,5 +1,5 @@
 // import axiosInstance from "./axiosConfig";
-import { get } from "axios";
+// import { get } from "axios";
 import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {
@@ -64,6 +64,10 @@ export interface Order {
   pickupDetails?: PickupDetails;
   createdAt: string;
   updatedAt: string;
+
+  status?: string;
+  reason?: string;
+  lastValidStatus?: string;
 }
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -71,9 +75,9 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
     try {
-      console.log("API_BASE_URL", `${API_BASE_URL}/orders`);
+      // console.log("API_BASE_URL", `${API_BASE_URL}/orders`);
       const response = await jsonAxios.get<Order[]>(`${API_BASE_URL}/orders`);
-      console.log("AllOrders", response.data);
+      // console.log("AllOrders", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -86,7 +90,7 @@ export const orderService = {
       const response = await jsonAxios.get<Order[]>(
         `${API_BASE_URL}/orders/user/${userId}`
       );
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders by userId:", error);
@@ -99,7 +103,7 @@ export const orderService = {
       const response = await jsonAxios.get<Order>(
         `${API_BASE_URL}/orders/getById/${orderId}`
       );
-      console.log("orderdata by id", response.data);
+      // console.log("orderdata by id", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching order by orderId:", error);
@@ -112,7 +116,7 @@ export const orderService = {
       const response = await jsonAxios.get<Order>(
         `${API_BASE_URL}/orders/${orderId}`
       );
-      console.log("orderdata by id", response.data);
+      // console.log("orderdata by id", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching order by orderId:", error);
@@ -121,13 +125,13 @@ export const orderService = {
   },
 
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
-    console.log("orderPayload", orderPayload);
+    // console.log("orderPayload", orderPayload);
     try {
       const response = await jsonAxios.post<Order>(
         `${API_BASE_URL}/orders`,
         orderPayload
       );
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error create orders:", error);
@@ -136,12 +140,12 @@ export const orderService = {
   },
 
   getOrdersByOrderDate: async (orderDate: string): Promise<Order[]> => {
-    console.log("todayorderDate", orderDate);
+    // console.log("todayorderDate", orderDate);
     try {
       const response = await jsonAxios.get<Order[]>(
         `${API_BASE_URL}/orders/by_date/${orderDate}`
       );
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching orders by orderDate:", error);
@@ -152,7 +156,7 @@ export const orderService = {
   getAllOrderStatuses: async (): Promise<{ statuses: string[] }> => {
     try {
       const response = await jsonAxios.get(`${API_BASE_URL}/orders/statuses`);
-      console.log("response of order status", response);
+      // console.log("response of order status", response);
       return response.data;
     } catch (error) {
       console.error("Error fetching order statuses", error);
@@ -161,7 +165,7 @@ export const orderService = {
   },
 
   updateOrderStatus: async (orderPayload: Partial<Order>): Promise<Order> => {
-    console.log("orderPayload", orderPayload);
+    // console.log("orderPayload", orderPayload);
     try {
       const { _id, ...updateData } = orderPayload;
 
@@ -169,7 +173,7 @@ export const orderService = {
         `${API_BASE_URL}/orders/${_id}/status`,
         updateData
       );
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error updating order status:", error);

@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const statusBarHeight = StatusBar.currentHeight;
-console.log("Status bar height:", statusBarHeight);
+// console.log("Status bar height:", statusBarHeight);
 
 // Get device dimensions for responsive calculations
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");

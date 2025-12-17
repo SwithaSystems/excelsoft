@@ -84,10 +84,9 @@ function OrderSummary(props) {
                   {CurrencySymbol}
                   {(item.netPrice - (item.discount || 0)).toFixed(2)}
                 </Text>
-                {item.isVatApplicable && (
+                {item.isVatApplicable ? (
                   <Text style={styles.vatamount}>
                     {CurrencySymbol}
-
                     {(
                       (item.vatRate *
                         (item.netPrice - item.discount) *
@@ -95,8 +94,7 @@ function OrderSummary(props) {
                       100
                     ).toFixed(2)}
                   </Text>
-                )}{" "}
-                {!item.isVatApplicable && (
+                ) : (
                   <Text style={styles.vatamount}>
                     {CurrencySymbol}
                     {0}

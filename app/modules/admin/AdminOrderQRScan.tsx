@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,19 +19,38 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./AdminOrderQRScanStyles";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+
 const AdminOrderQRScan = () => {
   const [qrCode, setQrCode] = useState("");
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
+    <BrandHeaderWeb hideUserGreeting = {true}/>
+  ) : (
+    <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
+  );
+
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="scan&deliver" />;
+
   return (
     //   <SafeAreaView style={globalStyles.safeAreaContainer}>
     // <View style={styles.container}>
     //   <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
     //   <ScrollView>
-    <PageLayout
-      hasFooter
+    <LayoutComponent
       hasHeader
-      scrollable
-      headerComponent={<Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />}
-      footerComponent={<AdminFooter activeTab="scan&deliver" />}
+      headerComponent={HeaderComponent}
+      hasFooter
+      footerComponent={FooterComponent}
+      hasSidebar={isTabOrDesktop}
+      scrollable={true}
+      hideNavItems={true}
     >
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>Scan the consumer's QR Order</Text>
@@ -63,7 +84,7 @@ const AdminOrderQRScan = () => {
   </View>
   <AdminFooter activeTab="scan&deliver"/>
 </SafeAreaView> */}
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

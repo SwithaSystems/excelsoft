@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import styles from "./VerifcationStyles";
 import Header from "../../components/Header";
@@ -22,6 +23,8 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { VERIFICATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const verifcationScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const {
     userData,
     from,
@@ -35,13 +38,13 @@ const verifcationScreen = () => {
   const [parsedUserData, setParsedUserData] = useState(null);
   const inputRefs = useRef<TextInput[]>([]);
 
-  console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
+  // console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
 
   useEffect(() => {
-    console.log("Source:", from);
-    console.log("Raw userData:", userData);
-    console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
-    console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
+    // console.log("Source:", from);
+    // console.log("Raw userData:", userData);
+    // console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
+    // console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
 
     // Set phone number based on source
     if (from === "signup" && userData) {
@@ -64,30 +67,30 @@ const verifcationScreen = () => {
     } else if (from === "forgotPassword" && phoneNumber_forgetPwd) {
       if (Array.isArray(phoneNumber_forgetPwd)) {
         setPhoneNumber(phoneNumber_forgetPwd[0]);
-        console.log(
-          "Set phone number (from array) for password reset:",
-          phoneNumber_forgetPwd[0]
-        );
+        // console.log(
+        //   "Set phone number (from array) for password reset:",
+        //   phoneNumber_forgetPwd[0]
+        // );
       } else {
         setPhoneNumber(phoneNumber_forgetPwd);
-        console.log(
-          "Set phone number (from string) for password reset:",
-          phoneNumber_forgetPwd
-        );
+        // console.log(
+        //   "Set phone number (from string) for password reset:",
+        //   phoneNumber_forgetPwd
+        // );
       }
     } else if (from === "verify" && phoneNumber_editAccount) {
       if (Array.isArray(phoneNumber_editAccount)) {
         setPhoneNumber(phoneNumber_editAccount[0]);
-        console.log(
-          "Set phone number (from array) for password reset:",
-          phoneNumber_editAccount[0]
-        );
+        // console.log(
+        //   "Set phone number (from array) for password reset:",
+        //   phoneNumber_editAccount[0]
+        // );
       } else {
         setPhoneNumber(phoneNumber_editAccount);
-        console.log(
-          "Set phone number (from string) for password reset:",
-          phoneNumber_editAccount
-        );
+        // console.log(
+        //   "Set phone number (from string) for password reset:",
+        //   phoneNumber_editAccount
+        // );
       }
     }
   }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount]);
@@ -105,7 +108,7 @@ const verifcationScreen = () => {
 
   // const phoneNumber = parsedUserData?.phone;
 
-  console.log("phoneNumber", phoneNumber);
+  // console.log("phoneNumber", phoneNumber);
   const handleChange = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text;
@@ -132,13 +135,13 @@ const verifcationScreen = () => {
           email: email,
           OtpNumber,
         });
-        console.log("Email OTP verification result:", res);
+        // console.log("Email OTP verification result:", res);
       } else {
         res = await TwilioApi.verifyOtp({
           phoneNumber,
           OtpNumber,
         });
-        console.log("Phone OTP verification result:", res);
+        // console.log("Phone OTP verification result:", res);
       }
 
       // Check if verification was successful
@@ -162,7 +165,7 @@ const verifcationScreen = () => {
         }
 
         if (from === "signup") {
-          console.log("ParsedUserData", parsedUserData);
+          // console.log("ParsedUserData", parsedUserData);
 
           if (!parsedUserData) {
             Alert.alert("Error", "User data is missing.");
@@ -174,7 +177,7 @@ const verifcationScreen = () => {
               userData: parsedUserData,
             });
 
-            console.log("response from verify otp", response);
+            // console.log("response from verify otp", response);
 
             if (response?.access_token && response?.user) {
               Alert.alert("Success", "User successfully registered");
@@ -244,27 +247,50 @@ const verifcationScreen = () => {
       <PageLayout
         hasFooter={false}
         hasHeader
-        headerComponent={<Header headerText={VERIFICATION_SCREEN_TITLE} />}
+        headerComponent={
+          <Header 
+            headerText={VERIFICATION_SCREEN_TITLE}
+            hideBackArrow={isTabOrDesktop}
+            headerStyle={isTabOrDesktop ? styles.verificationHeaderStyle : undefined}
+            headerTitleStyle={isTabOrDesktop ? styles.verificationHeaderTitle : undefined}
+          />
+        }
       >
         <KeyBoardWrapper>
-          <Image
-            style={styles.image}
-            source={require("assets/UserVerificationSuccessful.png")}
-          />
-          <Text style={styles.description}>
+          <View style={[
+            styles.contentContainer,
+            isTabOrDesktop && styles.contentContainerDesktop
+          ]}>
+            <Image
+              style={[
+                styles.image,
+                isTabOrDesktop && styles.imageDesktop
+              ]}
+              source={require("assets/UserVerificationSuccessful.png")}
+            />
+            <Text style={[
+              styles.description,
+              isTabOrDesktop && styles.descriptionDesktop
+            ]}>
             {verificationType === "email"
               ? "We've sent a verification link to your email address. Please check your inbox and click on the link to verify your email. If you don't see the email, check your spam folder or try resending the verification email."
               : "We have sent a verification code to your mobile. Please enter the code."}
           </Text>
 
-          <View style={styles.codeContainer}>
+          <View style={[
+            styles.codeContainer,
+            isTabOrDesktop && styles.codeContainerDesktop
+          ]}>
             {code.map((digit, index) => (
               <TextInput
                 key={index}
                 ref={(ref) => {
                   if (ref) inputRefs.current[index] = ref;
                 }}
-                style={styles.inputBox}
+                style={[
+                  styles.inputBox,
+                  isTabOrDesktop && styles.inputBoxDesktop
+                ]}
                 keyboardType="numeric"
                 maxLength={1}
                 value={digit}
@@ -282,22 +308,31 @@ const verifcationScreen = () => {
               />
             ))}
           </View>
-          <View style={{ alignItems: "center" }}>
+          <View style={[
+            styles.buttonContainer,
+            isTabOrDesktop && styles.buttonContainerDesktop
+          ]}>
             <TouchableOpacity
-              style={styles.verifyButton}
+              style={[
+                styles.verifyButton,
+                isTabOrDesktop && styles.verifyButtonDesktop
+              ]}
               onPress={handleVerify}
             >
               <Text style={styles.buttonText}>Verify</Text>
             </TouchableOpacity>
 
-            <Text style={styles.resendText}>
+            <Text style={[
+              styles.resendText,
+              isTabOrDesktop && styles.resendTextDesktop
+            ]}>
               Didn't receive the code?{" "}
               <Text style={styles.resendLink} onPress={handleResend}>
                 Resend
               </Text>
             </Text>
           </View>
-          {/* </View> */}
+          </View>
         </KeyBoardWrapper>
         {/* </SafeAreaView> */}
       </PageLayout>

@@ -14,7 +14,7 @@ export const UserAPI = {
   },
 
   userEditProfile: async (id: any, body: any) => {
-    console.log("Sending body to API:", body, id);
+    // console.log("Sending body to API:", body, id);
     const formDataAxios = createAxiosInstance("formdata");
 
     try {
@@ -25,15 +25,15 @@ export const UserAPI = {
       return response;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log("API error:", error.response?.data || error.message);
+        // console.log("API error:", error.response?.data || error.message);
       } else {
-        console.log("Unknown error:", error);
+        // console.log("Unknown error:", error);
       }
       throw error;
     }
   },
   userEditContact: async (id: any, body: any) => {
-    console.log("Sending body to API:", body);
+    // console.log("Sending body to API:", body);
     const formDataAxios = createAxiosInstance("formdata");
 
     try {
@@ -44,16 +44,16 @@ export const UserAPI = {
       return response;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log("API error:", error.response?.data || error.message);
+        // console.log("API error:", error.response?.data || error.message);
       } else {
-        console.log("Unknown error:", error);
+        // console.log("Unknown error:", error);
       }
       throw error;
     }
   },
 
   getUserByPhonenumber: async (phoneNumber: any) => {
-    console.log("phoneNumber", phoneNumber);
+    // console.log("phoneNumber", phoneNumber);
     const response = await jsonAxios.get(
       `/users/getUserByPhoneNumber/${phoneNumber}`
     );
@@ -61,12 +61,12 @@ export const UserAPI = {
   },
 
   getUserById: async (id: any) => {
-    console.log("id", id);
+    // console.log("id", id);
     const response = await jsonAxios.get(`/users/getUserById/${id}`);
     return response;
   },
   getUserByEmail: async (email: any) => {
-    console.log("email", email);
+    // console.log("email", email);
     const response = await jsonAxios.get(`/users/getUserByEmail/${email}`);
     return response;
   },
@@ -77,16 +77,20 @@ export const UserAPI = {
   //   );
   //   return response;
   // },
-  changePassword: async (body: { newPassword: string }) => {
-    console.log("newPassword", body.newPassword);
-    const response = await jsonAxios.put("/users/changePassword", {
+  changePassword: async (body: { newPassword: string; currentPassword?: string }) => {
+    // console.log("newPassword", body.newPassword);
+    const requestBody: any = {
       newPassword: body.newPassword,
-    });
+    };
+    if (body.currentPassword) {
+      requestBody.currentPassword = body.currentPassword;
+    }
+    const response = await jsonAxios.put("/users/changePassword", requestBody);
     return response;
   },
 
   resetPassword: async (body: { newPassword: string; phoneNumber: string }) => {
-    console.log("newPassword", body.newPassword, body.phoneNumber);
+    // console.log("newPassword", body.newPassword, body.phoneNumber);
     const response = await jsonAxios.post("/users/resetPassword", {
       newPassword: body.newPassword,
       phoneNumber: body.phoneNumber,

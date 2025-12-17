@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import colors from "../../../constants/colors";
@@ -13,7 +13,14 @@ interface BackArrowProps {
 const BackArrow = ({ needResetNavigation }: BackArrowProps) => {
   const router = useRouter();
   const navigation = useNavigation();
-
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  
+  // Hide on tablet and desktop
+  if (!isMobile) {
+    return null;
+  }
+  
   const handleBackArrow = () => {
     if (needResetNavigation) {
       clearNavigationStack("modules/home/Home");
@@ -21,6 +28,7 @@ const BackArrow = ({ needResetNavigation }: BackArrowProps) => {
       navigation.goBack();
     }
   };
+  
   return (
     <TouchableOpacity
       style={styles.container}

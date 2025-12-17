@@ -12,7 +12,7 @@ const CategoryDropdown = ({
   const [isVisible, setIsVisible] = useState(false);
 
   const handleSelect = (category) => {
-    console.log("Parent category", category);
+    // console.log("Parent category", category);
     setSelectedCategory(category.id);
     setIsVisible(false);
   };
@@ -88,7 +88,8 @@ const styles = {
     color: "#333",
   },
   placeholderText: {
-    color: "#999",
+    color: colors.slateGrey,
+    fontSize: 14,
   },
   arrow: {
     fontSize: 12,

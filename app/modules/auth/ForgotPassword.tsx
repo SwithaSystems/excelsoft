@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, useWindowDimensions } from "react-native";
 // import styles from "./forgotPasswordStyles";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -18,6 +18,8 @@ import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import styles from "./ForgotPasswordStyles";
 
 const forgotPasswordScreen = () => {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -85,7 +87,7 @@ const forgotPasswordScreen = () => {
       }
     } else {
       // TODO: Implement forgot password for email, if required
-      console.log("Email forgot password not implemented.");
+      // console.log("Email forgot password not implemented.");
     }
   };
 
@@ -106,10 +108,20 @@ const forgotPasswordScreen = () => {
       hasHeader
       hasFooter={false}
       scrollable
-      headerComponent={<Header headerText={FORGOT_PASSWORD_SCREEN_TITLE} />}
+      headerComponent={
+        <Header 
+          headerText={FORGOT_PASSWORD_SCREEN_TITLE}
+          hideBackArrow={isTabOrDesktop}
+          headerStyle={isTabOrDesktop ? styles.forgotPasswordHeaderStyle : undefined}
+          headerTitleStyle={isTabOrDesktop ? styles.forgotPasswordHeaderTitle : undefined}
+        />
+      }
     >
       <KeyBoardWrapper>
-        <View style={styles.sectionContainer}>
+        <View style={[
+          styles.sectionContainer,
+          isTabOrDesktop && styles.sectionContainerWeb
+        ]}>
           <Text>
             Please enter your email/phone number to reset your password.
           </Text>
@@ -162,14 +174,24 @@ const forgotPasswordScreen = () => {
                 keyboardType="email-address"
               />
               {errors.email && (
-                <Text style={globalStyles.errorText}>{errors.email}</Text>
+                <Text style={[
+                  globalStyles.errorText,
+                  isTabOrDesktop && styles.errorTextDesktop
+                ]}>{errors.email}</Text>
               )}
             </>
           ) : (
             <>
               <Text style={styles.label}>Phone Number</Text>
-              <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
+              <View style={[
+                styles.phoneInputContainer,
+                errors.phone && styles.phoneInputContainerError,
+                isTabOrDesktop && styles.phoneInputContainerDesktop
+              ]}>
+                <View style={[
+                  styles.countryPickerContainer,
+                  isTabOrDesktop && styles.countryPickerContainerDesktop
+                ]}>
                   <CountryPicker
                     countryCode={countryCode}
                     withFilter
@@ -179,13 +201,21 @@ const forgotPasswordScreen = () => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
                     }}
-                    containerButtonStyle={styles.countryPickerButton}
+                    containerButtonStyle={[
+                      styles.countryPickerButton,
+                      isTabOrDesktop && styles.countryPickerButtonDesktop
+                    ]}
                   />
-                  <Text style={styles.callingCode}>+{callingCode}</Text>
+                  {!isTabOrDesktop && (
+                    <Text style={styles.callingCode}>+{callingCode}</Text>
+                  )}
                 </View>
 
                 <TextInput
-                  style={styles.phoneInput}
+                  style={[
+                    styles.phoneInput,
+                    isTabOrDesktop && styles.phoneInputDesktop
+                  ]}
                   placeholder="Enter your phone number"
                   value={phoneNumber}
                   onChangeText={(text) => {
@@ -198,7 +228,10 @@ const forgotPasswordScreen = () => {
                 />
               </View>
               {errors.phone && (
-                <Text style={globalStyles.errorText}>{errors.phone}</Text>
+                <Text style={[
+                  globalStyles.errorText,
+                  isTabOrDesktop && styles.errorTextDesktop
+                ]}>{errors.phone}</Text>
               )}
             </>
           )}

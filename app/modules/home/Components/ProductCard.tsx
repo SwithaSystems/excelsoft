@@ -27,6 +27,10 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const isRemoteImage = typeof imageUrl === "string";
 
+  // console.log('discount:', discount, 'netPrice:', netPrice, 'are they equal?', discount === netPrice);
+
+  const hasDiscount = netPrice && discount !== netPrice;
+
   return (
     <TouchableOpacity style={HomeStyles.productCard} onPress={onPress}>
       <Image
@@ -48,7 +52,7 @@ const ProductCard = ({
             {CurrencySymbol}
             {discount}
           </Text>
-          {netPrice && (
+          {hasDiscount && (
             <Text style={HomeStyles.netPrice}>
               {CurrencySymbol}
               {netPrice}

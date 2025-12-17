@@ -17,11 +17,13 @@ function Header(props) {
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
           <View style={styles.leftContainer}>
+            {!props.hideBackArrow && (
             <BackArrow needResetNavigation={props.needResetNavigation} />
+            )}
           </View>
 
           <View style={styles.centerContainer}>
-            <Text style={styles.headerTitle}>{props.headerText}</Text>
+            <Text style={[styles.headerTitle, props?.headerTitleStyle]}>{props.headerText}</Text>
           </View>
 
           <View style={styles.rightContainer}>

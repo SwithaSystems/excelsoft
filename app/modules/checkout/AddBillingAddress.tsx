@@ -112,7 +112,7 @@ const addBillingAddressScreen = () => {
         const billingAddress = await addressService.getAllAddress();
         if (isActive && isMountedRef.current) {
           setBillingAddress(billingAddress || {});
-          console.log("billing addresses:", billingAddress);
+          // console.log("billing addresses:", billingAddress);
         }
       } catch (error) {
         console.error("Error fetching billing address:", error);
@@ -140,7 +140,7 @@ const addBillingAddressScreen = () => {
         setIsDefault(edit_address.isDefault || false);
 
         setInitialDataLoaded(true);
-        console.log("Editing address:", edit_address);
+        // console.log("Editing address:", edit_address);
       } catch (error) {
         console.error("Error setting edit address data:", error);
       }
@@ -369,7 +369,7 @@ const addBillingAddressScreen = () => {
       }
     >
       <KeyBoardWrapper>
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 48 }}>
           <View style={{ marginBottom: 16 }}>
             <Text style={styles.fieldLabel}>Recipient Name *</Text>
             <TextInput
@@ -475,7 +475,10 @@ const addBillingAddressScreen = () => {
             </View>
           </View>
 
-          <View style={[isSubmitting && styles.submitButtonDisabled]}>
+          <View style={[
+            { padding: 16, paddingBottom: 24 },
+            isSubmitting && styles.submitButtonDisabled
+          ]}>
             <Button
               title={
                 isSubmitting

@@ -7,6 +7,7 @@ import containers from "../containers";
 import { AppProvider, useAppContext } from "../context/AppContext";
 import { NotificationService } from "@/services/notificationService";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { RoleProvider } from "../context/RoleContext";
 import { authService } from "../services/auth.service";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { PersistGate } from "redux-persist/integration/react";
@@ -28,14 +29,14 @@ function NotificationsHandler() {
 
         const subscription = await NotificationService.subscribeToNotifications(
           (notification) => {
-            console.log("Notification received:", notification);
+            // console.log("Notification received:", notification);
           }
         );
 
         const responseSubscription =
           await NotificationService.handleNotificationResponse((response) => {
             const data = response.notification.request.content.data;
-            console.log("User interacted with notification:", data);
+            // console.log("User interacted with notification:", data);
           });
 
         return () => {
@@ -137,9 +138,18 @@ export default function Layout() {
   useEffect(() => {
     const fetchStripeConfig = async () => {
       try {
+        // console.log("Fetching Stripe config from:", `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`);
         const res = await axios.get(
           `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
         );
+        // console.log("Stripe config response:", res.data);
+        
+        if (!res.data?.stripePublishableKey) {
+          console.error("No publishable key in response:", res.data);
+          return; // Exit if no key is found
+        }
+        
+        // console.log("Setting Stripe publishable key");
         setStripePublishableKey(res.data.stripePublishableKey);
       } catch (error) {
         console.error("Failed to fetch Stripe config", error);
@@ -149,29 +159,39 @@ export default function Layout() {
     fetchStripeConfig();
   }, []);
 
+  // Don't render anything until we have a valid Stripe key
   if (!stripePublishableKey) {
+    // console.log('Waiting for Stripe publishable key...');
     return <SplashScreen />;
   }
 
+  // console.log('Initializing Stripe with key:', stripePublishableKey.substring(0, 20) + '...');
+
   return (
-    <StripeProvider publishableKey={stripePublishableKey}>
+    <StripeProvider 
+      publishableKey={stripePublishableKey}
+      urlScheme="yourapp" // required for 3D Secure and bank redirects
+      merchantIdentifier="merchant.com.yourapp" // required for Apple Pay
+    >
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <AppProvider>
             <AuthProvider>
-              <NotificationsHandler />
-              <LayoutContent />
-              <Toast
-                config={{
-                  customToast: ({ text1, text2, onPress }) => (
-                    <CustomToastAlert
-                      text1={text1}
-                      text2={text2}
-                      onPress={onPress}
-                    />
-                  ),
-                }}
-              />
+              <RoleProvider>
+                <NotificationsHandler />
+                <LayoutContent />
+                <Toast
+                  config={{
+                    customToast: ({ text1, text2, onPress }) => (
+                      <CustomToastAlert
+                        text1={text1}
+                        text2={text2}
+                        onPress={onPress}
+                      />
+                    ),
+                  }}
+                />
+              </RoleProvider>
             </AuthProvider>
           </AppProvider>
         </PersistGate>

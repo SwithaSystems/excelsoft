@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Modal, StyleSheet, Text, View, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
 import colors from "@/constants/colors";
 
 interface ConfirmationModalProps {
@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
   handleSubmit?: () => void;
   handleCancel?: () => void;
   animationType?: "none" | "slide" | "fade";
+  isDestructive?: boolean;
 }
 
 function ConfirmationModal({
@@ -24,7 +25,12 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
+  isDestructive = false, // Default to non-destructive (primary color)
 }: ConfirmationModalProps) {
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
   return (
     <Modal
       visible={isModalVisible}
@@ -33,23 +39,48 @@ function ConfirmationModal({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.dialogBox}>
+        <View style={[
+          styles.dialogBox,
+          isTabOrDesktop && styles.dialogBoxWeb
+        ]}>
           {/* Title */}
-          {title && <Text style={styles.title}>{title}</Text>}
-
+          {title && <Text style={[
+            styles.title,
+            isTabOrDesktop && styles.titleWeb
+          ]}>
+            {title}
+          </Text>}
+          
           {/* text */}
-          {text && <Text style={styles.text}>{text}</Text>}
-
+          {text && <Text style={[
+            styles.text,
+            isTabOrDesktop && styles.textWeb
+          ]}>{text}</Text>}
+          
           {/* Buttons */}
-          <View style={styles.buttonRow}>
+          <View style={[
+            styles.buttonRow,
+            isTabOrDesktop && styles.buttonRowWeb
+          ]}>
             {cancelText && (
               <TouchableOpacity onPress={handleCancel} style={styles.button}>
                 <Text style={styles.cancelText}>{cancelText}</Text>
               </TouchableOpacity>
             )}
+            
             {submitText && (
-              <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-                <Text style={styles.submitText}>{submitText}</Text>
+              <TouchableOpacity 
+                onPress={handleSubmit} 
+                style={[
+                  styles.button,
+                  isTabOrDesktop && styles.buttonWeb,
+                  isTabOrDesktop && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
+                ]}
+              >
+                <Text style={[
+                  isDestructive ? styles.submitText : styles.submitTextPrimary,
+                  isTabOrDesktop && styles.submitTextWeb
+                ]}>{submitText}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -69,9 +100,22 @@ const styles = StyleSheet.create({
   dialogBox: {
     width: "85%",
     backgroundColor: colors.white,
-    // borderRadius: 8,
     padding: 20,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  dialogBoxWeb: {
+    width: "90%",
+    maxWidth: 500,
+    borderRadius: 12,
+    padding: 32,
+  },
+  titleWeb: {
+    fontSize: 24,
+    marginBottom: 12,
   },
   title: {
     fontSize: 18,
@@ -84,23 +128,62 @@ const styles = StyleSheet.create({
     color: colors.secondaryText,
     marginBottom: 20,
   },
+  textWeb: {
+    fontSize: 16,
+    marginBottom: 32,
+    lineHeight: 24,
+  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
   },
+  buttonRowWeb: {
+    justifyContent: "flex-end",
+    gap: 12,
+  },
   button: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  buttonWeb: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 100,
+    alignItems: "center",
+  },
+  submitButtonDestructive: {
+    backgroundColor: colors.error,
+    borderColor: colors.error,
+  },
+  submitButtonPrimary: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   cancelText: {
     fontSize: 15,
     color: colors.primary,
     fontWeight: "500",
   },
+  cancelTextWeb: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
   submitText: {
     fontSize: 15,
     color: colors.error,
     fontWeight: "500",
+  },
+  submitTextPrimary: {
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: "500",
+  },
+  submitTextWeb: {
+    fontSize: 16,
+    color: colors.white,
+    fontWeight: "600",
   },
 });
 
