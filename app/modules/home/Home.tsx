@@ -77,18 +77,18 @@ const HomePage = () => {
   const router = useRouter();
 
   const { width } = useWindowDimensions();
-const isTabOrDesktop = Platform.OS === 'web';
-const isMobile = !isTabOrDesktop;
+  const isWeb = Platform.OS === 'web';
+  const isMobile = !isWeb;
 
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="home" />
   );
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
+  const carouselWidth = isWeb ? width - 64 : width - 32;
 
   const fetchGlobalSettings = async () => {
     try {
@@ -370,7 +370,7 @@ const isMobile = !isTabOrDesktop;
           <View
             style={[
               styles.carouselSection,
-              isTabOrDesktop && { marginTop: 32 },
+              isWeb && { marginTop: 32 },
             ]}
           >
             {promotionsLoading ? (
@@ -388,7 +388,7 @@ const isMobile = !isTabOrDesktop;
                 showArrows={true}
                 showIndicators={true}
                 width={carouselWidth}
-                height={isTabOrDesktop ? 420 : 230}
+                height={isWeb ? 420 : 230}
                 borderRadius={12}
               />
             ) : null}
