@@ -101,8 +101,6 @@ const AdminProductUpdation = () => {
   const [showColorModal, setShowColorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   const [errors, setErrors] = useState<
@@ -722,14 +720,14 @@ const AdminProductUpdation = () => {
     return `${selectedColors.length} colors selected`;
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
 
   return (
@@ -737,7 +735,7 @@ const AdminProductUpdation = () => {
       hasHeader
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={isWeb ? false : true}
       hideNavItems={true}
     >
 

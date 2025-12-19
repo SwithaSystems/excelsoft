@@ -6,7 +6,7 @@ import {
   TextInput,
   Alert,
   SafeAreaView,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import styles from "./PasswordResetStyles";
 import Header from "../../components/Header";
@@ -22,8 +22,7 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const passwordResetScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const { phoneNumber } = useLocalSearchParams();
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -82,8 +81,8 @@ const passwordResetScreen = () => {
       headerComponent={
         <Header 
           headerText={CHANGE_PASSWORD_SCREEN_TITLE}
-          headerStyle={isTabOrDesktop ? styles.passwordResetHeaderStyle : undefined}
-          headerTitleStyle={isTabOrDesktop ? styles.passwordResetHeaderTitle : undefined}
+          headerStyle={isWeb ? styles.passwordResetHeaderStyle : undefined}
+          headerTitleStyle={isWeb ? styles.passwordResetHeaderTitle : undefined}
         />
       }
     >
@@ -93,7 +92,7 @@ const passwordResetScreen = () => {
         {/* <Header headerText={" Reset Your Password"} /> */}
         <View style={[
           styles.sectionContainer,
-          isTabOrDesktop && styles.sectionContainerWeb
+          isWeb && styles.sectionContainerWeb
         ]}>
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -109,7 +108,7 @@ const passwordResetScreen = () => {
           {errors.password && (
             <Text style={[
               globalStyles.errorText,
-              isTabOrDesktop && styles.errorTextDesktop
+              isWeb && styles.errorTextDesktop
             ]}>{errors.password}</Text>
           )}
           <Text style={styles.label}>Confirm Password</Text>
@@ -126,7 +125,7 @@ const passwordResetScreen = () => {
           {errors.confirmPassword && (
             <Text style={[
               globalStyles.errorText,
-              isTabOrDesktop && styles.errorTextDesktop
+              isWeb && styles.errorTextDesktop
             ]}>{errors.confirmPassword}</Text>
           )}
           <Button

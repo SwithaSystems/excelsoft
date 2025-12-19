@@ -6,7 +6,7 @@ import {
   Alert,
   DeviceEventEmitter,
   StyleSheet,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -43,16 +43,15 @@ const editAccountInformationscreen = () => {
 
   const userData = useSelector((state: RootState) => state.user.user);
   // console.log("userData in edit account information", userData);
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
@@ -159,9 +158,9 @@ const editAccountInformationscreen = () => {
 
   return (
     <LayoutComponent
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       hasHeader
-      scrollable={!isTabOrDesktop}
+      scrollable={!isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
     >
@@ -169,7 +168,7 @@ const editAccountInformationscreen = () => {
         <View
           style={[
             globalStyles.pt_0,
-            isTabOrDesktop && webStyles.contentWidth,
+            isWeb && webStyles.contentWidth,
           ]}
         >
           <View style={globalStyles.profilePictureContainer}>
@@ -250,7 +249,7 @@ const editAccountInformationscreen = () => {
             </View>
           </View>
         </View>
-        {isTabOrDesktop ? (
+        {isWeb ? (
           <View style={webStyles.buttonRow}>
             <Button
               primary={false}

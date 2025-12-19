@@ -7,7 +7,7 @@ import {
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, Platform, useWindowDimensions } from "react-native";
+import { ScrollView, Text, View, Platform } from "react-native";
 import OrderTimeline from "./Components/OrderTimeline";
 import styles from "./DeliveryTrackingStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -192,16 +192,15 @@ const deliveryTrackingScreen = () => {
   // Get the appropriate statuses for display
   const displayStatuses = getOrderedStatusesForTimeline();
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={from === "admin"} />
   ) : (
     <Header headerText={DELIVERY_TRACKING_SCREEN_TITLE} needResetNavigation={false} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : from === "admin" ? (
     <AdminFooter />
@@ -216,7 +215,7 @@ const deliveryTrackingScreen = () => {
       scrollable
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       hideNavItems={from === "admin"}
     >
       <View style={[globalStyles.container]}>

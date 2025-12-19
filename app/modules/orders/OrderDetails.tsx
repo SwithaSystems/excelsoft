@@ -14,7 +14,6 @@ import {
   SafeAreaView,
   Platform,
   BackHandler,
-  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderDetailsStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -48,8 +47,7 @@ const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
   const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
@@ -399,8 +397,8 @@ const orderDetailsScreen = () => {
 
   // Show loading state
   if (isLoadingOrder || !orderDetails) {
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-    const HeaderComponent = isTabOrDesktop ? (
+    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+    const HeaderComponent = isWeb ? (
       <BrandHeaderWeb />
     ) : (
       <Header
@@ -408,7 +406,7 @@ const orderDetailsScreen = () => {
         needResetNavigation={from != "myOrders"}
       />
     );
-    const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+    const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
     return (
       <LayoutComponent
@@ -426,7 +424,7 @@ const orderDetailsScreen = () => {
   }
 
   // Web layout matching the design
-  if (isTabOrDesktop) {
+  if (isWeb) {
     const HeaderComponent = <BrandHeaderWeb />;
     const FooterComponent = <FooterWeb />;
     
@@ -452,7 +450,7 @@ const orderDetailsScreen = () => {
                     <View style={styles.webQrContainer}>
                       <QRCodeDisplay
                         qrValue={orderDetails.orderNumber?.toString()}
-                        size={isTabOrDesktop ? 165 : 200}
+                        size={isWeb ? 165 : 200}
                         hideNumber={true}
                       />
                     </View>

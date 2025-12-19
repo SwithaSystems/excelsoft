@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -39,11 +40,9 @@ const SearchResultsScreen = () => {
     useLocalSearchParams();
   const router = useRouter();
   const { width } = useWindowDimensions();
-
-  // Device breakpoints
-  const isTabOrDesktop = width >= 768;
-  const isDesktop = width >= 1024;
-  const isTablet = width >= 768 && width < 1024;
+  const isWeb = Platform.OS === "web";
+  const isDesktop = isWeb && width >= 1024;
+  const isTablet = isWeb && width >= 768 && width < 1024;
 
   // Ref to track component mount status
   const isMountedRef = useRef(true);
@@ -401,7 +400,7 @@ const SearchResultsScreen = () => {
   // Render product item
   const renderItem = useCallback(
     ({ item, index }: { item: Product; index: number }) => {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web layout: no special left/right styling needed
         return (
           <View style={styles.productItemWeb}>
@@ -459,7 +458,7 @@ const SearchResultsScreen = () => {
         );
       }
     },
-    [isTabOrDesktop]
+    [isWeb]
   );
 
   // Render category badges component
@@ -516,7 +515,7 @@ const SearchResultsScreen = () => {
       // Determine number of columns based on screen size
       const numColumns = isDesktop ? 5 : isTablet ? 4 : 2;
 
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web: Calculate card width based on number of columns and gap
         // PageLayoutWeb applies paddingHorizontal to content, so we need to account for that
         const numColumns = isDesktop ? 5 : 4;
@@ -612,7 +611,7 @@ const SearchResultsScreen = () => {
     if (error) return null;
 
     if (!isFromSearch && searchQuery) {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web: Title and filter/sort buttons on same line
         return (
           <View style={styles.resultsHeaderContainerWeb}>
@@ -651,7 +650,7 @@ const SearchResultsScreen = () => {
       }
     }
 
-    if (isFromSearch && !isTabOrDesktop) {
+    if (isFromSearch && !isWeb) {
       return renderCategoryBadges();
     }
 
@@ -659,19 +658,19 @@ const SearchResultsScreen = () => {
   };
 
   // Choose layout component based on screen size
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={headerTitle} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
   );
 
-  if (isTabOrDesktop) {
+  if (isWeb) {
     return (
       <LayoutComponent
         hasFooter
@@ -683,7 +682,7 @@ const SearchResultsScreen = () => {
         <View style={styles.webContainer}>
           {renderResultsInfo()}
           {/* Sort Dropdown Modal - Only for web */}
-          {isTabOrDesktop && (
+          {isWeb && (
             <Modal
               visible={isSortDropdownVisible}
               transparent={true}

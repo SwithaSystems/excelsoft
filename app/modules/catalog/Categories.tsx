@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, Dimensions, useWindowDimensions } from "react-native";
+import { View, FlatList, Dimensions, useWindowDimensions, Platform } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
 import CategoryItem from "../../components/CategoryItem";
@@ -23,7 +23,7 @@ const categoriesScreen = () => {
 
   // Responsive design: detect if device is tablet or desktop
   const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   useEffect(() => {
     // console.log("categoryId", categoryId);
@@ -49,9 +49,9 @@ const categoriesScreen = () => {
     fetchAllCategories();
   }, []);
 
-  const numColumns = isTabOrDesktop ? 4 : 2;
+  const numColumns = isWeb ? 4 : 2;
   // Use flex-basis percentage for responsive layout
-  const itemFlexBasis = isTabOrDesktop ? "23%" : "47%";
+  const itemFlexBasis = isWeb ? "23%" : "47%";
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
@@ -61,7 +61,7 @@ const categoriesScreen = () => {
           {
             flexBasis: itemFlexBasis,
             maxWidth: itemFlexBasis,
-            marginRight: isTabOrDesktop ? 15 : 0,
+            marginRight: isWeb ? 15 : 0,
             marginBottom: 16,
           },
         ]}
@@ -81,13 +81,13 @@ const categoriesScreen = () => {
       </View>
     );
   };
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={category?.name} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
@@ -113,7 +113,7 @@ const categoriesScreen = () => {
               columnWrapperStyle={[
                 styles.row,
                 {
-                  justifyContent: isTabOrDesktop ? "flex-start" : "space-between",
+                  justifyContent: isWeb ? "flex-start" : "space-between",
                 },
               ]}
               contentContainerStyle={styles.listContainer}

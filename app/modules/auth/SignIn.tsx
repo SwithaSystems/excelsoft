@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import styles from "./SignInStyles";
 import { useAuth } from "@/context/AuthContext";
@@ -30,8 +30,7 @@ import {
 import colors from "../../../constants/colors";
 
 const signIn = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const [inputValue, setInputValue] = useState(""); // Combined input field value
   const [isEmail, setIsEmail] = useState(true); // Track if input is email or phone
   const [password, setPassword] = useState("");
@@ -136,16 +135,16 @@ const signIn = () => {
         <Header 
           headerText={"Sign In"} 
           needResetNavigation={false}
-          hideBackArrow={isTabOrDesktop}
-          headerStyle={isTabOrDesktop ? styles.signInHeaderStyle : undefined}
-          headerTitleStyle={isTabOrDesktop ? styles.signInHeaderTitle : undefined}
+          hideBackArrow={isWeb}
+          headerStyle={isWeb ? styles.signInHeaderStyle : undefined}
+          headerTitleStyle={isWeb ? styles.signInHeaderTitle : undefined}
         />
       }
     >
       <KeyBoardWrapper>
         <View style={[
           styles.sectionContainer,
-          isTabOrDesktop && styles.sectionContainerWeb
+          isWeb && styles.sectionContainerWeb
         ]}>
           <View style={styles.toggleContainer}>
             <TouchableOpacity
@@ -184,15 +183,15 @@ const signIn = () => {
               <View style={styles.emailContainer}>
                 <Text style={[
                   styles.label,
-                  isTabOrDesktop && styles.labelDesktop
+                  isWeb && styles.labelDesktop
                 ]}>Email</Text>
                 <TextInput
                   style={[
                     styles.input,
-                    isTabOrDesktop && styles.inputDesktop
+                    isWeb && styles.inputDesktop
                   ]}
                   placeholder="Enter your email address"
-                  placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
+                  placeholderTextColor={isWeb ? colors.slateGrey : undefined}
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
@@ -202,7 +201,7 @@ const signIn = () => {
                 {errors.input && (
                   <Text style={[
                     globalStyles.errorText,
-                    isTabOrDesktop && styles.errorTextDesktop
+                    isWeb && styles.errorTextDesktop
                   ]}>{errors.input}</Text>
                 )}
               </View>
@@ -211,17 +210,17 @@ const signIn = () => {
             <>
               <Text style={[
                 styles.label,
-                isTabOrDesktop && styles.labelDesktop
+                isWeb && styles.labelDesktop
               ]}> Phone</Text>
               <View style={[
                 styles.phoneInputContainer,
                 errors.input && styles.phoneInputContainerError,
                 isPhoneFocused && styles.phoneInputContainerFocused,
-                isTabOrDesktop && styles.phoneInputContainerDesktop
+                isWeb && styles.phoneInputContainerDesktop
               ]}>
                 <View style={[
                   styles.countryPickerContainer,
-                  isTabOrDesktop && styles.countryPickerContainerDesktop
+                  isWeb && styles.countryPickerContainerDesktop
                 ]}>
                   <CountryPicker
                     countryCode={countryCode}
@@ -236,10 +235,10 @@ const signIn = () => {
                     }}
                     containerButtonStyle={[
                       styles.countryPickerButton,
-                      isTabOrDesktop && styles.countryPickerButtonDesktop
+                      isWeb && styles.countryPickerButtonDesktop
                     ]}
                   />
-                  {/* {!isTabOrDesktop && (
+                  {/* {!isWeb && (
                     <Text style={styles.callingCode}>+{callingCode}</Text>
                   )} */}
                 </View>
@@ -247,10 +246,10 @@ const signIn = () => {
                 <TextInput
                   style={[
                     styles.phoneInput,
-                    isTabOrDesktop && styles.phoneInputDesktop
+                    isWeb && styles.phoneInputDesktop
                   ]}
                   placeholder="Enter your phone number"
-                  placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
+                  placeholderTextColor={isWeb ? colors.slateGrey : undefined}
                   value={phone}
                   onChangeText={(text) => {
                     setPhoneNumber(text);
@@ -265,7 +264,7 @@ const signIn = () => {
               {errors.input && (
                 <Text style={[
                   globalStyles.errorText,
-                  isTabOrDesktop && styles.errorTextDesktop
+                  isWeb && styles.errorTextDesktop
                 ]}>{errors.input}</Text>
               )}
             </>
@@ -274,16 +273,16 @@ const signIn = () => {
           <View style={styles.passwordContainer}>
             <Text style={[
               styles.label,
-              isTabOrDesktop && styles.labelDesktop
+              isWeb && styles.labelDesktop
             ]}>Enter your Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
                 errors.password && globalStyles.errorInput,
-                isTabOrDesktop && { fontSize: 16 },
+                isWeb && { fontSize: 16 },
               ]}
               placeholder="Enter your password"
-              placeholderTextColor={isTabOrDesktop ? colors.slateGrey : undefined}
+              placeholderTextColor={isWeb ? colors.slateGrey : undefined}
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -292,7 +291,7 @@ const signIn = () => {
             {errors.password && (
               <Text style={[
                 globalStyles.errorText,
-                isTabOrDesktop && styles.errorTextDesktop
+                isWeb && styles.errorTextDesktop
               ]}>{errors.password}</Text>
             )}
           </View>

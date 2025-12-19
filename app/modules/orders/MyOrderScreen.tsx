@@ -13,7 +13,7 @@ import { orderService } from "@/services/orderService";
 import { useLocalSearchParams } from "expo-router";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { format } from "date-fns";
-import { useWindowDimensions } from "react-native";
+import { Platform } from "react-native";
 import { ProductsAPI } from "@/services/productService";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
@@ -23,8 +23,7 @@ const myOrderScreen = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersWithProducts, setOrdersWithProducts] = useState<any[]>([]);
   const params = useLocalSearchParams();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const userId = params.userId;
 
@@ -37,7 +36,7 @@ const myOrderScreen = () => {
       setOrders(response);
       
       // Fetch product images for web view - optimized with batch fetching
-      if (isTabOrDesktop && response.length > 0) {
+      if (isWeb && response.length > 0) {
         // Collect all unique product IDs from all orders to avoid duplicate fetches
         const allProductIds = new Set<number>();
         response.forEach((order: any) => {
@@ -112,9 +111,9 @@ const myOrderScreen = () => {
     fetchOrders();
   }, []);
 
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <Header headerText={MY_ORDERS_SCREEN_TITLE} />;
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <Header headerText={MY_ORDERS_SCREEN_TITLE} />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
@@ -123,7 +122,7 @@ const myOrderScreen = () => {
       scrollable
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View style={globalStyles.container}>
@@ -132,7 +131,7 @@ const myOrderScreen = () => {
             <>
               <View style={[globalStyles.pt_0]}>
                 <FlatList
-                  data={isTabOrDesktop && ordersWithProducts.length > 0 
+                  data={isWeb && ordersWithProducts.length > 0 
                     ? ordersWithProducts.map((order) => ({
                         orderId: `#ORD-${order.orderNumber}`,
                         date: order.deliveryDate
@@ -166,7 +165,7 @@ const myOrderScreen = () => {
                         fullOrder: order,
                       }))}
                   renderItem={({ item }) => (
-                    <OrderItem item={item} from="myOrders" isTabOrDesktop={isTabOrDesktop} />
+                    <OrderItem item={item} from="myOrders" isTabOrDesktop={isWeb} />
                   )}
                   keyExtractor={(item) => item._id}
                   nestedScrollEnabled={true}

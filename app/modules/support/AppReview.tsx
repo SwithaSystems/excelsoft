@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import styles from "./AppReviewStyles";
@@ -23,22 +23,21 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const appReviewScreen = () => {
   const [rating, setRating] = useState(0);
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={APP_REVIEW_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
     <LayoutComponent
       hasHeader
-      hasFooter={isTabOrDesktop}
-      scrollable={!isTabOrDesktop}
+      hasFooter={isWeb}
+      scrollable={!isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
     >
@@ -46,7 +45,7 @@ const appReviewScreen = () => {
         <View
           style={[
             styles.reviewContainer,
-            isTabOrDesktop && styles.reviewContainerWeb,
+            isWeb && styles.reviewContainerWeb,
           ]}
         >
         {/* <View style={styles.container}>

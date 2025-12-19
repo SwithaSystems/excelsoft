@@ -59,8 +59,6 @@ const ProductDetailScreen = () => {
   // Track image load errors
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
   
   const dispatch = useDispatch();
@@ -191,13 +189,13 @@ const ProductDetailScreen = () => {
     }, 3000);
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer/>
@@ -211,7 +209,7 @@ const ProductDetailScreen = () => {
     headerComponent={HeaderComponent}
     footerComponent={FooterComponent}
   >
-    {isTabOrDesktop ? (
+    {isWeb ? (
       <View style={styles.webContainer}>
         <ScrollView style={{ flex: 1 }}>
             <View style={styles.webContentWrapper}>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import colors from "../../constants/colors";
 import Star from "./Star";
@@ -51,8 +51,7 @@ const ProductCard = ({
   image,
 }: Product) => {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const isRemoteImage = typeof image === "string";
 
   const dispatch = useDispatch();
@@ -89,23 +88,23 @@ const ProductCard = ({
     }
   };
 
-  const maxTitleLength = isTabOrDesktop ? 20 : 12;
+  const maxTitleLength = isWeb ? 20 : 12;
   let displayName =
     name.length > maxTitleLength
       ? name.substring(0, maxTitleLength - 3) + "..."
       : name;
-  if (!isTabOrDesktop) {
+  if (!isWeb) {
     while (displayName.length < maxTitleLength) displayName += " ";
   }
 
   // Web-specific dimensions - smaller for compact grid layout
-  const imageHeight = isTabOrDesktop ? 150 : 203;
-  const titleFontSize = isTabOrDesktop ? 13 : 18;
-  const ratingFontSize = isTabOrDesktop ? 11 : 16;
-  const priceFontSize = isTabOrDesktop ? 13 : 16;
-  const heartSize = isTabOrDesktop ? 16 : 20;
-  const starSize = isTabOrDesktop ? 12 : 16;
-  const contentPadding = isTabOrDesktop ? 6 : 8;
+  const imageHeight = isWeb ? 150 : 203;
+  const titleFontSize = isWeb ? 13 : 18;
+  const ratingFontSize = isWeb ? 11 : 16;
+  const priceFontSize = isWeb ? 13 : 16;
+  const heartSize = isWeb ? 16 : 20;
+  const starSize = isWeb ? 12 : 16;
+  const contentPadding = isWeb ? 6 : 8;
   const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
 
 
@@ -140,7 +139,7 @@ const ProductCard = ({
 
       <View style={[styles.content, { padding: contentPadding }]}>
         <View style={globalStyles.savedContainer}>
-          <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isTabOrDesktop ? 2 : 1}>
+          <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isWeb ? 2 : 1}>
             {displayName}
           </Text>
           <TouchableOpacity onPress={handleHeartPress}>
@@ -179,7 +178,7 @@ const ProductCard = ({
             {(netPrice - discount).toFixed(2)}
           </Text>
           {discount > 0 && (
-            <Text style={[styles.netPrice, { fontSize: isTabOrDesktop ? 12 : 14 }]}>
+            <Text style={[styles.netPrice, { fontSize: isWeb ? 12 : 14 }]}>
               {CurrencySymbol}
               {Number(netPrice).toFixed(2)}
             </Text>

@@ -25,18 +25,16 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const AdminOrderQRScan = () => {
   const [qrCode, setQrCode] = useState("");
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="scan&deliver" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="scan&deliver" />;
 
   return (
     //   <SafeAreaView style={globalStyles.safeAreaContainer}>
@@ -48,7 +46,7 @@ const AdminOrderQRScan = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable={true}
       hideNavItems={true}
     >

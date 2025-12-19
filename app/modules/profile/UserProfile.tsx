@@ -3,7 +3,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import { Image, Text, TouchableOpacity, View, useWindowDimensions, Platform } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
@@ -42,8 +42,8 @@ Notifications.setNotificationHandler({
 
 const UserProfileScreen = () => {
   const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
-  const isDesktop = width >= 1024; // Common breakpoint for desktop
+  const isWeb = Platform.OS === "web";
+  const isDesktop = isWeb && width >= 1024; // Common breakpoint for desktop
   const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
@@ -159,8 +159,8 @@ const UserProfileScreen = () => {
     }
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header
@@ -168,7 +168,7 @@ const UserProfileScreen = () => {
       needResetNavigation={true}
     />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="menu" />

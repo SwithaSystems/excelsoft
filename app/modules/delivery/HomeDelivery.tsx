@@ -528,35 +528,34 @@ const HomeDeliveryScreen = () => {
     validateTime(date, hours, minutes, period);
   };
 
-      const { width } = useWindowDimensions();
-    const isTabOrDesktop = width >= 768;
+    const isWeb = Platform.OS === "web";
   
-    const HeaderComponent = isTabOrDesktop ? (
+    const HeaderComponent = isWeb ? (
       <BrandHeaderWeb />
     ) : (
       <Header headerText={DELIVERY_MODE_HOME}    
     />
     );
-    const FooterComponent = isTabOrDesktop ? (
+    const FooterComponent = isWeb ? (
       <FooterWeb />
     ) : (
       <Footer />
     );
   
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={true}
     >
       <View
         style={[
             globalStyles.pt_0,
-            isTabOrDesktop
+            isWeb
           ? {
             width: "70%",
             alignSelf: "center",
@@ -566,7 +565,7 @@ const HomeDeliveryScreen = () => {
         ]}
       >
       <KeyBoardWrapper>
-              {isTabOrDesktop && (
+              {isWeb && (
                 <Text
                   style={{
                     fontSize: 28,
