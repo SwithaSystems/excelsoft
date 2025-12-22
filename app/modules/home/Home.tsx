@@ -88,7 +88,10 @@ const HomePage = () => {
   );
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  const carouselWidth = isWeb ? width - 64 : width - 32;
+  // For web, use wider carousel that accounts for PageLayoutWeb padding
+  // PageLayoutWeb uses dynamic padding (max 80px per side), so we subtract more for web
+  // This ensures the carousel is properly sized for desktop layout
+  const carouselWidth = isWeb ? Math.max(width - 200, 800) : width - 32;
 
   const fetchGlobalSettings = async () => {
     try {

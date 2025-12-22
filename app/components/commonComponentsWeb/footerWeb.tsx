@@ -15,15 +15,10 @@ const FooterWeb = () => {
   const isWeb = Platform.OS === "web";
   const { width } = useWindowDimensions();
 
-  const isWebSmallScreen = isWeb && width < 900;
+  // const isWebSmallScreen = isWeb && width < 900;
 
   return (
-    <View
-      style={[
-        styles.footerContainer,
-        isWebSmallScreen && styles.footerContainerTablet,
-      ]}
-    >
+    <View style={styles.footerContainer}>
       <View style={styles.leftSection}>
         <Image
           source={require("@/assets/RecreatedLogo_2.png")}
@@ -32,12 +27,7 @@ const FooterWeb = () => {
         />
       </View>
 
-      <View
-        style={[
-          styles.middleSection,
-          isWebSmallScreen && styles.middleSectionTablet,
-        ]}
-      >
+      <View style={styles.middleSection}>
         <TouchableOpacity>
           <Text style={styles.linkText}>Home</Text>
         </TouchableOpacity>
@@ -74,7 +64,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 40,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
 
   footerContainerTablet: {
@@ -96,6 +86,7 @@ const styles = StyleSheet.create({
   middleSection: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 20,
   },
 
