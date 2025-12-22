@@ -35,6 +35,8 @@ const AdminSeeAllOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const { width } = useWindowDimensions();
+  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -81,7 +83,7 @@ const AdminSeeAllOrders = () => {
           <View
             style={[
               styles.eachOrderItem,
-              isWeb ? styles.eachOrderItemWeb : null,
+              isTabOrDesktop ? styles.eachOrderItemWeb : null,
             ]}
           >
             <View
@@ -230,10 +232,10 @@ const AdminSeeAllOrders = () => {
   };
 
   // Pagination for desktop/tablet grid
-  const ITEMS_PER_PAGE = isWeb ? 12 : 50;
+  const ITEMS_PER_PAGE = isTabOrDesktop ? 12 : 50;
   const filteredOrders = getFilteredOrders();
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
-  const paginatedData = isWeb
+  const paginatedData = isTabOrDesktop
     ? filteredOrders.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -245,14 +247,14 @@ const AdminSeeAllOrders = () => {
     setCurrentPage(1);
   }, [debouncedSearchQuery, activeFilter]);
 
-  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isWeb ? (
+  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isTabOrDesktop ? (
     <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
+  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
 
 
   return (
@@ -261,11 +263,11 @@ const AdminSeeAllOrders = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isWeb}
-      scrollable={!isWeb}
+      hasSidebar={isTabOrDesktop}
+      scrollable={!isTabOrDesktop}
       hideNavItems={true}
     >
-      {isWeb ? (
+      {isTabOrDesktop ? (
         <View style={{ flex: 1 }}>
           <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
             <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
@@ -324,9 +326,9 @@ const AdminSeeAllOrders = () => {
                   data={sortOrdersByTime(paginatedData)}
                   renderItem={renderOrderItem}
                   keyExtractor={(item) => String(item._id)}
-                  numColumns={4}
-                  columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
-                  contentContainerStyle={{ paddingVertical: 8 }}
+                  contentContainerStyle={
+                    isTabOrDesktop ? styles.ordersGridContent : { paddingVertical: 8 }
+                  }
                   showsVerticalScrollIndicator={true}
                   scrollEnabled={false}
                   ListEmptyComponent={
@@ -342,7 +344,7 @@ const AdminSeeAllOrders = () => {
           </ScrollView>
           
           {/* Pagination for web/tablet only - outside ScrollView */}
-          {isWeb && totalPages > 1 && (
+          {isTabOrDesktop && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -354,7 +356,7 @@ const AdminSeeAllOrders = () => {
         </View>
       ) : (
         <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
-          {!isWeb && (
+          {!isTabOrDesktop && (
             <View>
               <SearchBar
                 placeholder="Search orders..."
