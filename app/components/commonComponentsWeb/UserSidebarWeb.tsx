@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  useWindowDimensions,
   Image,
   Animated,
   Easing,
@@ -16,6 +15,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface NavItem {
   id: string;
@@ -49,14 +49,11 @@ const navItems: NavItem[] = [
 export const UserSidebarWeb: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
+  const { isWeb } = useWebMediaQuery();
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const [user, setUser] = useState<any>(null);
   // const [showQuickLinks, setShowQuickLinks] = useState(false);
-
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
 
   const dropdownAnim = useState(new Animated.Value(0))[0];
 
@@ -113,7 +110,7 @@ export const UserSidebarWeb: React.FC = () => {
   const isActive = (route: string) =>
     pathname === route || pathname?.startsWith(route);
 
-  if (!isTablet && !isDesktop) return null;
+  if (!isWeb) return null;
 
   return (
     <View style={[styles.container]}>

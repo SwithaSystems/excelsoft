@@ -5,13 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   useWindowDimensions,
-  Platform,
 } from "react-native";
 import colors from "@/constants/colors";
 import HeaderNavBar from "./HeaderNavBarWeb";
 import { AdminSidebarWeb } from "./AdminSidebarWeb";
 import { UserSidebarWeb } from "./UserSidebarWeb";
 import { useRoleContext } from "@/context/RoleContext";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface PageLayoutWebProps {
   children: React.ReactNode;
@@ -44,11 +44,11 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
 }) => {
   const { width, height } = useWindowDimensions();
   const { isAdmin } = useRoleContext();
+  const { isWeb } = useWebMediaQuery();
 
-  const horizontalPadding = Math.max(
-    24,
-    Math.min(width * 0.05, 80)
-  );
+  // Calculate horizontal padding based on viewport width
+  // This is a calculation, not a breakpoint decision, so width-based logic is appropriate here
+  const horizontalPadding = isWeb ? Math.max(24, Math.min(width * 0.05, 80)) : 24;
 
   const ContentWrapper = scrollable ? ScrollView : View;
 

@@ -5,10 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface SearchBarProps {
   placeholder: string;
@@ -65,9 +65,15 @@ const SearchBar = ({
   height,
 }: SearchBarProps) => {
   const { width } = useWindowDimensions();
-  const isWeb = Platform.OS === "web";
-  const isMobileWidth = width < 768;
-  const defaultBarWidth = isMobileWidth ? "100%" : width < 1280 ? "60%" : "40%";
+  const { isWeb, isMobile, isLargeDesktop } = useWebMediaQuery();
+  
+  // For web, use media query-based breakpoints; for native, use width-based fallback
+  const isMobileWidth = isWeb ? isMobile : width < 768;
+  const defaultBarWidth = isMobileWidth 
+    ? "100%" 
+    : isWeb && isLargeDesktop 
+    ? "40%" 
+    : "60%";
   const barWidth = isMobileWidth
     ? "100%"
     : typeof widthPercent === "number"

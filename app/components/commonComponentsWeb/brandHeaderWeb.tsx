@@ -5,7 +5,6 @@ import {
   Image,
   TouchableOpacity,
   Pressable,
-  useWindowDimensions,
   StyleSheet,
   ActivityIndicator,
   FlatList,
@@ -21,6 +20,7 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 
 // Storage key for recent searches
@@ -33,9 +33,7 @@ interface BrandHeaderWebProps {
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
   const { isAdmin, isValidUser, username } = useRoleContext();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
+  const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
@@ -146,12 +144,12 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       }
     };
 
-    if ((isTablet || isDesktop) && debouncedQuery && debouncedQuery.length >= 2) {
+    if (isTabletOrLarger && debouncedQuery && debouncedQuery.length >= 2) {
       fetchSuggestions();
     } else {
       setSuggestions([]);
     }
-  }, [debouncedQuery, isTablet, isDesktop]);
+  }, [debouncedQuery, isTabletOrLarger]);
 
   // Show suggestions dropdown when there are results, recent searches, or loading
   useEffect(() => {
@@ -376,7 +374,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 24 : 16,
+          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : 12,
           paddingVertical: isDesktop ? 8 : 10,
         },
       ]}
@@ -394,7 +392,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           ]}
         />
         
-        {(isTablet || isDesktop) && (
+        {isTabletOrLarger && (
           <View 
             ref={searchBarRef}
             style={styles.searchContainer}
@@ -561,11 +559,13 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
+    flexShrink: 0,
   },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    minWidth: 0,
   },
   searchContainer: {
     marginLeft: 16,
@@ -574,6 +574,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     position: 'relative',
     zIndex: 10001, 
+    minWidth: 0,
   },
   suggestionsDropdown: {
     position: 'absolute',
@@ -590,12 +591,12 @@ const styles = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    maxHeight: 300,
-    zIndex: 10002,
-    overflow: 'hidden',
-  },
+      shadowRadius: 3.84,
+      elevation: 5,
+      maxHeight: 300,
+      zIndex: 10002,
+      overflow: 'hidden',
+    },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
