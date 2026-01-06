@@ -14,6 +14,14 @@ const styles = StyleSheet.create({
   ordersContainer: {
     paddingHorizontal: 24,
   },
+  ordersGridContent: {
+    paddingVertical: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: 16,
+    rowGap: 16,
+    alignItems: "stretch",
+  },
   eachOrderItem: {
     // Mobile default look (old code)
     borderColor: colors.placeholdergrey,

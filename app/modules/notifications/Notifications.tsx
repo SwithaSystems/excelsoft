@@ -1,7 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useState } from "react";
-import { View, Text, Switch, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, Switch, StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
@@ -105,32 +105,31 @@ const notificationsScreen: React.FC = () => {
     }
   };
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={NOTIFICATIONS_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
     <LayoutComponent
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       hasHeader
-      scrollable={!isTabOrDesktop}
+      scrollable={!isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View
         style={[
           // globalStyles.sectionContent,
           globalStyles.pt_0,
-          isTabOrDesktop && webStyles.contentWidth,
+          isWeb && webStyles.contentWidth,
         ]}
       >
         <View

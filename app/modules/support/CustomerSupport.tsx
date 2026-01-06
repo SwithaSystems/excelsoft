@@ -1,6 +1,6 @@
 import { CUSTOMER_SUPPORT_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
-import { View, Text, Linking, TouchableOpacity, useWindowDimensions } from "react-native";
+import { View, Text, Linking, TouchableOpacity, Platform } from "react-native";
 import styles from "./CustomerSupportStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -13,16 +13,15 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const customerSupportScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
   const handlePhonePress = () => {
     Linking.openURL("tel:+15551234567"); // Replace with your actual phone number
@@ -35,14 +34,14 @@ const customerSupportScreen = () => {
     <LayoutComponent
       hasFooter
       hasHeader
-      scrollable={!isTabOrDesktop}
+      scrollable={!isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
     >
       <View
         style={[
           globalStyles.pt_0,
-          isTabOrDesktop && styles.contentWidthWeb,
+          isWeb && styles.contentWidthWeb,
         ]}
       >
         <View>

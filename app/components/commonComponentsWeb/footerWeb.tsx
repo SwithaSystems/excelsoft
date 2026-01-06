@@ -1,20 +1,24 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
 
 const FooterWeb = () => {
+  const isWeb = Platform.OS === "web";
   const { width } = useWindowDimensions();
 
-  const isTablet = width < 900;
+  // const isWebSmallScreen = isWeb && width < 900;
 
   return (
-    <View
-      style={[
-        styles.footerContainer,
-        isTablet && styles.footerContainerTablet,
-      ]}
-    >
+    <View style={styles.footerContainer}>
       <View style={styles.leftSection}>
         <Image
           source={require("@/assets/RecreatedLogo_2.png")}
@@ -23,8 +27,7 @@ const FooterWeb = () => {
         />
       </View>
 
-      {/* Middle Section - Links */}
-      <View style={[styles.middleSection, isTablet && styles.middleSectionTablet]}>
+      <View style={styles.middleSection}>
         <TouchableOpacity>
           <Text style={styles.linkText}>Home</Text>
         </TouchableOpacity>
@@ -39,7 +42,6 @@ const FooterWeb = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Right Section - Icons */}
       <View style={styles.rightSection}>
         <TouchableOpacity style={styles.iconButton}>
           <Ionicons name="logo-instagram" size={22} color={colors.primary} />
@@ -62,47 +64,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 40,
-    paddingVertical: 8,
-    borderTopWidth: 0,
-    borderTopColor: "#ddd",
+    paddingVertical: 12,
   },
+
   footerContainerTablet: {
     flexDirection: "column",
     alignItems: "center",
     gap: 12,
   },
+
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   logo: {
     width: 80,
     height: 30,
-    marginRight: 10,
   },
-  brandText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
+
   middleSection: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 20,
   },
+
   middleSectionTablet: {
     flexWrap: "wrap",
     justifyContent: "center",
   },
+
   linkText: {
     fontSize: 14,
     color: "#555",
   },
+
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 15,
   },
+
   iconButton: {
     padding: 5,
   },

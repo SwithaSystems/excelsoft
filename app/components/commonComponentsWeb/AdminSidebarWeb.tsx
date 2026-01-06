@@ -61,13 +61,14 @@ const navItems: NavItem[] = [
 export const AdminSidebarWeb: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
+  // const { width } = useWindowDimensions();
 
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
+  // const isTablet = width >= 768 && width < 1024;
+  // const isDesktop = width >= 1024;
 
   // console.log("Current pathname:", pathname);
   // console.log(
+
   //   "Container routes:",
   //   navItems.map((item) => ({ label: item.label, route: item.route }))
   // );
@@ -80,9 +81,9 @@ export const AdminSidebarWeb: React.FC = () => {
     return pathname === route || pathname?.startsWith(route);
   };
 
-  if (!isTablet && !isDesktop) {
-    return null;
-  }
+  // if (!isTablet && !isDesktop) {
+  //   return null;
+  // }
 
   return (
     <View style={styles.container}>

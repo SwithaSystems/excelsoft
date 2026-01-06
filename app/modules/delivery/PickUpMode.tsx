@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
+  Platform,
   ActivityIndicator,
 } from "react-native";
 import styles from "./PickUpModeStyles";
@@ -68,7 +68,6 @@ const modeConfig: Record<
 
 const pickUpModescreen = () => {
   // MOVE ALL HOOKS TO THE TOP - before any conditional returns
-  const { width } = useWindowDimensions();
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
@@ -114,7 +113,7 @@ const pickUpModescreen = () => {
 
   // console.log("Final options:", options);
 
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   // Now the loading check comes AFTER all hooks
   if (loading) {
@@ -133,24 +132,24 @@ const pickUpModescreen = () => {
     );
   }
 
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={PICKUP_MODE_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      {isTabOrDesktop && (
+      {isWeb && (
         <Text
           style={{
             fontSize: 28,
@@ -169,7 +168,7 @@ const pickUpModescreen = () => {
       <View
         style={[
           globalStyles.pt_0,
-          isTabOrDesktop
+          isWeb
             ? {
                 width: "70%",
                 alignSelf: "center",

@@ -326,9 +326,9 @@ const AdminSeeAllOrders = () => {
                   data={sortOrdersByTime(paginatedData)}
                   renderItem={renderOrderItem}
                   keyExtractor={(item) => String(item._id)}
-                  numColumns={4}
-                  columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
-                  contentContainerStyle={{ paddingVertical: 8 }}
+                  contentContainerStyle={
+                    isTabOrDesktop ? styles.ordersGridContent : { paddingVertical: 8 }
+                  }
                   showsVerticalScrollIndicator={true}
                   scrollEnabled={false}
                   ListEmptyComponent={

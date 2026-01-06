@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Alert,
   TextInputProps,
-  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -673,10 +672,9 @@ const PickupScreen = () => {
     </View>
   );
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header
@@ -685,20 +683,20 @@ const PickupScreen = () => {
       }
     />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      {isTabOrDesktop && (
+      {isWeb && (
         <Text
           style={{
             fontSize: 28,
@@ -718,7 +716,7 @@ const PickupScreen = () => {
           <View
             style={[
               globalStyles.pt_0,
-              isTabOrDesktop
+              isWeb
                 ? {
                     width: "70%",
                     alignSelf: "center",

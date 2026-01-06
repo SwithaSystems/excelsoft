@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, StyleSheet, Text, View, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
+import { Modal, StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import colors from "@/constants/colors";
 
 interface ConfirmationModalProps {
@@ -27,8 +27,6 @@ function ConfirmationModal({
   animationType = "fade",
   isDestructive = false, // Default to non-destructive (primary color)
 }: ConfirmationModalProps) {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   return (
@@ -41,12 +39,12 @@ function ConfirmationModal({
       <View style={styles.modalContainer}>
         <View style={[
           styles.dialogBox,
-          isTabOrDesktop && styles.dialogBoxWeb
+          isWeb && styles.dialogBoxWeb
         ]}>
           {/* Title */}
           {title && <Text style={[
             styles.title,
-            isTabOrDesktop && styles.titleWeb
+            isWeb && styles.titleWeb
           ]}>
             {title}
           </Text>}
@@ -54,13 +52,13 @@ function ConfirmationModal({
           {/* text */}
           {text && <Text style={[
             styles.text,
-            isTabOrDesktop && styles.textWeb
+            isWeb && styles.textWeb
           ]}>{text}</Text>}
           
           {/* Buttons */}
           <View style={[
             styles.buttonRow,
-            isTabOrDesktop && styles.buttonRowWeb
+            isWeb && styles.buttonRowWeb
           ]}>
             {cancelText && (
               <TouchableOpacity onPress={handleCancel} style={styles.button}>
@@ -73,13 +71,13 @@ function ConfirmationModal({
                 onPress={handleSubmit} 
                 style={[
                   styles.button,
-                  isTabOrDesktop && styles.buttonWeb,
-                  isTabOrDesktop && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
+                  isWeb && styles.buttonWeb,
+                  isWeb && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
                 ]}
               >
                 <Text style={[
                   isDestructive ? styles.submitText : styles.submitTextPrimary,
-                  isTabOrDesktop && styles.submitTextWeb
+                  isWeb && styles.submitTextWeb
                 ]}>{submitText}</Text>
               </TouchableOpacity>
             )}

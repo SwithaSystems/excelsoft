@@ -16,7 +16,7 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
-import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions } from "react-native";
+import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import styles from "./AdminProfileStyle";
 import AdminFooter from "@/app/components/AdminFooter";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -51,8 +51,8 @@ const AdminProfile = () => {
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const isMobile = !isWeb;
 
   const settingsMenu = {
     // "Edit Profile": containers.editProfileScreen,
@@ -63,15 +63,15 @@ const AdminProfile = () => {
   };
 
   // Responsive components
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb hideUserGreeting={true} /> : (
+  const HeaderComponent = isWeb ? <BrandHeaderWeb hideUserGreeting={true} /> : (
     <Header
       headerText={USER_PROFILE_SCREEN_TITLE}
       needResetNavigation={true}
     />
   );
   
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter />;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // console.log("userData_redux in userProfilescreen", userData_redux);
   
@@ -140,17 +140,17 @@ const AdminProfile = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >
       <View style={[
         responsiveStyles.container,
-        isTabOrDesktop && responsiveStyles.containerWeb
+        isWeb && responsiveStyles.containerWeb
       ]}>
         <View style={[
           responsiveStyles.profileCard,
-          isTabOrDesktop && responsiveStyles.profileCardWeb
+          isWeb && responsiveStyles.profileCardWeb
         ]}>
           <Text style={[
             isMobile ? styles.greeting : responsiveStyles.greetingWeb
@@ -199,7 +199,7 @@ const AdminProfile = () => {
               </Text>
               <Ionicons
                 name="chevron-forward"
-                size={isTabOrDesktop ? 22 : 18}
+                size={isWeb ? 22 : 18}
                 color={colors.placeholdergrey}
               />
             </TouchableOpacity>

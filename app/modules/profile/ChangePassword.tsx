@@ -6,7 +6,7 @@ import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, StyleSheet, useWindowDimensions } from "react-native";
+import { ScrollView, Text, View, StyleSheet, Platform } from "react-native";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
 import { useSelector } from "react-redux";
@@ -31,16 +31,15 @@ const changePasswordScreen = () => {
   const [existingPassword, setExistingPassword] = useState("");
   const [currentPasswordError, setCurrentPasswordError] = useState("");
   const user = useSelector((state: any) => state.user.user);
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={CHANGE_PASSWORD_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -210,10 +209,10 @@ const changePasswordScreen = () => {
     <LayoutComponent
       scrollable={false}
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <KeyBoardWrapper>
@@ -221,7 +220,7 @@ const changePasswordScreen = () => {
           <View
             style={[
               globalStyles.pt_0,
-              isTabOrDesktop && webStyles.contentWidth,
+              isWeb && webStyles.contentWidth,
             ]}
           >
             <View style={globalStyles.profileInputContainer}>

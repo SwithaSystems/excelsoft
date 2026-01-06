@@ -8,7 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import styles from "./SavedAddressStyles";
 import Button from "@/app/components/commonComponents/Button";
@@ -82,25 +82,24 @@ const savedAddressScreen = () => {
     setItemToDelete({ id: item._id });
   };
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
     <LayoutComponent
       scrollable={false}
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View style={globalStyles.container}>

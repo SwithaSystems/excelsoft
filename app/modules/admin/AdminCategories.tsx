@@ -70,8 +70,8 @@ const AdminCategories = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const { width } = useWindowDimensions();
+  // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   // Get params to detect refresh
@@ -209,7 +209,7 @@ const AdminCategories = () => {
     // console.log("Editing category:", category);
     
     // On desktop/tablet, redirect to AdminAddCategoriesWeb page
-    if (isTabOrDesktop) {
+    if (isWeb) {
       redirectToPage(containers.AdminAddCategoriesWebScreen, {
         editCategory: JSON.stringify(category),
       });
@@ -226,7 +226,7 @@ const AdminCategories = () => {
       setIsEditMode(true);
       setEditingCategoryId(category._id);
     }
-  }, [isTabOrDesktop]);
+  }, [isWeb]);
 
   const handleDeleteCategory = useCallback((categoryId: any) => {
     setCategoryToDelete(categoryId);
@@ -421,7 +421,7 @@ const AdminCategories = () => {
   const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
   
   // Get paginated categories for web/tablet, show all for mobile
-  const paginatedCategories = isTabOrDesktop
+  const paginatedCategories = isWeb
     ? filteredCategories.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -438,14 +438,14 @@ const AdminCategories = () => {
     return parentCategory ? parentCategory.name : "No Parent";
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="categories" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="categories" />;
 
   return (
     <LayoutComponent
@@ -453,17 +453,17 @@ const AdminCategories = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
-      scrollable={!isTabOrDesktop}
+      hasSidebar={isWeb}
+      scrollable={!isWeb}
       hideNavItems={true}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         <View style={{ flex: 1 }}>
           <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
             <View style={styles.listSection}>
               <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
-                
+                <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
+
                 {/* Desktop/Tablet: Show button to redirect to add category page */}
                 <TouchableOpacity
                   style={styles.addButton}
@@ -543,7 +543,7 @@ const AdminCategories = () => {
           </ScrollView>
           
           {/* Pagination for web/tablet only - outside ScrollView */}
-          {isTabOrDesktop && totalPages > 1 && (
+          {isWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -555,10 +555,10 @@ const AdminCategories = () => {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {!isTabOrDesktop && (
+          {!isWeb && (
             <View style={styles.formContainer}>
               <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>
+                <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>
                   {isEditMode ? "Edit Category" : "Add New Category"}
                 </Text>
                 {isEditMode && (
@@ -645,7 +645,7 @@ const AdminCategories = () => {
 
           <View style={styles.listSection}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
+              <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
             </View>
             <ScrollView style={styles.listContainer}>
               <View>

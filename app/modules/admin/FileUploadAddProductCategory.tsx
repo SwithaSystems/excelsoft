@@ -1,5 +1,5 @@
 import React from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Platform, View } from "react-native";
 import FileUploadComponent from "./components/FileUploadComponent";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
@@ -14,16 +14,15 @@ const fileUploadAddProductCategory = () => {
     // Handle successful upload
   };
 
-  const { width } = useWindowDimensions();
-    const isMobile = width < 768;
-    const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const isMobile = !isWeb;
   
-    const HeaderComponent = isTabOrDesktop ? (
+    const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
     ) : (
       <Header headerText="File Upload" />
     );
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
       <LayoutComponent
@@ -31,7 +30,7 @@ const fileUploadAddProductCategory = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={false}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >

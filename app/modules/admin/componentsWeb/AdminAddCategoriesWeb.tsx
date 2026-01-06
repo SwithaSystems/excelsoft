@@ -55,8 +55,8 @@ const AdminAddCategoriesWeb = () => {
     null
   );
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const { width } = useWindowDimensions();
+  // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   // Get params if editing
@@ -441,14 +441,14 @@ const AdminAddCategoriesWeb = () => {
     }
   }, [params.editCategory]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText="Add Category" />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
     return (
     <LayoutComponent
@@ -456,7 +456,7 @@ const AdminAddCategoriesWeb = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={!isTabOrDesktop}
+      hasSidebar={!isWeb}
       scrollable={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>

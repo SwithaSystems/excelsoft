@@ -2,7 +2,7 @@ import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, TextInput, useWindowDimensions } from "react-native";
+import { Alert, Dimensions, TextInput, Platform } from "react-native";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
@@ -54,8 +54,7 @@ import styles from "./CartStyles";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
@@ -255,10 +254,10 @@ const CartScreen = () => {
       }
     };
 
-    if (isTabOrDesktop) {
+    if (isWeb) {
       fetchSimilarProducts();
     }
-  }, [cartItems, isTabOrDesktop]);
+  }, [cartItems, isWeb]);
 
   const handlePlaceOrder = async () => {
     if (isPlacingOrder) return; // Prevent multiple clicks
@@ -334,19 +333,19 @@ const CartScreen = () => {
   };
 
   // Conditional Header and Footer components
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={CART_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="cart" />
   );
 
   // Conditional Layout component
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // Your JSX remains the same, just update the Place Order button:
   return (
@@ -357,7 +356,7 @@ const CartScreen = () => {
       footerComponent={FooterComponent}
       scrollable={true}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
         <View style={[globalStyles.container]}>
           <View style={[globalStyles.pt_0]}>

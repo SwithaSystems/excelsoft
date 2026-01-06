@@ -77,18 +77,21 @@ const HomePage = () => {
   const router = useRouter();
 
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === 'web';
+  const isMobile = !isWeb;
 
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="home" />
   );
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
+  // For web, use wider carousel that accounts for PageLayoutWeb padding
+  // PageLayoutWeb uses dynamic padding (max 80px per side), so we subtract more for web
+  // This ensures the carousel is properly sized for desktop layout
+  const carouselWidth = isWeb ? Math.max(width - 200, 800) : width - 32;
 
   const fetchGlobalSettings = async () => {
     try {
@@ -370,7 +373,7 @@ const HomePage = () => {
           <View
             style={[
               styles.carouselSection,
-              isTabOrDesktop && { marginTop: 32 },
+              isWeb && { marginTop: 32 },
             ]}
           >
             {promotionsLoading ? (
@@ -388,7 +391,7 @@ const HomePage = () => {
                 showArrows={true}
                 showIndicators={true}
                 width={carouselWidth}
-                height={isTabOrDesktop ? 420 : 230}
+                height={isWeb ? 420 : 230}
                 borderRadius={12}
               />
             ) : null}

@@ -63,21 +63,21 @@ const allNavItems: NavItem[] = [
     dropdownType: 'quicklinks',
     requiresAuth: true, 
   },
-  {
-    label: "Feedback",
-    onPress: () => redirectToPage(containers.feedbackScreen),
-    requiresAuth: false,
-  },
+  // {
+  //   label: "Feedback",
+  //   onPress: () => redirectToPage(containers.feedbackScreen),
+  //   requiresAuth: false,
+  // },
   {
     label: "Customer Service",
     onPress: () => redirectToPage(containers.customerSupportScreen),
     requiresAuth: false,
   },
-  {
-    label: "My Accounts",
-    onPress: () => redirectToPage(containers.editProfileScreen),
-    requiresAuth: true, 
-  },
+  // {
+  //   label: "My Accounts",
+  //   onPress: () => redirectToPage(containers.editProfileScreen),
+  //   requiresAuth: true, 
+  // },
 ];
 
 const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
@@ -232,6 +232,11 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
+        {/* <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        > */}
         <View style={styles.scrollContainer}>
           {navItems.map((item, index) => (
             <View key={index} style={styles.itemWrapper}>
@@ -295,6 +300,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               )}
             </View>
           ))}
+        {/* </ScrollView> */}
         </View>
         {renderAuthButtons()}
       </View>
@@ -346,11 +352,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingBottom: 4,
-    flexWrap: "wrap",
-    flex: 1,
+    // flexWrap: "wrap",
+    flexGrow: 1,
   },
   itemWrapper: {
-    marginRight: 20,
+    marginRight: 16,
     position: "relative",
     zIndex: 100,
   },
@@ -420,6 +426,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingRight: 16,
     gap: 12,
+    flexShrink: 0,
   },
   authButton: {
     flexDirection: "row",

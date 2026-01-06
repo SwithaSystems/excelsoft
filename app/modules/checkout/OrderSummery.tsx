@@ -21,7 +21,6 @@ import {
   FlatList,
   Animated,
   Platform,
-  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderSummeryStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -716,11 +715,8 @@ Contact Number: ${pickupAddress.phone || ""}`;
     }
   }, [pickupAddress, selectedMode]);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
-
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
@@ -730,11 +726,11 @@ Contact Number: ${pickupAddress.phone || ""}`;
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         // WEB LAYOUT
         <View style={styles.webContainer}>
           <ScrollView
@@ -1069,7 +1065,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     }
                   }}
                   style={
-                    isTabOrDesktop
+                    isWeb
                       ? [
                           styles.webPlaceOrderButton,
                           !isPaymentEnabled && {

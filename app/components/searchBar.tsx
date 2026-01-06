@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface SearchBarProps {
   placeholder: string;
@@ -64,10 +65,16 @@ const SearchBar = ({
   height,
 }: SearchBarProps) => {
   const { width } = useWindowDimensions();
-
-  const isMobile = width < 768;
-  const defaultBarWidth = isMobile ? "100%" : width < 1280 ? "60%" : "40%";
-  const barWidth = isMobile
+  const { isWeb, isMobile, isLargeDesktop } = useWebMediaQuery();
+  
+  // For web, use media query-based breakpoints; for native, use width-based fallback
+  const isMobileWidth = isWeb ? isMobile : width < 768;
+  const defaultBarWidth = isMobileWidth 
+    ? "100%" 
+    : isWeb && isLargeDesktop 
+    ? "40%" 
+    : "60%";
+  const barWidth = isMobileWidth
     ? "100%"
     : typeof widthPercent === "number"
     ? `${Math.min(100, Math.max(0, widthPercent))}%`
@@ -77,8 +84,8 @@ const SearchBar = ({
     styles.searchContainer,
     { 
       width: barWidth as `${number}%`, 
-      alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start",
-      height: typeof height === "number" ? height : isMobile ? 52 : 40,
+      alignSelf: (isMobileWidth ? "center" : "flex-start") as "center" | "flex-start",
+      height: typeof height === "number" ? height : isMobileWidth ? 52 : 40,
       minWidth:0,
     },
   ];
@@ -86,11 +93,11 @@ const SearchBar = ({
   const inputStyle = [
     styles.searchInput,
     { 
-      fontSize: isMobile ? 14 : 16, 
-      paddingVertical: isMobile ? 8 : 6,
+      fontSize: isMobileWidth ? 14 : 16, 
+      paddingVertical: isMobileWidth ? 8 : 6,
       minWidth:0,
       // Only on desktop/tablet: remove default web outline to avoid half-box
-      ...(isMobile
+      ...(isMobileWidth
         ? {}
         : ({ outlineWidth: 0, outlineColor: 'transparent', borderWidth: 0 } as any)),
     },
@@ -101,7 +108,7 @@ const SearchBar = ({
       style={containerStyle} 
       // onLayout is only used for tablet/desktop (width >= 768px) to measure width for dropdown suggestions
       // On mobile (width < 768px), onLayout is ignored even if provided to ensure mobile functionality is unaffected
-      onLayout={!isMobile && onLayout ? onLayout : undefined}
+      onLayout={!isMobileWidth && onLayout ? onLayout : undefined}
     >
       <TextInput
         style={inputStyle}
@@ -119,7 +126,7 @@ const SearchBar = ({
       <Touchable onPress={onPress} style={styles.iconWrapper}>
         <Ionicons
           name="search"
-          size={isMobile ? 18 : 22}
+          size={isMobileWidth ? 18 : 22}
           color={colors.primary}
         />
       </Touchable>

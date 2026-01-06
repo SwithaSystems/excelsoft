@@ -85,17 +85,15 @@ const editProfileScreen = () => {
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={EDIT_PROFILE_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
@@ -292,17 +290,17 @@ const editProfileScreen = () => {
     <LayoutComponent
       scrollable={true}
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <KeyBoardWrapper>
         <View
           style={[
             globalStyles.container as ViewStyle,
-            isTabOrDesktop && webStyles.contentWidth,
+            isWeb && webStyles.contentWidth,
           ]}
         >
           <ScrollView>
@@ -440,7 +438,7 @@ const editProfileScreen = () => {
           </ScrollView>
         </View>
 
-        {isTabOrDesktop ? (
+        {isWeb ? (
           <View style={webStyles.buttonRow}>
             <Button
               primary={false}

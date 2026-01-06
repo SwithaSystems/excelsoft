@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, TextInput, useWindowDimensions } from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput, Platform } from "react-native";
 import styles from "./FeedBackStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -26,8 +26,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 const MAX_IMAGES = 5;
 
 const feedBackScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const { productId, reviewsArrayLength } = useLocalSearchParams();
   const [rating, setRating] = useState(0);
@@ -111,22 +110,22 @@ const feedBackScreen = () => {
     }
   };
 
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={FEEDBACK_SCREEN2_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
 
   return (
     <LayoutComponent
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
       scrollable
     >
@@ -135,7 +134,7 @@ const feedBackScreen = () => {
 
           <View
             style={{
-              width: isTabOrDesktop ? "60%" : "100%",
+              width: isWeb ? "60%" : "100%",
               alignSelf: "center",
             }}
           >

@@ -71,14 +71,12 @@ const AdminProductDashboard = () => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
-  const ITEMS_PER_PAGE = isTabOrDesktop ? 10 : 50;
+  const ITEMS_PER_PAGE = isWeb ? 10 : 50;
 
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
@@ -346,7 +344,7 @@ const AdminProductDashboard = () => {
       const result = await ProductsAPI.deleteProduct(item?._id);
       if (result) {
         await onRefresh();
-        if (isWeb || isTabOrDesktop) {
+        if (isWeb) {
           setSuccessModalVisible(true);
         } else {
           Alert.alert("Success", "Product deleted successfully");
@@ -372,7 +370,7 @@ const AdminProductDashboard = () => {
 
   const handleDeleteProduct = useCallback(
     (item: Product) => {
-      if (isWeb || isTabOrDesktop) {
+      if (isWeb) {
         setProductToDelete(item);
         setDeleteModalVisible(true);
       } else {
@@ -392,7 +390,7 @@ const AdminProductDashboard = () => {
         );
       }
     },
-    [isWeb, isTabOrDesktop]
+    [isWeb, isWeb]
   );
 
   const getUniqueKey = useCallback((item: Product, index: number) => {
@@ -535,7 +533,7 @@ const AdminProductDashboard = () => {
   }, 0);
 
   const handleEndReached = useCallback(() => {
-    if (!isTabOrDesktop && !isLoadingMore && hasMore && !isLoading) {
+    if (!isWeb && !isLoadingMore && hasMore && !isLoading) {
       loadMoreData();
     }
   }, [isLoadingMore, hasMore, isLoading]);
@@ -589,14 +587,14 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
   return (
     <LayoutComponent
@@ -604,7 +602,7 @@ const AdminProductDashboard = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable={false}
       hideNavItems={true}
     >
@@ -612,7 +610,7 @@ const AdminProductDashboard = () => {
           // globalStyles.pt_0, 
           {flex: 1 }
         ]}>
-        {!isTabOrDesktop && (
+        {!isWeb && (
           <View>
             <SearchBar
               placeholder="Search by name..."
@@ -636,13 +634,13 @@ const AdminProductDashboard = () => {
             },
           ]}
         >
-          {isTabOrDesktop && (
+          {isWeb && (
             <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
               Product List
             </Text>
           )}
           <TouchableOpacity
-            style={[styles.addButton, !isTabOrDesktop && styles.addButtonMobile]}
+            style={[styles.addButton, !isWeb && styles.addButtonMobile]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
                 newProduct: true,
@@ -658,7 +656,7 @@ const AdminProductDashboard = () => {
         <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
-              {isTabOrDesktop && (
+              {isWeb && (
                 <SearchBar
                   placeholder="Search by name..."
                   value={searchQuery}
@@ -698,7 +696,7 @@ const AdminProductDashboard = () => {
                   </View>
                 </TouchableOpacity>
                 {isCategoryOpen && (
-  isTabOrDesktop ? (
+  isWeb ? (
     // ===== WEB: inline dropdown (keep your current UI) =====
     <View style={styles.dropdownList}>
       <ScrollView style={styles.dropdownScrollArea}>
@@ -811,7 +809,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
-        {isTabOrDesktop && shouldShowPagination && (
+        {isWeb && shouldShowPagination && (
         <View style={styles.stickyBottomContainer}>
           <Pagination
             currentPage={currentPage}

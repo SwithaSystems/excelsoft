@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, useWindowDimensions } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Platform } from "react-native";
 // import styles from "./forgotPasswordStyles";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -18,8 +18,7 @@ import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import styles from "./ForgotPasswordStyles";
 
 const forgotPasswordScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -111,16 +110,16 @@ const forgotPasswordScreen = () => {
       headerComponent={
         <Header 
           headerText={FORGOT_PASSWORD_SCREEN_TITLE}
-          hideBackArrow={isTabOrDesktop}
-          headerStyle={isTabOrDesktop ? styles.forgotPasswordHeaderStyle : undefined}
-          headerTitleStyle={isTabOrDesktop ? styles.forgotPasswordHeaderTitle : undefined}
+          hideBackArrow={isWeb}
+          headerStyle={isWeb ? styles.forgotPasswordHeaderStyle : undefined}
+          headerTitleStyle={isWeb ? styles.forgotPasswordHeaderTitle : undefined}
         />
       }
     >
       <KeyBoardWrapper>
         <View style={[
           styles.sectionContainer,
-          isTabOrDesktop && styles.sectionContainerWeb
+          isWeb && styles.sectionContainerWeb
         ]}>
           <Text>
             Please enter your email/phone number to reset your password.
@@ -176,7 +175,7 @@ const forgotPasswordScreen = () => {
               {errors.email && (
                 <Text style={[
                   globalStyles.errorText,
-                  isTabOrDesktop && styles.errorTextDesktop
+                  isWeb && styles.errorTextDesktop
                 ]}>{errors.email}</Text>
               )}
             </>
@@ -186,11 +185,11 @@ const forgotPasswordScreen = () => {
               <View style={[
                 styles.phoneInputContainer,
                 errors.phone && styles.phoneInputContainerError,
-                isTabOrDesktop && styles.phoneInputContainerDesktop
+                isWeb && styles.phoneInputContainerDesktop
               ]}>
                 <View style={[
                   styles.countryPickerContainer,
-                  isTabOrDesktop && styles.countryPickerContainerDesktop
+                  isWeb && styles.countryPickerContainerDesktop
                 ]}>
                   <CountryPicker
                     countryCode={countryCode}
@@ -203,10 +202,10 @@ const forgotPasswordScreen = () => {
                     }}
                     containerButtonStyle={[
                       styles.countryPickerButton,
-                      isTabOrDesktop && styles.countryPickerButtonDesktop
+                      isWeb && styles.countryPickerButtonDesktop
                     ]}
                   />
-                  {!isTabOrDesktop && (
+                  {!isWeb && (
                     <Text style={styles.callingCode}>+{callingCode}</Text>
                   )}
                 </View>
@@ -214,7 +213,7 @@ const forgotPasswordScreen = () => {
                 <TextInput
                   style={[
                     styles.phoneInput,
-                    isTabOrDesktop && styles.phoneInputDesktop
+                    isWeb && styles.phoneInputDesktop
                   ]}
                   placeholder="Enter your phone number"
                   value={phoneNumber}
@@ -230,7 +229,7 @@ const forgotPasswordScreen = () => {
               {errors.phone && (
                 <Text style={[
                   globalStyles.errorText,
-                  isTabOrDesktop && styles.errorTextDesktop
+                  isWeb && styles.errorTextDesktop
                 ]}>{errors.phone}</Text>
               )}
             </>

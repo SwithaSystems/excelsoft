@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import { TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import colors from "../../../constants/colors";
@@ -13,11 +13,13 @@ interface BackArrowProps {
 const BackArrow = ({ needResetNavigation }: BackArrowProps) => {
   const router = useRouter();
   const navigation = useNavigation();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+  // const { width } = useWindowDimensions();
+  // const isMobile = width < 768;
+  const isWeb = Platform.OS === "web";
+  
   
   // Hide on tablet and desktop
-  if (!isMobile) {
+  if (isWeb) {
     return null;
   }
   

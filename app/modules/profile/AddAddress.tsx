@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
@@ -65,8 +65,7 @@ const addAddressScreen = () => {
     general?: string;
   }>({});
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   // Load existing address data if in edit mode
   useEffect(() => {
@@ -449,8 +448,8 @@ const addAddressScreen = () => {
     }
   };
 
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-    const HeaderComponent = isTabOrDesktop ? (
+    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+    const HeaderComponent = isWeb ? (
       <BrandHeaderWeb />
     ) : (
       <Header
@@ -459,13 +458,13 @@ const addAddressScreen = () => {
         }
       />
     );
-    const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+    const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
     <LayoutComponent
       scrollable={true}
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
     >

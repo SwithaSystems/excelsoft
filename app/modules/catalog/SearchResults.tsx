@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -38,12 +39,14 @@ const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
     useLocalSearchParams();
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
 
-  // Device breakpoints
-  const isTabOrDesktop = width >= 768;
-  const isDesktop = width >= 1024;
-  const isTablet = width >= 768 && width < 1024;
+  const width =
+    Platform.OS === "web"
+      ? Math.max(windowWidth, 1200)
+      : windowWidth;
+
+  const isWeb = Platform.OS === "web";
 
   // Ref to track component mount status
   const isMountedRef = useRef(true);
@@ -401,7 +404,7 @@ const SearchResultsScreen = () => {
   // Render product item
   const renderItem = useCallback(
     ({ item, index }: { item: Product; index: number }) => {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web layout: no special left/right styling needed
         return (
           <View style={styles.productItemWeb}>
@@ -459,7 +462,7 @@ const SearchResultsScreen = () => {
         );
       }
     },
-    [isTabOrDesktop]
+    [isWeb]
   );
 
   // Render category badges component
@@ -513,30 +516,29 @@ const SearchResultsScreen = () => {
     }
 
     if (displayProducts.length > 0) {
-      // Determine number of columns based on screen size
-      const numColumns = isDesktop ? 5 : isTablet ? 4 : 2;
+      const numColumns = isWeb ? 5 : 2;
 
-      if (isTabOrDesktop) {
-        // Web: Calculate card width based on number of columns and gap
-        // PageLayoutWeb applies paddingHorizontal to content, so we need to account for that
-        const numColumns = isDesktop ? 5 : 4;
+      if (isWeb) {
+        const numColumns = 5;
         const gap = 16;
-        // PageLayoutWeb content padding: desktop: 64px per side, tablet: 32px per side
-        const sidePadding = isDesktop ? 64 : 32;
-        // Account for content padding from PageLayoutWeb (applied to ContentWrapper)
-        // The content area is already padded, but we calculate based on full width
-        // and subtract padding to get available content width
-        const availableWidth = width - (sidePadding * 2);
+        const horizontalPadding = Math.max(24, Math.min(width * 0.05, 80));
+        const availableWidth = width - (horizontalPadding * 2);
         const totalGapWidth = gap * (numColumns - 1);
-        const cardWidth = Math.max(160, Math.floor((availableWidth - totalGapWidth) / numColumns));
+        const calculatedCardWidth = (availableWidth - totalGapWidth) / numColumns;
+        const cardWidth = Math.max(180, calculatedCardWidth);
         
-        // Web: Use View with flexWrap for better control
         return (
           <View style={styles.productsGridWeb}>
             {displayProducts.map((item, index) => (
               <View
                 key={item?.id ? `product-${item.id}` : `item-${index}`}
-                style={[styles.productItemWeb, { width: cardWidth, maxWidth: cardWidth, flexShrink: 0, flexGrow: 0 }]}
+                style={[
+                  styles.productItemWeb,
+                  {
+                    width: cardWidth,
+                    maxWidth: cardWidth,
+                  }
+                ]}
               >
                 <ProductCard
                   _id={item._id}
@@ -612,7 +614,7 @@ const SearchResultsScreen = () => {
     if (error) return null;
 
     if (!isFromSearch && searchQuery) {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web: Title and filter/sort buttons on same line
         return (
           <View style={styles.resultsHeaderContainerWeb}>
@@ -651,7 +653,7 @@ const SearchResultsScreen = () => {
       }
     }
 
-    if (isFromSearch && !isTabOrDesktop) {
+    if (isFromSearch && !isWeb) {
       return renderCategoryBadges();
     }
 
@@ -659,19 +661,19 @@ const SearchResultsScreen = () => {
   };
 
   // Choose layout component based on screen size
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={headerTitle} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
   );
 
-  if (isTabOrDesktop) {
+  if (isWeb) {
     return (
       <LayoutComponent
         hasFooter
@@ -683,7 +685,7 @@ const SearchResultsScreen = () => {
         <View style={styles.webContainer}>
           {renderResultsInfo()}
           {/* Sort Dropdown Modal - Only for web */}
-          {isTabOrDesktop && (
+          {isWeb && (
             <Modal
               visible={isSortDropdownVisible}
               transparent={true}

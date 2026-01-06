@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import styles from "./VerifcationStyles";
 import Header from "../../components/Header";
@@ -23,8 +23,7 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { VERIFICATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
 
 const verifcationScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const {
     userData,
     from,
@@ -250,27 +249,27 @@ const verifcationScreen = () => {
         headerComponent={
           <Header 
             headerText={VERIFICATION_SCREEN_TITLE}
-            hideBackArrow={isTabOrDesktop}
-            headerStyle={isTabOrDesktop ? styles.verificationHeaderStyle : undefined}
-            headerTitleStyle={isTabOrDesktop ? styles.verificationHeaderTitle : undefined}
+            hideBackArrow={isWeb}
+            headerStyle={isWeb ? styles.verificationHeaderStyle : undefined}
+            headerTitleStyle={isWeb ? styles.verificationHeaderTitle : undefined}
           />
         }
       >
         <KeyBoardWrapper>
           <View style={[
             styles.contentContainer,
-            isTabOrDesktop && styles.contentContainerDesktop
+            isWeb && styles.contentContainerDesktop
           ]}>
             <Image
               style={[
                 styles.image,
-                isTabOrDesktop && styles.imageDesktop
+                isWeb && styles.imageDesktop
               ]}
               source={require("assets/UserVerificationSuccessful.png")}
             />
             <Text style={[
               styles.description,
-              isTabOrDesktop && styles.descriptionDesktop
+              isWeb && styles.descriptionDesktop
             ]}>
             {verificationType === "email"
               ? "We've sent a verification link to your email address. Please check your inbox and click on the link to verify your email. If you don't see the email, check your spam folder or try resending the verification email."
@@ -279,7 +278,7 @@ const verifcationScreen = () => {
 
           <View style={[
             styles.codeContainer,
-            isTabOrDesktop && styles.codeContainerDesktop
+            isWeb && styles.codeContainerDesktop
           ]}>
             {code.map((digit, index) => (
               <TextInput
@@ -289,7 +288,7 @@ const verifcationScreen = () => {
                 }}
                 style={[
                   styles.inputBox,
-                  isTabOrDesktop && styles.inputBoxDesktop
+                  isWeb && styles.inputBoxDesktop
                 ]}
                 keyboardType="numeric"
                 maxLength={1}
@@ -310,12 +309,12 @@ const verifcationScreen = () => {
           </View>
           <View style={[
             styles.buttonContainer,
-            isTabOrDesktop && styles.buttonContainerDesktop
+            isWeb && styles.buttonContainerDesktop
           ]}>
             <TouchableOpacity
               style={[
                 styles.verifyButton,
-                isTabOrDesktop && styles.verifyButtonDesktop
+                isWeb && styles.verifyButtonDesktop
               ]}
               onPress={handleVerify}
             >
@@ -324,7 +323,7 @@ const verifcationScreen = () => {
 
             <Text style={[
               styles.resendText,
-              isTabOrDesktop && styles.resendTextDesktop
+              isWeb && styles.resendTextDesktop
             ]}>
               Didn't receive the code?{" "}
               <Text style={styles.resendLink} onPress={handleResend}>
