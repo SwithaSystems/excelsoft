@@ -603,7 +603,7 @@ const AdminProductDashboard = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
-      scrollable={false}
+      scrollable={isWeb ? true : false}
       hideNavItems={true}
     >
       <View style={[

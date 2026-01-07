@@ -54,6 +54,9 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
 
   const headerHeight = 68 + 50; 
   const sidebarWidth = 240;
+  
+  // Calculate available content height (viewport height minus header)
+  const availableHeight = height - (hasHeader ? headerHeight : 0);
 
   return (
     <View style={[styles.root, { backgroundColor, minHeight: height }]}>
@@ -92,18 +95,40 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
             styles.content,
             { paddingHorizontal: contentPadding ? horizontalPadding : 0 },
           ]}
-          contentContainerStyle={[
+          contentContainerStyle={scrollable ? [
             styles.scrollContainer,
-            { paddingBottom: hasFooter ? 80 : 24 },
+            { 
+              paddingBottom: hasFooter ? 0 : 24,
+              minHeight: hasFooter ? availableHeight : undefined,
+              flexDirection: hasFooter ? "column" : undefined,
+            },
+          ] : [
+            styles.nonScrollableContainer,
+            { paddingBottom: 24 },
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {children}
+          {scrollable && hasFooter ? (
+            <View style={styles.scrollableContentWrapper}>
+              <View style={styles.scrollableChildren}>
+                {children}
+              </View>
+              <View style={styles.footer}>{footerComponent}</View>
+            </View>
+          ) : scrollable ? (
+            <>
+              {children}
+            </>
+          ) : (
+            <>
+              <View style={styles.contentWrapper}>
+                {children}
+              </View>
+              {hasFooter && <View style={styles.footer}>{footerComponent}</View>}
+            </>
+          )}
         </ContentWrapper>
       </View>
-
-      {/* FOOTER */}
-      {hasFooter && <View style={styles.footer}>{footerComponent}</View>}
     </View>
   );
 };
@@ -146,6 +171,22 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingTop: 16,
+  },
+  nonScrollableContainer: {
+    flex: 1,
+    flexDirection: "column",
+    paddingTop: 16,
+  },
+  scrollableContentWrapper: {
+    flex: 1,
+    flexDirection: "column",
+    minHeight: "100%",
+  },
+  scrollableChildren: {
+    flex: 1,
+  },
+  contentWrapper: {
+    flex: 1,
   },
   footer: {
     width: "100%",

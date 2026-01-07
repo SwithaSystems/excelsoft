@@ -694,7 +694,7 @@ const PickupScreen = () => {
       headerComponent={HeaderComponent}
       hasFooter={isWeb}
       footerComponent={isWeb ? <FooterWeb /> : undefined}
-      scrollable={false}
+      scrollable={true}
     >
       {isWeb && (
         <Text

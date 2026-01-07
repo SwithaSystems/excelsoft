@@ -454,13 +454,11 @@ const AdminCategories = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
-      scrollable={!isWeb}
+      scrollable={isWeb ? true : true}
       hideNavItems={true}
     >
       {isWeb ? (
-        <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-            <View style={styles.listSection}>
+        <View style={styles.listSection}>
               <View style={styles.sectionHeader}>
                 <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
 
@@ -539,10 +537,8 @@ const AdminCategories = () => {
                   )}
                 </View>
               </View>
-            </View>
-          </ScrollView>
           
-          {/* Pagination for web/tablet only - outside ScrollView */}
+          {/* Pagination for web/tablet only */}
           {isWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination

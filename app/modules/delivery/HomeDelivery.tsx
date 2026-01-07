@@ -1,6 +1,6 @@
 import {
   DATE_FORMAT_Display,
-  DEFAULT_PICKUP_HOURS,
+  // DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_HOME,
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
@@ -104,7 +104,7 @@ const HomeDeliveryScreen = () => {
     ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
-        now.getTime() + DEFAULT_PICKUP_HOURS * 60 * 60 * 1000
+        now.getTime() + /*DEFAULT_PICKUP_HOURS */ 2 * 60 * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
