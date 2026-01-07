@@ -20,6 +20,7 @@ function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const [isValidUser, setIsValidUser] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
   // console.log("user in home page", user);
@@ -66,6 +67,8 @@ function BrandHeader(props) {
       console.error("Error fetching user data:", error);
       setUsername(null);
       setIsValidUser(false);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -86,6 +89,11 @@ function BrandHeader(props) {
     };
   }, [user]);
   // console.log("isAdmin", isAdmin);
+
+  // Block rendering until auth is resolved
+  if (authLoading) {
+    return null;
+  }
 
   return (
     <>

@@ -3,7 +3,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Text, TouchableOpacity, View, useWindowDimensions, Platform } from "react-native";
+import { Image, Text, TouchableOpacity, View, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
@@ -61,6 +61,7 @@ const UserProfileScreen = () => {
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const settingsMenu = {
@@ -93,7 +94,10 @@ const UserProfileScreen = () => {
   // console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
     const fetchUser = async () => {
-      if (!userData_redux?.id) return;
+      if (!userData_redux?.id) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
         const response = await UserAPI.getUserById(
@@ -107,6 +111,8 @@ const UserProfileScreen = () => {
         }
       } catch (err) {
         console.error("User fetch failed", err);
+      } finally {
+        setProfileLoading(false);
       }
     };
 
@@ -173,6 +179,22 @@ const UserProfileScreen = () => {
   ) : (
     <Footer activeTab="menu" />
   );
+
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        hasFooter
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent}
+        scrollable
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
 
   return (
     <LayoutComponent
