@@ -55,26 +55,19 @@ const ProductDetailScreen = () => {
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
+  
   // Track image load errors
-  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>(
-    {}
-  );
+  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
-  // Add ref to track initial load
-  const isInitialLoad = useRef(true);
-
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
-
+  
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
-
+  
   const isItemSaved = (itemId: any) => {
     return savedItems.some((savedItem: any) => savedItem.id === itemId);
   };
-
+  
   const handleHeartPress = (e: any, item: any) => {
     e.stopPropagation();
 
@@ -87,16 +80,14 @@ const ProductDetailScreen = () => {
 
   // Helper function to check if image is valid
   const isValidImage = (imageUrl: string | undefined) => {
-    return (
-      imageUrl &&
-      imageUrl.trim() !== "" &&
-      !imageUrl.includes("Placeholder.png")
-    );
+    return imageUrl && 
+           imageUrl.trim() !== "" && 
+           !imageUrl.includes("Placeholder.png");
   };
 
   // Handler for image load errors
   const handleImageError = (index: number) => {
-    setImageErrors((prev) => ({ ...prev, [index]: true }));
+    setImageErrors(prev => ({ ...prev, [index]: true }));
   };
 
   const fetchProduct = useCallback(async () => {
@@ -106,7 +97,7 @@ const ProductDetailScreen = () => {
       const fetchedProduct = await ProductsAPI.getProductBYID(
         Number(productId)
       );
-
+      
       if (!fetchedProduct) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
@@ -145,16 +136,15 @@ const ProductDetailScreen = () => {
       }
     } finally {
       setIsProductLoading(false);
-      isInitialLoad.current = false;
     }
-  }, [productId, from, dispatch]);
+  }, [productId, setIsProductLoading, from, savedItems, dispatch]);
 
   useFocusEffect(
     useCallback(() => {
-      if (productId && isInitialLoad.current) {
+      if (productId) {
         fetchProduct();
       }
-    }, [productId, fetchProduct])
+    }, [fetchProduct, productId])
   );
 
   if (isProductLoading) {
@@ -205,27 +195,31 @@ const ProductDetailScreen = () => {
   ) : (
     <Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? (
+    <FooterWeb />
+  ) : (
+    <Footer/>
+  );
 
   return (
-    <LayoutComponent
-      scrollable
-      hasHeader
-      hasFooter
-      headerComponent={HeaderComponent}
-      footerComponent={FooterComponent}
-    >
-      {isTabOrDesktop ? (
-        <View style={styles.webContainer}>
-          <ScrollView style={{ flex: 1 }}>
+  <LayoutComponent
+    scrollable
+    hasHeader
+    hasFooter
+    headerComponent={HeaderComponent}
+    footerComponent={FooterComponent}
+  >
+    {isWeb ? (
+      <View style={styles.webContainer}>
+        <ScrollView style={{ flex: 1 }}>
             <View style={styles.webContentWrapper}>
               {/* Left Section - Images */}
               <View style={styles.webLeftSection}>
                 {/* Main Image */}
                 <View style={styles.webMainImageContainer}>
-                  {product?.image?.[selectedImageIndex] &&
-                  isValidImage(product.image[selectedImageIndex]) &&
-                  !imageErrors[selectedImageIndex] ? (
+                  {product?.image?.[selectedImageIndex] && 
+                   isValidImage(product.image[selectedImageIndex]) &&
+                   !imageErrors[selectedImageIndex] ? (
                     <Image
                       source={{ uri: product.image[selectedImageIndex] }}
                       style={styles.webMainImage}
@@ -233,19 +227,12 @@ const ProductDetailScreen = () => {
                       resizeMode="contain"
                     />
                   ) : (
-                    <View
-                      style={[
-                        styles.webMainImage,
-                        {
-                          backgroundColor: "#f0f0f0",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        },
-                      ]}
-                    >
-                      <Text style={{ color: "#999", fontSize: 16 }}>
-                        No Image Available
-                      </Text>
+                    <View style={[styles.webMainImage, { 
+                      backgroundColor: '#f0f0f0', 
+                      justifyContent: 'center', 
+                      alignItems: 'center' 
+                    }]}>
+                      <Text style={{ color: '#999', fontSize: 16 }}>No Image Available</Text>
                     </View>
                   )}
                 </View>
@@ -257,15 +244,14 @@ const ProductDetailScreen = () => {
                     if (!isValidImage(imageUrl)) {
                       return null;
                     }
-
+                    
                     return (
                       <TouchableOpacity
                         key={index}
                         onPress={() => setSelectedImageIndex(index)}
                         style={[
                           styles.webThumbnail,
-                          selectedImageIndex === index &&
-                            styles.webThumbnailActive,
+                          selectedImageIndex === index && styles.webThumbnailActive,
                         ]}
                       >
                         {!imageErrors[index] ? (
@@ -276,19 +262,15 @@ const ProductDetailScreen = () => {
                             resizeMode="cover"
                           />
                         ) : (
-                          <View
-                            style={[
-                              styles.webThumbnailImage,
-                              {
-                                backgroundColor: "#f0f0f0",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              },
-                            ]}
-                          >
-                            <Text style={{ color: "#999", fontSize: 10 }}>
-                              N/A
-                            </Text>
+                          <View style={[
+                            styles.webThumbnailImage, 
+                            { 
+                              backgroundColor: '#f0f0f0', 
+                              justifyContent: 'center', 
+                              alignItems: 'center' 
+                            }
+                          ]}>
+                            <Text style={{ color: '#999', fontSize: 10 }}>N/A</Text>
                           </View>
                         )}
                       </TouchableOpacity>
@@ -296,6 +278,7 @@ const ProductDetailScreen = () => {
                   })}
                 </View>
               </View>
+
 
               {/* Right Section - Product Details */}
               <View style={styles.webRightSection}>
@@ -418,9 +401,7 @@ const ProductDetailScreen = () => {
                       Toast.show({
                         type: "customToast",
                         text1: "Product added successfully!",
-                        text2: `${product.name} - ${CurrencySymbol}${(
-                          product.netPrice - product.discount
-                        ).toFixed(2)}`,
+                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
                         visibilityTime: 1000,
                         autoHide: true,
                         onPress: () => {
@@ -484,201 +465,196 @@ const ProductDetailScreen = () => {
               )}
             </View>
           </ScrollView>
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <ScrollView style={{ flex: 1 }}>
-            {/* Use the new ProductImageCarousel component */}
-            <ProductImageCarousel
-              images={product?.image || []}
-              height={300}
-              autoPlay={true}
-              autoPlayInterval={3000}
-            />
 
-            <View style={styles.contentContainer}>
-              <View style={styles.exclusiveDetails}>
-                <View style={globalStyles.savedContainer}>
-                  <Text style={styles.productTitle}>{product.name}</Text>
-                  <TouchableOpacity
-                    onPress={(e) => handleHeartPress(e, product)}
-                  >
-                    <Ionicons
-                      name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                      size={20}
-                      color={
-                        isItemSaved(product.id)
-                          ? colors.primaryRed
-                          : colors.black
-                      }
-                    />
-                  </TouchableOpacity>
-                </View>
-                {product.reviews.length > 0 && (
-                  <View style={styles.ratingContainer}>
-                    <Text style={styles.ratingText}>{product.rating}</Text>
-                    <Text style={styles.starIcon}> ★ </Text>
-                    <Text style={styles.reviewsText}>
-                      ({product?.reviews?.length || 0})
-                    </Text>
-                  </View>
-                )}
+      </View>
+    ) : (
+      <View style={styles.container}>
+        <ScrollView style={{ flex: 1 }}>
+          {/* Use the new ProductImageCarousel component */}
+          <ProductImageCarousel
+            images={product?.image || []}
+            height={300}
+            autoPlay={true}
+            autoPlayInterval={3000}
+          />
 
-                <View style={styles.priceContainer}>
-                  <DisplayPrice
-                    discount={product.discount}
-                    netPrice={product.netPrice}
+          <View style={styles.contentContainer}>
+            <View style={styles.exclusiveDetails}>
+              <View style={globalStyles.savedContainer}>
+                <Text style={styles.productTitle}>{product.name}</Text>
+                <TouchableOpacity onPress={(e) => handleHeartPress(e, product)}>
+                  <Ionicons
+                    name={isItemSaved(product.id) ? "heart" : "heart-outline"}
+                    size={20}
+                    color={
+                      isItemSaved(product.id) ? colors.primaryRed : colors.black
+                    }
                   />
-                </View>
+                </TouchableOpacity>
               </View>
-
-              <Text style={styles.infoTitle}>Product Information</Text>
-              <Text style={styles.infoText}>{product.description}</Text>
-
-              {product.productColors && product.productColors?.length > 0 && (
-                <>
-                  <View style={styles.colorSection}>
-                    <Text style={styles.colorTitle}>Select Color</Text>
-                    <View style={styles.colorOptions}>
-                      {product.productColors.map((color: any) => (
-                        <TouchableOpacity
-                          key={color._id}
-                          onPress={() => setSelectedColor(color)}
-                          style={[
-                            styles.colorOption,
-                            { backgroundColor: color.colorCode },
-                            selectedColor?._id === color._id &&
-                              styles.selectedColorOption,
-                          ]}
-                        />
-                      ))}
-                    </View>
-                  </View>
-                </>
+              {product.reviews.length > 0 && (
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>{product.rating}</Text>
+                  <Text style={styles.starIcon}> ★ </Text>
+                  <Text style={styles.reviewsText}>
+                    ({product?.reviews?.length || 0})
+                  </Text>
+                </View>
               )}
 
-              <View style={styles.quantitySection}>
-                <View style={styles.quantityContainer}>
-                  <Text style={styles.quantityTitle}>Quantity</Text>
-                </View>
-                <View style={styles.quantityControl}>
-                  <TouchableOpacity
-                    style={styles.quantityButton}
-                    onPress={() => quantity > 1 && setQuantity(quantity - 1)}
-                  >
-                    <Ionicons name="remove" size={20} color={colors.black} />
-                  </TouchableOpacity>
-                  <Text style={styles.quantityText}>{quantity}</Text>
-                  <TouchableOpacity
-                    style={styles.quantityButton}
-                    onPress={() => {
-                      const available = product?.stock || 0;
-                      if (quantity + 1 > available) {
-                        const message = QUANTITY_NOT_AVAILABLE.replace(
-                          "{{available}}",
-                          available.toString()
-                        );
-
-                        showErrorAlert({
-                          title: "Limited Stock Alert",
-                          message,
-                        });
-                        return;
-                      }
-                      setQuantity(quantity + 1);
-                    }}
-                  >
-                    <Ionicons name="add" size={20} color={colors.black} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View style={styles.buttonsContainer}>
-                <Button
-                  title="Add To Cart"
-                  onPress={() => {
-                    if (product) {
-                      if (product.stock === 0) {
-                        showErrorAlert({
-                          title: "Out of Stock",
-                          message: ITEM_OUT_OF_STOCK,
-                        });
-                        return;
-                      }
-                      dispatch(
-                        addToCart({
-                          _id: product && product._id ? product._id : "",
-                          id: product.id,
-                          name: product.name,
-                          discount: product.discount,
-                          quantity: quantity,
-                          image: product.image,
-                          netPrice: product.netPrice,
-                          isVatApplicable: product.isVatApplicable,
-                          vatRate: product.vatRate,
-                          vatAmount: product.vatAmount,
-                        })
-                      );
-                      Toast.show({
-                        type: "customToast",
-                        text1: "Product added successfully!",
-                        text2: `${product.name} - ${CurrencySymbol}${(
-                          product.netPrice - product.discount
-                        ).toFixed(2)}`,
-                        visibilityTime: 1000,
-                        autoHide: true,
-                        onPress: () => {
-                          redirectToPage(containers.cartScreen);
-                        },
-                      });
-                    }
-                  }}
-                  style={styles.button}
+              <View style={styles.priceContainer}>
+                <DisplayPrice
+                  discount={product.discount}
+                  netPrice={product.netPrice}
                 />
               </View>
             </View>
 
-            <View style={styles.reviewsSection}>
-              <View style={styles.reviewsHeader}>
-                <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+            <Text style={styles.infoTitle}>Product Information</Text>
+            <Text style={styles.infoText}>{product.description}</Text>
+
+            {product.productColors && product.productColors?.length > 0 && (
+              <>
+                <View style={styles.colorSection}>
+                  <Text style={styles.colorTitle}>Select Color</Text>
+                  <View style={styles.colorOptions}>
+                    {product.productColors.map((color: any) => (
+                      <TouchableOpacity
+                        key={color._id}
+                        onPress={() => setSelectedColor(color)}
+                        style={[
+                          styles.colorOption,
+                          { backgroundColor: color.colorCode },
+                          selectedColor?._id === color._id &&
+                            styles.selectedColorOption,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
+
+            <View style={styles.quantitySection}>
+              <View style={styles.quantityContainer}>
+                <Text style={styles.quantityTitle}>Quantity</Text>
+              </View>
+              <View style={styles.quantityControl}>
                 <TouchableOpacity
-                  onPress={() =>
-                    redirectToPage(containers.feedbackScreen, {
-                      productId: productId,
-                    })
-                  }
+                  style={styles.quantityButton}
+                  onPress={() => quantity > 1 && setQuantity(quantity - 1)}
                 >
-                  <Text style={styles.addReviewText}>Add Review</Text>
+                  <Ionicons name="remove" size={20} color={colors.black} />
+                </TouchableOpacity>
+                <Text style={styles.quantityText}>{quantity}</Text>
+                <TouchableOpacity
+                  style={styles.quantityButton}
+                  onPress={() => {
+                    const available = product?.stock || 0;
+                    if (quantity + 1 > available) {
+                      const message = QUANTITY_NOT_AVAILABLE.replace(
+                        "{{available}}",
+                        available.toString()
+                      );
+
+                      showErrorAlert({
+                        title: "Limited Stock Alert",
+                        message,
+                      });
+                      return;
+                    }
+                    setQuantity(quantity + 1);
+                  }}
+                >
+                  <Ionicons name="add" size={20} color={colors.black} />
                 </TouchableOpacity>
               </View>
-              {[...(product.reviews || [])]
-                .sort((a, b) => Number(b.id) - Number(a.id))
-                .slice(0, 5)
-                .map((review: any, index: number) => (
-                  <ProductRating
-                    key={`${review.id ?? "review"}-${index}`}
-                    review={review}
-                  />
-                ))}
-              {product.reviews?.length > 0 && (
-                <TouchableOpacity
-                  style={styles.seeMoreButton}
-                  onPress={() =>
-                    redirectToPage(containers.reviewsScreen, {
-                      productId: productId,
-                      totalReviews: JSON.stringify(product.reviews),
-                      productRating:
-                        JSON.stringify(product.rating) || product.rating,
-                    })
-                  }
-                >
-                  <Text style={styles.seeMoreText}>See More Reviews</Text>
-                </TouchableOpacity>
-              )}
             </View>
-          </ScrollView>
-        </View>
-      )}
+
+            <View style={styles.buttonsContainer}>
+              <Button
+                title="Add To Cart"
+                onPress={() => {
+                  if (product) {
+                    if (product.stock === 0) {
+                      showErrorAlert({
+                        title: "Out of Stock",
+                        message: ITEM_OUT_OF_STOCK,
+                      });
+                      return;
+                    }
+                    dispatch(
+                      addToCart({
+                        _id: product && product._id ? product._id : "",
+                        id: product.id,
+                        name: product.name,
+                        discount: product.discount,
+                        quantity: quantity,
+                        image: product.image,
+                        netPrice: product.netPrice,
+                        isVatApplicable: product.isVatApplicable,
+                        vatRate: product.vatRate,
+                        vatAmount: product.vatAmount,
+                      })
+                    );
+                    Toast.show({
+                      type: "customToast",
+                      text1: "Product added successfully!",
+                      text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
+                      visibilityTime: 1000,
+                      autoHide: true,
+                      onPress: () => {
+                        redirectToPage(containers.cartScreen);
+                      },
+                    });
+                  }
+                }}
+                style={styles.button}
+              />
+            </View>
+          </View>
+
+          <View style={styles.reviewsSection}>
+            <View style={styles.reviewsHeader}>
+              <Text style={styles.reviewsTitle}>What do Customers say?</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  redirectToPage(containers.feedbackScreen, {
+                    productId: productId,
+                  })
+                }
+              >
+                <Text style={styles.addReviewText}>Add Review</Text>
+              </TouchableOpacity>
+            </View>
+            {[...(product.reviews || [])]
+              .sort((a, b) => Number(b.id) - Number(a.id))
+              .slice(0, 5)
+              .map((review: any, index: number) => (
+                <ProductRating
+                  key={`${review.id ?? "review"}-${index}`}
+                  review={review}
+                />
+              ))}
+            {product.reviews?.length > 0 && (
+              <TouchableOpacity
+                style={styles.seeMoreButton}
+                onPress={() =>
+                  redirectToPage(containers.reviewsScreen, {
+                    productId: productId,
+                    totalReviews: JSON.stringify(product.reviews),
+                    productRating:
+                      JSON.stringify(product.rating) || product.rating,
+                  })
+                }
+              >
+                <Text style={styles.seeMoreText}>See More Reviews</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    )}
     </LayoutComponent>
   );
 };
