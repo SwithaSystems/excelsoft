@@ -1254,7 +1254,7 @@ const AdminProductUpdation = () => {
             title="Discard"
             primary={false}
             disabled={isLoading}
-            style={{ flex: 0.25, marginRight: 50 }}
+            style={{ flex: 0.25 }}
 
           />
         </View>

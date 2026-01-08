@@ -16,7 +16,7 @@ import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
 import Footer from "@/app/components/Footer";
-import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
 import styles from "./AdminProfileStyle";
 import AdminFooter from "@/app/components/AdminFooter";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -48,6 +48,7 @@ const AdminProfile = () => {
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const { width } = useWindowDimensions();
@@ -77,7 +78,10 @@ const AdminProfile = () => {
   
   useEffect(() => {
     const fetchUser = async () => {
-      if (!userData_redux?.id) return;
+      if (!userData_redux?.id) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
         const response = await UserAPI.getUserById(
@@ -91,6 +95,8 @@ const AdminProfile = () => {
         }
       } catch (err) {
         console.error("User fetch failed", err);
+      } finally {
+        setProfileLoading(false);
       }
     };
 
@@ -133,6 +139,24 @@ const AdminProfile = () => {
       }
     };
   }, [user]);
+
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        headerComponent={HeaderComponent}
+        hasFooter
+        footerComponent={FooterComponent}
+        hasSidebar={isWeb}
+        scrollable
+        hideNavItems={true}
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
 
   return (
     <LayoutComponent

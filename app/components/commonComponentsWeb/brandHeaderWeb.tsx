@@ -32,7 +32,7 @@ interface BrandHeaderWebProps {
 }
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
-  const { isAdmin, isValidUser, username } = useRoleContext();
+  const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
   const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -368,6 +368,11 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       </View>
     );
   };
+
+  // Block rendering until auth is resolved
+  if (authLoading) {
+    return null;
+  }
 
   return (
     <View
