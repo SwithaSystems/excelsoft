@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
   Linking,
+  ScrollView,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -79,6 +80,14 @@ const HomePage = () => {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const isMobile = !isWeb;
+
+  // Split categories for two-row layout: first half in row 1, second half in row 2
+  // Items fill Row 1 left to right, then continue in Row 2
+  const categoriesPerRow = useMemo(() => {
+    if (categories.length === 0) return 0;
+    // Split roughly in half, with preference for row 1 if odd number
+    return Math.ceil(categories.length / 2);
+  }, [categories.length]);
 
   const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
   const FooterComponent = isWeb ? (
@@ -338,30 +347,58 @@ const HomePage = () => {
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : (
-              <FlatList
-                data={categories}
+            <View style={styles.categoriesViewport}>
+              <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                keyExtractor={(item: any) => item.id}
-                renderItem={({ item }) => (
-                  <CategoryItem_Home
-                    name={item.name}
-                    imageUrl={item.images?.[0] || ""}
-                    onPress={() =>
-                      item.name === "All"
-                        ? redirectToPage(containers.categoriesScreen, {
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                        : redirectToPage(containers.searchResultsScreen, {
-                            fromSearch: true,
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                    }
-                  />
-                )}
-              />
+                contentContainerStyle={styles.categoriesScrollContent}
+              >
+                <View style={styles.categoriesRowsContainer}>
+                  <View style={styles.categoryRow}>
+                    {categories.slice(0, categoriesPerRow).map((item) => (
+                      <CategoryItem_Home
+                        key={item.id}
+                        name={item.name}
+                        imageUrl={item.images?.[0] || ""}
+                        onPress={() =>
+                          item.name === "All"
+                            ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                            : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                        }
+                      />
+                    ))}
+                  </View>
+                  <View style={styles.categoryRow}>
+                    {categories.slice(categoriesPerRow).map((item) => (
+                      <CategoryItem_Home
+                        key={item.id}
+                        name={item.name}
+                        imageUrl={item.images?.[0] || ""}
+                        onPress={() =>
+                          item.name === "All"
+                            ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                            : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                        }
+                      />
+                    ))}
+                  </View>
+                </View>
+              </ScrollView>
+            </View>
             )}
           </View>
         )}
@@ -421,6 +458,22 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
   },
+  categoriesScrollContent: {
+    // paddingHorizontal: 8,
+    paddingLeft: 0,
+    paddingRight: 16, 
+  },
+  categoriesRowsContainer: {
+    flexDirection: "column",
+  },
+  categoryRow: {
+    flexDirection: "row",
+  },
+  categoriesViewport: {
+    width: "94%",
+    alignSelf: "flex-start",
+  },
+
 });
 
 export default HomePage;

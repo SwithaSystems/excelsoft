@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "create": "node ./scripts/generate.js",
     "build": "echo 'No build script needed for client; handled by EAS'",
@@ -30,6 +30,7 @@
     "expo-asset": "~11.1.7",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
+    "expo-dev-client": "~5.2.4",
     "expo-device": "~7.1.4",
     "expo-document-picker": "^13.1.6",
     "expo-file-system": "^18.1.11",
