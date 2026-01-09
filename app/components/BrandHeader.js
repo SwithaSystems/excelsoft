@@ -1,3 +1,5 @@
+// BrandHeader.tsx
+
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
 import {
@@ -15,40 +17,33 @@ import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import colors from "@/constants/colors";
+import { NotificationService } from "@/services/notificationService";
 
 function BrandHeader(props) {
   const [username, setUsername] = useState(null);
   const [isValidUser, setIsValidUser] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
-  // console.log("user in home page", user);
+
   const fetchUser = async () => {
     try {
       if (user) {
         const userId = user?._id ? user?._id : user?.id;
-        // console.log("userPhone", userId);
 
-        // Check if user exists in DB
         const response = await UserAPI.getUserById(userId);
 
         if (response?.data) {
-          // console.log("userdata", response.data);
           setIsAdmin(response?.data?.isAdmin);
           setUsername(response?.data?.firstName || "User");
           setIsValidUser(true);
         } else {
-          // console.log("User not found in database");
           setIsValidUser(false);
           setUsername(null);
 
-          // Clear Redux store and AsyncStorage
           try {
-            // Clear AsyncStorage user data
-            // await AsyncStorage.removeItem("user");
-
-            await SecureStore.removeItemAsync("user");
-            //  clear Redux store
+            await SecureStore.deleteItemAsync("user");
             if (dispatch && typeof dispatch === "function") {
               dispatch({ type: "user/clearUserData" });
             }
@@ -57,10 +52,8 @@ function BrandHeader(props) {
           }
         }
       } else {
-        // Set default username when user is not logged in
         setUsername(null);
         setIsValidUser(false);
-        // console.log("user or user.phone is undefined", user);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -69,11 +62,15 @@ function BrandHeader(props) {
     }
   };
 
-  useEffect(() => {
-    // Fetch user whenever the user state changes
-    fetchUser();
+  const fetchUnreadCount = async () => {
+    const count = await NotificationService.getUnreadCount();
+    setUnreadCount(count);
+  };
 
-    // Listen for fetchUser events
+  useEffect(() => {
+    fetchUser();
+    fetchUnreadCount();
+
     const fetchUser_Listener = DeviceEventEmitter.addListener(
       "fetchUser",
       () => {
@@ -81,11 +78,23 @@ function BrandHeader(props) {
       }
     );
 
+    // Listen for notification updates
+    const notificationListener = DeviceEventEmitter.addListener(
+      "notificationUpdate",
+      () => {
+        fetchUnreadCount();
+      }
+    );
+
+    // Refresh unread count every time component mounts
+    const interval = setInterval(fetchUnreadCount, 5000);
+
     return () => {
       fetchUser_Listener.remove();
+      notificationListener.remove();
+      clearInterval(interval);
     };
   }, [user]);
-  // console.log("isAdmin", isAdmin);
 
   return (
     <>
@@ -153,12 +162,34 @@ function BrandHeader(props) {
           )}
 
           <TouchableOpacity
-            style={{ marginLeft: 14 }}
+            style={{ marginLeft: 14, position: "relative" }}
             onPress={() => {
               redirectToPage(containers.userNotificationsScreen);
             }}
           >
             <Ionicons name="notifications" size={24} color={colors.primary} />
+            {unreadCount > 0 && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -6,
+                  backgroundColor: colors.secondaryRed,
+                  borderRadius: 10,
+                  minWidth: 18,
+                  height: 18,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingHorizontal: 4,
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 10, fontWeight: "bold" }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
