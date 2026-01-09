@@ -84,9 +84,10 @@ const SearchSuggestionsScreen = () => {
           <TouchableOpacity
             key={index}
             onPress={() => handleSuggestionPress(suggestion)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <View style={styles.suggestionContainer}>
-              <Ionicons name="search" size={20} color={colors.primary} />
+              <Ionicons name="search" size={24} color={colors.primary} />
               <Text style={styles.suggestion}>{suggestion}</Text>
             </View>
           </TouchableOpacity>

@@ -54,6 +54,7 @@ const AddressItem = ({
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => onEdit(item)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="create-outline" size={24} color="black" />
             </TouchableOpacity>
@@ -62,6 +63,7 @@ const AddressItem = ({
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => onDelete(item)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="trash-outline" size={24} color="red" />
             </TouchableOpacity>

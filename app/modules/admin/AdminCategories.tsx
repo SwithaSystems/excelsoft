@@ -681,10 +681,16 @@ const AdminCategories = () => {
                       {editingCategoryId === categoryItem.id && (
                         <Text style={styles.editingLabel}>Editing</Text>
                       )}
-                      <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                      <TouchableOpacity
+                        onPress={() => handleEditCategory(categoryItem)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="create-outline" size={20} color={colors.primary} />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteCategory(categoryItem._id)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
                       </TouchableOpacity>
                     </View>

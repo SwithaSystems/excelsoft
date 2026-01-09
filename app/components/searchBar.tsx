@@ -123,16 +123,20 @@ const SearchBar = ({
           if (e.nativeEvent.key === "Enter") onSubmitEditing();
         }}
       />
-      <Touchable onPress={onPress} style={styles.iconWrapper}>
+      <Touchable 
+        onPress={onPress}   
+        style={styles.iconWrapper}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      >
         <Ionicons
           name="search"
-          size={isMobileWidth ? 18 : 22}
+          size={isMobileWidth ? 18 : 24}
           color={colors.primary}
         />
       </Touchable>
     </View>
   );
-};
+}; 
 
 export default SearchBar;
 

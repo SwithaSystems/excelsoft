@@ -20,14 +20,13 @@ export default StyleSheet.create({
     alignSelf: "flex-end",
   },
   categoriesContainer: {
-    paddingVertical: 4,
+    // paddingVertical: 2,
+    paddingLeft: 12,
   },
   categoryItem: {
     alignItems: "center",
-    // marginHorizontal: 8,
-    // minWidth: 80,
-    marginRight: 8,
-    height: 104,
+    marginRight: 6,
+    height: 92,
     width: 72,
   },
   categoryImage: {
@@ -38,11 +37,9 @@ export default StyleSheet.create({
     borderColor: colors.primary,
   },
   categoryText: {
-    marginTop: 6,
+    marginTop: 4,
     fontSize: 12,
     textAlign: "center",
-    // maxWidth: 80,
-    //flexWrap:'wrap',
     lineHeight: 14,
     height: 32,
     fontWeight: "500",

@@ -144,7 +144,11 @@ const CategoryBadges = (props) => {
               });
             }}
           >
-            <Feather name="filter" size={24} color={colors.black} />
+            <Ionicons 
+              name="funnel-outline" 
+              size={24} 
+              color={colors.black} 
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -245,8 +249,12 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
   },
   iconButton: {
+    width: 35,
+    height: 35,
     padding: 2,
-    borderRadius: 50,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.secondary,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },

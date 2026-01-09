@@ -286,6 +286,7 @@ const ProductDetailScreen = () => {
                   <Text style={styles.webProductTitle}>{product.name}</Text>
                   <TouchableOpacity
                     onPress={(e) => handleHeartPress(e, product)}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   >
                     <Ionicons
                       name={isItemSaved(product.id) ? "heart" : "heart-outline"}

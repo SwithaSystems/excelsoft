@@ -114,6 +114,7 @@ function BrandHeader(props) {
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             onPress={() => {
               if (isAdmin && props.hideUserGreeting) {
                 redirectToPage(containers.AdminProfileScreen);
@@ -162,7 +163,8 @@ function BrandHeader(props) {
           )}
 
           <TouchableOpacity
-            style={{ marginLeft: 14, position: "relative" }}
+            style={{ marginLeft: 14 }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             onPress={() => {
               redirectToPage(containers.userNotificationsScreen);
             }}
