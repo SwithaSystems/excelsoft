@@ -1,4 +1,4 @@
-// BrandHeader.tsx
+// app/components/commonComponents/BrandHeader.js
 
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState, useEffect } from "react";
@@ -14,7 +14,6 @@ import { redirectToPage } from "../../utilities/redirectionHelper";
 import containers from "../../containers";
 import { UserAPI } from "../../services/userService";
 import { useSelector, useDispatch } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import colors from "@/constants/colors";
 import { NotificationService } from "@/services/notificationService";
@@ -43,7 +42,9 @@ function BrandHeader(props) {
           setUsername(null);
 
           try {
-            await SecureStore.deleteItemAsync("user");
+            if (Platform.OS !== "web") {
+              await SecureStore.deleteItemAsync("user");
+            }
             if (dispatch && typeof dispatch === "function") {
               dispatch({ type: "user/clearUserData" });
             }
@@ -78,7 +79,6 @@ function BrandHeader(props) {
       }
     );
 
-    // Listen for notification updates
     const notificationListener = DeviceEventEmitter.addListener(
       "notificationUpdate",
       () => {
@@ -86,7 +86,6 @@ function BrandHeader(props) {
       }
     );
 
-    // Refresh unread count every time component mounts
     const interval = setInterval(fetchUnreadCount, 5000);
 
     return () => {

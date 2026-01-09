@@ -1,6 +1,6 @@
 // app/_layout.js
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Stack } from "expo-router";
 import { Provider } from "react-redux";
 import { store, persistor } from "../store/store";
@@ -20,13 +20,33 @@ import * as SecureStore from "expo-secure-store";
 import * as Notifications from "expo-notifications";
 import axios from "axios";
 import { handleNotificationNavigation } from "@/services/navigationService";
-import { DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter, AppState, Platform } from "react-native";
+
+// Only configure notification handler on mobile platforms
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 // Notifications setup
 function NotificationsHandler() {
   const { user } = useAuth();
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  const appState = useRef(AppState.currentState);
 
   useEffect(() => {
+    // Skip notifications on web platform
+    if (Platform.OS === "web") {
+      console.log("Notifications not supported on web");
+      return;
+    }
+
     const initializeNotifications = async () => {
       const currentUser = await authService.getCurrentUser();
       if (currentUser?.id) {
@@ -34,67 +54,73 @@ function NotificationsHandler() {
           currentUser.id.toString()
         );
 
-        // Handle notification received while app is OPEN
-        const subscription = await NotificationService.subscribeToNotifications(
-          async (notification) => {
-            console.log("Notification received:", notification);
+        // Handle notification received
+        notificationListener.current =
+          Notifications.addNotificationReceivedListener(
+            async (notification) => {
+              console.log("📱 Notification received:", notification);
 
-            // Save notification to storage
-            const notificationItem = {
-              id: notification.request.identifier,
-              title: notification.request.content.title || "Notification",
-              body: notification.request.content.body || "",
-              data: notification.request.content.data,
-              timestamp: Date.now(),
-              isRead: false,
-              type: notification.request.content.data?.type || "general",
-            };
+              const notificationItem = {
+                id: notification.request.identifier,
+                title: notification.request.content.title || "Notification",
+                body: notification.request.content.body || "",
+                data: notification.request.content.data,
+                timestamp: Date.now(),
+                isRead: false,
+                type:
+                  (notification.request.content.data &&
+                    notification.request.content.data.type) ||
+                  "general",
+              };
 
-            await NotificationService.saveNotification(notificationItem);
+              await NotificationService.saveNotification(notificationItem);
+              DeviceEventEmitter.emit("notificationUpdate");
 
-            // Emit event to update badge
-            DeviceEventEmitter.emit("notificationUpdate");
+              if (appState.current === "active") {
+                Toast.show({
+                  type: "customToast",
+                  text1: notification.request.content.title,
+                  text2: notification.request.content.body,
+                  visibilityTime: 4000,
+                  autoHide: true,
+                  topOffset: 50,
+                  onPress: async () => {
+                    await NotificationService.markAsRead(notificationItem.id);
+                    DeviceEventEmitter.emit("notificationUpdate");
+                    handleNotificationNavigation(
+                      notification.request.content.data
+                    );
+                  },
+                });
+              }
+            }
+          );
 
-            // Show toast
-            Toast.show({
-              type: "customToast",
-              text1: notification.request.content.title,
-              text2: notification.request.content.body,
-              onPress: async () => {
-                await NotificationService.markAsRead(notificationItem.id);
-                DeviceEventEmitter.emit("notificationUpdate");
-                const data = notification.request.content.data;
-                handleNotificationNavigation(data);
-              },
-            });
-          }
-        );
-
-        // Handle notification TAP (app was closed/background)
-        const responseSubscription =
-          await NotificationService.handleNotificationResponse(
+        // Handle notification tap
+        responseListener.current =
+          Notifications.addNotificationResponseReceivedListener(
             async (response) => {
+              console.log("👆 User tapped notification:", response);
+
               const notification = response.notification;
               const data = notification.request.content.data;
 
-              console.log("User tapped notification:", data);
-
-              // Save if not already saved and mark as read
               const notificationItem = {
                 id: notification.request.identifier,
                 title: notification.request.content.title || "Notification",
                 body: notification.request.content.body || "",
                 data: data,
                 timestamp: Date.now(),
-                isRead: true, // Mark as read since user tapped it
-                type: data?.type || "general",
+                isRead: true,
+                type: (data && data.type) || "general",
               };
 
               await NotificationService.saveNotification(notificationItem);
               DeviceEventEmitter.emit("notificationUpdate");
 
-              // Navigate
-              handleNotificationNavigation(data);
+              setTimeout(() => {
+                handleNotificationNavigation(data);
+              }, 500);
             }
           );
 
@@ -102,17 +128,35 @@ function NotificationsHandler() {
         const initialNotification =
           await Notifications.getLastNotificationResponseAsync();
         if (initialNotification) {
+          console.log("🚀 App opened from notification:", initialNotification);
           const data = initialNotification.notification.request.content.data;
-          console.log("App opened from notification:", data);
 
           setTimeout(() => {
             handleNotificationNavigation(data);
-          }, 1000);
+          }, 1500);
         }
 
+        // Track app state changes
+        const subscription = AppState.addEventListener(
+          "change",
+          (nextAppState) => {
+            appState.current = nextAppState;
+            console.log("App state changed to:", nextAppState);
+          }
+        );
+
         return () => {
-          subscription.remove();
-          responseSubscription.remove();
+          if (notificationListener.current) {
+            Notifications.removeNotificationSubscription(
+              notificationListener.current
+            );
+          }
+          if (responseListener.current) {
+            Notifications.removeNotificationSubscription(
+              responseListener.current
+            );
+          }
+          subscription?.remove();
         };
       }
     };
@@ -137,6 +181,14 @@ function BiometricAuthWrapper({ children }) {
 
   const checkBiometricSettings = async () => {
     try {
+      // Skip biometrics on web
+      if (Platform.OS === "web") {
+        setIsBiometricEnabled(false);
+        setIsBiometricAuthenticated(true);
+        setIsCheckingBiometric(false);
+        return;
+      }
+
       const biometricEnabled = await SecureStore.getItemAsync(
         "biometric_enabled"
       );
@@ -213,7 +265,7 @@ export default function Layout() {
           `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
         );
 
-        if (!res.data?.stripePublishableKey) {
+        if (!res.data || !res.data.stripePublishableKey) {
           console.error("No publishable key in response:", res.data);
           return;
         }

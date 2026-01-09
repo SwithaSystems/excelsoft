@@ -24,7 +24,6 @@ export default function UserNotificationsScreen() {
   const loadNotifications = async () => {
     const stored = await NotificationService.getStoredNotifications();
     setNotifications(stored);
-    // Emit event to update badge
     DeviceEventEmitter.emit("notificationUpdate");
   };
 
@@ -41,35 +40,14 @@ export default function UserNotificationsScreen() {
   };
 
   const handleNotificationPress = async (notification: any) => {
-    // Mark as read
     await NotificationService.markAsRead(notification.id);
     await loadNotifications();
-
-    // Navigate
     handleNotificationNavigation(notification.data);
   };
 
   const handleMarkAllAsRead = async () => {
     await NotificationService.markAllAsRead();
     await loadNotifications();
-  };
-
-  const handleClearAll = () => {
-    Alert.alert(
-      "Clear All Notifications",
-      "Are you sure you want to clear all notifications?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: async () => {
-            await NotificationService.clearAllNotifications();
-            await loadNotifications();
-          },
-        },
-      ]
-    );
   };
 
   const handleDeleteNotification = (notificationId: string) => {
@@ -94,13 +72,13 @@ export default function UserNotificationsScreen() {
     switch (type) {
       case "order_status":
       case "order_delivery":
-        return "cart";
+        return "cube-outline";
       case "new_message":
-        return "chatbubble";
+        return "chatbubble-outline";
       case "promotion":
-        return "pricetag";
+        return "pricetag-outline";
       default:
-        return "notifications";
+        return "notifications-outline";
     }
   };
 
@@ -115,30 +93,45 @@ export default function UserNotificationsScreen() {
     if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
 
-    return new Date(timestamp).toLocaleDateString();
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year:
+        date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+    });
   };
 
   const renderNotification = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={[styles.notificationCard, !item.isRead && styles.unreadCard]}
+      style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
       onPress={() => handleNotificationPress(item)}
-      activeOpacity={0.7}
+      activeOpacity={0.6}
     >
-      <View style={styles.notificationContent}>
-        <View style={styles.iconContainer}>
+      <View style={styles.leftSection}>
+        {/* Icon */}
+        <View style={styles.iconCircle}>
           <Ionicons
             name={getNotificationIcon(item.type)}
             size={24}
-            color={item.isRead ? colors.primary : colors.error}
+            color={colors.primary}
           />
         </View>
 
-        <View style={styles.textContainer}>
-          <Text style={[styles.title, !item.isRead && styles.unreadTitle]}>
-            {item.title}
-          </Text>
+        {/* Content */}
+        <View style={styles.contentSection}>
+          <View style={styles.titleRow}>
+            <Text
+              style={[styles.title, !item.isRead && styles.unreadTitle]}
+              numberOfLines={1}
+            >
+              {item.title}
+            </Text>
+            {!item.isRead && <View style={styles.unreadDot} />}
+          </View>
           <Text style={styles.body} numberOfLines={2}>
             {item.body}
           </Text>
@@ -146,28 +139,16 @@ export default function UserNotificationsScreen() {
             {formatTimestamp(item.timestamp)}
           </Text>
         </View>
-
-        <View style={styles.rightSection}>
-          {/* Read/Unread indicator */}
-          <View
-            style={[
-              styles.checkmark,
-              item.isRead ? styles.readCheckmark : styles.unreadCheckmark,
-            ]}
-          >
-            <Ionicons name="checkmark" size={16} color="white" />
-          </View>
-
-          {/* Delete button */}
-          <TouchableOpacity
-            onPress={() => handleDeleteNotification(item.id)}
-            style={styles.deleteButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="trash-outline" size={18} color={colors.darkGray} />
-          </TouchableOpacity>
-        </View>
       </View>
+
+      {/* Delete Button */}
+      <TouchableOpacity
+        onPress={() => handleDeleteNotification(item.id)}
+        style={styles.deleteButton}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Ionicons name="close-outline" size={22} color="#999" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -176,38 +157,22 @@ export default function UserNotificationsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={styles.headerActions}>
-          {notifications.length > 0 && (
-            <>
-              <TouchableOpacity
-                onPress={handleMarkAllAsRead}
-                style={styles.headerButton}
-              >
-                <Text style={styles.headerButtonText}>Mark all read</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleClearAll}
-                style={styles.headerButton}
-              >
-                <Ionicons
-                  name="trash-outline"
-                  size={20}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+        {notifications.length > 0 && (
+          <TouchableOpacity
+            onPress={handleMarkAllAsRead}
+            style={styles.markAllButton}
+          >
+            <Text style={styles.markAllText}>Mark all read</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons
-            name="notifications-off-outline"
-            size={64}
-            color={colors.darkGray}
-          />
+          <View style={styles.emptyIconCircle}>
+            <Ionicons name="notifications-off-outline" size={48} color="#999" />
+          </View>
           <Text style={styles.emptyText}>No notifications yet</Text>
           <Text style={styles.emptySubtext}>
             You'll see notifications here when you receive them
@@ -221,7 +186,7 @@ export default function UserNotificationsScreen() {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
     </View>
@@ -231,130 +196,128 @@ export default function UserNotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingTop: 50,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "#e8e8e8",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.primary,
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#000",
   },
-  headerActions: {
+  markAllButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  markAllText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  notificationItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: "#fff",
   },
-  headerButton: {
-    padding: 4,
+  unreadItem: {
+    backgroundColor: "#f9fafb",
   },
-  headerButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-  },
-  listContent: {
-    padding: 8,
-  },
-  notificationCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 4,
-    marginHorizontal: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  unreadCard: {
-    backgroundColor: "#f0f8ff",
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  notificationContent: {
+  leftSection: {
     flexDirection: "row",
     alignItems: "flex-start",
+    flex: 1,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
-  textContainer: {
+  contentSection: {
     flex: 1,
+    paddingRight: 8,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
+    color: "#1a1a1a",
+    flex: 1,
+    marginRight: 8,
   },
   unreadTitle: {
-    fontWeight: "bold",
-    color: colors.primary,
+    fontWeight: "700",
+    color: "#000",
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ff3b30",
   },
   body: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 4,
     lineHeight: 20,
+    marginBottom: 6,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#999",
-  },
-  rightSection: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginLeft: 8,
-  },
-  checkmark: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  readCheckmark: {
-    backgroundColor: "#4CAF50", // Green for read
-  },
-  unreadCheckmark: {
-    backgroundColor: colors.secondaryRed, // Red for unread
   },
   deleteButton: {
     padding: 4,
+    marginLeft: 8,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#f0f0f0",
+    marginLeft: 76,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 32,
+    paddingHorizontal: 40,
+  },
+  emptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
-    color: "#666",
-    marginTop: 16,
+    color: "#1a1a1a",
+    marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 8,
+    fontSize: 15,
+    color: "#666",
     textAlign: "center",
+    lineHeight: 22,
   },
 });
