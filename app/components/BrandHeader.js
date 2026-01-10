@@ -23,6 +23,7 @@ function BrandHeader(props) {
   const [isValidUser, setIsValidUser] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0); 
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
 
@@ -183,7 +184,7 @@ function BrandHeader(props) {
                   position: "absolute",
                   top: -4,
                   right: -6,
-                  backgroundColor: colors.secondaryRed,
+                  backgroundColor: colors.primaryRed,
                   borderRadius: 10,
                   minWidth: 18,
                   height: 18,

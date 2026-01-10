@@ -1257,7 +1257,19 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     );
                   })}
                 </View>
-                <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+                
+                <OrderSummary
+                  cartItems={cartItems}
+                  sectionHeadingStyle={styles.sectionHeading}
+                  hideHeading={true}
+                  containerStyle={styles.orderSummaryContainer}
+                />
+              </View>
+            </View>
+            <Text style={styles.noteText}>
+              *please select a billing address before proceeding to payment
+            </Text>
+            <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
                   <Button
                     title="Proceed for Payment"
                     disabled={!isPaymentEnabled}
@@ -1306,17 +1318,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     textStyle={styles.buttonText}
                   />
                 </View>
-                <OrderSummary
-                  cartItems={cartItems}
-                  sectionHeadingStyle={styles.sectionHeading}
-                  hideHeading={true}
-                  containerStyle={styles.orderSummaryContainer}
-                />
-              </View>
-            </View>
-            <Text style={styles.noteText}>
-              *please select a billing address before proceeding to payment
-            </Text>
             {isWeb && (
               <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
                 <StripeCardInput />

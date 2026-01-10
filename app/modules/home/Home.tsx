@@ -486,8 +486,8 @@ const styles = StyleSheet.create({
   },
   categoriesScrollContent: {
     // paddingHorizontal: 8,
-    paddingLeft: 0,
-    paddingRight: 16, 
+    // paddingLeft: 0,
+    // paddingRight: 16, 
   },
   categoriesRowsContainer: {
     flexDirection: "column",
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   categoriesViewport: {
-    width: "94%",
+    width: "100%",
     alignSelf: "flex-start",
   },
 
