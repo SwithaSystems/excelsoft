@@ -47,7 +47,7 @@ export default StyleSheet.create({
   categoryText: {
     marginTop: 6,
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "500",
     textAlign: "center",
     color: colors.black,
   },
@@ -127,12 +127,9 @@ export default StyleSheet.create({
     color: colors.primary,
     marginRight: 6,
   },
-
   mrpStriked: {
     fontSize: 14,
     color: colors.darkGray,
     textDecorationLine: "line-through",
   },
-
-
 });

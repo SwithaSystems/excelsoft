@@ -68,20 +68,6 @@ export default function UserNotificationsScreen() {
     );
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "order_status":
-      case "order_delivery":
-        return "cube-outline";
-      case "new_message":
-        return "chatbubble-outline";
-      case "promotion":
-        return "pricetag-outline";
-      default:
-        return "notifications-outline";
-    }
-  };
-
   const formatTimestamp = (timestamp: number) => {
     const now = Date.now();
     const diff = now - timestamp;
@@ -111,34 +97,25 @@ export default function UserNotificationsScreen() {
       onPress={() => handleNotificationPress(item)}
       activeOpacity={0.6}
     >
-      <View style={styles.leftSection}>
-        {/* Icon */}
-        <View style={styles.iconCircle}>
-          <Ionicons
-            name={getNotificationIcon(item.type)}
-            size={24}
-            color={colors.primary}
-          />
-        </View>
+      {/* Unread Dot Indicator on Left */}
+      <View style={styles.dotContainer}>
+        {!item.isRead && <View style={styles.unreadDot} />}
+      </View>
 
-        {/* Content */}
-        <View style={styles.contentSection}>
-          <View style={styles.titleRow}>
-            <Text
-              style={[styles.title, !item.isRead && styles.unreadTitle]}
-              numberOfLines={1}
-            >
-              {item.title}
-            </Text>
-            {!item.isRead && <View style={styles.unreadDot} />}
-          </View>
-          <Text style={styles.body} numberOfLines={2}>
-            {item.body}
-          </Text>
-          <Text style={styles.timestamp}>
-            {formatTimestamp(item.timestamp)}
-          </Text>
-        </View>
+      {/* Content Section */}
+      <View style={styles.contentSection}>
+        <Text
+          style={[styles.title, !item.isRead && styles.unreadTitle]}
+          numberOfLines={1}
+        >
+          {item.title}
+        </Text>
+        <Text style={styles.body} numberOfLines={2}>
+          {item.body}
+        </Text>
+        <Text style={styles.timestamp}>
+          {formatTimestamp(item.timestamp)}
+        </Text>
       </View>
 
       {/* Delete Button */}
@@ -226,7 +203,6 @@ const styles = StyleSheet.create({
   notificationItem: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingVertical: 16,
     paddingHorizontal: 16,
     backgroundColor: "#fff",
@@ -234,45 +210,31 @@ const styles = StyleSheet.create({
   unreadItem: {
     backgroundColor: "#f9fafb",
   },
-  leftSection: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    flex: 1,
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
+  dotContainer: {
+    width: 20,
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
+  },
+  unreadDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#007AFF",
   },
   contentSection: {
     flex: 1,
     paddingRight: 8,
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
   title: {
     fontSize: 16,
     fontWeight: "600",
     color: "#1a1a1a",
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 4,
   },
   unreadTitle: {
     fontWeight: "700",
     color: "#000",
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ff3b30",
   },
   body: {
     fontSize: 14,
@@ -291,7 +253,7 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: "#f0f0f0",
-    marginLeft: 76,
+    marginLeft: 48,
   },
   emptyContainer: {
     flex: 1,

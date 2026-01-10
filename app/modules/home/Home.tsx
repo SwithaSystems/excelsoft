@@ -494,6 +494,7 @@ const styles = StyleSheet.create({
   },
   categoryRow: {
     flexDirection: "row",
+    marginBottom: 8,
   },
   categoriesViewport: {
     width: "100%",
