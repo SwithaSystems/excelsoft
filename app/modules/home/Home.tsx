@@ -73,8 +73,10 @@ const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [promotionsLoading, setPromotionsLoading] = useState(false);
+  const [promotionsLoading, setPromotionsLoading] = useState(true);
   const [carousalEnabled, setCarousalEnabled] = useState(false);
+  const [globalSettingsLoaded, setGlobalSettingsLoaded] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const router = useRouter();
 
   const { width } = useWindowDimensions();
@@ -110,6 +112,8 @@ const HomePage = () => {
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
       setCarousalEnabled(true);
+    } finally {
+      setGlobalSettingsLoaded(true);
     }
   };
 
@@ -313,6 +317,13 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
+  // Check if all initial data is loaded
+  useEffect(() => {
+    if (!loading && !promotionsLoading && globalSettingsLoaded) {
+      setIsInitialLoading(false);
+    }
+  }, [loading, promotionsLoading, globalSettingsLoaded]);
+
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
@@ -330,6 +341,15 @@ const HomePage = () => {
     };
     fetchPromotions();
   }, []);
+
+  // Show full-screen loader until all required data is loaded
+  if (isInitialLoading) {
+    return (
+      <View style={styles.fullScreenLoader}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <LayoutComponent
@@ -444,6 +464,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
     marginVertical: 8,
+  },
+  fullScreenLoader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.white,
   },
   carouselSection: {
     marginVertical: 16,

@@ -22,6 +22,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
@@ -73,6 +74,7 @@ const editProfileScreen = () => {
   const [user, setUser] = useState<any>(null);
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const dispatch = useDispatch();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -98,7 +100,12 @@ const editProfileScreen = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      if (userData) {
+      if (!userData) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
         const user = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
@@ -117,6 +124,10 @@ const editProfileScreen = () => {
             setSelectedDate(formatted);
           }
         }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setProfileLoading(false);
       }
     };
     getUser();
@@ -243,8 +254,17 @@ const editProfileScreen = () => {
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
-        dispatch(setUserData(response.data.user));
-        setIsSuccessModalVisible(true);
+        dispatch(
+          setUserData({
+            ...response.data.user,
+            profileImageUrl:
+              response.data.user.profileImageUrl ||
+              response.data.user.profileImage ||
+              response.data.user.image ||
+              "",
+          })
+        );
+                setIsSuccessModalVisible(true);
       }
       return response?.data;
     } catch (error) {
@@ -286,6 +306,23 @@ const editProfileScreen = () => {
     const [day, month, year] = dateStr.split("/");
     return new Date(Number(year), Number(month) - 1, Number(day));
   };
+
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        hasFooter={isWeb}
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent || undefined}
+        hasSidebar={isWeb}
+        userSidebar={true}
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
 
   return (
     <LayoutComponent
