@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from "react-native";
 import colors from "../../constants/colors";
 import BackArrow from "./commonComponents/BackArrow";
 import SearchBar from "@/app/components/searchBar";
@@ -12,12 +12,14 @@ function Header(props) {
     redirectToPage(containers.searchScreen);
   };
 
+  const isWeb = Platform.OS === "web";
+
   return (
     <View style={styles.headerWrapper}>
       {props.headerText && (
         <View style={[styles.header, props?.headerStyle]}>
           <View style={styles.leftContainer}>
-            {!props.hideBackArrow && (
+            {!props.hideBackArrow && !isWeb && (
             <BackArrow needResetNavigation={props.needResetNavigation} />
             )}
           </View>

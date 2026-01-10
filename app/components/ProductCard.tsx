@@ -142,7 +142,10 @@ const ProductCard = ({
           <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isWeb ? 2 : 1}>
             {displayName}
           </Text>
-          <TouchableOpacity onPress={handleHeartPress}>
+          <TouchableOpacity 
+            onPress={handleHeartPress}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
             <Ionicons
               name={isItemSaved(id) ? "heart" : "heart-outline"}
               size={heartSize}

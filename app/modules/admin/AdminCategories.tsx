@@ -454,13 +454,11 @@ const AdminCategories = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
-      scrollable={!isWeb}
+      scrollable={isWeb ? true : true}
       hideNavItems={true}
     >
       {isWeb ? (
-        <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-            <View style={styles.listSection}>
+        <View style={styles.listSection}>
               <View style={styles.sectionHeader}>
                 <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
 
@@ -539,10 +537,8 @@ const AdminCategories = () => {
                   )}
                 </View>
               </View>
-            </View>
-          </ScrollView>
           
-          {/* Pagination for web/tablet only - outside ScrollView */}
+          {/* Pagination for web/tablet only */}
           {isWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
@@ -685,10 +681,16 @@ const AdminCategories = () => {
                       {editingCategoryId === categoryItem.id && (
                         <Text style={styles.editingLabel}>Editing</Text>
                       )}
-                      <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                      <TouchableOpacity
+                        onPress={() => handleEditCategory(categoryItem)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="create-outline" size={20} color={colors.primary} />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteCategory(categoryItem._id)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
                       </TouchableOpacity>
                     </View>

@@ -455,6 +455,7 @@ const AdminProductDashboard = () => {
                 </Text>
                 <View style={{ flexDirection: "row", gap: 4 }}>
                   <TouchableOpacity
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                     onPress={() =>
                       redirectToPage(containers.AdminProductUpdationScreen, {
                         item: JSON.stringify(item),
@@ -467,7 +468,10 @@ const AdminProductDashboard = () => {
                       color={colors.primary}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteProduct(item)}>
+                  <TouchableOpacity
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    onPress={() => handleDeleteProduct(item)}
+                  >
                     <Ionicons
                       name="trash-outline"
                       size={20}
@@ -603,7 +607,7 @@ const AdminProductDashboard = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
-      scrollable={false}
+      scrollable={isWeb ? true : false}
       hideNavItems={true}
     >
       <View style={[
@@ -696,36 +700,35 @@ const AdminProductDashboard = () => {
                   </View>
                 </TouchableOpacity>
                 {isCategoryOpen && (
-  isWeb ? (
-    // ===== WEB: inline dropdown (keep your current UI) =====
-    <View style={styles.dropdownList}>
-      <ScrollView style={styles.dropdownScrollArea}>
-        {renderCategoryItems()}
-      </ScrollView>
-    </View>
-  ) : (
-    // ===== MOBILE: modal dropdown =====
-    Platform.OS !== "web" && (
-      <Modal
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsCategoryOpen(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setIsCategoryOpen(false)}
-        >
-          <View style={styles.modalDropdown}>
-            <ScrollView>
-              {renderCategoryItems()}
-            </ScrollView>
-          </View>
-        </Pressable>
-      </Modal>
-    )
-  )
-)}
-
+                  isWeb ? (
+                    // ===== WEB: inline dropdown (keep your current UI) =====
+                    <View style={styles.dropdownList}>
+                      <ScrollView style={styles.dropdownScrollArea}>
+                        {renderCategoryItems()}
+                      </ScrollView>
+                    </View>
+                  ) : (
+                    // ===== MOBILE: modal dropdown =====
+                    Platform.OS !== "web" && (
+                      <Modal
+                        transparent
+                        animationType="fade"
+                        onRequestClose={() => setIsCategoryOpen(false)}
+                      >
+                        <Pressable
+                          style={styles.modalOverlay}
+                          onPress={() => setIsCategoryOpen(false)}
+                        >
+                          <View style={styles.modalDropdown}>
+                            <ScrollView>
+                              {renderCategoryItems()}
+                            </ScrollView>
+                          </View>
+                        </Pressable>
+                      </Modal>
+                    )
+                  )
+                )}
               </View>
             </View>
           </View>

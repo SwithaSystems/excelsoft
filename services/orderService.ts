@@ -180,4 +180,19 @@ export const orderService = {
       throw error;
     }
   },
+
+  getOrderByOrderNumber: async (
+    orderNumber: string | number
+  ): Promise<Order> => {
+    try {
+      const response = await jsonAxios.get<Order>(
+        `${API_BASE_URL}/orders/getByOrderNumber/${orderNumber}`
+      );
+      console.log("orderdata by orderNumber", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by orderNumber:", error);
+      throw error;
+    }
+  },
 };

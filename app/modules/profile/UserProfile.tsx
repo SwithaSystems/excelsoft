@@ -262,10 +262,10 @@ const UserProfileScreen = () => {
             <FontAwesome name="map-marker" size={32} color={colors.primary} />
             <Text style={styles.actionText}>Saved Address</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          {/* <TouchableOpacity style={styles.actionButton}>
             <FontAwesome name="credit-card" size={32} color={colors.primary} />
             <Text style={styles.actionText}>Payments</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <Text style={styles.settingsTitle}>Settings</Text>

@@ -624,18 +624,20 @@ const SearchResultsScreen = () => {
             <View style={styles.filterSortContainerWeb}>
               <TouchableOpacity
                 style={styles.filterButtonWeb}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 onPress={() => {
                   redirectToPage(containers.filterScreen, {
                     categoryId: parsedCategoryId || 0,
                   });
                 }}
               >
-                <Feather name="filter" size={18} color={colors.black} />
+                <Ionicons name="filter-outline" size={18} color={colors.black} />
                 <Text style={styles.filterButtonTextWeb}>Filter</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.sortButtonWeb}
                 onPress={() => setIsSortDropdownVisible(true)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
                 <Ionicons name="swap-vertical" size={18} color={colors.black} />
                 <Text style={styles.sortButtonTextWeb}>Sort</Text>

@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions } from "react-native";
 import colors from "../../../constants/colors";
+import { color } from "react-native-elements/dist/helpers";
 
 const { width } = Dimensions.get("window");
 
@@ -20,25 +21,35 @@ export default StyleSheet.create({
     alignSelf: "flex-end",
   },
   categoriesContainer: {
-    paddingVertical: 16,
+    // paddingVertical: 2,
+    // paddingLeft: 5,
   },
   categoryItem: {
+    width: 70,             
     alignItems: "center",
-    marginHorizontal: 8,
+  },
+  categoryImageWrapper: {
+    width: 45,
+    height: 45,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    borderColor: "#1F7A5C",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   categoryImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    width: 36,
+    height: 36,
+    resizeMode: "contain",
   },
+
   categoryText: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 12,
+    fontWeight: "500",
     textAlign: "center",
-    maxWidth: 80,
-    //flexWrap:'wrap',
+    color: colors.black,
   },
   banner: {
     height: 150,
@@ -116,12 +127,9 @@ export default StyleSheet.create({
     color: colors.primary,
     marginRight: 6,
   },
-
   mrpStriked: {
     fontSize: 14,
     color: colors.darkGray,
     textDecorationLine: "line-through",
   },
-
-
 });

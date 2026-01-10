@@ -264,13 +264,12 @@ const AdminSeeAllOrders = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isTabOrDesktop}
-      scrollable={!isTabOrDesktop}
+      scrollable={isTabOrDesktop ? true : true}
       hideNavItems={true}
     >
       {isTabOrDesktop ? (
-        <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-            <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
+        <>
+        <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
               <View
                 style={[
                   styles.headerRow,
@@ -341,9 +340,6 @@ const AdminSeeAllOrders = () => {
                 />
               </View>
             </View>
-          </ScrollView>
-          
-          {/* Pagination for web/tablet only - outside ScrollView */}
           {isTabOrDesktop && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
@@ -353,7 +349,7 @@ const AdminSeeAllOrders = () => {
               />
             </View>
           )}
-        </View>
+        </>
       ) : (
         <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
           {!isTabOrDesktop && (

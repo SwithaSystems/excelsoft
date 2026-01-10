@@ -89,7 +89,7 @@ const AdminNotificationSettings = () => {
     <PageLayout
       hasFooter={false}
       hasHeader
-      scrollable
+      scrollable={true}
       headerComponent={<Header headerText={NOTIFICATIONS_SCREEN_TITLE} />}
     >
       <View style={[globalStyles.pt_0]}>

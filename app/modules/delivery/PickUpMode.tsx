@@ -122,7 +122,7 @@ const pickUpModescreen = () => {
         hasHeader
         headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
         hasFooter={false}
-        scrollable={false}
+        scrollable={isWeb}
       >
         <View style={[globalStyles.pt_0, styles.loadingContainer]}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -147,7 +147,7 @@ const pickUpModescreen = () => {
       headerComponent={HeaderComponent}
       hasFooter={isWeb}
       footerComponent={isWeb ? <FooterWeb /> : undefined}
-      scrollable={false}
+      scrollable={true}
     >
       {isWeb && (
         <Text

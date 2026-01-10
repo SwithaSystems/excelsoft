@@ -37,6 +37,7 @@ const BackArrow = ({ needResetNavigation }: BackArrowProps) => {
       // onPress={() => router.canGoBack() ? router.back() : router.replace({
       //     pathname: "/",
       //   })}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       onPress={handleBackArrow}
     >
       <Ionicons name="arrow-back" size={24} color={colors.primary} />

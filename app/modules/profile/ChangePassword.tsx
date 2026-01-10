@@ -22,6 +22,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { isValidPassword } from "../../../utilities/validations";
+import colors from "@/constants/colors";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -201,7 +202,6 @@ const changePasswordScreen = () => {
         title: "Error",
         message: errorMessage,
       });
-      // Don't redirect on error, let user try again
     }
   };
 
@@ -278,7 +278,26 @@ const changePasswordScreen = () => {
                 />
               </View>
             </View>
-            <Button onPress={handleChangePassword} title="Save Password" />
+            {isWeb ? (
+              <View style={webStyles.inlineButtonRow}>
+                <Button
+                  primary={false}
+                  title="Cancel"
+                  onPress={() => redirectToPage(containers.userProfileScreen)}
+                  style={webStyles.cancelButton}
+                  textStyle={webStyles.cancelButtonText}
+                />
+                <Button
+                  title="Save Password"
+                  onPress={handleChangePassword}
+                  style={webStyles.saveButton}
+                  textStyle={webStyles.saveButtonText}
+                />
+              </View>
+            ) : (
+              <Button onPress={handleChangePassword} title="Save Password" />
+            )}
+
           </View>
         </ScrollView>
       </KeyBoardWrapper>
@@ -292,5 +311,43 @@ const webStyles = StyleSheet.create({
   contentWidth: {
     width: "70%",
     alignSelf: "center",
+  },
+
+  inlineButtonRow: {
+    marginTop: 24,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 16,
+  },
+
+  /* SAVE (Primary) */
+  saveButton: {
+    minWidth: 160,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  cancelButton: {
+    minWidth: 140,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "500",
   },
 });

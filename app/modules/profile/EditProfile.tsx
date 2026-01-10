@@ -51,6 +51,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useNavigation } from "@react-navigation/native";
+import { color } from "react-native-elements/dist/helpers";
 
 interface User {
   id: string;
@@ -471,25 +472,29 @@ const editProfileScreen = () => {
                   )}
                 </View>
               </View>
+              {isWeb && (
+                <View style={webStyles.inlineButtonRow}>
+                  <Button
+                    primary={false}
+                    title="Cancel"
+                    onPress={() => redirectToPage(containers.homeScreen)}
+                    style={webStyles.cancelButton}
+                    textStyle={webStyles.cancelButtonText}
+                  />
+                  <Button
+                    title="Save"
+                    onPress={handleEditProfile}
+                    style={webStyles.saveButton}
+                    textStyle={webStyles.saveButtonText}
+                  />
+                </View>
+              )}
+
             </View>
           </ScrollView>
         </View>
 
-        {isWeb ? (
-          <View style={webStyles.buttonRow}>
-            <Button
-              primary={false}
-              title="Cancel"
-              onPress={() => redirectToPage(containers.homeScreen)}
-              style={webStyles.buttonHalf}
-            />
-            <Button
-              onPress={handleEditProfile}
-              title="Save"
-              style={webStyles.buttonHalf}
-            />
-          </View>
-        ) : (
+          {!isWeb && (
           <View style={{ marginTop: 16 }}>
             <Button onPress={handleEditProfile} title="Save" />
           </View>
@@ -537,13 +542,52 @@ const webStyles = StyleSheet.create({
     width: "70%",
     alignSelf: "center",
   },
+
   buttonRow: {
     width: "70%",
     alignSelf: "center",
     flexDirection: "row",
-    columnGap: 16,
+    justifyContent: "flex-end",
+    gap: 16,
+    marginTop: 32,
+    marginBottom: 40,
   },
-  buttonHalf: {
-    flex: 1,
+
+  inlineButtonRow: {
+    marginTop: 24,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 16,
+  },
+
+
+  saveButton: {
+    minWidth: 160,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  cancelButton: {
+    minWidth: 140,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "500",
   },
 });
