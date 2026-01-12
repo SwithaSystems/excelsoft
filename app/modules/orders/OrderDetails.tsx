@@ -616,7 +616,7 @@ const orderDetailsScreen = () => {
             <View style={{}}>
               <QRCodeDisplay
                 qrValue={orderDetails.orderNumber?.toString()}
-                noteText="*Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
+                noteText="Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
               />
             </View>
             <View style={styles.orderSummaryItem}>
