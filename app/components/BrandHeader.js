@@ -10,7 +10,7 @@ import {
   View,
   Platform,
 } from "react-native";
-import { redirectToPage } from "../../utilities/redirectionHelper";
+import { clearNavigationStack, redirectToPage } from "../../utilities/redirectionHelper";
 import containers from "../../containers";
 import { UserAPI } from "../../services/userService";
 import { useSelector, useDispatch } from "react-redux";
@@ -151,9 +151,9 @@ function BrandHeader(props) {
             <TouchableOpacity
               onPress={() => {
                 if (props.hideUserGreeting) {
-                  redirectToPage(containers.homeScreen);
+                  clearNavigationStack(containers.homeScreen);
                 } else {
-                  redirectToPage(containers.AdminDashboardScreen);
+                  clearNavigationStack(containers.AdminDashboardScreen);
                 }
               }}
               style={{
