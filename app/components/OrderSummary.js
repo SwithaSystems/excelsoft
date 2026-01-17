@@ -1,10 +1,13 @@
 import colors from "@/constants/colors";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View ,Alert} from "react-native";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+import globalSettingsAPI from "@/services/globalSettingsService";
 
 function OrderSummary(props) {
   const cartItems = props.cartItems || [];
+  const [shippingCharge, setShippingCharge] = useState(0);
+
 
   const calculateItemSubtotal = (item) => {
     const basePrice = (item.netPrice || 0) - (item.discount || 0);
@@ -49,7 +52,24 @@ function OrderSummary(props) {
     return total + discountWithVAT * item.quantity;
   }, 0);
 
-  const deliveryCharge = props?.shipping || 0;
+  const fetchSettings = async () => {
+      try {
+        const response = await globalSettingsAPI.getSettings();
+        console.log("globalsettings",response.data.shippingCharge);
+        setShippingCharge(response.data.shippingCharge);
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+        Alert.alert("Error", "Failed to load settings. Please try again.");
+      } 
+     
+    };
+    useEffect(()=>{
+      fetchSettings();
+    },[])
+
+  const deliveryCharge = ( props.mode === "Home Delivery") ? shippingCharge ?? 0 : 0;
+
+
   const totalIncVAT = subtotalExVAT + totalVAT + deliveryCharge;
 
   return (
@@ -131,6 +151,7 @@ function OrderSummary(props) {
             {totalVAT.toFixed(2)}
           </Text>
         </View>
+        {props.mode == "Home Delivery" && (
         <View style={styles.tableRow}>
           <Text style={styles.summaryLabel}>Delivary Charges</Text>
           <Text style={styles.quantity}></Text>
@@ -139,7 +160,7 @@ function OrderSummary(props) {
             {CurrencySymbol}
             {deliveryCharge.toFixed(2)}
           </Text>
-        </View>
+        </View>)}
         {/* Totals Section with shared border */}
         <View style={styles.totalsContainer}>
           <View style={styles.tableRow}>

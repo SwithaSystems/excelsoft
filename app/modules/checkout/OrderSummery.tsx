@@ -969,6 +969,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   cartItems={cartItems}
                   containerStyle={styles.compactOrderSummary}
                   sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                  mode = {selectedMode}
                 />
                 {/* Place Order Button */}
                 {isWeb && <StripeCardInput />}
