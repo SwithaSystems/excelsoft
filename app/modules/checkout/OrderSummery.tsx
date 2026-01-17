@@ -152,7 +152,7 @@ const orderSummeryScreen = () => {
   const calculateOrderTotal = useCallback(
     (items: any[]) => {
       const calculateItemSubtotal = (item: any) => {
-        const basePrice = (item.netPrice || 0) - (item.discount || 0);
+        const basePrice = (item.netPrice || 0) /*- (item.discount || 0)*/;
         return basePrice * (item?.quantity || 1);
       };
 
@@ -969,6 +969,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   cartItems={cartItems}
                   containerStyle={styles.compactOrderSummary}
                   sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                  mode = {selectedMode}
                 />
                 {/* Place Order Button */}
                 {isWeb && <StripeCardInput />}

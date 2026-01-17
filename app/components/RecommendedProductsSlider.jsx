@@ -52,7 +52,7 @@ function RecommendedProductsSlider(props) {
               {props.showAddToCart && (
                 <View style={styles.priceButtonContainer}>
                   <DisplayPrice
-                    discount={item.discount}
+                    // discount={item.discount}
                     netPrice={item.netPrice}
                   />
                   <View style={styles.button}>

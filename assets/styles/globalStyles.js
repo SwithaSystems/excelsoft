@@ -332,28 +332,28 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 40,
     textAlign: "center",
   },
-  discountSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  discountTextInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.secondary,
-    height: 48,
-    flex: 1,
-    borderRadius: 8,
-    marginTop: 4,
-    justifyContent: "space-between",
-  },
-  discountText: {
-    margin: 8,
-  },
-  discountClearIcon: {
-    marginRight: 8,
-    fontSize: 24,
-    color: colors.primary,
-  },
+  // discountSection: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  // },
+  // discountTextInput: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   backgroundColor: colors.secondary,
+  //   height: 48,
+  //   flex: 1,
+  //   borderRadius: 8,
+  //   marginTop: 4,
+  //   justifyContent: "space-between",
+  // },
+  // discountText: {
+  //   margin: 8,
+  // },
+  // discountClearIcon: {
+  //   marginRight: 8,
+  //   fontSize: 24,
+  //   color: colors.primary,
+  // },
   redeemButton: {
     backgroundColor: colors.primary,
     color: colors.white,

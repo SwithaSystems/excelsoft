@@ -4,7 +4,7 @@ export interface CartItemInterface {
   _id?: string;
   id: string;
   name: string;
-  discount: number;
+  // discount: number;
   netPrice: number;
   quantity: number;
   isVatApplicable: boolean;

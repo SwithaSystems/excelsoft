@@ -67,7 +67,7 @@ const AdminProductUpdation = () => {
   const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
   const [netPrice, setNetPrice] = useState<any>();
-  const [discount, setDiscountPrice] = useState("");
+  // const [discount, setDiscountPrice] = useState("");
   const [minimumOrderQunatity, setMinimumOrderQuantity] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
@@ -88,7 +88,7 @@ const AdminProductUpdation = () => {
     {
       qty: "",
       actualPrice: "",
-      discount: "",
+      // discount: "",
     },
   ]);
 
@@ -110,7 +110,7 @@ const AdminProductUpdation = () => {
       // productDescription: string;
       // stock: string;
       netPrice: string;
-      discount: string;
+      // discount: string;
       category: string;
       // minimumOrderQunatity: string;
       // productImages: string;
@@ -146,7 +146,7 @@ const AdminProductUpdation = () => {
       setProductName(productData.name || "");
       setStock(productData.stock?.toString() || "");
       setNetPrice(productData.netPrice?.toString() || "");
-      setDiscountPrice(productData.discount?.toString() || "");
+      // setDiscountPrice(productData.discount?.toString() || "");
       setCategory(productData.categoryId?.[0]?.toString() || "");
       // setColor(productData.productColors?.[0] || "");
       setMinimumOrderQuantity(
@@ -189,16 +189,16 @@ const AdminProductUpdation = () => {
 
   useEffect(() => {
     calculatePrices();
-  }, [netPrice, discount, vatRate, isVatApplicable]);
+  }, [netPrice,/* discount,*/ vatRate, isVatApplicable]);
 
   const calculatePrices = () => {
     const netPriceNum = parseFloat(netPrice) || 0;
-    const discountNum = parseFloat(discount) || 0;
+    // const discountNum = parseFloat(discount) || 0;
 
     if (isVatApplicable) {
       const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
-      const VATAmount = (netPriceNum - discountNum) * (effectiveVatRate / 100);
-      const netPriceInc_Vat = netPriceNum - discountNum + VATAmount;
+      const VATAmount = (netPriceNum /*- discountNum*/) * (effectiveVatRate / 100);
+      const netPriceInc_Vat = netPriceNum /*- discountNum */+ VATAmount;
 
       setVatAmount(VATAmount.toFixed(2));
       setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
@@ -208,7 +208,7 @@ const AdminProductUpdation = () => {
       setVatAmount("");
       setNetPriceIncVAT("");
 
-      const grossPrice = calculateGrossPrice(netPriceNum - discountNum, false);
+      const grossPrice = calculateGrossPrice(netPriceNum /*- discountNum*/, false);
       setGrossPrice(grossPrice.toFixed(2));
     }
   };
@@ -446,19 +446,19 @@ const AdminProductUpdation = () => {
     }
   };
 
-  const handleDiscountPriceChange = (value: string) => {
-    // Allow numeric input with up to 2 decimal places
-    const numericValue = value.replace(/[^0-9.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return; // Prevent multiple decimal points
-    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
+  // const handleDiscountPriceChange = (value: string) => {
+  //   // Allow numeric input with up to 2 decimal places
+  //   const numericValue = value.replace(/[^0-9.]/g, "");
+  //   const parts = numericValue.split(".");
+  //   if (parts.length > 2) return; // Prevent multiple decimal points
+  //   if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
-    setDiscountPrice(numericValue);
-    // if (errors.discount) {
-    //   const error = isValidDiscountPrice(numericValue, discount);
-    //   setErrors((prev) => ({ ...prev, discount: error || undefined }));
-    // }
-  };
+  //   // setDiscountPrice(numericValue);
+  //   // if (errors.discount) {
+  //   //   const error = isValidDiscountPrice(numericValue, discount);
+  //   //   setErrors((prev) => ({ ...prev, discount: error || undefined }));
+  //   // }
+  // };
 
   const handleMinOrderQuantityChange = (value: string) => {
     // Only allow numeric input
@@ -507,7 +507,7 @@ const AdminProductUpdation = () => {
       formData.append("description", productDescription.trim());
       formData.append("stock", stock);
       formData.append("netPrice", netPrice);
-      formData.append("discount", discount || "0");
+      // formData.append("discount", discount || "0");
       formData.append("categoryId", category);
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
@@ -640,7 +640,7 @@ const AdminProductUpdation = () => {
     productName,
     stock,
     netPrice,
-    discount,
+    // discount,
     category,
     color,
     selectedColors,
@@ -872,7 +872,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
+            <Text style={styles.label}>RRP* ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={netPrice}
@@ -886,16 +886,16 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
             )}
 
-            <Text style={styles.label}>Discount({CurrencySymbol})</Text>
+            {/* <Text style={styles.label}>Discount({CurrencySymbol})</Text>
             <CustomTextInput
-              setValue={handleDiscountPriceChange}
-              value={discount}
+              // setValue={handleDiscountPriceChange}
+              // value={discount}
               onPress={() => { }}
               placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
               keyboardType="decimal-pad"
               // style={errors.discount ? globalStyles.errorInput : undefined}
               maxLength={10}
-            />
+            /> */}
             {/* {errors.discount && (
               <Text style={globalStyles.errorText}>{errors.discount}</Text>
             )} */}

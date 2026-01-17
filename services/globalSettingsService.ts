@@ -4,6 +4,7 @@ export interface GlobalSettingsDto {
   displayCarousel: boolean;
   timeWindow: boolean;
   deliveryMode: boolean;
+  shippingCharge:number;
   updatedAt?: Date;
 }
 
@@ -14,11 +15,7 @@ export const globalSettingsAPI = {
     return response;
   },
 
-  updateSettings: async (
-    key: keyof Omit<GlobalSettingsDto, "updatedAt">,
-    value: boolean
-  ) => {
-    // console.log(`Settings to Update: ${key} = ${value}`);
+ updateSettings: async (key: string, value: boolean | number) => {
     // Key goes in the URL, value goes in the body
     const response = await jsonAxios.patch(`/global-settings/${key}`, {
       value,

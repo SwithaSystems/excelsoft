@@ -32,7 +32,7 @@ const offersScreen = () => {
       title: product.name,
       rating: product.name === "Baby Stroller" ? 4.7 : 4.5,
       reviews: product.name === "Baby Stroller" ? 120 : 130,
-      discount: product.name === "Baby Stroller" ? 120 : 8,
+      // discount: product.name === "Baby Stroller" ? 120 : 8,
       netPrice: product.name === "Baby Stroller" ? 180 : 10,
       imageUrl: product.image,
       saleEndsAt: "31-4-2024",
@@ -51,7 +51,7 @@ const offersScreen = () => {
           id={item.id}
           name={item.name}
           description={item.description}
-          discount={item.discount}
+          // discount={item.discount}
           netPrice={item.netPrice}
           image={item.image}
           productColors={item.productColors}

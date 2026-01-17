@@ -11,6 +11,43 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.lightgrey,
   },
+  inputContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 8,
+},
+inputReadOnly: {
+  backgroundColor: colors.lightgrey, // or any color to indicate read-only
+},
+editButton: {
+  padding: 8,
+},
+editIcon: {
+  fontSize: 18,
+},
+actionButtons: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 8,
+},
+saveButton: {
+  padding: 8,
+  backgroundColor: colors.primary,
+  borderRadius: 4,
+},
+saveIcon: {
+  fontSize: 18,
+  color: colors.white,
+},
+cancelButton: {
+  padding: 8,
+  backgroundColor: colors.lightgrey,
+  borderRadius: 4,
+},
+cancelIcon: {
+  fontSize: 18,
+  color: colors.darkGray,
+},
   switchLabel: {
     fontSize: 16,
     fontWeight: "600",
@@ -37,6 +74,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 40,
   },
+  input: {
+  borderWidth: 1,
+  // borderColor: colors.border,
+  borderRadius: 6,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  minWidth: 100,
+  textAlign: "right",
+  // color: colors.primary,
+},
+
   loadingText: {
     marginTop: 12,
     fontSize: 16,

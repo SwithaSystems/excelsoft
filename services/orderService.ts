@@ -13,7 +13,7 @@ export interface OrderProduct {
   name: string;
   quantity: number;
   netPrice: number;
-  discount: number;
+  // discount: number;
   isVatApplicable: boolean;
   vatRate: number;
   vatAmount: number;
@@ -52,7 +52,7 @@ export interface Order {
   userId: string;
   products: OrderProduct[];
   shippingCharges: number;
-  discounts: number[];
+  // discounts: number[];
   tax: number;
   totalAmount: number;
   paymentMethod: string;

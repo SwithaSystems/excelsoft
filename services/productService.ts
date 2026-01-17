@@ -8,7 +8,7 @@ export interface Product {
   description: string;
   title?: string;
   stock?: number;
-  discount: number;
+  // discount: number;
   netPrice: number;
   grossPrice?: number;
   netPriceWithVAT?: number;
