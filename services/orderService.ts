@@ -185,6 +185,7 @@ export const orderService = {
     orderNumber: string | number
   ): Promise<Order> => {
     try {
+      console.log("order number",orderNumber);
       const response = await jsonAxios.get<Order>(
         `${API_BASE_URL}/orders/getByOrderNumber/${orderNumber}`
       );
