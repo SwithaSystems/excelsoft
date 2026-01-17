@@ -1207,6 +1207,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   sectionHeadingStyle={styles.sectionHeading}
                   hideHeading={true}
                   containerStyle={styles.orderSummaryContainer}
+                  mode = {selectedMode}
                 />
               </View>
             </View>
