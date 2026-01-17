@@ -43,7 +43,7 @@ const ProductCard = ({
   description,
   rating,
   noOfreviews,
-  discount,
+  // discount,
   netPrice,
   isVatApplicable,
   vatRate,
@@ -75,7 +75,7 @@ const ProductCard = ({
       vatRate,
       vatAmount,
       image,
-      discount: 0,
+      // discount: 0,
       quantity: 1,
     };
 
@@ -105,7 +105,7 @@ const ProductCard = ({
   const heartSize = isWeb ? 16 : 20;
   const starSize = isWeb ? 12 : 16;
   const contentPadding = isWeb ? 6 : 8;
-  const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
+  // const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
 
 
   return (
@@ -160,7 +160,9 @@ const ProductCard = ({
             <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
         )}
-        {netPrice > 0 && discountPercentage > 0 && (
+        {netPrice > 0 && 
+        // discountPercentage > 0 &&
+           (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
               {/* <View style={styles.saleTag}>
@@ -168,24 +170,26 @@ const ProductCard = ({
               </View> */}
               {/* <Text style={styles.time}>02:48:26</Text> */}
             </View>
-            <Text style={[styles.discount, { fontSize: priceFontSize }]}>
+            {/* <Text style={[styles.discount, { fontSize: priceFontSize }]}> */}
               {/* {Math.round((discount / netPrice) * 100)}% */}
-              {discountPercentage}%
-            </Text>
+              {/* {discountPercentage}% */}
+            {/* </Text> */}
           </View>
         )}
 
         <View style={styles.priceContainer}>
-          <Text style={[styles.discount, { fontSize: priceFontSize }]}>
+          <Text style={[
+            // styles.discount,
+             { fontSize: priceFontSize }]}>
             {CurrencySymbol}
-            {(netPrice - discount).toFixed(2)}
+            {(netPrice /*- discount*/).toFixed(2)}
           </Text>
-          {discount > 0 && (
+          {/* {discount > 0 && (
             <Text style={[styles.netPrice, { fontSize: isWeb ? 12 : 14 }]}>
               {CurrencySymbol}
               {Number(netPrice).toFixed(2)}
             </Text>
-          )}
+          )} */}
         </View>
       </View>
     </TouchableOpacity>
@@ -257,11 +261,11 @@ const styles = StyleSheet.create({
     //borderRadius: 4,
     marginRight: 6,
   },
-  discount: {
-    fontWeight: "600",
-    color: colors.primary,
-    marginRight: 6,
-  },
+  // discount: {
+  //   fontWeight: "600",
+  //   color: colors.primary,
+  //   marginRight: 6,
+  // },
   netPrice: {
     color: colors.secondaryText,
     textDecorationLine: "line-through",

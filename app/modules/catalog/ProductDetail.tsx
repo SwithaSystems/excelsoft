@@ -313,7 +313,7 @@ const ProductDetailScreen = () => {
                 {/* Price */}
                 <View style={styles.webPriceContainer}>
                   <DisplayPrice
-                    discount={product.discount}
+                    // discount={product.discount}
                     netPrice={product.netPrice}
                   />
                 </View>
@@ -390,7 +390,7 @@ const ProductDetailScreen = () => {
                           _id: product && product._id ? product._id : "",
                           id: product.id,
                           name: product.name,
-                          discount: product.discount,
+                          // discount: product.discount,
                           quantity: quantity,
                           image: product.image,
                           netPrice: product.netPrice,
@@ -402,7 +402,7 @@ const ProductDetailScreen = () => {
                       Toast.show({
                         type: "customToast",
                         text1: "Product added successfully!",
-                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
+                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice /* - product.discount*/).toFixed(2)}`,
                         visibilityTime: 1000,
                         autoHide: true,
                         onPress: () => {
@@ -505,7 +505,7 @@ const ProductDetailScreen = () => {
 
               <View style={styles.priceContainer}>
                 <DisplayPrice
-                  discount={product.discount}
+                  // discount={product.discount}
                   netPrice={product.netPrice}
                 />
               </View>
@@ -589,7 +589,7 @@ const ProductDetailScreen = () => {
                         _id: product && product._id ? product._id : "",
                         id: product.id,
                         name: product.name,
-                        discount: product.discount,
+                        // discount: product.discount,
                         quantity: quantity,
                         image: product.image,
                         netPrice: product.netPrice,
@@ -601,7 +601,7 @@ const ProductDetailScreen = () => {
                     Toast.show({
                       type: "customToast",
                       text1: "Product added successfully!",
-                      text2: `${product.name} - ${CurrencySymbol}${(product.netPrice - product.discount).toFixed(2)}`,
+                      text2: `${product.name} - ${CurrencySymbol}${(product.netPrice /* - product.discount*/).toFixed(2)}`,
                       visibilityTime: 1000,
                       autoHide: true,
                       onPress: () => {

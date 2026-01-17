@@ -25,7 +25,7 @@ type Product = {
   productId: string;
   name: string;
   quantity: number;
-  discount: number;
+  // discount: number;
   netPrice: number;
   isVatApplicable: boolean;
   vatRate: number;
@@ -106,11 +106,11 @@ export const usePaymentHandler = () => {
   /* -------------------- PRODUCT MAPPING -------------------- */
   const products = cartItems.map((item: any) => {
     const netPrice = item.netPrice || 0;
-    const discount = item.discount || 0;
+    // const discount = item.discount || 0;
     const quantity = item.quantity || 1;
     const vatRate = item.vatRate || 0;
 
-    const discountedPrice = netPrice - discount;
+    const discountedPrice = netPrice /* - discount */;
     const vatAmount = item.isVatApplicable
       ? (discountedPrice * quantity * vatRate) / 100
       : 0;
@@ -122,7 +122,7 @@ export const usePaymentHandler = () => {
       name: item.name,
       quantity: quantity,
       netPrice: netPrice,
-      discount: discount,
+      // discount: discount,
       isvatApplicable: item.isVatApplicable,
       vatRate: vatRate,
       vatAmount: vatAmount,
@@ -135,11 +135,11 @@ export const usePaymentHandler = () => {
   const calculateSubtotal = (cartItems: Product[]) =>
     cartItems.reduce((total, item) => {
       const netPrice = item.netPrice || 0;
-      const discount = item.discount || 0;
+      // const discount = item.discount || 0;
       const quantity = item.quantity || 1;
       const vatRate = item.vatRate || 0;
 
-      const discountedPrice = netPrice - discount;
+      const discountedPrice = netPrice /*- discount */;
       const vatAmount = item.isVatApplicable
         ? (discountedPrice * quantity * vatRate) / 100
         : 0;
@@ -173,12 +173,12 @@ export const usePaymentHandler = () => {
   /* -------------------- ORDER CREATION -------------------- */
   const createOrder = async (params: any, subtotal: number) => {
     const shippingCharges = params.shippingCharges || 0;
-    const discounts = params.discounts || [];
+    // const discounts = params.discounts || [];
 
     const orderDetails: any = {
       products: products,
       shippingCharges: shippingCharges,
-      discounts: discounts,
+      // discounts: discounts,
       totalAmount: subtotal,
       paymentMethod: "credit_card",
       pickupMode: (params.selectedMode || "Delivery") as PickupMode,
@@ -286,7 +286,7 @@ export const usePaymentHandler = () => {
     const platformPayItems: PlatformPay.CartSummaryItem[] = items.map(
       (item) => {
         const itemTotal = (
-          (item.netPrice - item.discount) * item.quantity +
+          (item.netPrice /*- item.discount*/) * item.quantity +
           item.vatAmount
         ).toFixed(2);
 

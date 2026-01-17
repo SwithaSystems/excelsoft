@@ -413,7 +413,7 @@ const SearchResultsScreen = () => {
               id={item.id}
               name={item.name}
               description={item.description}
-              discount={item.discount}
+              // discount={item.discount}
               netPrice={item.netPrice}
               image={item.image?.[0] || ""}
               productColors={item.productColors}
@@ -444,7 +444,7 @@ const SearchResultsScreen = () => {
               id={item.id}
               name={item.name}
               description={item.description}
-              discount={item.discount}
+              // discount={item.discount}
               netPrice={item.netPrice}
               image={item.image?.[0] || ""}
               productColors={item.productColors}
@@ -545,7 +545,7 @@ const SearchResultsScreen = () => {
                   id={item.id}
                   name={item.name}
                   description={item.description}
-                  discount={item.discount}
+                  // discount={item.discount}
                   netPrice={item.netPrice}
                   image={item.image?.[0] || ""}
                   productColors={item.productColors}

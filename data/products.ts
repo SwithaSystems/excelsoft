@@ -2,7 +2,7 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  discount: number;
+  // discount: number;
   netPrice: number;
   image: any;
   productColors: string[];
@@ -24,7 +24,7 @@ const products: Product[] = [
     name: "Greek Yogurt",
     description:
       "Creamy and delicious Greek yogurt made with the finest ingredients. High in protein and perfect for a healthy breakfast or snack. Made with fresh milk and live cultures, our Greek yogurt offers a rich, smooth texture and tangy taste.",
-    discount: 4.99,
+    // discount: 4.99,
     netPrice: 6.99,
     image: require("../assets/yogurt.jpg"),
     productColors: [],
@@ -53,7 +53,7 @@ const products: Product[] = [
     name: "Baby Stroller",
     description:
       "Introducing our premium baby stroller, designed for the ultimate comfort, safety, and convenience for both parents and babies. Perfectly crafted with durable materials and an ergonomic design, our stroller ensures a smooth ride with its easy maneuverability and adjustable recline options.",
-    discount: 120,
+    // discount: 120,
     netPrice: 180,
     image: require("../assets/stroller.jpg"),
     productColors: ["black", "gray", "yellow"],
@@ -269,7 +269,7 @@ const products: Product[] = [
     id: "10",
     name: "Building Blocks",
     description: "Educational building blocks set for creative play",
-    discount: 34.99,
+    // discount: 34.99,
     netPrice: 49.99,
     // image: require("../assets/building-blocks.png"),
     image: [],
@@ -295,7 +295,7 @@ const products: Product[] = [
     image: [],
     name: "SUPERKINGS LIGHT 20",
     netPrice: 36.05,
-    discount: 10.1,
+    // discount: 10.1,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -309,7 +309,7 @@ const products: Product[] = [
     image: [],
     name: "SILK CUT K/S 20",
     netPrice: 13.5,
-    discount: 12.5,
+    // discount: 12.5,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -323,7 +323,7 @@ const products: Product[] = [
     image: [],
     name: "CHESTERFIELD RED 20'S",
     netPrice: 11.25,
-    discount: 11.25,
+    // discount: 11.25,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -337,7 +337,7 @@ const products: Product[] = [
     image: [],
     name: "SOFTFRUITS",
     netPrice: 9.39,
-    discount: 0.65,
+    // discount: 0.65,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -351,7 +351,7 @@ const products: Product[] = [
     image: [],
     name: "JPS BLUE SK19",
     netPrice: 8.1,
-    discount: 8.1,
+    // discount: 8.1,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -365,7 +365,7 @@ const products: Product[] = [
     image: [],
     name: "WALKERS READY SALTED",
     netPrice: 8.97,
-    discount: 0.55,
+    // discount: 0.55,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -380,7 +380,7 @@ const products: Product[] = [
     image: [],
     name: "SNICKERS",
     netPrice: 10.99,
-    discount: 0.79,
+    // discount: 0.79,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -394,7 +394,7 @@ const products: Product[] = [
     image: [],
     name: "OLD HOLBORN 50GRM",
     netPrice: 38.65,
-    discount: 38.65,
+    // discount: 38.65,
     productColors: [],
     rating: 0,
     noOfreviews: 0,
@@ -408,7 +408,7 @@ const products: Product[] = [
     image: [],
     name: "NESCAFE 100G",
     netPrice: 18.99,
-    discount: 2.69,
+    // discount: 2.69,
     productColors: [],
     rating: 0,
     noOfreviews: 0,

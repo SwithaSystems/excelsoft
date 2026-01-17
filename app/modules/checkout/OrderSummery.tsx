@@ -152,7 +152,7 @@ const orderSummeryScreen = () => {
   const calculateOrderTotal = useCallback(
     (items: any[]) => {
       const calculateItemSubtotal = (item: any) => {
-        const basePrice = (item.netPrice || 0) - (item.discount || 0);
+        const basePrice = (item.netPrice || 0) /*- (item.discount || 0)*/;
         return basePrice * (item?.quantity || 1);
       };
 
