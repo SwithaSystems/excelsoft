@@ -57,6 +57,20 @@ import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
 import * as All from "@/app/components/usePaymentHandlerWeb";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
 import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
+
+// Conditionally import PlatformPayButton only on mobile (not web)
+let PlatformPayButton: any = null;
+let PlatformPay: any = null;
+
+if (Platform.OS !== "web") {
+  try {
+    const stripeRN = require("@stripe/stripe-react-native");
+    PlatformPayButton = stripeRN.PlatformPayButton;
+    PlatformPay = stripeRN.PlatformPay;
+  } catch (error) {
+    console.warn("PlatformPayButton not available:", error);
+  }
+}
 // type OrderSummeryScreenParams = {
 //   orderId: string;
 //   address?: string;
@@ -123,7 +137,13 @@ const orderSummeryScreen = () => {
   // console.log("All module:", All);
   // console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
-  const { handlePayment } = usePaymentHandler();
+  const paymentHandler = usePaymentHandler();
+  const {
+    handlePayment,
+    handlePlatformPayPayment,
+    isApplePaySupported = false,
+    isGooglePaySupported = false,
+  } = paymentHandler || {};
   const [total, settotal] = useState(0);
   const [currentMOV, setCurrentMOV] = useState<number | null>(null);
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -718,6 +738,52 @@ Contact Number: ${pickupAddress.phone || ""}`;
     }
   }, [pickupAddress, selectedMode]);
 
+  // Helper function to get payment parameters
+  const getPaymentParams = useCallback(() => {
+    return {
+      shippingAddress: shippingAddress,
+      billingAddress: selectedBillingAddress,
+      pickupdetails: pickupDetails,
+      deliveryDate: pickupDetails?.date,
+      deliveryTime: pickupDetails?.time,
+      selectedSlot: Array.isArray(selectedMode)
+        ? selectedMode[0]
+        : selectedMode,
+      selectedMode: Array.isArray(selectedMode)
+        ? selectedMode[0]
+        : selectedMode,
+    };
+  }, [shippingAddress, selectedBillingAddress, pickupDetails, selectedMode]);
+
+  // Wrapper function to validate MOV before executing payment
+  const executePayment = useCallback(
+    async (paymentFunction: () => Promise<void>) => {
+      try {
+        // Calculate total the same way as OrderSummary component
+        const currentTotal = calculateOrderTotal(cartItems);
+
+        // Get current MOV (use fetched value or fallback to static)
+        const mov = currentMOV !== null ? currentMOV : MOV;
+
+        if (currentTotal < mov) {
+          showAlert(
+            "Minimum Order Not Met",
+            `Your order value ($${currentTotal.toFixed(
+              2
+            )}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
+          );
+          return;
+        }
+
+        await paymentFunction();
+      } catch (error) {
+        console.error("Payment handler error:", error);
+        showAlert("Error", "Failed to process payment. Please try again.");
+      }
+    },
+    [cartItems, currentMOV, calculateOrderTotal, MOV]
+  );
+
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
@@ -897,128 +963,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     </View>
                   )}
                 </View>
-                {/* Substitutions Section */}
-                {/* <View style={styles.webSectionCard}>
-                  <Text style={styles.webSectionTitle}>Substitutions</Text>
-                  <View style={styles.webCheckboxRow}>
-                    <CheckBox
-                      checked={substitutionSelected}
-                      onPress={() =>
-                        setSubstitutionSelected(!substitutionSelected)
-                      }
-                      checkedColor={colors.primary}
-                      uncheckedColor={colors.primary}
-                      containerStyle={styles.webCheckboxContainer}
-                    />
-                    <Text style={styles.webCheckboxLabel}>
-                      Choose Substitutions for my orders.
-                    </Text>
-                  </View>
-                  <Text style={styles.webSubText}>
-                    If the product you picked is not available a similar product
-                    or brand will be picked.
-                  </Text>
-                </View> */}
-
-                {/* Order Details Section */}
-                {/* <View style={styles.webSectionCard}>
-                  <Text style={styles.webSectionTitle}>Order Details</Text> */}
-
-                {/* Table Header */}
-                {/* <View style={styles.webTableHeader}>
-                    <Text style={[styles.webTableCell, { flex: 2 }]}>
-                      Item Name
-                    </Text>
-                    <Text
-                      style={[
-                        styles.webTableCell,
-                        { flex: 1, textAlign: "center" },
-                      ]}
-                    >
-                      Total Items
-                    </Text>
-                    <Text
-                      style={[
-                        styles.webTableCell,
-                        { flex: 1, textAlign: "right" },
-                      ]}
-                    >
-                      Price
-                    </Text>
-                  </View> */}
-
-                {/* Table Rows */}
-                {/* {cartItems.map((item: any) => (
-                    <View key={item.id} style={styles.webTableRow}>
-                      <Text style={[styles.webTableCell, { flex: 2 }]}>
-                        {item.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.webTableCell,
-                          { flex: 1, textAlign: "center" },
-                        ]}
-                      >
-                        {String(item.quantity).padStart(2, "0")}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.webTableCell,
-                          { flex: 1, textAlign: "right" },
-                        ]}
-                      >
-                        {item.discount}$
-                      </Text>
-                    </View>
-                  ))} */}
-
-                {/* Summary Rows */}
-                {/* <View style={styles.webSummaryRow}>
-                    <Text style={styles.webSummaryLabel}>Total Price</Text>
-                    <Text style={styles.webSummaryValue}>
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + item.discount * item.quantity,
-                        0
-                      )}
-                      $
-                    </Text>
-                  </View>
-                  <View style={styles.webSummaryRow}>
-                    <Text style={styles.webSummaryLabel}>Discount</Text>
-                    <Text style={styles.webSummaryValue}>
-                      -
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + (item.netPrice - item.discount) * item.quantity,
-                        0
-                      )}
-                      $
-                    </Text>
-                  </View>
-                  <View style={styles.webSummaryRow}>
-                    <Text
-                      style={[
-                        styles.webSummaryLabel,
-                        { color: colors.primary },
-                      ]}
-                    >
-                      Shipping
-                    </Text>
-                    <Text style={styles.webSummaryValue}>3$</Text>
-                  </View>
-                  <View style={[styles.webSummaryRow, styles.webSubtotalRow]}>
-                    <Text style={styles.webSubtotalLabel}>SubTotal</Text>
-                    <Text style={styles.webSubtotalValue}>
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + item.discount * item.quantity,
-                        0
-                      ) + 3}
-                      $
-                    </Text>
-                  </View> */}
-                {/* </View>  */}
 
                 {/* Order Summary */}
                 <OrderSummary
@@ -1041,9 +985,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       if (total < mov) {
                         showAlert(
                           "Minimum Order Not Met",
-                          `Your order value (£${total.toFixed(
+                          `Your order value ($${total.toFixed(
                             2
-                          )}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
+                          )}) is less than the minimum order value of $${mov}. Please add more items to your cart.`
                         );
                         return;
                       }
@@ -1257,7 +1201,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     );
                   })}
                 </View>
-                
                 <OrderSummary
                   cartItems={cartItems}
                   sectionHeadingStyle={styles.sectionHeading}
@@ -1269,60 +1212,92 @@ Contact Number: ${pickupAddress.phone || ""}`;
             <Text style={styles.noteText}>
               *please select a billing address before proceeding to payment
             </Text>
+
+            {/* Mobile Payment Buttons Section */}
             <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-                  <Button
-                    title="Proceed for Payment"
-                    disabled={!isPaymentEnabled}
-                    onPress={async () => {
-                      try {
-                        // Calculate total the same way as OrderSummary component
-                        const currentTotal = calculateOrderTotal(cartItems);
-
-                        // Get current MOV (use fetched value or fallback to static)
-                        const mov = currentMOV !== null ? currentMOV : MOV;
-
-                        if (currentTotal < mov) {
-                          showAlert(
-                            "Minimum Order Not Met",
-                            `Your order value (£${currentTotal.toFixed(
-                              2
-                            )}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
-                          );
-                          return;
-                        }
-
-                        handlePayment(cartItems, {
-                          shippingAddress: shippingAddress,
-                          billingAddress: selectedBillingAddress,
-                          pickupdetails: pickupDetails,
-                          deliveryDate: pickupDetails?.date,
-                          deliveryTime: pickupDetails?.time,
-                          selectedSlot: Array.isArray(selectedMode)
-                            ? selectedMode[0]
-                            : selectedMode,
-                          selectedMode: Array.isArray(selectedMode)
-                            ? selectedMode[0]
-                            : selectedMode,
-                        });
-                      } catch (error) {
-                        console.error("Payment handler error:", error);
-                        showAlert(
-                          "Error",
-                          "Failed to process payment. Please try again."
-                        );
-                      }
-                    }}
-                    style={
-                      isPaymentEnabled ? styles.activeBtn : styles.disabledBtn
+              {/* Apple Pay Button - Native Stripe Component (iOS only) */}
+              {!isWeb &&
+                PlatformPayButton &&
+                Platform.OS === "ios" &&
+                isApplePaySupported && (
+                  <PlatformPayButton
+                    onPress={() =>
+                      executePayment(() =>
+                        handlePlatformPayPayment(cartItems, getPaymentParams())
+                      )
                     }
-                    textStyle={styles.buttonText}
+                    type={PlatformPay.ButtonType.Order}
+                    appearance={PlatformPay.ButtonStyle.Black}
+                    borderRadius={8}
+                    disabled={!isPaymentEnabled}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      marginBottom: 12,
+                    }}
                   />
-                </View>
-            {isWeb && (
-              <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-                <StripeCardInput />
-              </View>
-            )}
+                )}
+
+              {/* Google Pay Button - Native Stripe Component (Android only) */}
+              {!isWeb &&
+                PlatformPayButton &&
+                Platform.OS === "android" &&
+                isGooglePaySupported && (
+                  <PlatformPayButton
+                    onPress={() =>
+                      executePayment(() =>
+                        handlePlatformPayPayment(cartItems, getPaymentParams())
+                      )
+                    }
+                    type={PlatformPay.ButtonType.Order}
+                    appearance={PlatformPay.ButtonStyle.Black}
+                    borderRadius={8}
+                    disabled={!isPaymentEnabled}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      marginBottom: 12,
+                    }}
+                  />
+                )}
+
+              {/* Divider - Only show if platform pay is available and not web */}
+              {!isWeb &&
+                PlatformPayButton &&
+                ((Platform.OS === "ios" && isApplePaySupported) ||
+                  (Platform.OS === "android" && isGooglePaySupported)) && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginVertical: 16,
+                    }}
+                  >
+                    <View
+                      style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }}
+                    />
+                    <Text style={{ marginHorizontal: 16, color: "#666" }}>
+                      or
+                    </Text>
+                    <View
+                      style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }}
+                    />
+                  </View>
+                )}
+
+              {/* Regular Card Payment Button */}
+              <Button
+                title="Pay with Card"
+                disabled={!isPaymentEnabled}
+                onPress={() =>
+                  executePayment(() =>
+                    handlePayment(cartItems, getPaymentParams())
+                  )
+                }
+                style={isPaymentEnabled ? styles.activeBtn : styles.disabledBtn}
+                textStyle={styles.buttonText}
+              />
+            </View>
           </ScrollView>
         </View>
       )}

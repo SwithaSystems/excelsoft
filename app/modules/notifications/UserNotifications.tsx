@@ -40,9 +40,41 @@ export default function UserNotificationsScreen() {
   };
 
   const handleNotificationPress = async (notification: any) => {
+    console.log("🔔 Notification pressed:", JSON.stringify(notification, null, 2));
+    
     await NotificationService.markAsRead(notification.id);
     await loadNotifications();
-    handleNotificationNavigation(notification.data);
+    
+    // Parse notification data - handle both object and string formats
+    let notificationData = notification.data;
+    
+    // If data is a string, try to parse it
+    if (typeof notificationData === 'string') {
+      try {
+        notificationData = JSON.parse(notificationData);
+      } catch (e) {
+        console.log("⚠️ Could not parse notification data as JSON:", e);
+      }
+    }
+    
+    // If no data field, use the notification itself
+    if (!notificationData) {
+      notificationData = notification;
+    }
+    
+    // Extract order information from various possible fields
+    const normalizedData = {
+      ...notificationData,
+      // Try to find orderId or orderNumber in various places
+      orderId: notificationData.orderId || notificationData.orderNumber || notificationData.order_id,
+      orderNumber: notificationData.orderNumber || notificationData.orderNumber || notificationData.order_number,
+      type: notificationData.type || notificationData.notificationType || 'orderUpdate',
+    };
+    
+    console.log("📦 Normalized notification data:", JSON.stringify(normalizedData, null, 2));
+    console.log("🚀 Navigating with data:", JSON.stringify(normalizedData, null, 2));
+    
+    handleNotificationNavigation(normalizedData);
   };
 
   const handleMarkAllAsRead = async () => {
