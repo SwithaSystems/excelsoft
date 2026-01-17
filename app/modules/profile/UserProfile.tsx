@@ -145,12 +145,18 @@ const UserProfileScreen = () => {
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        try {
+          notificationListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing notification listener:", error);
+        }
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        try {
+          responseListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing response listener:", error);
+        }
       }
     };
   }, [user]);

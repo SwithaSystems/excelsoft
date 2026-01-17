@@ -303,6 +303,51 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 8,
   },
+  // Payment Button Styles
+  paymentButtonsContainer: {
+    marginTop: 16,
+    gap: 12,
+  },
+  platformPayButton: {
+    backgroundColor: "#000",
+    paddingVertical: 14,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  applePayButton: {
+    backgroundColor: "#000",
+  },
+  googlePayButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#dadce0",
+  },
+  platformPayButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  googlePayButtonText: {
+    color: "#3c4043",
+  },
+  paymentDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e0e0e0",
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: "#666",
+    fontSize: 14,
+  },
 });
 
 export default styles;
