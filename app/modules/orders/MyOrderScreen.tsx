@@ -31,14 +31,14 @@ const myOrderScreen = () => {
 
   const fetchOrders = async () => {
     try {
-      console.log("[MyOrderScreen] Fetching orders for userId:", userId);
+      // console.log("[MyOrderScreen] Fetching orders for userId:", userId);
       if (!userId) {
         console.error("[MyOrderScreen] ERROR: userId is missing!");
         return;
       }
       const response = await orderService.getOrdersByUserId(userId as string);
-      console.log("[MyOrderScreen] Orders fetched:", response?.length || 0, "orders");
-      console.log("[MyOrderScreen] Orders data:", response);
+      // console.log("[MyOrderScreen] Orders fetched:", response?.length || 0, "orders");
+      // console.log("[MyOrderScreen] Orders data:", response);
       setOrders(response || []);
       
       // Fetch product images for web view - optimized with batch fetching
@@ -120,7 +120,7 @@ const myOrderScreen = () => {
   };
 
   useEffect(() => {
-    console.log("[MyOrderScreen] Component mounted, userId:", userId);
+    // console.log("[MyOrderScreen] Component mounted, userId:", userId);
     if (userId) {
       fetchOrders();
     } else {
@@ -133,7 +133,7 @@ const myOrderScreen = () => {
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // Log render state
-  console.log("[MyOrderScreen] Rendering with orders:", orders.length, "ordersWithProducts:", ordersWithProducts.length, "isWeb:", isWeb);
+  // console.log("[MyOrderScreen] Rendering with orders:", orders.length, "ordersWithProducts:", ordersWithProducts.length, "isWeb:", isWeb);
 
   return (
     <LayoutComponent

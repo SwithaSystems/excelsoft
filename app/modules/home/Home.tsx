@@ -361,17 +361,17 @@ const HomePage = () => {
       try {
         setRecommendedProductsLoading(true);
         setRecommendedProductsError(null);
-        console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
+        // console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
         const response = await recommendationService.getRecommendedProducts(10);
-        console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
+        // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
         if (response && response.products && response.products.length > 0) {
-          console.log("[Home] ✅ Products fetched successfully for recommendations");
-          console.log("[Home] Product details:", response.products.map(p => ({ id: p.id, name: p.name })));
+          // console.log("[Home] ✅ Products fetched successfully for recommendations");
+          // console.log("[Home] Product details:", response.products.map(p => ({ id: p.id, name: p.name })));
           setRecommendedProducts(response.products);
           setRecommendationType(response.type);
         } else {
-          console.log("[Home] ⚠️ No recommended products returned");
-          console.log("[Home] This could mean: User has no orders, or products from orders not found in database");
+          // console.log("[Home] ⚠️ No recommended products returned");
+          // console.log("[Home] This could mean: User has no orders, or products from orders not found in database");
           setRecommendedProducts([]);
           setRecommendationType("hot_selling");
         }

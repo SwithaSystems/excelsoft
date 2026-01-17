@@ -10,7 +10,7 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
 import SearchBar from "../searchBar";
@@ -502,9 +502,9 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             style={styles.adminButton}
             onPress={() => {
               if (hideUserGreeting) {
-                redirectToPage(containers.homeScreen);
+                clearNavigationStack(containers.homeScreen);
               } else {
-                redirectToPage(containers.AdminDashboardScreen);
+                clearNavigationStack(containers.AdminDashboardScreen);
               }
             }}
           >
