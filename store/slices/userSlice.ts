@@ -8,6 +8,8 @@ export interface UserData {
   email?: string;
   phone: string;
   profileImageUrl?: string;
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
 }
 
 interface UserState {

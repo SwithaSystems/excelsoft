@@ -2,17 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   TextInput,
   TouchableOpacity,
   Alert,
-  SafeAreaView,
   Platform,
 } from "react-native";
 import styles from "./VerifcationStyles";
 import Header from "../../components/Header";
-import { globalStyles } from "@/assets/styles/globalStyles";
 import { TwilioApi } from "@/services/twilioService";
 import { useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -21,98 +18,74 @@ import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { VERIFICATION_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/store/slices/userSlice";
+import { UserAPI } from "@/services/userService";
+import * as SecureStore from "expo-secure-store";
 
-const verifcationScreen = () => {
+const verificationScreen = () => {
   const isWeb = Platform.OS === "web";
+  const dispatch = useDispatch();
+
   const {
     userData,
     from,
     phoneNumber_forgetPwd,
     phoneNumber_editAccount,
+    email_editAccount,
     verificationType,
+    newPhone,
+    newEmail,
+    userId,
   } = useLocalSearchParams();
+
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [parsedUserData, setParsedUserData] = useState(null);
   const inputRefs = useRef<TextInput[]>([]);
 
-  // console.log("from", from, userData, phoneNumber_forgetPwd, verificationType);
-
   useEffect(() => {
-    // console.log("Source:", from);
-    // console.log("Raw userData:", userData);
-    // console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
-    // console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
-
-    // Set phone number based on source
+    // Signup flow
     if (from === "signup" && userData) {
-      let parsed = null;
-      if (typeof userData === "string") {
-        try {
-          parsed = JSON.parse(userData);
-          setParsedUserData(parsed);
-          if (parsed?.phone) {
-            setPhoneNumber(parsed.phone);
-          } else if (parsed?.email) {
-            setEmail(parsed.email);
-          } else {
-            console.error("No phone number in userData");
-          }
-        } catch (e) {
-          console.error("Invalid JSON in userData", e);
-        }
-      }
-    } else if (from === "forgotPassword" && phoneNumber_forgetPwd) {
-      if (Array.isArray(phoneNumber_forgetPwd)) {
-        setPhoneNumber(phoneNumber_forgetPwd[0]);
-        // console.log(
-        //   "Set phone number (from array) for password reset:",
-        //   phoneNumber_forgetPwd[0]
-        // );
-      } else {
-        setPhoneNumber(phoneNumber_forgetPwd);
-        // console.log(
-        //   "Set phone number (from string) for password reset:",
-        //   phoneNumber_forgetPwd
-        // );
-      }
-    } else if (from === "verify" && phoneNumber_editAccount) {
-      if (Array.isArray(phoneNumber_editAccount)) {
-        setPhoneNumber(phoneNumber_editAccount[0]);
-        // console.log(
-        //   "Set phone number (from array) for password reset:",
-        //   phoneNumber_editAccount[0]
-        // );
-      } else {
-        setPhoneNumber(phoneNumber_editAccount);
-        // console.log(
-        //   "Set phone number (from string) for password reset:",
-        //   phoneNumber_editAccount
-        // );
+      try {
+        const parsed = JSON.parse(String(userData));
+        setParsedUserData(parsed);
+        if (parsed?.phone) setPhoneNumber(parsed.phone);
+        if (parsed?.email) setEmail(parsed.email);
+      } catch (e) {
+        console.error("Invalid JSON in userData", e);
       }
     }
-  }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount]);
 
-  // let parsedUserData: any;
-  // if (typeof userData === "string") {
-  //   try {
-  //     parsedUserData = JSON.parse(userData);
-  //   } catch (e) {
-  //     console.error("Invalid JSON in userData", e);
-  //   }
-  // } else {
-  //   console.warn("userData is not a string:", userData);
-  // }
+    // Forgot password flow
+    if (from === "forgotPassword" && phoneNumber_forgetPwd) {
+      const phone = Array.isArray(phoneNumber_forgetPwd)
+        ? phoneNumber_forgetPwd[0]
+        : phoneNumber_forgetPwd;
+      setPhoneNumber(phone);
+    }
 
-  // const phoneNumber = parsedUserData?.phone;
+    // Edit contact flows
+    if (phoneNumber_editAccount) {
+      const phone = Array.isArray(phoneNumber_editAccount)
+        ? phoneNumber_editAccount[0]
+        : phoneNumber_editAccount;
+      setPhoneNumber(phone);
+    }
 
-  // console.log("phoneNumber", phoneNumber);
+    if (email_editAccount) {
+      const emailVal = Array.isArray(email_editAccount)
+        ? email_editAccount[0]
+        : email_editAccount;
+      setEmail(emailVal);
+    }
+  }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount, email_editAccount]);
+
   const handleChange = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);
-    // Auto-focus to next input if a digit is entered
     if (text && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -129,177 +102,387 @@ const verifcationScreen = () => {
     try {
       let res;
 
-      if (verificationType === "email") {
-        res = await TwilioApi.verifyOtp_Email({
-          email: email,
-          OtpNumber,
-        });
-        // console.log("Email OTP verification result:", res);
-      } else {
-        res = await TwilioApi.verifyOtp({
-          phoneNumber,
-          OtpNumber,
-        });
-        // console.log("Phone OTP verification result:", res);
-      }
+      // SIGNUP/FORGOT PASSWORD FLOWS (existing - don't touch)
+      if (from === "signup" || from === "forgotPassword") {
+        if (verificationType === "email") {
+          res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
+        } else {
+          res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
+        }
 
-      // Check if verification was successful
-      // You need to check the actual response structure from your API
-      const isVerified =
-        res?.success === true ||
-        res?.data?.success === true ||
-        res === "verified successfully";
+        const isVerified =
+          res?.success === true ||
+          res?.data?.success === true ||
+          res === "verified successfully";
 
-      if (isVerified) {
-        if (from === "forgotPassword") {
-          redirectToPage(containers.passwordResetScreen, {
-            phoneNumber,
-          });
+        if (!isVerified) {
+          Alert.alert("Verification Failed", "Invalid OTP. Please try again.");
           return;
         }
 
-        if (from === "verify") {
-          redirectToPage(containers.editAccountInformationScreen);
+        if (from === "forgotPassword") {
+          redirectToPage(containers.passwordResetScreen, { phoneNumber });
           return;
         }
 
         if (from === "signup") {
-          // console.log("ParsedUserData", parsedUserData);
-
           if (!parsedUserData) {
             Alert.alert("Error", "User data is missing.");
             return;
           }
 
-          try {
-            const response = await authService.register({
-              userData: parsedUserData,
-            });
-
-            // console.log("response from verify otp", response);
-
-            if (response?.access_token && response?.user) {
-              Alert.alert("Success", "User successfully registered");
-              redirectToPage(containers.signInScreen);
-            } else {
-              Alert.alert("Registration Error", "Failed to register the user.");
-            }
-          } catch (registerError: any) {
-            console.error("Registration Error:", registerError);
-
-            // Properly extract error message
-            let errorMessage = "Registration failed. Please try again.";
-
-            if (registerError?.response?.data?.message) {
-              errorMessage = registerError.response.data.message;
-            } else if (registerError?.message) {
-              errorMessage = registerError.message;
-            }
-
-            if (
-              typeof errorMessage === "string" &&
-              errorMessage.toLowerCase().includes("already exists")
-            ) {
-              Alert.alert(
-                "Registration Error",
-                "This phone number is already registered."
-              );
-            } else {
-              Alert.alert("Registration Error", errorMessage);
-            }
+          const response = await authService.register({ userData: parsedUserData });
+          if (response?.access_token) {
+            Alert.alert("Success", "User successfully registered");
+            redirectToPage(containers.signInScreen);
           }
         }
-      } else {
-        // Handle unsuccessful verification
-        let errorMessage = "Invalid OTP. Please try again.";
+        return;
+      }
 
-        if (res?.data?.message) {
-          errorMessage = res.data.message;
+      // EDIT CONTACT FLOWS (new)
+      if (from === "first_add_phone") {
+        // First time adding phone - verify OTP sent to phone
+        res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
+        const isVerified =
+          res?.success === true ||
+          res?.data?.success === true ||
+          res === "verified successfully";
+
+        if (!isVerified) {
+          Alert.alert("Invalid OTP", "Please try again.");
+          return;
         }
 
-        Alert.alert("Verification Failed", errorMessage);
+        // Update phone and mark as verified
+        try {
+          const formData = new FormData();
+          formData.append("phone", phoneNumber);
+          console.log("Updating phone contact for userId:", userId, "phone:", phoneNumber);
+          const updateResponse = await UserAPI.userEditContact(String(userId), formData);
+          console.log("Update contact response:", updateResponse);
+          
+          console.log("Verifying phone contact for userId:", userId);
+          const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
+          console.log("Verify contact response:", verifyResponse);
+
+          // Refresh user data
+          const updatedUser = await UserAPI.getUserById(String(userId));
+          if (updatedUser?.data) {
+            dispatch(setUserData(updatedUser.data));
+            await SecureStore.setItemAsync("user", JSON.stringify(updatedUser.data));
+          }
+
+          Alert.alert("Success", "Phone verified successfully", [
+            { text: "OK", onPress: () => redirectToPage(containers.editAccountInformationScreen) },
+          ]);
+        } catch (updateError: any) {
+          console.error("Failed to update phone:", updateError);
+          console.error("Error details:", {
+            message: updateError?.message,
+            response: updateError?.response?.data,
+            status: updateError?.response?.status,
+          });
+          
+          let errorMessage = "Failed to update phone. Please try again.";
+          
+          // Check for authentication errors
+          if (updateError?.message?.includes("Refresh token not available") || 
+              updateError?.message?.includes("refresh token")) {
+            errorMessage = "Your session has expired. Please log in again.";
+            Alert.alert("Session Expired", errorMessage, [
+              { text: "OK", onPress: () => redirectToPage(containers.signInScreen) },
+            ]);
+            return;
+          }
+          
+          // Check for 500 server errors
+          if (updateError?.response?.status === 500) {
+            errorMessage = updateError?.response?.data?.message || 
+                          "Server error occurred. Please try again later or contact support.";
+          } else if (updateError?.response?.data?.message) {
+            errorMessage = updateError.response.data.message;
+          } else if (updateError?.message) {
+            errorMessage = updateError.message;
+          }
+          
+          Alert.alert("Error", errorMessage);
+        }
+      }
+
+      if (from === "first_add_email") {
+        // First time adding email - verify OTP sent to email
+        res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
+        const isVerified = res?.success === true || res?.data?.success === true;
+
+        if (!isVerified) {
+          Alert.alert("Invalid OTP", "Please try again.");
+          return;
+        }
+
+        // Update email and mark as verified
+        try {
+          const formData = new FormData();
+          formData.append("email", email);
+          console.log("Updating email contact for userId:", userId, "email:", email);
+          const updateResponse = await UserAPI.userEditContact(String(userId), formData);
+          console.log("Update contact response:", updateResponse);
+          
+          console.log("Verifying email contact for userId:", userId);
+          const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "email" });
+          console.log("Verify contact response:", verifyResponse);
+
+          // Refresh user data
+          const updatedUser = await UserAPI.getUserById(String(userId));
+          if (updatedUser?.data) {
+            dispatch(setUserData(updatedUser.data));
+            await SecureStore.setItemAsync("user", JSON.stringify(updatedUser.data));
+          }
+
+          Alert.alert("Success", "Email verified successfully", [
+            { text: "OK", onPress: () => redirectToPage(containers.editAccountInformationScreen) },
+          ]);
+        } catch (updateError: any) {
+          console.error("Failed to update email:", updateError);
+          console.error("Error details:", {
+            message: updateError?.message,
+            response: updateError?.response?.data,
+            status: updateError?.response?.status,
+          });
+          
+          let errorMessage = "Failed to update email. Please try again.";
+          
+          // Check for authentication errors
+          if (updateError?.message?.includes("Refresh token not available") || 
+              updateError?.message?.includes("refresh token")) {
+            errorMessage = "Your session has expired. Please log in again.";
+            Alert.alert("Session Expired", errorMessage, [
+              { text: "OK", onPress: () => redirectToPage(containers.signInScreen) },
+            ]);
+            return;
+          }
+          
+          // Check for 500 server errors
+          if (updateError?.response?.status === 500) {
+            errorMessage = updateError?.response?.data?.message || 
+                          "Server error occurred. Please try again later or contact support.";
+          } else if (updateError?.response?.data?.message) {
+            errorMessage = updateError.response.data.message;
+          } else if (updateError?.message) {
+            errorMessage = updateError.message;
+          }
+          
+          Alert.alert("Error", errorMessage);
+        }
+      }
+
+      if (from === "change_phone") {
+        // Changing phone - OTP was sent to email (cross-platform)
+        res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
+        const isVerified = res?.success === true || res?.data?.success === true;
+
+        if (!isVerified) {
+          Alert.alert("Invalid OTP", "Please try again.");
+          return;
+        }
+
+        // Update to new phone and mark as verified
+        try {
+          const formData = new FormData();
+          formData.append("phone", String(newPhone));
+          console.log("Updating phone contact for userId:", userId, "newPhone:", newPhone);
+          const updateResponse = await UserAPI.userEditContact(String(userId), formData);
+          console.log("Update contact response:", updateResponse);
+          
+          console.log("Verifying phone contact for userId:", userId);
+          const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
+          console.log("Verify contact response:", verifyResponse);
+
+          // Refresh user data
+          const updatedUser = await UserAPI.getUserById(String(userId));
+          if (updatedUser?.data) {
+            dispatch(setUserData(updatedUser.data));
+            await SecureStore.setItemAsync("user", JSON.stringify(updatedUser.data));
+          }
+
+          Alert.alert("Success", "Phone number changed successfully", [
+            { text: "OK", onPress: () => redirectToPage(containers.editAccountInformationScreen) },
+          ]);
+        } catch (updateError: any) {
+          console.error("Failed to update phone:", updateError);
+          console.error("Error details:", {
+            message: updateError?.message,
+            response: updateError?.response?.data,
+            status: updateError?.response?.status,
+          });
+          
+          let errorMessage = "Failed to update phone. Please try again.";
+          
+          // Check for authentication errors
+          if (updateError?.message?.includes("Refresh token not available") || 
+              updateError?.message?.includes("refresh token")) {
+            errorMessage = "Your session has expired. Please log in again.";
+            Alert.alert("Session Expired", errorMessage, [
+              { text: "OK", onPress: () => redirectToPage(containers.signInScreen) },
+            ]);
+            return;
+          }
+          
+          // Check for 500 server errors
+          if (updateError?.response?.status === 500) {
+            errorMessage = updateError?.response?.data?.message || 
+                          "Server error occurred. Please try again later or contact support.";
+          } else if (updateError?.response?.data?.message) {
+            errorMessage = updateError.response.data.message;
+          } else if (updateError?.message) {
+            errorMessage = updateError.message;
+          }
+          
+          Alert.alert("Error", errorMessage);
+        }
+      }
+
+      if (from === "change_email") {
+        // Changing email - OTP was sent to phone (cross-platform)
+        res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
+        const isVerified =
+          res?.success === true ||
+          res?.data?.success === true ||
+          res === "verified successfully";
+
+        if (!isVerified) {
+          Alert.alert("Invalid OTP", "Please try again.");
+          return;
+        }
+
+        // Update to new email and mark as verified
+        try {
+          const formData = new FormData();
+          formData.append("email", String(newEmail));
+          console.log("Updating email contact for userId:", userId, "newEmail:", newEmail);
+          const updateResponse = await UserAPI.userEditContact(String(userId), formData);
+          console.log("Update contact response:", updateResponse);
+          
+          console.log("Verifying email contact for userId:", userId);
+          const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "email" });
+          console.log("Verify contact response:", verifyResponse);
+
+          // Refresh user data
+          const updatedUser = await UserAPI.getUserById(String(userId));
+          if (updatedUser?.data) {
+            dispatch(setUserData(updatedUser.data));
+            await SecureStore.setItemAsync("user", JSON.stringify(updatedUser.data));
+          }
+
+          Alert.alert("Success", "Email changed successfully", [
+            { text: "OK", onPress: () => redirectToPage(containers.editAccountInformationScreen) },
+          ]);
+        } catch (updateError: any) {
+          console.error("Failed to update email:", updateError);
+          console.error("Error details:", {
+            message: updateError?.message,
+            response: updateError?.response?.data,
+            status: updateError?.response?.status,
+          });
+          
+          let errorMessage = "Failed to update email. Please try again.";
+          
+          // Check for authentication errors
+          if (updateError?.message?.includes("Refresh token not available") || 
+              updateError?.message?.includes("refresh token")) {
+            errorMessage = "Your session has expired. Please log in again.";
+            Alert.alert("Session Expired", errorMessage, [
+              { text: "OK", onPress: () => redirectToPage(containers.signInScreen) },
+            ]);
+            return;
+          }
+          
+          // Check for 500 server errors
+          if (updateError?.response?.status === 500) {
+            errorMessage = updateError?.response?.data?.message || 
+                          "Server error occurred. Please try again later or contact support.";
+          } else if (updateError?.response?.data?.message) {
+            errorMessage = updateError.response.data.message;
+          } else if (updateError?.message) {
+            errorMessage = updateError.message;
+          }
+          
+          Alert.alert("Error", errorMessage);
+        }
       }
     } catch (error: any) {
       console.error("OTP Verification Failed", error);
-
-      // FIX: Properly extract error message instead of passing entire error object
       let errorMessage = "Verification failed. Please try again.";
-
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
       }
-
       Alert.alert("Verification Error", errorMessage);
     }
   };
+
   const handleResend = async () => {
-    await TwilioApi.sendOtp({ phone: String(phoneNumber) });
-    setCode(["", "", "", "", "", ""]);
-    inputRefs.current[0]?.focus();
-  };
-  return (
-    <>
-      <PageLayout
-        hasFooter={false}
-        hasHeader
-        headerComponent={
-          <Header 
-            headerText={VERIFICATION_SCREEN_TITLE}
-            hideBackArrow={isWeb}
-            headerStyle={isWeb ? styles.verificationHeaderStyle : undefined}
-            headerTitleStyle={isWeb ? styles.verificationHeaderTitle : undefined}
-          />
+    try {
+      if (from === "first_add_phone" || from === "change_email") {
+        await TwilioApi.sendOtp({ phone: phoneNumber });
+      } else if (from === "first_add_email" || from === "change_phone") {
+        await TwilioApi.sendOtp_Email({ email });
+      } else {
+        // Signup/forgot password
+        if (verificationType === "email") {
+          await TwilioApi.sendOtp_Email({ email });
+        } else {
+          await TwilioApi.sendOtp({ phone: phoneNumber });
         }
-      >
-        <KeyBoardWrapper>
-          <View style={[
-            styles.contentContainer,
-            isWeb && styles.contentContainerDesktop
-          ]}>
-            <Image
-              style={[
-                styles.image,
-                isWeb && styles.imageDesktop
-              ]}
-              source={require("assets/UserVerificationSuccessful.png")}
-            />
-            <Text style={[
-              styles.description,
-              isWeb && styles.descriptionDesktop
-            ]}>
-            {verificationType === "email"
-              ? "We've sent a verification link to your email address. Please check your inbox and click on the link to verify your email. If you don't see the email, check your spam folder or try resending the verification email."
+      }
+      setCode(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+      Alert.alert("Success", "Code resent successfully");
+    } catch (error) {
+      Alert.alert("Error", "Failed to resend code");
+    }
+  };
+
+  return (
+    <PageLayout
+      hasFooter={false}
+      hasHeader
+      headerComponent={
+        <Header
+          headerText={VERIFICATION_SCREEN_TITLE}
+          hideBackArrow={isWeb}
+          headerStyle={isWeb ? styles.verificationHeaderStyle : undefined}
+          headerTitleStyle={isWeb ? styles.verificationHeaderTitle : undefined}
+        />
+      }
+    >
+      <KeyBoardWrapper>
+        <View style={[styles.contentContainer, isWeb && styles.contentContainerDesktop]}>
+          <Image
+            style={[styles.image, isWeb && styles.imageDesktop]}
+            source={require("assets/UserVerificationSuccessful.png")}
+          />
+          <Text style={[styles.description, isWeb && styles.descriptionDesktop]}>
+            {verificationType === "email" || from === "first_add_email" || from === "change_phone"
+              ? "We've sent a verification code to your email address. Please enter it below."
               : "We have sent a verification code to your mobile. Please enter the code."}
           </Text>
 
-          <View style={[
-            styles.codeContainer,
-            isWeb && styles.codeContainerDesktop
-          ]}>
+          <View style={[styles.codeContainer, isWeb && styles.codeContainerDesktop]}>
             {code.map((digit, index) => (
               <TextInput
                 key={index}
                 ref={(ref) => {
                   if (ref) inputRefs.current[index] = ref;
                 }}
-                style={[
-                  styles.inputBox,
-                  isWeb && styles.inputBoxDesktop
-                ]}
+                style={[styles.inputBox, isWeb && styles.inputBoxDesktop]}
                 keyboardType="numeric"
                 maxLength={1}
                 value={digit}
                 returnKeyType="next"
                 onKeyPress={({ nativeEvent }) => {
-                  if (
-                    nativeEvent.key === "Backspace" &&
-                    !code[index] &&
-                    index > 0
-                  ) {
+                  if (nativeEvent.key === "Backspace" && !code[index] && index > 0) {
                     inputRefs.current[index - 1]?.focus();
                   }
                 }}
@@ -307,36 +490,26 @@ const verifcationScreen = () => {
               />
             ))}
           </View>
-          <View style={[
-            styles.buttonContainer,
-            isWeb && styles.buttonContainerDesktop
-          ]}>
+
+          <View style={[styles.buttonContainer, isWeb && styles.buttonContainerDesktop]}>
             <TouchableOpacity
-              style={[
-                styles.verifyButton,
-                isWeb && styles.verifyButtonDesktop
-              ]}
+              style={[styles.verifyButton, isWeb && styles.verifyButtonDesktop]}
               onPress={handleVerify}
             >
               <Text style={styles.buttonText}>Verify</Text>
             </TouchableOpacity>
 
-            <Text style={[
-              styles.resendText,
-              isWeb && styles.resendTextDesktop
-            ]}>
+            <Text style={[styles.resendText, isWeb && styles.resendTextDesktop]}>
               Didn't receive the code?{" "}
               <Text style={styles.resendLink} onPress={handleResend}>
                 Resend
               </Text>
             </Text>
           </View>
-          </View>
-        </KeyBoardWrapper>
-        {/* </SafeAreaView> */}
-      </PageLayout>
-    </>
+        </View>
+      </KeyBoardWrapper>
+    </PageLayout>
   );
 };
 
-export default verifcationScreen;
+export default verificationScreen;

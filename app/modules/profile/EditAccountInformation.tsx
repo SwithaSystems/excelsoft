@@ -4,9 +4,9 @@ import {
   View,
   Text,
   Alert,
-  DeviceEventEmitter,
   StyleSheet,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -21,7 +21,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { setUserData } from "@/store/slices/userSlice";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -29,22 +28,33 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
-import { set } from "date-fns";
+import colors from "@/constants/colors";
 
-const editAccountInformationscreen = () => {
+const EditAccountInformationScreen = () => {
   const dispatch = useDispatch();
+
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [id, setId] = useState("");
   const [profileImage, setProfileImage] = useState("");
 
+  const [newPhone, setNewPhone] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [newPhoneError, setNewPhoneError] = useState<string | null>(null);
+  const [newEmailError, setNewEmailError] = useState<string | null>(null);
+
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+
+  const [showChangePhone, setShowChangePhone] = useState(false);
+  const [showChangeEmail, setShowChangeEmail] = useState(false);
 
   const userData = useSelector((state: RootState) => state.user.user);
-  // console.log("userData in edit account information", userData);
-  const isWeb = Platform.OS === "web";
 
+  const isWeb = Platform.OS === "web";
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
@@ -54,105 +64,195 @@ const editAccountInformationscreen = () => {
   const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
-    const getUser = async () => {
-      // console.log("userData", userData);
-      if (userData) {
-        const user = await UserAPI.getUserById(
-          userData?._id ? userData?._id : userData?.id
-        );
-        // console.log("user", user.data);
-        if (user) {
-          setId(user.data._id);
-          setPhone(user.data.phone);
-          setEmail(user.data?.email || "No mail added");
-          setProfileImage(user.data.profileImageUrl);
-        }
+    const loadUser = async () => {
+      if (!userData) return;
+
+      const user = await UserAPI.getUserById(userData._id || userData.id);
+      if (user?.data) {
+        setId(user.data._id);
+        setPhone(user.data.phone || "");
+        setEmail(user.data.email || "");
+        setProfileImage(user.data.profileImageUrl || "");
+        setIsPhoneVerified(!!user.data.isPhoneVerified);
+        setIsEmailVerified(!!user.data.isEmailVerified);
       }
     };
-    getUser();
+    loadUser();
   }, [userData]);
-
-  const validatePhone = (phone: string) => {
-    const error = isValidPhoneNumber(phone);
-    setPhoneError(error);
-  };
-
-  const validateEmail = (email: string) => {
-    const isValid = isValidEmail(email);
-    setEmailError(isValid ? null : "Please enter a valid email address");
-    return isValid;
-  };
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
-    if (value.trim()) {
-      validatePhone(value);
-    } else {
-      setPhoneError(null);
-    }
+    const error = isValidPhoneNumber(value);
+    setPhoneError(value.trim() ? error : null);
   };
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    if (value.trim()) {
-      validateEmail(value);
-    } else {
-      setEmailError(null);
+    const isValid = isValidEmail(value);
+    setEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
+  };
+
+  const handleNewPhoneChange = (value: string) => {
+    setNewPhone(value);
+    const error = isValidPhoneNumber(value);
+    setNewPhoneError(value.trim() ? error : null);
+  };
+
+  const handleNewEmailChange = (value: string) => {
+    setNewEmail(value);
+    const isValid = isValidEmail(value);
+    setNewEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
+  };
+
+  const handleVerifyPhone = async () => {
+    try {
+      const phoneToVerify = showChangePhone ? newPhone : phone;
+      const hasError = showChangePhone ? newPhoneError : phoneError;
+
+      if (!phoneToVerify || hasError) {
+        Alert.alert("Error", "Please enter a valid phone number");
+        return;
+      }
+
+      // First time add OR change
+      if (!isPhoneVerified) {
+        // First time add - send OTP to phone
+        const res = await TwilioApi.sendOtp({ phone: phoneToVerify });
+        console.log("Send OTP response:", res);
+        if (
+          res?.status === 201 &&
+          res.data?.status === "pending"
+        ) {
+          redirectToPage(containers.verificationScreen, {
+            phoneNumber_editAccount: phoneToVerify,
+            verificationType: "phone",
+            from: "first_add_phone",
+            userId: id,
+          });
+        } else {
+          const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
+          console.error("OTP send failed:", res);
+          Alert.alert("Error", errorMsg);
+        }
+      } else if (showChangePhone) {
+        // Change - send OTP to email (cross-platform)
+        if (!email || !isEmailVerified) {
+          Alert.alert("Error", "You need a verified email to change your phone number");
+          return;
+        }
+        const res = await TwilioApi.sendOtp_Email({ email });
+        console.log("Send OTP Email response:", res);
+        if (res?.status === 201 && res?.data?.success) {
+          redirectToPage(containers.verificationScreen, {
+            email_editAccount: email,
+            verificationType: "email",
+            from: "change_phone",
+            newPhone: phoneToVerify,
+            userId: id,
+          });
+        } else {
+          const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
+          console.error("OTP send failed:", res);
+          Alert.alert("Error", errorMsg);
+        }
+      }
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Failed to send verification code. Please try again.";
+      Alert.alert("Error", errorMsg);
     }
   };
 
-  const handleVerify = async () => {
+  const handleVerifyEmail = async () => {
     try {
-      const responseFromTwilio = await TwilioApi.sendOtp({
-        phone: phone,
-      });
-      // console.log("responseFromTwilio", responseFromTwilio);
-      if (
-        responseFromTwilio?.status === 201 &&
-        responseFromTwilio.data?.status === "pending"
-      ) {
-        // OTP sent successfully, proceed to verification screen
-        redirectToPage(containers.verificationScreen, {
-          phoneNumber_editAccount: phone,
-          from: "verify",
-        });
-      } else {
-        Alert.alert("Error", "Failed to send OTP. Please try again.");
+      const emailToVerify = showChangeEmail ? newEmail : email;
+      const hasError = showChangeEmail ? newEmailError : emailError;
+
+      if (!emailToVerify || hasError) {
+        Alert.alert("Error", "Please enter a valid email address");
+        return;
       }
-    } catch (error) {
-      console.error("Registration error:", error);
-      Alert.alert("Error", "Something went wrong during registration.");
+
+      // First time add OR change
+      if (!isEmailVerified) {
+        // First time add - send OTP to email
+        const res = await TwilioApi.sendOtp_Email({ email: emailToVerify });
+        console.log("Send OTP Email response:", res);
+        if (res?.status === 201 && res?.data?.success) {
+          redirectToPage(containers.verificationScreen, {
+            email_editAccount: emailToVerify,
+            verificationType: "email",
+            from: "first_add_email",
+            userId: id,
+          });
+        } else {
+          const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
+          console.error("OTP send failed:", res);
+          Alert.alert("Error", errorMsg);
+        }
+      } else if (showChangeEmail) {
+        // Change - send OTP to phone (cross-platform)
+        if (!phone || !isPhoneVerified) {
+          Alert.alert("Error", "You need a verified phone to change your email");
+          return;
+        }
+        const res = await TwilioApi.sendOtp({ phone });
+        console.log("Send OTP response:", res);
+        if (
+          res?.status === 201 &&
+          res.data?.status === "pending"
+        ) {
+          redirectToPage(containers.verificationScreen, {
+            phoneNumber_editAccount: phone,
+            verificationType: "phone",
+            from: "change_email",
+            newEmail: emailToVerify,
+            userId: id,
+          });
+        } else {
+          const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
+          console.error("OTP send failed:", res);
+          Alert.alert("Error", errorMsg);
+        }
+      }
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      const errorMsg = error?.response?.data?.message || error?.message || "Failed to send verification code. Please try again.";
+      Alert.alert("Error", errorMsg);
     }
   };
+
   const handleSave = async () => {
     const formData = new FormData();
-    formData.append("phone", phone);
-    formData.append("email", email);
+    let hasChanges = false;
+
+    if (!isPhoneVerified && phone && !phoneError) {
+      formData.append("phone", phone);
+      hasChanges = true;
+    }
+
+    if (!isEmailVerified && email && !emailError) {
+      formData.append("email", email);
+      hasChanges = true;
+    }
+
+    if (!hasChanges) {
+      Alert.alert("No Changes", "All contacts are verified or no changes made");
+      return;
+    }
+
     try {
       const response = await UserAPI.userEditContact(id, formData);
-      // console.log("response in edit contact", response.data);
-      if (response?.data) {
-        // console.log("Inside");
-        DeviceEventEmitter.emit("fetchUser");
-        try {
-          await SecureStore.setItemAsync("user", JSON.stringify(response.data));
-        } catch (error) {
-          console.error("SecureStore setItem error:", error);
-        }
+      if (response?.data?.user) {
         dispatch(setUserData(response.data.user));
-        Alert.alert("Message", "Profile updated successfully.", [
-          {
-            text: "OK",
-            onPress: () => {
-              redirectToPage(containers.userProfileScreen);
-            },
-          },
+        await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
+        Alert.alert("Success", "Profile updated successfully", [
+          { text: "OK", onPress: () => redirectToPage(containers.userProfileScreen) },
         ]);
       }
-      return response?.data;
     } catch (error) {
-      console.error("Registration error:", error);
-      Alert.alert("Error", "Something went wrong during registration.");
+      console.error("Save error:", error);
+      Alert.alert("Error", "Something went wrong");
     }
   };
 
@@ -165,12 +265,7 @@ const editAccountInformationscreen = () => {
       footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
-        <View
-          style={[
-            globalStyles.pt_0,
-            isWeb && webStyles.contentWidth,
-          ]}
-        >
+        <View style={[globalStyles.pt_0, isWeb && webStyles.contentWidth]}>
           <View style={globalStyles.profilePictureContainer}>
             <Image
               source={
@@ -181,25 +276,34 @@ const editAccountInformationscreen = () => {
               style={globalStyles.profileImage}
             />
           </View>
+
+          {/* PHONE SECTION */}
           <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="phone"
-              size={32}
-              style={globalStyles.userInputLabelIcon}
-            />
+            <FontAwesome name="phone" size={32} style={globalStyles.userInputLabelIcon} />
             <View style={{ flex: 1, paddingLeft: 14 }}>
-              <View style={globalStyles.deviceHeading}>
+              <View style={styles.headingRow}>
+                <View style={styles.labelWithTick}>
                 <Text style={globalStyles.userInputLabel}>Phone</Text>
-                {/* <TouchableOpacity>
-                      <Text
-                        style={globalStyles.verify}
-                        onPress={() => {
-                          handleVerify();
-                        }}
-                      >
-                        verify
+                {isPhoneVerified && (
+                  <FontAwesome name="check-circle" size={18} color={colors.primary} style={styles.tickIcon} />
+                )}
+                </View>
+          
+                {!isPhoneVerified && phone && !phoneError && !showChangePhone && (
+                  <TouchableOpacity onPress={handleVerifyPhone}>
+                    <Text style={globalStyles.verify}>verify</Text>
+                  </TouchableOpacity>
+                )}
+                {isPhoneVerified && (
+                  <>
+                    {/* <FontAwesome name="check-circle" size={18} color={colors.primary} /> */}
+                    <TouchableOpacity onPress={() => setShowChangePhone(!showChangePhone)}>
+                      <Text style={globalStyles.verify}>
+                        {showChangePhone ? "cancel" : "edit"}
                       </Text>
-                    </TouchableOpacity> */}
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
               <CustomTextInput
                 containerStyle={globalStyles.userInputContainer}
@@ -209,31 +313,68 @@ const editAccountInformationscreen = () => {
                 onPress={() => {}}
                 setValue={handlePhoneChange}
                 keyboardType="phone-pad"
+                editable={!isPhoneVerified && !showChangePhone}
               />
-              {phoneError && (
-                <Text style={globalStyles.errorText}>{phoneError}</Text>
+              {phoneError && <Text style={globalStyles.errorText}>{phoneError}</Text>}
+
+              {showChangePhone && (
+                <>
+                  <Text style={styles.changeLabel}>New Phone Number</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="new phone number"
+                    value={newPhone}
+                    onPress={() => {}}
+                    setValue={handleNewPhoneChange}
+                    keyboardType="phone-pad"
+                  />
+                  {newPhoneError && <Text style={globalStyles.errorText}>{newPhoneError}</Text>}
+                  {newPhone && !newPhoneError && (
+                    <TouchableOpacity onPress={handleVerifyPhone} style={styles.primaryVerifyButton}>
+                      <Text style={styles.primaryVerifyText}>verify new phone</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
             </View>
           </View>
 
+          {/* EMAIL SECTION */}
           <View style={globalStyles.profileInputContainer}>
-            <FontAwesome
-              name="envelope-o"
-              size={28}
-              style={globalStyles.userInputLabelIcon}
-            />
-            <View
-              style={{
-                flex: 1,
-                paddingLeft: 14,
-              }}
-            >
-              <View style={globalStyles.deviceHeading}>
-                <Text style={globalStyles.userInputLabel}>Email</Text>
-                {/* <TouchableOpacity>
-                      <Text style={globalStyles.verify}>verify</Text>
-                    </TouchableOpacity> */}
+            <FontAwesome name="envelope-o" size={28} style={globalStyles.userInputLabelIcon} />
+
+            <View style={{ flex: 1, paddingLeft: 14 }}>
+              {/* Header row */}
+              <View style={styles.headingRow}>
+                <View style={styles.labelWithTick}>
+                  <Text style={globalStyles.userInputLabel}>Email</Text>
+                  {isEmailVerified && (
+                    <FontAwesome
+                      name="check-circle"
+                      size={16}
+                      color={colors.primary}
+                      style={styles.tickIcon}
+                    />
+                  )}
+                </View>
+
+                {!isEmailVerified && email && !emailError && !showChangeEmail && (
+                  <TouchableOpacity onPress={handleVerifyEmail}>
+                    <Text style={globalStyles.verify}>verify</Text>
+                  </TouchableOpacity>
+                )}
+
+                {isEmailVerified && (
+                  <TouchableOpacity onPress={() => setShowChangeEmail(!showChangeEmail)}>
+                    <Text style={globalStyles.verify}>
+                      {showChangeEmail ? "cancel" : "edit"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
+
+              {/* Email input */}
               <CustomTextInput
                 containerStyle={globalStyles.userInputContainer}
                 TextStyle={globalStyles.input}
@@ -242,45 +383,110 @@ const editAccountInformationscreen = () => {
                 onPress={() => {}}
                 setValue={handleEmailChange}
                 keyboardType="email-address"
+                editable={!isEmailVerified && !showChangeEmail}
               />
-              {emailError && (
-                <Text style={globalStyles.errorText}>{emailError}</Text>
+
+              {emailError && <Text style={globalStyles.errorText}>{emailError}</Text>}
+
+              {showChangeEmail && (
+                <>
+                  <Text style={styles.changeLabel}>New Email Address</Text>
+                  <CustomTextInput
+                    containerStyle={globalStyles.userInputContainer}
+                    TextStyle={globalStyles.input}
+                    placeholder="new email"
+                    value={newEmail}
+                    onPress={() => {}}
+                    setValue={handleNewEmailChange}
+                    keyboardType="email-address"
+                  />
+                  {newEmailError && (
+                    <Text style={globalStyles.errorText}>{newEmailError}</Text>
+                  )}
+                  {newEmail && !newEmailError && (
+                    <TouchableOpacity
+                      onPress={handleVerifyEmail}
+                      style={styles.primaryVerifyButton}
+                    >
+                      <Text style={styles.primaryVerifyText}>verify new email</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
             </View>
           </View>
+
+          {isWeb ? (
+            <View style={webStyles.buttonRow}>
+              <Button
+                primary={false}
+                title="Cancel"
+                onPress={() => redirectToPage(containers.userProfileScreen)}
+                style={webStyles.buttonHalf}
+              />
+              <Button onPress={handleSave} title="Save" style={webStyles.buttonHalf} />
+            </View>
+          ) : (
+            <View>
+              {/* <Button onPress={handleSave} title="Save" /> */}
+            </View>
+          )}
         </View>
-        {isWeb ? (
-          <View style={webStyles.buttonRow}>
-            <Button
-              primary={false}
-              title="Cancel"
-              onPress={() => redirectToPage(containers.userProfileScreen)}
-              style={webStyles.buttonHalf}
-            />
-            <Button
-              onPress={() => {
-                handleSave();
-              }}
-              title="Save"
-              style={webStyles.buttonHalf}
-            />
-          </View>
-        ) : (
-          <View style={{ marginTop: 16 }}>
-            <Button
-              onPress={() => {
-                handleSave();
-              }}
-              title="Save"
-            />
-          </View>
-        )}
+      
       </KeyBoardWrapper>
     </LayoutComponent>
   );
 };
 
-export default editAccountInformationscreen;
+export default EditAccountInformationScreen;
+
+const styles = StyleSheet.create({
+  changeLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  verifyButton: {
+    marginTop: 8,
+    alignSelf: "flex-end",
+  },
+   primaryVerifyButton: {
+    marginTop: 12,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 6,
+    width: "100%",
+    alignItems: "center",
+  },
+
+  primaryVerifyText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  headingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between", 
+  },
+  labelWithTick: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10, 
+  },
+
+  tickIcon: {
+    marginTop: 3, 
+  },
+
+});
 
 const webStyles = StyleSheet.create({
   contentWidth: {
@@ -296,4 +502,6 @@ const webStyles = StyleSheet.create({
   buttonHalf: {
     flex: 1,
   },
+ 
+
 });
