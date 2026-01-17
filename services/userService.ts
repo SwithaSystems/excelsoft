@@ -52,6 +52,21 @@ export const UserAPI = {
     }
   },
 
+  verifyContact: async (userId: string, body: { type: "email" | "phone" }) => {
+    try {
+      const response = await jsonAxios.put(
+        `/users/verifyContact/${userId}`,
+        body
+      );
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Verify contact error:", error.response?.data || error.message);
+      }
+      throw error;
+    }
+  },
+
   getUserByPhonenumber: async (phoneNumber: any) => {
     // console.log("phoneNumber", phoneNumber);
     const response = await jsonAxios.get(

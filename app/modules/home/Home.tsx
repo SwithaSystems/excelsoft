@@ -36,6 +36,9 @@ import Button from "@/app/components/commonComponents/Button";
 import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
 import { promotionService } from "@/services/promotionService";
 import globalSettingsAPI from "@/services/globalSettingsService";
+import { recommendationService, RecommendedProduct } from "@/services/recommendationService";
+import ProductCard from "@/app/components/ProductCard";
+import { useAuth } from "@/context/AuthContext";
 
 interface Promotion {
   imageURL: string;
@@ -77,6 +80,11 @@ const HomePage = () => {
   const [carousalEnabled, setCarousalEnabled] = useState(false);
   const [globalSettingsLoaded, setGlobalSettingsLoaded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [recommendedProducts, setRecommendedProducts] = useState<RecommendedProduct[]>([]);
+  const [recommendedProductsLoading, setRecommendedProductsLoading] = useState(true);
+  const [recommendedProductsError, setRecommendedProductsError] = useState<string | null>(null);
+  const [recommendationType, setRecommendationType] = useState<"recommended" | "hot_selling">("hot_selling");
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
   const { width } = useWindowDimensions();
@@ -342,6 +350,49 @@ const HomePage = () => {
     fetchPromotions();
   }, []);
 
+  // Fetch recommended products (wait for auth to be determined first)
+  useEffect(() => {
+    // Wait for authentication state to be determined before fetching
+    if (isAuthLoading) {
+      return; // Don't fetch while auth is still loading
+    }
+
+    const fetchRecommendedProducts = async () => {
+      try {
+        setRecommendedProductsLoading(true);
+        setRecommendedProductsError(null);
+        // console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
+        const response = await recommendationService.getRecommendedProducts(10);
+        // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
+        if (response && response.products && response.products.length > 0) {
+          // console.log("[Home] ✅ Products fetched successfully for recommendations");
+          // console.log("[Home] Product details:", response.products.map(p => ({ id: p.id, name: p.name })));
+          setRecommendedProducts(response.products);
+          setRecommendationType(response.type);
+        } else {
+          // console.log("[Home] ⚠️ No recommended products returned");
+          // console.log("[Home] This could mean: User has no orders, or products from orders not found in database");
+          setRecommendedProducts([]);
+          setRecommendationType("hot_selling");
+        }
+      } catch (error: any) {
+        console.error("[Home] Error fetching recommended products:", error);
+        const errorMessage = error?.response?.data?.message || error?.message || "Failed to load recommendations";
+        console.error("[Home] Error details:", {
+          message: errorMessage,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+        setRecommendedProductsError(errorMessage);
+        setRecommendedProducts([]);
+        setRecommendationType("hot_selling");
+      } finally {
+        setRecommendedProductsLoading(false);
+      }
+    };
+    fetchRecommendedProducts();
+  }, [isAuthenticated, isAuthLoading]);
+
   // Show full-screen loader until all required data is loaded
   if (isInitialLoading) {
     return (
@@ -454,6 +505,68 @@ const HomePage = () => {
             ) : null}
           </View>
         )}
+        
+         {/* Recommended / Hot Selling Products Section */}
+         {!isAuthLoading && (recommendedProductsLoading || recommendedProducts.length > 0 || recommendedProductsError) && (
+           <View style={styles.recommendedSection}>
+             <Text style={styles.sectionTitle}>
+               {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
+             </Text>
+            {recommendedProductsLoading ? (
+              <View style={styles.recommendedLoader}>
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : recommendedProductsError ? (
+              <View style={styles.recommendedLoader}>
+                <Text style={styles.errorText}>
+                  {recommendedProductsError}
+                </Text>
+              </View>
+            ) : recommendedProducts.length > 0 ? (
+              <FlatList
+                horizontal
+                data={recommendedProducts}
+                keyExtractor={(item) => item.id.toString()}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recommendedList}
+                renderItem={({ item }) => {
+                  // Convert RecommendedProduct to ProductCard format
+                  // ProductCard calculates: Final price = netPrice - discount
+                  // ProductCard shows discount percentage if discount > 0
+                  // The API returns: price (final price), netPrice (original price if discount exists)
+                  const finalPrice = item.price || 0;
+                  const originalPrice = item.netPrice || item.price || 0;
+                  
+                  // To hide discount percentage, set discount to 0
+                  // If there's an actual discount, we could show it, but user wants to hide it
+                  // So we'll set discount to 0 and use netPrice as the final price
+                  const productCardProps = {
+                    id: item.id.toString(),
+                    name: item.name,
+                    rating: item.rating,
+                    noOfreviews: item.reviews || 0,
+                    noOfReviews: item.reviews || 0, // Alias for type compatibility
+                    reviews: [], // Empty array for type compatibility (reviews is an array of review objects)
+                    isReturnable: false, // Default value
+                    discount: 0, // Set to 0 to hide discount percentage
+                    netPrice: finalPrice, // Use final price as netPrice (no discount shown)
+                    image: item.imageUrl || require("@/assets/Placeholder.png"),
+                    categoryId: [],
+                    description: "",
+                    isVatApplicable: false,
+                    vatRate: 0,
+                    vatAmount: 0,
+                  } as any; // Type assertion to handle ProductCard prop compatibility
+                  return (
+                    <View style={styles.recommendedCardWrapper}>
+                      <ProductCard {...productCardProps} />
+                    </View>
+                  );
+                }}
+              />
+            ) : null}
+          </View>
+        )}
       </View>
     </LayoutComponent>
   );
@@ -483,6 +596,34 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingTop: 8,
     paddingBottom: 8,
+  },
+  recommendedSection: {
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    color: colors.black,
+  },
+  recommendedList: {
+    paddingHorizontal: 8,
+  },
+  recommendedCardWrapper: {
+    width: 160,
+    marginHorizontal: 8,
+  },
+  recommendedLoader: {
+    height: 200,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: colors.secondaryText,
+    fontSize: 14,
+    textAlign: "center",
   },
   categoriesScrollContent: {
     // paddingHorizontal: 8,

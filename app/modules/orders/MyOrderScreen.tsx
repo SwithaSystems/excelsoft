@@ -31,9 +31,15 @@ const myOrderScreen = () => {
 
   const fetchOrders = async () => {
     try {
+      // console.log("[MyOrderScreen] Fetching orders for userId:", userId);
+      if (!userId) {
+        console.error("[MyOrderScreen] ERROR: userId is missing!");
+        return;
+      }
       const response = await orderService.getOrdersByUserId(userId as string);
-      // console.log(" all my orders", response);
-      setOrders(response);
+      // console.log("[MyOrderScreen] Orders fetched:", response?.length || 0, "orders");
+      // console.log("[MyOrderScreen] Orders data:", response);
+      setOrders(response || []);
       
       // Fetch product images for web view - optimized with batch fetching
       if (isWeb && response.length > 0) {
@@ -103,17 +109,31 @@ const myOrderScreen = () => {
         setOrdersWithProducts(ordersWithProductImages);
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("[MyOrderScreen] Error fetching orders:", error);
+      console.error("[MyOrderScreen] Error details:", {
+        message: error?.message,
+        stack: error?.stack,
+        userId: userId
+      });
+      setOrders([]); // Set empty array on error to prevent undefined state
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    // console.log("[MyOrderScreen] Component mounted, userId:", userId);
+    if (userId) {
+      fetchOrders();
+    } else {
+      console.warn("[MyOrderScreen] WARNING: No userId provided, cannot fetch orders");
+    }
+  }, [userId]);
 
   const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <Header headerText={MY_ORDERS_SCREEN_TITLE} />;
   const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+
+  // Log render state
+  // console.log("[MyOrderScreen] Rendering with orders:", orders.length, "ordersWithProducts:", ordersWithProducts.length, "isWeb:", isWeb);
 
   return (
     <LayoutComponent
@@ -130,6 +150,11 @@ const myOrderScreen = () => {
           ListHeaderComponent={
             <>
               <View style={[globalStyles.pt_0]}>
+                {orders.length === 0 && (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, color: '#666' }}>No orders found</Text>
+                  </View>
+                )}
                 <FlatList
                   data={isWeb && ordersWithProducts.length > 0 
                     ? ordersWithProducts.map((order) => ({

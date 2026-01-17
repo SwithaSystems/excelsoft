@@ -363,7 +363,7 @@ export const globalStyles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   verify: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.primary,
     textDecorationLine: "underline",
     marginLeft: 4,
