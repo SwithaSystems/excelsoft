@@ -102,7 +102,7 @@ const verificationScreen = () => {
     try {
       let res;
 
-      // SIGNUP/FORGOT PASSWORD FLOWS (existing - don't touch)
+
       if (from === "signup" || from === "forgotPassword") {
         if (verificationType === "email") {
           res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
@@ -140,9 +140,8 @@ const verificationScreen = () => {
         return;
       }
 
-      // EDIT CONTACT FLOWS (new)
       if (from === "first_add_phone") {
-        // First time adding phone - verify OTP sent to phone
+
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
           res?.success === true ||
@@ -154,17 +153,16 @@ const verificationScreen = () => {
           return;
         }
 
-        // Update phone and mark as verified
         try {
           const formData = new FormData();
           formData.append("phone", phoneNumber);
-          console.log("Updating phone contact for userId:", userId, "phone:", phoneNumber);
+          // console.log("Updating phone contact for userId:", userId, "phone:", phoneNumber);
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
-          console.log("Update contact response:", updateResponse);
+          // console.log("Update contact response:", updateResponse);
           
-          console.log("Verifying phone contact for userId:", userId);
+          // console.log("Verifying phone contact for userId:", userId);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
-          console.log("Verify contact response:", verifyResponse);
+          // console.log("Verify contact response:", verifyResponse);
 
           // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
@@ -224,15 +222,14 @@ const verificationScreen = () => {
         try {
           const formData = new FormData();
           formData.append("email", email);
-          console.log("Updating email contact for userId:", userId, "email:", email);
+          // console.log("Updating email contact for userId:", userId, "email:", email);
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
-          console.log("Update contact response:", updateResponse);
+          // console.log("Update contact response:", updateResponse);
           
-          console.log("Verifying email contact for userId:", userId);
+          // console.log("Verifying email contact for userId:", userId);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "email" });
-          console.log("Verify contact response:", verifyResponse);
+          // console.log("Verify contact response:", verifyResponse);
 
-          // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
           if (updatedUser?.data) {
             dispatch(setUserData(updatedUser.data));
@@ -277,7 +274,7 @@ const verificationScreen = () => {
       }
 
       if (from === "change_phone") {
-        // Changing phone - OTP was sent to email (cross-platform)
+        // Changing phone - OTP was sent to email
         res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         const isVerified = res?.success === true || res?.data?.success === true;
 
@@ -290,13 +287,13 @@ const verificationScreen = () => {
         try {
           const formData = new FormData();
           formData.append("phone", String(newPhone));
-          console.log("Updating phone contact for userId:", userId, "newPhone:", newPhone);
+          // console.log("Updating phone contact for userId:", userId, "newPhone:", newPhone);
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
-          console.log("Update contact response:", updateResponse);
+          // console.log("Update contact response:", updateResponse);
           
-          console.log("Verifying phone contact for userId:", userId);
+          // console.log("Verifying phone contact for userId:", userId);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
-          console.log("Verify contact response:", verifyResponse);
+          // console.log("Verify contact response:", verifyResponse);
 
           // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
@@ -343,7 +340,7 @@ const verificationScreen = () => {
       }
 
       if (from === "change_email") {
-        // Changing email - OTP was sent to phone (cross-platform)
+        // Changing email - OTP was sent to phone 
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
           res?.success === true ||
@@ -355,17 +352,16 @@ const verificationScreen = () => {
           return;
         }
 
-        // Update to new email and mark as verified
         try {
           const formData = new FormData();
           formData.append("email", String(newEmail));
-          console.log("Updating email contact for userId:", userId, "newEmail:", newEmail);
+          // console.log("Updating email contact for userId:", userId, "newEmail:", newEmail);
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
-          console.log("Update contact response:", updateResponse);
+          // console.log("Update contact response:", updateResponse);
           
-          console.log("Verifying email contact for userId:", userId);
+          // console.log("Verifying email contact for userId:", userId);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "email" });
-          console.log("Verify contact response:", verifyResponse);
+          // console.log("Verify contact response:", verifyResponse);
 
           // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
@@ -464,9 +460,15 @@ const verificationScreen = () => {
             source={require("assets/UserVerificationSuccessful.png")}
           />
           <Text style={[styles.description, isWeb && styles.descriptionDesktop]}>
-            {verificationType === "email" || from === "first_add_email" || from === "change_phone"
-              ? "We've sent a verification code to your email address. Please enter it below."
-              : "We have sent a verification code to your mobile. Please enter the code."}
+            {from === "change_phone" || from === "first_add_email" ? (
+              "We've sent a verification code to your email address. Please enter it below."
+            ) : from === "change_email" || from === "first_add_phone" ? (
+              "We have sent a verification code to your mobile number. Please enter the code."
+            ) : verificationType === "email" ? (
+              "We've sent a verification code to your email address. Please enter it below."
+            ) : (
+              "We have sent a verification code to your mobile number. Please enter the code."
+            )}
           </Text>
 
           <View style={[styles.codeContainer, isWeb && styles.codeContainerDesktop]}>

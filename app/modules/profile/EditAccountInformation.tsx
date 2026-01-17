@@ -14,7 +14,10 @@ import { FontAwesome } from "@expo/vector-icons";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { Image } from "react-native-elements";
 import Button from "@/app/components/commonComponents/Button";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { 
+  redirectToPage,
+  clearNavigationStack,
+} from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { useDispatch, useSelector } from "react-redux";
@@ -59,7 +62,12 @@ const EditAccountInformationScreen = () => {
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
-    <Header headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE} />
+    <Header 
+      headerText={EDIT_ACCOUNT_INFORMATION_SCREEN_TITLE}
+      onBackPress={() =>
+        clearNavigationStack(containers.userProfileScreen)
+      }
+    />
   );
   const FooterComponent = isWeb ? <FooterWeb /> : null;
 
@@ -114,11 +122,9 @@ const EditAccountInformationScreen = () => {
         return;
       }
 
-      // First time add OR change
       if (!isPhoneVerified) {
-        // First time add - send OTP to phone
         const res = await TwilioApi.sendOtp({ phone: phoneToVerify });
-        console.log("Send OTP response:", res);
+        // console.log("Send OTP response:", res);
         if (
           res?.status === 201 &&
           res.data?.status === "pending"
@@ -135,13 +141,12 @@ const EditAccountInformationScreen = () => {
           Alert.alert("Error", errorMsg);
         }
       } else if (showChangePhone) {
-        // Change - send OTP to email (cross-platform)
         if (!email || !isEmailVerified) {
           Alert.alert("Error", "You need a verified email to change your phone number");
           return;
         }
         const res = await TwilioApi.sendOtp_Email({ email });
-        console.log("Send OTP Email response:", res);
+        // console.log("Send OTP Email response:", res);
         if (res?.status === 201 && res?.data?.success) {
           redirectToPage(containers.verificationScreen, {
             email_editAccount: email,
@@ -172,12 +177,9 @@ const EditAccountInformationScreen = () => {
         Alert.alert("Error", "Please enter a valid email address");
         return;
       }
-
-      // First time add OR change
       if (!isEmailVerified) {
-        // First time add - send OTP to email
         const res = await TwilioApi.sendOtp_Email({ email: emailToVerify });
-        console.log("Send OTP Email response:", res);
+        // console.log("Send OTP Email response:", res);
         if (res?.status === 201 && res?.data?.success) {
           redirectToPage(containers.verificationScreen, {
             email_editAccount: emailToVerify,
@@ -191,13 +193,12 @@ const EditAccountInformationScreen = () => {
           Alert.alert("Error", errorMsg);
         }
       } else if (showChangeEmail) {
-        // Change - send OTP to phone (cross-platform)
         if (!phone || !isPhoneVerified) {
           Alert.alert("Error", "You need a verified phone to change your email");
           return;
         }
         const res = await TwilioApi.sendOtp({ phone });
-        console.log("Send OTP response:", res);
+        // console.log("Send OTP response:", res);
         if (
           res?.status === 201 &&
           res.data?.status === "pending"
