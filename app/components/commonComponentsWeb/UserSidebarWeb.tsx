@@ -34,6 +34,7 @@ interface QuickLinkItem {
 const navItems: NavItem[] = [
   { id: "profile", label: "Profile Settings", icon: "person", route: containers.editProfileScreen },
   { id: "address", label: "Saved Address", icon: "location", route: containers.savedAddressScreen },
+  { id: "contact", label: "Edit Contact Information", icon: "call", route: containers.editContactInformationWebScreen },
   { id: "password", label: "Change Password", icon: "lock-closed", route: containers.changePasswordScreen },
   { id: "notification", label: "Notification", icon: "notifications", route: containers.notificationsScreen },
   // { id: "cards", label: "Saved Cards", icon: "card", route: "/saved-cards" },

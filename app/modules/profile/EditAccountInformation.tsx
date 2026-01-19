@@ -224,17 +224,25 @@ const EditAccountInformationScreen = () => {
   };
 
   const handleSave = async () => {
+    // Clear previous errors
+    setPhoneError(null);
+    setEmailError(null);
+
     const formData = new FormData();
     let hasChanges = false;
+    let phoneFieldChanged = false;
+    let emailFieldChanged = false;
 
     if (!isPhoneVerified && phone && !phoneError) {
       formData.append("phone", phone);
       hasChanges = true;
+      phoneFieldChanged = true;
     }
 
     if (!isEmailVerified && email && !emailError) {
       formData.append("email", email);
       hasChanges = true;
+      emailFieldChanged = true;
     }
 
     if (!hasChanges) {
@@ -251,9 +259,60 @@ const EditAccountInformationScreen = () => {
           { text: "OK", onPress: () => redirectToPage(containers.userProfileScreen) },
         ]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Save error:", error);
-      Alert.alert("Error", "Something went wrong");
+      
+      // Parse backend error response
+      const errorMessage = error?.response?.data?.message || error?.message || "";
+      const errorMessageLower = errorMessage.toLowerCase();
+
+      // Check for phone-related errors
+      if (phoneFieldChanged && (
+        errorMessageLower.includes("phone") ||
+        errorMessageLower.includes("mobile") ||
+        errorMessageLower.includes("number") ||
+        errorMessageLower.includes("already exists") ||
+        errorMessageLower.includes("duplicate")
+      )) {
+        // Check if it's specifically about phone
+        if (errorMessageLower.includes("phone") || 
+            errorMessageLower.includes("mobile") || 
+            errorMessageLower.includes("number")) {
+          setPhoneError(errorMessage || "This phone number is already in use. Please use a different number.");
+        } else {
+          // Generic duplicate error - check which field was changed
+          if (phoneFieldChanged && !emailFieldChanged) {
+            setPhoneError(errorMessage || "This phone number is already in use. Please use a different number.");
+          }
+        }
+      }
+
+      // Check for email-related errors
+      if (emailFieldChanged && (
+        errorMessageLower.includes("email") ||
+        errorMessageLower.includes("already exists") ||
+        errorMessageLower.includes("duplicate") ||
+        errorMessageLower.includes("invalid email") ||
+        errorMessageLower.includes("email format")
+      )) {
+        // Check if it's specifically about email
+        if (errorMessageLower.includes("email")) {
+          setEmailError(errorMessage || "This email is already in use. Please use a different email address.");
+        } else {
+          // Generic duplicate error - check which field was changed
+          if (emailFieldChanged && !phoneFieldChanged) {
+            setEmailError(errorMessage || "This email is already in use. Please use a different email address.");
+          }
+        }
+      }
+
+      // If no field-specific error was set, show generic error only for network/server errors
+      if (!phoneError && !emailError) {
+        // Only show alert for network/server errors, not validation errors
+        if (error?.response?.status >= 500 || !error?.response) {
+          Alert.alert("Error", errorMessage || "Something went wrong. Please try again.");
+        }
+      }
     }
   };
 
@@ -307,12 +366,18 @@ const EditAccountInformationScreen = () => {
                 )}
               </View>
               <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
+                containerStyle={phoneError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
+                TextStyle={phoneError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
                 placeholder="phone number"
                 value={phone}
                 onPress={() => {}}
-                setValue={handlePhoneChange}
+                setValue={(value) => {
+                  handlePhoneChange(value);
+                  // Clear error when user starts editing
+                  if (phoneError) {
+                    setPhoneError(null);
+                  }
+                }}
                 keyboardType="phone-pad"
                 editable={!isPhoneVerified && !showChangePhone}
               />
@@ -322,12 +387,18 @@ const EditAccountInformationScreen = () => {
                 <>
                   <Text style={styles.changeLabel}>New Phone Number</Text>
                   <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
+                    containerStyle={newPhoneError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
+                    TextStyle={newPhoneError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
                     placeholder="new phone number"
                     value={newPhone}
                     onPress={() => {}}
-                    setValue={handleNewPhoneChange}
+                    setValue={(value) => {
+                      handleNewPhoneChange(value);
+                      // Clear error when user starts editing
+                      if (newPhoneError) {
+                        setNewPhoneError(null);
+                      }
+                    }}
                     keyboardType="phone-pad"
                   />
                   {newPhoneError && <Text style={globalStyles.errorText}>{newPhoneError}</Text>}
@@ -377,12 +448,18 @@ const EditAccountInformationScreen = () => {
 
               {/* Email input */}
               <CustomTextInput
-                containerStyle={globalStyles.userInputContainer}
-                TextStyle={globalStyles.input}
+                containerStyle={emailError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
+                TextStyle={emailError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
                 placeholder="email"
                 value={email}
                 onPress={() => {}}
-                setValue={handleEmailChange}
+                setValue={(value) => {
+                  handleEmailChange(value);
+                  // Clear error when user starts editing
+                  if (emailError) {
+                    setEmailError(null);
+                  }
+                }}
                 keyboardType="email-address"
                 editable={!isEmailVerified && !showChangeEmail}
               />
@@ -393,12 +470,18 @@ const EditAccountInformationScreen = () => {
                 <>
                   <Text style={styles.changeLabel}>New Email Address</Text>
                   <CustomTextInput
-                    containerStyle={globalStyles.userInputContainer}
-                    TextStyle={globalStyles.input}
+                    containerStyle={newEmailError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
+                    TextStyle={newEmailError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
                     placeholder="new email"
                     value={newEmail}
                     onPress={() => {}}
-                    setValue={handleNewEmailChange}
+                    setValue={(value) => {
+                      handleNewEmailChange(value);
+                      // Clear error when user starts editing
+                      if (newEmailError) {
+                        setNewEmailError(null);
+                      }
+                    }}
                     keyboardType="email-address"
                   />
                   {newEmailError && (
