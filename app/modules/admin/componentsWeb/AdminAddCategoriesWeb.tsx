@@ -25,6 +25,8 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 interface Category {
   _id: any;
@@ -48,6 +50,9 @@ const AdminAddCategoriesWeb = () => {
   // Success Modal states
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Cancel confirmation modal state
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -238,10 +243,8 @@ const AdminAddCategoriesWeb = () => {
   // Handle cancel edit
   const handleCancelEdit = useCallback(() => {
     if (isWeb) {
-      // On web, use window.confirm
-      if (window.confirm("Are you sure you want to cancel? All changes will be lost.")) {
-        router.back();
-      }
+      // On web, show ConfirmationModal
+      setShowCancelModal(true);
     } else {
       // On mobile, use Alert.alert
       Alert.alert(
@@ -261,6 +264,18 @@ const AdminAddCategoriesWeb = () => {
       );
     }
   }, [isWeb]);
+
+  // Handle discard changes (navigate back to categories)
+  const handleDiscardChanges = useCallback(() => {
+    setShowCancelModal(false);
+    // Navigate back to Categories listing page
+    redirectToPage(containers.AdminCategoriesScreen);
+  }, []);
+
+  // Handle cancel modal (just close the modal)
+  const handleCancelModal = useCallback(() => {
+    setShowCancelModal(false);
+  }, []);
 
   const handleAddCategory = useCallback(async () => {
     try {
@@ -577,6 +592,20 @@ const AdminAddCategoriesWeb = () => {
           router.back();
         }}
       />
+
+      {/* Cancel Confirmation Modal - Web only */}
+      {isWeb && (
+        <ConfirmationModal
+          isModalVisible={showCancelModal}
+          onClose={handleCancelModal}
+          title="Discard changes?"
+          text="Are you sure you want to cancel? All unsaved changes will be lost."
+          submitText="Discard"
+          cancelText="Cancel"
+          handleSubmit={handleDiscardChanges}
+          handleCancel={handleCancelModal}
+        />
+      )}
     </LayoutComponent>
   );
 };

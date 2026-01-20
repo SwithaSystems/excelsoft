@@ -61,6 +61,7 @@ const AdminProfile = () => {
     "Store Information": containers.AdminStoreInformationScreen,
     "Promotion Management": containers.customerSupportScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
+    "Scan & Deliver": containers.AdminOrderQRScanScreen,
   };
 
   // Responsive components
@@ -71,7 +72,7 @@ const AdminProfile = () => {
     />
   );
   
-  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="menu" />;
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // console.log("userData_redux in userProfilescreen", userData_redux);
@@ -213,8 +214,7 @@ const AdminProfile = () => {
             <TouchableOpacity
               key={index}
               style={[
-                isMobile ? styles.settingOption : responsiveStyles.settingOptionWeb,
-                index === Object.keys(settingsMenu).length - 1 && { borderBottomWidth: 0 }
+                isMobile ? styles.settingOption : responsiveStyles.settingOptionWeb
               ]}
               onPress={() => {
                 redirectToPage(
