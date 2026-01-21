@@ -130,11 +130,21 @@ const styles = StyleSheet.create({
   searchWithToggle: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
+    flex: 1,
   },
 
   viewToggleIcon: {
-
     padding: 4,
+    marginLeft: 8,
+  },
+
+  gridCard: {
+    flex: 1,
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+    maxWidth: "32%",
+    minWidth: "32%",
   },
 
   headerRow: {
@@ -149,8 +159,8 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 1000,
     backgroundColor: colors.white,
-    paddingVertical: 6,
-    marginBottom: -20,
+    paddingVertical: 10,
+    marginBottom: 8,
   },
 
   stickyBottomContainer: {

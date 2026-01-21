@@ -409,7 +409,13 @@ const AdminProductDashboard = () => {
       const badge = item.stock !== undefined ? getStockBadge(item.stock) : null;
 
       return (
-        <View style={[styles.card, { minHeight: 120 }]}>
+        <View
+          style={[
+            styles.card,
+            { minHeight: 120 },
+            viewMode === "grid" && styles.gridCard,
+          ]}
+        >
           <View
             style={[
               globalStyles.flexRow,
@@ -520,7 +526,7 @@ const AdminProductDashboard = () => {
         </View>
       );
     },
-    [categories, handleDeleteProduct]
+    [categories, handleDeleteProduct, viewMode]
   );
 
   const maxId = productsList.reduce((max: number, product: Product) => {
@@ -658,7 +664,7 @@ const AdminProductDashboard = () => {
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
               {isWeb && (
-             <>
+                <View style={styles.searchWithToggle}>
                   <SearchBar
                     placeholder="Search by name..."
                     value={searchQuery}
@@ -681,8 +687,7 @@ const AdminProductDashboard = () => {
                       color={colors.primary}
                     />
                   </TouchableOpacity>
-              </>
-         
+                </View>
               )}
 
               <View style={styles.categoryContainer}>
@@ -756,7 +761,9 @@ const AdminProductDashboard = () => {
             key={isWeb ? viewMode : "list"}
             numColumns={isWeb && viewMode === "grid" ? 3 : 1}
             columnWrapperStyle={
-              isWeb && viewMode === "grid" ? { gap: 12 } : undefined
+              isWeb && viewMode === "grid"
+                ? { gap: 12, alignItems: "stretch", justifyContent: "flex-start" }
+                : undefined
             }
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
