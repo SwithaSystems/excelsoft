@@ -753,7 +753,7 @@ const AdminProductDashboard = () => {
           </View>
         </View>
 
-        <View style={{ marginTop: 16, flex: 1 }}>
+        <View style={{ marginTop: 8, flex: 1 }}>
           <FlatList
             data={productsListToShow}
             renderItem={ProductCard}

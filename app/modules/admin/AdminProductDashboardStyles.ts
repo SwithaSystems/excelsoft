@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
     marginHorizontal: 0,
-    marginBottom: 16,
+    marginBottom: 8,
     position: "relative",
     zIndex: 1000,
   },
@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
     height: Platform.OS === "web" ? 40 : 52,
-    width: Platform.OS === "web" ? "18%" : "100%",
-    minWidth: 220,
+    width: Platform.OS === "web" ? undefined : "100%",
+    minWidth: Platform.OS === "web" ? 140 : undefined,
     maxWidth: "100%",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     backgroundColor: colors.white,
     paddingVertical: 10,
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   stickyBottomContainer: {

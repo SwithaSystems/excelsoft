@@ -59,8 +59,8 @@ const AdminProfile = () => {
     // "Edit Profile": containers.editProfileScreen,
     "Notification Settings": containers.adminNotificationSettingsScreen,
     "Store Information": containers.AdminStoreInformationScreen,
-    "Promotion Management": containers.customerSupportScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
+    "Promotion Management": containers.AdminPromotionScreen,
   };
 
   // Responsive components

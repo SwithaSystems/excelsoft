@@ -106,6 +106,7 @@ const routes = {
     "modules/admin/FileUploadAddProductCategory",
   AdminGlobalSettingsScreen: "modules/admin/AdminGlobalSettings",
   AdminProfileScreen: "modules/admin/AdminProfile",
+  AdminPromotionScreen: "modules/admin/AdminPromotion",
 
   // Category
   catagoryScreenScreen: "modules/catalog/Categories",
