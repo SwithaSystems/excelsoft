@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   scrollContent: {
-    padding: 16,
+    // padding: 16,
     paddingBottom: 32,
   },
   section: {
@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
   // Live Promotions
   horizontalList: {
     paddingRight: 16,
+    gap: 16,
   },
   livePromotionCard: {
     width: 280,

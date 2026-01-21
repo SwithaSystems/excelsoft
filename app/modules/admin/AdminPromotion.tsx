@@ -22,6 +22,7 @@ import colors from "../../../constants/colors";
 import styles from "./AdminPromotionStyles";
 import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
+import PromotionCard from "@/app/components/PromotionCard";
 
 interface Promotion {
   id: string;
@@ -32,11 +33,7 @@ interface Promotion {
 }
 
 const AdminPromotion = () => {
-  const [promotionImage, setPromotionImage] = useState<string | null>(null);
-  const [promotionTitle, setPromotionTitle] = useState("");
-  const [promotionUrl, setPromotionUrl] = useState("");
-  const [livePromotions, setLivePromotions] = useState<Promotion[]>([]);
-  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>([
+  const dummyPromotions: Promotion[] = [
     {
       id: "1",
       title: "Summer Savings Sale",
@@ -51,7 +48,17 @@ const AdminPromotion = () => {
       image: require("../../../assets/Placeholder.png"),
       isLive: false,
     },
-  ]);
+  ];
+
+  const [promotionImage, setPromotionImage] = useState<string | null>(null);
+  const [promotionTitle, setPromotionTitle] = useState("");
+  const [promotionUrl, setPromotionUrl] = useState("");
+  const [livePromotions, setLivePromotions] = useState<Promotion[]>(
+    dummyPromotions.map((p) => ({ ...p, isLive: true }))
+  );
+  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>(
+    dummyPromotions
+  );
 
   const isWeb = Platform.OS === "web";
 
@@ -156,7 +163,8 @@ const AdminPromotion = () => {
   };
 
   const handleEditPromotion = (promotion: Promotion) => {
-    setPromotionImage(promotion.image);
+    const imageValue = typeof promotion.image === "string" ? promotion.image : null;
+    setPromotionImage(imageValue);
     setPromotionTitle(promotion.title);
     setPromotionUrl(promotion.url);
     if (promotion.isLive) {
@@ -167,68 +175,35 @@ const AdminPromotion = () => {
   };
 
   const renderLivePromotionCard = ({ item }: { item: Promotion }) => (
-    <View style={styles.livePromotionCard}>
-      <Image
-        source={
-          typeof item.image === "string" ? { uri: item.image } : item.image
-        }
-        style={styles.promotionImage}
-        resizeMode="cover"
+    <View style={{ width: 280, marginRight: 16 }}>
+      <PromotionCard
+        image={item.image}
+        title={item.title}
+        url={item.url}
+        showTitle={false}
+        showLink={false}
+        showEditButton={true}
+        showDeleteButton={true}
+        deleteButtonText="Remove Live"
+        backgroundColor={colors.white}
+        onEdit={() => handleEditPromotion(item)}
+        onDelete={() => handleRemoveLive(item.id)}
       />
-      <View style={styles.promotionActions}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => handleEditPromotion(item)}
-        >
-          <Ionicons name="create-outline" size={18} color={colors.white} />
-          <Text style={styles.actionButtonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.removeButton]}
-          onPress={() => handleRemoveLive(item.id)}
-        >
-          <Ionicons name="pause-outline" size={18} color={colors.white} />
-          <Text style={styles.actionButtonText}>Remove Live</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 
   const renderSavedPromotionCard = ({ item }: { item: Promotion }) => (
-    <View style={styles.savedPromotionCard}>
-      <Image
-        source={
-          typeof item.image === "string" ? { uri: item.image } : item.image
-        }
-        style={styles.savedPromotionImage}
-        resizeMode="cover"
-      />
-      <View style={styles.savedPromotionDetails}>
-        <Text style={styles.savedPromotionTitle}>{item.title}</Text>
-        <View style={styles.urlContainer}>
-          <Ionicons name="link-outline" size={16} color={colors.primary} />
-          <Text style={styles.urlText} numberOfLines={1}>
-            {item.url}
-          </Text>
-        </View>
-        <View style={styles.savedPromotionActions}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.editButton]}
-            onPress={() => handleEditPromotion(item)}
-          >
-            <Ionicons name="create-outline" size={18} color={colors.white} />
-            <Text style={styles.actionButtonText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => handleDeleteSaved(item.id)}
-          >
-            <Ionicons name="trash-outline" size={18} color={colors.white} />
-            <Text style={styles.actionButtonText}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+    <PromotionCard
+      image={item.image}
+      title={item.title}
+      url={item.url}
+      showTitle={true}
+      showLink={true}
+      showEditButton={true}
+      showDeleteButton={true}
+      onEdit={() => handleEditPromotion(item)}
+      onDelete={() => handleDeleteSaved(item.id)}
+    />
   );
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
@@ -289,8 +264,9 @@ const AdminPromotion = () => {
             <CustomTextInput
               placeholder="e.g., Summer Sale Bonanza"
               value={promotionTitle}
-              onChangeText={setPromotionTitle}
+              setValue={setPromotionTitle}
               style={styles.textInput}
+              onPress={() => {}}
             />
           </View>
 
@@ -300,10 +276,10 @@ const AdminPromotion = () => {
             <CustomTextInput
               placeholder="https://your-promo.com/summer-sale"
               value={promotionUrl}
-              onChangeText={setPromotionUrl}
+              setValue={setPromotionUrl}
               style={styles.textInput}
               keyboardType="url"
-              autoCapitalize="none"
+              onPress={() => {}}
             />
           </View>
 
