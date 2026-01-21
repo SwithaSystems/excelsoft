@@ -11,6 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { format } from "date-fns";
 import Header from "../../components/Header";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -36,6 +38,14 @@ const EditPromotion = () => {
   const [promotionUrl, setPromotionUrl] = useState(
     promotionData?.url || ""
   );
+  const [startingDate, setStartingDate] = useState<string>(
+    promotionData?.startingDate || ""
+  );
+  const [endingDate, setEndingDate] = useState<string>(
+    promotionData?.endingDate || ""
+  );
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const isWeb = Platform.OS === "web";
 
@@ -112,6 +122,38 @@ const EditPromotion = () => {
         },
       ]
     );
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
+  const getMinEndDate = () => {
+    if (startingDate) {
+      const start = new Date(startingDate);
+      start.setDate(start.getDate() + 1);
+      return start;
+    }
+    return getTodayDate();
+  };
+
+  const formatDateForDisplay = (dateString: string) => {
+    if (!dateString) return "";
+    if (Platform.OS === "web") {
+      return dateString;
+    }
+    try {
+      const date = new Date(dateString);
+      return format(date, "dd/MM/yyyy");
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatDateForInput = (date: Date) => {
+    return format(date, "yyyy-MM-dd");
   };
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
@@ -197,6 +239,55 @@ const EditPromotion = () => {
           />
         </View>
 
+        {/* Date Range Selection */}
+        <View style={styles.dateRangeContainer}>
+          <View style={styles.dateInputWrapper}>
+            <Text style={styles.dateLabel}>Starting From</Text>
+            {Platform.OS === "web" ? (
+              <input
+                type="date"
+                style={styles.webDateInput}
+                value={startingDate}
+                onChange={(e) => setStartingDate(e.target.value)}
+                min={formatDateForInput(getTodayDate())}
+              />
+            ) : (
+              <TouchableOpacity
+                style={styles.dateInput}
+                onPress={() => setShowStartDatePicker(true)}
+              >
+                <Text style={styles.dateInputText}>
+                  {startingDate ? formatDateForDisplay(startingDate) : "Select date"}
+                </Text>
+                <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.dateInputWrapper}>
+            <Text style={styles.dateLabel}>Ending On</Text>
+            {Platform.OS === "web" ? (
+              <input
+                type="date"
+                style={styles.webDateInput}
+                value={endingDate}
+                onChange={(e) => setEndingDate(e.target.value)}
+                min={formatDateForInput(getMinEndDate())}
+              />
+            ) : (
+              <TouchableOpacity
+                style={styles.dateInput}
+                onPress={() => setShowEndDatePicker(true)}
+              >
+                <Text style={styles.dateInputText}>
+                  {endingDate ? formatDateForDisplay(endingDate) : "Select date"}
+                </Text>
+                <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -213,6 +304,41 @@ const EditPromotion = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Date Pickers for Mobile */}
+      {!isWeb && (
+        <>
+          <DateTimePickerModal
+            isVisible={showStartDatePicker}
+            mode="date"
+            onConfirm={(selectedDate) => {
+              setShowStartDatePicker(false);
+              setStartingDate(formatDateForInput(selectedDate));
+              // If ending date is before new start date, clear it
+              if (endingDate && new Date(endingDate) <= selectedDate) {
+                setEndingDate("");
+              }
+            }}
+            onCancel={() => setShowStartDatePicker(false)}
+            minimumDate={getTodayDate()}
+          />
+          <DateTimePickerModal
+            isVisible={showEndDatePicker}
+            mode="date"
+            onConfirm={(selectedDate) => {
+              setShowEndDatePicker(false);
+              const minDate = getMinEndDate();
+              if (selectedDate >= minDate) {
+                setEndingDate(formatDateForInput(selectedDate));
+              } else {
+                Alert.alert("Invalid Date", "Ending date must be after the starting date");
+              }
+            }}
+            onCancel={() => setShowEndDatePicker(false)}
+            minimumDate={getMinEndDate()}
+          />
+        </>
+      )}
     </LayoutComponent>
   );
 };

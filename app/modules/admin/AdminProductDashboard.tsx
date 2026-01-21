@@ -73,6 +73,11 @@ const AdminProductDashboard = () => {
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
+  // Bulk selection state (additive feature only)
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteModalVisible, setBulkDeleteModalVisible] = useState(false);
+
   const isWeb = Platform.OS === "web";
 
   const loadingMoreRef = useRef(false);
@@ -361,6 +366,102 @@ const AdminProductDashboard = () => {
     }
   };
 
+  // Bulk delete handler (additive feature only)
+  const performBulkDelete = async (productIds: string[]) => {
+    try {
+      setIsLoading(true);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const productId of productIds) {
+        try {
+          const result = await ProductsAPI.deleteProduct(productId);
+          if (result) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          errorCount++;
+        }
+      }
+
+      // Clear selection and refresh
+      setSelectedProductIds(new Set());
+      setIsSelectionMode(false);
+      await onRefresh();
+
+      if (isWeb) {
+        if (errorCount === 0) {
+          setSuccessModalVisible(true);
+        } else {
+          alert(`Deleted ${successCount} products. ${errorCount} failed.`);
+        }
+      } else {
+        if (errorCount === 0) {
+          Alert.alert("Success", `${successCount} product(s) deleted successfully`);
+        } else {
+          Alert.alert("Partial Success", `Deleted ${successCount} products. ${errorCount} failed.`);
+        }
+      }
+    } catch (error: any) {
+      const errorMessage = "Something went wrong while deleting products.";
+      if (isWeb) {
+        alert(errorMessage);
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setBulkDeleteModalVisible(false);
+    }
+  };
+
+  // Bulk selection handlers (additive feature only)
+  const handleToggleSelection = (productId: string) => {
+    setSelectedProductIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const allIds = new Set<string>();
+    productsListToShow.forEach((p: Product) => {
+      const id = p._id || p.id;
+      if (id) {
+        allIds.add(String(id));
+      }
+    });
+    setSelectedProductIds(allIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedProductIds(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedProductIds);
+    if (ids.length === 0) return;
+    
+    setBulkDeleteModalVisible(true);
+  };
+
+  const handleLongPressProduct = (item: Product) => {
+    if (!isWeb && !isSelectionMode) {
+      setIsSelectionMode(true);
+      const productId = item._id || item.id;
+      if (productId) {
+        setSelectedProductIds(new Set([String(productId)]));
+      }
+    }
+  };
+
   const handleDeleteProduct = useCallback(
     (item: Product) => {
       if (isWeb) {
@@ -407,13 +508,17 @@ const AdminProductDashboard = () => {
       };
 
       const badge = item.stock !== undefined ? getStockBadge(item.stock) : null;
+      const productId = String(item._id || item.id);
+      const isSelected = selectedProductIds.has(productId);
 
       return (
-        <View
+        <Pressable
+          onLongPress={() => handleLongPressProduct(item)}
           style={[
             styles.card,
             { minHeight: 120 },
             viewMode === "grid" && styles.gridCard,
+            isSelectionMode && isSelected && styles.selectedCard,
           ]}
         >
           <View
@@ -424,6 +529,20 @@ const AdminProductDashboard = () => {
               { marginTop: 12 },
             ]}
           >
+            {/* Checkbox for selection mode (additive feature only) */}
+            {(isSelectionMode || isWeb) && (
+              <TouchableOpacity
+                onPress={() => handleToggleSelection(productId)}
+                style={styles.checkboxContainer}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={isSelected ? "checkbox" : "checkbox-outline"}
+                  size={24}
+                  color={isSelected ? colors.primary : colors.placeholdergrey}
+                />
+              </TouchableOpacity>
+            )}
             <View>
               {item?.image[0] ? (
                 <Image source={{ uri: item?.image[0] }} style={styles.image} />
@@ -452,32 +571,35 @@ const AdminProductDashboard = () => {
                 >
                   {item.name}
                 </Text>
-                <View style={{ flexDirection: "row", gap: 4 }}>
-                  <TouchableOpacity
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() =>
-                      redirectToPage(containers.AdminProductUpdationScreen, {
-                        item: JSON.stringify(item),
-                      })
-                    }
-                  >
-                    <Ionicons
-                      name="create-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() => handleDeleteProduct(item)}
-                  >
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={colors.error}
-                    />
-                  </TouchableOpacity>
-                </View>
+                {/* Hide edit/delete buttons in selection mode on mobile */}
+                {(!isSelectionMode || isWeb) && (
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() =>
+                        redirectToPage(containers.AdminProductUpdationScreen, {
+                          item: JSON.stringify(item),
+                        })
+                      }
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() => handleDeleteProduct(item)}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={20}
+                        color={colors.error}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               <Text style={styles.text}>
                 Category:{" "}
@@ -523,10 +645,10 @@ const AdminProductDashboard = () => {
               </View>
             </View>
           </View>
-        </View>
+        </Pressable>
       );
     },
-    [categories, handleDeleteProduct, viewMode]
+    [categories, handleDeleteProduct, viewMode, isSelectionMode, selectedProductIds, isWeb]
   );
 
   const maxId = productsList.reduce((max: number, product: Product) => {
@@ -753,6 +875,68 @@ const AdminProductDashboard = () => {
           </View>
         </View>
 
+        {/* Mobile: Selection bar (additive feature only) */}
+        {!isWeb && isSelectionMode && (
+          <View style={styles.selectionBar}>
+            <TouchableOpacity
+              onPress={
+                selectedProductIds.size === productsListToShow.length
+                  ? handleDeselectAll
+                  : handleSelectAll
+              }
+              style={styles.selectionBarButton}
+            >
+              <Text style={styles.selectionBarButtonText}>
+                {selectedProductIds.size === productsListToShow.length
+                  ? "Deselect All"
+                  : "Select All"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.selectionBarText}>
+              {selectedProductIds.size} product{selectedProductIds.size !== 1 ? "s" : ""} selected
+            </Text>
+            <TouchableOpacity
+              onPress={handleBulkDelete}
+              style={styles.selectionBarButton}
+              disabled={selectedProductIds.size === 0}
+            >
+              <Text
+                style={[
+                  styles.selectionBarButtonText,
+                  selectedProductIds.size === 0 && styles.selectionBarButtonTextDisabled,
+                ]}
+              >
+                {selectedProductIds.size === 0 ? "Delete" : "Delete Selected"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsSelectionMode(false);
+                setSelectedProductIds(new Set());
+              }}
+              style={styles.selectionBarButton}
+            >
+              <Ionicons name="close" size={20} color={colors.black} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Web: Bulk action bar (additive feature only) */}
+        {isWeb && selectedProductIds.size > 0 && (
+          <View style={styles.bulkActionBar}>
+            <Text style={styles.bulkActionBarText}>
+              {selectedProductIds.size} selected
+            </Text>
+            <TouchableOpacity
+              onPress={handleBulkDelete}
+              style={styles.bulkDeleteButton}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.white} />
+              <Text style={styles.bulkDeleteButtonText}>Delete Selected</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={{ marginTop: 8, flex: 1 }}>
           <FlatList
             data={productsListToShow}
@@ -881,6 +1065,23 @@ const AdminProductDashboard = () => {
         text="Product deleted successfully"
         submitText="OK"
         cancelText=""
+      />
+      <ConfirmationModal
+        isModalVisible={bulkDeleteModalVisible}
+        onClose={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleCancel={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleSubmit={() => {
+          const ids = Array.from(selectedProductIds);
+          performBulkDelete(ids);
+        }}
+        title="Delete Products"
+        text={`Are you sure you want to delete ${selectedProductIds.size} product(s)?`}
+        submitText="Delete"
+        cancelText="Cancel"
       />
     </LayoutComponent>
   );

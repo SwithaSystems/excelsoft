@@ -298,6 +298,75 @@ const styles = StyleSheet.create({
     maxHeight: "70%",
     paddingVertical: 8,
   },
+
+  // Bulk selection styles (additive feature only)
+  selectedCard: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  checkboxContainer: {
+    marginRight: 12,
+    padding: 4,
+  },
+  selectionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.white,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.placeholdergrey,
+    marginBottom: 8,
+  },
+  selectionBarButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  selectionBarButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  selectionBarButtonTextDisabled: {
+    color: colors.secondaryText,
+  },
+  selectionBarText: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.black,
+  },
+  bulkActionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.secondary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  bulkActionBarText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.black,
+  },
+  bulkDeleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.error,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  bulkDeleteButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   
 });
 

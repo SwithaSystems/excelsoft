@@ -91,6 +91,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  // Date Range Selection
+  dateRangeContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  dateInputWrapper: {
+    flex: 1,
+  },
+  dateLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.black,
+    marginBottom: 8,
+  },
+  dateInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    minHeight: 48,
+  },
+  dateInputText: {
+    fontSize: 16,
+    color: colors.black,
+    flex: 1,
+  },
+  webDateInput: {
+    width: "100%",
+    height: 48,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: colors.white,
+  },
   // Live Promotions
   horizontalList: {
     paddingRight: 16,
