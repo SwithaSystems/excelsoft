@@ -71,6 +71,8 @@ const AdminProductDashboard = () => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
   const isWeb = Platform.OS === "web";
 
   const loadingMoreRef = useRef(false);
@@ -165,25 +167,16 @@ const AdminProductDashboard = () => {
 
   useEffect(() => {
     const performSearch = async () => {
-      if (!debouncedQuery || debouncedQuery.length < 2) {
+      if (!debouncedQuery.trim()) {
         setSuggestions([]);
-        if (debouncedQuery.length === 0) {
-          loadInitialData();
-        }
+        loadInitialData();
         return;
       }
 
-      const API_URL = process.env.EXPO_PUBLIC_API_URL;
       try {
-        const response = await axios.get(
-          `${API_URL}/products/suggestions/search?q=${debouncedQuery}`
-        );
-        const results = response.data;
-        const uniqueResults = [...new Set(results)].slice(0, 6);
-        setSuggestions(uniqueResults as string[]);
+        await searchProductsByName(debouncedQuery.trim());
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        setSuggestions([]);
+        console.error("Search failed:", error);
       }
     };
 
@@ -644,7 +637,11 @@ const AdminProductDashboard = () => {
             </Text>
           )}
           <TouchableOpacity
-            style={[styles.addButton, !isWeb && styles.addButtonMobile]}
+            style={[
+              styles.addButton,
+              isWeb && styles.addButtonWebSmall,
+              !isWeb && styles.addButtonMobile
+            ]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
                 newProduct: true,
@@ -653,7 +650,7 @@ const AdminProductDashboard = () => {
               });
             }}
           >
-            <Text style={styles.addButtonText}>+ Add New Product</Text>
+            <Text style={[styles.addButtonText, isWeb && styles.addButtonTextWebSmall]}>+ Add New Product</Text>
           </TouchableOpacity>
         </View>
 
@@ -661,16 +658,33 @@ const AdminProductDashboard = () => {
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
               {isWeb && (
-                <SearchBar
-                  placeholder="Search by name..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                  onPress={handleSearch}
-                  widthPercent={35}
-                  height={40}
-                />
+             <>
+                  <SearchBar
+                    placeholder="Search by name..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearch}
+                    onPress={handleSearch}
+                    widthPercent={35}
+                    height={40}
+                  />
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      setViewMode(viewMode === "list" ? "grid" : "list")
+                    }
+                    style={styles.viewToggleIcon}
+                  >
+                    <Ionicons
+                      name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                      size={22}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+              </>
+         
               )}
+
               <View style={styles.categoryContainer}>
                 <TouchableOpacity
                   onPress={() => setIsCategoryOpen((prev) => !prev)}
@@ -739,6 +753,11 @@ const AdminProductDashboard = () => {
             data={productsListToShow}
             renderItem={ProductCard}
             keyExtractor={getUniqueKey}
+            key={isWeb ? viewMode : "list"}
+            numColumns={isWeb && viewMode === "grid" ? 3 : 1}
+            columnWrapperStyle={
+              isWeb && viewMode === "grid" ? { gap: 12 } : undefined
+            }
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={

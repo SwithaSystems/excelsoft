@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import {  Pressable } from "react-native";
 
 interface SearchBarProps {
   placeholder: string;
@@ -97,11 +98,19 @@ const SearchBar = ({
       paddingVertical: isMobileWidth ? 8 : 6,
       minWidth:0,
       // Only on desktop/tablet: remove default web outline to avoid half-box
-      ...(isMobileWidth
-        ? {}
-        : ({ outlineWidth: 0, outlineColor: 'transparent', borderWidth: 0 } as any)),
-    },
-  ];
+      ...(isWeb && !isMobileWidth
+      ? ({
+          outlineStyle: "none",
+          outlineWidth: 0,
+          outlineColor: "transparent",
+          boxShadow: "none",
+          borderWidth: 0,
+        } as any)
+      : {}),
+  },
+];
+
+  const showClear = value && value.length > 0;
 
   return (
     <View 
@@ -111,29 +120,51 @@ const SearchBar = ({
       onLayout={!isMobileWidth && onLayout ? onLayout : undefined}
     >
       <TextInput
-        style={inputStyle}
-        placeholder={placeholder}
-        placeholderTextColor={colors.placeholdergrey}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        value={value}
-        onChangeText={onChangeText}
-        onSubmitEditing={onSubmitEditing}
-        onKeyPress={(e) => {
-          if (e.nativeEvent.key === "Enter") onSubmitEditing();
-        }}
-      />
-      <Touchable 
-        onPress={onPress}   
-        style={styles.iconWrapper}
-        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-      >
-        <Ionicons
+          style={inputStyle}
+          placeholder={placeholder}
+          placeholderTextColor={colors.placeholdergrey}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          value={value}
+          onChangeText={onChangeText}
+          onSubmitEditing={onSubmitEditing}
+          onKeyPress={(e) => {
+            if (e.nativeEvent.key === "Enter") onSubmitEditing();
+          }}
+        />
+
+        {showClear ? (
+          <Pressable
+            onPress={() => onChangeText("")}
+            hitSlop={12}
+            style={styles.clearIconWrapper}
+          >
+            <Ionicons
+              name="close-circle"
+              size={isMobileWidth ? 18 : 22}
+              color={colors.slateGrey}
+            />
+          </Pressable>
+        ) : (
+          <Touchable 
+            onPress={onPress}   
+            style={styles.iconWrapper}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons
+              name="search"
+              size={isMobileWidth ? 18 : 24}
+              color={colors.primary}
+            />
+          </Touchable>
+        )}
+
+        {/* <Ionicons
           name="search"
           size={isMobileWidth ? 18 : 24}
           color={colors.primary}
         />
-      </Touchable>
+      </Touchable> */}
     </View>
   );
 }; 
@@ -168,5 +199,14 @@ iconWrapper: {
   alignItems: "center",
   flexShrink: 0,
   flexGrow: 0,
-}
+},
+clearIconWrapper: {
+  paddingLeft: 10,
+  paddingRight: 6,
+  minWidth: 40,
+  alignSelf: "stretch",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
 });

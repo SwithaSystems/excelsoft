@@ -113,6 +113,30 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  addButtonWebSmall: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+
+  addButtonTextWebSmall: {
+    fontSize: 13,
+  },
+
+  searchAndToggleWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchWithToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  viewToggleIcon: {
+
+    padding: 4,
+  },
+
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
