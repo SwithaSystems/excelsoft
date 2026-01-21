@@ -23,6 +23,8 @@ import styles from "./AdminPromotionStyles";
 import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import PromotionCard from "@/app/components/PromotionCard";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 interface Promotion {
   id: string;
@@ -163,15 +165,9 @@ const AdminPromotion = () => {
   };
 
   const handleEditPromotion = (promotion: Promotion) => {
-    const imageValue = typeof promotion.image === "string" ? promotion.image : null;
-    setPromotionImage(imageValue);
-    setPromotionTitle(promotion.title);
-    setPromotionUrl(promotion.url);
-    if (promotion.isLive) {
-      setLivePromotions(livePromotions.filter((p) => p.id !== promotion.id));
-    } else {
-      setSavedPromotions(savedPromotions.filter((p) => p.id !== promotion.id));
-    }
+    redirectToPage(containers.EditPromotionScreen, {
+      promotion: JSON.stringify(promotion),
+    });
   };
 
   const renderLivePromotionCard = ({ item }: { item: Promotion }) => (
@@ -341,4 +337,3 @@ const AdminPromotion = () => {
 };
 
 export default AdminPromotion;
-
