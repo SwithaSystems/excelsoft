@@ -313,30 +313,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: colors.white,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.placeholdergrey,
+    // paddingVertical: 12,
+    // paddingHorizontal: 16,
     marginBottom: 8,
   },
+  selectionBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 8,
+  },
+  selectionBarRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  checkboxButton: {
+    // padding: 4,
+  },
   selectionBarButton: {
+    // paddingHorizontal: 12,
+    // paddingVertical: 6,
+  },
+  deleteButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  deleteButtonActive: {
     paddingHorizontal: 12,
     paddingVertical: 6,
+    borderRadius: 6,
   },
   selectionBarButtonText: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.primary,
   },
+  deleteButtonTextActive: {
+    color: colors.primary,
+  },
   selectionBarButtonTextDisabled: {
     color: colors.secondaryText,
   },
-  selectionBarText: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 14,
+  selectionBarCount: {
+    fontSize: 10,
     fontWeight: "500",
     color: colors.black,
+    // marginLeft: 4,
   },
   bulkActionBar: {
     flexDirection: "row",
@@ -348,6 +372,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
   },
+  bulkActionBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  bulkSelectAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  bulkSelectAllText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
+  },
   bulkActionBarText: {
     fontSize: 14,
     fontWeight: "500",
@@ -357,7 +398,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: colors.error,
+    backgroundColor: colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,

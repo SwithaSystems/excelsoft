@@ -878,55 +878,115 @@ const AdminProductDashboard = () => {
         {/* Mobile: Selection bar (additive feature only) */}
         {!isWeb && isSelectionMode && (
           <View style={styles.selectionBar}>
-            <TouchableOpacity
-              onPress={
-                selectedProductIds.size === productsListToShow.length
-                  ? handleDeselectAll
-                  : handleSelectAll
-              }
-              style={styles.selectionBarButton}
-            >
-              <Text style={styles.selectionBarButtonText}>
-                {selectedProductIds.size === productsListToShow.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </Text>
-            </TouchableOpacity>
-            <Text style={styles.selectionBarText}>
-              {selectedProductIds.size} product{selectedProductIds.size !== 1 ? "s" : ""} selected
-            </Text>
-            <TouchableOpacity
-              onPress={handleBulkDelete}
-              style={styles.selectionBarButton}
-              disabled={selectedProductIds.size === 0}
-            >
-              <Text
-                style={[
-                  styles.selectionBarButtonText,
-                  selectedProductIds.size === 0 && styles.selectionBarButtonTextDisabled,
-                ]}
+            <View style={styles.selectionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.checkboxButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                {selectedProductIds.size === 0 ? "Delete" : "Delete Selected"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setIsSelectionMode(false);
-                setSelectedProductIds(new Set());
-              }}
-              style={styles.selectionBarButton}
-            >
-              <Ionicons name="close" size={20} color={colors.black} />
-            </TouchableOpacity>
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={24}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.selectionBarButton}
+              >
+                <Text style={styles.selectionBarButtonText}>Select All</Text>
+              </TouchableOpacity>
+              {selectedProductIds.size > 0 && (
+                <Text style={styles.selectionBarCount}>
+                  ({selectedProductIds.size} product{selectedProductIds.size !== 1 ? "s" : ""} selected)
+                </Text>
+              )}
+            </View>
+            <View style={styles.selectionBarRight}>
+              <TouchableOpacity
+                onPress={handleBulkDelete}
+                style={[
+                  styles.selectionBarButton,
+                  // styles.deleteButtonContainer,
+                  selectedProductIds.size > 0
+                ]}
+                disabled={selectedProductIds.size === 0}
+              >
+                {/* <Ionicons 
+                  name="trash-outline" 
+                  size={18} 
+                  color={selectedProductIds.size === 0 ? colors.secondaryText : colors.white} 
+                /> */}
+                <Text
+                  style={[
+                    styles.selectionBarButtonText,
+                    selectedProductIds.size === 0 && styles.selectionBarButtonTextDisabled,
+                    selectedProductIds.size > 0 && styles.deleteButtonTextActive,
+                  ]}
+                >
+                  {selectedProductIds.size === 0 ? "Delete" : "Delete Selected"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsSelectionMode(false);
+                  setSelectedProductIds(new Set());
+                }}
+                style={styles.selectionBarButton}
+              >
+                <Ionicons name="close" size={20} color={colors.black} />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
         {/* Web: Bulk action bar (additive feature only) */}
         {isWeb && selectedProductIds.size > 0 && (
           <View style={styles.bulkActionBar}>
-            <Text style={styles.bulkActionBarText}>
-              {selectedProductIds.size} selected
-            </Text>
+            <View style={styles.bulkActionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.bulkSelectAllButton}
+              >
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={20}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+                <Text style={styles.bulkSelectAllText}>Select All</Text>
+              </TouchableOpacity>
+              <Text style={styles.bulkActionBarText}>
+                ({selectedProductIds.size} selected)
+              </Text>
+            </View>
             <TouchableOpacity
               onPress={handleBulkDelete}
               style={styles.bulkDeleteButton}
