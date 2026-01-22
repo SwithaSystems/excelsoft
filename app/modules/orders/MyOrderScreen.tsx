@@ -108,7 +108,7 @@ const myOrderScreen = () => {
 
         setOrdersWithProducts(ordersWithProductImages);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("[MyOrderScreen] Error fetching orders:", error);
       console.error("[MyOrderScreen] Error details:", {
         message: error?.message,

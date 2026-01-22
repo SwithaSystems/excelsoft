@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,13 @@ import {
   Image,
   Alert,
   Platform,
+  FlatList,
+  Modal,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+  ImageStyle,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -21,8 +28,13 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import colors from "../../../constants/colors";
 import styles from "./EditPromotionStyles";
+import { globalStyles } from "@/assets/styles/globalStyles";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import Button from "@/app/components/commonComponents/Button";
+import { Product, ProductsAPI } from "@/services/productService";
+import SearchBar from "@/app/components/searchBar";
+import { categoryService } from "@/services/categoryService";
+import useDebounce from "@/utilities/customHooks/useDebounce";
 
 const EditPromotion = () => {
   const router = useRouter();
@@ -46,8 +58,112 @@ const EditPromotion = () => {
   );
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [attachedProducts, setAttachedProducts] = useState<Product[]>(
+    promotionData?.attachedProducts || []
+  );
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [productDisplayMode, setProductDisplayMode] = useState<"category" | "product">("product");
+  const [selectedCategory, setSelectedCategory] = useState<string | number>("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [allCategories, setAllCategories] = useState<any[]>([]);
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const debouncedProductQuery = useDebounce(productSearchQuery, 300);
 
   const isWeb = Platform.OS === "web";
+
+  const fetchAvailableProducts = useCallback(async () => {
+    try {
+      setIsLoadingProducts(true);
+      const response = await ProductsAPI.getAllProducts(1, 100);
+      setAvailableProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      Alert.alert("Error", "Failed to load products");
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  }, []);
+
+  const searchProductsByName = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      fetchAvailableProducts();
+      return;
+    }
+    try {
+      setIsLoadingProducts(true);
+      const response = await ProductsAPI.productsBy_Name_Id(query.trim());
+      if (response) {
+        setAvailableProducts(response);
+      }
+    } catch (error) {
+      console.error("Error searching products:", error);
+      Alert.alert("Error", "Failed to search products");
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  }, [fetchAvailableProducts]);
+
+  useEffect(() => {
+    if (showProductModal) {
+      searchProductsByName(debouncedProductQuery);
+    }
+  }, [debouncedProductQuery, showProductModal, searchProductsByName]);
+
+  const handleSelectProducts = useCallback(() => {
+    setShowProductModal(true);
+    setProductSearchQuery("");
+    if (availableProducts.length === 0) {
+      fetchAvailableProducts();
+    }
+  }, [availableProducts.length, fetchAvailableProducts]);
+
+  const handleProductSearch = useCallback(async () => {
+    await searchProductsByName(productSearchQuery);
+  }, [productSearchQuery, searchProductsByName]);
+
+  const renderCategoryItems = () => (
+    <>
+      {allCategories.map((cat: any) => (
+        <TouchableOpacity
+          key={cat.id || cat._id}
+          style={styles.dropdownItem as ViewStyle}
+          onPress={() => {
+            setSelectedCategory(cat.id || cat._id);
+            setIsCategoryOpen(false);
+          }}
+        >
+          <Text style={styles.dropdownItemText as TextStyle}>{cat.name}</Text>
+        </TouchableOpacity>
+      ))}
+    </>
+  );
+
+  const handleAddProduct = useCallback((product: Product) => {
+    setAttachedProducts((prev) => {
+      const exists = prev.some((p) => (p._id || p.id) === (product._id || product.id));
+      if (exists) return prev;
+      return [...prev, product];
+    });
+  }, []);
+
+  const handleRemoveProduct = useCallback((productId: string) => {
+    setAttachedProducts((prev) =>
+      prev.filter((p) => (p._id || p.id) !== productId)
+    );
+  }, []);
+
+  const handleToggleProductAttachment = useCallback((product: Product) => {
+    const isAttached = attachedProducts.some(
+      (p) => (p._id || p.id) === (product._id || product.id)
+    );
+    if (isAttached) {
+      handleRemoveProduct(String(product._id || product.id));
+    } else {
+      handleAddProduct(product);
+    }
+  }, [attachedProducts, handleAddProduct, handleRemoveProduct]);
 
   const openImagePicker = useCallback(async () => {
     try {
@@ -176,27 +292,27 @@ const EditPromotion = () => {
       hideNavItems={true}
     >
       <ScrollView
-        style={styles.container}
+        style={styles.container as ViewStyle}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={styles.scrollContent as ViewStyle}
       >
         {/* Promotion Image */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Promotion Image</Text>
+        <View style={styles.section as ViewStyle}>
+          <Text style={styles.sectionTitle as TextStyle}>Promotion Image</Text>
           {promotionImage ? (
-            <View style={styles.imagePreviewContainer}>
+            <View style={styles.imagePreviewContainer as ViewStyle}>
               <Image
                 source={
                   typeof promotionImage === "string"
                     ? { uri: promotionImage }
                     : promotionImage
                 }
-                style={styles.imagePreview}
+                style={styles.imagePreview as ImageStyle}
                 resizeMode="cover"
               />
             </View>
           ) : (
-            <View style={styles.imagePlaceholder}>
+            <View style={styles.imagePlaceholder as ViewStyle}>
               <Ionicons
                 name="image-outline"
                 size={48}
@@ -205,102 +321,263 @@ const EditPromotion = () => {
             </View>
           )}
           <TouchableOpacity
-            style={styles.uploadButton}
+            style={styles.uploadButton as ViewStyle}
             onPress={openImagePicker}
             activeOpacity={0.7}
           >
             <Ionicons name="cloud-upload-outline" size={20} color={colors.white} />
-            <Text style={styles.uploadButtonText}>Upload Image</Text>
+            <Text style={styles.uploadButtonText as TextStyle}>Upload Image</Text>
           </TouchableOpacity>
         </View>
 
         {/* Title Input */}
-        <View style={styles.section}>
-          <Text style={styles.inputLabel}>Add Promotional Slide Title</Text>
+        <View style={styles.section as ViewStyle}>
+          <Text style={styles.inputLabel as TextStyle}>Add Promotional Slide Title</Text>
           <CustomTextInput
             placeholder="Enter Promotional Slide title"
             value={promotionTitle}
             setValue={setPromotionTitle}
-            style={styles.textInput}
+            style={styles.textInput as ViewStyle}
             onPress={() => {}}
           />
         </View>
 
         {/* URL Input */}
-        <View style={styles.section}>
-          <Text style={styles.inputLabel}>Enter Promotional URL</Text>
+        <View style={styles.section as ViewStyle}>
+          <Text style={styles.inputLabel as TextStyle}>Enter Promotional URL</Text>
           <CustomTextInput
             placeholder="Enter your promotional url"
             value={promotionUrl}
             setValue={setPromotionUrl}
-            style={styles.textInput}
+            style={styles.textInput as ViewStyle}
             keyboardType="url"
             onPress={() => {}}
           />
         </View>
 
-        {/* Date Range Selection */}
-        <View style={styles.dateRangeContainer}>
-          <View style={styles.dateInputWrapper}>
-            <Text style={styles.dateLabel}>Starting From</Text>
-            {Platform.OS === "web" ? (
-              <input
-                type="date"
-                style={styles.webDateInput}
-                value={startingDate}
-                onChange={(e) => setStartingDate(e.target.value)}
-                min={formatDateForInput(getTodayDate())}
+        {/* Product Display Mode Selection */}
+        <View style={styles.productDisplayModeSection as ViewStyle}>
+          <Text style={styles.productDisplayModeTitle as TextStyle}>
+            How do you want to display the products?
+          </Text>
+          <View style={styles.radioButtonContainer as ViewStyle}>
+            <TouchableOpacity
+              style={styles.radioButtonRow as ViewStyle}
+              onPress={() => setProductDisplayMode("category")}
+            >
+              <Ionicons
+                name={productDisplayMode === "category" ? "radio-button-on" : "radio-button-off"}
+                size={24}
+                color={productDisplayMode === "category" ? colors.primary : colors.placeholdergrey}
               />
-            ) : (
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => setShowStartDatePicker(true)}
-              >
-                <Text style={styles.dateInputText}>
-                  {startingDate ? formatDateForDisplay(startingDate) : "Select date"}
-                </Text>
-                <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.dateInputWrapper}>
-            <Text style={styles.dateLabel}>Ending On</Text>
-            {Platform.OS === "web" ? (
-              <input
-                type="date"
-                style={styles.webDateInput}
-                value={endingDate}
-                onChange={(e) => setEndingDate(e.target.value)}
-                min={formatDateForInput(getMinEndDate())}
+              <Text style={styles.radioButtonLabel as TextStyle}>Choose Category</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.radioButtonRow as ViewStyle}
+              onPress={() => setProductDisplayMode("product")}
+            >
+              <Ionicons
+                name={productDisplayMode === "product" ? "radio-button-on" : "radio-button-off"}
+                size={24}
+                color={productDisplayMode === "product" ? colors.primary : colors.placeholdergrey}
               />
-            ) : (
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => setShowEndDatePicker(true)}
-              >
-                <Text style={styles.dateInputText}>
-                  {endingDate ? formatDateForDisplay(endingDate) : "Select date"}
-                </Text>
-                <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            )}
+              <Text style={styles.radioButtonLabel as TextStyle}>Select Product</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
+        {/* Choose Category Section */}
+        {productDisplayMode === "category" && (
+          <View style={styles.categorySelectionSection as ViewStyle}>
+            <Text style={styles.categorySelectionTitle as TextStyle}>Choose Category</Text>
+            <View style={styles.categoryContainer as ViewStyle}>
+              <TouchableOpacity
+                onPress={() => setIsCategoryOpen((prev) => !prev)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.categorySelector as ViewStyle}>
+                  <Text
+                    style={[
+                      styles.categoryText as TextStyle,
+                      {
+                        color:
+                          selectedCategory && selectedCategory !== ""
+                            ? colors.black
+                            : colors.slateGrey,
+                      },
+                    ]}
+                    >
+                      {selectedCategory && selectedCategory !== ""
+                        ? allCategories.find((c: any) => (c.id || c._id) == selectedCategory)?.name || "Select Category"
+                        : "Select Category"}
+                    </Text>
+                  <Ionicons
+                    name={isCategoryOpen ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color={colors.black}
+                  />
+                </View>
+              </TouchableOpacity>
+              {isCategoryOpen && (
+                isWeb ? (
+                  // ===== WEB: inline dropdown =====
+                  <View style={styles.dropdownList as ViewStyle}>
+                    <ScrollView style={styles.dropdownScrollArea as ViewStyle}>
+                      {renderCategoryItems()}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  // ===== MOBILE: modal dropdown =====
+                  Platform.OS !== "web" && (
+                    <Modal
+                      transparent
+                      animationType="fade"
+                      onRequestClose={() => setIsCategoryOpen(false)}
+                    >
+                      <Pressable
+                        style={styles.modalOverlay as ViewStyle}
+                        onPress={() => setIsCategoryOpen(false)}
+                      >
+                        <View style={styles.modalDropdown as ViewStyle}>
+                          <ScrollView>
+                            {renderCategoryItems()}
+                          </ScrollView>
+                        </View>
+                      </Pressable>
+                    </Modal>
+                  )
+                )
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Attach Products Section */}
+        {productDisplayMode === "product" && (
+          <View style={styles.attachProductsSection as ViewStyle}>
+          <View style={styles.attachProductsHeader as ViewStyle}>
+            <View style={styles.attachProductsTitleContainer as ViewStyle}>
+              <Text style={styles.attachProductsTitle as TextStyle}>
+                Attach Products to this Promotion
+              </Text>
+              <Text style={styles.attachProductsSubtitle as TextStyle}>
+                (Optional) Link items to display below the banner
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.selectProductsButton as ViewStyle}
+              onPress={handleSelectProducts}
+            >
+              <Ionicons name="add" size={20} color={colors.primary} />
+              <Text style={styles.selectProductsButtonText as TextStyle}>Select Products</Text>
+            </TouchableOpacity>
+          </View>
+
+          {attachedProducts.length > 0 && (
+            <View style={styles.attachedProductsList as ViewStyle}>
+              {attachedProducts.map((product) => {
+                const productId = String(product._id || product.id);
+                const productImage = product.image?.[0] || product.image;
+                return (
+                  <View key={productId} style={styles.attachedProductCard as ViewStyle}>
+                    <Image
+                      source={
+                        typeof productImage === "string"
+                          ? { uri: productImage }
+                          : productImage || require("../../../assets/Placeholder.png")
+                      }
+                      style={styles.attachedProductImage as ImageStyle}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.attachedProductInfo as ViewStyle}>
+                      <Text style={styles.attachedProductName as TextStyle} numberOfLines={1}>
+                        {product.name}
+                      </Text>
+                      <Text style={styles.attachedProductSku as TextStyle}>
+                        SKU: {product.id || product._id || "N/A"}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.removeProductButton as ViewStyle}
+                      onPress={() => handleRemoveProduct(productId)}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons name="close" size={20} color={colors.black} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+        )}
+
+        {/* Date Range Selection */}
+        <View style={styles.dateRangeContainer as ViewStyle}>
+                  <View style={styles.dateInputWrapper as ViewStyle}>
+                    <Text style={styles.dateLabel as TextStyle}>Starting From</Text>
+                    {Platform.OS === "web" ? (
+                      <input
+                        type="date"
+                        style={globalStyles.webDateInput}
+                        value={startingDate}
+                        onChange={(e) => setStartingDate(e.target.value)}
+                        min={formatDateForInput(getTodayDate())}
+                      />
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.dateInput as ViewStyle}
+                        onPress={() => setShowStartDatePicker(true)}
+                      >
+                        <Text style={styles.dateInputText as TextStyle}>
+                          {startingDate ? formatDateForDisplay(startingDate) : "Select date"}
+                        </Text>
+                        <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
+                  {Platform.OS === "web" && (
+                    <Text style={styles.dateToLabel as TextStyle}>to</Text>
+                  )}
+
+                  <View style={styles.dateInputWrapper as ViewStyle}>
+                    <Text style={styles.dateLabel as TextStyle}>Ending On</Text>
+                    {Platform.OS === "web" ? (
+                      <input
+                        type="date"
+                        style={globalStyles.webDateInput}
+                        value={endingDate}
+                        onChange={(e) => setEndingDate(e.target.value)}
+                        min={formatDateForInput(getMinEndDate())}
+                      />
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.dateInput as ViewStyle}
+                        onPress={() => setShowEndDatePicker(true)}
+                      >
+                        <Text style={styles.dateInputText as TextStyle}>
+                          {endingDate ? formatDateForDisplay(endingDate) : "Select date"}
+                        </Text>
+                        <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+
         {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer as ViewStyle}>
           <TouchableOpacity
-            style={styles.saveButton}
+            style={styles.saveButton as ViewStyle}
             onPress={handleSavePromotion}
           >
-            <Text style={styles.saveButtonText}>Save Promotion</Text>
+            <Text style={styles.saveButtonText as TextStyle}>Save Promotion</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.deleteButton}
+            style={styles.deleteButton as ViewStyle}
             onPress={handleDeletePromotion}
           >
-            <Text style={styles.deleteButtonText}>Delete Promotion</Text>
+            <Text style={styles.deleteButtonText as TextStyle}>Delete Promotion</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -339,6 +616,107 @@ const EditPromotion = () => {
           />
         </>
       )}
+
+      {/* Product Selection Modal */}
+      <Modal
+        visible={showProductModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowProductModal(false)}
+      >
+        <View style={styles.modalOverlay as ViewStyle}>
+          <View style={styles.modalContent as ViewStyle}>
+            <View style={styles.modalHeader as ViewStyle}>
+              <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
+              <TouchableOpacity
+                onPress={() => setShowProductModal(false)}
+                style={styles.modalCloseButton as ViewStyle}
+              >
+                <Ionicons name="close" size={24} color={colors.black} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.modalSearchContainer as ViewStyle}>
+              <SearchBar
+                placeholder="Search by name..."
+                value={productSearchQuery}
+                onChangeText={setProductSearchQuery}
+                onSubmitEditing={handleProductSearch}
+                onPress={handleProductSearch}
+              />
+            </View>
+            {isLoadingProducts ? (
+              <View style={styles.modalLoadingContainer as ViewStyle}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={{ marginTop: 12 }}>Loading products...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={[...availableProducts].sort((a, b) => {
+                  const aIsAttached = attachedProducts.some(
+                    (p) => (p._id || p.id) === (a._id || a.id)
+                  );
+                  const bIsAttached = attachedProducts.some(
+                    (p) => (p._id || p.id) === (b._id || b.id)
+                  );
+                  if (aIsAttached && !bIsAttached) return -1;
+                  if (!aIsAttached && bIsAttached) return 1;
+                  return 0;
+                })}
+                keyExtractor={(item) => String(item._id || item.id)}
+                renderItem={({ item }) => {
+                  const isAttached = attachedProducts.some(
+                    (p) => (p._id || p.id) === (item._id || item.id)
+                  );
+                  const productImage = item.image?.[0] || item.image;
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.productModalItem as ViewStyle,
+                        isAttached && (styles.productModalItemSelected as ViewStyle),
+                      ]}
+                      onPress={() => handleToggleProductAttachment(item)}
+                    >
+                      <Image
+                        source={
+                          typeof productImage === "string"
+                            ? { uri: productImage }
+                            : productImage || require("../../../assets/Placeholder.png")
+                        }
+                        style={styles.productModalImage as ImageStyle}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.productModalInfo as ViewStyle}>
+                        <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <Text style={styles.productModalSku as TextStyle}>
+                          SKU: {item.id || item._id || "N/A"}
+                        </Text>
+                      </View>
+                      {isAttached && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+                style={styles.modalList as ViewStyle}
+              />
+            )}
+            <View style={styles.modalFooter as ViewStyle}>
+              <TouchableOpacity
+                style={styles.modalDoneButton as ViewStyle}
+                onPress={() => setShowProductModal(false)}
+              >
+                <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </LayoutComponent>
   );
 };
