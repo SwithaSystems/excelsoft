@@ -73,6 +73,9 @@ const EditPromotion = () => {
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const debouncedProductQuery = useDebounce(productSearchQuery, 300);
+  const [isOnLive, setIsOnLive] = useState<boolean>(
+    isNewPromotion ? false : (promotionData?.isLive || false)
+  );
 
   const isWeb = Platform.OS === "web";
 
@@ -361,22 +364,57 @@ const EditPromotion = () => {
         return;
       }
 
-      // Update existing promotion
+      if (isOnLive) {
+        // If "On Live" is checked, update/create via API (makes it live, appears in carousel)
       if (promotionData?._id) {
+          // Update existing live promotion
         await promotionService.updatePromotion(promotionData._id, {
           title: promotionTitle,
           link: promotionUrl,
           isInternalLink: isInternalLink,
           image: imageFile,
         });
-        Alert.alert("Success", "Promotion updated successfully", [
+          Alert.alert("Success", "Promotion updated and is live!", [
           {
             text: "OK",
             onPress: () => router.back(),
           },
         ]);
       } else {
-        Alert.alert("Error", "Promotion ID not found");
+          // Create new live promotion
+          await promotionService.createPromotion({
+            title: promotionTitle,
+            link: promotionUrl,
+            isInternalLink: isInternalLink,
+            image: imageFile,
+          });
+          Alert.alert("Success", "Promotion is now live!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        }
+      } else {
+        // If "On Live" is not checked, save locally (doesn't appear in carousel)
+        const updatedPromotion = {
+          id: promotionData?.id || Date.now().toString(),
+          title: promotionTitle,
+          url: promotionUrl,
+          image: promotionImage,
+          isLive: false,
+          startingDate: startingDate,
+          endingDate: endingDate,
+          attachedProducts: attachedProducts,
+        };
+
+        // Navigate back with the updated promotion data as a param
+        router.setParams({
+          updatedSavedPromotion: JSON.stringify(updatedPromotion),
+        });
+        router.back();
+        
+        Alert.alert("Success", "Promotion saved successfully");
       }
     } catch (error: any) {
       console.error("Error saving promotion:", error);
@@ -386,7 +424,7 @@ const EditPromotion = () => {
     }
   };
 
-  const handleDeletePromotion = () => {
+  const handleDeletePromotion = async () => {
     Alert.alert(
       "Delete Promotion",
       "Are you sure you want to delete this promotion?",
@@ -395,14 +433,33 @@ const EditPromotion = () => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            // TODO: Delete promotion logic here
+          onPress: async () => {
+            try {
+              setIsSaving(true);
+              
+              // If it's a live promotion (has _id), delete via API
+              if (promotionData?._id) {
+                await promotionService.deletePromotion(promotionData._id);
             Alert.alert("Success", "Promotion deleted successfully", [
               {
                 text: "OK",
                 onPress: () => router.back(),
               },
             ]);
+              } else {
+                // If it's a saved promotion, notify AdminPromotion to remove it
+                router.setParams({
+                  deletedPromotionId: promotionData?.id || "",
+                });
+                router.back();
+                Alert.alert("Success", "Promotion deleted successfully");
+              }
+            } catch (error: any) {
+              console.error("Error deleting promotion:", error);
+              Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
+            } finally {
+              setIsSaving(false);
+            }
           },
         },
       ]
@@ -682,6 +739,31 @@ const EditPromotion = () => {
         </View>
         )}
 
+        {/* On Live Checkbox - Only show when editing */}
+        {!isNewPromotion && (
+          <View style={styles.section as ViewStyle}>
+            <TouchableOpacity
+              style={styles.checkboxContainer as ViewStyle}
+              onPress={() => setIsOnLive(!isOnLive)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[
+                  styles.checkbox as ViewStyle,
+                  isOnLive
+                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                    : { backgroundColor: colors.white, borderColor: colors.placeholdergrey },
+                ]}
+              >
+                {isOnLive && (
+                  <Ionicons name="checkmark" size={20} color={colors.white} />
+                )}
+              </View>
+              <Text style={styles.checkboxLabel as TextStyle}>On Live</Text>
+            </TouchableOpacity>
+        </View>
+        )}
+
         {/* Date Range Selection */}
         <View style={styles.dateRangeContainer as ViewStyle}>
                   <View style={styles.dateInputWrapper as ViewStyle}>
@@ -772,7 +854,7 @@ const EditPromotion = () => {
                 {isSaving ? (
                   <ActivityIndicator size="small" color={colors.white} />
                 ) : (
-                  <Text style={styles.saveButtonText as TextStyle}>Save Promotion</Text>
+                  <Text style={styles.saveButtonText as TextStyle}>Add</Text>
                 )}
               </TouchableOpacity>
               <TouchableOpacity
@@ -780,7 +862,7 @@ const EditPromotion = () => {
                 onPress={handleDeletePromotion}
                 disabled={isSaving}
               >
-                <Text style={styles.deleteButtonText as TextStyle}>Delete Promotion</Text>
+                <Text style={styles.deleteButtonText as TextStyle}>Delete</Text>
               </TouchableOpacity>
             </>
           )}

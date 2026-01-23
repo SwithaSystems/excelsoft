@@ -443,6 +443,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  // On Live Checkbox
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: colors.black,
+  },
 });
 
 export default styles;

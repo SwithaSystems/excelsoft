@@ -216,6 +216,35 @@ const AdminPromotion = () => {
     }
   }, [params.newSavedPromotion]);
 
+  // Handle updated saved promotion from EditPromotion screen
+  useEffect(() => {
+    if (params.updatedSavedPromotion) {
+      try {
+        const updatedPromotion = JSON.parse(params.updatedSavedPromotion as string);
+        setSavedPromotions((prev) => {
+          // Update existing promotion or add if it doesn't exist
+          const index = prev.findIndex((p) => p.id === updatedPromotion.id);
+          if (index !== -1) {
+            const updated = [...prev];
+            updated[index] = updatedPromotion;
+            return updated;
+          }
+          return [...prev, updatedPromotion];
+        });
+      } catch (error) {
+        console.error("Error parsing updated saved promotion:", error);
+      }
+    }
+  }, [params.updatedSavedPromotion]);
+
+  // Handle deleted saved promotion from EditPromotion screen
+  useEffect(() => {
+    if (params.deletedPromotionId) {
+      const deletedId = params.deletedPromotionId as string;
+      setSavedPromotions((prev) => prev.filter((p) => p.id !== deletedId));
+    }
+  }, [params.deletedPromotionId]);
+
   const handleAddProduct = useCallback((product: Product) => {
     setAttachedProducts((prev) => {
       const exists = prev.some((p) => (p._id || p.id) === (product._id || product.id));
