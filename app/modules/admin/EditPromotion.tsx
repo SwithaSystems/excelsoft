@@ -563,7 +563,7 @@ const EditPromotion = () => {
 
         {/* Title Input */}
         <View style={styles.section as ViewStyle}>
-          <Text style={styles.inputLabel as TextStyle}>Add Promotional Slide Title</Text>
+          <Text style={styles.inputLabel as TextStyle}>Title</Text>
           <CustomTextInput
             placeholder="Enter Promotional Slide title"
             value={promotionTitle}
@@ -589,7 +589,7 @@ const EditPromotion = () => {
         {/* Product Display Mode Selection */}
         <View style={styles.productDisplayModeSection as ViewStyle}>
           <Text style={styles.productDisplayModeTitle as TextStyle}>
-            How do you want to display the products?
+            Choose Category/Products
           </Text>
           <View style={styles.radioButtonContainer as ViewStyle}>
             <TouchableOpacity
@@ -601,7 +601,7 @@ const EditPromotion = () => {
                 size={24}
                 color={productDisplayMode === "category" ? colors.primary : colors.placeholdergrey}
               />
-              <Text style={styles.radioButtonLabel as TextStyle}>Choose Category</Text>
+              <Text style={styles.radioButtonLabel as TextStyle}>Select Category</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.radioButtonRow as ViewStyle}
@@ -612,7 +612,7 @@ const EditPromotion = () => {
                 size={24}
                 color={productDisplayMode === "product" ? colors.primary : colors.placeholdergrey}
               />
-              <Text style={styles.radioButtonLabel as TextStyle}>Select Product</Text>
+              <Text style={styles.radioButtonLabel as TextStyle}>Select Products</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -620,7 +620,7 @@ const EditPromotion = () => {
         {/* Choose Category Section */}
         {productDisplayMode === "category" && (
           <View style={styles.categorySelectionSection as ViewStyle}>
-            <Text style={styles.categorySelectionTitle as TextStyle}>Choose Category</Text>
+            <Text style={styles.categorySelectionTitle as TextStyle}>Select Category</Text>
             {isWeb ? (
               <View style={{ overflow: "visible", zIndex: 1000 }}>
                 <WebCategoryDropdown
@@ -645,9 +645,6 @@ const EditPromotion = () => {
             <View style={styles.attachProductsTitleContainer as ViewStyle}>
               <Text style={styles.attachProductsTitle as TextStyle}>
                 Attach Products to this Promotion
-              </Text>
-              <Text style={styles.attachProductsSubtitle as TextStyle}>
-                (Optional) Link items to display below the banner
               </Text>
             </View>
             <TouchableOpacity
