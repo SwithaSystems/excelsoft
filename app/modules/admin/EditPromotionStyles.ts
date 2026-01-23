@@ -105,6 +105,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  goLiveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  goLiveButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
   // Date Range Selection
   dateRangeContainer: {
     flexDirection: "row",

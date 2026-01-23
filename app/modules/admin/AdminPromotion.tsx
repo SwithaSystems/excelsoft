@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { useLocalSearchParams, useFocusEffect } from "expo-router";
 import {
   View,
   Text,
@@ -38,6 +39,8 @@ import { Product, ProductsAPI } from "@/services/productService";
 import SearchBar from "@/app/components/searchBar";
 import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
+import { promotionService, Promotion as APIPromotion } from "@/services/promotionService";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 interface Promotion {
   id: string;
@@ -45,9 +48,12 @@ interface Promotion {
   url: string;
   image: string | number;
   isLive: boolean;
+  _id?: string;
 }
 
 const AdminPromotion = () => {
+  const params = useLocalSearchParams();
+  
   const dummyPromotions: Promotion[] = [
     {
       id: "1",
@@ -82,12 +88,12 @@ const AdminPromotion = () => {
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const debouncedProductQuery = useDebounce(productSearchQuery, 300);
-  const [livePromotions, setLivePromotions] = useState<Promotion[]>(
-    dummyPromotions.map((p) => ({ ...p, isLive: true }))
-  );
-  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>(
-    dummyPromotions
-  );
+  const [livePromotions, setLivePromotions] = useState<Promotion[]>([]);
+  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>(dummyPromotions);
+  const [isLoadingLivePromotions, setIsLoadingLivePromotions] = useState(false);
+  const [isSavingPromotion, setIsSavingPromotion] = useState(false);
+  const [showRemoveLiveModal, setShowRemoveLiveModal] = useState(false);
+  const [promotionToRemoveLive, setPromotionToRemoveLive] = useState<Promotion | null>(null);
 
   const isWeb = Platform.OS === "web";
 
@@ -157,6 +163,58 @@ const AdminPromotion = () => {
       searchProductsByName(debouncedProductQuery);
     }
   }, [debouncedProductQuery, showProductModal, searchProductsByName]);
+
+  const fetchLivePromotions = useCallback(async () => {
+    try {
+      setIsLoadingLivePromotions(true);
+      const apiPromotions = await promotionService.getAllPromotions();
+      
+      // Convert API promotions to local Promotion format
+      const convertedPromotions: Promotion[] = apiPromotions.map((promo: APIPromotion) => ({
+        id: promo._id || Date.now().toString(),
+        _id: promo._id,
+        title: promo.title,
+        url: promo.link,
+        image: promo.imageURL,
+        isLive: true,
+      }));
+      
+      setLivePromotions(convertedPromotions);
+    } catch (error) {
+      console.error("Error fetching live promotions:", error);
+      // Don't show alert, just log the error
+    } finally {
+      setIsLoadingLivePromotions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLivePromotions();
+  }, [fetchLivePromotions]);
+
+  // Refresh live promotions when screen comes into focus (after navigating back from edit)
+  useFocusEffect(
+    useCallback(() => {
+      fetchLivePromotions();
+    }, [fetchLivePromotions])
+  );
+
+  // Handle new saved promotion from EditPromotion screen
+  useEffect(() => {
+    if (params.newSavedPromotion) {
+      try {
+        const newPromotion = JSON.parse(params.newSavedPromotion as string);
+        setSavedPromotions((prev) => {
+          // Check if promotion already exists to avoid duplicates
+          const exists = prev.some((p) => p.id === newPromotion.id);
+          if (exists) return prev;
+          return [...prev, newPromotion];
+        });
+      } catch (error) {
+        console.error("Error parsing new saved promotion:", error);
+      }
+    }
+  }, [params.newSavedPromotion]);
 
   const handleAddProduct = useCallback((product: Product) => {
     setAttachedProducts((prev) => {
@@ -231,13 +289,14 @@ const AdminPromotion = () => {
       title: promotionTitle,
       url: promotionUrl,
       image: promotionImage,
-      isLive: true,
+      isLive: false,
     };
 
-    setLivePromotions([...livePromotions, newPromotion]);
+    setSavedPromotions([...savedPromotions, newPromotion]);
     handleResetPromotion();
-    Alert.alert("Success", "Promotion added successfully");
+    Alert.alert("Success", "Promotion saved successfully");
   };
+
 
   const handleResetPromotion = () => {
     setPromotionImage(null);
@@ -279,20 +338,139 @@ const AdminPromotion = () => {
     return format(date, "yyyy-MM-dd");
   };
 
-  const handleRemoveLive = (id: string) => {
+  const handleRemoveLiveClick = (id: string) => {
+    const promotion = livePromotions.find((p) => p.id === id);
+    if (promotion) {
+      setPromotionToRemoveLive(promotion);
+      setShowRemoveLiveModal(true);
+    }
+  };
+
+  const confirmRemoveLive = async () => {
+    if (!promotionToRemoveLive) return;
+
+    try {
+      const promotion = promotionToRemoveLive;
+      if (promotion._id) {
+        await promotionService.deletePromotion(promotion._id);
+        // Move promotion from live to saved
+        const updatedPromotion = { ...promotion, isLive: false, _id: undefined };
+        setLivePromotions(livePromotions.filter((p) => p.id !== promotion.id));
+        setSavedPromotions((prev) => {
+          const exists = prev.some((p) => p.id === promotion.id);
+          if (exists) return prev;
+          return [...prev, updatedPromotion];
+        });
+        Alert.alert("Success", "Promotion removed from live");
+      }
+    } catch (error: any) {
+      console.error("Error removing promotion from live:", error);
+      Alert.alert("Error", error?.response?.data?.message || "Failed to remove promotion from live");
+    } finally {
+      setShowRemoveLiveModal(false);
+      setPromotionToRemoveLive(null);
+    }
+  };
+
+  const handleGoLive = async (id: string) => {
+    const promotion = savedPromotions.find((p) => p.id === id);
+    if (!promotion) return;
+
     Alert.alert(
-      "Remove Live Promotion",
-      "Are you sure you want to remove this promotion from live?",
+      "Go Live",
+      "Are you sure you want to make this promotion live?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Remove",
+          text: "Go Live",
+          onPress: async () => {
+            try {
+              setIsSavingPromotion(true);
+              
+              // Determine if the link is internal or external
+              const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
+              
+              // Prepare image file for upload
+              let imageFile: File | any;
+              if (Platform.OS === "web") {
+                if (typeof promotion.image === "string") {
+                  if (promotion.image.startsWith("data:")) {
+                    const response = await fetch(promotion.image);
+                    const blob = await response.blob();
+                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+                  } else if (promotion.image.startsWith("http://") || promotion.image.startsWith("https://")) {
+                    const response = await fetch(promotion.image);
+                    const blob = await response.blob();
+                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+                  } else {
+                    const response = await fetch(promotion.image);
+                    const blob = await response.blob();
+                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+                  }
+                } else {
+                  Alert.alert("Error", "Please select a new image for upload");
+                  setIsSavingPromotion(false);
+                  return;
+                }
+              } else {
+                if (typeof promotion.image === "string") {
+                  imageFile = {
+                    uri: promotion.image,
+                    type: "image/jpeg",
+                    name: "promotion-image.jpg",
+                  };
+                } else {
+                  Alert.alert("Error", "Please select a new image for upload");
+                  setIsSavingPromotion(false);
+                  return;
+                }
+              }
+
+              await promotionService.createPromotion({
+                title: promotion.title,
+                link: promotion.url,
+                isInternalLink: isInternalLink,
+                image: imageFile,
+              });
+
+              // Remove from saved and refresh live promotions
+              setSavedPromotions(savedPromotions.filter((p) => p.id !== id));
+              fetchLivePromotions();
+              Alert.alert("Success", "Promotion is now live!");
+            } catch (error: any) {
+              console.error("Error making promotion live:", error);
+              Alert.alert("Error", error?.response?.data?.message || "Failed to make promotion live");
+            } finally {
+              setIsSavingPromotion(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteLive = async (id: string) => {
+    Alert.alert(
+      "Delete Promotion",
+      "Are you sure you want to delete this live promotion?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
           style: "destructive",
-          onPress: () => {
-            const promotion = livePromotions.find((p) => p.id === id);
-            if (promotion) {
-              setLivePromotions(livePromotions.filter((p) => p.id !== id));
-              setSavedPromotions([...savedPromotions, { ...promotion, isLive: false }]);
+          onPress: async () => {
+            try {
+              const promotion = livePromotions.find((p) => p.id === id);
+              if (promotion && promotion._id) {
+                await promotionService.deletePromotion(promotion._id);
+                // Remove from live promotions
+                setLivePromotions(livePromotions.filter((p) => p.id !== id));
+                fetchLivePromotions();
+                Alert.alert("Success", "Promotion deleted successfully");
+              }
+            } catch (error: any) {
+              console.error("Error deleting promotion:", error);
+              Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
             }
           },
         },
@@ -323,37 +501,6 @@ const AdminPromotion = () => {
     });
   };
 
-  const renderLivePromotionCard = ({ item }: { item: Promotion }) => (
-    <View style={{ width: 280, marginRight: 16 }}>
-      <PromotionCard
-        image={item.image}
-        title={item.title}
-        url={item.url}
-        showTitle={false}
-        showLink={false}
-        showEditButton={true}
-        showDeleteButton={true}
-        deleteButtonText="Remove Live"
-        backgroundColor={colors.white}
-        onEdit={() => handleEditPromotion(item)}
-        onDelete={() => handleRemoveLive(item.id)}
-      />
-    </View>
-  );
-
-  const renderSavedPromotionCard = ({ item }: { item: Promotion }) => (
-    <PromotionCard
-      image={item.image}
-      title={item.title}
-      url={item.url}
-      showTitle={true}
-      showLink={true}
-      showEditButton={true}
-      showDeleteButton={true}
-      onEdit={() => handleEditPromotion(item)}
-      onDelete={() => handleDeleteSaved(item.id)}
-    />
-  );
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -363,6 +510,10 @@ const AdminPromotion = () => {
   );
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
+
+  // Combine live and saved promotions into one array
+  // Live promotions first, then saved promotions - both will be displayed together
+  const allPromotions = [...livePromotions, ...savedPromotions];
 
   return (
     <LayoutComponent
@@ -376,325 +527,132 @@ const AdminPromotion = () => {
     >
       <ScrollView
         style={styles.container}
-        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Add New Promotion Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Add New Promotion</Text>
-
-          {/* Image Upload Area */}
-          <TouchableOpacity
-            style={styles.imageUploadArea}
-            onPress={openImagePicker}
-            activeOpacity={0.7}
-          >
-            {promotionImage ? (
-              <Image
-                source={{ uri: promotionImage }}
-                style={styles.uploadedImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons
-                  name="image-outline"
-                  size={48}
-                  color={colors.primary}
-                />
-                <Text style={styles.placeholderText}>Add Image here</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {/* Title Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Add Promotional Slide Title</Text>
-            <CustomTextInput
-              placeholder="e.g., Summer Sale Bonanza"
-              value={promotionTitle}
-              setValue={setPromotionTitle}
-              style={styles.textInput}
-              onPress={() => {}}
-            />
+        {/* Mobile: Add New Promotion Button */}
+        {!isWeb && (
+          <View style={styles.mobileButtonContainer as ViewStyle}>
+            <TouchableOpacity
+              style={styles.addNewButton as ViewStyle}
+              onPress={() => {
+                redirectToPage(containers.EditPromotionScreen, {
+                  newPromotion: true,
+                });
+              }}
+            >
+              <Text style={styles.addNewButtonText as TextStyle}>+ Add New Promotion</Text>
+            </TouchableOpacity>
           </View>
+        )}
 
-          {/* URL Input */}
-          <View style={styles.inputContainer as ViewStyle}>
-            <Text style={styles.inputLabel as TextStyle}>Enter Promotional URL</Text>
-            <CustomTextInput
-              placeholder="https://your-promo.com/summer-sale"
-              value={promotionUrl}
-              setValue={setPromotionUrl}
-              style={styles.textInput as ViewStyle}
-              keyboardType="url"
-              onPress={() => {}}
-            />
-          </View>
-
-          {/* Product Display Mode Selection */}
-          <View style={styles.productDisplayModeSection as ViewStyle}>
-            <Text style={styles.productDisplayModeTitle as TextStyle}>
-              How do you want to display the products?
-            </Text>
-            <View style={styles.radioButtonContainer as ViewStyle}>
-              <TouchableOpacity
-                style={styles.radioButtonRow as ViewStyle}
-                onPress={() => setProductDisplayMode("category")}
-              >
-                <Ionicons
-                  name={productDisplayMode === "category" ? "radio-button-on" : "radio-button-off"}
-                  size={24}
-                  color={productDisplayMode === "category" ? colors.primary : colors.placeholdergrey}
-                />
-                <Text style={styles.radioButtonLabel as TextStyle}>Choose Category</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.radioButtonRow as ViewStyle}
-                onPress={() => setProductDisplayMode("product")}
-              >
-                <Ionicons
-                  name={productDisplayMode === "product" ? "radio-button-on" : "radio-button-off"}
-                  size={24}
-                  color={productDisplayMode === "product" ? colors.primary : colors.placeholdergrey}
-                />
-                <Text style={styles.radioButtonLabel as TextStyle}>Select Product</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Choose Category Section */}
-          {productDisplayMode === "category" && (
-            <View style={styles.categorySelectionSection as ViewStyle}>
-              <Text style={styles.categorySelectionTitle as TextStyle}>Choose Category</Text>
-              <View style={styles.categoryContainer as ViewStyle}>
-                <TouchableOpacity
-                  onPress={() => setIsCategoryOpen((prev) => !prev)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.categorySelector as ViewStyle}>
-                    <Text
-                      style={[
-                        styles.categoryText as TextStyle,
-                        {
-                          color:
-                            selectedCategory && selectedCategory !== ""
-                              ? colors.black
-                              : colors.slateGrey,
-                        },
-                      ]}
-                    >
-                      {selectedCategory && selectedCategory !== ""
-                        ? allCategories.find((c: any) => (c.id || c._id) == selectedCategory)?.name || "Select Category"
-                        : "Select Category"}
-                    </Text>
-                    <Ionicons
-                      name={isCategoryOpen ? "chevron-up" : "chevron-down"}
-                      size={20}
-                      color={colors.black}
-                    />
-                  </View>
-                </TouchableOpacity>
-                {isCategoryOpen && (
-                  isWeb ? (
-                    // ===== WEB: inline dropdown =====
-                    <View style={styles.dropdownList as ViewStyle}>
-                      <ScrollView style={styles.dropdownScrollArea as ViewStyle}>
-                        {renderCategoryItems()}
-                      </ScrollView>
-                    </View>
-                  ) : (
-                    // ===== MOBILE: modal dropdown =====
-                    Platform.OS !== "web" && (
-                      <Modal
-                        transparent
-                        animationType="fade"
-                        onRequestClose={() => setIsCategoryOpen(false)}
-                      >
-                        <Pressable
-                          style={styles.modalOverlay as ViewStyle}
-                          onPress={() => setIsCategoryOpen(false)}
-                        >
-                          <View style={styles.modalDropdown as ViewStyle}>
-                            <ScrollView>
-                              {renderCategoryItems()}
-                            </ScrollView>
-                          </View>
-                        </Pressable>
-                      </Modal>
-                    )
-                  )
-                )}
-              </View>
-            </View>
+        {/* Header with Title and Add Button */}
+        <View style={styles.headerRow as ViewStyle}>
+          {isWeb && (
+            <Text style={styles.pageTitle as TextStyle}>Promotions</Text>
           )}
+          {isWeb && (
+            <TouchableOpacity
+              style={styles.addNewButtonWeb as ViewStyle}
+              onPress={() => {
+                redirectToPage(containers.EditPromotionScreen, {
+                  newPromotion: true,
+                });
+              }}
+            >
+              <Text style={styles.addNewButtonText as TextStyle}>+ Add New Promotion</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-          {/* Attach Products Section */}
-          {productDisplayMode === "product" && (
-            <View style={styles.attachProductsSection as ViewStyle}>
-            <View style={styles.attachProductsHeader as ViewStyle}>
-              <View style={styles.attachProductsTitleContainer as ViewStyle}>
-                <Text style={styles.attachProductsTitle as TextStyle}>
-                  Attach Products to this Promotion
-                </Text>
-                <Text style={styles.attachProductsSubtitle as TextStyle}>
-                  (Optional) Link items to display below the banner
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.selectProductsButton as ViewStyle}
-                onPress={handleSelectProducts}
-              >
-                <Ionicons name="add" size={20} color={colors.primary} />
-                <Text style={styles.selectProductsButtonText as TextStyle}>Select Products</Text>
-              </TouchableOpacity>
-            </View>
+        {!isWeb && (
+          <Text style={styles.pageTitle as TextStyle}>Promotions</Text>
+        )}
 
-            {attachedProducts.length > 0 && (
-              <View style={styles.attachedProductsList as ViewStyle}>
-                {attachedProducts.map((product) => {
-                  const productId = String(product._id || product.id);
-                  const productImage = product.image?.[0] || product.image;
-                  return (
-                    <View key={productId} style={styles.attachedProductCard as ViewStyle}>
-                      <Image
-                        source={
-                          typeof productImage === "string"
-                            ? { uri: productImage }
-                            : productImage || require("../../../assets/Placeholder.png")
+        {/* Combined Promotions List */}
+        {isLoadingLivePromotions ? (
+          <View style={styles.emptyState as ViewStyle}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.emptyStateText as TextStyle}>Loading promotions...</Text>
+          </View>
+        ) : allPromotions.length > 0 ? (
+          isWeb ? (
+            <View style={styles.gridContainer as ViewStyle}>
+              {allPromotions.map((item, index) => {
+                const isLive = item.isLive;
+                return (
+                  <View 
+                    key={item.id} 
+                    style={[
+                      styles.gridCardWrapper as ViewStyle,
+                      (index + 1) % 4 === 0 && { marginRight: 0 } as ViewStyle
+                    ]}
+                  >
+                    <View style={styles.cardContainer as ViewStyle}>
+                      {isLive && (
+                        <View style={styles.liveBadge as ViewStyle}>
+                          <View style={styles.liveDot as ViewStyle} />
+                          <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
+                        </View>
+                      )}
+                      <PromotionCard
+                        image={item.image}
+                        title={item.title}
+                        isLive={item.isLive}
+                        onEdit={() => handleEditPromotion(item)}
+                        onDelete={() =>
+                          item.isLive
+                            ? handleDeleteLive(item.id)
+                            : handleDeleteSaved(item.id)
                         }
-                        style={styles.attachedProductImage as ImageStyle}
-                        resizeMode="cover"
+                        onRemoveLive={() => handleRemoveLiveClick(item.id)}
+                        onGoLive={() => handleGoLive(item.id)}
                       />
-                      <View style={styles.attachedProductInfo as ViewStyle}>
-                        <Text style={styles.attachedProductName as TextStyle} numberOfLines={1}>
-                          {product.name}
-                        </Text>
-                        <Text style={styles.attachedProductSku as TextStyle}>
-                          SKU: {product.id || product._id || "N/A"}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={styles.removeProductButton as ViewStyle}
-                        onPress={() => handleRemoveProduct(productId)}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <Ionicons name="close" size={20} color={colors.black} />
-                      </TouchableOpacity>
+
                     </View>
-                  );
-                })}
-              </View>
-            )}
+                  </View>
+                );
+              })}
             </View>
-          )}
-
-          {/* Date Range Selection */}
-          <View style={styles.dateRangeContainer}>
-            <View style={styles.dateInputWrapper}>
-              <Text style={styles.dateLabel}>Starting From</Text>
-              {Platform.OS === "web" ? (
-                <input
-                  type="date"
-                  style={globalStyles.webDateInput}
-                  value={startingDate}
-                  onChange={(e) => setStartingDate(e.target.value)}
-                  min={formatDateForInput(getTodayDate())}
-                />
-              ) : (
-                <TouchableOpacity
-                  style={styles.dateInput}
-                  onPress={() => setShowStartDatePicker(true)}
-                >
-                  <Text style={styles.dateInputText}>
-                    {startingDate ? formatDateForDisplay(startingDate) : "Select date"}
-                  </Text>
-                  <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {Platform.OS === "web" && (
-              <Text style={styles.dateToLabel}>to</Text>
-            )}
-
-            <View style={styles.dateInputWrapper}>
-              <Text style={styles.dateLabel}>Ending On</Text>
-              {Platform.OS === "web" ? (
-                <input
-                  type="date"
-                  style={globalStyles.webDateInput}
-                  value={endingDate}
-                  onChange={(e) => setEndingDate(e.target.value)}
-                  min={formatDateForInput(getMinEndDate())}
-                />
-              ) : (
-                <TouchableOpacity
-                  style={styles.dateInput}
-                  onPress={() => setShowEndDatePicker(true)}
-                >
-                  <Text style={styles.dateInputText}>
-                    {endingDate ? formatDateForDisplay(endingDate) : "Select date"}
-                  </Text>
-                  <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          {/* Action Buttons */}
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={[styles.button, styles.addButton]}
-              onPress={handleAddPromotion}
-            >
-              <Text style={styles.addButtonText}>Add Promotion</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.resetButton]}
-              onPress={handleResetPromotion}
-            >
-              <Text style={styles.resetButtonText}>Reset Promotion</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Live Promotions Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Live Promotions</Text>
-          {livePromotions.length > 0 ? (
-            <FlatList
-              data={livePromotions}
-              renderItem={renderLivePromotionCard}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalList}
-            />
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No live promotions</Text>
+            <View>
+              {allPromotions.map((item) => {
+                const isLive = item.isLive;
+                return (
+                  <View key={item.id} style={styles.mobileCardWrapper as ViewStyle}>
+                    <View style={styles.cardContainer as ViewStyle}>
+                      {isLive && (
+                        <View style={styles.liveBadge as ViewStyle}>
+                          <View style={styles.liveDot as ViewStyle} />
+                          <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
+                        </View>
+                      )}
+                      <PromotionCard
+                        image={item.image}
+                        title={item.title}
+                        isLive={item.isLive}
+                        onEdit={() => handleEditPromotion(item)}
+                        onDelete={() =>
+                          item.isLive
+                            ? handleDeleteLive(item.id)
+                            : handleDeleteSaved(item.id)
+                        }
+                        onRemoveLive={() => handleRemoveLiveClick(item.id)}
+                        onGoLive={() => handleGoLive(item.id)}
+                      />
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          )}
-        </View>
-
-        {/* Saved Promotions Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Saved Promotions</Text>
-          {savedPromotions.length > 0 ? (
-            <FlatList
-              data={savedPromotions}
-              renderItem={renderSavedPromotionCard}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-            />
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>No saved promotions</Text>
-            </View>
-          )}
-        </View>
+          )
+        ) : (
+          <View style={styles.emptyState as ViewStyle}>
+            <Text style={styles.emptyStateText as TextStyle}>No promotions found</Text>
+          </View>
+        )}
       </ScrollView>
+
 
       {/* Date Pickers for Mobile */}
       {!isWeb && (
@@ -831,6 +789,24 @@ const AdminPromotion = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Remove Live Confirmation Modal */}
+      <ConfirmationModal
+        isModalVisible={showRemoveLiveModal}
+        onClose={() => {
+          setShowRemoveLiveModal(false);
+          setPromotionToRemoveLive(null);
+        }}
+        handleCancel={() => {
+          setShowRemoveLiveModal(false);
+          setPromotionToRemoveLive(null);
+        }}
+        handleSubmit={confirmRemoveLive}
+        title="Remove Live Promotion"
+        text="Are you sure you want to remove this promotion from live?"
+        submitText="Yes"
+        cancelText="No"
+      />
     </LayoutComponent>
   );
 };

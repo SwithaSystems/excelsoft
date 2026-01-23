@@ -35,32 +35,35 @@ import { Product, ProductsAPI } from "@/services/productService";
 import SearchBar from "@/app/components/searchBar";
 import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
+import { promotionService } from "@/services/promotionService";
 
 const EditPromotion = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const promotionData = params.promotion ? JSON.parse(params.promotion as string) : null;
+  const isNewPromotion = params.newPromotion === "true" || params.newPromotion === "1" || (Array.isArray(params.newPromotion) && params.newPromotion[0] === "true");
+  const promotionData = params.promotion ? JSON.parse(Array.isArray(params.promotion) ? params.promotion[0] : params.promotion as string) : null;
 
   const [promotionImage, setPromotionImage] = useState<string | number | null>(
-    promotionData?.image || null
+    isNewPromotion ? null : (promotionData?.image || promotionData?.imageURL || null)
   );
   const [promotionTitle, setPromotionTitle] = useState(
-    promotionData?.title || ""
+    isNewPromotion ? "" : (promotionData?.title || "")
   );
   const [promotionUrl, setPromotionUrl] = useState(
-    promotionData?.url || ""
+    isNewPromotion ? "" : (promotionData?.url || "")
   );
   const [startingDate, setStartingDate] = useState<string>(
-    promotionData?.startingDate || ""
+    isNewPromotion ? "" : (promotionData?.startingDate || "")
   );
   const [endingDate, setEndingDate] = useState<string>(
-    promotionData?.endingDate || ""
+    isNewPromotion ? "" : (promotionData?.endingDate || "")
   );
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [attachedProducts, setAttachedProducts] = useState<Product[]>(
-    promotionData?.attachedProducts || []
+    isNewPromotion ? [] : (promotionData?.attachedProducts || [])
   );
+  const [isSaving, setIsSaving] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -194,27 +197,193 @@ const EditPromotion = () => {
     }
   }, []);
 
-  const handleSavePromotion = () => {
+  const prepareImageFile = async (): Promise<File | any | null> => {
+    if (!promotionImage) return null;
+
+    if (Platform.OS === "web") {
+      // For web, handle data URI or regular URL
+      if (typeof promotionImage === "string") {
+        if (promotionImage.startsWith("data:")) {
+          // Convert data URI to File
+          const response = await fetch(promotionImage);
+          const blob = await response.blob();
+          return new File([blob], "promotion-image.jpg", { type: blob.type });
+        } else if (promotionImage.startsWith("http://") || promotionImage.startsWith("https://")) {
+          // Fetch from URL
+          const response = await fetch(promotionImage);
+          const blob = await response.blob();
+          return new File([blob], "promotion-image.jpg", { type: blob.type });
+        } else {
+          // Local file path
+          const response = await fetch(promotionImage);
+          const blob = await response.blob();
+          return new File([blob], "promotion-image.jpg", { type: blob.type });
+        }
+      } else {
+        // If it's a require() asset, we can't upload it - user needs to select a new image
+        Alert.alert("Error", "Please select a new image for upload");
+        return null;
+      }
+    } else {
+      // For mobile, use the URI directly
+      if (typeof promotionImage === "string") {
+        return {
+          uri: promotionImage,
+          type: "image/jpeg",
+          name: "promotion-image.jpg",
+        };
+      } else {
+        Alert.alert("Error", "Please select a new image for upload");
+        return null;
+      }
+    }
+  };
+
+  const validateForm = (): boolean => {
     if (!promotionImage) {
       Alert.alert("Error", "Please add an image");
-      return;
+      return false;
     }
     if (!promotionTitle.trim()) {
       Alert.alert("Error", "Please enter a promotional slide title");
-      return;
+      return false;
     }
     if (!promotionUrl.trim()) {
       Alert.alert("Error", "Please enter a promotional URL");
-      return;
+      return false;
     }
+    return true;
+  };
 
-    // TODO: Save promotion logic here
-    Alert.alert("Success", "Promotion saved successfully", [
-      {
-        text: "OK",
-        onPress: () => router.back(),
-      },
-    ]);
+  const handleAddPromotion = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Create promotion object to pass back to AdminPromotion
+      const newPromotion = {
+        id: Date.now().toString(),
+        title: promotionTitle,
+        url: promotionUrl,
+        image: promotionImage,
+        isLive: false,
+        startingDate: startingDate,
+        endingDate: endingDate,
+        attachedProducts: attachedProducts,
+      };
+
+      // Navigate back with the new promotion data as a param
+      router.setParams({
+        newSavedPromotion: JSON.stringify(newPromotion),
+      });
+      router.back();
+      
+      Alert.alert("Success", "Promotion saved successfully");
+    } catch (error: any) {
+      console.error("Error saving promotion:", error);
+      Alert.alert("Error", "Failed to save promotion");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGoLive = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Determine if the link is internal or external
+      const isInternalLink = !promotionUrl.startsWith("http://") && !promotionUrl.startsWith("https://");
+      
+      // Prepare image file for upload
+      const imageFile = await prepareImageFile();
+      if (!imageFile) {
+        setIsSaving(false);
+        return;
+      }
+
+      if (isNewPromotion) {
+        // Create new promotion and save to API (makes it live)
+        await promotionService.createPromotion({
+          title: promotionTitle,
+          link: promotionUrl,
+          isInternalLink: isInternalLink,
+          image: imageFile,
+        });
+        Alert.alert("Success", "Promotion is now live!", [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ]);
+      } else {
+        // Update existing promotion
+        if (promotionData?._id) {
+          await promotionService.updatePromotion(promotionData._id, {
+            title: promotionTitle,
+            link: promotionUrl,
+            isInternalLink: isInternalLink,
+            image: imageFile,
+          });
+          Alert.alert("Success", "Promotion updated and is live!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        } else {
+          Alert.alert("Error", "Promotion ID not found");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error saving promotion:", error);
+      Alert.alert("Error", error?.response?.data?.message || "Failed to save promotion");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSavePromotion = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Determine if the link is internal or external
+      const isInternalLink = !promotionUrl.startsWith("http://") && !promotionUrl.startsWith("https://");
+      
+      // Prepare image file for upload
+      const imageFile = await prepareImageFile();
+      if (!imageFile) {
+        setIsSaving(false);
+        return;
+      }
+
+      // Update existing promotion
+      if (promotionData?._id) {
+        await promotionService.updatePromotion(promotionData._id, {
+          title: promotionTitle,
+          link: promotionUrl,
+          isInternalLink: isInternalLink,
+          image: imageFile,
+        });
+        Alert.alert("Success", "Promotion updated successfully", [
+          {
+            text: "OK",
+            onPress: () => router.back(),
+          },
+        ]);
+      } else {
+        Alert.alert("Error", "Promotion ID not found");
+      }
+    } catch (error: any) {
+      console.error("Error saving promotion:", error);
+      Alert.alert("Error", error?.response?.data?.message || "Failed to save promotion");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeletePromotion = () => {
@@ -273,10 +442,11 @@ const EditPromotion = () => {
   };
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const headerText = isNewPromotion ? "Add Promotion" : "Edit Promotion";
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
-    <Header headerText="Edit Promotion" />
+    <Header headerText={headerText} />
   );
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
@@ -343,7 +513,7 @@ const EditPromotion = () => {
         </View>
 
         {/* URL Input */}
-        <View style={styles.section as ViewStyle}>
+        {/* <View style={styles.section as ViewStyle}>
           <Text style={styles.inputLabel as TextStyle}>Enter Promotional URL</Text>
           <CustomTextInput
             placeholder="Enter your promotional url"
@@ -353,7 +523,7 @@ const EditPromotion = () => {
             keyboardType="url"
             onPress={() => {}}
           />
-        </View>
+        </View> */}
 
         {/* Product Display Mode Selection */}
         <View style={styles.productDisplayModeSection as ViewStyle}>
@@ -567,18 +737,53 @@ const EditPromotion = () => {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer as ViewStyle}>
-          <TouchableOpacity
-            style={styles.saveButton as ViewStyle}
-            onPress={handleSavePromotion}
-          >
-            <Text style={styles.saveButtonText as TextStyle}>Save Promotion</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteButton as ViewStyle}
-            onPress={handleDeletePromotion}
-          >
-            <Text style={styles.deleteButtonText as TextStyle}>Delete Promotion</Text>
-          </TouchableOpacity>
+          {isNewPromotion ? (
+            <>
+              <TouchableOpacity
+                style={[styles.saveButton as ViewStyle, { flex: 1, marginRight: 8 }]}
+                onPress={handleAddPromotion}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.saveButtonText as TextStyle}>Add</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.goLiveButton as ViewStyle, { flex: 1, marginLeft: 8 }]}
+                onPress={handleGoLive}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.goLiveButtonText as TextStyle}>Go Live</Text>
+                )}
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.saveButton as ViewStyle}
+                onPress={handleSavePromotion}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.saveButtonText as TextStyle}>Save Promotion</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton as ViewStyle}
+                onPress={handleDeletePromotion}
+                disabled={isSaving}
+              >
+                <Text style={styles.deleteButtonText as TextStyle}>Delete Promotion</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </ScrollView>
 

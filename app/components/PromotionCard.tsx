@@ -12,71 +12,44 @@ import colors from "@/constants/colors";
 
 interface PromotionCardProps {
   image: string | number;
-  title?: string;
-  url?: string;
-
-  showTitle?: boolean;
-  showLink?: boolean;
-  showEditButton?: boolean;
-  showDeleteButton?: boolean;
-  deleteButtonText?: string;
-
-  backgroundColor?: string;
-
+  title: string;
+  isLive?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
-
-  cardStyle?: any;
-  imageStyle?: any;
+  onRemoveLive?: () => void;
+  onGoLive?: () => void;
 }
 
 const PromotionCard: React.FC<PromotionCardProps> = ({
   image,
   title,
-  url,
-  showTitle = true,
-  showLink = true,
-  showEditButton = true,
-  showDeleteButton = true,
-  deleteButtonText = "Delete",
-  backgroundColor = colors.secondary,
+  isLive = false,
   onEdit,
   onDelete,
-  cardStyle,
-  imageStyle,
+  onRemoveLive,
+  onGoLive,
 }) => {
   return (
-    <View style={[styles.card, cardStyle]}>
+    <View style={styles.card}>
       {/* Image */}
       <Image
         source={typeof image === "string" ? { uri: image } : image}
-        style={[styles.image, imageStyle]}
+        style={styles.image}
         resizeMode="cover"
       />
 
-      {/* Content */}
-      <View style={[styles.infoSection, { backgroundColor }]}>
-        {/* Title & URL */}
-        <View>
-          {showTitle && title && (
-            <Text style={styles.title} numberOfLines={2}>
-              {title}
-            </Text>
-          )}
+      {/* ================= LIVE CARD ================= */}
+      {isLive ? (
+        <View style={styles.liveActionBar}>
+          <TouchableOpacity
+            style={styles.removeLiveBtn}
+            onPress={onRemoveLive}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.removeLiveText}>Remove Live</Text>
+          </TouchableOpacity>
 
-          {showLink && url && (
-            <View style={styles.urlRow}>
-              <Ionicons name="link-outline" size={16} color={colors.black} />
-              <Text style={styles.urlText} numberOfLines={1}>
-                {url}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Actions – bottom right */}
-        <View style={styles.actionsRow}>
-          {showEditButton && onEdit && (
+          <View style={styles.rightActions}>
             <TouchableOpacity
               style={styles.iconTextBtn}
               onPress={onEdit}
@@ -89,9 +62,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
               />
               <Text style={styles.editText}>Edit</Text>
             </TouchableOpacity>
-          )}
 
-          {showDeleteButton && onDelete && (
             <TouchableOpacity
               style={styles.iconTextBtn}
               onPress={onDelete}
@@ -102,11 +73,37 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
                 size={18}
                 color={colors.error}
               />
-              <Text style={styles.deleteText}>{deleteButtonText}</Text>
+              <Text style={styles.deleteText}>Delete</Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-      </View>
+      ) : (
+        /* ================= NOT LIVE CARD ================= */
+        <View style={styles.infoSection}>
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+
+          <View style={styles.bottomRow}>
+            <TouchableOpacity style={styles.goLiveBtn} onPress={onGoLive}>
+              <View style={styles.liveDot} />
+              <Text style={styles.goLiveText}>Go Live</Text>
+            </TouchableOpacity>
+
+            <View style={styles.rightActions}>
+              <TouchableOpacity style={styles.iconTextBtn} onPress={onEdit}>
+                <Ionicons name="create-outline" size={18} color={colors.primary} />
+                <Text style={styles.editText}>Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.iconTextBtn} onPress={onDelete}>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
+                <Text style={styles.deleteText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -128,40 +125,79 @@ const styles = StyleSheet.create({
     height: 180,
   },
 
+  /* ===== LIVE CARD ===== */
+
+  liveActionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: colors.white,
+  },
+
+  removeLiveBtn: {
+    paddingVertical: 6,
+  },
+
+  removeLiveText: {
+    color: colors.error,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+    gap: 24,
+  },
+
+  /* ===== NOT LIVE CARD ===== */
+
   infoSection: {
     padding: 16,
+    backgroundColor: colors.white,
   },
 
   title: {
     fontSize: 18,
     fontWeight: "700",
     color: colors.black,
-    marginBottom: 6,
   },
 
-  urlRow: {
+  bottomRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    marginTop: 14,
   },
 
-  urlText: {
-    fontSize: 14,
-    color: colors.black,
-  },
-
-  actionsRow: {
+  goLiveBtn: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 20,
-    marginTop: 16,
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  goLiveText: {
+    color: colors.white,
+    fontWeight: "600",
+    marginLeft: 6,
+    fontSize: 14,
+  },
+
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.white,
   },
 
   iconTextBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-
     ...(Platform.OS === "web" && {
       cursor: "pointer",
     }),

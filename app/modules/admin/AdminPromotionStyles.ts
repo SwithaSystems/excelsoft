@@ -529,6 +529,203 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  // Header styles
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: Platform.OS === "web" ? 0 : 16,
+    marginTop: Platform.OS === "web" ? 0 : 8,
+  },
+  pageTitle: {
+    fontSize: Platform.OS === "web" ? 35 : 24,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: Platform.OS === "web" ? 0 : 16,
+  },
+  mobileButtonContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  addNewButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  addNewButtonWeb: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addNewButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Grid layout styles
+  gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingBottom: 32,
+    ...(Platform.OS === "web" ? { 
+      justifyContent: "flex-start",
+    } : {}),
+  },
+  promotionsList: {
+    paddingHorizontal: Platform.OS === "web" ? 0 : 16,
+    paddingBottom: 32,
+  },
+  gridRow: {
+    gap: 16,
+    marginBottom: 16,
+  },
+  gridCardWrapper: {
+    ...(Platform.OS === "web" 
+      ? { 
+          width: "23.5%",
+          marginRight: "2%",
+          marginBottom: 16,
+        }
+      : {
+          width: "100%",
+          marginBottom: 16,
+        }
+    ),
+  },
+  mobileCardWrapper: {
+    marginBottom: 16,
+    width: "100%",
+  },
+  cardContainer: {
+    position: "relative",
+    width: "100%",
+  },
+  // Live badge styles
+  liveBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 10,
+    gap: 4,
+    ...(Platform.OS === "web" ? {
+      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    } : {
+      elevation: 3,
+    }),
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.white,
+    flexShrink: 0,
+  },
+  liveBadgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "600",
+    flexShrink: 0,
+    ...(Platform.OS === "web" ? {
+      whiteSpace: "nowrap",
+    } : {}),
+  },
+  // Custom action buttons (inside card)
+  customActionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 16,
+  },
+  removeLiveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.error,
+    backgroundColor: colors.white,
+    ...(Platform.OS === "web" ? {
+      cursor: "pointer",
+    } : {}),
+  },
+  removeLiveButtonText: {
+    color: colors.error,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  goLiveButtonCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    ...(Platform.OS === "web" ? {
+      cursor: "pointer",
+    } : {}),
+  },
+  goLiveButtonTextCard: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  deleteButtonCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.error,
+    backgroundColor: colors.white,
+    ...(Platform.OS === "web" ? {
+      cursor: "pointer",
+    } : {}),
+  },
+  deleteButtonTextCard: {
+    color: colors.error,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  editButtonCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+    ...(Platform.OS === "web" ? {
+      cursor: "pointer",
+    } : {}),
+  },
+  editButtonTextCard: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "600",
+  },
 });
 
 export default styles;
