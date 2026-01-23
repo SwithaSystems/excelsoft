@@ -6,6 +6,7 @@ import {
   ScrollView,
   Platform,
   StyleSheet,
+  Pressable,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import colors from "@/constants/colors";
@@ -59,42 +60,51 @@ const WebCategoryDropdown: React.FC<Props> = ({
   );
 
   return (
-    <View style={styles.categoryContainer}>
-      <TouchableOpacity onPress={() => setIsOpen((p) => !p)}>
-        <View style={styles.categorySelector}>
-          <Text
-            style={[
-              styles.categoryText,
-              {
-                color:
-                  selectedCategory && selectedCategory !== ""
-                    ? colors.black
-                    : colors.slateGrey,
-              },
-            ]}
-          >
-            {selectedCategory && selectedCategory !== ""
-              ? categories.find(
-                  (c) => (c.id || c._id) == selectedCategory
-                )?.name
-              : "All Categories"}
-          </Text>
-
-          <Ionicons
-            name={isOpen ? "chevron-up" : "chevron-down"}
-            size={20}
-            color={colors.black}
-          />
-        </View>
-      </TouchableOpacity>
-
+    <View style={styles.wrapper}>
       {isOpen && (
-        <View style={styles.dropdownList}>
-          <ScrollView style={styles.dropdownScrollArea}>
-            {renderItems()}
-          </ScrollView>
-        </View>
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setIsOpen(false)}
+        />
       )}
+
+      <View style={styles.categoryContainer}>
+        <TouchableOpacity onPress={() => setIsOpen((p) => !p)}>
+          <View style={styles.categorySelector}>
+            <Text
+              style={[
+                styles.categoryText,
+                {
+                  color:
+                    selectedCategory && selectedCategory !== ""
+                      ? colors.black
+                      : colors.slateGrey,
+                },
+              ]}
+            >
+              {selectedCategory && selectedCategory !== ""
+                ? categories.find(
+                    (c) => (c.id || c._id) == selectedCategory
+                  )?.name
+                : "All Categories"}
+            </Text>
+
+            <Ionicons
+              name={isOpen ? "chevron-up" : "chevron-down"}
+              size={20}
+              color={colors.black}
+            />
+          </View>
+        </TouchableOpacity>
+
+        {isOpen && (
+          <View style={styles.dropdownList}>
+            <ScrollView style={styles.dropdownScrollArea}>
+              {renderItems()}
+            </ScrollView>
+          </View>
+        )}
+      </View>
     </View>
   );
 };
@@ -102,6 +112,20 @@ const WebCategoryDropdown: React.FC<Props> = ({
 export default WebCategoryDropdown;
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: "relative",
+    zIndex: 1000,
+  },
+
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
+
   categoryContainer: {
     backgroundColor: colors.white,
     borderColor: colors.placeholdergrey,
@@ -111,7 +135,7 @@ const styles = StyleSheet.create({
     height: 40,
     minWidth: 140,
     position: "relative",
-    zIndex: 1000,
+    zIndex: 1001,
   },
 
   categorySelector: {
@@ -140,7 +164,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
-    zIndex: 1001,
+    zIndex: 1002,
     maxHeight: 260,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
@@ -165,4 +189,3 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 });
-

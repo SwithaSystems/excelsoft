@@ -10,6 +10,11 @@ const styles = StyleSheet.create({
     // padding: 16,
     paddingBottom: 32,
   },
+  webFormContainer: {
+    width: "75%",
+    alignSelf: "center",
+    flex: 1,
+  },
   section: {
     marginBottom: 24,
   },
@@ -39,25 +44,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
     borderStyle: "dashed",
   },
-  uploadButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    gap: 8,
+  imagePlaceholderText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: colors.placeholdergrey,
+    fontWeight: "500",
   },
-  uploadButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "600",
+  imageClickableContainer: {
+    width: "100%",
   },
   inputLabel: {
     fontSize: 14,
@@ -78,22 +76,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginTop: 8,
+    ...(Platform.OS === "web" && {
+      justifyContent: "center",
+      alignItems: "center",
+    }),
   },
   saveButton: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
     backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
+  webButton: {
+    width: Platform.OS === "web" ? "30%" : undefined,
+    flex: Platform.OS === "web" ? 0 : 1,
+    paddingVertical: Platform.OS === "web" ? 8 : 14,
+    paddingHorizontal: Platform.OS === "web" ? 24 : undefined,
+    minWidth: Platform.OS === "web" ? 120 : undefined,
+  },
   saveButtonText: {
     color: colors.white,
-    fontSize: 16,
+    fontSize: Platform.OS === "web" ? 13 : 16,
     fontWeight: "600",
   },
   deleteButton: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
     backgroundColor: colors.placeholdergrey,
     paddingVertical: 14,
     borderRadius: 8,
@@ -102,10 +111,11 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: colors.black,
-    fontSize: 16,
+    fontSize: Platform.OS === "web" ? 13 : 16,
     fontWeight: "600",
   },
   goLiveButton: {
+    flex: Platform.OS === "web" ? 0 : 1,
     backgroundColor: colors.primary,
     borderRadius: 8,
     paddingVertical: 14,
@@ -114,7 +124,7 @@ const styles = StyleSheet.create({
   },
   goLiveButtonText: {
     color: colors.white,
-    fontSize: 16,
+    fontSize: Platform.OS === "web" ? 13 : 16,
     fontWeight: "600",
   },
   // Date Range Selection

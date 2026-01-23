@@ -518,44 +518,48 @@ const EditPromotion = () => {
     >
 
       <View style={{ flex: 1 }}>
-        <ScrollView
-          style={styles.container as ViewStyle}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent as ViewStyle}
-      >
-        {/* Promotion Image */}
-        <View style={styles.section as ViewStyle}>
-          <Text style={styles.sectionTitle as TextStyle}>Promotion Image</Text>
-          {promotionImage ? (
-            <View style={styles.imagePreviewContainer as ViewStyle}>
-              <Image
-                source={
-                  typeof promotionImage === "string"
-                    ? { uri: promotionImage }
-                    : promotionImage
-                }
-                style={styles.imagePreview as ImageStyle}
-                resizeMode="cover"
-              />
-            </View>
-          ) : (
-            <View style={styles.imagePlaceholder as ViewStyle}>
-              <Ionicons
-                name="image-outline"
-                size={48}
-                color={colors.placeholdergrey}
-              />
-            </View>
-          )}
-          <TouchableOpacity
-            style={styles.uploadButton as ViewStyle}
-            onPress={openImagePicker}
-            activeOpacity={0.7}
+        <View style={isWeb ? styles.webFormContainer as ViewStyle : { flex: 1 }}>
+          <ScrollView
+            style={styles.container as ViewStyle}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent as ViewStyle}
           >
-            <Ionicons name="cloud-upload-outline" size={20} color={colors.white} />
-            <Text style={styles.uploadButtonText as TextStyle}>Upload Image</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Promotion Image */}
+            <View style={styles.section as ViewStyle}>
+              <Text style={styles.sectionTitle as TextStyle}>Promotion Image</Text>
+              <TouchableOpacity
+                onPress={openImagePicker}
+                activeOpacity={0.7}
+                style={styles.imageClickableContainer as ViewStyle}
+              >
+                {promotionImage ? (
+                  <View style={styles.imagePreviewContainer as ViewStyle}>
+                    <Image
+                      source={
+                        typeof promotionImage === "string"
+                          ? { uri: promotionImage }
+                          : promotionImage
+                      }
+                      style={styles.imagePreview as ImageStyle}
+                      resizeMode="cover"
+                    />
+                  </View>
+                ) : (
+                  <View style={styles.imagePlaceholder as ViewStyle}>
+                    <Ionicons
+                      name="image-outline"
+                      size={48}
+                      color={colors.placeholdergrey}
+                    />
+                    {isWeb && (
+                      <Text style={styles.imagePlaceholderText as TextStyle}>
+                        Click to upload image
+                      </Text>
+                    )}
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
 
         {/* Title Input */}
         <View style={styles.section as ViewStyle}>
@@ -772,57 +776,58 @@ const EditPromotion = () => {
                   </View>
                 </View>
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer as ViewStyle}>
-          {isNewPromotion ? (
-            <>
-              <TouchableOpacity
-                style={[styles.saveButton as ViewStyle, { flex: 1, marginRight: 8 }]}
-                onPress={handleAddPromotion}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <Text style={styles.saveButtonText as TextStyle}>Add</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.goLiveButton as ViewStyle, { flex: 1, marginLeft: 8 }]}
-                onPress={handleGoLive}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <Text style={styles.goLiveButtonText as TextStyle}>Go Live</Text>
-                )}
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={styles.saveButton as ViewStyle}
-                onPress={handleSavePromotion}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <Text style={styles.saveButtonText as TextStyle}>Add</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton as ViewStyle}
-                onPress={handleDeletePromotion}
-                disabled={isSaving}
-              >
-                <Text style={styles.deleteButtonText as TextStyle}>Delete</Text>
-              </TouchableOpacity>
-            </>
-          )}
+            {/* Action Buttons */}
+            <View style={styles.buttonContainer as ViewStyle}>
+              {isNewPromotion ? (
+                <>
+                  <TouchableOpacity
+                    style={[styles.saveButton as ViewStyle, isWeb && styles.webButton]}
+                    onPress={handleAddPromotion}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <ActivityIndicator size="small" color={colors.white} />
+                    ) : (
+                      <Text style={styles.saveButtonText as TextStyle}>Add</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.goLiveButton as ViewStyle, isWeb && styles.webButton]}
+                    onPress={handleGoLive}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <ActivityIndicator size="small" color={colors.white} />
+                    ) : (
+                      <Text style={styles.goLiveButtonText as TextStyle}>Go Live</Text>
+                    )}
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.saveButton as ViewStyle, isWeb && styles.webButton]}
+                    onPress={handleSavePromotion}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <ActivityIndicator size="small" color={colors.white} />
+                    ) : (
+                      <Text style={styles.saveButtonText as TextStyle}>Add</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.deleteButton as ViewStyle, isWeb && styles.webButton]}
+                    onPress={handleDeletePromotion}
+                    disabled={isSaving}
+                  >
+                    <Text style={styles.deleteButtonText as TextStyle}>Delete</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
       </View>
 
       {/* Date Pickers for Mobile */}
