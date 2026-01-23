@@ -41,6 +41,7 @@ import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import { promotionService, Promotion as APIPromotion } from "@/services/promotionService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 
 interface Promotion {
   id: string;
@@ -97,22 +98,20 @@ const AdminPromotion = () => {
 
   const isWeb = Platform.OS === "web";
 
-  const renderCategoryItems = () => (
-    <>
-      {allCategories.map((cat: any) => (
-        <TouchableOpacity
-          key={cat.id || cat._id}
-          style={styles.dropdownItem as ViewStyle}
-          onPress={() => {
-            setSelectedCategory(cat.id || cat._id);
-            setIsCategoryOpen(false);
-          }}
-        >
-          <Text style={styles.dropdownItemText as TextStyle}>{cat.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </>
-  );
+  async function getallCategories() {
+    try {
+      const categories = await categoryService.getAllCategories();
+      if (categories) {
+        setAllCategories(categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  }
+
+  useEffect(() => {
+    getallCategories();
+  }, []);
 
   const fetchAvailableProducts = useCallback(async () => {
     try {

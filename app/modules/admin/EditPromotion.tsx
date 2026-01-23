@@ -36,6 +36,7 @@ import SearchBar from "@/app/components/searchBar";
 import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import { promotionService } from "@/services/promotionService";
+import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 
 const EditPromotion = () => {
   const router = useRouter();
@@ -69,7 +70,6 @@ const EditPromotion = () => {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [productDisplayMode, setProductDisplayMode] = useState<"category" | "product">("product");
   const [selectedCategory, setSelectedCategory] = useState<string | number>("");
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const debouncedProductQuery = useDebounce(productSearchQuery, 300);
@@ -117,6 +117,21 @@ const EditPromotion = () => {
     }
   }, [debouncedProductQuery, showProductModal, searchProductsByName]);
 
+  async function getallCategories() {
+    try {
+      const categories = await categoryService.getAllCategories();
+      if (categories) {
+        setAllCategories(categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  }
+
+  useEffect(() => {
+    getallCategories();
+  }, []);
+
   const handleSelectProducts = useCallback(() => {
     setShowProductModal(true);
     setProductSearchQuery("");
@@ -128,23 +143,6 @@ const EditPromotion = () => {
   const handleProductSearch = useCallback(async () => {
     await searchProductsByName(productSearchQuery);
   }, [productSearchQuery, searchProductsByName]);
-
-  const renderCategoryItems = () => (
-    <>
-      {allCategories.map((cat: any) => (
-        <TouchableOpacity
-          key={cat.id || cat._id}
-          style={styles.dropdownItem as ViewStyle}
-          onPress={() => {
-            setSelectedCategory(cat.id || cat._id);
-            setIsCategoryOpen(false);
-          }}
-        >
-          <Text style={styles.dropdownItemText as TextStyle}>{cat.name}</Text>
-        </TouchableOpacity>
-      ))}
-    </>
-  );
 
   const handleAddProduct = useCallback((product: Product) => {
     setAttachedProducts((prev) => {
@@ -515,11 +513,13 @@ const EditPromotion = () => {
       hasFooter
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
-      scrollable={isWeb ? true : false}
+      scrollable={false}
       hideNavItems={true}
     >
-      <ScrollView
-        style={styles.container as ViewStyle}
+
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          style={styles.container as ViewStyle}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent as ViewStyle}
       >
@@ -617,67 +617,22 @@ const EditPromotion = () => {
         {productDisplayMode === "category" && (
           <View style={styles.categorySelectionSection as ViewStyle}>
             <Text style={styles.categorySelectionTitle as TextStyle}>Choose Category</Text>
-            <View style={styles.categoryContainer as ViewStyle}>
-              <TouchableOpacity
-                onPress={() => setIsCategoryOpen((prev) => !prev)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.categorySelector as ViewStyle}>
-                  <Text
-                    style={[
-                      styles.categoryText as TextStyle,
-                      {
-                        color:
-                          selectedCategory && selectedCategory !== ""
-                            ? colors.black
-                            : colors.slateGrey,
-                      },
-                    ]}
-                    >
-                      {selectedCategory && selectedCategory !== ""
-                        ? allCategories.find((c: any) => (c.id || c._id) == selectedCategory)?.name || "Select Category"
-                        : "Select Category"}
-                    </Text>
-                  <Ionicons
-                    name={isCategoryOpen ? "chevron-up" : "chevron-down"}
-                    size={20}
-                    color={colors.black}
-                  />
-                </View>
-              </TouchableOpacity>
-              {isCategoryOpen && (
-                isWeb ? (
-                  // ===== WEB: inline dropdown =====
-                  <View style={styles.dropdownList as ViewStyle}>
-                    <ScrollView style={styles.dropdownScrollArea as ViewStyle}>
-                      {renderCategoryItems()}
-                    </ScrollView>
-                  </View>
-                ) : (
-                  // ===== MOBILE: modal dropdown =====
-                  Platform.OS !== "web" && (
-                    <Modal
-                      transparent
-                      animationType="fade"
-                      onRequestClose={() => setIsCategoryOpen(false)}
-                    >
-                      <Pressable
-                        style={styles.modalOverlay as ViewStyle}
-                        onPress={() => setIsCategoryOpen(false)}
-                      >
-                        <View style={styles.modalDropdown as ViewStyle}>
-                          <ScrollView>
-                            {renderCategoryItems()}
-                          </ScrollView>
-                        </View>
-                      </Pressable>
-                    </Modal>
-                  )
-                )
-              )}
-            </View>
+            {isWeb ? (
+              <View style={{ overflow: "visible", zIndex: 1000 }}>
+                <WebCategoryDropdown
+                  categories={allCategories}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                />
+              </View>
+            ) : (
+              <Text style={styles.categorySelectionTitle as TextStyle}>
+                Category selection available on web
+              </Text>
+            )}
           </View>
         )}
+
 
         {/* Attach Products Section */}
         {productDisplayMode === "product" && (
@@ -868,6 +823,7 @@ const EditPromotion = () => {
           )}
         </View>
       </ScrollView>
+      </View>
 
       {/* Date Pickers for Mobile */}
       {!isWeb && (

@@ -39,6 +39,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
+import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 
 interface ApiResponse {
   data: Product[];
@@ -145,13 +146,6 @@ const AdminProductDashboard = () => {
         const totalFetched = (page - 1) * ITEMS_PER_PAGE + response.data.length;
         const hasMoreData = totalFetched < response.total;
 
-        // console.log(`Page ${page} response:`, {
-        //   itemsReceived: response.data.length,
-        //   totalRecords: response.total,
-        //   totalFetched,
-        //   hasMore: hasMoreData,
-        // });
-
         return {
           data: response.data,
           total: response.total,
@@ -227,10 +221,6 @@ const AdminProductDashboard = () => {
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
 
-      // console.log("Initial data loaded:", {
-      //   
-      // }
-      //);
     } catch (error) {
       console.error("Failed to load initial data:", error);
       Alert.alert("Error", "Failed to load products");
@@ -244,17 +234,10 @@ const AdminProductDashboard = () => {
 
   const loadMoreData = async () => {
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
-      // console.log("Load more blocked:", {
-      //   loadingMoreRef: loadingMoreRef.current,
-      //   isLoadingMore,
-      //   hasMore,
-      //   isLoading,
-      // });
       return;
     }
 
     const nextPage = lastPageLoadedRef.current + 1;
-    // console.log(`Loading more data - page ${nextPage}`);
 
     loadingMoreRef.current = true;
     setIsLoadingMore(true);
@@ -272,9 +255,6 @@ const AdminProductDashboard = () => {
             (item) => !existingIds.has(item._id || item.id)
           );
 
-          // console.log(
-          //   `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
-          // );
           return [...prevProducts, ...newItems];
         });
 
@@ -309,11 +289,6 @@ const AdminProductDashboard = () => {
       setHasMore(response.hasMore);
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
-
-      // console.log("Data refreshed:", {
-      //   itemCount: response.data.length,
-      //   total: response.total,
-      // });
     } catch (error) {
       console.error("Failed to refresh data:", error);
       Alert.alert("Error", "Failed to refresh products");
@@ -349,7 +324,6 @@ const AdminProductDashboard = () => {
         }
       }
     } catch (error: any) {
-      // console.log("Delete error:", error?.response?.data);
       const errorMessage =
         error?.response?.data?.message ||
         "Something went wrong while deleting the product.";
@@ -667,7 +641,6 @@ const AdminProductDashboard = () => {
     try {
       setIsLoading(true);
       const response = await ProductsAPI.productsBy_Name_Id(query);
-      // console.log("Search response:", response);
 
       if (response) {
         setAllProductsList(response);
@@ -731,10 +704,7 @@ const AdminProductDashboard = () => {
       scrollable={isWeb ? true : false}
       hideNavItems={true}
     >
-      <View style={[
-          // globalStyles.pt_0, 
-          {flex: 1 }
-        ]}>
+      <View style={[{flex: 1 }]}>
         {!isWeb && (
           <View>
             <SearchBar
