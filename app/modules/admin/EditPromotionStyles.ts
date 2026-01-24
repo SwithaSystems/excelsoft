@@ -54,6 +54,25 @@ const styles = StyleSheet.create({
     color: colors.placeholdergrey,
     fontWeight: "500",
   },
+  imageNoteBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  imageNoteIcon: {
+    marginRight: 6,
+    marginTop: 2,
+  },
+  imageNoteText: {
+    fontWeight: "500",
+    fontSize: 12,
+    color: colors.black,
+    flex: 1,
+  },
   imageClickableContainer: {
     width: "100%",
   },
@@ -272,8 +291,8 @@ const styles = StyleSheet.create({
   // Category Selection Section
   categorySelectionSection: {
     marginBottom: 24,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    alignItems: Platform.OS === "web" ? "center" : "flex-start",
     gap: 16,
   },
   categorySelectionTitle: {
@@ -281,6 +300,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.black,
     marginBottom: 0,
+  },
+  mobileCategoryDropdown: {
+    width: "100%",
+    marginTop: 8,
+  },
+  mobileCategoryDropdown: {
+    width: "100%",
+    marginTop: 8,
   },
   categoryContainer: {
     backgroundColor: colors.white,
@@ -351,9 +378,13 @@ const styles = StyleSheet.create({
   // Product Selection Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: Platform.OS === "web" ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.3)",
     justifyContent: "center",
     alignItems: "center",
+    ...(Platform.OS === "web" && {
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+    }),
   },
   modalContent: {
     backgroundColor: colors.white,
@@ -388,6 +419,7 @@ const styles = StyleSheet.create({
   },
   modalSearchContainer: {
     paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.placeholdergrey,

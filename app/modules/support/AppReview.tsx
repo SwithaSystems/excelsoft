@@ -7,13 +7,10 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { globalStyles } from "@/assets/styles/globalStyles";
 import styles from "./AppReviewStyles";
 import Header from "../../components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import ProductStars from "@/app/components/ProductStars";
-import containers from "@/containers";
-import { redirectToPage } from "@/utilities/redirectionHelper";
 import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -21,7 +18,7 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
-const appReviewScreen = () => {
+const AppReviewScreen = () => {
   const [rating, setRating] = useState(0);
   const isWeb = Platform.OS === "web";
 
@@ -42,91 +39,76 @@ const appReviewScreen = () => {
       footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
-        <View
-          style={[
-            styles.reviewContainer,
-            isWeb && styles.reviewContainerWeb,
-          ]}
-        >
-        {/* <View style={styles.container}>
-          <Header
-            headerText="Feedback"
-            // secondaryBtnText="Discard"
-            // secondaryBtnCallBack={() => {
-            // redirectToPage(containers.userProfileScreenScreen);
-            // }}
-          /> */}
-
-        {/* <ScrollView style={styles.reviewContainer}> */}
-        <View style={styles.ratingCategory}>
-          <Text style={styles.label}>Tell us about your expereince!</Text>
-          <Text style={styles.label}>Rate your site Experience</Text>
-          <ProductStars
-            starsContainer={{
-              justifyContent: "space-between",
-              //backgroundColor: colors.placeholdergrey,
-            }}
-            rating={rating}
-            needAction={true}
-            size={60}
-            onChangeRating={setRating}
-          />
-        </View>
-        <View style={styles.selectCategory}>
-          <Text style={styles.label}>Tell us your feedback about</Text>
-          <View style={styles.chooseCategory}>
-            <TextInput
-              placeholder="Choose your category"
-              style={styles.categoryText}
-            />
-            <Ionicons
-              name="chevron-down-outline"
-              size={24}
-              color={colors.primary}
+        <View style={[styles.reviewContainer, isWeb && styles.reviewContainerWeb]}>
+          
+          {/* Rating */}
+          <View style={styles.ratingCategory}>
+            <Text style={styles.label}>Tell us about your experience</Text>
+            <Text style={styles.label}>Rate your site experience</Text>
+            <ProductStars
+              starsContainer={{ justifyContent: "space-between" }}
+              rating={rating}
+              needAction={true}
+              size={60}
+              onChangeRating={setRating}
             />
           </View>
-        </View>
-        <View style={styles.radioContainer}>
-          <Text style={styles.label}>Did any thing stop your shopping?</Text>
-          <TouchableOpacity style={styles.radioOption}>
-            <Ionicons
-              name="radio-button-off"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={styles.radioLabel}>Yes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.radioOption}>
-            <Ionicons
-              name="radio-button-off"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={styles.radioLabel}>No</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.addYourReview}>
-          <Text style={styles.label}>
-            Do you want to talk about your experience?
-          </Text>
-          <TextInput
-            style={[styles.reviewText]}
-            placeholder="Add your experience"
-            multiline
-            numberOfLines={8}
-          />
-        </View>
 
-        <TouchableOpacity style={styles.submitButton}>
-          <Text style={styles.submitText}>Submit Feedback</Text>
-        </TouchableOpacity>
-        {/* </ScrollView> */}
-        {/* </View> */}
+          {/* Category */}
+          <View style={styles.selectCategory}>
+            <Text style={styles.label}>Tell us your feedback about</Text>
+            <View style={styles.chooseCategory}>
+              <TextInput
+                placeholder="Choose your category"
+                style={styles.categoryText}
+                placeholderTextColor={colors.placeholdergrey}
+              />
+              <Ionicons
+                name="chevron-down-outline"
+                size={22}
+                color={colors.primary}
+              />
+            </View>
+          </View>
+
+          {/* Radio */}
+          <View style={styles.radioContainer}>
+            <Text style={styles.label}>Did anything stop your shopping?</Text>
+
+            <TouchableOpacity style={styles.radioOption}>
+              <Ionicons name="radio-button-off" size={20} color={colors.primary} />
+              <Text style={styles.radioLabel}>Yes</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.radioOption}>
+              <Ionicons name="radio-button-off" size={20} color={colors.primary} />
+              <Text style={styles.radioLabel}>No</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Review */}
+          <View style={styles.addYourReview}>
+            <Text style={styles.label}>
+              Do you want to talk about your experience?
+            </Text>
+            <TextInput
+              style={styles.reviewText}
+              placeholder="Add your experience"
+              placeholderTextColor={colors.placeholdergrey}
+              multiline
+              numberOfLines={8}
+            />
+          </View>
+
+          {/* Submit */}
+          <TouchableOpacity style={styles.submitButton}>
+            <Text style={styles.submitText}>Submit Feedback</Text>
+          </TouchableOpacity>
+
         </View>
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </LayoutComponent>
   );
 };
 
-export default appReviewScreen;
+export default AppReviewScreen;

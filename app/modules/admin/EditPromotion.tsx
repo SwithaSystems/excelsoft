@@ -37,6 +37,8 @@ import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import { promotionService } from "@/services/promotionService";
 import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
+import CategoryDropdown from "./components/categoryDropdown";
+import { BlurView } from "expo-blur";
 
 const EditPromotion = () => {
   const router = useRouter();
@@ -822,6 +824,90 @@ const EditPromotion = () => {
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
 
+  // Modal content component to avoid duplication
+  const renderModalContent = () => (
+    <View style={styles.modalContent as ViewStyle}>
+      <View style={styles.modalHeader as ViewStyle}>
+        <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
+        <TouchableOpacity
+          onPress={() => setShowProductModal(false)}
+          style={styles.modalCloseButton as ViewStyle}
+        >
+          <Ionicons name="close" size={24} color={colors.black} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.modalSearchContainer as ViewStyle}>
+        <SearchBar
+          placeholder="Search by name..."
+          value={productSearchQuery}
+          onChangeText={setProductSearchQuery}
+          onSubmitEditing={handleProductSearch}
+          onPress={handleProductSearch}
+        />
+      </View>
+      {isLoadingProducts ? (
+        <View style={styles.modalLoadingContainer as ViewStyle}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 12 }}>Loading products...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={availableProducts}
+          keyExtractor={(item) => String(item._id || item.id)}
+          renderItem={({ item }) => {
+            const isAttached = attachedProducts.some(
+              (p) => (p._id || p.id) === (item._id || item.id)
+            );
+            const productImage = item.image?.[0] || item.image;
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.productModalItem as ViewStyle,
+                  isAttached && (styles.productModalItemSelected as ViewStyle),
+                ]}
+                onPress={() => handleToggleProductAttachment(item)}
+              >
+                <Image
+                  source={
+                    typeof productImage === "string"
+                      ? { uri: productImage }
+                      : productImage || require("../../../assets/Placeholder.png")
+                  }
+                  style={styles.productModalImage as ImageStyle}
+                  resizeMode="cover"
+                />
+                <View style={styles.productModalInfo as ViewStyle}>
+                  <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.productModalSku as TextStyle}>
+                    SKU: {item.id || item._id || "N/A"}
+                  </Text>
+                </View>
+                {isAttached && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          }}
+          style={styles.modalList as ViewStyle}
+        />
+      )}
+      <View style={styles.modalFooter as ViewStyle}>
+        <TouchableOpacity
+          style={styles.modalDoneButton as ViewStyle}
+          onPress={() => setShowProductModal(false)}
+        >
+          <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <LayoutComponent
       hasHeader
@@ -895,6 +981,17 @@ const EditPromotion = () => {
                   </View>
                 )}
               </TouchableOpacity>
+              <View style={styles.imageNoteBox as ViewStyle}>
+                <Ionicons
+                  name="information-circle"
+                  size={24}
+                  color={colors.primary}
+                  style={styles.imageNoteIcon}
+                />
+                <Text style={styles.imageNoteText as TextStyle}>
+                  Please upload images with a resolution of 1536 × 834 px and a file size below 200 KB.
+                </Text>
+              </View>
             </View>
 
         {/* Title Input */}
@@ -964,9 +1061,13 @@ const EditPromotion = () => {
                 setSelectedCategory={setSelectedCategory}
               />
             ) : (
-              <Text style={{ fontSize: 14, color: colors.secondaryText }}>
-                Category selection available on web
-              </Text>
+              <CategoryDropdown
+                categories={allCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                placeholder="All Categories"
+                containerStyle={styles.mobileCategoryDropdown as ViewStyle}
+              />
             )}
           </View>
         )}
@@ -1204,98 +1305,19 @@ const EditPromotion = () => {
         transparent={true}
         onRequestClose={() => setShowProductModal(false)}
       >
-        <View style={styles.modalOverlay as ViewStyle}>
-          <View style={styles.modalContent as ViewStyle}>
-            <View style={styles.modalHeader as ViewStyle}>
-              <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
-              <TouchableOpacity
-                onPress={() => setShowProductModal(false)}
-                style={styles.modalCloseButton as ViewStyle}
-              >
-                <Ionicons name="close" size={24} color={colors.black} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.modalSearchContainer as ViewStyle}>
-              <SearchBar
-                placeholder="Search by name..."
-                value={productSearchQuery}
-                onChangeText={setProductSearchQuery}
-                onSubmitEditing={handleProductSearch}
-                onPress={handleProductSearch}
-              />
-            </View>
-            {isLoadingProducts ? (
-              <View style={styles.modalLoadingContainer as ViewStyle}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={{ marginTop: 12 }}>Loading products...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={[...availableProducts].sort((a, b) => {
-                  const aIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (a._id || a.id)
-                  );
-                  const bIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (b._id || b.id)
-                  );
-                  if (aIsAttached && !bIsAttached) return -1;
-                  if (!aIsAttached && bIsAttached) return 1;
-                  return 0;
-                })}
-                keyExtractor={(item) => String(item._id || item.id)}
-                renderItem={({ item }) => {
-                  const isAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (item._id || item.id)
-                  );
-                  const productImage = item.image?.[0] || item.image;
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        styles.productModalItem as ViewStyle,
-                        isAttached && (styles.productModalItemSelected as ViewStyle),
-                      ]}
-                      onPress={() => handleToggleProductAttachment(item)}
-                    >
-                      <Image
-                        source={
-                          typeof productImage === "string"
-                            ? { uri: productImage }
-                            : productImage || require("../../../assets/Placeholder.png")
-                        }
-                        style={styles.productModalImage as ImageStyle}
-                        resizeMode="cover"
-                      />
-                      <View style={styles.productModalInfo as ViewStyle}>
-                        <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                        <Text style={styles.productModalSku as TextStyle}>
-                          SKU: {item.id || item._id || "N/A"}
-                        </Text>
-                      </View>
-                      {isAttached && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={colors.primary}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-                style={styles.modalList as ViewStyle}
-              />
-            )}
-            <View style={styles.modalFooter as ViewStyle}>
-              <TouchableOpacity
-                style={styles.modalDoneButton as ViewStyle}
-                onPress={() => setShowProductModal(false)}
-              >
-                <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
-              </TouchableOpacity>
-            </View>
+        {Platform.OS === "web" ? (
+          <View style={styles.modalOverlay as ViewStyle}>
+            {renderModalContent()}
           </View>
-        </View>
+        ) : (
+          <BlurView 
+            intensity={20} 
+            tint="dark"
+            style={styles.modalOverlay as ViewStyle}
+          >
+            {renderModalContent()}
+          </BlurView>
+        )}
       </Modal>
     </LayoutComponent>
   );
