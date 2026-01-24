@@ -26,9 +26,8 @@
         "NSLocationWhenInUseUsageDescription": "This app uses your location to provide location-based content or services.",
         "NSFaceIDUsageDescription": "This app uses Face ID for secure authentication."
       },
-      "merchantId": "merchant.com.yourcompany.yourapp",
        "entitlements": {
-    "com.apple.developer.in-app-payments": ["merchant.com.yourcompany.yourapp"]
+    "com.apple.developer.in-app-payments": ["merchant.com.excelsoft.app"]
   }
     },
     "android": {
