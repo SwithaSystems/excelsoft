@@ -187,14 +187,14 @@ const orderSummeryScreen = () => {
   const getMinimumOrderValue = useCallback(async (): Promise<number | null> => {
     try {
       const resp = await axios.get(
-        `${API_BASE_URL}/global-settings/minimumOrderValue`
+        `${API_BASE_URL}/global-settings/minimumCheckoutOrderValue`
       );
       const raw = resp?.data;
 
       if (typeof raw === "number") return Number(raw);
       if (raw && typeof raw === "object") {
-        if (typeof raw.minimumOrderValue === "number")
-          return Number(raw.minimumOrderValue);
+        if (typeof raw.minimumCheckoutOrderValue === "number")
+          return Number(raw.minimumCheckoutOrderValue);
         if (typeof raw.value === "number") return Number(raw.value);
       }
 
@@ -206,10 +206,10 @@ const orderSummeryScreen = () => {
     }
   }, [API_BASE_URL]);
   
-   const getMinimumCheckoutOrderValue = async (): Promise<number | null> => {
+   const getminimumDeliveryOrderValue = async (): Promise<number | null> => {
     try {
       const resp = await axios.get(
-        `${API_BASE_URL}/global-settings/minimumCheckoutOrderValue`
+        `${API_BASE_URL}/global-settings/minimumDeliveryOrderValue`
       );
       const raw = resp?.data;
       const mov_check =
@@ -217,8 +217,8 @@ const orderSummeryScreen = () => {
           ? raw
           : typeof raw === "object" &&
             raw !== null &&
-            typeof raw.minimumOrderValue === "number"
-          ? raw.minimumCheckoutOrderValue
+            typeof raw.minimumCheckoutOrderValue === "number"
+          ? raw.minimumDeliveryOrderValue
           : null;
 
       return mov_check === null ? null : Number(mov_check);
@@ -232,7 +232,7 @@ const orderSummeryScreen = () => {
   useEffect(() => {
     let isActive = true;
     (async () => {
-      const mov_check = await getMinimumCheckoutOrderValue();
+      const mov_check = await getminimumDeliveryOrderValue();
       if (!isActive) return;
       if (mov_check !== null) {
         setCurrentMOV_Checkout(mov_check);
@@ -244,7 +244,7 @@ const orderSummeryScreen = () => {
     return () => {
       isActive = false;
     };
-  }, [getMinimumCheckoutOrderValue]);
+  }, [getminimumDeliveryOrderValue]);
 
    useEffect(() => {
     let isActive = true;
@@ -815,7 +815,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
       // Calculate total the same way as OrderSummary component
       const currentTotal = calculateOrderTotal(cartItems);
 
-      // UPDATED: Use minimumCheckoutOrderValue for home delivery, regular MOV for others
+      // UPDATED: Use minimumDeliveryOrderValue for home delivery, regular MOV for others
       const applicableMOV = 
         selectedMode === DELIVERY_MODE_HOME
           ? (currentMOV_Chekcout !== null ? currentMOV_Chekcout : MOV)

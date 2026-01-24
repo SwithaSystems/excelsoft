@@ -47,15 +47,15 @@ const SETTINGS_CONFIG: SettingConfig[] = [
     type: "input",
   },
   {
-    key: "minimumOrderValue",
-    label: "Minimum Order Value",
-    description: "Minimum order value required for customers to place an order.",
+    key: "minimumCheckoutOrderValue",
+    label: "Minimum Checkout Order Value",
+    description: "Minimum Checkout order value required for customers to place an order.",
     type: "input",
   },
   {
-    key: "minimumCheckoutOrderValue",
-    label: "Minimum Checkout Order Value",
-    description: "Minimum order value required to proceed to checkout.",
+    key: "minimumDeliveryOrderValue",
+    label: "Minimum Delivery Order Value",
+    description: "Minimum Delivery order value required to proceed to checkout.",
     type: "input",
   },
 ];
@@ -69,8 +69,8 @@ const AdminGlobalSettings = () => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValues, setTempValues] = useState<Record<string, string>>({
     shippingCharge: "",
-    minimumOrderValue: "",
     minimumCheckoutOrderValue: "",
+    minimumDeliveryOrderValue: "",
   });
 
   useEffect(() => {
@@ -133,8 +133,8 @@ const AdminGlobalSettings = () => {
     setEditingField(null);
     setTempValues({
       shippingCharge: "",
-      minimumOrderValue: "",
       minimumCheckoutOrderValue: "",
+      minimumDeliveryOrderValue: "",
     });
   };
 

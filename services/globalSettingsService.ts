@@ -5,8 +5,8 @@ export interface GlobalSettingsDto {
   timeWindow: boolean;
   deliveryMode: boolean;
   shippingCharge:number;
-  minimumOrderValue:number;
   minimumCheckoutOrderValue:number;
+  minimumDeliveryOrderValue:number;
   updatedAt?: Date;
 }
 

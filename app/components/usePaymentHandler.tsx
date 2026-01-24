@@ -91,11 +91,11 @@ export const usePaymentHandler = () => {
   const getMinimumOrderValue = async (): Promise<number | null> => {
     try {
       const resp = await axios.get(
-        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+        `${API_BASE_URL}/ui-constants/minimumCheckoutOrderValue`
       );
       return typeof resp.data === "number"
         ? resp.data
-        : resp.data?.minimumOrderValue ?? null;
+        : resp.data?.minimumCheckoutOrderValue ?? null;
     } catch {
       return null;
     }

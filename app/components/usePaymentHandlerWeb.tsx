@@ -44,8 +44,8 @@ export default function usePaymentHandlerWeb() {
       try {
         const resp = await axios.get(`${API_BASE_URL}/global-settings`);
         setShippingCharge(resp?.data?.shippingCharge ?? 0);
-        setMOV(resp?.data?.minimumOrderValue ?? null);
-        setCurrentMOV_Checkout(resp?.data?.minimumCheckoutOrderValue ?? null);
+        setMOV(resp?.data?.minimumCheckoutOrderValue ?? null);
+        setCurrentMOV_Checkout(resp?.data?.minimumDeliveryOrderValue ?? null);
       } catch {
         setShippingCharge(0);
         setMOV(null);

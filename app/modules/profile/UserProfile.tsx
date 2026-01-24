@@ -172,7 +172,7 @@ const UserProfileScreen = () => {
   };
 
   const handleSoftDelete = async () => {
-  if (!user?.id) {
+  if (!user?._id) {
     showErrorAlert({
       title: "Error",
       message: "User ID not found. Please try again.",
@@ -186,7 +186,7 @@ const UserProfileScreen = () => {
     // Show loading state (optional)
     // You can add a loading state here if needed
     
-    const response = await UserAPI.softDeleteUser(user.id);
+    const response = await UserAPI.softDeleteUser(user?._id);
     
     if (response) {
       // Show success message
