@@ -19,6 +19,8 @@ const routes = {
   categoriesScreen: "modules/catalog/Categories",
   filterScreen: "modules/catalog/Filter",
   offersScreen: "modules/catalog/Offers",
+  promotionProductsScreen: "modules/catalog/PromotionProducts",
+
 
   // Splash and Welcome
   splashScreen: "modules/auth/SplashScreen",

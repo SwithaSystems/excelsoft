@@ -50,28 +50,14 @@ interface Promotion {
   image: string | number;
   isLive: boolean;
   _id?: string;
+  startingDate?: string;
+  endingDate?: string;
+  attachedProducts?: any[];
 }
 
 const AdminPromotion = () => {
   const params = useLocalSearchParams();
   
-  const dummyPromotions: Promotion[] = [
-    {
-      id: "1",
-      title: "Summer Savings Sale",
-      url: "https://your-promo.com/summer-sale",
-      image: require("../../../assets/Placeholder.png"),
-      isLive: false,
-    },
-    {
-      id: "2",
-      title: "Weekend Saving Sale",
-      url: "https://your-promo.com/summer-sale",
-      image: require("../../../assets/Placeholder.png"),
-      isLive: false,
-    },
-  ];
-
   const [promotionImage, setPromotionImage] = useState<string | null>(null);
   const [promotionTitle, setPromotionTitle] = useState("");
   const [promotionUrl, setPromotionUrl] = useState("");
@@ -90,11 +76,20 @@ const AdminPromotion = () => {
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const debouncedProductQuery = useDebounce(productSearchQuery, 300);
   const [livePromotions, setLivePromotions] = useState<Promotion[]>([]);
-  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>(dummyPromotions);
+  const [savedPromotions, setSavedPromotions] = useState<Promotion[]>([]);
   const [isLoadingLivePromotions, setIsLoadingLivePromotions] = useState(false);
   const [isSavingPromotion, setIsSavingPromotion] = useState(false);
   const [showRemoveLiveModal, setShowRemoveLiveModal] = useState(false);
   const [promotionToRemoveLive, setPromotionToRemoveLive] = useState<Promotion | null>(null);
+  const [errorLoadingPromotions, setErrorLoadingPromotions] = useState<string | null>(null);
+  
+  // Confirmation modals
+  const [showGoLiveModal, setShowGoLiveModal] = useState(false);
+  const [promotionToGoLive, setPromotionToGoLive] = useState<Promotion | null>(null);
+  const [showDeleteLiveModal, setShowDeleteLiveModal] = useState(false);
+  const [promotionToDeleteLive, setPromotionToDeleteLive] = useState<string | null>(null);
+  const [showDeleteSavedModal, setShowDeleteSavedModal] = useState(false);
+  const [promotionToDeleteSaved, setPromotionToDeleteSaved] = useState<string | null>(null);
 
   const isWeb = Platform.OS === "web";
 
@@ -163,9 +158,10 @@ const AdminPromotion = () => {
     }
   }, [debouncedProductQuery, showProductModal, searchProductsByName]);
 
-  const fetchLivePromotions = useCallback(async () => {
+  const fetchAllPromotions = useCallback(async () => {
     try {
       setIsLoadingLivePromotions(true);
+      setErrorLoadingPromotions(null);
       const apiPromotions = await promotionService.getAllPromotions();
       
       // Convert API promotions to local Promotion format
@@ -173,76 +169,48 @@ const AdminPromotion = () => {
         id: promo._id || Date.now().toString(),
         _id: promo._id,
         title: promo.title,
-        url: promo.link,
+        url: promo.link || promo.imageURL, // fallback to imageURL if link is missing
         image: promo.imageURL,
-        isLive: true,
+        isLive: promo.isLive || false,
+        startingDate: promo.startDate,
+        endingDate: promo.endDate,
+        attachedProducts: promo.products || [],
       }));
       
-      setLivePromotions(convertedPromotions);
-    } catch (error) {
-      console.error("Error fetching live promotions:", error);
-      // Don't show alert, just log the error
+      // Separate into live and saved promotions
+      const live = convertedPromotions.filter((p) => p.isLive === true);
+      const saved = convertedPromotions.filter((p) => p.isLive !== true);
+      
+      console.log("FetchAllPromotions - Total:", convertedPromotions.length, "Live:", live.length, "Saved:", saved.length);
+      console.log("FetchAllPromotions - Live promotions:", live.map(p => ({ id: p.id, title: p.title, isLive: p.isLive })));
+      console.log("FetchAllPromotions - Saved promotions:", saved.map(p => ({ id: p.id, title: p.title, isLive: p.isLive, _id: p._id })));
+      
+      setLivePromotions(live);
+      setSavedPromotions(saved);
+    } catch (error: any) {
+      console.error("Error fetching promotions:", error);
+      setErrorLoadingPromotions(error?.response?.data?.message || "Failed to load promotions");
+      // Set empty arrays on error to show empty state
+      setLivePromotions([]);
+      setSavedPromotions([]);
     } finally {
       setIsLoadingLivePromotions(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLivePromotions();
-  }, [fetchLivePromotions]);
+    fetchAllPromotions();
+  }, [fetchAllPromotions]);
 
-  // Refresh live promotions when screen comes into focus (after navigating back from edit)
+  // Refresh promotions when screen comes into focus (after navigating back from edit)
   useFocusEffect(
     useCallback(() => {
-      fetchLivePromotions();
-    }, [fetchLivePromotions])
+      fetchAllPromotions();
+    }, [fetchAllPromotions])
   );
 
-  // Handle new saved promotion from EditPromotion screen
-  useEffect(() => {
-    if (params.newSavedPromotion) {
-      try {
-        const newPromotion = JSON.parse(params.newSavedPromotion as string);
-        setSavedPromotions((prev) => {
-          // Check if promotion already exists to avoid duplicates
-          const exists = prev.some((p) => p.id === newPromotion.id);
-          if (exists) return prev;
-          return [...prev, newPromotion];
-        });
-      } catch (error) {
-        console.error("Error parsing new saved promotion:", error);
-      }
-    }
-  }, [params.newSavedPromotion]);
-
-  // Handle updated saved promotion from EditPromotion screen
-  useEffect(() => {
-    if (params.updatedSavedPromotion) {
-      try {
-        const updatedPromotion = JSON.parse(params.updatedSavedPromotion as string);
-        setSavedPromotions((prev) => {
-          // Update existing promotion or add if it doesn't exist
-          const index = prev.findIndex((p) => p.id === updatedPromotion.id);
-          if (index !== -1) {
-            const updated = [...prev];
-            updated[index] = updatedPromotion;
-            return updated;
-          }
-          return [...prev, updatedPromotion];
-        });
-      } catch (error) {
-        console.error("Error parsing updated saved promotion:", error);
-      }
-    }
-  }, [params.updatedSavedPromotion]);
-
-  // Handle deleted saved promotion from EditPromotion screen
-  useEffect(() => {
-    if (params.deletedPromotionId) {
-      const deletedId = params.deletedPromotionId as string;
-      setSavedPromotions((prev) => prev.filter((p) => p.id !== deletedId));
-    }
-  }, [params.deletedPromotionId]);
+  // Refresh promotions when returning from EditPromotion screen
+  // The useFocusEffect above will handle the refresh automatically
 
   const handleAddProduct = useCallback((product: Product) => {
     setAttachedProducts((prev) => {
@@ -380,15 +348,48 @@ const AdminPromotion = () => {
     try {
       const promotion = promotionToRemoveLive;
       if (promotion._id) {
-        await promotionService.deletePromotion(promotion._id);
-        // Move promotion from live to saved
-        const updatedPromotion = { ...promotion, isLive: false, _id: undefined };
-        setLivePromotions(livePromotions.filter((p) => p.id !== promotion.id));
-        setSavedPromotions((prev) => {
-          const exists = prev.some((p) => p.id === promotion.id);
-          if (exists) return prev;
-          return [...prev, updatedPromotion];
-        });
+        // Determine if the link is internal or external
+        const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
+        
+        // Format dates for API
+        const formatDateForAPI = (dateString: string): string => {
+          if (!dateString) return "";
+          try {
+            const date = new Date(dateString + "T00:00:00.000Z");
+            if (!isNaN(date.getTime())) {
+              return date.toISOString();
+            }
+            return dateString;
+          } catch {
+            return dateString;
+          }
+        };
+
+        const today = new Date();
+        const defaultEndDate = new Date();
+        defaultEndDate.setDate(today.getDate() + 30);
+
+        // Update promotion to set isLive: false
+        const updateData: any = {
+          title: promotion.title,
+          link: promotion.url,
+          isInternalLink: isInternalLink,
+          isLive: false, // Set as not live
+          startDate: formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd")),
+          endDate: formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd")),
+        };
+        
+        // Include products if available
+        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
+          updateData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
+        } else {
+          updateData.products = [];
+        }
+        
+        await promotionService.updatePromotion(promotion._id, updateData);
+        
+        // Refresh all promotions to reflect the change
+        await fetchAllPromotions();
         Alert.alert("Success", "Promotion removed from live");
       }
     } catch (error: any) {
@@ -400,127 +401,238 @@ const AdminPromotion = () => {
     }
   };
 
-  const handleGoLive = async (id: string) => {
+  const handleGoLive = (id: string) => {
     const promotion = savedPromotions.find((p) => p.id === id);
-    if (!promotion) return;
+    if (!promotion) {
+      console.error("Promotion not found in savedPromotions:", id);
+      return;
+    }
 
-    Alert.alert(
-      "Go Live",
-      "Are you sure you want to make this promotion live?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Go Live",
-          onPress: async () => {
-            try {
-              setIsSavingPromotion(true);
-              
-              // Determine if the link is internal or external
-              const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
-              
-              // Prepare image file for upload
-              let imageFile: File | any;
-              if (Platform.OS === "web") {
-                if (typeof promotion.image === "string") {
-                  if (promotion.image.startsWith("data:")) {
-                    const response = await fetch(promotion.image);
-                    const blob = await response.blob();
-                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-                  } else if (promotion.image.startsWith("http://") || promotion.image.startsWith("https://")) {
-                    const response = await fetch(promotion.image);
-                    const blob = await response.blob();
-                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-                  } else {
-                    const response = await fetch(promotion.image);
-                    const blob = await response.blob();
-                    imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-                  }
-                } else {
-                  Alert.alert("Error", "Please select a new image for upload");
-                  setIsSavingPromotion(false);
-                  return;
-                }
-              } else {
-                if (typeof promotion.image === "string") {
-                  imageFile = {
-                    uri: promotion.image,
-                    type: "image/jpeg",
-                    name: "promotion-image.jpg",
-                  };
-                } else {
-                  Alert.alert("Error", "Please select a new image for upload");
-                  setIsSavingPromotion(false);
-                  return;
-                }
-              }
-
-              await promotionService.createPromotion({
-                title: promotion.title,
-                link: promotion.url,
-                isInternalLink: isInternalLink,
-                image: imageFile,
-              });
-
-              // Remove from saved and refresh live promotions
-              setSavedPromotions(savedPromotions.filter((p) => p.id !== id));
-              fetchLivePromotions();
-              Alert.alert("Success", "Promotion is now live!");
-            } catch (error: any) {
-              console.error("Error making promotion live:", error);
-              Alert.alert("Error", error?.response?.data?.message || "Failed to make promotion live");
-            } finally {
-              setIsSavingPromotion(false);
-            }
-          },
-        },
-      ]
-    );
+    console.log("Go Live - Promotion found:", promotion);
+    setPromotionToGoLive(promotion);
+    setShowGoLiveModal(true);
   };
 
-  const handleDeleteLive = async (id: string) => {
-    Alert.alert(
-      "Delete Promotion",
-      "Are you sure you want to delete this live promotion?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const promotion = livePromotions.find((p) => p.id === id);
-              if (promotion && promotion._id) {
-                await promotionService.deletePromotion(promotion._id);
-                // Remove from live promotions
-                setLivePromotions(livePromotions.filter((p) => p.id !== id));
-                fetchLivePromotions();
-                Alert.alert("Success", "Promotion deleted successfully");
-              }
-            } catch (error: any) {
-              console.error("Error deleting promotion:", error);
-              Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
+  const confirmGoLive = async () => {
+    if (!promotionToGoLive) return;
+    
+    const promotion = promotionToGoLive;
+    const id = promotion.id;
+    setShowGoLiveModal(false);
+
+    // Execute the go live logic
+    try {
+      console.log("Go Live - Confirmation confirmed, starting process...");
+      setIsSavingPromotion(true);
+      console.log("Go Live - setIsSavingPromotion(true) called");
+      
+      // Determine if the link is internal or external
+      const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
+      console.log("Go Live - isInternalLink:", isInternalLink);
+      
+      // If promotion already exists in backend (has _id), update it instead of creating new one
+      if (promotion._id) {
+        console.log("Go Live - Updating existing promotion with _id:", promotion._id);
+        // Update existing promotion to make it live
+        const updateData: any = {
+          title: promotion.title,
+          link: promotion.url,
+          isInternalLink: isInternalLink,
+          isLive: true, // Set as live
+        };
+        
+        // Format dates for API
+        const formatDateForAPI = (dateString: string): string => {
+          if (!dateString) return "";
+          try {
+            const date = new Date(dateString + "T00:00:00.000Z");
+            if (!isNaN(date.getTime())) {
+              return date.toISOString();
             }
-          },
-        },
-      ]
-    );
+            return dateString;
+          } catch {
+            return dateString;
+          }
+        };
+
+        const today = new Date();
+        const defaultEndDate = new Date();
+        defaultEndDate.setDate(today.getDate() + 30);
+
+        // Include dates if available, otherwise use defaults
+        updateData.startDate = formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd"));
+        updateData.endDate = formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd"));
+        
+        // Include products if available
+        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
+          updateData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
+        } else {
+          updateData.products = [];
+        }
+        
+        console.log("Go Live - Update data:", JSON.stringify({ ...updateData, products: updateData.products.length }, null, 2));
+        console.log("Go Live - Calling updatePromotion API...");
+        try {
+          const updatedPromotion = await promotionService.updatePromotion(promotion._id, updateData);
+          console.log("Go Live - Updated promotion response:", updatedPromotion);
+          console.log("Go Live - Updated promotion isLive:", updatedPromotion?.isLive);
+          
+          // Verify the update worked
+          if (updatedPromotion && !updatedPromotion.isLive) {
+            console.warn("Go Live - WARNING: Promotion was updated but isLive is still false!");
+            console.warn("Go Live - Full response:", JSON.stringify(updatedPromotion, null, 2));
+          }
+        } catch (updateError: any) {
+          console.error("Go Live - Error in updatePromotion call:", updateError);
+          console.error("Go Live - Error details:", updateError?.response?.data || updateError?.message);
+          throw updateError; // Re-throw to be caught by outer catch
+        }
+      } else {
+        // Create new promotion (for local-only promotions)
+        // Prepare image file for upload
+        let imageFile: File | any;
+        if (Platform.OS === "web") {
+          if (typeof promotion.image === "string") {
+            if (promotion.image.startsWith("data:")) {
+              const response = await fetch(promotion.image);
+              const blob = await response.blob();
+              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+            } else if (promotion.image.startsWith("http://") || promotion.image.startsWith("https://")) {
+              const response = await fetch(promotion.image);
+              const blob = await response.blob();
+              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+            } else {
+              const response = await fetch(promotion.image);
+              const blob = await response.blob();
+              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
+            }
+          } else {
+            Alert.alert("Error", "Please select a new image for upload");
+            setIsSavingPromotion(false);
+            return;
+          }
+        } else {
+          if (typeof promotion.image === "string") {
+            imageFile = {
+              uri: promotion.image,
+              type: "image/jpeg",
+              name: "promotion-image.jpg",
+            };
+          } else {
+            Alert.alert("Error", "Please select a new image for upload");
+            setIsSavingPromotion(false);
+            return;
+          }
+        }
+
+        // Format dates for API
+        const formatDateForAPI = (dateString: string): string => {
+          if (!dateString) return "";
+          try {
+            const date = new Date(dateString + "T00:00:00.000Z");
+            if (!isNaN(date.getTime())) {
+              return date.toISOString();
+            }
+            return dateString;
+          } catch {
+            return dateString;
+          }
+        };
+
+        const today = new Date();
+        const defaultEndDate = new Date();
+        defaultEndDate.setDate(today.getDate() + 30);
+
+        console.log("Go Live - Creating new promotion (no _id)");
+        const createData: any = {
+          title: promotion.title,
+          link: promotion.url,
+          isInternalLink: isInternalLink,
+          image: imageFile,
+          isLive: true, // Set as live
+          startDate: formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd")),
+          endDate: formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd")),
+        };
+
+        // Include products if available
+        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
+          createData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
+        } else {
+          createData.products = [];
+        }
+
+        console.log("Go Live - Create data:", { ...createData, image: "File present", products: createData.products.length });
+        const createdPromotion = await promotionService.createPromotion(createData);
+        console.log("Go Live - Created promotion response:", createdPromotion);
+        console.log("Go Live - Created promotion isLive:", createdPromotion?.isLive);
+        
+        // Verify the create worked
+        if (createdPromotion && !createdPromotion.isLive) {
+          console.warn("Go Live - WARNING: Promotion was created but isLive is false!");
+          console.warn("Go Live - Full response:", JSON.stringify(createdPromotion, null, 2));
+        }
+      }
+
+      // Wait a bit for backend to process, then refresh
+      console.log("Go Live - Waiting before refresh...");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Remove from saved and refresh all promotions
+      console.log("Go Live - Removing from saved and refreshing...");
+      setSavedPromotions(prev => prev.filter((p) => p.id !== id));
+      await fetchAllPromotions();
+      console.log("Go Live - Refresh complete");
+      Alert.alert("Success", "Promotion is now live!");
+    } catch (error: any) {
+      console.error("Error making promotion live:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      Alert.alert("Error", error?.response?.data?.message || error?.message || "Failed to make promotion live");
+    } finally {
+      setIsSavingPromotion(false);
+      setPromotionToGoLive(null);
+    }
+  };
+
+  const handleDeleteLive = (id: string) => {
+    setPromotionToDeleteLive(id);
+    setShowDeleteLiveModal(true);
+  };
+
+  const confirmDeleteLive = async () => {
+    if (!promotionToDeleteLive) return;
+    
+    const id = promotionToDeleteLive;
+    setShowDeleteLiveModal(false);
+
+    try {
+      const promotion = livePromotions.find((p) => p.id === id);
+      if (promotion && promotion._id) {
+        await promotionService.deletePromotion(promotion._id);
+        // Remove from live promotions and refresh all promotions
+        setLivePromotions(livePromotions.filter((p) => p.id !== id));
+        fetchAllPromotions();
+        Alert.alert("Success", "Promotion deleted successfully");
+      }
+    } catch (error: any) {
+      console.error("Error deleting promotion:", error);
+      Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
+    } finally {
+      setPromotionToDeleteLive(null);
+    }
   };
 
   const handleDeleteSaved = (id: string) => {
-    Alert.alert(
-      "Delete Promotion",
-      "Are you sure you want to delete this promotion?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            setSavedPromotions(savedPromotions.filter((p) => p.id !== id));
-          },
-        },
-      ]
-    );
+    setPromotionToDeleteSaved(id);
+    setShowDeleteSavedModal(true);
+  };
+
+  const confirmDeleteSaved = () => {
+    if (!promotionToDeleteSaved) return;
+    
+    const id = promotionToDeleteSaved;
+    setShowDeleteSavedModal(false);
+    setSavedPromotions(savedPromotions.filter((p) => p.id !== id));
+    setPromotionToDeleteSaved(null);
   };
 
   const handleEditPromotion = (promotion: Promotion) => {
@@ -602,6 +714,16 @@ const AdminPromotion = () => {
           <View style={styles.emptyState as ViewStyle}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.emptyStateText as TextStyle}>Loading promotions...</Text>
+          </View>
+        ) : errorLoadingPromotions ? (
+          <View style={styles.emptyState as ViewStyle}>
+            <Text style={styles.emptyStateText as TextStyle}>{errorLoadingPromotions}</Text>
+            <TouchableOpacity
+              style={[styles.addNewButton as ViewStyle, { marginTop: 16 }]}
+              onPress={fetchAllPromotions}
+            >
+              <Text style={styles.addNewButtonText as TextStyle}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : allPromotions.length > 0 ? (
           isWeb ? (
@@ -834,6 +956,59 @@ const AdminPromotion = () => {
         text="Are you sure you want to remove this promotion from live?"
         submitText="Yes"
         cancelText="No"
+      />
+      
+      <ConfirmationModal
+        isModalVisible={showGoLiveModal}
+        onClose={() => {
+          setShowGoLiveModal(false);
+          setPromotionToGoLive(null);
+        }}
+        handleCancel={() => {
+          setShowGoLiveModal(false);
+          setPromotionToGoLive(null);
+        }}
+        handleSubmit={confirmGoLive}
+        title="Go Live"
+        text="Are you sure you want to make this promotion live?"
+        submitText="Go Live"
+        cancelText="Cancel"
+      />
+      
+      <ConfirmationModal
+        isModalVisible={showDeleteLiveModal}
+        onClose={() => {
+          setShowDeleteLiveModal(false);
+          setPromotionToDeleteLive(null);
+        }}
+        handleCancel={() => {
+          setShowDeleteLiveModal(false);
+          setPromotionToDeleteLive(null);
+        }}
+        handleSubmit={confirmDeleteLive}
+        title="Delete Promotion"
+        text="Are you sure you want to delete this live promotion?"
+        submitText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+      />
+      
+      <ConfirmationModal
+        isModalVisible={showDeleteSavedModal}
+        onClose={() => {
+          setShowDeleteSavedModal(false);
+          setPromotionToDeleteSaved(null);
+        }}
+        handleCancel={() => {
+          setShowDeleteSavedModal(false);
+          setPromotionToDeleteSaved(null);
+        }}
+        handleSubmit={confirmDeleteSaved}
+        title="Delete Promotion"
+        text="Are you sure you want to delete this promotion?"
+        submitText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
       />
     </LayoutComponent>
   );

@@ -26,12 +26,13 @@ function preparePromotionalData(backendData) {
   return backendData.map((item) => ({
     id: item.id,
     image: item.imageUrl || item.image || "",
-    link: item.link || null,
+    link: item.link || null, // Preserved for future CMS usage
     title: item.title || "",
     description: item.description || "",
-    // Preserve custom properties for internal link handling
     onPress: item.onPress,
-    isInternalLink: item.isInternalLink,
+    isInternalLink: item.isInternalLink, // Metadata only
+    category: item.category, // For category-based navigation
+    products: item.products, // For product-based navigation (offers)
   }));
 }
 

@@ -131,7 +131,6 @@ const feedBackScreen = () => {
     >
       <KeyBoardWrapper>
         <ScrollView>
-
           <View
             style={{
               width: isWeb ? "60%" : "100%",

@@ -2,86 +2,95 @@ import { StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.white,
+  reviewContainer: {
+    // paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 40,
   },
-  secondaryText: {
-    marginBottom: 16,
+
+  reviewContainerWeb: {
+    width: "70%",
+    alignSelf: "center",
   },
+
+  label: {
+    fontSize: 15,
+    color: colors.black,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+
   ratingCategory: {
-    // marginBottom: 16,
+    marginBottom: 28,
   },
+
   selectCategory: {
-    // marginBottom: 16,
+    marginBottom: 24,
   },
+
   chooseCategory: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.primary,
-    borderRadius: 8,
-    // paddingHorizontal: 12,
-    //paddingVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: colors.white,
-    marginTop: 10,
+    marginTop: 8,
   },
+
   categoryText: {
     flex: 1,
     fontSize: 14,
     color: colors.placeholdergrey,
   },
+
   radioContainer: {
-    // marginVertical: 8,
-    // marginBottom: 8,
+    marginBottom: 24,
   },
+
   radioOption: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 8,
-    color: colors.primary,
+    marginVertical: 10,
   },
+
   radioLabel: {
     fontSize: 16,
     marginLeft: 10,
     color: colors.black,
   },
+
   addYourReview: {
-    // marginVertical: 16,
+    marginBottom: 28,
   },
+
   reviewText: {
-    height: 150,
-    backgroundColor: colors.placeholdergrey,
-    borderWidth: 0,
-    borderRadius: 8,
-    // padding: 10,
+    height: 160,
+    backgroundColor: colors.white,
+    borderWidth: 1.2,
+    borderColor: colors.placeholdergrey,
+    borderRadius: 10,
+    padding: 14,
     textAlignVertical: "top",
+    marginTop: 8,
   },
+
   submitButton: {
     backgroundColor: colors.primary,
-    paddingVertical: 15,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
+    elevation: 2,
   },
+
   submitText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "bold",
-  },
-  reviewContainer: {
-    padding: 16,
-    marginBottom: 64,
-    marginTop: -15,
-  },
-  reviewContainerWeb: {
-    width: "70%",
-    alignSelf: "center",
-  },
-  label: {
-    fontSize: 16,
-    color: colors.black,
-    marginBottom: 4,
+    fontWeight: "600",
   },
 });
 

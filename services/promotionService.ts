@@ -1,7 +1,5 @@
 // services/promotionService.ts
-import axios from "axios";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+import { jsonAxios, formDataAxios } from "./axiosConfig";
 
 export interface Promotion {
   _id?: string;
@@ -9,6 +7,12 @@ export interface Promotion {
   title: string;
   isInternalLink: boolean;
   link: string;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  isLive?: boolean;
+  products?: any[];
+  category?: any; // Category ID or populated category object
   createdAt?: string;
   updatedAt?: string;
 }
@@ -18,14 +22,19 @@ export interface CreatePromotionData {
   isInternalLink: boolean;
   link: string;
   image: File | any; // File for web, asset for mobile
+  startDate?: string;
+  endDate?: string;
+  products?: any[];
+  isLive?: boolean;
+  category?: string; // Category ID
 }
 
 class PromotionService {
-  private baseUrl = `${API_URL}/promotions`;
+  private baseUrl = "/promotions";
 
   async getAllPromotions(): Promise<Promotion[]> {
     try {
-      const response = await axios.get(this.baseUrl);
+      const response = await jsonAxios.get(this.baseUrl);
       return response.data;
     } catch (error) {
       console.error("Error fetching promotions:", error);
@@ -35,7 +44,7 @@ class PromotionService {
 
   async getPromotionById(id: string): Promise<Promotion> {
     try {
-      const response = await axios.get(`${this.baseUrl}/${id}`);
+      const response = await jsonAxios.get(`${this.baseUrl}/${id}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching promotion:", error);
@@ -50,12 +59,25 @@ class PromotionService {
       formData.append("isInternalLink", data.isInternalLink.toString());
       formData.append("link", data.link);
       formData.append("image", data.image);
+      
+      if (data.startDate) {
+        formData.append("startDate", data.startDate);
+      }
+      if (data.endDate) {
+        formData.append("endDate", data.endDate);
+      }
+      // Always send products array (even if empty) to ensure backend receives it
+      formData.append("products", JSON.stringify(data.products || []));
+      // Send isLive flag if provided
+      if (data.isLive !== undefined) {
+        formData.append("isLive", data.isLive.toString());
+      }
+      // Send category if provided
+      if (data.category) {
+        formData.append("category", data.category);
+      }
 
-      const response = await axios.post(this.baseUrl, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await formDataAxios.post(this.baseUrl, formData);
       return response.data;
     } catch (error) {
       console.error("Error creating promotion:", error);
@@ -74,12 +96,35 @@ class PromotionService {
         formData.append("isInternalLink", data.isInternalLink.toString());
       if (data.link) formData.append("link", data.link);
       if (data.image) formData.append("image", data.image);
-
-      const response = await axios.patch(`${this.baseUrl}/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      if (data.startDate) {
+        formData.append("startDate", data.startDate);
+      }
+      if (data.endDate) {
+        formData.append("endDate", data.endDate);
+      }
+      // Always send products array (even if empty) to ensure backend receives it
+      formData.append("products", JSON.stringify(data.products || []));
+      // ALWAYS send isLive flag (even if false) to ensure backend receives it
+      formData.append("isLive", (data.isLive !== undefined ? data.isLive : false).toString());
+      // Send category if provided
+      if (data.category) {
+        formData.append("category", data.category);
+      }
+      
+      console.log("promotionService.updatePromotion - Sending data:", {
+        id,
+        title: data.title,
+        link: data.link,
+        isInternalLink: data.isInternalLink,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        products: data.products?.length || 0,
+        isLive: data.isLive,
+        category: data.category,
       });
+
+      const response = await formDataAxios.patch(`${this.baseUrl}/${id}`, formData);
+      console.log("promotionService.updatePromotion - Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error updating promotion:", error);
@@ -89,7 +134,7 @@ class PromotionService {
 
   async deletePromotion(id: string): Promise<void> {
     try {
-      await axios.delete(`${this.baseUrl}/${id}`);
+      await jsonAxios.delete(`${this.baseUrl}/${id}`);
     } catch (error) {
       console.error("Error deleting promotion:", error);
       throw error;

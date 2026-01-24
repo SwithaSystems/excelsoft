@@ -548,6 +548,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+    alignItems: "flex-end",
   },
   addNewButton: {
     backgroundColor: colors.primary,

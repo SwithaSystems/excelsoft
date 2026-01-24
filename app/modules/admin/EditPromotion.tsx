@@ -37,6 +37,8 @@ import { categoryService } from "@/services/categoryService";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import { promotionService } from "@/services/promotionService";
 import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
+import CategoryDropdown from "./components/categoryDropdown";
+import { BlurView } from "expo-blur";
 
 const EditPromotion = () => {
   const router = useRouter();
@@ -76,6 +78,9 @@ const EditPromotion = () => {
   const [isOnLive, setIsOnLive] = useState<boolean>(
     isNewPromotion ? false : (promotionData?.isLive || false)
   );
+  const [isLoadingPromotion, setIsLoadingPromotion] = useState(false);
+  const [errorLoadingPromotion, setErrorLoadingPromotion] = useState<string | null>(null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
   const isWeb = Platform.OS === "web";
 
@@ -131,6 +136,83 @@ const EditPromotion = () => {
   useEffect(() => {
     getallCategories();
   }, []);
+
+  // Fetch promotion data from API when editing an existing promotion
+  useEffect(() => {
+    const fetchPromotionData = async () => {
+      // Only fetch if we have a promotion ID and it's not a new promotion
+      if (!isNewPromotion && promotionData?._id) {
+        try {
+          setIsLoadingPromotion(true);
+          setErrorLoadingPromotion(null);
+          const apiPromotion = await promotionService.getPromotionById(promotionData._id);
+          
+          // Update all state with API data
+          setPromotionTitle(apiPromotion.title || "");
+          setPromotionUrl(apiPromotion.link || "");
+          setPromotionImage(apiPromotion.imageURL || null);
+          setOriginalImageUrl(apiPromotion.imageURL || null);
+          setIsOnLive(apiPromotion.isLive || false);
+          
+          // Set dates if available
+          if (apiPromotion.startDate) {
+            const startDate = new Date(apiPromotion.startDate);
+            setStartingDate(formatDateForInput(startDate));
+          }
+          if (apiPromotion.endDate) {
+            const endDate = new Date(apiPromotion.endDate);
+            setEndingDate(formatDateForInput(endDate));
+          }
+          
+          // Set attached products if available
+          if (apiPromotion.products && Array.isArray(apiPromotion.products)) {
+            // Check if products are populated (full objects) or just IDs
+            if (apiPromotion.products.length > 0) {
+              const firstProduct = apiPromotion.products[0];
+              // If it's a populated product object (has name, image, etc.)
+              if (typeof firstProduct === 'object' && firstProduct.name) {
+                setAttachedProducts(apiPromotion.products as Product[]);
+              } else {
+                // If it's just IDs, fetch full product details
+                const productIds = apiPromotion.products.map((p: any) => 
+                  typeof p === 'string' ? p : (p._id || p.id || p)
+                );
+                try {
+                  const fullProducts = await ProductsAPI.getProductBy_multipleID(productIds);
+                  setAttachedProducts(fullProducts);
+                } catch (error) {
+                  console.error("Error fetching product details:", error);
+                  // Set empty array if fetch fails
+                  setAttachedProducts([]);
+                }
+              }
+            } else {
+              setAttachedProducts([]);
+            }
+          } else {
+            setAttachedProducts([]);
+          }
+          
+          // Set category if available (for "Select Category" mode)
+          if ((apiPromotion as any).category) {
+            const category = (apiPromotion as any).category;
+            // Category can be a populated object or just an ID
+            const categoryId = category._id || category.id || category;
+            setSelectedCategory(categoryId);
+            setProductDisplayMode("category");
+          }
+        } catch (error: any) {
+          console.error("Error fetching promotion:", error);
+          setErrorLoadingPromotion(error?.response?.data?.message || "Failed to load promotion");
+          Alert.alert("Error", error?.response?.data?.message || "Failed to load promotion data");
+        } finally {
+          setIsLoadingPromotion(false);
+        }
+      }
+    };
+
+    fetchPromotionData();
+  }, [isNewPromotion, promotionData?._id]);
 
   const handleSelectProducts = useCallback(() => {
     setShowProductModal(true);
@@ -191,6 +273,8 @@ const EditPromotion = () => {
 
       if (!result.canceled && result.assets[0]) {
         setPromotionImage(result.assets[0].uri);
+        // Mark that image was changed
+        setOriginalImageUrl(null);
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -249,10 +333,8 @@ const EditPromotion = () => {
       Alert.alert("Error", "Please enter a promotional slide title");
       return false;
     }
-    if (!promotionUrl.trim()) {
-      Alert.alert("Error", "Please enter a promotional URL");
-      return false;
-    }
+    // URL is optional since the field is commented out in UI
+    // If not provided, we'll use a default value
     return true;
   };
 
@@ -262,28 +344,60 @@ const EditPromotion = () => {
     try {
       setIsSaving(true);
       
-      // Create promotion object to pass back to AdminPromotion
-      const newPromotion = {
-        id: Date.now().toString(),
-        title: promotionTitle,
-        url: promotionUrl,
-        image: promotionImage,
-        isLive: false,
-        startingDate: startingDate,
-        endingDate: endingDate,
-        attachedProducts: attachedProducts,
-      };
-
-      // Navigate back with the new promotion data as a param
-      router.setParams({
-        newSavedPromotion: JSON.stringify(newPromotion),
-      });
-      router.back();
+      // Determine if the link is internal or external
+      // Use promotionUrl if provided, otherwise use a default value
+      const url = promotionUrl.trim() || "#";
+      const isInternalLink = !url.startsWith("http://") && !url.startsWith("https://");
       
-      Alert.alert("Success", "Promotion saved successfully");
+      // Prepare image file for upload
+      const imageFile = await prepareImageFile();
+      if (!imageFile) {
+        console.error("Image file preparation failed");
+        Alert.alert("Error", "Please select an image for the promotion");
+        setIsSaving(false);
+        return;
+      }
+
+      // Create new draft promotion via API
+      // Backend requires startDate and endDate, so provide defaults if not set
+      const today = new Date();
+      const defaultEndDate = new Date();
+      defaultEndDate.setDate(today.getDate() + 30); // 30 days from now
+      
+      const createData: any = {
+        title: promotionTitle,
+        link: url,
+        isInternalLink: isInternalLink,
+        image: imageFile,
+        startDate: formatDateForAPI(startingDate || formatDateForInput(today)),
+        endDate: formatDateForAPI(endingDate || formatDateForInput(defaultEndDate)),
+        isLive: false, // Draft promotion (not live)
+      };
+      
+      // Always send products array (even if empty) to ensure backend receives it
+      createData.products = attachedProducts.length > 0 
+        ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+        : [];
+      
+      // Include category if selected (for "Select Category" mode)
+      if (productDisplayMode === "category" && selectedCategory) {
+        createData.category = selectedCategory.toString();
+      }
+      
+      console.log("Creating promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
+      await promotionService.createPromotion(createData);
+      
+      Alert.alert("Success", "Promotion saved successfully", [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
     } catch (error: any) {
       console.error("Error saving promotion:", error);
-      Alert.alert("Error", "Failed to save promotion");
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
+      console.error("Full error details:", error);
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -296,38 +410,95 @@ const EditPromotion = () => {
       setIsSaving(true);
       
       // Determine if the link is internal or external
-      const isInternalLink = !promotionUrl.startsWith("http://") && !promotionUrl.startsWith("https://");
+      // Use promotionUrl if provided, otherwise use existing URL or default
+      const url = promotionUrl.trim() || (promotionData?.url || "#");
+      const isInternalLink = !url.startsWith("http://") && !url.startsWith("https://");
       
-      // Prepare image file for upload
-      const imageFile = await prepareImageFile();
-      if (!imageFile) {
-        setIsSaving(false);
-        return;
+      // Prepare image file for upload (only if image was changed)
+      let imageFile: File | any | null = null;
+      // Check if image was changed: new promotion, or image is not a URL (local file), or image URL changed
+      const imageChanged = isNewPromotion || 
+        (typeof promotionImage === "string" && promotionImage && !promotionImage.startsWith("http")) ||
+        (originalImageUrl && promotionImage !== originalImageUrl);
+      
+      if (imageChanged) {
+        imageFile = await prepareImageFile();
+        if (!imageFile && isNewPromotion) {
+          console.error("Image file preparation failed for new promotion");
+          Alert.alert("Error", "Please select an image for the promotion");
+          setIsSaving(false);
+          return;
+        }
       }
 
       if (isNewPromotion) {
         // Create new promotion and save to API (makes it live)
-        await promotionService.createPromotion({
+        // Backend requires startDate and endDate, so provide defaults if not set
+        const today = new Date();
+        const defaultEndDate = new Date();
+        defaultEndDate.setDate(today.getDate() + 30); // 30 days from now
+        
+        const createData: any = {
           title: promotionTitle,
-          link: promotionUrl,
+          link: url,
           isInternalLink: isInternalLink,
           image: imageFile,
-        });
-        Alert.alert("Success", "Promotion is now live!", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+          startDate: startingDate || formatDateForInput(today),
+          endDate: endingDate || formatDateForInput(defaultEndDate),
+          isLive: true, // Make it live
+        };
+        
+        if (attachedProducts.length > 0) {
+          createData.products = attachedProducts.map(p => p._id || p.id);
+        }
+        
+        // Include category if selected (for "Select Category" mode)
+        if (productDisplayMode === "category" && selectedCategory) {
+          createData.category = selectedCategory.toString();
+        }
+        
+        console.log("Creating live promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
+        await promotionService.createPromotion(createData);
+          Alert.alert("Success", "Promotion is now live!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
       } else {
         // Update existing promotion
         if (promotionData?._id) {
-          await promotionService.updatePromotion(promotionData._id, {
+          const updateData: any = {
             title: promotionTitle,
-            link: promotionUrl,
+            link: url,
             isInternalLink: isInternalLink,
-            image: imageFile,
-          });
+          };
+          
+          if (imageFile) {
+            updateData.image = imageFile;
+          }
+          
+          // Backend requires startDate and endDate for updates too
+          const today = new Date();
+          const defaultEndDate = new Date();
+          defaultEndDate.setDate(today.getDate() + 30);
+          
+          updateData.startDate = formatDateForAPI(startingDate || formatDateForInput(today));
+          updateData.endDate = formatDateForAPI(endingDate || formatDateForInput(defaultEndDate));
+          updateData.isLive = true; // Make it live
+          
+          // Always send products array (even if empty) to ensure backend receives it
+          updateData.products = attachedProducts.length > 0 
+            ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+            : [];
+          
+          // Include category if selected (for "Select Category" mode)
+          if (productDisplayMode === "category" && selectedCategory) {
+            updateData.category = selectedCategory.toString();
+          }
+          
+          console.log("Updating promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
+          await promotionService.updatePromotion(promotionData._id, updateData);
           Alert.alert("Success", "Promotion updated and is live!", [
             {
               text: "OK",
@@ -340,7 +511,9 @@ const EditPromotion = () => {
       }
     } catch (error: any) {
       console.error("Error saving promotion:", error);
-      Alert.alert("Error", error?.response?.data?.message || "Failed to save promotion");
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
+      console.error("Full error details:", error);
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -353,39 +526,104 @@ const EditPromotion = () => {
       setIsSaving(true);
       
       // Determine if the link is internal or external
-      const isInternalLink = !promotionUrl.startsWith("http://") && !promotionUrl.startsWith("https://");
+      // Use promotionUrl if provided, otherwise use existing URL or default
+      const url = promotionUrl.trim() || (promotionData?.url || "#");
+      const isInternalLink = !url.startsWith("http://") && !url.startsWith("https://");
       
-      // Prepare image file for upload
-      const imageFile = await prepareImageFile();
-      if (!imageFile) {
-        setIsSaving(false);
-        return;
+      // Prepare image file for upload (only if image was changed)
+      let imageFile: File | any | null = null;
+      // Check if image was changed: new promotion, or image is not a URL (local file), or image URL changed
+      const imageChanged = isNewPromotion || 
+        (typeof promotionImage === "string" && promotionImage && !promotionImage.startsWith("http")) ||
+        (originalImageUrl && promotionImage !== originalImageUrl);
+      
+      if (imageChanged) {
+        imageFile = await prepareImageFile();
+        if (!imageFile && isNewPromotion) {
+          console.error("Image file preparation failed for new promotion");
+          Alert.alert("Error", "Please select an image for the promotion");
+          setIsSaving(false);
+          return;
+        }
       }
 
       if (isOnLive) {
         // If "On Live" is checked, update/create via API (makes it live, appears in carousel)
-      if (promotionData?._id) {
+        if (promotionData?._id) {
           // Update existing live promotion
-        await promotionService.updatePromotion(promotionData._id, {
-          title: promotionTitle,
-          link: promotionUrl,
-          isInternalLink: isInternalLink,
-          image: imageFile,
-        });
-          Alert.alert("Success", "Promotion updated and is live!", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
-      } else {
-          // Create new live promotion
-          await promotionService.createPromotion({
+          const updateData: any = {
             title: promotionTitle,
-            link: promotionUrl,
+            link: url,
+            isInternalLink: isInternalLink,
+            isLive: true, // Set as live when "On Live" is checked
+          };
+          
+          if (imageFile) {
+            updateData.image = imageFile;
+          }
+          
+          // Backend requires startDate and endDate for updates too
+          const today = new Date();
+          const defaultEndDate = new Date();
+          defaultEndDate.setDate(today.getDate() + 30);
+          
+          updateData.startDate = formatDateForAPI(startingDate || formatDateForInput(today));
+          updateData.endDate = formatDateForAPI(endingDate || formatDateForInput(defaultEndDate));
+          
+          // Always send products array (even if empty) to ensure backend receives it
+          updateData.products = attachedProducts.length > 0 
+            ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+            : [];
+          
+          // Include category if selected (for "Select Category" mode)
+          if (productDisplayMode === "category" && selectedCategory) {
+            updateData.category = selectedCategory.toString();
+          }
+          
+          console.log("Updating live promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
+          await promotionService.updatePromotion(promotionData._id, updateData);
+          Alert.alert("Success", "Promotion updated and is live!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        } else {
+          // Create new live promotion
+          if (!imageFile) {
+            console.error("Image file is required for new live promotion");
+            Alert.alert("Error", "Please select an image for the promotion");
+            setIsSaving(false);
+            return;
+          }
+          
+          const createData: any = {
+            title: promotionTitle,
+            link: url,
             isInternalLink: isInternalLink,
             image: imageFile,
-          });
+            isLive: true, // Set as live when "On Live" is checked
+          };
+          
+          if (startingDate) {
+            createData.startDate = formatDateForAPI(startingDate);
+          }
+          
+          if (endingDate) {
+            createData.endDate = formatDateForAPI(endingDate);
+          }
+          
+          if (attachedProducts.length > 0) {
+            createData.products = attachedProducts.map(p => p._id || p.id);
+          }
+          
+          // Include category if selected (for "Select Category" mode)
+          if (productDisplayMode === "category" && selectedCategory) {
+            createData.category = selectedCategory.toString();
+          }
+          
+          console.log("Creating live promotion with data:", { ...createData, image: "File present" });
+          await promotionService.createPromotion(createData);
           Alert.alert("Success", "Promotion is now live!", [
             {
               text: "OK",
@@ -394,29 +632,94 @@ const EditPromotion = () => {
           ]);
         }
       } else {
-        // If "On Live" is not checked, save locally (doesn't appear in carousel)
-        const updatedPromotion = {
-          id: promotionData?.id || Date.now().toString(),
-          title: promotionTitle,
-          url: promotionUrl,
-          image: promotionImage,
-          isLive: false,
-          startingDate: startingDate,
-          endingDate: endingDate,
-          attachedProducts: attachedProducts,
-        };
-
-        // Navigate back with the updated promotion data as a param
-        router.setParams({
-          updatedSavedPromotion: JSON.stringify(updatedPromotion),
-        });
-        router.back();
-        
-        Alert.alert("Success", "Promotion saved successfully");
+        // If "On Live" is not checked, save as draft via API
+        if (promotionData?._id) {
+          // Update existing promotion as draft
+          const updateData: any = {
+            title: promotionTitle,
+            link: url,
+            isInternalLink: isInternalLink,
+            isLive: false, // Set as draft when "On Live" is not checked
+          };
+          
+          if (imageFile) {
+            updateData.image = imageFile;
+          }
+          
+          // Backend requires startDate and endDate for updates too
+          const today = new Date();
+          const defaultEndDate = new Date();
+          defaultEndDate.setDate(today.getDate() + 30);
+          
+          updateData.startDate = formatDateForAPI(startingDate || formatDateForInput(today));
+          updateData.endDate = formatDateForAPI(endingDate || formatDateForInput(defaultEndDate));
+          
+          // Always send products array (even if empty) to ensure backend receives it
+          updateData.products = attachedProducts.length > 0 
+            ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+            : [];
+          
+          // Include category if selected (for "Select Category" mode)
+          if (productDisplayMode === "category" && selectedCategory) {
+            updateData.category = selectedCategory.toString();
+          }
+          
+          console.log("Updating draft promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
+          await promotionService.updatePromotion(promotionData._id, updateData);
+          Alert.alert("Success", "Promotion saved successfully", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        } else {
+          // Create new draft promotion
+          if (!imageFile) {
+            console.error("Image file is required for new draft promotion");
+            Alert.alert("Error", "Please select an image for the promotion");
+            setIsSaving(false);
+            return;
+          }
+          
+          // Backend requires startDate and endDate, so provide defaults if not set
+          const today = new Date();
+          const defaultEndDate = new Date();
+          defaultEndDate.setDate(today.getDate() + 30); // 30 days from now
+          
+          const createData: any = {
+            title: promotionTitle,
+            link: url,
+            isInternalLink: isInternalLink,
+            image: imageFile,
+            startDate: formatDateForAPI(startingDate || formatDateForInput(today)),
+            endDate: formatDateForAPI(endingDate || formatDateForInput(defaultEndDate)),
+            isLive: false, // Draft promotion (not live)
+          };
+          
+          if (attachedProducts.length > 0) {
+            createData.products = attachedProducts.map(p => p._id || p.id);
+          }
+          
+          // Include category if selected (for "Select Category" mode)
+          if (productDisplayMode === "category" && selectedCategory) {
+            createData.category = selectedCategory.toString();
+          }
+          
+          console.log("Creating draft promotion with data:", { ...createData, image: "File present" });
+          await promotionService.createPromotion(createData);
+          Alert.alert("Success", "Promotion saved successfully", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        }
       }
     } catch (error: any) {
       console.error("Error saving promotion:", error);
-      Alert.alert("Error", error?.response?.data?.message || "Failed to save promotion");
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
+      console.error("Full error details:", error);
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -496,6 +799,21 @@ const EditPromotion = () => {
     return format(date, "yyyy-MM-dd");
   };
 
+  // Format date as ISO 8601 string for API
+  const formatDateForAPI = (dateString: string): string => {
+    if (!dateString) return "";
+    try {
+      // If it's already in yyyy-MM-dd format, convert to ISO
+      const date = new Date(dateString + "T00:00:00.000Z");
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
+
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const headerText = isNewPromotion ? "Add Promotion" : "Edit Promotion";
   const HeaderComponent = isWeb ? (
@@ -505,6 +823,90 @@ const EditPromotion = () => {
   );
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
+
+  // Modal content component to avoid duplication
+  const renderModalContent = () => (
+    <View style={styles.modalContent as ViewStyle}>
+      <View style={styles.modalHeader as ViewStyle}>
+        <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
+        <TouchableOpacity
+          onPress={() => setShowProductModal(false)}
+          style={styles.modalCloseButton as ViewStyle}
+        >
+          <Ionicons name="close" size={24} color={colors.black} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.modalSearchContainer as ViewStyle}>
+        <SearchBar
+          placeholder="Search by name..."
+          value={productSearchQuery}
+          onChangeText={setProductSearchQuery}
+          onSubmitEditing={handleProductSearch}
+          onPress={handleProductSearch}
+        />
+      </View>
+      {isLoadingProducts ? (
+        <View style={styles.modalLoadingContainer as ViewStyle}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 12 }}>Loading products...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={availableProducts}
+          keyExtractor={(item) => String(item._id || item.id)}
+          renderItem={({ item }) => {
+            const isAttached = attachedProducts.some(
+              (p) => (p._id || p.id) === (item._id || item.id)
+            );
+            const productImage = item.image?.[0] || item.image;
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.productModalItem as ViewStyle,
+                  isAttached && (styles.productModalItemSelected as ViewStyle),
+                ]}
+                onPress={() => handleToggleProductAttachment(item)}
+              >
+                <Image
+                  source={
+                    typeof productImage === "string"
+                      ? { uri: productImage }
+                      : productImage || require("../../../assets/Placeholder.png")
+                  }
+                  style={styles.productModalImage as ImageStyle}
+                  resizeMode="cover"
+                />
+                <View style={styles.productModalInfo as ViewStyle}>
+                  <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.productModalSku as TextStyle}>
+                    SKU: {item.id || item._id || "N/A"}
+                  </Text>
+                </View>
+                {isAttached && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          }}
+          style={styles.modalList as ViewStyle}
+        />
+      )}
+      <View style={styles.modalFooter as ViewStyle}>
+        <TouchableOpacity
+          style={styles.modalDoneButton as ViewStyle}
+          onPress={() => setShowProductModal(false)}
+        >
+          <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <LayoutComponent
@@ -519,10 +921,30 @@ const EditPromotion = () => {
 
       <View style={{ flex: 1 }}>
         <View style={isWeb ? styles.webFormContainer as ViewStyle : { flex: 1 }}>
+          {isLoadingPromotion ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={{ marginTop: 12 }}>Loading promotion...</Text>
+            </View>
+          ) : errorLoadingPromotion ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+              <Text style={{ color: colors.error, textAlign: "center", marginBottom: 16 }}>
+                {errorLoadingPromotion}
+              </Text>
+              <TouchableOpacity
+                style={[styles.saveButton as ViewStyle, { minWidth: 120 }]}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.saveButtonText as TextStyle}>Go Back</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
           <ScrollView
-            style={styles.container as ViewStyle}
+            style={[styles.container as ViewStyle, { flex: 1 }]}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent as ViewStyle}
+            nestedScrollEnabled={true}
+            bounces={true}
           >
             {/* Promotion Image */}
             <View style={styles.section as ViewStyle}>
@@ -559,6 +981,17 @@ const EditPromotion = () => {
                   </View>
                 )}
               </TouchableOpacity>
+              <View style={styles.imageNoteBox as ViewStyle}>
+                <Ionicons
+                  name="information-circle"
+                  size={24}
+                  color={colors.primary}
+                  style={styles.imageNoteIcon}
+                />
+                <Text style={styles.imageNoteText as TextStyle}>
+                  Please upload images with a resolution of 1536 × 834 px and a file size below 200 KB.
+                </Text>
+              </View>
             </View>
 
         {/* Title Input */}
@@ -619,20 +1052,22 @@ const EditPromotion = () => {
 
         {/* Choose Category Section */}
         {productDisplayMode === "category" && (
-          <View style={styles.categorySelectionSection as ViewStyle}>
+          <View style={[styles.categorySelectionSection as ViewStyle, { overflow: "visible", zIndex: 1000 }]}>
             <Text style={styles.categorySelectionTitle as TextStyle}>Select Category</Text>
             {isWeb ? (
-              <View style={{ overflow: "visible", zIndex: 1000 }}>
-                <WebCategoryDropdown
-                  categories={allCategories}
-                  selectedCategory={selectedCategory}
-                  setSelectedCategory={setSelectedCategory}
-                />
-              </View>
+              <WebCategoryDropdown
+                categories={allCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+              />
             ) : (
-              <Text style={styles.categorySelectionTitle as TextStyle}>
-                Category selection available on web
-              </Text>
+              <CategoryDropdown
+                categories={allCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                placeholder="All Categories"
+                containerStyle={styles.mobileCategoryDropdown as ViewStyle}
+              />
             )}
           </View>
         )}
@@ -824,6 +1259,7 @@ const EditPromotion = () => {
               )}
             </View>
           </ScrollView>
+          )}
         </View>
       </View>
 
@@ -869,98 +1305,19 @@ const EditPromotion = () => {
         transparent={true}
         onRequestClose={() => setShowProductModal(false)}
       >
-        <View style={styles.modalOverlay as ViewStyle}>
-          <View style={styles.modalContent as ViewStyle}>
-            <View style={styles.modalHeader as ViewStyle}>
-              <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
-              <TouchableOpacity
-                onPress={() => setShowProductModal(false)}
-                style={styles.modalCloseButton as ViewStyle}
-              >
-                <Ionicons name="close" size={24} color={colors.black} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.modalSearchContainer as ViewStyle}>
-              <SearchBar
-                placeholder="Search by name..."
-                value={productSearchQuery}
-                onChangeText={setProductSearchQuery}
-                onSubmitEditing={handleProductSearch}
-                onPress={handleProductSearch}
-              />
-            </View>
-            {isLoadingProducts ? (
-              <View style={styles.modalLoadingContainer as ViewStyle}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={{ marginTop: 12 }}>Loading products...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={[...availableProducts].sort((a, b) => {
-                  const aIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (a._id || a.id)
-                  );
-                  const bIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (b._id || b.id)
-                  );
-                  if (aIsAttached && !bIsAttached) return -1;
-                  if (!aIsAttached && bIsAttached) return 1;
-                  return 0;
-                })}
-                keyExtractor={(item) => String(item._id || item.id)}
-                renderItem={({ item }) => {
-                  const isAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (item._id || item.id)
-                  );
-                  const productImage = item.image?.[0] || item.image;
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        styles.productModalItem as ViewStyle,
-                        isAttached && (styles.productModalItemSelected as ViewStyle),
-                      ]}
-                      onPress={() => handleToggleProductAttachment(item)}
-                    >
-                      <Image
-                        source={
-                          typeof productImage === "string"
-                            ? { uri: productImage }
-                            : productImage || require("../../../assets/Placeholder.png")
-                        }
-                        style={styles.productModalImage as ImageStyle}
-                        resizeMode="cover"
-                      />
-                      <View style={styles.productModalInfo as ViewStyle}>
-                        <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                        <Text style={styles.productModalSku as TextStyle}>
-                          SKU: {item.id || item._id || "N/A"}
-                        </Text>
-                      </View>
-                      {isAttached && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={colors.primary}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-                style={styles.modalList as ViewStyle}
-              />
-            )}
-            <View style={styles.modalFooter as ViewStyle}>
-              <TouchableOpacity
-                style={styles.modalDoneButton as ViewStyle}
-                onPress={() => setShowProductModal(false)}
-              >
-                <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
-              </TouchableOpacity>
-            </View>
+        {Platform.OS === "web" ? (
+          <View style={styles.modalOverlay as ViewStyle}>
+            {renderModalContent()}
           </View>
-        </View>
+        ) : (
+          <BlurView 
+            intensity={20} 
+            tint="dark"
+            style={styles.modalOverlay as ViewStyle}
+          >
+            {renderModalContent()}
+          </BlurView>
+        )}
       </Modal>
     </LayoutComponent>
   );

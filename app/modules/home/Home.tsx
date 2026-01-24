@@ -173,109 +173,72 @@ const HomePage = () => {
 
   const handleBannerPress = useMemo(
     () => async (item: any, index: number) => {
-      // console.log("item", item);
-      // item is from carouselData, which has: id, image, link, title, description, isInternalLink
-      if (item.isInternalLink && item.link) {
+      // PRIORITY 1: Category-based promotion
+      // If promotion.category exists → redirect to category page (like HeaderNavBarWeb)
+      if (item.category !== undefined && item.category !== null && item.category !== "") {
         try {
-          // Parse the link format: "offers/electronics-sale" or just "offers"
-          const linkParts = item.link
-            .split("/")
-            .filter((part: string) => part.trim() !== "");
-          const parentCategoryName = linkParts[0] || item.title || "Offers";
-          const subCategoryName = linkParts[1] || null;
+          // Parse category ID (can be string "28", number 28, or populated object)
+          const categoryIdToFind =
+            typeof item.category === "object"
+              ? item.category.id
+              : typeof item.category === "string"
+              ? parseInt(item.category, 10)
+              : item.category;
 
-          // console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
-
-          // Fetch all categories to find the parent category by name
-          const allCategories = await categoryService.getAllCategories();
-          const parentCategory = allCategories.find((cat) =>
-            categoryNamesMatch(cat.name, parentCategoryName)
-          );
-
-          if (!parentCategory) {
-            console.error(`Parent category "${parentCategoryName}" not found`);
-            // Fallback: redirect with the link as categoryId (original behavior)
-            redirectToPage(containers.searchResultsScreen, {
-              fromSearch: true,
-              category: parentCategoryName,
-              categoryId: item.link,
-            });
+          // Skip if not a valid number
+          if (isNaN(categoryIdToFind)) {
             return;
           }
 
-          // console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
+          // Fetch all categories and find by numeric id
+          const allCategories = await categoryService.getAllCategories();
+          const foundCategory = allCategories.find((cat) => cat.id === categoryIdToFind);
 
-          // If there's a subcategory, find it
-          if (subCategoryName) {
-            const subCategories = await categoryService.getAllSubCategories(
-              parentCategory.id
-            );
-
-            // console.log("Available subcategories:", subCategories.map(s => s.name));
-
-            const subCategory = subCategories.find((subCat) =>
-              categoryNamesMatch(subCat.name, subCategoryName)
-            );
-
-            if (subCategory) {
-              // Navigate directly to the subcategory as the main category
-              redirectToPage(containers.searchResultsScreen, {
-                fromSearch: true,
-                category: subCategory.name,
-                categoryId: subCategory.id,
-              });
-              // // console.log(
-              //   `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
-              // );
-            } else {
-              // Subcategory not found, navigate to parent category only
-              console.warn(
-                `Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`
-              );
-              redirectToPage(containers.searchResultsScreen, {
-                fromSearch: true,
-                category: parentCategory.name,
-                categoryId: parentCategory.id,
-              });
-            }
-          } else {
-            // No subcategory, navigate to parent category only
+          if (foundCategory) {
+            // Redirect EXACTLY like HeaderNavBarWeb.handleCategoryPress
             redirectToPage(containers.searchResultsScreen, {
               fromSearch: true,
-              category: parentCategory.name,
-              categoryId: parentCategory.id,
+              category: foundCategory.name,
+              categoryId: foundCategory.id,
             });
+            return; // Exit after successful redirect
           }
         } catch (error) {
-          console.error("Error processing carousel link:", error);
-          // Fallback: redirect with the link as categoryId (original behavior)
-          redirectToPage(containers.searchResultsScreen, {
-            fromSearch: true,
-            category: item.title || "Offers",
-            categoryId: item.link,
-          });
-        }
-      } else if (item.link) {
-        // console.log("Opening external link:", item.link);
-        if (Platform.OS === "web") {
-          window.open(item.link, "_blank");
-        } else {
-          // For mobile, use Linking API
-          Linking.openURL(item.link);
+          // Silent fail - continue to next priority
         }
       }
+
+      // PRIORITY 2: Product-based promotion
+      // If no category but has products → redirect to promotion products page
+      if (Array.isArray(item.products) && item.products.length > 0) {
+        try {
+          redirectToPage(containers.promotionProductsScreen, {
+            title: item.title || "Special Offers",
+            products: JSON.stringify(item.products),
+          });
+          return; // Exit after successful redirect
+        } catch (error) {
+          // Silent fail
+        }
+      }
+
+      // PRIORITY 3: Fallback
+      // If neither category nor products exist → do nothing
+      // link field is preserved for future CMS usage but not used for navigation
     },
     []
   );
   const carouselData = useMemo(() => {
-    return promotions.map((promo, index) => ({
+    return promotions.map((promo: any, index) => ({
       id: index + 1,
       image: promo.imageURL,
-      link: promo.link,
+      link: promo.link, // Preserved for future CMS usage
       title: promo.title,
       description: "", // Add if you have description in your schema
-      isInternalLink: promo.isInternalLink, // Preserve the internal link flag
-      onPress: handleBannerPress, // Add the handler to each item
+      isInternalLink: promo.isInternalLink, // Metadata only
+      category: promo.category, // For category-based navigation
+      products: promo.products, // For product-based navigation (offers)
+      onPress: handleBannerPress,
     }));
   }, [promotions, handleBannerPress]);
 
@@ -337,8 +300,9 @@ const HomePage = () => {
       try {
         setPromotionsLoading(true);
         const data = await promotionService.getAllPromotions();
-        setPromotions(data);
-        // console.log("Fetched promotions:", data);
+        // Filter to only show live promotions (isLive: true)
+        const livePromotions = data.filter((promo: any) => promo.isLive === true);
+        setPromotions(livePromotions);
       } catch (error) {
         console.error("Error fetching promotions:", error);
         // Optionally set empty array or show error message
