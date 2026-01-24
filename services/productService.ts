@@ -51,11 +51,33 @@ export const ProductsAPI = {
     return response.data;
   },
 
+//soft delete
   deleteProduct: async (id: any): Promise<Product> => {
     // console.log("id", id);
     const response = await jsonAxios.delete(`/products/${id}`);
     return response.data;
   },
+deleteProduct_Permanently: async (id: any): Promise<Product> => {
+    // console.log("id", id);
+    const response = await jsonAxios.delete(`/products/hard/${id}`);
+    return response.data;
+  },
+
+  // For bulk soft delete
+bulkSoftDelete: async (ids: string[]): Promise<any> => {
+  const response = await jsonAxios.delete(`/products/bulk-delete`, {
+    data: { ids }
+  });
+  return response.data;
+},
+
+// For bulk hard delete
+bulkHardDelete: async (ids: string[]): Promise<any> => {
+  const response = await jsonAxios.delete(`/products/bulk-hard-delete`, {
+    data: { ids }
+  });
+  return response.data;
+},
 
   getAllProducts: async (
     page = 1,

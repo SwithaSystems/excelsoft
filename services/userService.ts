@@ -124,4 +124,10 @@ export const UserAPI = {
     });
     return response;
   },
+
+  softDeleteUser : async(id:number)=>{
+    const response = await jsonAxios.delete(`/users/${id}`);
+    return response;
+  }
+
 };

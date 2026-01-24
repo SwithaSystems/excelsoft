@@ -102,7 +102,7 @@ function OrderSummary(props) {
                 <Text style={styles.quantity}>{item.quantity}</Text>
                 <Text style={styles.price}>
                   {CurrencySymbol}
-                  {(item.netPrice - (item.discount || 0)).toFixed(2)}
+                  {((item.netPrice - (item.discount || 0))*item.quantity).toFixed(2)}
                 </Text>
                 {/* {item.isVatApplicable ? (
                   <Text style={styles.vatamount}>

@@ -348,6 +348,63 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 14,
   },
+  movWarningContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff3cd',
+    borderLeftWidth: 4,
+    borderLeftColor: '#f39c12',
+    padding: 12,
+    marginVertical: 16,
+    borderRadius: 8,
+  },
+   movWarningTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 4,
+  },
+  movWarningText: {
+    fontSize: 13,
+    color: '#856404',
+    lineHeight: 18,
+  }, webMovWarning: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+//   applePayButton: {
+//   backgroundColor: '#000',
+//   height: 50,
+//   borderRadius: 8,
+//   justifyContent: 'center',
+//   alignItems: 'center',
+//   marginBottom: 12,
+// },
+applePayText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+// googlePayButton: {
+//   backgroundColor: '#fff',
+//   borderWidth: 1,
+//   borderColor: '#dadce0',
+//   height: 50,
+//   borderRadius: 8,
+//   justifyContent: 'center',
+//   alignItems: 'center',
+//   marginBottom: 12,
+// },
+googlePayText: {
+  color: '#3c4043',
+  fontSize: 16,
+  fontWeight: '600',
+},
+divider: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginVertical: 16,
+},
 });
 
 export default styles;

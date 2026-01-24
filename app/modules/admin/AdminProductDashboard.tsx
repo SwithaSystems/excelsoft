@@ -347,48 +347,32 @@ const AdminProductDashboard = () => {
       let successCount = 0;
       let errorCount = 0;
 
-      for (const productId of productIds) {
-        try {
-          const result = await ProductsAPI.deleteProduct(productId);
-          if (result) {
-            successCount++;
-          } else {
-            errorCount++;
-          }
-        } catch (error) {
-          errorCount++;
-        }
-      }
+      const result = await ProductsAPI.deleteProduct(productIds);
 
       // Clear selection and refresh
       setSelectedProductIds(new Set());
       setIsSelectionMode(false);
       await onRefresh();
 
-      if (isWeb) {
-        if (errorCount === 0) {
-          setSuccessModalVisible(true);
-        } else {
-          alert(`Deleted ${successCount} products. ${errorCount} failed.`);
-        }
-      } else {
-        if (errorCount === 0) {
-          Alert.alert("Success", `${successCount} product(s) deleted successfully`);
-        } else {
-          Alert.alert("Partial Success", `Deleted ${successCount} products. ${errorCount} failed.`);
-        }
-      }
-    } catch (error: any) {
-      const errorMessage = "Something went wrong while deleting products.";
-      if (isWeb) {
-        alert(errorMessage);
-      } else {
-        Alert.alert("Error", errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-      setBulkDeleteModalVisible(false);
+       const successMessage = `${productIds.length} product(s) deleted successfully`;
+
+     if (isWeb) {
+      setSuccessModalVisible(true);
+    } else {
+      Alert.alert("Success", successMessage);
     }
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.message || "Something went wrong while deleting products.";
+    
+    if (isWeb) {
+      alert(errorMessage);
+    } else {
+      Alert.alert("Error", errorMessage);
+    }
+  } finally {
+    setIsLoading(false);
+    setBulkDeleteModalVisible(false);
+  }
   };
 
   // Bulk selection handlers (additive feature only)
