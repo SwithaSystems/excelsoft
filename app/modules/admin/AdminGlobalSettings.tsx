@@ -46,14 +46,32 @@ const SETTINGS_CONFIG: SettingConfig[] = [
     description: "Default delivery charge applied to all delivery orders.",
     type: "input",
   },
+  {
+    key: "minimumOrderValue",
+    label: "Minimum Order Value",
+    description: "Minimum order value required for customers to place an order.",
+    type: "input",
+  },
+  {
+    key: "minimumCheckoutOrderValue",
+    label: "Minimum Checkout Order Value",
+    description: "Minimum order value required to proceed to checkout.",
+    type: "input",
+  },
 ];
 
 const AdminGlobalSettings = () => {
   const [settings, setSettings] = useState<GlobalSettingsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
-  const [isEditingShipping, setIsEditingShipping] = useState(false);
-  const [tempShippingValue, setTempShippingValue] = useState("");
+  
+  // Track editing state for each input field
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempValues, setTempValues] = useState<Record<string, string>>({
+    shippingCharge: "",
+    minimumOrderValue: "",
+    minimumCheckoutOrderValue: "",
+  });
 
   useEffect(() => {
     fetchSettings();
@@ -72,37 +90,39 @@ const AdminGlobalSettings = () => {
     }
   };
 
-  const handleEditShipping = () => {
+  const handleEditField = (fieldKey: string) => {
     if (settings) {
-      setTempShippingValue(String(settings.shippingCharge ?? ""));
-      setIsEditingShipping(true);
+      setTempValues((prev) => ({
+        ...prev,
+        [fieldKey]: String(settings[fieldKey as keyof GlobalSettingsDto] ?? ""),
+      }));
+      setEditingField(fieldKey);
     }
   };
 
-  const handleSaveShipping = async () => {
+  const handleSaveField = async (fieldKey: string) => {
     if (!settings) return;
 
-    const numericValue = parseFloat(tempShippingValue);
+    const numericValue = parseFloat(tempValues[fieldKey]);
 
     if (isNaN(numericValue) || numericValue < 0) {
-      Alert.alert("Invalid value", "Please enter a valid shipping charge.");
+      Alert.alert("Invalid value", `Please enter a valid ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
       return;
     }
 
-    setUpdatingKey("shippingCharge");
+    setUpdatingKey(fieldKey);
 
     // Optimistic update
     setSettings((prev) =>
-      prev ? { ...prev, shippingCharge: numericValue } : prev
+      prev ? { ...prev, [fieldKey]: numericValue } : prev
     );
 
     try {
-      // Ensure we're sending a number, not a string
-      await globalSettingsAPI.updateSettings("shippingCharge", numericValue);
-      setIsEditingShipping(false);
+      await globalSettingsAPI.updateSettings(fieldKey as keyof Omit<GlobalSettingsDto, "updatedAt">, numericValue);
+      setEditingField(null);
     } catch (error) {
-      console.error("Failed to update shippingCharge:", error);
-      Alert.alert("Error", "Failed to update shipping charge.");
+      console.error(`Failed to update ${fieldKey}:`, error);
+      Alert.alert("Error", `Failed to update ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
       fetchSettings();
     } finally {
       setUpdatingKey(null);
@@ -110,8 +130,12 @@ const AdminGlobalSettings = () => {
   };
 
   const handleCancelEdit = () => {
-    setIsEditingShipping(false);
-    setTempShippingValue("");
+    setEditingField(null);
+    setTempValues({
+      shippingCharge: "",
+      minimumOrderValue: "",
+      minimumCheckoutOrderValue: "",
+    });
   };
 
   const handleToggle = async (
@@ -135,6 +159,65 @@ const AdminGlobalSettings = () => {
     } finally {
       setUpdatingKey(null);
     }
+  };
+
+  const renderInputField = (config: SettingConfig) => {
+    const fieldKey = config.key as string;
+    const isEditing = editingField === fieldKey;
+    const isUpdating = updatingKey === fieldKey;
+
+    return (
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[
+            styles.input,
+            !isEditing && styles.inputReadOnly,
+          ]}
+          keyboardType="numeric"
+          value={
+            isEditing
+              ? tempValues[fieldKey]
+              : String(settings?.[config.key] ?? "0")
+          }
+          onChangeText={(value) =>
+            setTempValues((prev) => ({ ...prev, [fieldKey]: value }))
+          }
+          editable={isEditing}
+          placeholder="Enter amount"
+        />
+        
+        {!isEditing ? (
+          <TouchableOpacity
+            onPress={() => handleEditField(fieldKey)}
+            style={styles.editButton}
+            disabled={updatingKey !== null}
+          >
+            <Text style={styles.editIcon}>✏️</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.actionButtons}>
+            {isUpdating ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <>
+                <TouchableOpacity
+                  onPress={() => handleSaveField(fieldKey)}
+                  style={styles.saveButton}
+                >
+                  <Text style={styles.saveIcon}>✓</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleCancelEdit}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelIcon}>✕</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        )}
+      </View>
+    );
   };
 
   if (loading) {
@@ -202,54 +285,7 @@ const AdminGlobalSettings = () => {
                   />
                 </View>
               ) : (
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      !isEditingShipping && styles.inputReadOnly,
-                    ]}
-                    keyboardType="numeric"
-                    value={
-                      isEditingShipping
-                        ? tempShippingValue
-                        : String(settings.shippingCharge ?? "0")
-                    }
-                    onChangeText={setTempShippingValue}
-                    editable={isEditingShipping}
-                    placeholder="Enter amount"
-                  />
-                  
-                  {!isEditingShipping ? (
-                    <TouchableOpacity
-                      onPress={handleEditShipping}
-                      style={styles.editButton}
-                      disabled={updatingKey !== null}
-                    >
-                      <Text style={styles.editIcon}>✏️</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <View style={styles.actionButtons}>
-                      {updatingKey === "shippingCharge" ? (
-                        <ActivityIndicator size="small" color={colors.primary} />
-                      ) : (
-                        <>
-                          <TouchableOpacity
-                            onPress={handleSaveShipping}
-                            style={styles.saveButton}
-                          >
-                            <Text style={styles.saveIcon}>✓</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={handleCancelEdit}
-                            style={styles.cancelButton}
-                          >
-                            <Text style={styles.cancelIcon}>✕</Text>
-                          </TouchableOpacity>
-                        </>
-                      )}
-                    </View>
-                  )}
-                </View>
+                renderInputField(config)
               )}
             </View>
 

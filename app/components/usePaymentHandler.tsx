@@ -1,4 +1,5 @@
 // usePaymentHandler.ts (Mobile version with Apple Pay & Google Pay)
+
 import { Alert } from "react-native";
 import {
   useStripe,
@@ -20,12 +21,12 @@ import {
   STORE_NAME,
 } from "../../constants/stringLiterals";
 import { useEffect, useState } from "react";
+import globalSettingsAPI from "@/services/globalSettingsService";
 
 type Product = {
   productId: string;
   name: string;
   quantity: number;
-  // discount: number;
   netPrice: number;
   isVatApplicable: boolean;
   vatRate: number;
@@ -35,38 +36,56 @@ type Product = {
 export const usePaymentHandler = () => {
   const { initPaymentSheet, presentPaymentSheet, confirmPlatformPayPayment } =
     useStripe();
-  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
+  const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
   const cartItems = useSelector((state: any) => state.cart.items);
   const dispatch = useDispatch();
-  const [MOV, setMOV] = useState<number>(0);
+
+  const [shippingCharge, setShippingCharge] = useState<number>(0);
   const [isApplePaySupported, setIsApplePaySupported] = useState(false);
   const [isGooglePaySupported, setIsGooglePaySupported] = useState(false);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  /* -------------------- FETCH SHIPPING CHARGE -------------------- */
+  const fetchSettings = async () => {
+    try {
+      setIsLoadingSettings(true);
+      const response = await globalSettingsAPI.getSettings();
+      console.log("globalsettings", response.data.shippingCharge);
+      setShippingCharge(response.data.shippingCharge);
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+      Alert.alert("Error", "Failed to load settings. Please try again.");
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  };
 
-  /* -------------------- PLATFORM PAY SUPPORT CHECK -------------------- */
   useEffect(() => {
-    (async () => {
-      try {
-        // Check Apple Pay support (iOS)
-        const appleSupported = await isPlatformPaySupported();
-
-        // Check Google Pay support (Android)
-        const googleSupported = await isPlatformPaySupported({
-          googlePay: { testEnv: true }, // Set to false in production
-        });
-
-        setIsApplePaySupported(!!appleSupported);
-        setIsGooglePaySupported(!!googleSupported);
-
-        console.log("Apple Pay supported:", appleSupported);
-        console.log("Google Pay supported:", googleSupported);
-      } catch (err) {
-        console.error("Platform pay check failed", err);
-        setIsApplePaySupported(false);
-        setIsGooglePaySupported(false);
-      }
-    })();
+    fetchSettings();
   }, []);
+
+
+  /* -------------------- PLATFORM PAY SUPPORT -------------------- */
+  useEffect(() => {
+  (async () => {
+    try {
+      const applePaySupported = await isPlatformPaySupported();
+      const googlePaySupported = await isPlatformPaySupported({ 
+        googlePay: { testEnv: true } 
+      });
+      
+      console.log('Apple Pay supported:', applePaySupported);
+      console.log('Google Pay supported:', googlePaySupported);
+      
+      setIsApplePaySupported(!!applePaySupported);
+      setIsGooglePaySupported(!!googlePaySupported);
+    } catch (error) {
+      console.error('Platform pay support check failed:', error);
+      setIsApplePaySupported(false);
+      setIsGooglePaySupported(false);
+    }
+  })();
+}, []);
 
   /* -------------------- MIN ORDER VALUE -------------------- */
   const getMinimumOrderValue = async (): Promise<number | null> => {
@@ -74,156 +93,110 @@ export const usePaymentHandler = () => {
       const resp = await axios.get(
         `${API_BASE_URL}/ui-constants/minimumOrderValue`
       );
-      const raw = resp?.data;
-      const mov =
-        typeof raw === "number"
-          ? raw
-          : typeof raw === "object" &&
-            raw !== null &&
-            typeof raw.minimumOrderValue === "number"
-          ? raw.minimumOrderValue
-          : null;
-
-      return mov === null ? null : Number(mov);
-    } catch (err) {
-      console.error("Failed to fetch MOV", err);
+      return typeof resp.data === "number"
+        ? resp.data
+        : resp.data?.minimumOrderValue ?? null;
+    } catch {
       return null;
     }
   };
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const mov = await getMinimumOrderValue();
-      if (!mounted) return;
-      if (mov !== null) setMOV(mov);
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   /* -------------------- PRODUCT MAPPING -------------------- */
-  const products = cartItems.map((item: any) => {
-    const netPrice = item.netPrice || 0;
-    // const discount = item.discount || 0;
-    const quantity = item.quantity || 1;
-    const vatRate = item.vatRate || 0;
+const products = cartItems.map((item: any) => {
+  const quantity = item.quantity || 1;
+  const netPrice = item.netPrice;
+  
+  // Calculate VAT per unit
+  const vatPerUnit = item.isVatApplicable
+    ? (netPrice * (item.vatRate || 0)) / 100
+    : 0;
+  
+  // Price including VAT per unit
+  const netPriceIncVat = netPrice + vatPerUnit;
+  
+  // Total VAT for all quantities
+  const vatAmount = vatPerUnit * quantity;
 
-    const discountedPrice = netPrice /* - discount */;
-    const vatAmount = item.isVatApplicable
-      ? (discountedPrice * quantity * vatRate) / 100
-      : 0;
-    const netPriceIncVat = discountedPrice * quantity + vatAmount;
-    const grossPrice = netPriceIncVat;
+  return {
+    productId: Number(item.id),
+    name: item.name,
+    quantity,
+    netPrice: netPrice,
+    netPriceIncVat: netPriceIncVat,  
+    grossPrice: netPriceIncVat,       
+    isVatApplicable: item.isVatApplicable,
+    vatRate: item.vatRate,
+    vatAmount: vatAmount,             
+  };
+});
+ /* -------------------- PRICE CALCULATION -------------------- */
+  const calculateSubtotal = (items: Product[]) => {
+  const total = items.reduce((sum, item) => {
+    const itemSubtotal = item.netPrice * item.quantity;
+    const itemVAT = item.isVatApplicable ? (itemSubtotal * item.vatRate) / 100 : 0;
+    
+    console.log(`Item: ${item.name}`);
+    console.log(`  Price: ${item.netPrice} × ${item.quantity} = ${itemSubtotal}`);
+    console.log("item vat rate",item.vatRate);
+    console.log(`  VAT: ${itemVAT}`);
+    console.log(`  Item Total: ${itemSubtotal + itemVAT}`);
+    
+    return sum + itemSubtotal + itemVAT;
+  }, 0);
+  
+  console.log(`Subtotal (with VAT): ${total}`);
+  return total;
+};
 
-    return {
-      productId: parseInt(item.id),
-      name: item.name,
-      quantity: quantity,
-      netPrice: netPrice,
-      // discount: discount,
-      isvatApplicable: item.isVatApplicable,
-      vatRate: vatRate,
-      vatAmount: vatAmount,
-      netPriceIncVat: netPriceIncVat,
-      grossPrice: grossPrice,
-    };
-  });
-
-  /* -------------------- PRICE CALCULATION -------------------- */
-  const calculateSubtotal = (cartItems: Product[]) =>
-    cartItems.reduce((total, item) => {
-      const netPrice = item.netPrice || 0;
-      // const discount = item.discount || 0;
-      const quantity = item.quantity || 1;
-      const vatRate = item.vatRate || 0;
-
-      const discountedPrice = netPrice /*- discount */;
-      const vatAmount = item.isVatApplicable
-        ? (discountedPrice * quantity * vatRate) / 100
-        : 0;
-
-      return total + discountedPrice * quantity + vatAmount;
-    }, 0);
+const getFinalAmount = (items: Product[], mode: string): number => {
+  const subtotal = calculateSubtotal(items);
+  console.log("Subtotal:", subtotal);
+  console.log("Shipping charge being used:", shippingCharge);
+  console.log("Delivery mode:", mode);
+  
+  const total = mode === DELIVERY_MODE_HOME
+    ? subtotal + shippingCharge
+    : subtotal;
+  
+  console.log("Final total:", total);
+  return total;
+};
 
   /* -------------------- PAYMENT INTENT -------------------- */
-  const fetchPaymentIntent = async (amount: number, clientId: string) => {
+  const fetchPaymentIntent = async (amount: number) => {
     try {
-      const response = await axios.post(
+      const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: amount,
+          amount,
           currency: CURRENCY_CODE,
-          clientId: clientId,
+          clientId: CLIENT_ID,
         }
       );
-      return {
-        clientSecret: response.data.paymentIntent.client_secret,
-        ephemeralKey: response.data.ephemeralKey,
-        customer: response.data.customer,
-      };
-    } catch (error) {
-      console.error("Payment intent error:", error);
-      Alert.alert("Error", "Failed to initialize payment. Please try again.");
+      return resp.data;
+    } catch {
+      Alert.alert("Error", "Failed to initialize payment");
       return null;
     }
   };
 
   /* -------------------- ORDER CREATION -------------------- */
-  const createOrder = async (params: any, subtotal: number) => {
-    const shippingCharges = params.shippingCharges || 0;
-    // const discounts = params.discounts || [];
-
-    const orderDetails: any = {
-      products: products,
-      shippingCharges: shippingCharges,
-      // discounts: discounts,
-      totalAmount: subtotal,
-      paymentMethod: "credit_card",
-      pickupMode: (params.selectedMode || "Delivery") as PickupMode,
-      deliveryDate: formatDateForBackend(params.deliveryDate) ?? "N/A",
-      deliveryTime: params.deliveryTime,
-      billingAddress: {
-        name: params.billingAddress?.name ?? "N/A",
-        line1: params.billingAddress?.line1 ?? "N/A",
-        line2: params.billingAddress?.line2 ?? "",
-        city: params.billingAddress?.city ?? "N/A",
-        state: params.billingAddress?.state ?? "N/A",
-        postalCode: params.billingAddress?.postalCode ?? "N/A",
-      },
-      shippingAddress: {
-        name: params.shippingAddress?.name ?? "N/A",
-        line1: params.shippingAddress?.line1 ?? "N/A",
-        line2: params.shippingAddress?.line2 ?? "",
-        city: params.shippingAddress?.city ?? "N/A",
-        state: params.shippingAddress?.state ?? "N/A",
-        postalCode: params.shippingAddress?.postalCode ?? "N/A",
-      },
-    };
-
-    if (
-      params.selectedMode !== DELIVERY_MODE_HOME &&
-      params.pickupdetails?.date
-    ) {
-      const formattedDate = formatDateForBackend(params.pickupdetails.date);
-      orderDetails.pickupDetails = {
-        date: formattedDate ?? "N/A",
-        time: params.pickupdetails?.time ?? "N/A",
-        firstName: params.pickupdetails?.firstName ?? "N/A",
-        lastName: params.pickupdetails?.lastName ?? "N/A",
-        phone: params.pickupdetails?.phone ?? "N/A",
-        email: params.pickupdetails?.email ?? "N/A",
-        vehicleType: params.pickupdetails?.vehicleType,
-        vehicleNumber: params.pickupdetails?.vehicleNumber,
-        additionalDetails: params.pickupdetails.additionalDetails,
-      };
-    }
-
+  const createOrder = async (params: any, totalAmount: number) => {
     try {
-      const response = await orderService.createOrder(orderDetails);
-      console.log("Order created successfully:", response);
+      const orderDetails = {
+        products,
+        shippingCharges:
+          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
+        totalAmount,
+        paymentMethod: "credit_card",
+        pickupMode: params.selectedMode as PickupMode,
+        deliveryDate: formatDateForBackend(params.deliveryDate),
+        deliveryTime: params.deliveryTime,
+        billingAddress: params.billingAddress,
+        shippingAddress: params.shippingAddress,
+      };
 
+      const response = await orderService.createOrder(orderDetails);
       dispatch(clearCart());
 
       redirectToPage(containers.orderSuccessfulScreen, {
@@ -232,193 +205,110 @@ export const usePaymentHandler = () => {
 
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
-        `Your order number is #ORD-${response?.orderNumber}`,
-        { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
+        `Your order number is #ORD-${response.orderNumber}`,
+        { orderNumber: response.orderNumber }
       );
-    } catch (error) {
-      console.error("=== ORDER CREATION FAILED ===", error);
-      Alert.alert(
-        "Error",
-        "Payment successful but failed to create order. Please contact support."
-      );
+    } catch {
+      Alert.alert("Error", "Payment successful but order creation failed");
     }
   };
 
-  /* -------------------- APPLE PAY / GOOGLE PAY -------------------- */
+  /* -------------------- APPLE / GOOGLE PAY -------------------- */
   const handlePlatformPayPayment = async (items: Product[], params: any) => {
-    console.log("=== STARTING PLATFORM PAY PROCESS ===");
-
-    const subtotal = calculateSubtotal(items);
-    console.log("Subtotal:", subtotal);
-
-    // Check Minimum Order Value
-    const currentMOV = await getMinimumOrderValue();
-    if (currentMOV === null) {
-      Alert.alert(
-        "Error",
-        "Unable to fetch minimum order value. Please try again."
-      );
-      return Promise.reject(new Error("Failed to fetch MOV"));
+    if (isLoadingSettings) {
+      Alert.alert("Please Wait", "Loading payment settings...");
+      return;
     }
+    const totalAmount = getFinalAmount(items, params.selectedMode);
 
-    if (subtotal < currentMOV) {
-      console.error("Order value below minimum order value");
-      Alert.alert(
-        "Minimum Order Not Met",
-        `Your order value (£${subtotal.toFixed(
-          2
-        )}) is less than the minimum order value of £${currentMOV}. Please add more items to your cart.`
-      );
-      return Promise.reject(new Error("Order value below minimum order value"));
-    }
+    console.log("total amount",totalAmount);
 
-    // Fetch payment intent
-    const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
-    if (!paymentData) {
-      console.error("Failed to fetch payment intent");
+    const mov = await getMinimumOrderValue();
+    if (mov !== null && totalAmount < mov) {
+      Alert.alert("Minimum Order Not Met");
       return;
     }
 
-    const { clientSecret } = paymentData;
-    console.log("Got payment data for platform pay");
+    const paymentData = await fetchPaymentIntent(totalAmount);
+    if (!paymentData) return;
 
-    // Prepare cart items for platform pay (immediate payment type)
-    const platformPayItems: PlatformPay.CartSummaryItem[] = items.map(
-      (item) => {
-        const itemTotal = (
-          (item.netPrice /*- item.discount*/) * item.quantity +
-          item.vatAmount
-        ).toFixed(2);
+    const cartSummary: PlatformPay.CartSummaryItem[] = items.map((i) => ({
+      label: i.name,
+      amount: (
+        i.netPrice * i.quantity +
+        (i.isVatApplicable ? i.vatAmount : 0)
+      ).toFixed(2),
+      paymentType: PlatformPay.PaymentType.Immediate,
+    }));
 
-        return {
-          label: item.name,
-          amount: itemTotal,
-          paymentType: PlatformPay.PaymentType.Immediate,
-        } as PlatformPay.CartSummaryItem;
+    if (params.selectedMode === DELIVERY_MODE_HOME) {
+      cartSummary.push({
+        label: "Delivery Charges",
+        amount: shippingCharge.toFixed(2),
+        paymentType: PlatformPay.PaymentType.Immediate,
+      });
+    }
+
+    const { error } = await confirmPlatformPayPayment(
+      paymentData.paymentIntent.client_secret,
+      {
+        applePay: {
+          merchantCountryCode: "GB",
+          currencyCode: CURRENCY_CODE.toUpperCase(),
+          cartItems: cartSummary,
+        },
+        googlePay: {
+          testEnv: true,
+          merchantName: STORE_NAME,
+          merchantCountryCode: "GB",
+          currencyCode: CURRENCY_CODE.toUpperCase(),
+        },
       }
     );
 
-    // Confirm platform pay payment
-    const { error } = await confirmPlatformPayPayment(clientSecret, {
-      applePay: {
-        merchantCountryCode: "GB",
-        currencyCode: CURRENCY_CODE.toUpperCase(),
-        cartItems: platformPayItems,
-      },
-      googlePay: {
-        testEnv: true, // Set to false in production
-        merchantName: STORE_NAME,
-        merchantCountryCode: "GB",
-        currencyCode: CURRENCY_CODE.toUpperCase(),
-        billingAddressConfig: {
-          format: PlatformPay.BillingAddressFormat.Full,
-          isPhoneNumberRequired: true,
-          isRequired: true,
-        },
-      },
-    });
-
     if (error) {
-      console.error("Platform pay error:", error);
       Alert.alert("Payment Error", error.message);
       return;
     }
 
-    // Payment successful
-    console.log("=== PLATFORM PAY SUCCESSFUL ===");
-    Alert.alert("Success", "Payment completed successfully!");
-
-    // Create order
-    await createOrder(params, subtotal);
+    await createOrder(params, totalAmount);
   };
 
-  /* -------------------- CARD / PAYMENT SHEET -------------------- */
-  const handlePayment = async (cartItems: Product[], params: any) => {
-    console.log("=== STARTING CARD PAYMENT PROCESS ===");
-    console.log("Order details:", params);
-
-    const subtotal = calculateSubtotal(cartItems);
-    console.log("Subtotal:", subtotal);
-
-    // Check Minimum Order Value
-    const currentMOV = await getMinimumOrderValue();
-    if (currentMOV === null) {
-      Alert.alert(
-        "Error",
-        "Unable to fetch minimum order value. Please try again."
-      );
-      return Promise.reject(new Error("Failed to fetch MOV"));
+  /* -------------------- CARD PAYMENT -------------------- */
+  const handlePayment = async (items: Product[], params: any) => {
+    if (isLoadingSettings) {
+      Alert.alert("Please Wait", "Loading payment settings...");
+      return;
     }
+    const totalAmount = getFinalAmount(items, params.selectedMode);
+    console.log("total amount", totalAmount)
 
-    if (subtotal < currentMOV) {
-      console.error("Order value below minimum order value");
-      Alert.alert(
-        "Minimum Order Not Met",
-        `Your order value (£${subtotal.toFixed(
-          2
-        )}) is less than the minimum order value of £${currentMOV}. Please add more items to your cart.`
-      );
-      return Promise.reject(new Error("Order value below minimum order value"));
-    }
-
-    // Fetch payment intent
-    const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
-    if (!paymentData) {
-      console.error("Failed to fetch payment intent");
+    const mov = await getMinimumOrderValue();
+    if (mov !== null && totalAmount < mov) {
+      Alert.alert("Minimum Order Not Met");
       return;
     }
 
-    const { clientSecret, ephemeralKey, customer } = paymentData;
-    console.log("Got payment data, initializing payment sheet...");
+    const paymentData = await fetchPaymentIntent(totalAmount);
+    if (!paymentData) return;
 
-    // Initialize payment sheet with Apple Pay & Google Pay options
     const { error: initError } = await initPaymentSheet({
       merchantDisplayName: STORE_NAME,
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: clientSecret,
-      allowsDelayedPaymentMethods: true,
-      applePay: {
-        merchantCountryCode: "GB",
-      },
-      googlePay: {
-        merchantCountryCode: "GB",
-        testEnv: true, // Set to false in production
-      },
-      defaultBillingDetails: {
-        name: params.billingAddress?.name || "",
-        address: {
-          city: params.billingAddress?.city || "",
-          line1: params.billingAddress?.line1 || "",
-          postalCode: params.billingAddress?.postalCode || "",
-          state: params.billingAddress?.state || "",
-        },
-      },
+      paymentIntentClientSecret:
+        paymentData.paymentIntent.client_secret,
+      applePay: { merchantCountryCode: "GB" },
+      googlePay: { merchantCountryCode: "GB", testEnv: true },
     });
 
     if (initError) {
-      console.error("Payment sheet init error:", initError);
-      Alert.alert("Setup Error", initError.message);
+      Alert.alert("Payment Error", initError.message);
       return;
     }
 
-    console.log("Payment sheet initialized, presenting...");
+    const { error } = await presentPaymentSheet();
+    if (error) return;
 
-    // Present payment sheet
-    const { error: paymentError } = await presentPaymentSheet();
-
-    if (paymentError) {
-      console.error("Payment error:", paymentError);
-      Alert.alert("Payment Cancelled", paymentError.message);
-      return;
-    }
-
-    // Payment successful
-    console.log("=== CARD PAYMENT SUCCESSFUL ===");
-    Alert.alert("Success", "Payment completed successfully!");
-
-    // Create order
-    await createOrder(params, subtotal);
+    await createOrder(params, totalAmount);
   };
 
   return {
@@ -426,5 +316,6 @@ export const usePaymentHandler = () => {
     handlePlatformPayPayment,
     isApplePaySupported,
     isGooglePaySupported,
+    isLoadingSettings,
   };
 };

@@ -171,6 +171,49 @@ const UserProfileScreen = () => {
     }
   };
 
+  const handleSoftDelete = async () => {
+  if (!user?.id) {
+    showErrorAlert({
+      title: "Error",
+      message: "User ID not found. Please try again.",
+    });
+    return;
+  }
+
+  try {
+    setDeleteAccountModalOpen(false); // Close modal first
+    
+    // Show loading state (optional)
+    // You can add a loading state here if needed
+    
+    const response = await UserAPI.softDeleteUser(user.id);
+    
+    if (response) {
+      // Show success message
+      if (Platform.OS === 'web') {
+        alert(ACCOUNT_DELETED || "Your account has been deleted successfully.");
+      } else {
+        showErrorAlert({
+          title: "Account Deleted",
+          message: ACCOUNT_DELETED || "Your account has been deleted successfully.",
+        });
+      }
+      
+      // Logout and redirect after a short delay
+      setTimeout(async () => {
+        await logout();
+        router.replace("/modules/home/Home");
+      }, 1500);
+    }
+  } catch (error) {
+    console.error("Deletion error:", error);
+    showErrorAlert({
+      title: "Deletion Failed",
+      message: ACCOUNT_DELETION_ERROR || "Failed to delete account. Please try again.",
+    });
+  }
+};
+
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
@@ -337,7 +380,7 @@ const UserProfileScreen = () => {
         title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
-        handleSubmit={() => {}}
+        handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />
