@@ -39,6 +39,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
+import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 
 interface ApiResponse {
   data: Product[];
@@ -70,6 +71,13 @@ const AdminProductDashboard = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  // Bulk selection state (additive feature only)
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteModalVisible, setBulkDeleteModalVisible] = useState(false);
 
   const isWeb = Platform.OS === "web";
 
@@ -138,13 +146,6 @@ const AdminProductDashboard = () => {
         const totalFetched = (page - 1) * ITEMS_PER_PAGE + response.data.length;
         const hasMoreData = totalFetched < response.total;
 
-        // console.log(`Page ${page} response:`, {
-        //   itemsReceived: response.data.length,
-        //   totalRecords: response.total,
-        //   totalFetched,
-        //   hasMore: hasMoreData,
-        // });
-
         return {
           data: response.data,
           total: response.total,
@@ -165,25 +166,16 @@ const AdminProductDashboard = () => {
 
   useEffect(() => {
     const performSearch = async () => {
-      if (!debouncedQuery || debouncedQuery.length < 2) {
+      if (!debouncedQuery.trim()) {
         setSuggestions([]);
-        if (debouncedQuery.length === 0) {
-          loadInitialData();
-        }
+        loadInitialData();
         return;
       }
 
-      const API_URL = process.env.EXPO_PUBLIC_API_URL;
       try {
-        const response = await axios.get(
-          `${API_URL}/products/suggestions/search?q=${debouncedQuery}`
-        );
-        const results = response.data;
-        const uniqueResults = [...new Set(results)].slice(0, 6);
-        setSuggestions(uniqueResults as string[]);
+        await searchProductsByName(debouncedQuery.trim());
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        setSuggestions([]);
+        console.error("Search failed:", error);
       }
     };
 
@@ -229,10 +221,6 @@ const AdminProductDashboard = () => {
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
 
-      // console.log("Initial data loaded:", {
-      //   
-      // }
-      //);
     } catch (error) {
       console.error("Failed to load initial data:", error);
       Alert.alert("Error", "Failed to load products");
@@ -246,17 +234,10 @@ const AdminProductDashboard = () => {
 
   const loadMoreData = async () => {
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
-      // console.log("Load more blocked:", {
-      //   loadingMoreRef: loadingMoreRef.current,
-      //   isLoadingMore,
-      //   hasMore,
-      //   isLoading,
-      // });
       return;
     }
 
     const nextPage = lastPageLoadedRef.current + 1;
-    // console.log(`Loading more data - page ${nextPage}`);
 
     loadingMoreRef.current = true;
     setIsLoadingMore(true);
@@ -274,9 +255,6 @@ const AdminProductDashboard = () => {
             (item) => !existingIds.has(item._id || item.id)
           );
 
-          // console.log(
-          //   `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
-          // );
           return [...prevProducts, ...newItems];
         });
 
@@ -311,11 +289,6 @@ const AdminProductDashboard = () => {
       setHasMore(response.hasMore);
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
-
-      // console.log("Data refreshed:", {
-      //   itemCount: response.data.length,
-      //   total: response.total,
-      // });
     } catch (error) {
       console.error("Failed to refresh data:", error);
       Alert.alert("Error", "Failed to refresh products");
@@ -351,7 +324,6 @@ const AdminProductDashboard = () => {
         }
       }
     } catch (error: any) {
-      // console.log("Delete error:", error?.response?.data);
       const errorMessage =
         error?.response?.data?.message ||
         "Something went wrong while deleting the product.";
@@ -365,6 +337,102 @@ const AdminProductDashboard = () => {
       setIsLoading(false);
       setDeleteModalVisible(false);
       setProductToDelete(null);
+    }
+  };
+
+  // Bulk delete handler (additive feature only)
+  const performBulkDelete = async (productIds: string[]) => {
+    try {
+      setIsLoading(true);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const productId of productIds) {
+        try {
+          const result = await ProductsAPI.deleteProduct(productId);
+          if (result) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          errorCount++;
+        }
+      }
+
+      // Clear selection and refresh
+      setSelectedProductIds(new Set());
+      setIsSelectionMode(false);
+      await onRefresh();
+
+      if (isWeb) {
+        if (errorCount === 0) {
+          setSuccessModalVisible(true);
+        } else {
+          alert(`Deleted ${successCount} products. ${errorCount} failed.`);
+        }
+      } else {
+        if (errorCount === 0) {
+          Alert.alert("Success", `${successCount} product(s) deleted successfully`);
+        } else {
+          Alert.alert("Partial Success", `Deleted ${successCount} products. ${errorCount} failed.`);
+        }
+      }
+    } catch (error: any) {
+      const errorMessage = "Something went wrong while deleting products.";
+      if (isWeb) {
+        alert(errorMessage);
+      } else {
+        Alert.alert("Error", errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+      setBulkDeleteModalVisible(false);
+    }
+  };
+
+  // Bulk selection handlers (additive feature only)
+  const handleToggleSelection = (productId: string) => {
+    setSelectedProductIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const allIds = new Set<string>();
+    productsListToShow.forEach((p: Product) => {
+      const id = p._id || p.id;
+      if (id) {
+        allIds.add(String(id));
+      }
+    });
+    setSelectedProductIds(allIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedProductIds(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedProductIds);
+    if (ids.length === 0) return;
+    
+    setBulkDeleteModalVisible(true);
+  };
+
+  const handleLongPressProduct = (item: Product) => {
+    if (!isWeb && !isSelectionMode) {
+      setIsSelectionMode(true);
+      const productId = item._id || item.id;
+      if (productId) {
+        setSelectedProductIds(new Set([String(productId)]));
+      }
     }
   };
 
@@ -414,9 +482,19 @@ const AdminProductDashboard = () => {
       };
 
       const badge = item.stock !== undefined ? getStockBadge(item.stock) : null;
+      const productId = String(item._id || item.id);
+      const isSelected = selectedProductIds.has(productId);
 
       return (
-        <View style={[styles.card, { minHeight: 120 }]}>
+        <Pressable
+          onLongPress={() => handleLongPressProduct(item)}
+          style={[
+            styles.card,
+            { minHeight: 120 },
+            viewMode === "grid" && styles.gridCard,
+            isSelectionMode && isSelected && styles.selectedCard,
+          ]}
+        >
           <View
             style={[
               globalStyles.flexRow,
@@ -425,6 +503,20 @@ const AdminProductDashboard = () => {
               { marginTop: 12 },
             ]}
           >
+            {/* Checkbox for selection mode (additive feature only) */}
+            {(isSelectionMode || isWeb) && (
+              <TouchableOpacity
+                onPress={() => handleToggleSelection(productId)}
+                style={styles.checkboxContainer}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={isSelected ? "checkbox" : "checkbox-outline"}
+                  size={24}
+                  color={isSelected ? colors.primary : colors.placeholdergrey}
+                />
+              </TouchableOpacity>
+            )}
             <View>
               {item?.image[0] ? (
                 <Image source={{ uri: item?.image[0] }} style={styles.image} />
@@ -453,32 +545,35 @@ const AdminProductDashboard = () => {
                 >
                   {item.name}
                 </Text>
-                <View style={{ flexDirection: "row", gap: 4 }}>
-                  <TouchableOpacity
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() =>
-                      redirectToPage(containers.AdminProductUpdationScreen, {
-                        item: JSON.stringify(item),
-                      })
-                    }
-                  >
-                    <Ionicons
-                      name="create-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() => handleDeleteProduct(item)}
-                  >
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={colors.error}
-                    />
-                  </TouchableOpacity>
-                </View>
+                {/* Hide edit/delete buttons in selection mode on mobile */}
+                {(!isSelectionMode || isWeb) && (
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() =>
+                        redirectToPage(containers.AdminProductUpdationScreen, {
+                          item: JSON.stringify(item),
+                        })
+                      }
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() => handleDeleteProduct(item)}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={20}
+                        color={colors.error}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               <Text style={styles.text}>
                 Category:{" "}
@@ -524,10 +619,10 @@ const AdminProductDashboard = () => {
               </View>
             </View>
           </View>
-        </View>
+        </Pressable>
       );
     },
-    [categories, handleDeleteProduct]
+    [categories, handleDeleteProduct, viewMode, isSelectionMode, selectedProductIds, isWeb]
   );
 
   const maxId = productsList.reduce((max: number, product: Product) => {
@@ -546,7 +641,6 @@ const AdminProductDashboard = () => {
     try {
       setIsLoading(true);
       const response = await ProductsAPI.productsBy_Name_Id(query);
-      // console.log("Search response:", response);
 
       if (response) {
         setAllProductsList(response);
@@ -610,10 +704,7 @@ const AdminProductDashboard = () => {
       scrollable={isWeb ? true : false}
       hideNavItems={true}
     >
-      <View style={[
-          // globalStyles.pt_0, 
-          {flex: 1 }
-        ]}>
+      <View style={[{flex: 1 }]}>
         {!isWeb && (
           <View>
             <SearchBar
@@ -644,7 +735,11 @@ const AdminProductDashboard = () => {
             </Text>
           )}
           <TouchableOpacity
-            style={[styles.addButton, !isWeb && styles.addButtonMobile]}
+            style={[
+              styles.addButton,
+              isWeb && styles.addButtonWebSmall,
+              !isWeb && styles.addButtonMobile
+            ]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
                 newProduct: true,
@@ -653,7 +748,7 @@ const AdminProductDashboard = () => {
               });
             }}
           >
-            <Text style={styles.addButtonText}>+ Add New Product</Text>
+            <Text style={[styles.addButtonText, isWeb && styles.addButtonTextWebSmall]}>+ Add New Product</Text>
           </TouchableOpacity>
         </View>
 
@@ -661,16 +756,32 @@ const AdminProductDashboard = () => {
           <View style={styles.stickyTopContainer}>
             <View style={styles.categoryActionRow}>
               {isWeb && (
-                <SearchBar
-                  placeholder="Search by name..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                  onPress={handleSearch}
-                  widthPercent={35}
-                  height={40}
-                />
+                <View style={styles.searchWithToggle}>
+                  <SearchBar
+                    placeholder="Search by name..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearch}
+                    onPress={handleSearch}
+                    widthPercent={35}
+                    height={40}
+                  />
+
+                  <TouchableOpacity
+                    onPress={() =>
+                      setViewMode(viewMode === "list" ? "grid" : "list")
+                    }
+                    style={styles.viewToggleIcon}
+                  >
+                    <Ionicons
+                      name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                      size={22}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
               )}
+
               <View style={styles.categoryContainer}>
                 <TouchableOpacity
                   onPress={() => setIsCategoryOpen((prev) => !prev)}
@@ -734,11 +845,140 @@ const AdminProductDashboard = () => {
           </View>
         </View>
 
-        <View style={{ marginTop: 16, flex: 1 }}>
+        {/* Mobile: Selection bar (additive feature only) */}
+        {!isWeb && isSelectionMode && (
+          <View style={styles.selectionBar}>
+            <View style={styles.selectionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.checkboxButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={24}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.selectionBarButton}
+              >
+                <Text style={styles.selectionBarButtonText}>Select All</Text>
+              </TouchableOpacity>
+              {selectedProductIds.size > 0 && (
+                <Text style={styles.selectionBarCount}>
+                  ({selectedProductIds.size} product{selectedProductIds.size !== 1 ? "s" : ""} selected)
+                </Text>
+              )}
+            </View>
+            <View style={styles.selectionBarRight}>
+              <TouchableOpacity
+                onPress={handleBulkDelete}
+                style={[
+                  styles.selectionBarButton,
+                  // styles.deleteButtonContainer,
+                  selectedProductIds.size > 0
+                ]}
+                disabled={selectedProductIds.size === 0}
+              >
+                {/* <Ionicons 
+                  name="trash-outline" 
+                  size={18} 
+                  color={selectedProductIds.size === 0 ? colors.secondaryText : colors.white} 
+                /> */}
+                <Text
+                  style={[
+                    styles.selectionBarButtonText,
+                    selectedProductIds.size === 0 && styles.selectionBarButtonTextDisabled,
+                    selectedProductIds.size > 0 && styles.deleteButtonTextActive,
+                  ]}
+                >
+                  {selectedProductIds.size === 0 ? "Delete" : "Delete Selected"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsSelectionMode(false);
+                  setSelectedProductIds(new Set());
+                }}
+                style={styles.selectionBarButton}
+              >
+                <Ionicons name="close" size={20} color={colors.black} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Web: Bulk action bar (additive feature only) */}
+        {isWeb && selectedProductIds.size > 0 && (
+          <View style={styles.bulkActionBar}>
+            <View style={styles.bulkActionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.bulkSelectAllButton}
+              >
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={20}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+                <Text style={styles.bulkSelectAllText}>Select All</Text>
+              </TouchableOpacity>
+              <Text style={styles.bulkActionBarText}>
+                ({selectedProductIds.size} selected)
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleBulkDelete}
+              style={styles.bulkDeleteButton}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.white} />
+              <Text style={styles.bulkDeleteButtonText}>Delete Selected</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={{ marginTop: 8, flex: 1 }}>
           <FlatList
             data={productsListToShow}
             renderItem={ProductCard}
             keyExtractor={getUniqueKey}
+            key={isWeb ? viewMode : "list"}
+            numColumns={isWeb && viewMode === "grid" ? 3 : 1}
+            columnWrapperStyle={
+              isWeb && viewMode === "grid"
+                ? { gap: 12, alignItems: "stretch", justifyContent: "flex-start" }
+                : undefined
+            }
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={
@@ -855,6 +1095,23 @@ const AdminProductDashboard = () => {
         text="Product deleted successfully"
         submitText="OK"
         cancelText=""
+      />
+      <ConfirmationModal
+        isModalVisible={bulkDeleteModalVisible}
+        onClose={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleCancel={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleSubmit={() => {
+          const ids = Array.from(selectedProductIds);
+          performBulkDelete(ids);
+        }}
+        title="Delete Products"
+        text={`Are you sure you want to delete ${selectedProductIds.size} product(s)?`}
+        submitText="Delete"
+        cancelText="Cancel"
       />
     </LayoutComponent>
   );

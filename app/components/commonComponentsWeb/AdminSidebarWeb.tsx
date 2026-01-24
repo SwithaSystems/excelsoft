@@ -56,6 +56,12 @@ const navItems: NavItem[] = [
     icon: "people",
     route: "/modules/admin/FileUploadAddProductCategory",
   },
+  {
+    id: "promotion",
+    label: "Promotion Management",
+    icon: "megaphone",
+    route: "/modules/admin/AdminPromotion",
+  },
 ];
 
 export const AdminSidebarWeb: React.FC = () => {

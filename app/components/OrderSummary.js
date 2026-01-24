@@ -240,19 +240,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itemName: {
-    width: "30%",
+    flex: 1,
     fontSize: 14,
     color: colors.text || "#000",
     paddingRight: 8,
   },
   quantity: {
-    width: "15%",
+    flex: 1,
     textAlign: "center",
     fontSize: 14,
     color: colors.text || "#000",
   },
   price: {
-    width: "15%",
+    flex: 1,
     textAlign: "right",
     fontSize: 14,
     color: colors.text || "#000",
@@ -271,13 +271,13 @@ const styles = StyleSheet.create({
     color: colors.text || "#000",
   },
   summaryLabel: {
-    width: "40%",
+    flex: 1,
     fontSize: 14,
     color: colors.text || "#000",
     paddingRight: 8,
   },
   summaryValue: {
-    width: "25%",
+    flex: 1,
     textAlign: "right",
     fontSize: 14,
     fontWeight: "500",
