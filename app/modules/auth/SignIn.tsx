@@ -278,6 +278,7 @@ const signIn = () => {
             <TextInput
               style={[
                 globalStyles.input,
+                styles.passwordInput,
                 errors.password && globalStyles.errorInput,
                 isWeb && { fontSize: 16 },
               ]}
