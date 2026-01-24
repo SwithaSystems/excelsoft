@@ -65,6 +65,7 @@ const routes = {
   userProfileScreen: "modules/profile/UserProfile",
   editProfileScreen: "modules/profile/EditProfile",
   editAccountInformationScreen: "modules/profile/EditAccountInformation",
+  editContactInformationWebScreen: "modules/profile/EditContactInformationWeb",
   changePasswordScreen: "modules/profile/ChangePassword",
   addAddressScreen: "modules/profile/AddAddress",
   editAddressScreen: "modules/profile/EditAddress",

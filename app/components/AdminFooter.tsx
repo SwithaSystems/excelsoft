@@ -16,6 +16,7 @@ import {
   ADMINFOOTER_ORDERS,
   ADMINFOOTER_PRODUCTS,
   ADMINFOOTER_SCAN,
+  ADMINFOOTER_MENU,
 } from "@/constants/stringLiterals";
 import colors from "@/constants/colors";
 
@@ -38,9 +39,9 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
     if (activeTab === ADMINFOOTER_CATEGORIES) return;
     redirectToPage(containers.AdminCategoriesScreen);
   };
-  const handleScanPress = () => {
-    if (activeTab === ADMINFOOTER_SCAN) return;
-    redirectToPage(containers.AdminOrderQRScanScreen);
+  const handleMenuPress = () => {
+    if (activeTab === ADMINFOOTER_MENU) return;
+    redirectToPage(containers.AdminProfileScreen);
   };
 
   return (
@@ -80,12 +81,10 @@ const AdminFooter = ({ navigation, activeTab = "" }: any) => {
           // onPress={() => redirectToPage(containers.AdminCategoriesScreen)}
         />
         <FooterButton
-          icon="gift"
-          label="Scan & Deliver"
-          isActive={activeTab === ADMINFOOTER_SCAN}
-          onPress={handleScanPress}
-
-          // onPress={() => redirectToPage(containers.AdminOrderQRScanScreen)}
+          icon="menu"
+          label="Menu"
+          isActive={activeTab === ADMINFOOTER_MENU}
+          onPress={handleMenuPress}
         />
       </View>
     </View>

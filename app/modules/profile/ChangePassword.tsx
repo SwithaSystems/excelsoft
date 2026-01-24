@@ -31,6 +31,10 @@ const changePasswordScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
   const [currentPasswordError, setCurrentPasswordError] = useState("");
+  // Web-only validation states
+  const [newPasswordError, setNewPasswordError] = useState<string>("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const user = useSelector((state: any) => state.user.user);
   const isWeb = Platform.OS === "web";
 
@@ -97,19 +101,75 @@ const changePasswordScreen = () => {
       }
     } catch (error) {
       console.error("Error comparing passwords:", error);
+      if (isWeb) {
+        setCurrentPasswordError("Failed to verify current password. Please try again.");
+      }
     }
   };
 
   const handleChangePassword = async () => {
-    setCurrentPasswordError("");
+    // Web-only: Set submit attempted flag and validate fields
+    if (isWeb) {
+      setSubmitAttempted(true);
+      
+      // Reset web-specific errors (but keep currentPasswordError for now, will validate below)
+      setNewPasswordError("");
+      setConfirmPasswordError("");
+      
+      // Validate all fields for web
+      let hasErrors = false;
+      
+      // Validate current password
+      if (!currPassword.trim()) {
+        setCurrentPasswordError("Current password is required");
+        hasErrors = true;
+      } else {
+        // Clear any previous "required" error if field is now filled
+        if (currentPasswordError === "Current password is required") {
+          setCurrentPasswordError("");
+        }
+      }
+      
+      // Validate new password
+      if (!newPassword.trim()) {
+        setNewPasswordError("New password is required");
+        hasErrors = true;
+      } else {
+        const passwordValidationError = isValidPassword(newPassword);
+        if (passwordValidationError) {
+          setNewPasswordError(passwordValidationError);
+          hasErrors = true;
+        }
+      }
+      
+      // Validate confirm password
+      if (!confirmPassword.trim()) {
+        setConfirmPasswordError("Confirm password is required");
+        hasErrors = true;
+      } else if (newPassword !== confirmPassword) {
+        setConfirmPasswordError("New and Confirm passwords do not match");
+        hasErrors = true;
+      }
+      
+      // If there are validation errors, stop here (don't proceed to API call)
+      if (hasErrors) {
+        return;
+      }
+    }
     
-    if (!currPassword || !newPassword || !confirmPassword) {
-      // console.log("Validation failed: Missing fields");
-      showErrorAlert({
-        title: "Validation Error",
-        message: "All fields are required",
-      });
-      return;
+    // Mobile validation (existing behavior)
+    if (!isWeb) {
+      // Clear current password error for mobile
+      setCurrentPasswordError("");
+      
+      if (!currPassword || !newPassword || !confirmPassword) {
+        // console.log("Validation failed: Missing fields");
+        showErrorAlert({
+          title: "Validation Error",
+          message: "All fields are required",
+        });
+        return;
+      }
     }
 
     // Validate current password before proceeding (if we have the password hash)
@@ -120,19 +180,28 @@ const changePasswordScreen = () => {
         // console.log("Current password validation result:", isCurrentPasswordValid);
         if (!isCurrentPasswordValid) {
           setCurrentPasswordError(INCORRECT_CURRENT_PASSWORD);
-          showErrorAlert({
-            title: "Error",
-            message: INCORRECT_CURRENT_PASSWORD,
-          });
+          if (isWeb) {
+            // Web: error already shown inline, no need for alert
+          } else {
+            // Mobile: show alert (existing behavior)
+            showErrorAlert({
+              title: "Error",
+              message: INCORRECT_CURRENT_PASSWORD,
+            });
+          }
           return;
         }
         // console.log("Current password validated successfully");
       } catch (error) {
         console.error("Error validating current password:", error);
-        showErrorAlert({
-          title: "Error",
-          message: "Failed to verify current password. Please try again.",
-        });
+        if (isWeb) {
+          setCurrentPasswordError("Failed to verify current password. Please try again.");
+        } else {
+          showErrorAlert({
+            title: "Error",
+            message: "Failed to verify current password. Please try again.",
+          });
+        }
         return;
       }
     } else {
@@ -140,27 +209,30 @@ const changePasswordScreen = () => {
       // console.log("Password hash not available, backend will validate current password");
     }
 
-    // console.log("Validating new password format...");
-    const newPasswordError = isValidPassword(newPassword);
-    if (newPasswordError) {
-      // console.log("New password validation failed:", newPasswordError);
-      showErrorAlert({
-        title: "Validation Error",
-        message: newPasswordError,
-      });
-      return;
+    // Mobile-only: Additional validation (web validation already done above)
+    if (!isWeb) {
+      // console.log("Validating new password format...");
+      const newPasswordError = isValidPassword(newPassword);
+      if (newPasswordError) {
+        // console.log("New password validation failed:", newPasswordError);
+        showErrorAlert({
+          title: "Validation Error",
+          message: newPasswordError,
+        });
+        return;
+      }
+      // console.log("New password format validated successfully");
+      
+      if (newPassword !== confirmPassword) {
+        // console.log("Password mismatch validation failed");
+        showErrorAlert({
+          title: "Validation Error",
+          message: "New and Confirm passwords do not match",
+        });
+        return;
+      }
+      // console.log("Password match validated successfully");
     }
-    // console.log("New password format validated successfully");
-    
-    if (newPassword !== confirmPassword) {
-      // console.log("Password mismatch validation failed");
-      showErrorAlert({
-        title: "Validation Error",
-        message: "New and Confirm passwords do not match",
-      });
-      return;
-    }
-    // console.log("Password match validated successfully");
 
     try {
       // console.log("Calling API to change password...");
@@ -196,12 +268,19 @@ const changePasswordScreen = () => {
       if (errorMessage.toLowerCase().includes("current password") || 
           errorMessage.toLowerCase().includes("incorrect password")) {
         setCurrentPasswordError(INCORRECT_CURRENT_PASSWORD);
+        // Web: show inline error, also show alert for visibility
+        // Mobile: show alert (existing behavior)
+        showErrorAlert({
+          title: "Error",
+          message: errorMessage,
+        });
+      } else {
+        // Other errors: show alert for both web and mobile
+        showErrorAlert({
+          title: "Error",
+          message: errorMessage,
+        });
       }
-      
-      showErrorAlert({
-        title: "Error",
-        message: errorMessage,
-      });
     }
   };
 
@@ -237,13 +316,22 @@ const changePasswordScreen = () => {
                   onPress={() => {}}
                   setValue={(value) => {
                     setCurrPassword(value);
-                    setCurrentPasswordError("");
+                    // Web-only: Clear "required" error when user types, but keep bcrypt validation errors until blur/submit
+                    if (isWeb && submitAttempted) {
+                      // Only clear if it's a "required" error, not a bcrypt validation error
+                      if (currentPasswordError === "Current password is required") {
+                        setCurrentPasswordError("");
+                      }
+                    } else {
+                      // Mobile: always clear on type
+                      setCurrentPasswordError("");
+                    }
                   }}
                   onblur={handleBlur}
                 />
-                {currentPasswordError && (
-                  <Text style={[globalStyles.errorText, { marginTop: 4 }]}>
-                    {currentPasswordError}
+                {((isWeb && submitAttempted && !currPassword.trim()) || currentPasswordError) && (
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                    {currentPasswordError || (isWeb && submitAttempted && !currPassword.trim() ? "Current password is required" : "")}
                   </Text>
                 )}
               </View>
@@ -258,8 +346,34 @@ const changePasswordScreen = () => {
                   placeholder="Enter your new Password"
                   value={newPassword}
                   onPress={() => {}}
-                  setValue={setNewPassword}
+                  setValue={(value) => {
+                    setNewPassword(value);
+                    // Web-only: Clear error when user types
+                    if (isWeb && submitAttempted) {
+                      if (value.trim()) {
+                        const passwordValidationError = isValidPassword(value);
+                        if (passwordValidationError) {
+                          setNewPasswordError(passwordValidationError);
+                        } else {
+                          setNewPasswordError("");
+                        }
+                        // Re-validate confirm password match
+                        if (confirmPassword && value !== confirmPassword) {
+                          setConfirmPasswordError("New and Confirm passwords do not match");
+                        } else if (confirmPassword && value === confirmPassword) {
+                          setConfirmPasswordError("");
+                        }
+                      } else {
+                        setNewPasswordError("");
+                      }
+                    }
+                  }}
                 />
+                {isWeb && submitAttempted && newPasswordError && (
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                    {newPasswordError}
+                  </Text>
+                )}
               </View>
             </View>
             <View style={globalStyles.profileInputContainer}>
@@ -274,8 +388,27 @@ const changePasswordScreen = () => {
                   placeholder="Re-enter your new Password"
                   value={confirmPassword}
                   onPress={() => {}}
-                  setValue={setConfirmPassword}
+                  setValue={(value) => {
+                    setConfirmPassword(value);
+                    // Web-only: Clear error when user types
+                    if (isWeb && submitAttempted) {
+                      if (value.trim()) {
+                        if (newPassword && value !== newPassword) {
+                          setConfirmPasswordError("New and Confirm passwords do not match");
+                        } else {
+                          setConfirmPasswordError("");
+                        }
+                      } else {
+                        setConfirmPasswordError("");
+                      }
+                    }
+                  }}
                 />
+                {isWeb && submitAttempted && confirmPasswordError && (
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                    {confirmPasswordError}
+                  </Text>
+                )}
               </View>
             </View>
             {isWeb ? (

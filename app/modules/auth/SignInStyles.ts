@@ -33,6 +33,9 @@ const styles = StyleSheet.create({
   passwordContainer: {
     paddingTop: 16,
   },
+  passwordInput: {
+    marginBottom: 4,
+  },
   emailContainer: {
     //marginBottom: 10,
   },
@@ -153,7 +156,7 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   errorTextDesktop: {
-    marginTop: 4,
+    marginTop: 0,
   },
   phoneInput: {
     flex: 1,

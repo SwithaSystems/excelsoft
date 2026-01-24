@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react"; // <-- Added useState import
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
-  ScrollView,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -28,6 +27,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import SearchBar from "@/app/components/searchBar";
+import OrderStatusDropdown from "./componentsWeb/OrderStatusDropdown";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -40,8 +40,6 @@ const AdminSeeAllOrders = () => {
   const isWeb = Platform.OS === "web";
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  const statusFilters = ["All Orders", "Cancelled", "Replaced", "Returned"];
 
   const getAllOrders = async () => {
     const allorders = await orderService.getAllOrders();
@@ -286,34 +284,23 @@ const AdminSeeAllOrders = () => {
                   See All Orders
                 </Text>
               </View>
-              <View style={{ marginTop: 16, marginBottom: 8 }}>
-                <SearchBar
-                  placeholder="Search orders..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={() => {}}
-                  onPress={() => {}}
-                  widthPercent={35}
-                  height={40}
-                />
-              </View>
-
-              <View style={localStyles.badgeContainer}>
-                {statusFilters.map((status) => (
-                  <TouchableOpacity
-                    key={status}
-                    onPress={() => setActiveFilter(status)}
-                    style={[
-                      localStyles.badge,
-                      {
-                        backgroundColor:
-                          activeFilter === status ? colors.primary : colors.secondary,
-                      },
-                    ]}
-                  >
-                    <Text style={localStyles.badgeText}>{status}</Text>
-                  </TouchableOpacity>
-                ))}
+              <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
+                <View style={localStyles.searchFilterRow}>
+                  <SearchBar
+                    placeholder="Search orders..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={() => {}}
+                    onPress={() => {}}
+                    widthPercent={35}
+                    height={40}
+                  />
+                  <OrderStatusDropdown
+                    selectedStatus={activeFilter}
+                    onSelectStatus={setActiveFilter}
+                    containerStyle={localStyles.dropdownContainer}
+                  />
+                </View>
               </View>
 
               <Text style={styles.heading}>
@@ -353,34 +340,24 @@ const AdminSeeAllOrders = () => {
       ) : (
         <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
           {!isTabOrDesktop && (
-            <View>
-              <SearchBar
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={() => {}}
-                onPress={() => {}}
-              />
+            <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
+              <View style={localStyles.searchFilterRow}>
+                <SearchBar
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => {}}
+                  onPress={() => {}}
+                />
+                <OrderStatusDropdown
+                  selectedStatus={activeFilter}
+                  onSelectStatus={setActiveFilter}
+                  containerStyle={localStyles.dropdownContainer}
+                />
+              </View>
             </View>
           )}
           <>
-            <View style={localStyles.badgeContainer}>
-              {statusFilters.map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setActiveFilter(status)}
-                  style={[
-                    localStyles.badge,
-                    {
-                      backgroundColor:
-                        activeFilter === status ? colors.primary : colors.secondary,
-                    },
-                  ]}
-                >
-                  <Text style={localStyles.badgeText}>{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
             <Text style={styles.heading}>
               WELCOME, Let's go through the orders details!
@@ -494,22 +471,19 @@ const localStyles = StyleSheet.create({
     color: colors.black,
   },
 
-  badgeContainer: {
+  searchFilterRow: {
     flexDirection: "row",
-    marginTop: 10,
-    marginBottom: 16,
-    gap: 4,
     flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    position: "relative",
+    zIndex: 1000,
   },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  badgeText: {
-    color: colors.black,
-    fontSize: 14,
-    fontWeight: "500",
+  dropdownContainer: {
+    flexShrink: 0,
   },
   emptyContainer: {
     flex: 1,
