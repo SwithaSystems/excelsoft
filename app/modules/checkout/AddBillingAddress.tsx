@@ -135,7 +135,7 @@ const addBillingAddressScreen = () => {
         setTownCity(edit_address.city || "");
         setState(edit_address.state || "");
         setPostalCode(edit_address.postalCode || "");
-        setPhoneNumber(edit_address.phoneNumber || "");
+        setPhoneNumber(edit_address.phone || edit_address.phoneNumber || "");
         setAddressType(edit_address.addressType || []);
         setIsDefault(edit_address.isDefault || false);
 

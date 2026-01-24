@@ -5,7 +5,7 @@ import {
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
 } from "../../../constants/stringLiterals";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -47,6 +47,8 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
+import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -83,13 +85,13 @@ const HomeDeliveryScreen = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [existingAddress, setExistingSelectedAddress] = useState<Address[]>([]);
+  const [existingAddress, setExistingAddress] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
-  const newAddressAdded = useLocalSearchParams();
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
 
   // Initialize default time values based on new business rules
   useEffect(() => {
@@ -126,12 +128,8 @@ const HomeDeliveryScreen = () => {
       targetHour = 10;
       targetMinute = 0;
     }
-    // Format the date for state
-    // const formattedDate = targetDate.toISOString().split("T")[0];
-    // console.log("target date", targetDate);
-    // const formattedDate = formatToDDMMYYYY(targetDate);
+
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
-    // console.log("formatted date", formattedDate);
     setDate(formattedDate);
 
     // Convert target hour to 12-hour format
@@ -154,6 +152,105 @@ const HomeDeliveryScreen = () => {
       minutesValue,
       periodValue
     );
+  }, []);
+
+  // Fetch addresses function with retry logic and token check
+  const fetchAddresses = useCallback(async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    setIsLoadingAddresses(true);
+    
+    try {
+      // First, verify token exists
+      const token = await SecureStore.getItemAsync("token");
+      const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+      
+      console.log("=== Fetch Addresses Debug ===");
+      console.log("Token exists:", !!token);
+      console.log("Refresh token exists:", !!refreshToken);
+      console.log("Retry attempt:", retryCount);
+      
+      if (!token && !refreshToken) {
+        console.error("No tokens found - user may need to login again");
+        setIsLoadingAddresses(false);
+        showErrorAlert({
+          title: "Session Expired",
+          message: "Please login again to continue.",
+        });
+        // Optionally redirect to login
+        // redirectToPage(containers.signInScreen);
+        return;
+      }
+      
+      console.log("Attempting to fetch addresses...");
+      const response = await addressService.getAllAddress();
+      console.log("Successfully fetched addresses:", response.length, "addresses");
+      setExistingAddress(response);
+      
+      // If there's only one address and none is selected, auto-select it
+      if (response.length === 1 && !selectedAddressId) {
+        console.log("Auto-selecting single address");
+        setSelectedAddressId(response[0]._id);
+        setAddress(response[0]);
+      }
+      setIsLoadingAddresses(false);
+    } catch (err: any) {
+      console.error("=== Error fetching addresses ===");
+      console.error("Attempt:", retryCount + 1, "of", MAX_RETRIES + 1);
+      console.error("Error:", err);
+      console.error("Error message:", err.message);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      
+      // If it's a 401 error and we haven't exceeded retries, wait and retry
+      if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
+        console.log("Got 401 error, waiting before retry...");
+        setIsLoadingAddresses(false);
+        
+        // Exponential backoff: wait longer with each retry
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+        console.log(`Retrying in ${delay}ms...`);
+        
+        setTimeout(() => {
+          fetchAddresses(retryCount + 1);
+        }, delay);
+      } else {
+        setIsLoadingAddresses(false);
+        
+        // Only show error alert after all retries exhausted
+        if (retryCount >= MAX_RETRIES) {
+          const errorMessage = err.response?.status === 401 
+            ? "Session expired. Please login again."
+            : "Failed to load addresses. Please check your connection and try again.";
+            
+          showErrorAlert({
+            title: "Error Loading Addresses",
+            message: errorMessage,
+          });
+          
+          // If 401 after all retries, consider redirecting to login
+          if (err.response?.status === 401) {
+            console.log("Authentication failed after retries, may need to login");
+            // Uncomment to auto-redirect to login:
+            // setTimeout(() => redirectToPage(containers.signInScreen), 2000);
+          }
+        }
+      }
+    }
+  }, [selectedAddressId]);
+
+  // Use useFocusEffect to refresh addresses when screen comes into focus
+  // This ensures addresses are fetched when navigating back from add address screen
+  useFocusEffect(
+    useCallback(() => {
+      console.log("HomeDeliveryScreen focused - fetching addresses");
+      fetchAddresses(0);
+    }, [fetchAddresses])
+  );
+
+  // Also fetch on mount
+  useEffect(() => {
+    console.log("HomeDeliveryScreen mounted - initial address fetch");
+    fetchAddresses(0);
   }, []);
 
   // Validate if selected time is in the future and at least 30 minutes ahead
@@ -221,24 +318,10 @@ const HomeDeliveryScreen = () => {
     return { isValid: true };
   };
 
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        const response = await addressService.getAllAddress();
-        setExistingSelectedAddress(response);
-        // console.log("Shipping addresses:", response);
-      } catch (err) {
-        console.error("Error fetching shipping addresses:", err);
-      }
-    };
-
-    fetchAddresses();
-  }, []);
-
   // Check form validity whenever any input changes
   useEffect(() => {
     validateFormFields();
-  }, [hours, minutes, period, date, selectedAddressId]);
+  }, [hours, minutes, period, date, selectedAddressId, existingAddress]);
 
   const validateFormFields = () => {
     // First check if time is valid
@@ -277,7 +360,6 @@ const HomeDeliveryScreen = () => {
     const currentDate = selectedDate || new Date(date);
     setShowDatePicker(false);
     setDate(format(currentDate, DATE_FORMAT_Display));
-    // setDate(formatToDDMMYYYY(currentDate));
 
     // Validate time with new date
     setTimeout(() => {
@@ -322,9 +404,9 @@ const HomeDeliveryScreen = () => {
     }
     return true;
   };
+
   const handleSubmit = async () => {
     try {
-      // console.log("confirm", containers.orderSummaryScreen);
       if (!validateForm()) {
         return;
       }
@@ -375,7 +457,7 @@ const HomeDeliveryScreen = () => {
       try {
         const response = await addressService.deleteAddress(itemToDelete.id);
         if (response.success) {
-          setExistingSelectedAddress((prev) =>
+          setExistingAddress((prev) =>
             prev.filter((item) => item._id !== itemToDelete.id)
           );
 
@@ -385,11 +467,17 @@ const HomeDeliveryScreen = () => {
             setAddress("");
           }
         } else {
-          alert("Failed to delete address.");
+          showErrorAlert({
+            title: "Error",
+            message: "Failed to delete address.",
+          });
         }
       } catch (err) {
         console.error("Delete error:", err);
-        alert("Something went wrong.");
+        showErrorAlert({
+          title: "Error",
+          message: "Something went wrong while deleting the address.",
+        });
       }
     }
     setIsModalVisible(false);
@@ -451,7 +539,6 @@ const HomeDeliveryScreen = () => {
     }
 
     // Create a proper date object for the selected date and time
-    // Parse the selectedDate (YYYY-MM-DD format) and create new Date
     const [year, month, day] = selectedDate
       .split("-")
       .map((num) => parseInt(num, 10));
@@ -483,30 +570,25 @@ const HomeDeliveryScreen = () => {
 
   // Handle hours input changes
   const handleHoursChange = (text: any) => {
-    // Only allow numeric input
     const numericText = text.replace(/[^0-9]/g, "");
     setHours(numericText);
 
-    // Auto-move to minutes input when 2 digits entered
     if (numericText.length === 2) {
       if (minutesRef.current) {
         (minutesRef.current as any).focus();
       }
     }
 
-    // Validate time after change
     setTimeout(() => {
-      validateTime(date, hours, numericText, period);
+      validateTime(date, numericText, minutes, period);
     }, 100);
   };
 
   // Handle minutes input changes
   const handleMinutesChange = (text: any) => {
-    // Only allow numeric input
     const numericText = text.replace(/[^0-9]/g, "");
     setMinutes(numericText);
 
-    // Validate when leaving the minutes field
     if (numericText.length === 2) {
       setTimeout(() => {
         validateTime(date, hours, numericText, period);
@@ -517,7 +599,6 @@ const HomeDeliveryScreen = () => {
   // Handle period changes
   const handlePeriodChange = (value: any) => {
     setPeriod(value);
-    // Validate immediately when period changes
     setTimeout(() => {
       validateTime(date, hours, minutes, value);
     }, 100);
@@ -528,21 +609,16 @@ const HomeDeliveryScreen = () => {
     validateTime(date, hours, minutes, period);
   };
 
-    const isWeb = Platform.OS === "web";
+  const isWeb = Platform.OS === "web";
   
-    const HeaderComponent = isWeb ? (
-      <BrandHeaderWeb />
-    ) : (
-      <Header headerText={DELIVERY_MODE_HOME}    
-    />
-    );
-    const FooterComponent = isWeb ? (
-      <FooterWeb />
-    ) : (
-      <Footer />
-    );
-  
-    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header headerText={DELIVERY_MODE_HOME} />
+  );
+
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
@@ -554,233 +630,259 @@ const HomeDeliveryScreen = () => {
     >
       <View
         style={[
-            globalStyles.pt_0,
-            isWeb
-          ? {
-            width: "70%",
-            alignSelf: "center",
-            paddingVertical: 20,
-          }
-          : { paddingHorizontal: 0 },
+          globalStyles.pt_0,
+          isWeb
+            ? {
+                width: "70%",
+                alignSelf: "center",
+                paddingVertical: 20,
+              }
+            : { paddingHorizontal: 0 },
         ]}
       >
-      <KeyBoardWrapper>
-              {isWeb && (
-                <Text
-                  style={{
-                    fontSize: 28,
-                    fontWeight: "300",
-                    marginBottom: 20,
-                    color: colors.black,
-                    textAlign: "center",
-                    width: "100%",
-                    marginTop: 20,
-                  }}
-                >
-                 {DELIVERY_MODE_HOME}
-                </Text>
-              )}
+        <KeyBoardWrapper>
+          {isWeb && (
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "300",
+                marginBottom: 20,
+                color: colors.black,
+                textAlign: "center",
+                width: "100%",
+                marginTop: 20,
+              }}
+            >
+              {DELIVERY_MODE_HOME}
+            </Text>
+          )}
 
-        <FlatList
-          ListHeaderComponent={
-            <>
-              <View style={[globalStyles.pt_0]}>
-                <Text style={styles.label}>
-                  Do you prefer home delivery? Let us know your available day
-                  and time.
-                </Text>
+          <FlatList
+            ListHeaderComponent={
+              <>
+                <View style={[globalStyles.pt_0]}>
+                  <Text style={styles.label}>
+                    Do you prefer home delivery? Let us know your available day
+                    and time.
+                  </Text>
 
-                {/* Date Picker */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Date: *</Text>
-                  {Platform.OS === "web" ? (
-                    <input
-                      type="date"
-                      style={globalStyles.webDateInput}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  ) : (
-                    <TouchableOpacity
-                      style={globalStyles.dateInput}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text>{date}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {showDatePicker && (
-                    <DateTimePickerModal
-                      isVisible={showDatePicker}
-                      mode="date"
-                      onConfirm={(selectedDate) => {
-                        setShowDatePicker(false);
-                        setDate(format(selectedDate, DATE_FORMAT_Display));
-                        // setDate(formatToDDMMYYYY(selectedDate));
-                        setTimeout(() => {
-                          validateTime(
-                            // formatToDDMMYYYY(selectedDate),
-                            format(selectedDate, DATE_FORMAT_Display),
-                            hours,
-                            minutes,
-                            period
-                          );
-                        }, 100);
-                      }}
-                      onCancel={() => setShowDatePicker(false)}
-                      minimumDate={new Date()}
-                    />
-                  )}
-                </View>
-
-                {/* Time Input */}
-                <Text style={styles.inputLabel}>Time: *</Text>
-                <View style={globalStyles.timeContainer}>
-                  <TextInput
-                    style={[
-                      globalStyles.timeInput,
-                      error ? { borderColor: "red" } : {},
-                    ]}
-                    placeholder="HH"
-                    keyboardType="numeric"
-                    maxLength={2}
-                    value={hours}
-                    onChangeText={handleHoursChange}
-                    onBlur={handleBlur}
-                  />
-                  <Text>:</Text>
-                  <TextInput
-                    ref={minutesRef}
-                    style={[
-                      globalStyles.timeInput,
-                      error ? { borderColor: "red" } : {},
-                    ]}
-                    placeholder="MM"
-                    keyboardType="numeric"
-                    maxLength={2}
-                    value={minutes}
-                    onChangeText={handleMinutesChange}
-                    onBlur={handleBlur}
-                  />
-                  <View style={styles.toggleContainer}>
-                    <TouchableOpacity
-                      style={[
-                        styles.toggleButton,
-                        period === "am" && styles.activeToggle,
-                      ]}
-                      onPress={() => handlePeriodChange("am")}
-                    >
-                      <Text
-                        style={[
-                          styles.toggleText,
-                          period === "am" && styles.activeText,
-                        ]}
+                  {/* Date Picker */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Date: *</Text>
+                    {Platform.OS === "web" ? (
+                      <input
+                        type="date"
+                        style={globalStyles.webDateInput}
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
+                    ) : (
+                      <TouchableOpacity
+                        style={globalStyles.dateInput}
+                        onPress={() => setShowDatePicker(true)}
                       >
-                        AM
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.toggleButton,
-                        period === "pm" && styles.activeToggle,
-                      ]}
-                      onPress={() => handlePeriodChange("pm")}
-                    >
-                      <Text
-                        style={[
-                          styles.toggleText,
-                          period === "pm" && styles.activeText,
-                        ]}
-                      >
-                        PM
-                      </Text>
-                    </TouchableOpacity>
+                        <Text>{date}</Text>
+                      </TouchableOpacity>
+                    )}
+                    {showDatePicker && (
+                      <DateTimePickerModal
+                        isVisible={showDatePicker}
+                        mode="date"
+                        onConfirm={(selectedDate) => {
+                          setShowDatePicker(false);
+                          setDate(format(selectedDate, DATE_FORMAT_Display));
+                          setTimeout(() => {
+                            validateTime(
+                              format(selectedDate, DATE_FORMAT_Display),
+                              hours,
+                              minutes,
+                              period
+                            );
+                          }, 100);
+                        }}
+                        onCancel={() => setShowDatePicker(false)}
+                        minimumDate={new Date()}
+                      />
+                    )}
                   </View>
-                </View>
-                {error ? (
-                  <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
-                ) : null}
 
-                {/* Shipping Address Section */}
-                <View style={styles.inputContainer}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={styles.inputLabel}>Shipping Address: *</Text>
-                  <Text
-                    style={styles.linkText}
-                    onPress={() => {
-                      redirectToPage(containers.addAddressScreen, {
-                        from: "homeDelivery",
-                      });
-                    }}
-                  >
-                    Add Address
-                    <Ionicons
-                    name="add-circle-outline"
-                    size={16}
-                    color={colors.primary}
-                    styles={{marginLeft: 4, marginBottom: 5}}
-                  />
-                  </Text>
-                </View>
-              </View>
+                  {/* Time Input */}
+                  <Text style={styles.inputLabel}>Time: *</Text>
+                  <View style={globalStyles.timeContainer}>
+                    <TextInput
+                      style={[
+                        globalStyles.timeInput,
+                        error ? { borderColor: "red" } : {},
+                      ]}
+                      placeholder="HH"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={hours}
+                      onChangeText={handleHoursChange}
+                      onBlur={handleBlur}
+                    />
+                    <Text>:</Text>
+                    <TextInput
+                      ref={minutesRef}
+                      style={[
+                        globalStyles.timeInput,
+                        error ? { borderColor: "red" } : {},
+                      ]}
+                      placeholder="MM"
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={minutes}
+                      onChangeText={handleMinutesChange}
+                      onBlur={handleBlur}
+                    />
+                    <View style={styles.toggleContainer}>
+                      <TouchableOpacity
+                        style={[
+                          styles.toggleButton,
+                          period === "am" && styles.activeToggle,
+                        ]}
+                        onPress={() => handlePeriodChange("am")}
+                      >
+                        <Text
+                          style={[
+                            styles.toggleText,
+                            period === "am" && styles.activeText,
+                          ]}
+                        >
+                          AM
+                        </Text>
+                      </TouchableOpacity>
 
-                {/* Address List */}
-                <FlatList
-                  data={existingAddress}
-                  keyExtractor={(item) => item._id}
-                  renderItem={({ item }) => (
-                    <AddressItem
-                      item={item}
-                      showRadio={true}
-                      isSelected={item._id === selectedAddressId}
-                      onSelect={() => {
-                        setSelectedAddressId(item._id);
-                        setAddress(item);
-                      }}
-                      onEdit={() => handleEditAddress(item)}
-                      onDelete={() => handleDeleteAddress(item)}
+                      <TouchableOpacity
+                        style={[
+                          styles.toggleButton,
+                          period === "pm" && styles.activeToggle,
+                        ]}
+                        onPress={() => handlePeriodChange("pm")}
+                      >
+                        <Text
+                          style={[
+                            styles.toggleText,
+                            period === "pm" && styles.activeText,
+                          ]}
+                        >
+                          PM
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  {error ? (
+                    <Text style={{ color: "red", marginTop: 5 }}>{error}</Text>
+                  ) : null}
+
+                  {/* Shipping Address Section */}
+                  <View style={styles.inputContainer}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.inputLabel}>Shipping Address: *</Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          redirectToPage(containers.addAddressScreen, {
+                            from: "homeDelivery",
+                          });
+                        }}
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Text style={styles.linkText}>Add Address</Text>
+                        <Ionicons
+                          name="add-circle-outline"
+                          size={16}
+                          color={colors.primary}
+                          style={{ marginLeft: 4 }}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Address List */}
+                  {isLoadingAddresses ? (
+                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                      <Text style={{ textAlign: 'center', marginBottom: 10 }}>
+                        Loading addresses...
+                      </Text>
+                    </View>
+                  ) : existingAddress.length === 0 ? (
+                    <View style={{ alignItems: 'center', marginVertical: 20 }}>
+                      <Text style={{ textAlign: 'center', marginBottom: 10, color: colors.darkGray }}>
+                        No addresses found. Please add an address to continue.
+                      </Text>
+                      <TouchableOpacity 
+                        onPress={() => fetchAddresses(0)}
+                        style={{
+                          padding: 10,
+                          backgroundColor: colors.primary,
+                          borderRadius: 5,
+                          marginTop: 10,
+                          alignSelf: 'center',
+                        }}
+                      >
+                        <Text style={{ color: 'white', fontWeight: '600' }}>
+                          Retry Loading Addresses
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <FlatList
+                      data={existingAddress}
+                      keyExtractor={(item) => item._id}
+                      renderItem={({ item }) => (
+                        <AddressItem
+                          item={item}
+                          showRadio={true}
+                          isSelected={item._id === selectedAddressId}
+                          onSelect={() => {
+                            setSelectedAddressId(item._id);
+                            setAddress(item);
+                          }}
+                          onEdit={() => handleEditAddress(item)}
+                          onDelete={() => handleDeleteAddress(item)}
+                        />
+                      )}
                     />
                   )}
-                />
 
-                {/* Additional Instructions */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>
-                    Additional Instructions for delivery partner:
-                  </Text>
-                  <TextInput
-                    style={[styles.textInput, styles.multilineInput]}
-                    value={additionalDetails}
-                    onChangeText={setAdditionalDetails}
-                    multiline
-                    numberOfLines={3}
-                    placeholder="E.g., Landmark, preferred delivery time, etc."
+                  {/* Additional Instructions */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>
+                      Additional Instructions for delivery partner:
+                    </Text>
+                    <TextInput
+                      style={[styles.textInput, styles.multilineInput]}
+                      value={additionalDetails}
+                      onChangeText={setAdditionalDetails}
+                      multiline
+                      numberOfLines={3}
+                      placeholder="E.g., Landmark, preferred delivery time, etc."
+                    />
+                  </View>
+                  <Button
+                    title="Confirm"
+                    onPress={handleSubmit}
+                    disabled={isLoading || !isFormValid}
                   />
                 </View>
-                <Button
-                  title="Confirm"
-                  onPress={handleSubmit}
-                  disabled={isLoading || !isFormValid}
+                <ConfirmationModal
+                  onClose={() => {
+                    setIsModalVisible(false);
+                  }}
+                  isModalVisible={isModalVisible}
+                  title="Delete Address"
+                  text="Are you sure you want to delete this address?"
+                  submitText="Delete Address"
+                  handleSubmit={confirmDelete}
+                  cancelText="Cancel"
+                  handleCancel={cancelDelete}
                 />
-              </View>
-              <ConfirmationModal
-                onClose={() => {
-                  setIsModalVisible(false);
-                }}
-                isModalVisible={isModalVisible}
-                title="Delete Address"
-                text="Are you sure you want to delete this address?"
-                submitText="Delete Address"
-                handleSubmit={confirmDelete}
-                cancelText="Cancel"
-                handleCancel={cancelDelete}
-              />
-            </>
-          }
-          data={[]}
-          renderItem={null}
-        />
-      </KeyBoardWrapper>
+              </>
+            }
+            data={[]}
+            renderItem={null}
+          />
+        </KeyBoardWrapper>
       </View>
     </LayoutComponent>
   );

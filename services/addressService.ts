@@ -1,8 +1,4 @@
-import { AnimateStyle } from "react-native-reanimated";
-import { AnimationType } from "expo-symbols";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { jsonAxios } from "./axiosConfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
