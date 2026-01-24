@@ -76,10 +76,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginTop: 8,
-    ...(Platform.OS === "web" && {
-      justifyContent: "center",
-      alignItems: "center",
-    }),
+    justifyContent: "flex-end",
+    alignItems: "center",
   },
   saveButton: {
     flex: Platform.OS === "web" ? 0 : 1,
@@ -274,12 +272,15 @@ const styles = StyleSheet.create({
   // Category Selection Section
   categorySelectionSection: {
     marginBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
   categorySelectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
-    marginBottom: 12,
+    marginBottom: 0,
   },
   categoryContainer: {
     backgroundColor: colors.white,
