@@ -11,8 +11,6 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import Header from "@/app/components/Header";
 import { FILE_UPLOAD } from "@/constants/stringLiterals";
 import styles from "../FileUploadAddProductCategoryStyles";
 import colors from "@/constants/colors";
@@ -151,38 +149,21 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         vendor: selectedVendor,
       };
 
-      // DEBUG: Log upload data
-      // console.log("=== UPLOAD DATA DEBUG ===");
-      // console.log("Entity Type:", uploadData.entityType);
-      // console.log("File Name:", uploadData.fileName);
-      // console.log("File URI:", uploadData.fileUri);
-      // console.log("Vendor:", uploadData.vendor);
-      // console.log("Selected Entity Label:", selectedEntityLabel);
-      // console.log("Selected Vendor Label:", selectedVendorLabel);
-
       const formData = new FormData();
       formData.append("entityType", uploadData.entityType);
       formData.append("fileName", uploadData.fileName);
       formData.append("vendor", uploadData.vendor);
 
       if (Platform.OS === "web") {
-        // console.log("=== WEB PLATFORM: Fetching blob ===");
         const resp = await fetch(uploadData.fileUri);
         const blob = await resp.blob();
-        // console.log("Blob size:", blob.size);
-        // console.log("Blob type:", blob.type);
         formData.append("file", blob, uploadData.fileName);
       } else {
-        // console.log("=== MOBILE PLATFORM: Appending file ===");
         const fileObject = {
           uri: uploadData.fileUri,
           name: uploadData.fileName,
           type: selectedFile.type || selectedFile.mimeType || "application/pdf",
         };
-        // console.log(
-        //   "File object being appended:",
-        //   JSON.stringify(fileObject, null, 2)
-        // );
         formData.append("file", fileObject as any);
       }
 
@@ -225,14 +206,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
             headers: { "Content-Type": "multipart/form-data" },
             timeout: 300000,
           });
-
-          // console.log("=== BACKEND RESPONSE ===");
-          // console.log("Status:", response.status);
-          // console.log("Response data:", JSON.stringify(response.data, null, 2));
-          // console.log(
-          //   "Response headers:",
-          //   JSON.stringify(response.headers, null, 2)
-          // );
 
           setResult(
             response.data ?? { success: false, message: "Empty response" }
@@ -282,9 +255,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           );
           if (!resp) throw new Error("No response from server");
           const json = await resp.json();
-
-          // console.log("=== ENTITY RESPONSE ===");
-          // console.log("Response:", JSON.stringify(json, null, 2));
 
           setResult(
             json ?? {
@@ -392,12 +362,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   });
 
   return (
-    <PageLayout
-      hasFooter
-      hasHeader
-      scrollable={false}
-      headerComponent={<Header headerText={FILE_UPLOAD} />}
-    >
+    <View style={{ flex: 1 }}>
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
         <ModalSelector
@@ -540,7 +505,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           </View>
         </View>
       )}
-    </PageLayout>
+    </View>
   );
 };
 

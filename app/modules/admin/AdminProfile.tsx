@@ -1,4 +1,4 @@
-import { USER_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import { ADMIN_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -66,7 +66,7 @@ const AdminProfile = () => {
   // Responsive components
   const HeaderComponent = isWeb ? <BrandHeaderWeb hideUserGreeting={true} /> : (
     <Header
-      headerText={USER_PROFILE_SCREEN_TITLE}
+      headerText={ADMIN_PROFILE_SCREEN_TITLE}
       needResetNavigation={true}
     />
   );
@@ -182,13 +182,13 @@ const AdminProfile = () => {
           responsiveStyles.profileCard,
           isWeb && responsiveStyles.profileCardWeb
         ]}>
-          <Text style={[
+          {/* <Text style={[
             isMobile ? styles.greeting : responsiveStyles.greetingWeb
           ]}>
             {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
-          </Text>
+          </Text> */}
           
-          <Image
+          {/* <Image
             source={
               user?.profileImageUrl
                 ? { uri: user?.profileImageUrl }
@@ -203,8 +203,8 @@ const AdminProfile = () => {
             isMobile ? styles.userName : responsiveStyles.userNameWeb
           ]}>
             {user?.firstName || ""} {user?.lastName || ""}
-          </Text>
-        </View>
+          </Text>*/}
+        </View> 
 
         <View style={[
           isMobile ? styles.settingsContainer : responsiveStyles.settingsContainerWeb
