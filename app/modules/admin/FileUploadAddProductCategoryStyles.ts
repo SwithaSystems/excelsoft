@@ -30,8 +30,9 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   modalOptionText: {
-    fontSize: 16,
-  },
+  fontSize: 16,
+  color: colors.primary, 
+},
   modalSelectedItemText: {
     fontWeight: "bold",
     color: colors.primary,
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
   modalTriggerText: {
     fontSize: 16,
     paddingVertical: 10,
-    color: colors.black,
+    color: colors.primary,
   },
   modalTrigger: {
     flexDirection: "row",
