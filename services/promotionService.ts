@@ -91,23 +91,42 @@ class PromotionService {
   ): Promise<Promotion> {
     try {
       const formData = new FormData();
-      if (data.title) formData.append("title", data.title);
-      if (data.isInternalLink !== undefined)
+      
+      // Only append fields that are actually provided
+      if (data.title !== undefined) {
+        formData.append("title", data.title);
+      }
+      if (data.isInternalLink !== undefined) {
         formData.append("isInternalLink", data.isInternalLink.toString());
-      if (data.link) formData.append("link", data.link);
-      if (data.image) formData.append("image", data.image);
-      if (data.startDate) {
+      }
+      if (data.link !== undefined) {
+        formData.append("link", data.link);
+      }
+      if (data.image !== undefined) {
+        formData.append("image", data.image);
+      }
+      if (data.startDate !== undefined) {
         formData.append("startDate", data.startDate);
       }
-      if (data.endDate) {
+      if (data.endDate !== undefined) {
         formData.append("endDate", data.endDate);
       }
-      // Always send products array (even if empty) to ensure backend receives it
-      formData.append("products", JSON.stringify(data.products || []));
-      // ALWAYS send isLive flag (even if false) to ensure backend receives it
-      formData.append("isLive", (data.isLive !== undefined ? data.isLive : false).toString());
+      
+      // FIXED: Only send products if explicitly provided
+      if (data.products !== undefined) {
+        formData.append("products", JSON.stringify(data.products || []));
+      }
+      
+      // FIXED: Only send isLive if explicitly provided (not defaulting to false!)
+      if (data.isLive !== undefined) {
+        formData.append("isLive", data.isLive.toString());
+        console.log("promotionService.updatePromotion - Setting isLive:", data.isLive);
+      } else {
+        console.log("promotionService.updatePromotion - isLive not provided, not sending");
+      }
+      
       // Send category if provided
-      if (data.category) {
+      if (data.category !== undefined) {
         formData.append("category", data.category);
       }
       
@@ -118,9 +137,9 @@ class PromotionService {
         isInternalLink: data.isInternalLink,
         startDate: data.startDate,
         endDate: data.endDate,
-        products: data.products?.length || 0,
-        isLive: data.isLive,
-        category: data.category,
+        products: data.products?.length || "not provided",
+        isLive: data.isLive !== undefined ? data.isLive : "not provided",
+        category: data.category || "not provided",
       });
 
       const response = await formDataAxios.patch(`${this.baseUrl}/${id}`, formData);

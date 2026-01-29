@@ -6,21 +6,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  TextInput,
   Alert,
   Platform,
-  FlatList,
-  Modal,
   ActivityIndicator,
   ViewStyle,
   TextStyle,
   ImageStyle,
-  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { format } from "date-fns";
 import Header from "../../components/Header";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -29,20 +22,78 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import colors from "../../../constants/colors";
 import styles from "./AdminPromotionStyles";
-import { globalStyles } from "@/assets/styles/globalStyles";
-import Button from "@/app/components/commonComponents/Button";
-import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import PromotionCard from "@/app/components/PromotionCard";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import { Product, ProductsAPI } from "@/services/productService";
-import SearchBar from "@/app/components/searchBar";
-import { categoryService } from "@/services/categoryService";
-import useDebounce from "@/utilities/customHooks/useDebounce";
 import { promotionService, Promotion as APIPromotion } from "@/services/promotionService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
-import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
+import { showAlert } from "@/utilities/alertHelper";
 
+// Utility functions
+const formatDateForAPI = (dateString: string): string => {
+  if (!dateString) return "";
+  try {
+    // Remove any existing time component
+    const dateOnly = dateString.split("T")[0];
+    const date = new Date(dateOnly + "T00:00:00.000Z");
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+    return "";
+  } catch {
+    return "";
+  }
+};
+
+const getDefaultEndDate = (): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + 30);
+  return date.toISOString().split("T")[0];
+};
+
+const getTodayDate = (): string => {
+  return new Date().toISOString().split("T")[0];
+};
+
+const isInternalLink = (url: string): boolean => {
+  return !url.startsWith("http://") && !url.startsWith("https://");
+};
+
+const getProductImage = (image: any): any => {
+  if (!image) return require("../../../assets/Placeholder.png");
+  
+  if (Array.isArray(image)) {
+    return image.length > 0 && image[0] 
+      ? (typeof image[0] === "string" ? { uri: image[0] } : image[0])
+      : require("../../../assets/Placeholder.png");
+  }
+  
+  return typeof image === "string" ? { uri: image } : image;
+};
+
+// Check if today's date is within the promotion date range (inclusive)
+const isDateInRange = (startDate?: string, endDate?: string): boolean => {
+  if (!startDate || !endDate) return false;
+  
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    const start = new Date(startDate.split("T")[0]);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate.split("T")[0]);
+    end.setHours(0, 0, 0, 0);
+    
+    // Check if today is >= start date AND <= end date (inclusive)
+    return today >= start && today <= end;
+  } catch (error) {
+    console.error("Error checking date range:", error);
+    return false;
+  }
+};
+
+// Interfaces
 interface Promotion {
   id: string;
   title: string;
@@ -55,113 +106,49 @@ interface Promotion {
   attachedProducts?: any[];
 }
 
+interface PromotionUpdateData {
+  title: string;
+  link: string;
+  isInternalLink: boolean;
+  isLive: boolean;
+  startDate: string;
+  endDate: string;
+  products ?: string[];
+}
+
 const AdminPromotion = () => {
   const params = useLocalSearchParams();
   
-  const [promotionImage, setPromotionImage] = useState<string | null>(null);
-  const [promotionTitle, setPromotionTitle] = useState("");
-  const [promotionUrl, setPromotionUrl] = useState("");
-  const [startingDate, setStartingDate] = useState<string>("");
-  const [endingDate, setEndingDate] = useState<string>("");
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [attachedProducts, setAttachedProducts] = useState<Product[]>([]);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [productDisplayMode, setProductDisplayMode] = useState<"category" | "product">("product");
-  const [selectedCategory, setSelectedCategory] = useState<string | number>("");
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [allCategories, setAllCategories] = useState<any[]>([]);
-  const [productSearchQuery, setProductSearchQuery] = useState("");
-  const debouncedProductQuery = useDebounce(productSearchQuery, 300);
+  // State management
   const [livePromotions, setLivePromotions] = useState<Promotion[]>([]);
   const [savedPromotions, setSavedPromotions] = useState<Promotion[]>([]);
-  const [isLoadingLivePromotions, setIsLoadingLivePromotions] = useState(false);
-  const [isSavingPromotion, setIsSavingPromotion] = useState(false);
-  const [showRemoveLiveModal, setShowRemoveLiveModal] = useState(false);
-  const [promotionToRemoveLive, setPromotionToRemoveLive] = useState<Promotion | null>(null);
+  const [isLoadingPromotions, setIsLoadingPromotions] = useState(false);
   const [errorLoadingPromotions, setErrorLoadingPromotions] = useState<string | null>(null);
   
-  // Confirmation modals
+  // Modal states
   const [showGoLiveModal, setShowGoLiveModal] = useState(false);
   const [promotionToGoLive, setPromotionToGoLive] = useState<Promotion | null>(null);
+  const [isGoingLive, setIsGoingLive] = useState(false);
+  
+  const [showRemoveLiveModal, setShowRemoveLiveModal] = useState(false);
+  const [promotionToRemoveLive, setPromotionToRemoveLive] = useState<Promotion | null>(null);
+  const [isRemovingLive, setIsRemovingLive] = useState(false);
+  
   const [showDeleteLiveModal, setShowDeleteLiveModal] = useState(false);
   const [promotionToDeleteLive, setPromotionToDeleteLive] = useState<string | null>(null);
+  const [isDeletingLive, setIsDeletingLive] = useState(false);
+  
   const [showDeleteSavedModal, setShowDeleteSavedModal] = useState(false);
   const [promotionToDeleteSaved, setPromotionToDeleteSaved] = useState<string | null>(null);
 
   const isWeb = Platform.OS === "web";
 
-  async function getallCategories() {
-    try {
-      const categories = await categoryService.getAllCategories();
-      if (categories) {
-        setAllCategories(categories);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  }
-
-  useEffect(() => {
-    getallCategories();
-  }, []);
-
-  const fetchAvailableProducts = useCallback(async () => {
-    try {
-      setIsLoadingProducts(true);
-      const response = await ProductsAPI.getAllProducts(1, 100);
-      setAvailableProducts(response.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      Alert.alert("Error", "Failed to load products");
-    } finally {
-      setIsLoadingProducts(false);
-    }
-  }, []);
-
-  const handleSelectProducts = useCallback(() => {
-    setShowProductModal(true);
-    setProductSearchQuery("");
-    if (availableProducts.length === 0) {
-      fetchAvailableProducts();
-    }
-  }, [availableProducts.length, fetchAvailableProducts]);
-
-  const searchProductsByName = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      fetchAvailableProducts();
-      return;
-    }
-    try {
-      setIsLoadingProducts(true);
-      const response = await ProductsAPI.productsBy_Name_Id(query.trim());
-      if (response) {
-        setAvailableProducts(response);
-      }
-    } catch (error) {
-      console.error("Error searching products:", error);
-      Alert.alert("Error", "Failed to search products");
-    } finally {
-      setIsLoadingProducts(false);
-    }
-  }, [fetchAvailableProducts]);
-
-  const handleProductSearch = useCallback(async () => {
-    await searchProductsByName(productSearchQuery);
-  }, [productSearchQuery, searchProductsByName]);
-
-  useEffect(() => {
-    if (showProductModal) {
-      searchProductsByName(debouncedProductQuery);
-    }
-  }, [debouncedProductQuery, showProductModal, searchProductsByName]);
-
+  // Fetch all promotions from API
   const fetchAllPromotions = useCallback(async () => {
     try {
-      setIsLoadingLivePromotions(true);
+      setIsLoadingPromotions(true);
       setErrorLoadingPromotions(null);
+      
       const apiPromotions = await promotionService.getAllPromotions();
       
       // Convert API promotions to local Promotion format
@@ -169,7 +156,7 @@ const AdminPromotion = () => {
         id: promo._id || Date.now().toString(),
         _id: promo._id,
         title: promo.title,
-        url: promo.link || promo.imageURL, // fallback to imageURL if link is missing
+        url: promo.link || promo.imageURL,
         image: promo.imageURL,
         isLive: promo.isLive || false,
         startingDate: promo.startDate,
@@ -181,159 +168,55 @@ const AdminPromotion = () => {
       const live = convertedPromotions.filter((p) => p.isLive === true);
       const saved = convertedPromotions.filter((p) => p.isLive !== true);
       
-      console.log("FetchAllPromotions - Total:", convertedPromotions.length, "Live:", live.length, "Saved:", saved.length);
-      console.log("FetchAllPromotions - Live promotions:", live.map(p => ({ id: p.id, title: p.title, isLive: p.isLive })));
-      console.log("FetchAllPromotions - Saved promotions:", saved.map(p => ({ id: p.id, title: p.title, isLive: p.isLive, _id: p._id })));
+      console.log("Fetched promotions - Total:", convertedPromotions.length, "Live:", live.length, "Saved:", saved.length);
       
       setLivePromotions(live);
       setSavedPromotions(saved);
     } catch (error: any) {
       console.error("Error fetching promotions:", error);
-      setErrorLoadingPromotions(error?.response?.data?.message || "Failed to load promotions");
-      // Set empty arrays on error to show empty state
+      const errorMessage = error?.response?.data?.message || "Failed to load promotions";
+      setErrorLoadingPromotions(errorMessage);
       setLivePromotions([]);
       setSavedPromotions([]);
     } finally {
-      setIsLoadingLivePromotions(false);
+      setIsLoadingPromotions(false);
     }
   }, []);
 
+  // Initial fetch
   useEffect(() => {
     fetchAllPromotions();
   }, [fetchAllPromotions]);
 
-  // Refresh promotions when screen comes into focus (after navigating back from edit)
+  // Refresh on focus
   useFocusEffect(
     useCallback(() => {
       fetchAllPromotions();
     }, [fetchAllPromotions])
   );
 
-  // Refresh promotions when returning from EditPromotion screen
-  // The useFocusEffect above will handle the refresh automatically
+  // Build promotion update data
+  const buildPromotionUpdateData = (promotion: Promotion, isLive: boolean): PromotionUpdateData => {
+    // const hasProducts =
+    // promotion.attachedProducts &&
+    // promotion.attachedProducts.length > 0;
+    // const productIds = (promotion.attachedProducts || [])
+    //   .map((p: any) => p._id || p.id)
+    //   .filter(Boolean);
+      console.log("Promotion in buildPromotionUpdate",promotion);
 
-  const handleAddProduct = useCallback((product: Product) => {
-    setAttachedProducts((prev) => {
-      const exists = prev.some((p) => (p._id || p.id) === (product._id || product.id));
-      if (exists) return prev;
-      return [...prev, product];
-    });
-  }, []);
-
-  const handleRemoveProduct = useCallback((productId: string) => {
-    setAttachedProducts((prev) =>
-      prev.filter((p) => (p._id || p.id) !== productId)
-    );
-  }, []);
-
-  const handleToggleProductAttachment = useCallback((product: Product) => {
-    const isAttached = attachedProducts.some(
-      (p) => (p._id || p.id) === (product._id || product.id)
-    );
-    if (isAttached) {
-      handleRemoveProduct(String(product._id || product.id));
-    } else {
-      handleAddProduct(product);
-    }
-  }, [attachedProducts, handleAddProduct, handleRemoveProduct]);
-
-  const openImagePicker = useCallback(async () => {
-    try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permissionResult.granted) {
-        Alert.alert(
-          "Permission Required",
-          "Permission to access camera roll is required!"
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [16, 9],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setPromotionImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image");
-    }
-  }, []);
-
-  const handleAddPromotion = () => {
-    if (!promotionImage) {
-      Alert.alert("Error", "Please add an image");
-      return;
-    }
-    if (!promotionTitle.trim()) {
-      Alert.alert("Error", "Please enter a promotional slide title");
-      return;
-    }
-    if (!promotionUrl.trim()) {
-      Alert.alert("Error", "Please enter a promotional URL");
-      return;
-    }
-
-    const newPromotion: Promotion = {
-      id: Date.now().toString(),
-      title: promotionTitle,
-      url: promotionUrl,
-      image: promotionImage,
-      isLive: false,
+    return {
+      title: promotion.title,
+      link: promotion.url,
+      isInternalLink: isInternalLink(promotion.url),
+      isLive: isLive,
+      startDate: formatDateForAPI(promotion.startingDate || getTodayDate()),
+      endDate: formatDateForAPI(promotion.endingDate || getDefaultEndDate()),
+     products : promotion.attachedProducts || []
     };
-
-    setSavedPromotions([...savedPromotions, newPromotion]);
-    handleResetPromotion();
-    Alert.alert("Success", "Promotion saved successfully");
   };
 
-
-  const handleResetPromotion = () => {
-    setPromotionImage(null);
-    setPromotionTitle("");
-    setPromotionUrl("");
-    setStartingDate("");
-    setEndingDate("");
-  };
-
-  const getTodayDate = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
-  };
-
-  const getMinEndDate = () => {
-    if (startingDate) {
-      const start = new Date(startingDate);
-      start.setDate(start.getDate() + 1);
-      return start;
-    }
-    return getTodayDate();
-  };
-
-  const formatDateForDisplay = (dateString: string) => {
-    if (!dateString) return "";
-    if (Platform.OS === "web") {
-      return dateString;
-    }
-    try {
-      const date = new Date(dateString);
-      return format(date, "dd/MM/yyyy");
-    } catch {
-      return dateString;
-    }
-  };
-
-  const formatDateForInput = (date: Date) => {
-    return format(date, "yyyy-MM-dd");
-  };
-
+  // Handle Remove Live
   const handleRemoveLiveClick = (id: string) => {
     const promotion = livePromotions.find((p) => p.id === id);
     if (promotion) {
@@ -343,68 +226,47 @@ const AdminPromotion = () => {
   };
 
   const confirmRemoveLive = async () => {
-    if (!promotionToRemoveLive) return;
+    if (!promotionToRemoveLive || !promotionToRemoveLive._id) {
+      setShowRemoveLiveModal(false);
+      setPromotionToRemoveLive(null);
+      return;
+    }
+
+    setIsRemovingLive(true);
 
     try {
-      const promotion = promotionToRemoveLive;
-      if (promotion._id) {
-        // Determine if the link is internal or external
-        const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
-        
-        // Format dates for API
-        const formatDateForAPI = (dateString: string): string => {
-          if (!dateString) return "";
-          try {
-            const date = new Date(dateString + "T00:00:00.000Z");
-            if (!isNaN(date.getTime())) {
-              return date.toISOString();
-            }
-            return dateString;
-          } catch {
-            return dateString;
-          }
-        };
-
-        const today = new Date();
-        const defaultEndDate = new Date();
-        defaultEndDate.setDate(today.getDate() + 30);
-
-        // Update promotion to set isLive: false
-        const updateData: any = {
-          title: promotion.title,
-          link: promotion.url,
-          isInternalLink: isInternalLink,
-          isLive: false, // Set as not live
-          startDate: formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd")),
-          endDate: formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd")),
-        };
-        
-        // Include products if available
-        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
-          updateData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
-        } else {
-          updateData.products = [];
-        }
-        
-        await promotionService.updatePromotion(promotion._id, updateData);
-        
-        // Refresh all promotions to reflect the change
-        await fetchAllPromotions();
-        Alert.alert("Success", "Promotion removed from live");
-      }
+      const updateData = buildPromotionUpdateData(promotionToRemoveLive, false);
+      
+      await promotionService.updatePromotion(promotionToRemoveLive._id, updateData);
+      
+      // Refresh promotions from server
+      await fetchAllPromotions();
+      
+      showAlert("Success", "Promotion removed from live");
     } catch (error: any) {
       console.error("Error removing promotion from live:", error);
-      Alert.alert("Error", error?.response?.data?.message || "Failed to remove promotion from live");
+      showAlert("Error", error?.response?.data?.message || "Failed to remove promotion from live");
     } finally {
+      setIsRemovingLive(false);
       setShowRemoveLiveModal(false);
       setPromotionToRemoveLive(null);
     }
   };
 
+  // Handle Go Live
   const handleGoLive = (id: string) => {
     const promotion = savedPromotions.find((p) => p.id === id);
     if (!promotion) {
       console.error("Promotion not found in savedPromotions:", id);
+      return;
+    }
+
+    // Check if today's date is within the promotion's date range
+    if (!isDateInRange(promotion.startingDate, promotion.endingDate)) {
+      showAlert(
+        "Invalid Date Range",
+        "Cannot go live. Today's date must be within the promotion's start and end dates. Please edit the promotion to update the dates."
+      );
       return;
     }
 
@@ -414,245 +276,142 @@ const AdminPromotion = () => {
   };
 
   const confirmGoLive = async () => {
-    if (!promotionToGoLive) return;
-    
-    const promotion = promotionToGoLive;
-    const id = promotion.id;
-    setShowGoLiveModal(false);
+    if (!promotionToGoLive || !promotionToGoLive._id) {
+      setShowGoLiveModal(false);
+      setPromotionToGoLive(null);
+      return;
+    }
 
-    // Execute the go live logic
+    setIsGoingLive(true);
+
     try {
-      console.log("Go Live - Confirmation confirmed, starting process...");
-      setIsSavingPromotion(true);
-      console.log("Go Live - setIsSavingPromotion(true) called");
+      console.log("Making promotion live:", promotionToGoLive._id);
       
-      // Determine if the link is internal or external
-      const isInternalLink = !promotion.url.startsWith("http://") && !promotion.url.startsWith("https://");
-      console.log("Go Live - isInternalLink:", isInternalLink);
+      const updateData = buildPromotionUpdateData(promotionToGoLive, true);
       
-      // If promotion already exists in backend (has _id), update it instead of creating new one
-      if (promotion._id) {
-        console.log("Go Live - Updating existing promotion with _id:", promotion._id);
-        // Update existing promotion to make it live
-        const updateData: any = {
-          title: promotion.title,
-          link: promotion.url,
-          isInternalLink: isInternalLink,
-          isLive: true, // Set as live
-        };
-        
-        // Format dates for API
-        const formatDateForAPI = (dateString: string): string => {
-          if (!dateString) return "";
-          try {
-            const date = new Date(dateString + "T00:00:00.000Z");
-            if (!isNaN(date.getTime())) {
-              return date.toISOString();
-            }
-            return dateString;
-          } catch {
-            return dateString;
-          }
-        };
-
-        const today = new Date();
-        const defaultEndDate = new Date();
-        defaultEndDate.setDate(today.getDate() + 30);
-
-        // Include dates if available, otherwise use defaults
-        updateData.startDate = formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd"));
-        updateData.endDate = formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd"));
-        
-        // Include products if available
-        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
-          updateData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
-        } else {
-          updateData.products = [];
-        }
-        
-        console.log("Go Live - Update data:", JSON.stringify({ ...updateData, products: updateData.products.length }, null, 2));
-        console.log("Go Live - Calling updatePromotion API...");
-        try {
-          const updatedPromotion = await promotionService.updatePromotion(promotion._id, updateData);
-          console.log("Go Live - Updated promotion response:", updatedPromotion);
-          console.log("Go Live - Updated promotion isLive:", updatedPromotion?.isLive);
-          
-          // Verify the update worked
-          if (updatedPromotion && !updatedPromotion.isLive) {
-            console.warn("Go Live - WARNING: Promotion was updated but isLive is still false!");
-            console.warn("Go Live - Full response:", JSON.stringify(updatedPromotion, null, 2));
-          }
-        } catch (updateError: any) {
-          console.error("Go Live - Error in updatePromotion call:", updateError);
-          console.error("Go Live - Error details:", updateError?.response?.data || updateError?.message);
-          throw updateError; // Re-throw to be caught by outer catch
-        }
-      } else {
-        // Create new promotion (for local-only promotions)
-        // Prepare image file for upload
-        let imageFile: File | any;
-        if (Platform.OS === "web") {
-          if (typeof promotion.image === "string") {
-            if (promotion.image.startsWith("data:")) {
-              const response = await fetch(promotion.image);
-              const blob = await response.blob();
-              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-            } else if (promotion.image.startsWith("http://") || promotion.image.startsWith("https://")) {
-              const response = await fetch(promotion.image);
-              const blob = await response.blob();
-              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-            } else {
-              const response = await fetch(promotion.image);
-              const blob = await response.blob();
-              imageFile = new File([blob], "promotion-image.jpg", { type: blob.type });
-            }
-          } else {
-            Alert.alert("Error", "Please select a new image for upload");
-            setIsSavingPromotion(false);
-            return;
-          }
-        } else {
-          if (typeof promotion.image === "string") {
-            imageFile = {
-              uri: promotion.image,
-              type: "image/jpeg",
-              name: "promotion-image.jpg",
-            };
-          } else {
-            Alert.alert("Error", "Please select a new image for upload");
-            setIsSavingPromotion(false);
-            return;
-          }
-        }
-
-        // Format dates for API
-        const formatDateForAPI = (dateString: string): string => {
-          if (!dateString) return "";
-          try {
-            const date = new Date(dateString + "T00:00:00.000Z");
-            if (!isNaN(date.getTime())) {
-              return date.toISOString();
-            }
-            return dateString;
-          } catch {
-            return dateString;
-          }
-        };
-
-        const today = new Date();
-        const defaultEndDate = new Date();
-        defaultEndDate.setDate(today.getDate() + 30);
-
-        console.log("Go Live - Creating new promotion (no _id)");
-        const createData: any = {
-          title: promotion.title,
-          link: promotion.url,
-          isInternalLink: isInternalLink,
-          image: imageFile,
-          isLive: true, // Set as live
-          startDate: formatDateForAPI(promotion.startingDate || format(today, "yyyy-MM-dd")),
-          endDate: formatDateForAPI(promotion.endingDate || format(defaultEndDate, "yyyy-MM-dd")),
-        };
-
-        // Include products if available
-        if (promotion.attachedProducts && promotion.attachedProducts.length > 0) {
-          createData.products = promotion.attachedProducts.map((p: any) => p._id || p.id).filter(Boolean);
-        } else {
-          createData.products = [];
-        }
-
-        console.log("Go Live - Create data:", { ...createData, image: "File present", products: createData.products.length });
-        const createdPromotion = await promotionService.createPromotion(createData);
-        console.log("Go Live - Created promotion response:", createdPromotion);
-        console.log("Go Live - Created promotion isLive:", createdPromotion?.isLive);
-        
-        // Verify the create worked
-        if (createdPromotion && !createdPromotion.isLive) {
-          console.warn("Go Live - WARNING: Promotion was created but isLive is false!");
-          console.warn("Go Live - Full response:", JSON.stringify(createdPromotion, null, 2));
-        }
+      console.log("Update data:", JSON.stringify(updateData, null, 2));
+      
+      const updatedPromotion = await promotionService.updatePromotion(
+        promotionToGoLive._id,
+        updateData
+      );
+      
+      console.log("Updated promotion response:", updatedPromotion);
+      
+      // Verify the update
+      if (updatedPromotion && !updatedPromotion.isLive) {
+        console.warn("Warning: Promotion was updated but isLive is still false!");
       }
-
-      // Wait a bit for backend to process, then refresh
-      console.log("Go Live - Waiting before refresh...");
+      
+      // Small delay to ensure backend processing
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Remove from saved and refresh all promotions
-      console.log("Go Live - Removing from saved and refreshing...");
-      setSavedPromotions(prev => prev.filter((p) => p.id !== id));
+      // Refresh promotions from server
       await fetchAllPromotions();
-      console.log("Go Live - Refresh complete");
-      Alert.alert("Success", "Promotion is now live!");
+      
+      showAlert("Success", "Promotion is now live!");
     } catch (error: any) {
       console.error("Error making promotion live:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      Alert.alert("Error", error?.response?.data?.message || error?.message || "Failed to make promotion live");
+      showAlert("Error", error?.response?.data?.message || error?.message || "Failed to make promotion live");
     } finally {
-      setIsSavingPromotion(false);
+      setIsGoingLive(false);
+      setShowGoLiveModal(false);
       setPromotionToGoLive(null);
     }
   };
 
+  // Handle Delete Live
   const handleDeleteLive = (id: string) => {
     setPromotionToDeleteLive(id);
     setShowDeleteLiveModal(true);
   };
 
   const confirmDeleteLive = async () => {
-    if (!promotionToDeleteLive) return;
-    
-    const id = promotionToDeleteLive;
-    setShowDeleteLiveModal(false);
+    if (!promotionToDeleteLive) {
+      setShowDeleteLiveModal(false);
+      return;
+    }
+
+    setIsDeletingLive(true);
 
     try {
-      const promotion = livePromotions.find((p) => p.id === id);
+      const promotion = livePromotions.find((p) => p.id === promotionToDeleteLive);
+      
       if (promotion && promotion._id) {
         await promotionService.deletePromotion(promotion._id);
-        // Remove from live promotions and refresh all promotions
-        setLivePromotions(livePromotions.filter((p) => p.id !== id));
-        fetchAllPromotions();
-        Alert.alert("Success", "Promotion deleted successfully");
+        
+        // Refresh promotions from server
+        await fetchAllPromotions();
+        
+        showAlert("Success", "Promotion deleted successfully");
       }
     } catch (error: any) {
       console.error("Error deleting promotion:", error);
-      Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
+      showAlert("Error", error?.response?.data?.message || "Failed to delete promotion");
     } finally {
+      setIsDeletingLive(false);
+      setShowDeleteLiveModal(false);
       setPromotionToDeleteLive(null);
     }
   };
 
+  // Handle Delete Saved
   const handleDeleteSaved = (id: string) => {
     setPromotionToDeleteSaved(id);
     setShowDeleteSavedModal(true);
   };
 
-  const confirmDeleteSaved = () => {
-    if (!promotionToDeleteSaved) return;
-    
-    const id = promotionToDeleteSaved;
-    setShowDeleteSavedModal(false);
-    setSavedPromotions(savedPromotions.filter((p) => p.id !== id));
-    setPromotionToDeleteSaved(null);
+  const confirmDeleteSaved = async () => {
+    if (!promotionToDeleteSaved) {
+      setShowDeleteSavedModal(false);
+      return;
+    }
+
+    try {
+      const promotion = savedPromotions.find((p) => p.id === promotionToDeleteSaved);
+      
+      if (promotion && promotion._id) {
+        // If promotion exists in backend, delete it
+        await promotionService.deletePromotion(promotion._id);
+        showAlert("Success", "Promotion deleted successfully");
+      } else {
+        // If it's only local, just remove from state
+        setSavedPromotions(prev => prev.filter((p) => p.id !== promotionToDeleteSaved));
+      }
+      
+      // Refresh promotions from server
+      await fetchAllPromotions();
+    } catch (error: any) {
+      console.error("Error deleting promotion:", error);
+      showAlert("Error", error?.response?.data?.message || "Failed to delete promotion");
+    } finally {
+      setShowDeleteSavedModal(false);
+      setPromotionToDeleteSaved(null);
+    }
   };
 
+  // Handle Edit
   const handleEditPromotion = (promotion: Promotion) => {
     redirectToPage(containers.EditPromotionScreen, {
       promotion: JSON.stringify(promotion),
     });
   };
 
+  // Check if promotion can go live (date range check)
+  const canGoLive = (promotion: Promotion): boolean => {
+    return isDateInRange(promotion.startingDate, promotion.endingDate);
+  };
 
+  // Layout components
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText="Promotional Slides" />
   );
-
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
 
-  // Combine live and saved promotions into one array
-  // Live promotions first, then saved promotions - both will be displayed together
+  // Combine promotions for display
   const allPromotions = [...livePromotions, ...savedPromotions];
 
   return (
@@ -709,8 +468,8 @@ const AdminPromotion = () => {
           <Text style={styles.pageTitle as TextStyle}>Promotions</Text>
         )}
 
-        {/* Combined Promotions List */}
-        {isLoadingLivePromotions ? (
+        {/* Promotions List */}
+        {isLoadingPromotions ? (
           <View style={styles.emptyState as ViewStyle}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.emptyStateText as TextStyle}>Loading promotions...</Text>
@@ -728,72 +487,67 @@ const AdminPromotion = () => {
         ) : allPromotions.length > 0 ? (
           isWeb ? (
             <View style={styles.gridContainer as ViewStyle}>
-              {allPromotions.map((item, index) => {
-                const isLive = item.isLive;
-                return (
-                  <View 
-                    key={item.id} 
-                    style={[
-                      styles.gridCardWrapper as ViewStyle,
-                      (index + 1) % 4 === 0 && { marginRight: 0 } as ViewStyle
-                    ]}
-                  >
-                    <View style={styles.cardContainer as ViewStyle}>
-                      {isLive && (
-                        <View style={styles.liveBadge as ViewStyle}>
-                          <View style={styles.liveDot as ViewStyle} />
-                          <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
-                        </View>
-                      )}
-                      <PromotionCard
-                        image={item.image}
-                        title={item.title}
-                        isLive={item.isLive}
-                        onEdit={() => handleEditPromotion(item)}
-                        onDelete={() =>
-                          item.isLive
-                            ? handleDeleteLive(item.id)
-                            : handleDeleteSaved(item.id)
-                        }
-                        onRemoveLive={() => handleRemoveLiveClick(item.id)}
-                        onGoLive={() => handleGoLive(item.id)}
-                      />
-
-                    </View>
+              {allPromotions.map((item, index) => (
+                <View 
+                  key={`${item.id}-${index}`}
+                  style={[
+                    styles.gridCardWrapper as ViewStyle,
+                    (index + 1) % 4 === 0 && { marginRight: 0 } as ViewStyle
+                  ]}
+                >
+                  <View style={styles.cardContainer as ViewStyle}>
+                    {item.isLive && (
+                      <View style={styles.liveBadge as ViewStyle}>
+                        <View style={styles.liveDot as ViewStyle} />
+                        <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
+                      </View>
+                    )}
+                    <PromotionCard
+                      image={item.image}
+                      title={item.title}
+                      isLive={item.isLive}
+                      onEdit={() => handleEditPromotion(item)}
+                      onDelete={() =>
+                        item.isLive
+                          ? handleDeleteLive(item.id)
+                          : handleDeleteSaved(item.id)
+                      }
+                      onRemoveLive={() => handleRemoveLiveClick(item.id)}
+                      onGoLive={() => handleGoLive(item.id)}
+                      canGoLive={canGoLive(item)}
+                    />
                   </View>
-                );
-              })}
+                </View>
+              ))}
             </View>
           ) : (
             <View>
-              {allPromotions.map((item) => {
-                const isLive = item.isLive;
-                return (
-                  <View key={item.id} style={styles.mobileCardWrapper as ViewStyle}>
-                    <View style={styles.cardContainer as ViewStyle}>
-                      {isLive && (
-                        <View style={styles.liveBadge as ViewStyle}>
-                          <View style={styles.liveDot as ViewStyle} />
-                          <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
-                        </View>
-                      )}
-                      <PromotionCard
-                        image={item.image}
-                        title={item.title}
-                        isLive={item.isLive}
-                        onEdit={() => handleEditPromotion(item)}
-                        onDelete={() =>
-                          item.isLive
-                            ? handleDeleteLive(item.id)
-                            : handleDeleteSaved(item.id)
-                        }
-                        onRemoveLive={() => handleRemoveLiveClick(item.id)}
-                        onGoLive={() => handleGoLive(item.id)}
-                      />
-                    </View>
+              {allPromotions.map((item, index) => (
+                <View key={`${item.id}-${index}`} style={styles.mobileCardWrapper as ViewStyle}>
+                  <View style={styles.cardContainer as ViewStyle}>
+                    {item.isLive && (
+                      <View style={styles.liveBadge as ViewStyle}>
+                        <View style={styles.liveDot as ViewStyle} />
+                        <Text style={styles.liveBadgeText as TextStyle}>Live</Text>
+                      </View>
+                    )}
+                    <PromotionCard
+                      image={item.image}
+                      title={item.title}
+                      isLive={item.isLive}
+                      onEdit={() => handleEditPromotion(item)}
+                      onDelete={() =>
+                        item.isLive
+                          ? handleDeleteLive(item.id)
+                          : handleDeleteSaved(item.id)
+                      }
+                      onRemoveLive={() => handleRemoveLiveClick(item.id)}
+                      onGoLive={() => handleGoLive(item.id)}
+                      canGoLive={canGoLive(item)}
+                    />
                   </View>
-                );
-              })}
+                </View>
+              ))}
             </View>
           )
         ) : (
@@ -803,196 +557,89 @@ const AdminPromotion = () => {
         )}
       </ScrollView>
 
-
-      {/* Date Pickers for Mobile */}
-      {!isWeb && (
-        <>
-          <DateTimePickerModal
-            isVisible={showStartDatePicker}
-            mode="date"
-            onConfirm={(selectedDate) => {
-              setShowStartDatePicker(false);
-              setStartingDate(formatDateForInput(selectedDate));
-              // If ending date is before new start date, clear it
-              if (endingDate && new Date(endingDate) <= selectedDate) {
-                setEndingDate("");
-              }
-            }}
-            onCancel={() => setShowStartDatePicker(false)}
-            minimumDate={getTodayDate()}
-          />
-          <DateTimePickerModal
-            isVisible={showEndDatePicker}
-            mode="date"
-            onConfirm={(selectedDate) => {
-              setShowEndDatePicker(false);
-              const minDate = getMinEndDate();
-              if (selectedDate >= minDate) {
-                setEndingDate(formatDateForInput(selectedDate));
-              } else {
-                Alert.alert("Invalid Date", "Ending date must be after the starting date");
-              }
-            }}
-            onCancel={() => setShowEndDatePicker(false)}
-            minimumDate={getMinEndDate()}
-          />
-        </>
-      )}
-
-      {/* Product Selection Modal */}
-      <Modal
-        visible={showProductModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowProductModal(false)}
-      >
-        <View style={styles.modalOverlay as ViewStyle}>
-          <View style={styles.modalContent as ViewStyle}>
-            <View style={styles.modalHeader as ViewStyle}>
-              <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
-              <TouchableOpacity
-                onPress={() => setShowProductModal(false)}
-                style={styles.modalCloseButton as ViewStyle}
-              >
-                <Ionicons name="close" size={24} color={colors.black} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.modalSearchContainer as ViewStyle}>
-              <SearchBar
-                placeholder="Search by name..."
-                value={productSearchQuery}
-                onChangeText={setProductSearchQuery}
-                onSubmitEditing={handleProductSearch}
-                onPress={handleProductSearch}
-              />
-            </View>
-            {isLoadingProducts ? (
-              <View style={styles.modalLoadingContainer as ViewStyle}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={{ marginTop: 12 }}>Loading products...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={[...availableProducts].sort((a, b) => {
-                  const aIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (a._id || a.id)
-                  );
-                  const bIsAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (b._id || b.id)
-                  );
-                  if (aIsAttached && !bIsAttached) return -1;
-                  if (!aIsAttached && bIsAttached) return 1;
-                  return 0;
-                })}
-                keyExtractor={(item) => String(item._id || item.id)}
-                renderItem={({ item }) => {
-                  const isAttached = attachedProducts.some(
-                    (p) => (p._id || p.id) === (item._id || item.id)
-                  );
-                  const productImage = item.image?.[0] || item.image;
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        styles.productModalItem as ViewStyle,
-                        isAttached && (styles.productModalItemSelected as ViewStyle),
-                      ]}
-                      onPress={() => handleToggleProductAttachment(item)}
-                    >
-                      <Image
-                        source={
-                          typeof productImage === "string"
-                            ? { uri: productImage }
-                            : productImage || require("../../../assets/Placeholder.png")
-                        }
-                        style={styles.productModalImage as ImageStyle}
-                        resizeMode="cover"
-                      />
-                      <View style={styles.productModalInfo as ViewStyle}>
-                        <Text style={styles.productModalName as TextStyle} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                        <Text style={styles.productModalSku as TextStyle}>
-                          SKU: {item.id || item._id || "N/A"}
-                        </Text>
-                      </View>
-                      {isAttached && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={colors.primary}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-                style={styles.modalList as ViewStyle}
-              />
-            )}
-            <View style={styles.modalFooter as ViewStyle}>
-              <TouchableOpacity
-                style={styles.modalDoneButton as ViewStyle}
-                onPress={() => setShowProductModal(false)}
-              >
-                <Text style={styles.modalDoneButtonText as TextStyle}>Select Products</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Remove Live Confirmation Modal */}
       <ConfirmationModal
         isModalVisible={showRemoveLiveModal}
         onClose={() => {
-          setShowRemoveLiveModal(false);
-          setPromotionToRemoveLive(null);
+          if (!isRemovingLive) {
+            setShowRemoveLiveModal(false);
+            setPromotionToRemoveLive(null);
+          }
         }}
         handleCancel={() => {
-          setShowRemoveLiveModal(false);
-          setPromotionToRemoveLive(null);
+          if (!isRemovingLive) {
+            setShowRemoveLiveModal(false);
+            setPromotionToRemoveLive(null);
+          }
         }}
         handleSubmit={confirmRemoveLive}
         title="Remove Live Promotion"
-        text="Are you sure you want to remove this promotion from live?"
-        submitText="Yes"
+        text={
+          isRemovingLive
+            ? "Removing promotion from live..."
+            : "Are you sure you want to remove this promotion from live?"
+        }
+        submitText={isRemovingLive ? "Removing..." : "Yes"}
         cancelText="No"
+        disabled={isRemovingLive}
       />
       
+      {/* Go Live Confirmation Modal */}
       <ConfirmationModal
         isModalVisible={showGoLiveModal}
         onClose={() => {
-          setShowGoLiveModal(false);
-          setPromotionToGoLive(null);
+          if (!isGoingLive) {
+            setShowGoLiveModal(false);
+            setPromotionToGoLive(null);
+          }
         }}
         handleCancel={() => {
-          setShowGoLiveModal(false);
-          setPromotionToGoLive(null);
+          if (!isGoingLive) {
+            setShowGoLiveModal(false);
+            setPromotionToGoLive(null);
+          }
         }}
         handleSubmit={confirmGoLive}
         title="Go Live"
-        text="Are you sure you want to make this promotion live?"
-        submitText="Go Live"
+        text={
+          isGoingLive
+            ? "Making promotion live..."
+            : "Are you sure you want to make this promotion live?"
+        }
+        submitText={isGoingLive ? "Going Live..." : "Go Live"}
         cancelText="Cancel"
+        disabled={isGoingLive}
       />
       
+      {/* Delete Live Confirmation Modal */}
       <ConfirmationModal
         isModalVisible={showDeleteLiveModal}
         onClose={() => {
-          setShowDeleteLiveModal(false);
-          setPromotionToDeleteLive(null);
+          if (!isDeletingLive) {
+            setShowDeleteLiveModal(false);
+            setPromotionToDeleteLive(null);
+          }
         }}
         handleCancel={() => {
-          setShowDeleteLiveModal(false);
-          setPromotionToDeleteLive(null);
+          if (!isDeletingLive) {
+            setShowDeleteLiveModal(false);
+            setPromotionToDeleteLive(null);
+          }
         }}
         handleSubmit={confirmDeleteLive}
         title="Delete Promotion"
-        text="Are you sure you want to delete this live promotion?"
-        submitText="Delete"
+        text={
+          isDeletingLive
+            ? "Deleting promotion..."
+            : "Are you sure you want to delete this live promotion?"
+        }
+        submitText={isDeletingLive ? "Deleting..." : "Delete"}
         cancelText="Cancel"
         isDestructive={true}
+        disabled={isDeletingLive}
       />
       
+      {/* Delete Saved Confirmation Modal */}
       <ConfirmationModal
         isModalVisible={showDeleteSavedModal}
         onClose={() => {

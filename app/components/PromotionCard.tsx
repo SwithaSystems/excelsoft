@@ -18,6 +18,7 @@ interface PromotionCardProps {
   onDelete?: () => void;
   onRemoveLive?: () => void;
   onGoLive?: () => void;
+  canGoLive?: boolean;
 }
 
 const PromotionCard: React.FC<PromotionCardProps> = ({
@@ -28,6 +29,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
   onDelete,
   onRemoveLive,
   onGoLive,
+  canGoLive = true,
 }) => {
   return (
     <View style={styles.card}>
@@ -85,10 +87,18 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
           </Text>
 
           <View style={styles.bottomRow}>
-            <TouchableOpacity style={styles.goLiveBtn} onPress={onGoLive}>
-              <View style={styles.liveDot} />
-              <Text style={styles.goLiveText}>Go Live</Text>
-            </TouchableOpacity>
+            {/* Show Go Live button only if canGoLive is true */}
+            {canGoLive ? (
+              <TouchableOpacity style={styles.goLiveBtn} onPress={onGoLive}>
+                <View style={styles.liveDot} />
+                <Text style={styles.goLiveText}>Go Live</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.disabledGoLiveBtn}>
+                <View style={styles.disabledLiveDot} />
+                <Text style={styles.disabledGoLiveText}>Go Live</Text>
+              </View>
+            )}
 
             <View style={styles.rightActions}>
               <TouchableOpacity style={styles.iconTextBtn} onPress={onEdit}>
@@ -192,6 +202,32 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.white,
+  },
+
+  /* ===== DISABLED GO LIVE BUTTON ===== */
+
+  disabledGoLiveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.placeholdergrey,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    opacity: 0.6,
+  },
+
+  disabledGoLiveText: {
+    color: colors.darkGray || "#666",
+    fontWeight: "600",
+    marginLeft: 6,
+    fontSize: 14,
+  },
+
+  disabledLiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.darkGray || "#666",
   },
 
   iconTextBtn: {
