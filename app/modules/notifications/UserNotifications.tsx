@@ -40,7 +40,7 @@ export default function UserNotificationsScreen() {
   };
 
   const handleNotificationPress = async (notification: any) => {
-    console.log("🔔 Notification pressed:", JSON.stringify(notification, null, 2));
+    // console.log(" Notification pressed:", JSON.stringify(notification, null, 2));
     
     await NotificationService.markAsRead(notification.id);
     await loadNotifications();
@@ -53,7 +53,7 @@ export default function UserNotificationsScreen() {
       try {
         notificationData = JSON.parse(notificationData);
       } catch (e) {
-        console.log("⚠️ Could not parse notification data as JSON:", e);
+        // console.log(" Could not parse notification data as JSON:", e);
       }
     }
     
@@ -71,8 +71,8 @@ export default function UserNotificationsScreen() {
       type: notificationData.type || notificationData.notificationType || 'orderUpdate',
     };
     
-    console.log("📦 Normalized notification data:", JSON.stringify(normalizedData, null, 2));
-    console.log("🚀 Navigating with data:", JSON.stringify(normalizedData, null, 2));
+    // console.log(" Normalized notification data:", JSON.stringify(normalizedData, null, 2));
+    // console.log("Navigating with data:", JSON.stringify(normalizedData, null, 2));
     
     handleNotificationNavigation(normalizedData);
   };

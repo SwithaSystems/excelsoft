@@ -43,7 +43,7 @@ function NotificationsHandler() {
   useEffect(() => {
     // Skip notifications on web platform
     if (Platform.OS === "web") {
-      console.log("Notifications not supported on web");
+      // console.log("Notifications not supported on web");
       return;
     }
 
@@ -58,7 +58,7 @@ function NotificationsHandler() {
         notificationListener.current =
           Notifications.addNotificationReceivedListener(
             async (notification) => {
-              console.log("📱 Notification received:", notification);
+              // console.log("📱 Notification received:", notification);
 
               const notificationItem = {
                 id: notification.request.identifier,
@@ -100,7 +100,7 @@ function NotificationsHandler() {
         responseListener.current =
           Notifications.addNotificationResponseReceivedListener(
             async (response) => {
-              console.log("👆 User tapped notification:", response);
+              // console.log("👆 User tapped notification:", response);
 
               const notification = response.notification;
               const data = notification.request.content.data;
@@ -128,7 +128,7 @@ function NotificationsHandler() {
         const initialNotification =
           await Notifications.getLastNotificationResponseAsync();
         if (initialNotification) {
-          console.log("🚀 App opened from notification:", initialNotification);
+          // console.log("🚀 App opened from notification:", initialNotification);
           const data = initialNotification.notification.request.content.data;
 
           setTimeout(() => {
@@ -141,7 +141,7 @@ function NotificationsHandler() {
           "change",
           (nextAppState) => {
             appState.current = nextAppState;
-            console.log("App state changed to:", nextAppState);
+            // console.log("App state changed to:", nextAppState);
           }
         );
 

@@ -443,10 +443,10 @@ const orderSummeryScreen = () => {
     outputRange: ["0deg", "180deg"],
   });
   useEffect(() => {
-  console.log('Platform:', Platform.OS);
-  console.log('Apple Pay Supported:', isApplePaySupported);
-  console.log('Google Pay Supported:', isGooglePaySupported);
-  console.log('PlatformPayButton available:', !!PlatformPayButton);
+  // console.log('Platform:', Platform.OS);
+  // console.log('Apple Pay Supported:', isApplePaySupported);
+  // console.log('Google Pay Supported:', isGooglePaySupported);
+  // console.log('PlatformPayButton available:', !!PlatformPayButton);
 }, [isApplePaySupported, isGooglePaySupported]);
 
   // Fetch addresses with proper error handling

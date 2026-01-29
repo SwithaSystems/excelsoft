@@ -120,9 +120,9 @@ class PromotionService {
       // FIXED: Only send isLive if explicitly provided (not defaulting to false!)
       if (data.isLive !== undefined) {
         formData.append("isLive", data.isLive.toString());
-        console.log("promotionService.updatePromotion - Setting isLive:", data.isLive);
+        // console.log("promotionService.updatePromotion - Setting isLive:", data.isLive);
       } else {
-        console.log("promotionService.updatePromotion - isLive not provided, not sending");
+        // console.log("promotionService.updatePromotion - isLive not provided, not sending");
       }
       
       // Send category if provided
@@ -130,20 +130,20 @@ class PromotionService {
         formData.append("category", data.category);
       }
       
-      console.log("promotionService.updatePromotion - Sending data:", {
-        id,
-        title: data.title,
-        link: data.link,
-        isInternalLink: data.isInternalLink,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        products: data.products?.length || "not provided",
-        isLive: data.isLive !== undefined ? data.isLive : "not provided",
-        category: data.category || "not provided",
-      });
+      // console.log("promotionService.updatePromotion - Sending data:", {
+      //   id,
+      //   title: data.title,
+      //   link: data.link,
+      //   isInternalLink: data.isInternalLink,
+      //   startDate: data.startDate,
+      //   endDate: data.endDate,
+      //   products: data.products?.length || "not provided",
+      //   isLive: data.isLive !== undefined ? data.isLive : "not provided",
+      //   category: data.category || "not provided",
+      // });
 
       const response = await formDataAxios.patch(`${this.baseUrl}/${id}`, formData);
-      console.log("promotionService.updatePromotion - Response:", response.data);
+      // console.log("promotionService.updatePromotion - Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error updating promotion:", error);

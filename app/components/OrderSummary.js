@@ -59,7 +59,7 @@ function OrderSummary(props) {
   const fetchSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
-      console.log("globalsettings", response.data.shippingCharge);
+      // console.log("globalsettings", response.data.shippingCharge);
       setShippingCharge(response.data.shippingCharge);
     } catch (error) {
       console.error("Failed to fetch settings:", error);

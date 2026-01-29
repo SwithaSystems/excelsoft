@@ -32,12 +32,12 @@ export const recommendationService = {
     limit: number = 10
   ): Promise<RecommendationResponse> => {
     try {
-      console.log(`[RecommendationService] Fetching recommendations with limit: ${limit}`);
+      // console.log(`[RecommendationService] Fetching recommendations with limit: ${limit}`);
       const response = await jsonAxios.get(
         `/recommendations/suggested?limit=${limit}`
       );
-      console.log(`[RecommendationService] Response status: ${response.status}`);
-      console.log(`[RecommendationService] Response data:`, response.data);
+      // console.log(`[RecommendationService] Response status: ${response.status}`);
+      // console.log(`[RecommendationService] Response data:`, response.data);
       
       // Handle new response format: { products: [...], type: "recommended" | "hot_selling" }
       let result: RecommendationResponse;
@@ -56,15 +56,6 @@ export const recommendationService = {
       } else {
         console.warn("[RecommendationService] Unexpected response format:", response.data);
         return { products: [], type: "hot_selling" };
-      }
-      
-      // Log product count and source type
-      if (result.products.length === 0) {
-        console.log(`[RecommendationService] ⚠️ No products fetched - User has no orders or products not found`);
-      } else {
-        console.log(`[RecommendationService] ✅ Successfully fetched ${result.products.length} products (type: ${result.type})`);
-        console.log(`[RecommendationService] 📦 Product IDs:`, result.products.map(p => p.id).join(', '));
-        console.log(`[RecommendationService] 📦 Product names:`, result.products.map(p => p.name).join(', '));
       }
       
       return result;

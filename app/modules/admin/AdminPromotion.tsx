@@ -168,7 +168,7 @@ const AdminPromotion = () => {
       const live = convertedPromotions.filter((p) => p.isLive === true);
       const saved = convertedPromotions.filter((p) => p.isLive !== true);
       
-      console.log("Fetched promotions - Total:", convertedPromotions.length, "Live:", live.length, "Saved:", saved.length);
+      // console.log("Fetched promotions - Total:", convertedPromotions.length, "Live:", live.length, "Saved:", saved.length);
       
       setLivePromotions(live);
       setSavedPromotions(saved);
@@ -203,7 +203,7 @@ const AdminPromotion = () => {
     // const productIds = (promotion.attachedProducts || [])
     //   .map((p: any) => p._id || p.id)
     //   .filter(Boolean);
-      console.log("Promotion in buildPromotionUpdate",promotion);
+      // console.log("Promotion in buildPromotionUpdate",promotion);
 
     return {
       title: promotion.title,
@@ -270,7 +270,7 @@ const AdminPromotion = () => {
       return;
     }
 
-    console.log("Go Live - Promotion found:", promotion);
+    // console.log("Go Live - Promotion found:", promotion);
     setPromotionToGoLive(promotion);
     setShowGoLiveModal(true);
   };
@@ -285,18 +285,18 @@ const AdminPromotion = () => {
     setIsGoingLive(true);
 
     try {
-      console.log("Making promotion live:", promotionToGoLive._id);
+      // console.log("Making promotion live:", promotionToGoLive._id);
       
       const updateData = buildPromotionUpdateData(promotionToGoLive, true);
       
-      console.log("Update data:", JSON.stringify(updateData, null, 2));
+      // console.log("Update data:", JSON.stringify(updateData, null, 2));
       
       const updatedPromotion = await promotionService.updatePromotion(
         promotionToGoLive._id,
         updateData
       );
       
-      console.log("Updated promotion response:", updatedPromotion);
+      // console.log("Updated promotion response:", updatedPromotion);
       
       // Verify the update
       if (updatedPromotion && !updatedPromotion.isLive) {

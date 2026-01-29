@@ -127,9 +127,9 @@ export default function usePaymentHandlerWeb() {
       0
     );
 
-    console.log(`Subtotal (excl. VAT): ${subtotalExVAT.toFixed(2)}`);
-    console.log(`Total VAT: ${totalVAT.toFixed(2)}`);
-    console.log(`Subtotal (incl. VAT): ${subtotalIncVAT.toFixed(2)}`);
+    // console.log(`Subtotal (excl. VAT): ${subtotalExVAT.toFixed(2)}`);
+    // console.log(`Total VAT: ${totalVAT.toFixed(2)}`);
+    // console.log(`Subtotal (incl. VAT): ${subtotalIncVAT.toFixed(2)}`);
 
     return subtotalIncVAT;
   };

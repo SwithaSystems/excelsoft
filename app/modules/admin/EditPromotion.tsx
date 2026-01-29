@@ -390,7 +390,7 @@ const EditPromotion = () => {
         createData.category = selectedCategory.toString();
       }
       
-      console.log("Creating promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
+      // console.log("Creating promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
       await promotionService.createPromotion(createData);
       
       if (Platform.OS === "web") {
@@ -460,7 +460,7 @@ const handleGoLive = async () => {
         createData.category = selectedCategory.toString();
       }
       
-      console.log("Creating live promotion:", { ...createData, image: imageFile ? "File" : "No file" });
+      // console.log("Creating live promotion:", { ...createData, image: imageFile ? "File" : "No file" });
       await promotionService.createPromotion(createData);
       
       if (Platform.OS === "web") {
@@ -497,11 +497,11 @@ const handleGoLive = async () => {
           updateData.category = selectedCategory.toString();
         }
         
-        console.log("Making promotion live:", { 
-          ...updateData, 
-          image: imageFile ? "File" : "No file",
-          isLive: true 
-        });
+      //   console.log("Making promotion live:", { 
+      //     ...updateData, 
+      //     image: imageFile ? "File" : "No file",
+      //     isLive: true 
+      //   });
         
         await promotionService.updatePromotion(promotionData._id, updateData);
         
@@ -585,7 +585,7 @@ const handleGoLive = async () => {
             updateData.category = selectedCategory.toString();
           }
           
-          console.log("Updating live promotion with data:", updateData);
+          // console.log("Updating live promotion with data:", updateData);
           await promotionService.updatePromotion(promotionData._id, updateData);
           
           if (Platform.OS === "web") {
@@ -632,7 +632,7 @@ const handleGoLive = async () => {
             createData.category = selectedCategory.toString();
           }
           
-          console.log("Creating live promotion with data:", { ...createData, image: "File present" });
+          // console.log("Creating live promotion with data:", { ...createData, image: "File present" });
           await promotionService.createPromotion(createData);
           
           if (Platform.OS === "web") {
@@ -679,7 +679,7 @@ const handleGoLive = async () => {
             updateData.category = selectedCategory.toString();
           }
           
-          console.log("Updating draft promotion with data:", updateData);
+          // console.log("Updating draft promotion with data:", updateData);
           await promotionService.updatePromotion(promotionData._id, updateData);
           
           if (Platform.OS === "web") {
@@ -725,7 +725,7 @@ const handleGoLive = async () => {
             createData.category = selectedCategory.toString();
           }
           
-          console.log("Creating draft promotion with data:", { ...createData, image: "File present" });
+          // console.log("Creating draft promotion with data:", { ...createData, image: "File present" });
           await promotionService.createPromotion(createData);
           
           if (Platform.OS === "web") {

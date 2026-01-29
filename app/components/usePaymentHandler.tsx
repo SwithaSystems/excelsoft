@@ -50,7 +50,7 @@ export const usePaymentHandler = () => {
     try {
       setIsLoadingSettings(true);
       const response = await globalSettingsAPI.getSettings();
-      console.log("globalsettings", response.data.shippingCharge);
+      // console.log("globalsettings", response.data.shippingCharge);
       setShippingCharge(response.data.shippingCharge);
     } catch (error) {
       console.error("Failed to fetch settings:", error);
@@ -74,8 +74,8 @@ export const usePaymentHandler = () => {
         googlePay: { testEnv: true } 
       });
       
-      console.log('Apple Pay supported:', applePaySupported);
-      console.log('Google Pay supported:', googlePaySupported);
+      // console.log('Apple Pay supported:', applePaySupported);
+      // console.log('Google Pay supported:', googlePaySupported);
       
       setIsApplePaySupported(!!applePaySupported);
       setIsGooglePaySupported(!!googlePaySupported);
@@ -135,30 +135,30 @@ const products = cartItems.map((item: any) => {
     const itemSubtotal = item.netPrice * item.quantity;
     const itemVAT = item.isVatApplicable ? (itemSubtotal * item.vatRate) / 100 : 0;
     
-    console.log(`Item: ${item.name}`);
-    console.log(`  Price: ${item.netPrice} × ${item.quantity} = ${itemSubtotal}`);
-    console.log("item vat rate",item.vatRate);
-    console.log(`  VAT: ${itemVAT}`);
-    console.log(`  Item Total: ${itemSubtotal + itemVAT}`);
+    // console.log(`Item: ${item.name}`);
+    // console.log(`  Price: ${item.netPrice} × ${item.quantity} = ${itemSubtotal}`);
+    // console.log("item vat rate",item.vatRate);
+    // console.log(`  VAT: ${itemVAT}`);
+    // console.log(`  Item Total: ${itemSubtotal + itemVAT}`);
     
     return sum + itemSubtotal + itemVAT;
   }, 0);
   
-  console.log(`Subtotal (with VAT): ${total}`);
+  // console.log(`Subtotal (with VAT): ${total}`);
   return total;
 };
 
 const getFinalAmount = (items: Product[], mode: string): number => {
   const subtotal = calculateSubtotal(items);
-  console.log("Subtotal:", subtotal);
-  console.log("Shipping charge being used:", shippingCharge);
-  console.log("Delivery mode:", mode);
+  // console.log("Subtotal:", subtotal);
+  // console.log("Shipping charge being used:", shippingCharge);
+  // console.log("Delivery mode:", mode);
   
   const total = mode === DELIVERY_MODE_HOME
     ? subtotal + shippingCharge
     : subtotal;
   
-  console.log("Final total:", total);
+  // console.log("Final total:", total);
   return total;
 };
 
@@ -221,7 +221,7 @@ const getFinalAmount = (items: Product[], mode: string): number => {
     }
     const totalAmount = getFinalAmount(items, params.selectedMode);
 
-    console.log("total amount",totalAmount);
+    // console.log("total amount",totalAmount);
 
     const mov = await getMinimumOrderValue();
     if (mov !== null && totalAmount < mov) {
@@ -281,7 +281,7 @@ const getFinalAmount = (items: Product[], mode: string): number => {
       return;
     }
     const totalAmount = getFinalAmount(items, params.selectedMode);
-    console.log("total amount", totalAmount)
+    // console.log("total amount", totalAmount)
 
     const mov = await getMinimumOrderValue();
     if (mov !== null && totalAmount < mov) {
