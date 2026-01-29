@@ -1,9 +1,19 @@
 // usePaymentHandler.web.tsx
 
 import { Alert } from "react-native";
-import { loadStripe, Stripe, StripeCardElement, PaymentRequest } from "@stripe/stripe-js";
+import {
+  loadStripe,
+  Stripe,
+  StripeCardElement,
+  PaymentRequest,
+} from "@stripe/stripe-js";
 import axios from "axios";
-import { Order, OrderProduct, orderService, PickupMode } from "@/services/orderService";
+import {
+  Order,
+  OrderProduct,
+  orderService,
+  PickupMode,
+} from "@/services/orderService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,18 +35,26 @@ export default function usePaymentHandlerWeb() {
   const cartItems = useSelector((state: any) => state.cart.items);
 
   const [stripe, setStripe] = useState<Stripe | null>(null);
-  const [cardElement, setCardElement] = useState<StripeCardElement | null>(null);
+  const [cardElement, setCardElement] = useState<StripeCardElement | null>(
+    null
+  );
   const [isStripeReady, setIsStripeReady] = useState(false);
-  
+
   // Payment Request (Apple Pay / Google Pay) states
-  const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(null);
+  const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(
+    null
+  );
   const [canMakePayment, setCanMakePayment] = useState(false);
   const [isApplePaySupported, setIsApplePaySupported] = useState(false);
   const [isGooglePaySupported, setIsGooglePaySupported] = useState(false);
 
   const [shippingCharge, setShippingCharge] = useState<number>(0);
   const [MOV, setMOV] = useState<number | null>(null);
-  const [currentMOV_Checkout, setCurrentMOV_Checkout] = useState<number | null>(null);
+  const [currentMOV_Checkout, setCurrentMOV_Checkout] = useState<number | null>(
+    null
+  );
+
+  const VAT_RATE = 0.20; // 20% VAT
 
   /* -------------------- FETCH GLOBAL SETTINGS -------------------- */
   useEffect(() => {
@@ -45,7 +63,9 @@ export default function usePaymentHandlerWeb() {
         const resp = await axios.get(`${API_BASE_URL}/global-settings`);
         setShippingCharge(resp?.data?.shippingCharge ?? 0);
         setMOV(resp?.data?.minimumCheckoutOrderValue ?? null);
-        setCurrentMOV_Checkout(resp?.data?.minimumDeliveryOrderValue ?? null);
+        setCurrentMOV_Checkout(
+          resp?.data?.minimumDeliveryOrderValue ?? null
+        );
       } catch {
         setShippingCharge(0);
         setMOV(null);
@@ -57,24 +77,30 @@ export default function usePaymentHandlerWeb() {
   /* -------------------- MAP CART → ORDER PRODUCTS -------------------- */
   const products: OrderProduct[] = cartItems.map((item: any) => {
     const quantity = item.quantity || 1;
-    const netPrice = item.netPrice || 0;
-    const vatRate = item.vatRate || 0;
+    const netPrice = item.netPrice || 0; // This is RRP (includes VAT if applicable)
     const isVatApplicable = !!item.isVatApplicable;
 
-    const vatAmount = isVatApplicable
-      ? (netPrice * quantity * vatRate) / 100
-      : 0;
+    // Calculate net price excluding VAT
+    const netPriceExVAT = isVatApplicable ? netPrice / (1 + VAT_RATE) : netPrice;
 
-    const netPriceIncVat = netPrice * quantity + vatAmount;
+    // Calculate VAT amount per unit
+    const vatPerUnit = isVatApplicable ? netPrice - netPriceExVAT : 0;
+
+    // Total VAT for all quantities
+    const vatAmount = vatPerUnit * quantity;
+
+    // Total price including VAT (which is just netPrice * quantity since netPrice is RRP)
+    const netPriceIncVat = netPrice * quantity;
     const grossPrice = netPriceIncVat;
 
     return {
       productId: String(item.id),
       name: item.name,
       quantity,
-      netPrice,
+      netPrice, // RRP (VAT-inclusive)
+      netPriceExVAT, // Net price without VAT
       isVatApplicable,
-      vatRate,
+      vatRate: item.vatRate || 20,
       vatAmount,
       netPriceIncVat,
       grossPrice,
@@ -83,14 +109,34 @@ export default function usePaymentHandlerWeb() {
   });
 
   /* -------------------- PRICE CALCULATION -------------------- */
-  const calculateSubtotal = (items: OrderProduct[]) =>
-    items.reduce((sum, i) => sum + i.grossPrice, 0);
+  const calculateSubtotal = (items: OrderProduct[]) => {
+    // Subtotal excluding VAT
+    const subtotalExVAT = items.reduce((sum, item) => {
+      const netExVAT = item.isVatApplicable
+        ? (item.netPrice / (1 + VAT_RATE)) * item.quantity
+        : item.netPrice * item.quantity;
+      return sum + netExVAT;
+    }, 0);
+
+    // Total VAT
+    const totalVAT = items.reduce((sum, item) => sum + item.vatAmount, 0);
+
+    // Subtotal including VAT (sum of all RRP * quantity)
+    const subtotalIncVAT = items.reduce(
+      (sum, item) => sum + item.netPrice * item.quantity,
+      0
+    );
+
+    console.log(`Subtotal (excl. VAT): ${subtotalExVAT.toFixed(2)}`);
+    console.log(`Total VAT: ${totalVAT.toFixed(2)}`);
+    console.log(`Subtotal (incl. VAT): ${subtotalIncVAT.toFixed(2)}`);
+
+    return subtotalIncVAT;
+  };
 
   const getFinalAmount = (items: OrderProduct[], mode: string) => {
     const subtotal = calculateSubtotal(items);
-    return mode === DELIVERY_MODE_HOME
-      ? subtotal + shippingCharge
-      : subtotal;
+    return mode === DELIVERY_MODE_HOME ? subtotal + shippingCharge : subtotal;
   };
 
   /* -------------------- STRIPE INITIALIZATION -------------------- */
@@ -104,9 +150,7 @@ export default function usePaymentHandlerWeb() {
           `${API_BASE_URL}/stripe-config/client_abc`
         );
 
-        const stripeInstance = await loadStripe(
-          resp.data.stripePublishableKey
-        );
+        const stripeInstance = await loadStripe(resp.data.stripePublishableKey);
         if (!stripeInstance || !mounted) return;
 
         setStripe(stripeInstance);
@@ -128,7 +172,7 @@ export default function usePaymentHandlerWeb() {
         if (result && mounted) {
           setPaymentRequest(pr);
           setCanMakePayment(true);
-          
+
           // Detect which wallet is available
           if (result.applePay) {
             setIsApplePaySupported(true);
@@ -204,9 +248,7 @@ export default function usePaymentHandlerWeb() {
       const orderDetails: Partial<Order> = {
         products,
         shippingCharges:
-          params.selectedMode === DELIVERY_MODE_HOME
-            ? shippingCharge
-            : 0,
+          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
         tax: 0,
         totalAmount,
         paymentMethod: "credit_card",
@@ -248,18 +290,23 @@ export default function usePaymentHandlerWeb() {
     const totalAmount = getFinalAmount(products, params.selectedMode);
 
     // Check appropriate MOV based on delivery mode
-    const applicableMOV = 
+    const applicableMOV =
       params.selectedMode === DELIVERY_MODE_HOME
-        ? (currentMOV_Checkout !== null ? currentMOV_Checkout : MOV)
+        ? currentMOV_Checkout !== null
+          ? currentMOV_Checkout
+          : MOV
         : MOV;
 
     if (applicableMOV !== null && totalAmount < applicableMOV) {
-      const movLabel = params.selectedMode === DELIVERY_MODE_HOME 
-        ? "minimum checkout order value" 
-        : "minimum order value";
+      const movLabel =
+        params.selectedMode === DELIVERY_MODE_HOME
+          ? "minimum checkout order value"
+          : "minimum order value";
       Alert.alert(
         "Minimum Order Not Met",
-        `Your order value (£${totalAmount.toFixed(2)}) is less than the ${movLabel} of £${applicableMOV}.`
+        `Your order value (£${totalAmount.toFixed(
+          2
+        )}) is less than the ${movLabel} of £${applicableMOV}.`
       );
       return;
     }
@@ -267,18 +314,17 @@ export default function usePaymentHandlerWeb() {
     const paymentData = await fetchPaymentIntent(totalAmount);
     if (!paymentData) return;
 
-    const { error, paymentIntent } =
-      await stripe.confirmCardPayment(
-        paymentData.paymentIntent.client_secret,
-        {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: params.billingAddress?.name || "",
-            },
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      paymentData.paymentIntent.client_secret,
+      {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: params.billingAddress?.name || "",
           },
-        }
-      );
+        },
+      }
+    );
 
     if (error || paymentIntent?.status !== "succeeded") {
       Alert.alert("Payment Failed", error?.message);
@@ -289,10 +335,7 @@ export default function usePaymentHandlerWeb() {
     try {
       await createOrder(params, totalAmount);
     } catch {
-      Alert.alert(
-        "Error",
-        "Payment successful but order creation failed"
-      );
+      Alert.alert("Error", "Payment successful but order creation failed");
     }
   };
 
@@ -306,18 +349,23 @@ export default function usePaymentHandlerWeb() {
     const totalAmount = getFinalAmount(products, params.selectedMode);
 
     // Check appropriate MOV based on delivery mode
-    const applicableMOV = 
+    const applicableMOV =
       params.selectedMode === DELIVERY_MODE_HOME
-        ? (currentMOV_Checkout !== null ? currentMOV_Checkout : MOV)
+        ? currentMOV_Checkout !== null
+          ? currentMOV_Checkout
+          : MOV
         : MOV;
 
     if (applicableMOV !== null && totalAmount < applicableMOV) {
-      const movLabel = params.selectedMode === DELIVERY_MODE_HOME 
-        ? "minimum checkout order value" 
-        : "minimum order value";
+      const movLabel =
+        params.selectedMode === DELIVERY_MODE_HOME
+          ? "minimum checkout order value"
+          : "minimum order value";
       Alert.alert(
         "Minimum Order Not Met",
-        `Your order value (£${totalAmount.toFixed(2)}) is less than the ${movLabel} of £${applicableMOV}.`
+        `Your order value (£${totalAmount.toFixed(
+          2
+        )}) is less than the ${movLabel} of £${applicableMOV}.`
       );
       return;
     }
@@ -336,7 +384,7 @@ export default function usePaymentHandlerWeb() {
     // Set up payment method handler
     paymentRequest.on("paymentmethod", async (ev) => {
       try {
-        const { error: confirmError, paymentIntent } = 
+        const { error: confirmError, paymentIntent } =
           await stripe.confirmCardPayment(
             paymentData.paymentIntent.client_secret,
             {
@@ -355,7 +403,7 @@ export default function usePaymentHandlerWeb() {
           const { error: actionError } = await stripe.confirmCardPayment(
             paymentData.paymentIntent.client_secret
           );
-          
+
           if (actionError) {
             ev.complete("fail");
             Alert.alert("Payment Failed", actionError.message);

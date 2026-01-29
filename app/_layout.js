@@ -290,8 +290,8 @@ export default function Layout() {
   return (
     <StripeProvider
       publishableKey={stripePublishableKey}
-      urlScheme="yourapp"
-      merchantIdentifier="merchant.com.yourapp"
+      urlScheme="excelsoft"
+      merchantIdentifier="merchant.com.excelsoft.app"
     >
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>

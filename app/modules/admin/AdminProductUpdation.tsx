@@ -56,6 +56,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { parse } from "date-fns";
 
 const AdminProductUpdation = () => {
   const props = useLocalSearchParams();
@@ -79,10 +80,10 @@ const AdminProductUpdation = () => {
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isVatApplicable, setIsVatApplicable] = useState(false);
-  const [grossPrice, setGrossPrice] = useState<any>("");
+  // const [grossPrice, setGrossPrice] = useState<any>("");
   const [vatRate, setVatRate] = useState("");
   const [vatAmount, setVatAmount] = useState("");
-  const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
+  // const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
@@ -159,9 +160,9 @@ const AdminProductUpdation = () => {
         productData.vatRate?.toString() ||
         (productData.isVatApplicable ? "20.00" : " ")
       );
-      setGrossPrice(productData.grossPrice?.toString() || "");
+      // setGrossPrice(productData.grossPrice?.toString() || "");
       setVatAmount(productData.vatAmount?.toString() || "");
-      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "");
+      // setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "");
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
@@ -191,32 +192,53 @@ const AdminProductUpdation = () => {
     calculatePrices();
   }, [netPrice,/* discount,*/ vatRate, isVatApplicable]);
 
-  const calculatePrices = () => {
-    const netPriceNum = parseFloat(netPrice) || 0;
-    // const discountNum = parseFloat(discount) || 0;
+const calculatePrices = () => {
+  if (!isVatApplicable) {
+    setVatAmount("");
+    return;
+  }
 
-    if (isVatApplicable) {
-      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
-      const VATAmount = (netPriceNum /*- discountNum*/) * (effectiveVatRate / 100);
-      const netPriceInc_Vat = netPriceNum /*- discountNum */+ VATAmount;
+  const netPriceNum = parseFloat(netPrice) || 0;
+  
+  if (netPriceNum === 0) {
+    setVatAmount("");
+    return;
+  }
 
-      setVatAmount(VATAmount.toFixed(2));
-      setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
-      const grossPrice = calculateGrossPrice(netPriceInc_Vat, true);
-      setGrossPrice(grossPrice.toFixed(2));
-    } else {
-      setVatAmount("");
-      setNetPriceIncVAT("");
+  const VAT_RATE = 0.20;
+  // RRP includes VAT, so we need to extract the net price and VAT amount
+  const netPrice_Ex_VAT = netPriceNum / (1 + VAT_RATE);  // Net price without VAT
+  const calculatedVatAmount = netPriceNum - netPrice_Ex_VAT; // VAT amount
+  
+  setVatAmount(calculatedVatAmount.toFixed(2));
+};
 
-      const grossPrice = calculateGrossPrice(netPriceNum /*- discountNum*/, false);
-      setGrossPrice(grossPrice.toFixed(2));
-    }
-  };
+  // const calculatePrices = () => {
+  //   const netPriceNum = parseFloat(netPrice) || 0;
+  //   // const discountNum = parseFloat(discount) || 0;
 
-  const calculateGrossPrice = (basePrice: number, hasVAT: boolean) => {
-    let finalPrice = basePrice;
-    return finalPrice;
-  };
+  //   if (isVatApplicable) {
+  //     const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
+  //     const VATAmount = (netPriceNum /*- discountNum*/) * (effectiveVatRate / 100);
+  //     const netPriceInc_Vat = netPriceNum /*- discountNum */+ VATAmount;
+
+  //     setVatAmount(VATAmount.toFixed(2));
+  //     // setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
+  //     // const grossPrice = calculateGrossPrice(netPriceInc_Vat, true);
+  //     // setGrossPrice(grossPrice.toFixed(2));
+  //   } else {
+  //     setVatAmount("");
+  //     // setNetPriceIncVAT("");
+
+  //     // const grossPrice = calculateGrossPrice(netPriceNum /*- discountNum*/, false);
+  //     // setGrossPrice(grossPrice.toFixed(2));
+  //   }
+  // };
+
+  // const calculateGrossPrice = (basePrice: number, hasVAT: boolean) => {
+  //   let finalPrice = basePrice;
+  //   return finalPrice;
+  // };
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
@@ -481,7 +503,9 @@ const AdminProductUpdation = () => {
     setVatRate(numericValue);
   };
 
-  const handleVatAmountChange = (value: string) => { };
+  const handleVatAmountChange = (value: string) => {
+    
+   };
 
   const handleAdd_UpdateProduct = useCallback(async () => {
     // Validate fields before submission
@@ -654,7 +678,7 @@ const AdminProductUpdation = () => {
     isVatApplicable,
     vatRate,
     vatAmount,
-    grossPrice,
+    // grossPrice,
     router,
     newProduct,
     productData?._id,
@@ -908,12 +932,12 @@ const AdminProductUpdation = () => {
                   if (!isVatApplicable) {
                     setVatRate("20.00");
                     setVatAmount("");
-                    setNetPriceIncVAT("");
+                    // setNetPriceIncVAT("");
                     // setGrossPrice("");
                   } else {
                     setVatRate("");
                     setVatAmount(" ");
-                    setNetPriceIncVAT("");
+                    // setNetPriceIncVAT("");
                     // setGrossPrice("");
                   }
                 }}
@@ -948,7 +972,7 @@ const AdminProductUpdation = () => {
                   style={styles.readOnlyInput}
                 />
 
-                <Text style={styles.label}>
+                {/* <Text style={styles.label}>
                   Net Price Including VAT ({CurrencySymbol})
                 </Text>
                 <CustomTextInput
@@ -959,11 +983,11 @@ const AdminProductUpdation = () => {
                   maxLength={10}
                   editable={false}
                   style={styles.readOnlyInput}
-                />
+                /> */}
               </>
             )}
 
-            <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
+            {/* <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
             <CustomTextInput
               value={grossPrice}
               onPress={() => { }}
@@ -972,7 +996,7 @@ const AdminProductUpdation = () => {
               maxLength={10}
               editable={false}
               style={styles.readOnlyInput}
-            />
+            /> */}
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput
