@@ -31,6 +31,7 @@ export interface Product {
     rating: number;
     text: string;
   }[];
+  onAddToCart?:()=> void;
 }
 
 export const ProductsAPI = {
