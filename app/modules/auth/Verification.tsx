@@ -39,6 +39,7 @@ const verificationScreen = () => {
     newPhone,
     newEmail,
     userId,
+    email_forgetPwd
   } = useLocalSearchParams();
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -49,16 +50,41 @@ const verificationScreen = () => {
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef<TextInput[]>([]);
 
+  // DEBUG: Log all params on mount
   useEffect(() => {
+    ////console.log("=== VERIFICATION SCREEN DEBUG ===");
+    ////console.log("from:", from);
+    ////console.log("userData:", userData);
+    ////console.log("phoneNumber_forgetPwd:", phoneNumber_forgetPwd);
+    ////console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
+    ////console.log("email_editAccount:", email_editAccount);
+    ////console.log("verificationType:", verificationType);
+    ////console.log("newPhone:", newPhone);
+    ////console.log("newEmail:", newEmail);
+    ////console.log("userId:", userId);
+    ////console.log("================================");
+  }, []);
+
+  useEffect(() => {
+    ////console.log("=== useEffect triggered ===");
+    ////console.log("from:", from);
+    
     // Signup flow
     if (from === "signup" && userData) {
       try {
         const parsed = JSON.parse(String(userData));
+        ////console.log("Parsed userData:", parsed);
         setParsedUserData(parsed);
-        if (parsed?.phone) setPhoneNumber(parsed.phone);
-        if (parsed?.email) setEmail(parsed.email);
+        if (parsed?.phone) {
+          ////console.log("Setting phoneNumber from userData:", parsed.phone);
+          setPhoneNumber(parsed.phone);
+        }
+        if (parsed?.email) {
+          ////console.log("Setting email from userData:", parsed.email);
+          setEmail(parsed.email);
+        }
       } catch (e) {
-        console.error("Invalid JSON in userData", e);
+        ////console.error("Invalid JSON in userData", e);
         Alert.alert("Error", "Invalid user data. Please try signing up again.");
       }
     }
@@ -68,24 +94,120 @@ const verificationScreen = () => {
       const phone = Array.isArray(phoneNumber_forgetPwd)
         ? phoneNumber_forgetPwd[0]
         : phoneNumber_forgetPwd;
+      ////console.log("Setting phoneNumber from forgotPassword:", phone);
       setPhoneNumber(phone);
     }
+    if (from === "forgotPassword" && email_forgetPwd) {
+  const emailVal = Array.isArray(email_forgetPwd)
+    ? email_forgetPwd[0]
+    : email_forgetPwd;
 
-    // Edit contact flows
-    if (phoneNumber_editAccount) {
+  ////console.log("Setting email from forgotPassword:", emailVal);
+  setEmail(emailVal);
+}
+
+    // FIRST TIME ADDING PHONE - OTP sent to phone
+    if (from === "first_add_phone") {
+      ////console.log("Flow: first_add_phone");
+      ////console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
+      
+      if (phoneNumber_editAccount) {
+        const phone = Array.isArray(phoneNumber_editAccount)
+          ? phoneNumber_editAccount[0]
+          : phoneNumber_editAccount;
+        ////console.log("Setting phoneNumber:", phone);
+        setPhoneNumber(phone);
+      } else {
+        ////console.warn("phoneNumber_editAccount is missing!");
+      }
+    }
+
+    // FIRST TIME ADDING EMAIL - OTP sent to email
+    if (from === "first_add_email") {
+      //console.log("Flow: first_add_email");
+      //console.log("email_editAccount:", email_editAccount);
+      
+      if (email_editAccount) {
+        const emailVal = Array.isArray(email_editAccount)
+          ? email_editAccount[0]
+          : email_editAccount;
+        //console.log("Setting email:", emailVal);
+        setEmail(emailVal);
+      } else {
+        //console.warn("email_editAccount is missing!");
+      }
+    }
+
+    // CHANGING PHONE - OTP sent to email (for verification)
+    if (from === "change_phone") {
+      //console.log("Flow: change_phone");
+      //console.log("email_editAccount:", email_editAccount);
+      //console.log("newPhone:", newPhone);
+      
+      // Set existing email for OTP verification
+      if (email_editAccount) {
+        const emailVal = Array.isArray(email_editAccount)
+          ? email_editAccount[0]
+          : email_editAccount;
+        //console.log("Setting email for verification:", emailVal);
+        setEmail(emailVal);
+      } else {
+        //console.warn("email_editAccount is missing for change_phone!");
+      }
+    }
+
+    // CHANGING EMAIL - OTP sent to phone (for verification)
+    if (from === "change_email") {
+      //console.log("Flow: change_email");
+      //console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
+      //console.log("newEmail:", newEmail);
+      
+      // Set existing phone for OTP verification
+      if (phoneNumber_editAccount) {
+        const phone = Array.isArray(phoneNumber_editAccount)
+          ? phoneNumber_editAccount[0]
+          : phoneNumber_editAccount;
+        //console.log("Setting phoneNumber for verification:", phone);
+        setPhoneNumber(phone);
+      } else {
+        //console.warn("phoneNumber_editAccount is missing for change_email!");
+      }
+    }
+
+    // Legacy edit contact flows (keeping for backward compatibility)
+    if (phoneNumber_editAccount && !from) {
       const phone = Array.isArray(phoneNumber_editAccount)
         ? phoneNumber_editAccount[0]
         : phoneNumber_editAccount;
+      //console.log("Setting phoneNumber (legacy):", phone);
       setPhoneNumber(phone);
     }
 
-    if (email_editAccount) {
+    if (email_editAccount && !from) {
       const emailVal = Array.isArray(email_editAccount)
         ? email_editAccount[0]
         : email_editAccount;
+      //console.log("Setting email (legacy):", emailVal);
       setEmail(emailVal);
     }
-  }, [from, userData, phoneNumber_forgetPwd, phoneNumber_editAccount, email_editAccount]);
+  }, [
+    from,
+    userData,
+    phoneNumber_forgetPwd,
+    phoneNumber_editAccount,
+    email_editAccount,
+    newPhone,
+    newEmail,
+  ]);
+
+  // DEBUG: Log state changes
+  useEffect(() => {
+    //console.log("Email state changed to:", email);
+  }, [email]);
+
+  useEffect(() => {
+    //console.log("PhoneNumber state changed to:", phoneNumber);
+  }, [phoneNumber]);
 
   const handleChange = (text: string, index: number) => {
     const newCode = [...code];
@@ -138,6 +260,13 @@ const verificationScreen = () => {
       return;
     }
 
+    //console.log("=== VERIFY DEBUG ===");
+    //console.log("from:", from);
+    //console.log("email:", email);
+    //console.log("phoneNumber:", phoneNumber);
+    //console.log("OtpNumber:", OtpNumber);
+    //console.log("===================");
+
     setIsVerifying(true);
 
     try {
@@ -146,8 +275,10 @@ const verificationScreen = () => {
       // SIGNUP OR FORGOT PASSWORD FLOW
       if (from === "signup" || from === "forgotPassword") {
         if (verificationType === "email") {
+          //console.log("Verifying email OTP with:", { email, OtpNumber });
           res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         } else {
+          //console.log("Verifying phone OTP with:", { phoneNumber, OtpNumber });
           res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         }
 
@@ -161,13 +292,11 @@ const verificationScreen = () => {
             "Invalid Verification Code", 
             "The code you entered is incorrect. Please check the code and try again, or request a new code."
           );
-          // Clear the code inputs for user to try again
           setCode(["", "", "", "", "", ""]);
           inputRefs.current[0]?.focus();
           return;
         }
 
-        // FORGOT PASSWORD - redirect to reset password
         if (from === "forgotPassword") {
           showSuccessAlert(
             "Verification Successful",
@@ -179,7 +308,6 @@ const verificationScreen = () => {
           return;
         }
 
-        // SIGNUP - register the user
         if (from === "signup") {
           if (!parsedUserData) {
             showErrorAlertCustom("Error", "User data is missing. Please try signing up again.");
@@ -203,7 +331,7 @@ const verificationScreen = () => {
               );
             }
           } catch (registerError: any) {
-            console.error("Registration error:", registerError);
+            //console.error("Registration error:", registerError);
             const errorMessage =
               registerError?.response?.data?.message ||
               registerError?.message ||
@@ -216,6 +344,7 @@ const verificationScreen = () => {
 
       // FIRST TIME ADDING PHONE
       if (from === "first_add_phone") {
+        //console.log("Verifying first_add_phone with:", { phoneNumber, OtpNumber });
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
           res?.success === true ||
@@ -239,7 +368,6 @@ const verificationScreen = () => {
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
 
-          // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
           if (updatedUser?.data) {
             dispatch(setUserData(updatedUser.data));
@@ -252,7 +380,7 @@ const verificationScreen = () => {
             () => redirectToPage(containers.editAccountInformationScreen)
           );
         } catch (updateError: any) {
-          console.error("Failed to update phone:", updateError);
+          //console.error("Failed to update phone:", updateError);
           handleUpdateContactError(updateError);
         }
         return;
@@ -260,6 +388,7 @@ const verificationScreen = () => {
 
       // FIRST TIME ADDING EMAIL
       if (from === "first_add_email") {
+        //console.log("Verifying first_add_email with:", { email, OtpNumber });
         res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         const isVerified = res?.success === true || res?.data?.success === true;
 
@@ -292,7 +421,7 @@ const verificationScreen = () => {
             () => redirectToPage(containers.editAccountInformationScreen)
           );
         } catch (updateError: any) {
-          console.error("Failed to update email:", updateError);
+          //console.error("Failed to update email:", updateError);
           handleUpdateContactError(updateError);
         }
         return;
@@ -300,6 +429,7 @@ const verificationScreen = () => {
 
       // CHANGING PHONE (OTP sent to email)
       if (from === "change_phone") {
+        //console.log("Verifying change_phone with:", { email, OtpNumber });
         res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         const isVerified = res?.success === true || res?.data?.success === true;
 
@@ -320,7 +450,6 @@ const verificationScreen = () => {
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "phone" });
 
-          // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
           if (updatedUser?.data) {
             dispatch(setUserData(updatedUser.data));
@@ -333,7 +462,7 @@ const verificationScreen = () => {
             () => redirectToPage(containers.editAccountInformationScreen)
           );
         } catch (updateError: any) {
-          console.error("Failed to update phone:", updateError);
+          //console.error("Failed to update phone:", updateError);
           handleUpdateContactError(updateError);
         }
         return;
@@ -341,6 +470,7 @@ const verificationScreen = () => {
 
       // CHANGING EMAIL (OTP sent to phone)
       if (from === "change_email") {
+        //console.log("Verifying change_email with:", { phoneNumber, OtpNumber });
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
           res?.success === true ||
@@ -364,7 +494,6 @@ const verificationScreen = () => {
           const updateResponse = await UserAPI.userEditContact(String(userId), formData);
           const verifyResponse = await UserAPI.verifyContact(String(userId), { type: "email" });
 
-          // Refresh user data
           const updatedUser = await UserAPI.getUserById(String(userId));
           if (updatedUser?.data) {
             dispatch(setUserData(updatedUser.data));
@@ -377,17 +506,16 @@ const verificationScreen = () => {
             () => redirectToPage(containers.editAccountInformationScreen)
           );
         } catch (updateError: any) {
-          console.error("Failed to update email:", updateError);
+          //console.error("Failed to update email:", updateError);
           handleUpdateContactError(updateError);
         }
         return;
       }
     } catch (error: any) {
-      console.error("OTP Verification Failed", error);
+      //console.error("OTP Verification Failed", error);
       let errorMessage = "Verification failed. Please check your code and try again.";
       let errorTitle = "Verification Error";
       
-      // Handle different error scenarios with specific messages
       if (error?.response?.status === 400) {
         errorTitle = "Invalid or Expired Code";
         errorMessage = "The verification code you entered is either invalid or has expired. Please request a new code.";
@@ -408,7 +536,6 @@ const verificationScreen = () => {
       
       showErrorAlertCustom(errorTitle, errorMessage);
       
-      // Clear code inputs on error so user can try again
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
@@ -417,15 +544,14 @@ const verificationScreen = () => {
   };
 
   const handleUpdateContactError = (updateError: any) => {
-    console.error("Error details:", {
-      message: updateError?.message,
-      response: updateError?.response?.data,
-      status: updateError?.response?.status,
-    });
+    // console.error("Error details:", {
+    //   message: updateError?.message,
+    //   response: updateError?.response?.data,
+    //   status: updateError?.response?.status,
+    // });
     
     let errorMessage = "Failed to update your contact information. Please try again.";
     
-    // Check for authentication errors
     if (
       updateError?.message?.includes("Refresh token not available") ||
       updateError?.message?.includes("refresh token")
@@ -438,7 +564,6 @@ const verificationScreen = () => {
       return;
     }
     
-    // Check for 500 server errors
     if (updateError?.response?.status === 500) {
       errorMessage =
         updateError?.response?.data?.message ||
@@ -451,21 +576,69 @@ const verificationScreen = () => {
     
     showErrorAlertCustom("Update Failed", errorMessage);
   };
-
+ 
   const handleResend = async () => {
     if (isResending) return;
+
+    ////console.log("=== RESEND DEBUG ===");
+    ////console.log("from:", from);
+    ////console.log("email state:", email);
+    ////console.log("phoneNumber state:", phoneNumber);
+    ////console.log("verificationType:", verificationType);
+    ////console.log("===================");
+
+    // Early validation - check if we have the required contact info
+    if (from === "first_add_email" || from === "change_phone") {
+      if (!email || email === "") {
+        ////console.error("Email is empty! Cannot send OTP.");
+        showErrorAlertCustom(
+          "Missing Email",
+          "Email address is not available. Please go back and try again."
+        );
+        return;
+      }
+    } else if (from === "first_add_phone" || from === "change_email") {
+      if (!phoneNumber || phoneNumber === "") {
+        ////console.error("Phone number is empty! Cannot send OTP.");
+        showErrorAlertCustom(
+          "Missing Phone Number",
+          "Phone number is not available. Please go back and try again."
+        );
+        return;
+      }
+    } else {
+      // Signup/forgot password flows
+      if (verificationType === "email" && (!email || email === "")) {
+        ////console.error("Email is empty for email verification!");
+        showErrorAlertCustom(
+          "Missing Email",
+          "Email address is not available. Please go back and try again."
+        );
+        return;
+      } else if (verificationType !== "email" && (!phoneNumber || phoneNumber === "")) {
+        ////console.error("Phone number is empty for phone verification!");
+        showErrorAlertCustom(
+          "Missing Phone Number",
+          "Phone number is not available. Please go back and try again."
+        );
+        return;
+      }
+    }
 
     setIsResending(true);
     try {
       if (from === "first_add_phone" || from === "change_email") {
+        ////console.log("Resending OTP to phone:", phoneNumber);
         await TwilioApi.sendOtp({ phone: phoneNumber });
       } else if (from === "first_add_email" || from === "change_phone") {
-        await TwilioApi.sendOtp_Email({ email:email});
+        ////console.log("Resending OTP to email:", email);
+        await TwilioApi.sendOtp_Email({ email: email });
       } else {
-        // Signup/forgot password
         if (verificationType === "email") {
-          await TwilioApi.sendOtp_Email({ email:email });
+          ////console.log("Resending OTP to email (signup/forgot):", email);
+          await TwilioApi.sendOtp_Email({ email: email });
         } else {
+          ////console.log("Resending OTP to phone (signup/forgot):", phoneNumber);
           await TwilioApi.sendOtp({ phone: phoneNumber });
         }
       }
@@ -474,10 +647,9 @@ const verificationScreen = () => {
       inputRefs.current[0]?.focus();
       showSuccessAlert("Code Resent", "A new verification code has been sent successfully.");
     } catch (error: any) {
-      console.error("Resend error:", error);
+      ////console.error("Resend error:", error);
       let errorMessage = "Failed to resend code. Please try again.";
       
-      // Better error messages for resend failures
       if (error?.response?.status === 429) {
         errorMessage = "Too many resend requests. Please wait a few minutes before requesting a new code.";
       } else if (error?.message?.toLowerCase().includes("network")) {
@@ -523,6 +695,11 @@ const verificationScreen = () => {
             ) : (
               "We have sent a verification code to your mobile number. Please enter the code."
             )}
+          </Text>
+
+          {/* DEBUG INFO - Remove this in production */}
+          <Text style={{ fontSize: 10, color: 'gray', marginVertical: 10 }}>
+            DEBUG: from={from}, email={email || 'EMPTY'}, phone={phoneNumber || 'EMPTY'}
           </Text>
 
           <View style={[styles.codeContainer, isWeb && styles.codeContainerDesktop]}>
