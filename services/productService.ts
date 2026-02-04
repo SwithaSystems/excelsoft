@@ -132,9 +132,11 @@ bulkHardDelete: async (ids: string[]): Promise<any> => {
   },
 
   addReview: async (productId: Number, review: any): Promise<void> => {
-    // console.log("productId", productId);
-    // console.log("review", review);
-    await jsonAxios.post(`/products/${productId}/reviews`, review);
+    console.log("productId", productId);
+    console.log("review", review);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/products/${productId}/reviews`, review);
+    return response.data;
   },
 
   addProduct_Catagory_Upload_File: async (data: any) => {
