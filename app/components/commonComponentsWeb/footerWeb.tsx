@@ -10,47 +10,83 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const FooterWeb = () => {
-  const isWeb = Platform.OS === "web";
-  const { width } = useWindowDimensions();
-
-  // const isWebSmallScreen = isWeb && width < 900;
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
   return (
-    <View style={styles.footerContainer}>
+    <View style={[
+      styles.footerContainer,
+      isMobile && styles.footerContainerMobile,
+      isTablet && styles.footerContainerTablet,
+    ]}>
       <View style={styles.leftSection}>
         <Image
           source={require("@/assets/RecreatedLogo_2.png")}
-          style={styles.logo}
+          style={[
+            styles.logo,
+            isMobile && styles.logoMobile,
+          ]}
           resizeMode="contain"
         />
       </View>
 
-      <View style={styles.middleSection}>
+      <View style={[
+        styles.middleSection,
+        isMobile && styles.middleSectionMobile,
+        isTablet && styles.middleSectionTablet,
+      ]}>
         <TouchableOpacity>
-          <Text style={styles.linkText}>Home</Text>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Text style={styles.linkText}>About</Text>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>About</Text>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Text style={styles.linkText}>Contact</Text>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Text style={styles.linkText}>Support</Text>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Support</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.rightSection}>
+      <View style={[
+        styles.rightSection,
+        isMobile && styles.rightSectionMobile,
+      ]}>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="logo-instagram" size={22} color={colors.primary} />
+          <Ionicons 
+            name="logo-instagram" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="logo-linkedin" size={22} color={colors.primary} />
+          <Ionicons 
+            name="logo-linkedin" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="mail-outline" size={22} color={colors.primary} />
+          <Ionicons 
+            name="mail-outline" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -65,47 +101,65 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingHorizontal: 40,
     paddingVertical: 12,
+    width: "100%",
+    flexWrap: "wrap",
   },
-
-  footerContainerTablet: {
+  footerContainerMobile: {
     flexDirection: "column",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    gap: 16,
   },
-
+  footerContainerTablet: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   logo: {
     width: 80,
     height: 30,
   },
-
+  logoMobile: {
+    width: 60,
+    height: 24,
+  },
   middleSection: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 20,
+    flex: 1,
   },
-
-  middleSectionTablet: {
+  middleSectionMobile: {
+    flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
+    gap: 16,
+    width: "100%",
   },
-
+  middleSectionTablet: {
+    gap: 16,
+  },
   linkText: {
     fontSize: 14,
     color: "#555",
   },
-
+  linkTextMobile: {
+    fontSize: 12,
+  },
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 15,
   },
-
+  rightSectionMobile: {
+    gap: 12,
+  },
   iconButton: {
     padding: 5,
   },
