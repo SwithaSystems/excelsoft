@@ -568,12 +568,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginHorizontal: 16,
+    // marginHorizontal: 16,
     marginBottom: 12,
     color: colors.black,
   },
   recommendedList: {
-    paddingHorizontal: 8,
+    // paddingHorizontal: 8,
   },
   recommendedCardWrapper: {
     width: 160,

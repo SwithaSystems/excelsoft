@@ -313,7 +313,9 @@ const AdminSeeAllOrders = () => {
                   renderItem={renderOrderItem}
                   keyExtractor={(item) => String(item._id)}
                   contentContainerStyle={
-                    isTabOrDesktop ? styles.ordersGridContent : { paddingVertical: 8 }
+                    isTabOrDesktop ? styles.ordersGridContent : { 
+                      // paddingVertical: 8 
+                    }
                   }
                   showsVerticalScrollIndicator={true}
                   scrollEnabled={false}
@@ -472,7 +474,7 @@ const localStyles = StyleSheet.create({
   },
 
   searchFilterRow: {
-    flexDirection: "row",
+    flexDirection: Platform.OS === "web" ? "row" : "column",
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "flex-start",
