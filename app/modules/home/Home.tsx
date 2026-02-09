@@ -36,6 +36,9 @@ import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
 import { promotionService } from "@/services/promotionService";
 import globalSettingsAPI from "@/services/globalSettingsService";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { ProductsAPI, Product } from "@/services/productService";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
 
 interface Promotion {
   imageURL: string;
@@ -75,7 +78,10 @@ const HomePage = () => {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [promotionsLoading, setPromotionsLoading] = useState(false);
   const [carousalEnabled, setCarousalEnabled] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+  const [recommendedProductsLoading, setRecommendedProductsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const { width } = useWindowDimensions();
   const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
@@ -95,8 +101,17 @@ const HomePage = () => {
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // Responsive carousel width based on media queries
+  // Account for PageLayoutWeb padding: desktop (64px each side), tablet (32px), mobile (16px)
+  // For mobile web: PageLayoutWeb adds 16px padding + carouselSection adds 16px padding = 32px each side = 64px total
+  // For tablet: PageLayoutWeb adds 32px padding, carouselSection has no padding = 32px each side = 64px total
+  // For desktop: PageLayoutWeb adds 64px padding, carouselSection has no padding = 64px each side = 128px total
   const carouselWidth = isWeb 
-    ? (isDesktop ? width - 128 : isTablet ? width - 64 : width - 32)
+    ? (isDesktop 
+        ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
+        : isTablet 
+          ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
+          : width - 64  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
+      )
     : width - 32;
 
   const fetchGlobalSettings = async () => {
@@ -328,6 +343,62 @@ const HomePage = () => {
     fetchPromotions();
   }, []);
 
+  useEffect(() => {
+    const fetchRecommendedProducts = async () => {
+      try {
+        setRecommendedProductsLoading(true);
+        const response = await ProductsAPI.getAllProducts(1, 8);
+        // Transform products to match RecommendedProductsSlider format
+        const formattedProducts = response.data.slice(0, 8).map((product: Product) => {
+          // Handle image - can be string, array, or object
+          let imageUrl;
+          if (Array.isArray(product.image)) {
+            imageUrl = product.image.length > 0 
+              ? { uri: product.image[0] } 
+              : require("@/assets/Placeholder.png");
+          } else if (typeof product.image === 'string') {
+            imageUrl = { uri: product.image };
+          } else {
+            imageUrl = product.image || require("@/assets/Placeholder.png");
+          }
+
+          return {
+            id: product._id || product.id,
+            title: product.name,
+            rating: product.rating || 0,
+            reviews: product.noOfreviews || 0,
+            imageUrl: imageUrl,
+            netPrice: product.netPrice || 0,
+            isVatApplicable: product.isVatApplicable || false,
+            vatRate: product.vatRate || 0,
+            vatAmount: product.vatAmount || 0,
+          };
+        });
+        setRecommendedProducts(formattedProducts);
+      } catch (error) {
+        console.error("Error fetching recommended products:", error);
+        setRecommendedProducts([]);
+      } finally {
+        setRecommendedProductsLoading(false);
+      }
+    };
+    
+    fetchRecommendedProducts();
+  }, []);
+
+  const handleAddToCart = (item: any) => {
+    dispatch(addToCart({
+      id: item.id,
+      name: item.title,
+      netPrice: item.netPrice,
+      image: item.imageUrl,
+      quantity: 1,
+      isVatApplicable: item.isVatApplicable || false,
+      vatRate: item.vatRate || 0,
+      vatAmount: item.vatAmount || 0,
+    }));
+  };
+
   return (
     <LayoutComponent
       hasHeader
@@ -336,7 +407,11 @@ const HomePage = () => {
       footerComponent={FooterComponent}
       scrollable
     >
-      <View style={styles.container}>
+      <View style={[
+        styles.container, 
+        !isWeb && styles.containerMobile,
+        isWeb && styles.containerWeb
+      ]}>
         {!isWeb && <Header />}
 
         {!isWeb && (
@@ -404,6 +479,34 @@ const HomePage = () => {
             ) : null}
           </View>
         )}
+
+        {/* Recommended Products Section */}
+        {recommendedProducts.length > 0 && (
+          <View
+            style={[
+              styles.recommendedSection,
+              isTabOrDesktop && styles.recommendedSectionDesktop,
+              isMobileWeb && styles.recommendedSectionMobile,
+            ]}
+          >
+            {recommendedProductsLoading ? (
+              <View style={styles.recommendedLoader}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : (
+              <RecommendedProductsSlider
+                recommendedProducts={recommendedProducts}
+                title="Recommended for You"
+                sectionTitleStyle={[
+                  globalStyles.sectionTitleStyle,
+                  isMobileWeb && styles.recommendedTitleMobile,
+                ]}
+                showAddToCart={true}
+                handleAdd={handleAddToCart}
+              />
+            )}
+          </View>
+        )}
       </View>
     </LayoutComponent>
   );
@@ -415,13 +518,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginVertical: 8,
   },
+  containerWeb: {
+    marginVertical: 0,
+  },
+  containerMobile: {
+    flex: 0, // Override flex: 1 to allow scrolling in ScrollView
+    // Content will determine its own height naturally
+  },
   carouselSection: {
     marginVertical: 16,
     paddingHorizontal: 16,
+    width: "100%",
+    alignItems: "center",
   },
   carouselSectionMobile: {
     paddingHorizontal: 16,
-    marginVertical: 12,
+    marginTop: 4,
+    marginBottom: 12,
+    width: "100%",
   },
   carouselSectionDesktop: {
     marginTop: 32,
@@ -435,6 +549,30 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     paddingTop: 8,
     paddingBottom: 8,
+  },
+  recommendedSection: {
+    marginVertical: 16,
+    paddingHorizontal: 16,
+    width: "100%",
+  },
+  recommendedSectionMobile: {
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    width: "100%",
+  },
+  recommendedSectionDesktop: {
+    marginTop: 32,
+    paddingHorizontal: 0, // Padding handled by PageLayoutWeb
+  },
+  recommendedLoader: {
+    height: 280,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  recommendedTitleMobile: {
+    fontSize: 18,
+    marginLeft: 0,
   },
 });
 

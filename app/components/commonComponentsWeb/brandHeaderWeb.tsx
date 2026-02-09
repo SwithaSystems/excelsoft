@@ -33,7 +33,7 @@ interface BrandHeaderWebProps {
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
   const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
-  const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
+  const { isMobile, isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
@@ -379,8 +379,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : 12,
-          paddingVertical: isDesktop ? 8 : 10,
+          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : isMobile ? 8 : 12,
+          paddingVertical: isDesktop ? 8 : isMobile ? 6 : 10,
         },
       ]}
     >
@@ -487,12 +487,14 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           style={styles.profileButton}
           onPress={handleProfileClick}
         >
-          <Text style={styles.greetingText}>
-            {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
-          </Text>
+          {!isMobile && (
+            <Text style={styles.greetingText}>
+              {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+            </Text>
+          )}
           <Ionicons
             name="person-circle-outline"
-            size={24}
+            size={isMobile ? 28 : 24}
             color={colors.primary}
           />
         </TouchableOpacity>
@@ -520,7 +522,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              <Ionicons name="cart-outline" size={isMobile ? 22 : 24} color={colors.primary} />
               {cartItemCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -537,7 +539,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             style={styles.iconButton}
             onPress={() => redirectToPage(containers.userNotificationsScreen)}
           >
-            <Ionicons name="notifications" size={24} color={colors.primary} />
+            <Ionicons name="notifications" size={isMobile ? 22 : 24} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -565,6 +567,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexShrink: 0,
+    gap: 4,
   },
   leftSection: {
     flexDirection: "row",
@@ -674,8 +677,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginLeft: 14,
-    padding: 6,
+    marginLeft: 8,
+    padding: 4,
   },
   iconContainer: {
     position: "relative",
@@ -698,7 +701,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   adminButton: {
-    marginLeft: 16,
+    marginLeft: 8,
     backgroundColor: colors.primary,
     borderRadius: 16,
     paddingHorizontal: 12,
@@ -712,7 +715,8 @@ const styles = StyleSheet.create({
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: 8,
+    padding: 4,
   },
   greetingText: {
     marginRight: 8,

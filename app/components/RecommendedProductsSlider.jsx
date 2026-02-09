@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   productsList: {
-    // padding: 10,
+    paddingLeft: 0,
+    paddingRight: 16,
   },
   reviewsText: {
     fontSize: 14,

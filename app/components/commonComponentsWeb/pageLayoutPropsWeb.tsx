@@ -52,9 +52,18 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const ContentWrapper = scrollable ? ScrollView : View;
 
   // Responsive header heights
-  const headerHeight = isDesktop ? 68 + 50 : isTablet ? 56 + 50 : 52 + 50;
-  const navBarHeight = 50;
-  const totalHeaderHeight = headerHeight + navBarHeight;
+  const navBarHeight = isMobile ? 32 : 50;
+
+  const headerHeight = isDesktop
+    ? 68 + 50
+    : isTablet
+    ? 56 + 50
+    : 52; 
+    
+  const totalHeaderHeight = isMobile
+    ? headerHeight + navBarHeight
+    : headerHeight + navBarHeight;
+
   
   // Use fixed positioning for desktop/tablet, relative for mobile browsers
   // Mobile browsers handle fixed positioning poorly, so use relative positioning
@@ -81,8 +90,8 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
         style={[
           styles.mainContainer,
           hasHeader && {
-            marginTop: shouldUseFixedHeader ? headerHeight : 0,
-            paddingTop: !shouldUseFixedHeader ? totalHeaderHeight : 0,
+            marginTop: headerHeight,
+            // paddingTop: !shouldUseFixedHeader ? totalHeaderHeight : 0,
           },
         ]}
       >
@@ -111,16 +120,20 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
         <ContentWrapper
           style={[
             styles.content,
-            { paddingHorizontal: contentPadding ? horizontalPadding : 0 },
-          ]}
-          contentContainerStyle={[
-            styles.scrollContainer,
             { 
+              paddingHorizontal: contentPadding ? horizontalPadding : 0,
               paddingBottom: hasFooter ? 80 : 24,
-              // Ensure content doesn't get cut off on mobile
-              minHeight: isMobile ? height - totalHeaderHeight : undefined,
-            },
+             },
           ]}
+          // contentContainerStyle={[
+          //   styles.scrollContainer,
+          //   { 
+          //     paddingBottom: hasFooter ? 80 : 24,
+          //     paddingTop: isMobile ? 0 : 16,
+          //     // Ensure content doesn't get cut off on mobile
+          //     minHeight: isMobile ? height - totalHeaderHeight : undefined,
+          //   },
+          // ]}
           showsVerticalScrollIndicator={false}
         >
           {children}
@@ -192,7 +205,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingTop: 16,
+    // paddingTop: 16,
   },
   footer: {
     width: "100%",

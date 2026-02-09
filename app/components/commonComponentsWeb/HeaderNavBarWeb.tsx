@@ -18,6 +18,7 @@ import { useRoleContext } from "@/context/RoleContext";
 import { useAuth } from "@/context/AuthContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useSelector } from "react-redux";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 type NavItem = {
   label: string;
@@ -88,6 +89,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const { loading: roleLoading, isValidUser } = useRoleContext();
   const { logout } = useAuth();
   const userData_redux = useSelector((state: any) => state.user.user);
+  const { isMobile } = useWebMediaQuery();
 
   const isAuthenticated = isValidUser;
 
@@ -176,6 +178,29 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const renderAuthButtons = () => {
     if (!isAuthenticated) return null;
 
+    if (isMobile) {
+      // Mobile: Show only icons
+      return (
+        <View style={styles.authButtonsContainerMobile}>
+          <TouchableOpacity
+            style={styles.authButtonIcon}
+            onPress={() => setLogOutModalOpen(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="log-out-outline" size={22} color={colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.authButtonIcon}
+            onPress={() => setDeleteAccountModalOpen(true)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="delete" size={22} color={colors.white} />
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // Desktop: Show icons with text
     return (
       <View style={styles.authButtonsContainer}>
         <TouchableOpacity
@@ -198,11 +223,14 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     );
   };
 
+  // Get only Categories item for mobile
+  const categoriesItem = navItems.find(item => item.dropdownType === 'categories');
+
   if (roleLoading || hideNavItems) {
     return (
       <>
         <View style={[styles.container, { backgroundColor }]}>
-          <View style={styles.emptyBelt} />
+          {!isMobile && <View style={styles.emptyBelt} />}
           {renderAuthButtons()}
         </View>
         <ConfirmationModal
@@ -232,76 +260,120 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
-        {/* <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-        > */}
-        <View style={styles.scrollContainer}>
-          {navItems.map((item, index) => (
-            <View key={index} style={styles.itemWrapper}>
+        {isMobile ? (
+          // Mobile: Show only Categories dropdown
+          categoriesItem && (
+            <View style={styles.mobileCategoriesContainer}>
               <TouchableOpacity
-                style={styles.navItem}
-                onPress={() => handleNavPress(item)}
+                style={styles.mobileCategoriesButton}
+                onPress={() => handleNavPress(categoriesItem)}
                 activeOpacity={0.7}
               >
                 <View style={styles.navItemContent}>
-                  <Text style={styles.navText}>{item.label}</Text>
-                  {item.isDropdown && (
-                    <Ionicons
-                      name={showDropdown === item.dropdownType ? "chevron-up" : "chevron-down"}
-                      size={16}
-                      color={colors.white}
-                      style={styles.dropdownIcon}
-                    />
-                  )}
+                  <Text style={styles.navText}>{categoriesItem.label}</Text>
+                  <Ionicons
+                    name={showDropdown === categoriesItem.dropdownType ? "chevron-up" : "chevron-down"}
+                    size={18}
+                    color={colors.white}
+                    style={styles.dropdownIcon}
+                  />
                 </View>
               </TouchableOpacity>
-              {item.isDropdown && showDropdown === item.dropdownType && (
-                <View style={styles.dropdownMenu}>
-                  {item.dropdownType === 'categories' ? (
-                    loading ? (
-                      <View style={styles.loadingContainer}>
-                        <ActivityIndicator color={colors.primary} />
-                      </View>
-                    ) : (
-                      <ScrollView
-                        style={styles.dropdownScroll}
-                        nestedScrollEnabled
-                        showsVerticalScrollIndicator
-                      >
-                        {categories.map((cat) => (
-                          <TouchableOpacity
-                            key={String(cat.id ?? cat.name)}
-                            onPress={() => handleCategoryPress(cat)}
-                            style={styles.dropdownItem}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.dropdownText}>{cat.name}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    )
-                  ) : item.dropdownType === 'quicklinks' ? (
-                    <View>
-                      {quickLinks.map((link) => (
+              {showDropdown === categoriesItem.dropdownType && (
+                <View style={styles.mobileDropdownMenu}>
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator color={colors.primary} />
+                    </View>
+                  ) : (
+                    <ScrollView
+                      style={styles.dropdownScroll}
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator
+                    >
+                      {categories.map((cat) => (
                         <TouchableOpacity
-                          key={link.id}
-                          onPress={() => handleQuickLinkPress(link)}
+                          key={String(cat.id ?? cat.name)}
+                          onPress={() => handleCategoryPress(cat)}
                           style={styles.dropdownItem}
                           activeOpacity={0.7}
                         >
-                          <Text style={styles.dropdownText}>{link.label}</Text>
+                          <Text style={styles.dropdownText}>{cat.name}</Text>
                         </TouchableOpacity>
                       ))}
-                    </View>
-                  ) : null}
+                    </ScrollView>
+                  )}
                 </View>
               )}
             </View>
-          ))}
-        {/* </ScrollView> */}
-        </View>
+          )
+        ) : (
+          // Desktop: Show full navigation
+          <View style={styles.scrollContainer}>
+            {navItems.map((item, index) => (
+              <View key={index} style={styles.itemWrapper}>
+                <TouchableOpacity
+                  style={styles.navItem}
+                  onPress={() => handleNavPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={styles.navText}>{item.label}</Text>
+                    {item.isDropdown && (
+                      <Ionicons
+                        name={showDropdown === item.dropdownType ? "chevron-up" : "chevron-down"}
+                        size={16}
+                        color={colors.white}
+                        style={styles.dropdownIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                {item.isDropdown && showDropdown === item.dropdownType && (
+                  <View style={styles.dropdownMenu}>
+                    {item.dropdownType === 'categories' ? (
+                      loading ? (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator color={colors.primary} />
+                        </View>
+                      ) : (
+                        <ScrollView
+                          style={styles.dropdownScroll}
+                          nestedScrollEnabled
+                          showsVerticalScrollIndicator
+                        >
+                          {categories.map((cat) => (
+                            <TouchableOpacity
+                              key={String(cat.id ?? cat.name)}
+                              onPress={() => handleCategoryPress(cat)}
+                              style={styles.dropdownItem}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.dropdownText}>{cat.name}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      )
+                    ) : item.dropdownType === 'quicklinks' ? (
+                      <View>
+                        {quickLinks.map((link) => (
+                          <TouchableOpacity
+                            key={link.id}
+                            onPress={() => handleQuickLinkPress(link)}
+                            style={styles.dropdownItem}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.dropdownText}>{link.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
         {renderAuthButtons()}
       </View>
       {showDropdown && (
@@ -421,6 +493,32 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 1,
   },
+  mobileCategoriesContainer: {
+    paddingHorizontal: 8,
+    position: "relative",
+    zIndex: 100,
+  },
+  mobileCategoriesButton: {
+    paddingVertical: 8,
+  },
+  mobileDropdownMenu: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    width: "100%",
+    maxWidth: 300,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    shadowColor: colors.black,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    maxHeight: 400,
+    zIndex: 9999,
+    overflow: "hidden",
+    marginTop: 4,
+  },
   authButtonsContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -428,12 +526,25 @@ const styles = StyleSheet.create({
     gap: 12,
     flexShrink: 0,
   },
+  authButtonsContainerMobile: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 8,
+    gap: 4,
+    flexShrink: 0,
+    marginLeft: "auto",
+  },
   authButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     gap: 6,
+  },
+  authButtonIcon: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   authButtonText: {
     color: colors.white,
