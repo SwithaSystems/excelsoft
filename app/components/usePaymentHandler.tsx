@@ -132,17 +132,12 @@ export const usePaymentHandler = () => {
 
   /* -------------------- PRICE CALCULATION -------------------- */
   const calculateSubtotal = (items: Product[]) => {
-    const total = items.reduce((sum, item) => {
-      const itemSubtotal = item.netPrice * item.quantity;
-      const itemVAT = item.isVatApplicable
-        ? (itemSubtotal * item.vatRate) / 100
-        : 0;
+  const total = items.reduce((sum, item) => {
+    return sum + (item.netPrice * item.quantity);  // ✅ netPrice already includes VAT
+  }, 0);
 
-      return sum + itemSubtotal + itemVAT;
-    }, 0);
-
-    return total;
-  };
+  return total;
+};
 
   const getFinalAmount = (items: Product[], mode: string): number => {
     const subtotal = calculateSubtotal(items);
@@ -160,33 +155,18 @@ export const usePaymentHandler = () => {
   };
 
   /* -------------------- PAYMENT INTENT -------------------- */
-  const fetchPaymentIntent = async (amountInMajorUnits: number) => {
+  const fetchPaymentIntent = async (amount: number) => {
     try {
-      const amountInCents = Math.round(amountInMajorUnits * 100);
-      
-      console.log(" Creating PaymentIntent:", {
-        amountInMajorUnits,
-        amountInCents,
-        currency: CURRENCY_CODE.toUpperCase(),
-      });
-
       const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: amountInCents, // backend expects cents
-          currency: CURRENCY_CODE.toUpperCase(), // FIXED: Uppercase currency
+          amount,
+          currency: CURRENCY_CODE,
           clientId: CLIENT_ID,
         }
       );
-
-      console.log(" PaymentIntent created:", {
-        clientSecret: resp.data?.paymentIntent?.client_secret?.substring(0, 20) + "...",
-        amount: resp.data?.paymentIntent?.amount,
-      });
-
       return resp.data;
-    } catch (error: any) {
-      console.error(" PaymentIntent creation failed:", error.response?.data || error.message);
+    } catch {
       Alert.alert("Error", "Failed to initialize payment");
       return null;
     }
@@ -248,9 +228,7 @@ export const usePaymentHandler = () => {
     const cartSummary: PlatformPay.CartSummaryItem[] = items.map((i) => ({
       label: i.name,
       amount: (
-        i.netPrice * i.quantity +
-        (i.isVatApplicable ? i.vatAmount : 0)
-      ).toFixed(2),
+        i.netPrice * i.quantity).toFixed(2),
       paymentType: PlatformPay.PaymentType.Immediate,
     }));
 
