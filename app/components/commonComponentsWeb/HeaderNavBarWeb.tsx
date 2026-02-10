@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Pressable,
   Modal,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -20,10 +22,15 @@ import { useAuth } from "@/context/AuthContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useSelector } from "react-redux";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
-import { useWindowDimensions } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 import { AdminSidebarWeb } from "./AdminSidebarWeb";
 import { UserSidebarWeb } from "./UserSidebarWeb";
+import { UserAPI } from "@/services/userService";
+import { showErrorAlert } from "@/utilities/showErrorAlert";
+import {
+  ACCOUNT_DELETED,
+  ACCOUNT_DELETION_ERROR,
+} from "@/constants/customErrorMessages";
 
 type NavItem = {
   label: string;
