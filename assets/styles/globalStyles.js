@@ -273,6 +273,7 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
     // marginBottom: 16,
     backgroundColor: colors.white,
+    marginTop: 10,
   },
   profileImage: {
     width: 85,

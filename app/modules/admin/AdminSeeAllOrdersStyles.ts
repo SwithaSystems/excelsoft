@@ -10,9 +10,10 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     marginBottom: 16,
+    paddingHorizontal: Platform.OS === "web" ? 0 : 0, // Match search bar and orders container padding on mobile
   },
   ordersContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: Platform.OS === "web" ? 24 : 0, // Match search bar padding on mobile
   },
   ordersGridContent: {
     paddingVertical: 8,

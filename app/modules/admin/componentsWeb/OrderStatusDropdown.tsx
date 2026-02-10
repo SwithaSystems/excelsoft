@@ -113,7 +113,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
     height: Platform.OS === "web" ? 40 : 52,
-    minWidth: Platform.OS === "web" ? 180 : 150,
+    minWidth: Platform.OS === "web" ? 180 : undefined,
+    width: Platform.OS === "web" ? undefined : "100%", // Full width on mobile
     maxWidth: Platform.OS === "web" ? 250 : "100%",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },

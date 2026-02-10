@@ -341,7 +341,7 @@ const AdminDashboard = () => {
 
   const ListHeaderComponent = () => (
     <View style={[globalStyles.pt_0]}>
-      <View style={styles.headerContainer}>
+      {/* <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
         {!isWeb && (
           <Text
@@ -353,7 +353,7 @@ const AdminDashboard = () => {
             Upload Data
           </Text>
         )}
-      </View>
+      </View> */}
 
       <View
         style={[
@@ -439,6 +439,24 @@ const AdminDashboard = () => {
             </View> */}
           </View>
         </View>
+        {/* {isSuperAdmin && (
+          <View
+            style={[
+              styles.metricBox,
+              isWeb && { width: "32%", minHeight: 65 },
+            ]}
+          >
+            <View style={styles.metricIconContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  redirectToPage(containers.adminAccessControlScreen);
+                }}
+              >
+                <Text style={styles.metricTitle}>User Admin Access</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )} */}
       </View>
 
       <View style={styles.ordersHeader}>

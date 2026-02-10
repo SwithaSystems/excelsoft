@@ -34,9 +34,15 @@ const customerSupportScreen = () => {
   //   Linking.openURL("tel:+15551234567"); // Replace with your actual phone number
   // };
 
+  const SUPPORT_EMAIL = "mayur@weekesretail.co.uk";
+
   const handleEmailPress = () => {
-    Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
-  };
+  if (Platform.OS === "web") {
+    window.location.href = `mailto:${SUPPORT_EMAIL}`;
+  } else {
+    Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+  }
+};
   return (
     <LayoutComponent
       hasFooter

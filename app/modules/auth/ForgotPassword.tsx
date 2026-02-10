@@ -84,15 +84,34 @@ const forgotPasswordScreen = () => {
       } else {
         setModalOpen(true);
       }
-    } else {
-      // TODO: Implement forgot password for email, if required
-      // console.log("Email forgot password not implemented.");
+    } else if (mode === "email") {
+      try {
+        await TwilioApi.sendOtp_Email({ email });
+        redirectToPage(containers.verificationScreen, {
+          email_forgetPwd: email,
+          from: "forgotPassword",
+          verificationType: "email",
+        });
+      } catch {
+        showErrorAlert({
+          title: "Failed to send OTP",
+          message: "Please try again later.",
+        });
+      }
     }
   };
 
   useEffect(() => {
     if (mode === "phone" && phoneNumber) {
       UserAPI.getUserByPhonenumber(`+${callingCode}${phoneNumber}`)
+        .then((response) => {
+          setUser(response.data);
+        })
+        .catch(() => {
+          setUser(null);
+        });
+    } else if (mode === "email" && email) {
+      UserAPI.getUserByEmail(email)
         .then((response) => {
           setUser(response.data);
         })

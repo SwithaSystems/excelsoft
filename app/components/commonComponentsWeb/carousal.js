@@ -59,6 +59,7 @@ export default function CarouselWeb({
   const autoplayRef = useRef(null);
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
+  const [arrowPressed, setArrowPressed] = useState(false);
 
   // Process data based on whether it's promotional content
   const items = React.useMemo(() => {
@@ -143,6 +144,40 @@ export default function CarouselWeb({
         }
       : {};
 
+  const handleArrowPress = useCallback((direction) => {
+    setArrowPressed(true);
+    if (direction === "next") {
+      next();
+    } else {
+      prev();
+    }
+    // Reset arrow pressed state after a short delay
+    setTimeout(() => setArrowPressed(false), 300);
+  }, [next, prev]);
+
+  const handleSlidePress = useCallback((item, idx) => {
+    // Don't trigger slide press if arrow was just pressed
+    if (arrowPressed) {
+      return;
+    }
+
+    // For internal links, only call onPress handler (don't open URL)
+    if (item.onPress) {
+      item.onPress(item, idx);
+      return; // Prevent any further URL navigation
+    }
+    // For external links without custom handler, open the URL
+    if (item.link && !item.isInternalLink) {
+      if (Platform.OS === "web") {
+        window?.open?.(item.link, "_blank");
+      } else {
+        // For mobile, you can use Linking
+        // Linking.openURL(item.link);
+        // console.log("Open link:", item.link);
+      }
+    }
+  }, [arrowPressed]);
+
   if (!items.length) return null;
 
   return (
@@ -158,23 +193,7 @@ export default function CarouselWeb({
           <TouchableOpacity
             activeOpacity={0.9}
             style={[styles.slide, { width, height }]}
-            onPress={() => {
-              // For internal links, only call onPress handler (don't open URL)
-              if (item.onPress) {
-                item.onPress(item, idx);
-                return; // Prevent any further URL navigation
-              }
-              // For external links without custom handler, open the URL
-              if (item.link && !item.isInternalLink) {
-                if (Platform.OS === "web") {
-                  window?.open?.(item.link, "_blank");
-                } else {
-                  // For mobile, you can use Linking
-                  // Linking.openURL(item.link);
-                  // console.log("Open link:", item.link);
-                }
-              }
-            }}
+            onPress={() => handleSlidePress(item, idx)}
           >
             <Image
               source={normalizeImage(item.image)}
@@ -218,20 +237,28 @@ export default function CarouselWeb({
 
       {showArrows && items.length > 1 && (
         <>
+          {/* Left Arrow with larger touchable area */}
           <TouchableOpacity
             accessibilityRole="button"
-            onPress={prev}
-            style={[styles.arrow, styles.leftArrow]}
+            onPress={() => handleArrowPress("prev")}
+            style={styles.leftArrowTouchArea}
+            hitSlop={{ top: 20, bottom: 20, left: 10, right: 10 }}
           >
-            <Text style={styles.arrowText}>‹</Text>
+            <View style={[styles.arrow, styles.leftArrow]}>
+              <Text style={styles.arrowText}>‹</Text>
+            </View>
           </TouchableOpacity>
 
+          {/* Right Arrow with larger touchable area */}
           <TouchableOpacity
             accessibilityRole="button"
-            onPress={next}
-            style={[styles.arrow, styles.rightArrow]}
+            onPress={() => handleArrowPress("next")}
+            style={styles.rightArrowTouchArea}
+            hitSlop={{ top: 20, bottom: 20, left: 10, right: 10 }}
           >
-            <Text style={styles.arrowText}>›</Text>
+            <View style={[styles.arrow, styles.rightArrow]}>
+              <Text style={styles.arrowText}>›</Text>
+            </View>
           </TouchableOpacity>
         </>
       )}
@@ -295,10 +322,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.9,
   },
-  arrow: {
+  leftArrowTouchArea: {
     position: "absolute",
-    top: "45%",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 80, // Larger touchable area
+    justifyContent: "center",
+    alignItems: "flex-start",
+    paddingLeft: 8,
     zIndex: 20,
+  },
+  rightArrowTouchArea: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 80, // Larger touchable area
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 8,
+    zIndex: 20,
+  },
+  arrow: {
     backgroundColor: "rgba(255,255,255,0.7)",
     width: 36,
     height: 36,
@@ -311,10 +357,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   leftArrow: {
-    left: 8,
+    // Removed position absolute - now inside touch area
   },
   rightArrow: {
-    right: 8,
+    // Removed position absolute - now inside touch area
   },
   arrowText: {
     fontSize: 20,

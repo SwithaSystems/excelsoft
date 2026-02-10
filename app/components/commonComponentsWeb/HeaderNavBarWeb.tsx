@@ -228,6 +228,59 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     }
   };
 
+  const handleSoftDelete = async () => {
+    // Get user ID from redux state
+    const userId = userData_redux?._id || userData_redux?.id;
+    
+    if (!userId) {
+      if (Platform.OS === 'web') {
+        alert("Error: User ID not found. Please try again.");
+      } else {
+        showErrorAlert({
+          title: "Error",
+          message: "User ID not found. Please try again.",
+        });
+      }
+      return;
+    }
+
+    try {
+      setDeleteAccountModalOpen(false); // Close modal first
+      
+      const response = await UserAPI.softDeleteUser(userId);
+      
+      if (response) {
+        // Show success message
+        if (Platform.OS === 'web') {
+          alert(ACCOUNT_DELETED || "Your account has been deleted successfully.");
+          // Logout and redirect immediately after alert is dismissed
+          await logout();
+          router.replace("/modules/home/Home");
+        } else {
+          showErrorAlert({
+            title: "Account Deleted",
+            message: ACCOUNT_DELETED || "Your account has been deleted successfully.",
+          });
+          // Logout and redirect after a short delay for mobile
+          setTimeout(async () => {
+            await logout();
+            router.replace("/modules/home/Home");
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      console.error("Deletion error:", error);
+      if (Platform.OS === 'web') {
+        alert(ACCOUNT_DELETION_ERROR || "Failed to delete account. Please try again.");
+      } else {
+        showErrorAlert({
+          title: "Deletion Failed",
+          message: ACCOUNT_DELETION_ERROR || "Failed to delete account. Please try again.",
+        });
+      }
+    }
+  };
+
   const renderAuthButtons = () => {
     // Debug: Check authentication status
     // console.log("renderAuthButtons - isAuthenticated:", isAuthenticated, "isValidUser:", isValidUser);
@@ -314,7 +367,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           title="Delete Account"
           text="Are you sure you want to delete your account? This action cannot be undone."
           submitText="Yes"
-          handleSubmit={() => { }}
+          handleSubmit={handleSoftDelete}
           cancelText="No"
           handleCancel={() => setDeleteAccountModalOpen(false)}
         />
@@ -528,7 +581,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
-        handleSubmit={() => { }}
+        handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -32,6 +33,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
 import colors from "@/constants/colors";
+import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 
 const EditAccountInformationScreen = () => {
   const dispatch = useDispatch();
@@ -55,6 +57,12 @@ const EditAccountInformationScreen = () => {
   const [showChangePhone, setShowChangePhone] = useState(false);
   const [showChangeEmail, setShowChangeEmail] = useState(false);
 
+  const [countryCode, setCountryCode] = useState<CountryCode>("GB");
+  const [callingCode, setCallingCode] = useState("44");
+  const [localPhone, setLocalPhone] = useState("");       
+  const [newLocalPhone, setNewLocalPhone] = useState(""); 
+
+
   const userData = useSelector((state: RootState) => state.user.user);
 
   const isWeb = Platform.OS === "web";
@@ -72,21 +80,38 @@ const EditAccountInformationScreen = () => {
   const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
-    const loadUser = async () => {
-      if (!userData) return;
+  const loadUser = async () => {
+    if (!userData) return;
 
+    try {
       const user = await UserAPI.getUserById(userData._id || userData.id);
+
       if (user?.data) {
         setId(user.data._id);
-        setPhone(user.data.phone || "");
+
+        const fullPhone = user.data.phone || ""; // example: +447911123456
+
+        if (fullPhone.startsWith("+")) {
+          const match = fullPhone.match(/^\+(\d{1,3})(\d+)$/);
+          if (match) {
+            setCallingCode(match[1]);   // 44
+            setLocalPhone(match[2]);   // 7911123456
+          }
+        }
+
         setEmail(user.data.email || "");
         setProfileImage(user.data.profileImageUrl || "");
         setIsPhoneVerified(!!user.data.isPhoneVerified);
         setIsEmailVerified(!!user.data.isEmailVerified);
       }
-    };
-    loadUser();
-  }, [userData]);
+    } catch (error) {
+      console.error("Failed to load user:", error);
+    }
+  };
+
+  loadUser();
+}, [userData]);
+
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
@@ -336,74 +361,96 @@ const EditAccountInformationScreen = () => {
               style={globalStyles.profileImage}
             />
           </View>
-
           {/* PHONE SECTION */}
           <View style={globalStyles.profileInputContainer}>
             <FontAwesome name="phone" size={32} style={globalStyles.userInputLabelIcon} />
+
             <View style={{ flex: 1, paddingLeft: 14 }}>
               <View style={styles.headingRow}>
                 <View style={styles.labelWithTick}>
-                <Text style={globalStyles.userInputLabel}>Phone</Text>
-                {isPhoneVerified && (
-                  <FontAwesome name="check-circle" size={18} color={colors.primary} style={styles.tickIcon} />
-                )}
+                  <Text style={globalStyles.userInputLabel}>Phone</Text>
+                  {isPhoneVerified && (
+                    <FontAwesome
+                      name="check-circle"
+                      size={18}
+                      color={colors.primary}
+                      style={styles.tickIcon}
+                    />
+                  )}
                 </View>
-          
-                {!isPhoneVerified && phone && !phoneError && !showChangePhone && (
+
+                {!isPhoneVerified && localPhone && !phoneError && !showChangePhone && (
                   <TouchableOpacity onPress={handleVerifyPhone}>
                     <Text style={globalStyles.verify}>verify</Text>
                   </TouchableOpacity>
                 )}
+
                 {isPhoneVerified && (
-                  <>
-                    {/* <FontAwesome name="check-circle" size={18} color={colors.primary} /> */}
-                    <TouchableOpacity onPress={() => setShowChangePhone(!showChangePhone)}>
-                      <Text style={globalStyles.verify}>
-                        {showChangePhone ? "cancel" : "edit"}
-                      </Text>
-                    </TouchableOpacity>
-                  </>
+                  <TouchableOpacity onPress={() => setShowChangePhone(!showChangePhone)}>
+                    <Text style={globalStyles.verify}>
+                      {showChangePhone ? "cancel" : "edit"}
+                    </Text>
+                  </TouchableOpacity>
                 )}
               </View>
-              <CustomTextInput
-                containerStyle={phoneError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
-                TextStyle={phoneError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
-                placeholder="phone number"
-                value={phone}
-                onPress={() => {}}
-                setValue={(value) => {
-                  handlePhoneChange(value);
-                  // Clear error when user starts editing
-                  if (phoneError) {
-                    setPhoneError(null);
-                  }
-                }}
-                keyboardType="phone-pad"
-                editable={!isPhoneVerified && !showChangePhone}
-              />
-              {phoneError && <Text style={globalStyles.errorText}>{phoneError}</Text>}
 
+              {/* Current Phone */}
+              <View style={styles.phoneInputContainer}>
+                <View style={styles.countryPickerContainer}>
+                  <CountryPicker
+                    countryCode={countryCode}
+                    withFilter
+                    withCallingCode
+                    withCallingCodeButton
+                    onSelect={(country) => {
+                      setCountryCode(country.cca2 || "GB");
+                      setCallingCode(country.callingCode[0] || "44");
+                    }}
+                  />
+                </View>
+
+                <TextInput
+                  style={styles.phoneInput}
+                  placeholder="Enter phone number"
+                  value={localPhone}
+                  onChangeText={(text) => {
+                    setLocalPhone(text);
+                    handlePhoneChange(`+${callingCode}${text}`);
+                  }}
+                  keyboardType="phone-pad"
+                  editable={!isPhoneVerified && !showChangePhone}
+                />
+              </View>
+
+              {phoneError && (
+                <Text style={globalStyles.errorText}>{phoneError}</Text>
+              )}
+
+              {/* Change Phone */}
               {showChangePhone && (
                 <>
                   <Text style={styles.changeLabel}>New Phone Number</Text>
-                  <CustomTextInput
-                    containerStyle={newPhoneError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
-                    TextStyle={newPhoneError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
-                    placeholder="new phone number"
-                    value={newPhone}
-                    onPress={() => {}}
-                    setValue={(value) => {
-                      handleNewPhoneChange(value);
-                      // Clear error when user starts editing
-                      if (newPhoneError) {
-                        setNewPhoneError(null);
-                      }
+
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="New phone number"
+                    value={newLocalPhone}
+                    onChangeText={(text) => {
+                      setNewLocalPhone(text);
+                      handleNewPhoneChange(`+${callingCode}${text}`);
                     }}
                     keyboardType="phone-pad"
                   />
-                  {newPhoneError && <Text style={globalStyles.errorText}>{newPhoneError}</Text>}
-                  {newPhone && !newPhoneError && (
-                    <TouchableOpacity onPress={handleVerifyPhone} style={styles.primaryVerifyButton}>
+
+                  {newPhoneError && (
+                    <Text style={globalStyles.errorText}>{newPhoneError}</Text>
+                  )}
+
+                  {newLocalPhone && !newPhoneError && (
+                    <TouchableOpacity
+                      onPress={handleVerifyPhone}
+                      style={styles.primaryVerifyButton}
+                    >
                       <Text style={styles.primaryVerifyText}>verify new phone</Text>
                     </TouchableOpacity>
                   )}
@@ -417,7 +464,6 @@ const EditAccountInformationScreen = () => {
             <FontAwesome name="envelope-o" size={28} style={globalStyles.userInputLabelIcon} />
 
             <View style={{ flex: 1, paddingLeft: 14 }}>
-              {/* Header row */}
               <View style={styles.headingRow}>
                 <View style={styles.labelWithTick}>
                   <Text style={globalStyles.userInputLabel}>Email</Text>
@@ -446,47 +492,52 @@ const EditAccountInformationScreen = () => {
                 )}
               </View>
 
-              {/* Email input */}
               <CustomTextInput
-                containerStyle={emailError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
-                TextStyle={emailError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
-                placeholder="email"
-                value={email}
-                onPress={() => {}}
-                setValue={(value) => {
-                  handleEmailChange(value);
-                  // Clear error when user starts editing
-                  if (emailError) {
-                    setEmailError(null);
-                  }
-                }}
-                keyboardType="email-address"
-                editable={!isEmailVerified && !showChangeEmail}
-              />
+                          containerStyle={emailError
+                            ? [globalStyles.userInputContainer, globalStyles.errorInput] as any
+                            : globalStyles.userInputContainer}
+                          TextStyle={emailError
+                            ? [globalStyles.input, globalStyles.errorInput] as any
+                            : globalStyles.input}
+                          placeholder="email"
+                          value={email}
+                          onPress={() => {}}
+                          setValue={(value) => {
+                            handleEmailChange(value);
+                            if (emailError) setEmailError(null);
+                          } }
+                          keyboardType="email-address"
+                          editable={!isEmailVerified && !showChangeEmail}
+                           />
 
-              {emailError && <Text style={globalStyles.errorText}>{emailError}</Text>}
+              {emailError && (
+                <Text style={globalStyles.errorText}>{emailError}</Text>
+              )}
 
               {showChangeEmail && (
                 <>
                   <Text style={styles.changeLabel}>New Email Address</Text>
                   <CustomTextInput
-                    containerStyle={newEmailError ? [globalStyles.userInputContainer, globalStyles.errorInput] as any : globalStyles.userInputContainer}
-                    TextStyle={newEmailError ? [globalStyles.input, globalStyles.errorInput] as any : globalStyles.input}
-                    placeholder="new email"
-                    value={newEmail}
-                    onPress={() => {}}
-                    setValue={(value) => {
-                      handleNewEmailChange(value);
-                      // Clear error when user starts editing
-                      if (newEmailError) {
-                        setNewEmailError(null);
-                      }
-                    }}
-                    keyboardType="email-address"
-                  />
+                              containerStyle={newEmailError
+                                ? [globalStyles.userInputContainer, globalStyles.errorInput] as any
+                                : globalStyles.userInputContainer}
+                              TextStyle={newEmailError
+                                ? [globalStyles.input, globalStyles.errorInput] as any
+                                : globalStyles.input}
+                              placeholder="new email"
+                              value={newEmail}
+                              onPress={() => {} }
+                              setValue={(value) => {
+                                handleNewEmailChange(value);
+                                if (newEmailError) setNewEmailError(null);
+                              } }
+                              keyboardType="email-address" 
+                                  />
+
                   {newEmailError && (
                     <Text style={globalStyles.errorText}>{newEmailError}</Text>
                   )}
+
                   {newEmail && !newEmailError && (
                     <TouchableOpacity
                       onPress={handleVerifyEmail}
@@ -569,6 +620,26 @@ const styles = StyleSheet.create({
   tickIcon: {
     marginTop: 3, 
   },
+
+  phoneInputContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 6,
+  paddingHorizontal: 8,
+  marginTop: 6,
+},
+
+phoneInput: {
+  flex: 1,
+  paddingVertical: 10,
+  fontSize: 16,
+},
+
+countryPickerContainer: {
+  marginRight: 8,
+},
 
 });
 

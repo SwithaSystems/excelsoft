@@ -357,8 +357,6 @@ const SearchScreen = () => {
         />
       }
     ></PageLayout>
-    /*  <Footer activeTab = "search"/>
-     </SafeAreaView> */
   );
 };
 
