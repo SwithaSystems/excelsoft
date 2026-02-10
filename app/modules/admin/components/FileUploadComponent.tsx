@@ -11,6 +11,8 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import Header from "@/app/components/Header";
 import { FILE_UPLOAD } from "@/constants/stringLiterals";
 import styles from "../FileUploadAddProductCategoryStyles";
 import colors from "@/constants/colors";
@@ -362,7 +364,12 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   });
 
   return (
-    <View style={{ flex: 1 }}>
+    <PageLayout
+      hasFooter
+      hasHeader
+      scrollable={false}
+      headerComponent={<Header headerText={FILE_UPLOAD} />}
+    >
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
         <ModalSelector
@@ -505,7 +512,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           </View>
         </View>
       )}
-    </View>
+    </PageLayout>
   );
 };
 

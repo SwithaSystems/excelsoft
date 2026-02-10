@@ -176,6 +176,8 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   };
 
   const renderAuthButtons = () => {
+    // Debug: Check authentication status
+    // console.log("renderAuthButtons - isAuthenticated:", isAuthenticated, "isValidUser:", isValidUser);
     if (!isAuthenticated) return null;
 
     if (isMobile) {
@@ -261,52 +263,54 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     <>
       <View style={[styles.container, { backgroundColor }]}>
         {isMobile ? (
-          // Mobile: Show only Categories dropdown
-          categoriesItem && (
-            <View style={styles.mobileCategoriesContainer}>
-              <TouchableOpacity
-                style={styles.mobileCategoriesButton}
-                onPress={() => handleNavPress(categoriesItem)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.navItemContent}>
-                  <Text style={styles.navText}>{categoriesItem.label}</Text>
-                  <Ionicons
-                    name={showDropdown === categoriesItem.dropdownType ? "chevron-up" : "chevron-down"}
-                    size={18}
-                    color={colors.white}
-                    style={styles.dropdownIcon}
-                  />
-                </View>
-              </TouchableOpacity>
-              {showDropdown === categoriesItem.dropdownType && (
-                <View style={styles.mobileDropdownMenu}>
-                  {loading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator color={colors.primary} />
-                    </View>
-                  ) : (
-                    <ScrollView
-                      style={styles.dropdownScroll}
-                      nestedScrollEnabled
-                      showsVerticalScrollIndicator
-                    >
-                      {categories.map((cat) => (
-                        <TouchableOpacity
-                          key={String(cat.id ?? cat.name)}
-                          onPress={() => handleCategoryPress(cat)}
-                          style={styles.dropdownItem}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.dropdownText}>{cat.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  )}
-                </View>
-              )}
-            </View>
-          )
+          // Mobile: Show Categories dropdown and auth buttons
+          <>
+            {categoriesItem && (
+              <View style={styles.mobileCategoriesContainer}>
+                <TouchableOpacity
+                  style={styles.mobileCategoriesButton}
+                  onPress={() => handleNavPress(categoriesItem)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={styles.navText}>{categoriesItem.label}</Text>
+                    <Ionicons
+                      name={showDropdown === categoriesItem.dropdownType ? "chevron-up" : "chevron-down"}
+                      size={18}
+                      color={colors.white}
+                      style={styles.dropdownIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {showDropdown === categoriesItem.dropdownType && (
+                  <View style={styles.mobileDropdownMenu}>
+                    {loading ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator color={colors.primary} />
+                      </View>
+                    ) : (
+                      <ScrollView
+                        style={styles.dropdownScroll}
+                        nestedScrollEnabled
+                        showsVerticalScrollIndicator
+                      >
+                        {categories.map((cat) => (
+                          <TouchableOpacity
+                            key={String(cat.id ?? cat.name)}
+                            onPress={() => handleCategoryPress(cat)}
+                            style={styles.dropdownItem}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.dropdownText}>{cat.name}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </>
         ) : (
           // Desktop: Show full navigation
           <View style={styles.scrollContainer}>
@@ -411,21 +415,23 @@ export default HeaderNavBar;
 const styles = StyleSheet.create({
   container: {
     minHeight: 32,
-    justifyContent: "center",
+    justifyContent: "space-between", // Space between nav items and auth buttons
     paddingVertical: 0,
     marginTop: 0,
     overflow: "visible",
     zIndex: 9998,
     flexDirection: "row",
     alignItems: "center",
+    width: "100%", // Ensure full width
   },
   scrollContainer: {
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     paddingBottom: 4,
-    // flexWrap: "wrap",
     flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0, // Allow flexbox to shrink below content size
   },
   itemWrapper: {
     marginRight: 16,
@@ -497,6 +503,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     position: "relative",
     zIndex: 100,
+    flexShrink: 1,
+    flexGrow: 0,
   },
   mobileCategoriesButton: {
     paddingVertical: 8,
@@ -525,6 +533,8 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     gap: 12,
     flexShrink: 0,
+    flexGrow: 0,
+    marginLeft: "auto", // Push buttons to the right
   },
   authButtonsContainerMobile: {
     flexDirection: "row",

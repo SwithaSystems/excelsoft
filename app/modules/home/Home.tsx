@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
   Linking,
+  ScrollView,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -84,6 +85,12 @@ const HomePage = () => {
   const dispatch = useDispatch();
 
   const { width } = useWindowDimensions();
+
+  const categoriesPerRow = useMemo(() => {
+    if (categories.length === 0) return 0;
+    return Math.ceil(categories.length / 2);
+  }, [categories.length]);
+
   const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
   
   // Always use web components when Platform.OS is "web" (including mobile browsers)
@@ -419,30 +426,59 @@ const HomePage = () => {
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : (
-              <FlatList
-                data={categories}
+              <View style={styles.categoriesViewport}>
+              <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                keyExtractor={(item: any) => item.id}
-                renderItem={({ item }) => (
-                  <CategoryItem_Home
-                    name={item.name}
-                    imageUrl={item.images?.[0] || ""}
-                    onPress={() =>
-                      item.name === "All"
-                        ? redirectToPage(containers.categoriesScreen, {
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                        : redirectToPage(containers.searchResultsScreen, {
-                            fromSearch: true,
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                    }
-                  />
-                )}
-              />
+                contentContainerStyle={styles.categoriesScrollContent}
+              >
+                <View style={styles.categoriesRowsContainer}>
+                  <View style={styles.categoryRow}>
+                    {categories.slice(0, categoriesPerRow).map((item) => (
+                      <CategoryItem_Home
+                        key={item.id}
+                        name={item.name}
+                        imageUrl={item.images?.[0] || ""}
+                        onPress={() =>
+                          item.name === "All"
+                            ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                            : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                        }
+                      />
+                    ))}
+                  </View>
+
+                  <View style={styles.categoryRow}>
+                    {categories.slice(categoriesPerRow).map((item) => (
+                      <CategoryItem_Home
+                        key={item.id}
+                        name={item.name}
+                        imageUrl={item.images?.[0] || ""}
+                        onPress={() =>
+                          item.name === "All"
+                            ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                            : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                        }
+                      />
+                    ))}
+                  </View>
+                </View>
+              </ScrollView>
+            </View>
             )}
           </View>
         )}
@@ -522,8 +558,8 @@ const styles = StyleSheet.create({
     marginVertical: 0,
   },
   containerMobile: {
-    flex: 0, // Override flex: 1 to allow scrolling in ScrollView
-    // Content will determine its own height naturally
+    flex: 0, // Remove flex: 1 to allow scrolling in ScrollView - content determines height
+    flexGrow: 1, // Allow content to grow but don't force full height
   },
   carouselSection: {
     marginVertical: 16,
@@ -573,6 +609,21 @@ const styles = StyleSheet.create({
   recommendedTitleMobile: {
     fontSize: 18,
     marginLeft: 0,
+  },
+  categoriesViewport: {
+    width: "100%",
+    alignSelf: "flex-start",
+  },
+
+  categoriesScrollContent: {},
+
+  categoriesRowsContainer: {
+    flexDirection: "column",
+  },
+
+  categoryRow: {
+    flexDirection: "row",
+    marginBottom: 8,
   },
 });
 
