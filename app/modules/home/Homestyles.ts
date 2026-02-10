@@ -31,12 +31,12 @@ export default StyleSheet.create({
   categoryImageWrapper: {
     width: 45,
     height: 45,
-    borderRadius: 2,
+    borderRadius: 8,
     borderWidth: 1.5,
-    borderColor: "#1F7A5C",
+    borderColor: colors.placeholdergrey,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
   },
   categoryImage: {
     width: 36,
