@@ -41,6 +41,16 @@ class PromotionService {
       throw error;
     }
   }
+   async getAllLivePromotions(): Promise<Promotion[]> {
+    try {
+      const response = await jsonAxios.get(`${this.baseUrl}/live/all`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching promotions:", error);
+      throw error;
+    }
+  }
+  
 
   async getPromotionById(id: string): Promise<Promotion> {
     try {

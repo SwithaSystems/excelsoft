@@ -336,7 +336,7 @@ const HomePage = () => {
     const fetchPromotions = async () => {
       try {
         setPromotionsLoading(true);
-        const data = await promotionService.getAllPromotions();
+        const data = await promotionService.getAllLivePromotions();
         setPromotions(data);
         // console.log("Fetched promotions:", data);
       } catch (error) {
