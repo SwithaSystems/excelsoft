@@ -146,18 +146,20 @@ const orderSummeryScreen = () => {
     isApplePaySupported = false,
     isGooglePaySupported = false,
     canMakePayment,
-  paymentRequest,
+    paymentRequest,
   } = paymentHandler || {};
   const [total, settotal] = useState(0);
   const [currentMOV, setCurrentMOV] = useState<number | null>(null);
-  const[currentMOV_Chekcout,setCurrentMOV_Checkout]=useState<number | null >(null);
+  const [currentMOV_Chekcout, setCurrentMOV_Checkout] = useState<number | null>(
+    null
+  );
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
   // Calculate total the same way as OrderSummary component (totalIncVAT)
   const calculateOrderTotal = useCallback(
     (items: any[]) => {
       const calculateItemSubtotal = (item: any) => {
-        const basePrice = (item.netPrice || 0) /*- (item.discount || 0)*/;
+        const basePrice = item.netPrice || 0; /*- (item.discount || 0)*/
         return basePrice * (item?.quantity || 1);
       };
 
@@ -205,8 +207,8 @@ const orderSummeryScreen = () => {
       return null;
     }
   }, [API_BASE_URL]);
-  
-   const getminimumDeliveryOrderValue = async (): Promise<number | null> => {
+
+  const getminimumDeliveryOrderValue = async (): Promise<number | null> => {
     try {
       const resp = await axios.get(
         `${API_BASE_URL}/global-settings/minimumDeliveryOrderValue`
@@ -228,7 +230,6 @@ const orderSummeryScreen = () => {
     }
   };
 
-
   useEffect(() => {
     let isActive = true;
     (async () => {
@@ -246,7 +247,7 @@ const orderSummeryScreen = () => {
     };
   }, [getminimumDeliveryOrderValue]);
 
-   useEffect(() => {
+  useEffect(() => {
     let isActive = true;
     (async () => {
       const mov = await getMinimumOrderValue();
@@ -284,8 +285,6 @@ const orderSummeryScreen = () => {
     },
     []
   );
-
- 
 
   // Extract pickup data from route params or use default values
   const pickupAddress = useMemo(() => {
@@ -443,11 +442,11 @@ const orderSummeryScreen = () => {
     outputRange: ["0deg", "180deg"],
   });
   useEffect(() => {
-  console.log('Platform:', Platform.OS);
-  console.log('Apple Pay Supported:', isApplePaySupported);
-  console.log('Google Pay Supported:', isGooglePaySupported);
-  console.log('PlatformPayButton available:', !!PlatformPayButton);
-}, [isApplePaySupported, isGooglePaySupported]);
+    // console.log('Platform:', Platform.OS);
+    // console.log('Apple Pay Supported:', isApplePaySupported);
+    // console.log('Google Pay Supported:', isGooglePaySupported);
+    // console.log('PlatformPayButton available:', !!PlatformPayButton);
+  }, [isApplePaySupported, isGooglePaySupported]);
 
   // Fetch addresses with proper error handling
   useEffect(() => {
@@ -810,39 +809,51 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
   // Wrapper function to validate MOV before executing payment
   const executePayment = useCallback(
-  async (paymentFunction: () => Promise<void>) => {
-    try {
-      // Calculate total the same way as OrderSummary component
-      const currentTotal = calculateOrderTotal(cartItems);
+    async (paymentFunction: () => Promise<void>) => {
+      try {
+        // Calculate total the same way as OrderSummary component
+        const currentTotal = calculateOrderTotal(cartItems);
 
-      // UPDATED: Use minimumDeliveryOrderValue for home delivery, regular MOV for others
-      const applicableMOV = 
-        selectedMode === DELIVERY_MODE_HOME
-          ? (currentMOV_Chekcout !== null ? currentMOV_Chekcout : MOV)
-          : (currentMOV !== null ? currentMOV : MOV);
+        // UPDATED: Use minimumDeliveryOrderValue for home delivery, regular MOV for others
+        const applicableMOV =
+          selectedMode === DELIVERY_MODE_HOME
+            ? currentMOV_Chekcout !== null
+              ? currentMOV_Chekcout
+              : MOV
+            : currentMOV !== null
+            ? currentMOV
+            : MOV;
 
-      const movLabel = selectedMode === DELIVERY_MODE_HOME 
-        ? "minimum checkout order value" 
-        : "minimum order value";
+        const movLabel =
+          selectedMode === DELIVERY_MODE_HOME
+            ? "minimum checkout order value"
+            : "minimum order value";
 
-      if (currentTotal < applicableMOV) {
-        showAlert(
-          "Minimum Order Not Met",
-          `Your order value (${CurrencySymbol}${currentTotal.toFixed(
-            2
-          )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
-        );
-        return;
+        if (currentTotal < applicableMOV) {
+          showAlert(
+            "Minimum Order Not Met",
+            `Your order value (${CurrencySymbol}${currentTotal.toFixed(
+              2
+            )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
+          );
+          return;
+        }
+
+        await paymentFunction();
+      } catch (error) {
+        console.error("Payment handler error:", error);
+        showAlert("Error", "Failed to process payment. Please try again.");
       }
-
-      await paymentFunction();
-    } catch (error) {
-      console.error("Payment handler error:", error);
-      showAlert("Error", "Failed to process payment. Please try again.");
-    }
-  },
-  [cartItems, currentMOV, currentMOV_Chekcout, selectedMode, calculateOrderTotal, MOV]
-);
+    },
+    [
+      cartItems,
+      currentMOV,
+      currentMOV_Chekcout,
+      selectedMode,
+      calculateOrderTotal,
+      MOV,
+    ]
+  );
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -851,50 +862,63 @@ Contact Number: ${pickupAddress.phone || ""}`;
     <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
   );
 
-   // Add this helper function to calculate if MOV is met
-const checkMinimumOrderValue = useCallback(() => {
-  const currentTotal = calculateOrderTotal(cartItems);
-  const applicableMOV = 
-    selectedMode === DELIVERY_MODE_HOME
-      ? (currentMOV_Chekcout !== null ? currentMOV_Chekcout : MOV)
-      : (currentMOV !== null ? currentMOV : MOV);
-  
-  return {
-    isMet: currentTotal >= applicableMOV,
-    currentTotal,
-    requiredMOV: applicableMOV,
-    difference: applicableMOV - currentTotal,
-    movType: selectedMode === DELIVERY_MODE_HOME ? "checkout" : "order"
-  };
-}, [cartItems, selectedMode, currentMOV, currentMOV_Chekcout, calculateOrderTotal, MOV]);
+  // Add this helper function to calculate if MOV is met
+  const checkMinimumOrderValue = useCallback(() => {
+    const currentTotal = calculateOrderTotal(cartItems);
+    const applicableMOV =
+      selectedMode === DELIVERY_MODE_HOME
+        ? currentMOV_Chekcout !== null
+          ? currentMOV_Chekcout
+          : MOV
+        : currentMOV !== null
+        ? currentMOV
+        : MOV;
 
-// Component for MOV Warning Message
-const MOVWarningMessage = () => {
-  const movStatus = checkMinimumOrderValue();
-  
-  if (movStatus.isMet) return null;
-  
-  return (
-    <View style={styles.movWarningContainer}>
-      <Ionicons 
-        name="warning" 
-        size={20} 
-        color="#f39c12" 
-        style={{ marginRight: 8 }}
-      />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.movWarningTitle}>
-          Minimum {movStatus.movType === "checkout" ? "Checkout " : ""}Order Value Not Met
-        </Text>
-        <Text style={styles.movWarningText}>
-          Your order total is ${movStatus.currentTotal.toFixed(2)}. 
-          Please add ${movStatus.difference.toFixed(2)} more to reach the minimum 
-          {movStatus.movType === "checkout" ? " checkout" : ""} order value of ${movStatus.requiredMOV.toFixed(2)}.
-        </Text>
+    return {
+      isMet: currentTotal >= applicableMOV,
+      currentTotal,
+      requiredMOV: applicableMOV,
+      difference: applicableMOV - currentTotal,
+      movType: selectedMode === DELIVERY_MODE_HOME ? "checkout" : "order",
+    };
+  }, [
+    cartItems,
+    selectedMode,
+    currentMOV,
+    currentMOV_Chekcout,
+    calculateOrderTotal,
+    MOV,
+  ]);
+
+  // Component for MOV Warning Message
+  const MOVWarningMessage = () => {
+    const movStatus = checkMinimumOrderValue();
+
+    if (movStatus.isMet) return null;
+
+    return (
+      <View style={styles.movWarningContainer}>
+        <Ionicons
+          name="warning"
+          size={20}
+          color="#f39c12"
+          style={{ marginRight: 8 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.movWarningTitle}>
+            Minimum {movStatus.movType === "checkout" ? "Checkout " : ""}Order
+            Value Not Met
+          </Text>
+          <Text style={styles.movWarningText}>
+            Your order total is ${movStatus.currentTotal.toFixed(2)}. Please add
+            ${movStatus.difference.toFixed(2)} more to reach the minimum
+            {movStatus.movType === "checkout" ? " checkout" : ""} order value of
+            ${movStatus.requiredMOV.toFixed(2)}.
+          </Text>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
   return (
     <LayoutComponent
@@ -904,7 +928,6 @@ const MOVWarningMessage = () => {
       footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      
       {isWeb ? (
         // WEB LAYOUT
         <View style={styles.webContainer}>
@@ -1075,48 +1098,64 @@ const MOVWarningMessage = () => {
                   cartItems={cartItems}
                   containerStyle={styles.compactOrderSummary}
                   sectionHeadingStyle={styles.compactOrderSummaryHeading}
-                  mode = {selectedMode}
+                  mode={selectedMode}
                 />
                 <MOVWarningMessage />
                 {/* Place Order Button */}
 
                 {isWeb && (
-  <>
-    {isApplePaySupported && (
-      <TouchableOpacity
-        style={styles.applePayButton}
-        onPress={() => {
-          if (paymentRequest) {
-            paymentRequest.show();
-          }
-        }}
-        disabled={!isPaymentEnabled}
-      >
-        <Text style={styles.applePayText}>Apple Pay</Text>
-      </TouchableOpacity>
-    )}
-    
-    {isGooglePaySupported && (
-      <TouchableOpacity
-        style={styles.googlePayButton}
-        onPress={() => {
-          if (paymentRequest) {
-            paymentRequest.show();
-          }
-        }}
-        disabled={!isPaymentEnabled}
-      >
-        <Text style={styles.googlePayText}>Google Pay</Text>
-      </TouchableOpacity>
-    )}
-    
-    <View style={styles.divider}>
-      <View style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }} />
-      <Text style={{ marginHorizontal: 16, color: "#666" }}>or</Text>
-      <View style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }} />
-    </View>
-  </>
-)}
+                  <>
+                    {isApplePaySupported && (
+                      <TouchableOpacity
+                        style={styles.applePayButton}
+                        onPress={() => {
+                          handlePlatformPayPayment(
+                            cartItems,
+                            getPaymentParams()
+                          );
+                        }}
+                        disabled={!isPaymentEnabled}
+                      >
+                        <Text style={styles.applePayText}>Apple Pay</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {isGooglePaySupported && (
+                      <TouchableOpacity
+                        style={styles.googlePayButton}
+                        onPress={() => {
+                          handlePlatformPayPayment(
+                            cartItems,
+                            getPaymentParams()
+                          );
+                        }}
+                        disabled={!isPaymentEnabled}
+                      >
+                        <Text style={styles.googlePayText}>Google Pay</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <View style={styles.divider}>
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          backgroundColor: "#e0e0e0",
+                        }}
+                      />
+                      <Text style={{ marginHorizontal: 16, color: "#666" }}>
+                        or
+                      </Text>
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          backgroundColor: "#e0e0e0",
+                        }}
+                      />
+                    </View>
+                  </>
+                )}
                 {isWeb && <StripeCardInput />}
 
                 <Button
@@ -1125,45 +1164,50 @@ const MOVWarningMessage = () => {
                   onPress={async () => {
                     try {
                       // UPDATED: Use appropriate MOV based on delivery mode
-      const applicableMOV = 
-        selectedMode === DELIVERY_MODE_HOME
-          ? (currentMOV_Chekcout !== null ? currentMOV_Chekcout : MOV)
-          : (currentMOV !== null ? currentMOV : MOV);
-          const movLabel = selectedMode === DELIVERY_MODE_HOME 
-        ? "minimum checkout order value" 
-        : "minimum order value";
-                     // Check if total is less than applicable MOV
-      if (total < applicableMOV) {
-        showAlert(
-          "Minimum Order Not Met",
-          `Your order value (${CurrencySymbol}${total.toFixed(
-            2
-          )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
-        );
-        return;
-      }
+                      const applicableMOV =
+                        selectedMode === DELIVERY_MODE_HOME
+                          ? currentMOV_Chekcout !== null
+                            ? currentMOV_Chekcout
+                            : MOV
+                          : currentMOV !== null
+                          ? currentMOV
+                          : MOV;
+                      const movLabel =
+                        selectedMode === DELIVERY_MODE_HOME
+                          ? "minimum checkout order value"
+                          : "minimum order value";
+                      // Check if total is less than applicable MOV
+                      if (total < applicableMOV) {
+                        showAlert(
+                          "Minimum Order Not Met",
+                          `Your order value (${CurrencySymbol}${total.toFixed(
+                            2
+                          )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
+                        );
+                        return;
+                      }
 
-                     handlePayment(cartItems, {
-        shippingAddress: shippingAddress,
-        billingAddress: selectedBillingAddress,
-        pickupdetails: pickupDetails,
-        deliveryDate: pickupDetails?.date,
-        deliveryTime: pickupDetails?.time,
-        selectedSlot: Array.isArray(selectedMode)
-          ? selectedMode[0]
-          : selectedMode,
-        selectedMode: Array.isArray(selectedMode)
-          ? selectedMode[0]
-          : selectedMode,
-      });
-    } catch (error) {
-      console.error("Payment handler error:", error);
-      showAlert(
-        "Error",
-        "Failed to process payment. Please try again."
-      );
-    }
-  }}
+                      handlePayment(cartItems, {
+                        shippingAddress: shippingAddress,
+                        billingAddress: selectedBillingAddress,
+                        pickupdetails: pickupDetails,
+                        deliveryDate: pickupDetails?.date,
+                        deliveryTime: pickupDetails?.time,
+                        selectedSlot: Array.isArray(selectedMode)
+                          ? selectedMode[0]
+                          : selectedMode,
+                        selectedMode: Array.isArray(selectedMode)
+                          ? selectedMode[0]
+                          : selectedMode,
+                      });
+                    } catch (error) {
+                      console.error("Payment handler error:", error);
+                      showAlert(
+                        "Error",
+                        "Failed to process payment. Please try again."
+                      );
+                    }
+                  }}
                   style={
                     isWeb
                       ? [
@@ -1357,8 +1401,8 @@ const MOVWarningMessage = () => {
                   sectionHeadingStyle={styles.sectionHeading}
                   hideHeading={true}
                   containerStyle={styles.orderSummaryContainer}
-                  mode = {selectedMode}
-                  deliveryCharges = {params?.shipping || 0}
+                  mode={selectedMode}
+                  deliveryCharges={params?.shipping || 0}
                 />
               </View>
             </View>

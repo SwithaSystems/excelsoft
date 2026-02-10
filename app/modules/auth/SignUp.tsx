@@ -10,6 +10,7 @@ import {
   View,
   SafeAreaView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { UserAPI } from "@/services/userService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -49,6 +50,7 @@ const signUpScreen = () => {
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [errors, setErrors] = useState<
     Partial<{
@@ -65,6 +67,7 @@ const signUpScreen = () => {
     setPhoneNumber("");
     setPassword("");
     setConfirmPassword("");
+    setErrors({}); // Clear all errors when switching modes
   };
 
   const checkIfUserExists = async () => {
@@ -78,41 +81,55 @@ const signUpScreen = () => {
   const checkIfPhoneExists = async () => {
     const trimmedPhone = phone.trim();
     if (!trimmedPhone || !callingCode) return;
-    if (trimmedPhone) {
-      const normalizedPhone = trimmedPhone.startsWith("0")
-        ? trimmedPhone.slice(1)
-        : trimmedPhone;
-      const formattedPhone = `+${callingCode}${normalizedPhone}`;
-      try {
-        const response = await UserAPI.getUserByPhonenumber(formattedPhone);
-        if (response?.data) {
-          showErrorAlert({
-            title: "Phone Number Already exists!",
-            message: PHONE_ALREADY_REGISTERED,
-          });
-          setPhoneNumber("");
-        }
-      } catch (error) {
-        console.error("Error checking phone number", error);
+    
+    const normalizedPhone = trimmedPhone.startsWith("0")
+      ? trimmedPhone.slice(1)
+      : trimmedPhone;
+    const formattedPhone = `+${callingCode}${normalizedPhone}`;
+    
+    try {
+      const response = await UserAPI.getUserByPhonenumber(formattedPhone);
+      if (response?.data) {
+        showErrorAlert({
+          title: "Phone Number Already Exists!",
+          message: PHONE_ALREADY_REGISTERED,
+        });
+        setPhoneNumber("");
+        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));
       }
+    } catch (error) {
+      console.error("Error checking phone number", error);
+      // If error is 404, phone doesn't exist (which is good for signup)
+      // Clear any existing phone error
+      setErrors((prev) => ({ ...prev, phone: undefined }));
     }
   };
 
   const checkIfEmailExists = async () => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail) return;
+    
+    // Validate email format before checking existence
+    if (!isValidEmail(trimmedEmail)) {
+      setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
+      return;
+    }
 
     try {
       const response = await UserAPI.getUserByEmail(trimmedEmail);
       if (response?.data) {
         showErrorAlert({
-          title: "Email Already exists!",
+          title: "Email Already Exists!",
           message: EMAIL_ALREADY_REGISTERED,
         });
         setEmail("");
+        setErrors((prev) => ({ ...prev, email: "This email is already registered" }));
       }
     } catch (error) {
       console.error("Error checking email", error);
+      // If error is 404, email doesn't exist (which is good for signup)
+      // Clear any existing email error
+      setErrors((prev) => ({ ...prev, email: undefined }));
     }
   };
 
@@ -133,6 +150,7 @@ const signUpScreen = () => {
         newErrors.email = "Enter a valid email address.";
       }
     }
+    
     if (mode === "phone") {
       const trimmedPhone = phone.trim();
       if (!trimmedPhone) {
@@ -143,10 +161,7 @@ const signUpScreen = () => {
           normalizedPhone = normalizedPhone.slice(1);
         }
         const fullPhoneNumber = `+${callingCode}${normalizedPhone}`;
-        // console.log("DEBUG: Validating", fullPhoneNumber);
-        // console.log("DEBUG: Digits:", fullPhoneNumber.replace(/\D/g, "").length);
         const validationResult = isValidPhoneNumber(fullPhoneNumber);
-        // console.log("DEBUG: Validation result:", validationResult);
         
         if (validationResult !== null) {
           newErrors.phone = validationResult;
@@ -154,24 +169,37 @@ const signUpScreen = () => {
       }
     }
 
-    const passwordError = isValidPassword(password);
-    if (passwordError) {
-      newErrors.password = passwordError;
+    // Password validation
+    if (!password) {
+      newErrors.password = "Password is required.";
+    } else {
+      const passwordError = isValidPassword(password);
+      if (passwordError) {
+        newErrors.password = passwordError;
+      }
     }
 
+    // Confirm password validation
     if (!confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password.";
     } else if (confirmPassword !== password) {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
-    // console.log("DEBUG: All validation errors:", newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSignUp = async () => {
-    if (validateFields()) {
+    if (!validateFields()) {
+      showErrorAlert({
+        title: "Validation Error",
+        message: FIX_VALIDATION_ERRORS,
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
       if (mode === "phone") {
         await handlePhoneSignUp();
@@ -184,58 +212,46 @@ const signUpScreen = () => {
         title: "Registration Failed",
         message: ACCOUNT_CREATION_FAILED,
       });
-    }
-    } else {
-      showErrorAlert({
-        title: "Validation Error",
-        message: FIX_VALIDATION_ERRORS,
-      });
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const handlePhoneSignUp = async () => {
-    if (validateFields()) {
     let normalizedPhone = phone.trim();
     if (normalizedPhone.startsWith("0")) {
       normalizedPhone = normalizedPhone.slice(1);
     }
 
-    // Add country code
     const formattedPhone = `+${callingCode}${normalizedPhone}`;
-
-    const userData = { phone: formattedPhone, email, password };
+    const userData = { phone: formattedPhone, email: "", password };
 
     try {
       const responseFromTwilio = await TwilioApi.sendOtp({
         phone: userData.phone,
       });
-      // console.log("responseFromTwilio", responseFromTwilio);
+      
       if (
         responseFromTwilio?.status === 201 &&
         responseFromTwilio.data?.status === "pending"
       ) {
-        // OTP sent successfully, proceed to verification screen
         redirectToPage(containers.verificationScreen, {
-          // phoneNumber: userData.phone,
           userData: JSON.stringify(userData),
           from: "signup",
+          verificationType: "phone",
         });
       } else {
         showErrorAlert({
-          title: "Failed to send OTP",
+          title: "Failed to Send OTP",
           message: OTP_SEND_FAILED,
         });
       }
-    } catch (error) {
-      console.error("Registration error:", error);
+    } catch (error: any) {
+      console.error("Phone signup error:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || ACCOUNT_CREATION_FAILED;
       showErrorAlert({
         title: "Registration Failed",
-        message: ACCOUNT_CREATION_FAILED,
-      });
-    }
-    } else {
-      showErrorAlert({
-        title: "Validation Error",
-        message: FIX_VALIDATION_ERRORS,
+        message: errorMessage,
       });
     }
   };
@@ -244,15 +260,11 @@ const signUpScreen = () => {
     const userData = { phone: "", email: email.trim(), password };
 
     try {
-      // Send email verification using your auth service
       const response = await TwilioApi.sendOtp_Email({
         email: userData.email,
       });
 
-      // console.log("Email verification response:", response);
-
       if (response?.status === 201 && response?.data?.success) {
-        // Email verification sent successfully, proceed to verification screen
         redirectToPage(containers.verificationScreen, {
           userData: JSON.stringify(userData),
           from: "signup",
@@ -260,15 +272,16 @@ const signUpScreen = () => {
         });
       } else {
         showErrorAlert({
-          title: "Failed to send verification email",
+          title: "Failed to Send Verification Email",
           message: response?.message || "Please try again later.",
         });
       }
     } catch (error: any) {
       console.error("Email verification error:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Please try again later.";
       showErrorAlert({
-        title: "Failed to send verification email",
-        message: error?.message || "Please try again later.",
+        title: "Failed to Send Verification Email",
+        message: errorMessage,
       });
     }
   };
@@ -299,6 +312,7 @@ const signUpScreen = () => {
                 mode === "phone" && { backgroundColor: colors.primary },
               ]}
               onPress={() => toggleMode("phone")}
+              disabled={isLoading}
             >
               <Text
                 style={
@@ -314,6 +328,7 @@ const signUpScreen = () => {
                 mode === "email" && styles.activeToggle,
               ]}
               onPress={() => toggleMode("email")}
+              disabled={isLoading}
             >
               <Text
                 style={
@@ -324,14 +339,15 @@ const signUpScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
+          
           {mode === "email" ? (
             <>
               <Text style={[styles.label, { marginLeft: 8 }]}>Email</Text>
-
               <TextInput
                 style={[
                   styles.input,
-                  isWeb && styles.inputDesktop
+                  isWeb && styles.inputDesktop,
+                  errors.email && globalStyles.errorInput,
                 ]}
                 placeholder="Enter your email address"
                 placeholderTextColor={isWeb ? colors.slateGrey : undefined}
@@ -339,7 +355,15 @@ const signUpScreen = () => {
                 onChangeText={(text) => {
                   setEmail(text);
                   setPhoneNumber("");
+                  // Clear error as user types
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: undefined }));
+                  }
                 }}
+                onBlur={checkIfEmailExists}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!isLoading}
               />
               {errors.email && (
                 <Text style={[
@@ -353,7 +377,7 @@ const signUpScreen = () => {
               <Text style={[
                 styles.label,
                 isWeb && styles.labelDesktop
-              ]}> Phone</Text>
+              ]}>Phone</Text>
               <View style={[
                 styles.phoneInputContainer,
                 errors.phone && styles.phoneInputContainerError,
@@ -370,7 +394,7 @@ const signUpScreen = () => {
                     withFlag={false}
                     withFlagButton={false}
                     withCallingCode
-                    withCallingCodeButton = {true}
+                    withCallingCodeButton={true}
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");
                       setCallingCode(country.callingCode[0] || "44");
@@ -380,9 +404,6 @@ const signUpScreen = () => {
                       isWeb && styles.countryPickerButtonDesktop
                     ]}
                   />
-                  {/* {!isWeb && (
-                    <Text style={styles.callingCode}>+{callingCode}</Text>
-                  )} */}
                 </View>
 
                 <TextInput
@@ -396,15 +417,19 @@ const signUpScreen = () => {
                   onChangeText={(text) => {
                     setPhoneNumber(text);
                     setEmail("");
-                    setErrors((prev) => ({ ...prev, phone: undefined }));
+                    // Clear error as user types
+                    if (errors.phone) {
+                      setErrors((prev) => ({ ...prev, phone: undefined }));
+                    }
                   }}
                   onFocus={() => setIsPhoneFocused(true)}
                   onBlur={() => {
                     setIsPhoneFocused(false);
-                    checkIfUserExists();
+                    checkIfPhoneExists();
                   }}
                   maxLength={11}
                   keyboardType="phone-pad"
+                  editable={!isLoading}
                 />
               </View>
               {errors.phone && (
@@ -420,7 +445,7 @@ const signUpScreen = () => {
             <Text style={[
               styles.label,
               isWeb && styles.labelDesktop
-            ]}> Password</Text>
+            ]}>Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
@@ -432,7 +457,20 @@ const signUpScreen = () => {
               secureTextEntry
               value={password}
               onFocus={checkIfUserExists}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                // Clear error as user types
+                if (errors.password) {
+                  setErrors((prev) => ({ ...prev, password: undefined }));
+                }
+                // Also check confirm password match if it's already filled
+                if (confirmPassword && text !== confirmPassword) {
+                  setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
+                } else if (confirmPassword && text === confirmPassword) {
+                  setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                }
+              }}
+              editable={!isLoading}
             />
             {errors.password && (
               <Text style={[
@@ -440,10 +478,11 @@ const signUpScreen = () => {
                 isWeb && styles.errorTextDesktop
               ]}>{errors.password}</Text>
             )}
+            
             <Text style={[
               styles.label,
               isWeb && styles.labelDesktop
-            ]}> Confirm Password</Text>
+            ]}>Confirm Password</Text>
             <TextInput
               style={[
                 globalStyles.input,
@@ -454,7 +493,16 @@ const signUpScreen = () => {
               placeholderTextColor={isWeb ? colors.slateGrey : undefined}
               secureTextEntry
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                // Clear error as user types and check match
+                if (text === password) {
+                  setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                } else if (text && text !== password) {
+                  setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
+                }
+              }}
+              editable={!isLoading}
             />
             {errors.confirmPassword && (
               <Text style={[
@@ -467,17 +515,28 @@ const signUpScreen = () => {
           </View>
 
           <Button
-            title="Sign Up"
+            title={isLoading ? "Signing Up..." : "Sign Up"}
             style={styles.signInButton}
             onPress={handleSignUp}
+            disabled={isLoading}
           />
+
+          {isLoading && (
+            <ActivityIndicator 
+              size="small" 
+              color={colors.primary} 
+              style={{ marginTop: 10 }}
+            />
+          )}
 
           <Text style={styles.signUpText}>
             Already have an account?{" "}
             <Text
               style={styles.signUpLink}
               onPress={() => {
-                redirectToPage(containers.signInScreen);
+                if (!isLoading) {
+                  redirectToPage(containers.signInScreen);
+                }
               }}
             >
               Sign In

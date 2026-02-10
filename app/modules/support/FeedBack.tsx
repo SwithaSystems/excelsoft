@@ -28,11 +28,14 @@ const MAX_IMAGES = 5;
 const feedBackScreen = () => {
   const isWeb = Platform.OS === "web";
 
-  const { productId, reviewsArrayLength } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const productId = params.productId as string;
+  const reviewsArrayLength = params.reviewsArrayLength as string;
+
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [selectedImages, setSelectedImages] = useState<
-    { uri: string; name: string; type: string }[]
+  const [selectedImages, setSelectedImages] = useState
+    <{ uri: string; name: string; type: string }[]
   >([]);
 
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] = useState(false);
@@ -40,16 +43,23 @@ const feedBackScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickImage = async () => {
+    if (selectedImages.length >= MAX_IMAGES) {
+      alert(`You can only upload up to ${MAX_IMAGES} images.`);
+      return;
+    }
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Permission to access gallery is required!");
       return;
     }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
+
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({
         uri: asset.uri,
@@ -68,56 +78,71 @@ const feedBackScreen = () => {
   };
 
   const handleAddReview = async () => {
-    if (isSubmitting) return;
+  if (isSubmitting) return;
 
-    if (!rating || reviewText.trim() === "") {
-      alert("Please enter both a rating and review text.");
-      return;
-    }
+  if (!rating || reviewText.trim() === "") {
+    alert("Please enter both a rating and review text.");
+    return;
+  }
 
-    setIsSubmitting(true);
-    try {
-      const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
-      const user = await UserAPI.getUserById(userID);
-      const UserParsed = user.data;
+  setIsSubmitting(true);
+  try {
+    const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
+    const user = await UserAPI.getUserById(userID);
+    const UserParsed = user.data;
 
-      const formData = new FormData();
-      formData.append("id", (Number(reviewsArrayLength) + 1).toString());
-      formData.append("rating", rating.toString());
-      formData.append("name", UserParsed?.firstName);
-      formData.append("review", reviewText);
+    const formData = new FormData();
+    formData.append("rating", rating.toString());
+    formData.append("name", UserParsed?.firstName || "");
+    formData.append("review", reviewText);
 
-      selectedImages.forEach((img) => {
-        formData.append("images", {
+    // Append images correctly for React Native
+    for (let i = 0; i < selectedImages.length; i++) {
+      const img = selectedImages[i];
+      
+      if (Platform.OS === 'web') {
+        // For web platform
+        try {
+          const response = await fetch(img.uri);
+          const blob = await response.blob();
+          formData.append("images", blob, img.name);
+        } catch (error) {
+          console.error("Error converting image to blob:", error);
+        }
+      } else {
+        // For mobile (iOS/Android) - React Native format
+        const file: any = {
           uri: img.uri,
-          name: img.name,
           type: img.type,
-        } as any);
-      });
-
-      await ProductsAPI.addReview(Number(productId), formData);
-
-      setShowReviewconfirmationModal(true);
-      setTimeout(() => {
-        setShowReviewconfirmationModal(false);
-        redirectToPage(containers.productDetailScreen, { productId });
-      }, 1500);
-    } catch (error) {
-      console.error("Failed to add review:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+          name: img.name,
+        };
+        formData.append("images", file);
+      }
     }
-  };
 
-    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+    console.log("FormData prepared, sending request...");
+    await ProductsAPI.addReview(Number(productId), formData);
+
+    setShowReviewconfirmationModal(true);
+    setTimeout(() => {
+      setShowReviewconfirmationModal(false);
+      redirectToPage(containers.productDetailScreen, { productId });
+    }, 1500);
+  } catch (error) {
+    console.error("Failed to add review:", error);
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={FEEDBACK_SCREEN2_TITLE} />
   );
   const FooterComponent = isWeb ? <FooterWeb /> : null;
-
 
   return (
     <LayoutComponent
@@ -161,18 +186,22 @@ const feedBackScreen = () => {
               </View>
 
               <View style={styles.imagePickerContainer}>
-                <Text style={styles.ratingTitle}>Would you like to add some pictures?</Text>
+                <Text style={styles.ratingTitle}>
+                  Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
+                </Text>
 
                 <TouchableOpacity
                   style={styles.addImageButton}
                   onPress={pickImage}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
                 >
                   <Ionicons
                     name="add"
                     size={30}
                     color={
-                      isSubmitting ? colors.placeholdergrey : colors.darkGray
+                      isSubmitting || selectedImages.length >= MAX_IMAGES
+                        ? colors.placeholdergrey
+                        : colors.darkGray
                     }
                   />
                 </TouchableOpacity>
@@ -216,7 +245,6 @@ const feedBackScreen = () => {
               onClose={() => setShowReviewconfirmationModal(false)}
             />
           </View>
-
         </ScrollView>
       </KeyBoardWrapper>
     </LayoutComponent>

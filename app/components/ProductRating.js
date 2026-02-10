@@ -1,6 +1,6 @@
 import colors from "@/constants/colors";
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View, ScrollView } from "react-native";
 import LikeDisLike from "./LikeDisLike";
 import ProductStars from "./ProductStars";
 
@@ -8,6 +8,16 @@ function ProductRating({ review }) {
   if (!review) {
     return null;
   }
+
+  // Get images array - handle both array and single image cases
+  // Filter out empty strings, null, undefined, and invalid URLs
+  const reviewImages = review.images 
+    ? (Array.isArray(review.images) 
+        ? review.images.filter(img => img && typeof img === 'string' && img.trim() !== '')
+        : (review.images && typeof review.images === 'string' && review.images.trim() !== '' 
+            ? [review.images] 
+            : []))
+    : [];
 
   return (
     <View style={styles.reviewItem}>
@@ -25,6 +35,29 @@ function ProductRating({ review }) {
         <ProductStars rating={review.rating || 0} />
       </View>
       <Text style={styles.reviewText}>{review.text || ""}</Text>
+      
+      {/* Display review images as small squares */}
+      {reviewImages.length > 0 && (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.imagesContainer}
+          contentContainerStyle={styles.imagesContentContainer}
+        >
+          {reviewImages.map((imageUrl, index) => (
+            <Image
+              key={index}
+              source={{ uri: imageUrl }}
+              style={[
+                styles.reviewImage,
+                index < reviewImages.length - 1 && styles.reviewImageMargin
+              ]}
+              resizeMode="cover"
+            />
+          ))}
+        </ScrollView>
+      )}
+      
       <LikeDisLike liked={review.liked || false} />
     </View>
   );
@@ -68,5 +101,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.reviewsColor,
     marginBottom: 8,
+  },
+  imagesContainer: {
+    marginBottom: 8,
+  },
+  imagesContentContainer: {
+    flexDirection: "row",
+  },
+  reviewImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 4,
+    backgroundColor: colors.placeholdergrey || "#f0f0f0",
+  },
+  reviewImageMargin: {
+    marginRight: 8,
   },
 });

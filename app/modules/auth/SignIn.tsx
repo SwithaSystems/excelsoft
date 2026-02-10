@@ -95,10 +95,13 @@ const signIn = () => {
 
       if (mode === "phone") {
         let normalizedPhone = phone.trim();
+        
+        // Remove leading zero if present
         if (normalizedPhone.startsWith("0")) {
           normalizedPhone = normalizedPhone.slice(1);
         }
 
+        // After removing leading zero, should be exactly 10 digits
         if (normalizedPhone.length !== 10) {
           showErrorAlert({
             title: "Phone Number Error",

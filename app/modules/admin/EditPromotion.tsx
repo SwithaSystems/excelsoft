@@ -39,6 +39,8 @@ import { promotionService } from "@/services/promotionService";
 import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 import CategoryDropdown from "./components/categoryDropdown";
 import { BlurView } from "expo-blur";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const EditPromotion = () => {
   const router = useRouter();
@@ -139,80 +141,78 @@ const EditPromotion = () => {
 
   // Fetch promotion data from API when editing an existing promotion
   useEffect(() => {
-    const fetchPromotionData = async () => {
-      // Only fetch if we have a promotion ID and it's not a new promotion
-      if (!isNewPromotion && promotionData?._id) {
-        try {
-          setIsLoadingPromotion(true);
-          setErrorLoadingPromotion(null);
-          const apiPromotion = await promotionService.getPromotionById(promotionData._id);
-          
-          // Update all state with API data
-          setPromotionTitle(apiPromotion.title || "");
-          setPromotionUrl(apiPromotion.link || "");
-          setPromotionImage(apiPromotion.imageURL || null);
-          setOriginalImageUrl(apiPromotion.imageURL || null);
-          setIsOnLive(apiPromotion.isLive || false);
-          
-          // Set dates if available
-          if (apiPromotion.startDate) {
-            const startDate = new Date(apiPromotion.startDate);
-            setStartingDate(formatDateForInput(startDate));
-          }
-          if (apiPromotion.endDate) {
-            const endDate = new Date(apiPromotion.endDate);
-            setEndingDate(formatDateForInput(endDate));
-          }
-          
-          // Set attached products if available
-          if (apiPromotion.products && Array.isArray(apiPromotion.products)) {
-            // Check if products are populated (full objects) or just IDs
-            if (apiPromotion.products.length > 0) {
-              const firstProduct = apiPromotion.products[0];
-              // If it's a populated product object (has name, image, etc.)
-              if (typeof firstProduct === 'object' && firstProduct.name) {
-                setAttachedProducts(apiPromotion.products as Product[]);
-              } else {
-                // If it's just IDs, fetch full product details
-                const productIds = apiPromotion.products.map((p: any) => 
-                  typeof p === 'string' ? p : (p._id || p.id || p)
-                );
-                try {
-                  const fullProducts = await ProductsAPI.getProductBy_multipleID(productIds);
-                  setAttachedProducts(fullProducts);
-                } catch (error) {
-                  console.error("Error fetching product details:", error);
-                  // Set empty array if fetch fails
-                  setAttachedProducts([]);
-                }
-              }
-            } else {
-              setAttachedProducts([]);
-            }
-          } else {
+  const fetchPromotionData = async () => {
+    if (!isNewPromotion && promotionData?._id) {
+      try {
+        setIsLoadingPromotion(true);
+        setErrorLoadingPromotion(null);
+
+        const apiPromotion = await promotionService.getPromotionById(
+          promotionData._id
+        );
+
+        // Basic fields
+        setPromotionTitle(apiPromotion.title || "");
+        setPromotionUrl(apiPromotion.link || "");
+        setPromotionImage(apiPromotion.imageURL || null);
+        setOriginalImageUrl(apiPromotion.imageURL || null);
+        setIsOnLive(!!apiPromotion.isLive);
+
+        // Dates
+        if (apiPromotion.startDate) {
+          setStartingDate(
+            formatDateForInput(new Date(apiPromotion.startDate))
+          );
+        }
+
+        if (apiPromotion.endDate) {
+          setEndingDate(
+            formatDateForInput(new Date(apiPromotion.endDate))
+          );
+        }
+
+        // ✅ Products: ALWAYS normalize → fetch full objects
+        if (Array.isArray(apiPromotion.products) && apiPromotion.products.length > 0) {
+          const productIds = apiPromotion.products.map((p: any) =>
+            typeof p === "string" ? p : p._id || p.id
+          );
+
+          try {
+            const fullProducts =
+              await ProductsAPI.getProductBy_multipleID(productIds);
+            setAttachedProducts(fullProducts);
+          } catch (err) {
+            console.error("Error fetching products:", err);
             setAttachedProducts([]);
           }
-          
-          // Set category if available (for "Select Category" mode)
-          if ((apiPromotion as any).category) {
-            const category = (apiPromotion as any).category;
-            // Category can be a populated object or just an ID
-            const categoryId = category._id || category.id || category;
-            setSelectedCategory(categoryId);
-            setProductDisplayMode("category");
-          }
-        } catch (error: any) {
-          console.error("Error fetching promotion:", error);
-          setErrorLoadingPromotion(error?.response?.data?.message || "Failed to load promotion");
-          Alert.alert("Error", error?.response?.data?.message || "Failed to load promotion data");
-        } finally {
-          setIsLoadingPromotion(false);
+        } else {
+          setAttachedProducts([]);
         }
-      }
-    };
 
-    fetchPromotionData();
-  }, [isNewPromotion, promotionData?._id]);
+        // Category mode
+        if ((apiPromotion as any).category) {
+          const category = (apiPromotion as any).category;
+          setSelectedCategory(category._id || category.id || category);
+          setProductDisplayMode("category");
+        }
+      } catch (error: any) {
+        console.error("Error fetching promotion:", error);
+        setErrorLoadingPromotion(
+          error?.response?.data?.message || "Failed to load promotion"
+        );
+        Alert.alert(
+          "Error",
+          error?.response?.data?.message || "Failed to load promotion data"
+        );
+      } finally {
+        setIsLoadingPromotion(false);
+      }
+    }
+  };
+
+  fetchPromotionData();
+}, [isNewPromotion, promotionData?._id]);
+
 
   const handleSelectProducts = useCallback(() => {
     setShowProductModal(true);
@@ -333,9 +333,15 @@ const EditPromotion = () => {
       Alert.alert("Error", "Please enter a promotional slide title");
       return false;
     }
-    // URL is optional since the field is commented out in UI
-    // If not provided, we'll use a default value
     return true;
+  };
+
+  const navigateToAdminPromotion = () => {
+    if (Platform.OS === "web") {
+     redirectToPage(containers.AdminPromotionScreen);
+    } else {
+      router.back();
+    }
   };
 
   const handleAddPromotion = async () => {
@@ -384,15 +390,19 @@ const EditPromotion = () => {
         createData.category = selectedCategory.toString();
       }
       
-      console.log("Creating promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
+      // console.log("Creating promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
       await promotionService.createPromotion(createData);
       
-      Alert.alert("Success", "Promotion saved successfully", [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ]);
+      if (Platform.OS === "web") {
+        navigateToAdminPromotion();
+      } else {
+        Alert.alert("Success", "Promotion saved successfully", [
+          {
+            text: "OK",
+            onPress: navigateToAdminPromotion,
+          },
+        ]);
+      }
     } catch (error: any) {
       console.error("Error saving promotion:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
@@ -403,121 +413,116 @@ const EditPromotion = () => {
     }
   };
 
-  const handleGoLive = async () => {
-    if (!validateForm()) return;
+const handleGoLive = async () => {
+  if (!validateForm()) return;
 
-    try {
-      setIsSaving(true);
-      
-      // Determine if the link is internal or external
-      // Use promotionUrl if provided, otherwise use existing URL or default
-      const url = promotionUrl.trim() || (promotionData?.url || "#");
-      const isInternalLink = !url.startsWith("http://") && !url.startsWith("https://");
-      
-      // Prepare image file for upload (only if image was changed)
-      let imageFile: File | any | null = null;
-      // Check if image was changed: new promotion, or image is not a URL (local file), or image URL changed
-      const imageChanged = isNewPromotion || 
-        (typeof promotionImage === "string" && promotionImage && !promotionImage.startsWith("http")) ||
-        (originalImageUrl && promotionImage !== originalImageUrl);
-      
-      if (imageChanged) {
-        imageFile = await prepareImageFile();
-        if (!imageFile && isNewPromotion) {
-          console.error("Image file preparation failed for new promotion");
-          Alert.alert("Error", "Please select an image for the promotion");
-          setIsSaving(false);
-          return;
-        }
+  try {
+    setIsSaving(true);
+    
+    const url = promotionUrl.trim() || (promotionData?.url || "#");
+    const isInternalLink = !url.startsWith("http://") && !url.startsWith("https://");
+    
+    // Check if image was changed
+    let imageFile: File | any | null = null;
+    const imageChanged = isNewPromotion || 
+      (typeof promotionImage === "string" && promotionImage && !promotionImage.startsWith("http")) ||
+      (originalImageUrl && promotionImage !== originalImageUrl);
+    
+    if (imageChanged) {
+      imageFile = await prepareImageFile();
+      if (!imageFile && isNewPromotion) {
+        Alert.alert("Error", "Please select an image for the promotion");
+        setIsSaving(false);
+        return;
       }
+    }
 
-      if (isNewPromotion) {
-        // Create new promotion and save to API (makes it live)
-        // Backend requires startDate and endDate, so provide defaults if not set
+    if (isNewPromotion) {
+      // Create new promotion as live
+      const today = new Date();
+      const defaultEndDate = new Date();
+      defaultEndDate.setDate(today.getDate() + 30);
+      
+      const createData: any = {
+        title: promotionTitle,
+        link: url,
+        isInternalLink: isInternalLink,
+        image: imageFile,
+        startDate: formatDateForAPI(startingDate || formatDateForInput(today)),
+        endDate: formatDateForAPI(endingDate || formatDateForInput(defaultEndDate)),
+        isLive: true, // Make it live
+        products: attachedProducts.length > 0 
+          ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+          : [],
+      };
+      
+      if (productDisplayMode === "category" && selectedCategory) {
+        createData.category = selectedCategory.toString();
+      }
+      
+      // console.log("Creating live promotion:", { ...createData, image: imageFile ? "File" : "No file" });
+      await promotionService.createPromotion(createData);
+      
+      if (Platform.OS === "web") {
+        navigateToAdminPromotion();
+      } else {
+        Alert.alert("Success", "Promotion is now live!", [
+          { text: "OK", onPress: navigateToAdminPromotion }
+        ]);
+      }
+    } else {
+      // Update existing promotion and make it live
+      if (promotionData?._id) {
         const today = new Date();
         const defaultEndDate = new Date();
-        defaultEndDate.setDate(today.getDate() + 30); // 30 days from now
+        defaultEndDate.setDate(today.getDate() + 30);
         
-        const createData: any = {
+        const updateData: any = {
           title: promotionTitle,
           link: url,
           isInternalLink: isInternalLink,
-          image: imageFile,
-          startDate: startingDate || formatDateForInput(today),
-          endDate: endingDate || formatDateForInput(defaultEndDate),
-          isLive: true, // Make it live
+          startDate: formatDateForAPI(startingDate || formatDateForInput(today)),
+          endDate: formatDateForAPI(endingDate || formatDateForInput(defaultEndDate)),
+          isLive: true, // ALWAYS make it live when "Go Live" is clicked
+          products: attachedProducts.length > 0 
+            ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
+            : [],
         };
         
-        if (attachedProducts.length > 0) {
-          createData.products = attachedProducts.map(p => p._id || p.id);
+        if (imageFile) {
+          updateData.image = imageFile;
         }
         
-        // Include category if selected (for "Select Category" mode)
         if (productDisplayMode === "category" && selectedCategory) {
-          createData.category = selectedCategory.toString();
+          updateData.category = selectedCategory.toString();
         }
         
-        console.log("Creating live promotion with data:", { ...createData, image: imageFile ? "File present" : "No file" });
-        await promotionService.createPromotion(createData);
-          Alert.alert("Success", "Promotion is now live!", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
-      } else {
-        // Update existing promotion
-        if (promotionData?._id) {
-          const updateData: any = {
-            title: promotionTitle,
-            link: url,
-            isInternalLink: isInternalLink,
-          };
-          
-          if (imageFile) {
-            updateData.image = imageFile;
-          }
-          
-          // Backend requires startDate and endDate for updates too
-          const today = new Date();
-          const defaultEndDate = new Date();
-          defaultEndDate.setDate(today.getDate() + 30);
-          
-          updateData.startDate = formatDateForAPI(startingDate || formatDateForInput(today));
-          updateData.endDate = formatDateForAPI(endingDate || formatDateForInput(defaultEndDate));
-          updateData.isLive = true; // Make it live
-          
-          // Always send products array (even if empty) to ensure backend receives it
-          updateData.products = attachedProducts.length > 0 
-            ? attachedProducts.map(p => p._id || p.id).filter(Boolean)
-            : [];
-          
-          // Include category if selected (for "Select Category" mode)
-          if (productDisplayMode === "category" && selectedCategory) {
-            updateData.category = selectedCategory.toString();
-          }
-          
-          console.log("Updating promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
-          await promotionService.updatePromotion(promotionData._id, updateData);
-          Alert.alert("Success", "Promotion updated and is live!", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+      //   console.log("Making promotion live:", { 
+      //     ...updateData, 
+      //     image: imageFile ? "File" : "No file",
+      //     isLive: true 
+      //   });
+        
+        await promotionService.updatePromotion(promotionData._id, updateData);
+        
+        if (Platform.OS === "web") {
+          navigateToAdminPromotion();
         } else {
-          Alert.alert("Error", "Promotion ID not found");
+          Alert.alert("Success", "Promotion is now live!", [
+            { text: "OK", onPress: navigateToAdminPromotion }
+          ]);
         }
+      } else {
+        Alert.alert("Error", "Promotion ID not found");
       }
-    } catch (error: any) {
-      console.error("Error saving promotion:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
-      console.error("Full error details:", error);
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setIsSaving(false);
     }
-  };
+  } catch (error: any) {
+    console.error("Error making promotion live:", error);
+    Alert.alert("Error", error?.response?.data?.message || "Failed to make promotion live");
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   const handleSavePromotion = async () => {
     if (!validateForm()) return;
@@ -580,14 +585,19 @@ const EditPromotion = () => {
             updateData.category = selectedCategory.toString();
           }
           
-          console.log("Updating live promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
+          // console.log("Updating live promotion with data:", updateData);
           await promotionService.updatePromotion(promotionData._id, updateData);
-          Alert.alert("Success", "Promotion updated and is live!", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          
+          if (Platform.OS === "web") {
+            navigateToAdminPromotion();
+          } else {
+            Alert.alert("Success", "Promotion updated and is live!", [
+              {
+                text: "OK",
+                onPress: navigateToAdminPromotion,
+              },
+            ]);
+          }
         } else {
           // Create new live promotion
           if (!imageFile) {
@@ -622,14 +632,19 @@ const EditPromotion = () => {
             createData.category = selectedCategory.toString();
           }
           
-          console.log("Creating live promotion with data:", { ...createData, image: "File present" });
+          // console.log("Creating live promotion with data:", { ...createData, image: "File present" });
           await promotionService.createPromotion(createData);
-          Alert.alert("Success", "Promotion is now live!", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          
+          if (Platform.OS === "web") {
+            navigateToAdminPromotion();
+          } else {
+            Alert.alert("Success", "Promotion is now live!", [
+              {
+                text: "OK",
+                onPress: navigateToAdminPromotion,
+              },
+            ]);
+          }
         }
       } else {
         // If "On Live" is not checked, save as draft via API
@@ -664,14 +679,19 @@ const EditPromotion = () => {
             updateData.category = selectedCategory.toString();
           }
           
-          console.log("Updating draft promotion with data:", { ...updateData, image: imageFile ? "File present" : "No file" });
+          // console.log("Updating draft promotion with data:", updateData);
           await promotionService.updatePromotion(promotionData._id, updateData);
-          Alert.alert("Success", "Promotion saved successfully", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          
+          if (Platform.OS === "web") {
+            navigateToAdminPromotion();
+          } else {
+            Alert.alert("Success", "Promotion saved successfully", [
+              {
+                text: "OK",
+                onPress: navigateToAdminPromotion,
+              },
+            ]);
+          }
         } else {
           // Create new draft promotion
           if (!imageFile) {
@@ -705,14 +725,19 @@ const EditPromotion = () => {
             createData.category = selectedCategory.toString();
           }
           
-          console.log("Creating draft promotion with data:", { ...createData, image: "File present" });
+          // console.log("Creating draft promotion with data:", { ...createData, image: "File present" });
           await promotionService.createPromotion(createData);
-          Alert.alert("Success", "Promotion saved successfully", [
-            {
-              text: "OK",
-              onPress: () => router.back(),
-            },
-          ]);
+          
+          if (Platform.OS === "web") {
+            navigateToAdminPromotion();
+          } else {
+            Alert.alert("Success", "Promotion saved successfully", [
+              {
+                text: "OK",
+                onPress: navigateToAdminPromotion,
+              },
+            ]);
+          }
         }
       }
     } catch (error: any) {
@@ -741,19 +766,26 @@ const EditPromotion = () => {
               // If it's a live promotion (has _id), delete via API
               if (promotionData?._id) {
                 await promotionService.deletePromotion(promotionData._id);
-            Alert.alert("Success", "Promotion deleted successfully", [
-              {
-                text: "OK",
-                onPress: () => router.back(),
-              },
-            ]);
+                
+                if (Platform.OS === "web") {
+                  navigateToAdminPromotion();
+                } else {
+                  Alert.alert("Success", "Promotion deleted successfully", [
+                    {
+                      text: "OK",
+                      onPress: navigateToAdminPromotion,
+                    },
+                  ]);
+                }
               } else {
                 // If it's a saved promotion, notify AdminPromotion to remove it
                 router.setParams({
                   deletedPromotionId: promotionData?.id || "",
                 });
-                router.back();
-                Alert.alert("Success", "Promotion deleted successfully");
+                navigateToAdminPromotion();
+                if (Platform.OS !== "web") {
+                  Alert.alert("Success", "Promotion deleted successfully");
+                }
               }
             } catch (error: any) {
               console.error("Error deleting promotion:", error);
@@ -981,17 +1013,6 @@ const EditPromotion = () => {
                   </View>
                 )}
               </TouchableOpacity>
-              <View style={styles.imageNoteBox as ViewStyle}>
-                <Ionicons
-                  name="information-circle"
-                  size={24}
-                  color={colors.primary}
-                  style={styles.imageNoteIcon}
-                />
-                <Text style={styles.imageNoteText as TextStyle}>
-                  Please upload images with a resolution of 1536 × 834 px and a file size below 200 KB.
-                </Text>
-              </View>
             </View>
 
         {/* Title Input */}
@@ -1006,18 +1027,6 @@ const EditPromotion = () => {
           />
         </View>
 
-        {/* URL Input */}
-        {/* <View style={styles.section as ViewStyle}>
-          <Text style={styles.inputLabel as TextStyle}>Enter Promotional URL</Text>
-          <CustomTextInput
-            placeholder="Enter your promotional url"
-            value={promotionUrl}
-            setValue={setPromotionUrl}
-            style={styles.textInput as ViewStyle}
-            keyboardType="url"
-            onPress={() => {}}
-          />
-        </View> */}
 
         {/* Product Display Mode Selection */}
         <View style={styles.productDisplayModeSection as ViewStyle}>
@@ -1245,7 +1254,7 @@ const EditPromotion = () => {
                     {isSaving ? (
                       <ActivityIndicator size="small" color={colors.white} />
                     ) : (
-                      <Text style={styles.saveButtonText as TextStyle}>Add</Text>
+                      <Text style={styles.saveButtonText as TextStyle}>Edit</Text>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -1324,4 +1333,3 @@ const EditPromotion = () => {
 };
 
 export default EditPromotion;
-
