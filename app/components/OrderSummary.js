@@ -112,12 +112,15 @@ function OrderSummary(props) {
       )}
 
       {/* Summary Section */}
+      
       <View style={styles.summarySection}>
         {/* VAT */}
+        
         <View style={styles.tableRow}>
-  <Text style={styles.summaryLabel}>
+          {totalVAT > 0 && (<Text style={styles.summaryLabel}>
     VAT - {CurrencySymbol} {totalVAT.toFixed(2)}
-  </Text>
+  </Text>)}
+  
 </View>
 
 
