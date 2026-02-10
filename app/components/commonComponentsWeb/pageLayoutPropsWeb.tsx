@@ -107,12 +107,11 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
           >
         {sidebarComponent ? (
           sidebarComponent
-        ) : isAdmin ? (
-          <AdminSidebarWeb />
-        ) : (
+        ) : userSidebar ? (
           <UserSidebarWeb />
+        ) : (
+          <AdminSidebarWeb />
         )}
-
           </View>
         )}
 

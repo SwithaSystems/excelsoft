@@ -31,6 +31,7 @@ import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
 } from "@/constants/customErrorMessages";
+import { usePathname } from "expo-router";
 
 type NavItem = {
   label: string;
@@ -119,6 +120,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const drawerWidth = Math.min(width * 0.8, 320);
   const drawerTranslateX = useSharedValue(-drawerWidth);
   const overlayOpacity = useSharedValue(0);
+
+  const pathname = usePathname();
+
+  // Detect screen type from route
+  const isAdminScreen = pathname.includes("/admin/");
+
 
   const navItems = !hideNavItems 
     ? allNavItems.filter(item => !item.requiresAuth || isAuthenticated)
@@ -421,11 +428,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                   style={styles.drawerContent}
                   showsVerticalScrollIndicator={false}
                 >
-                  {isAdmin ? (
+                {isAdminScreen ? (
                     <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
                   ) : (
                     <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
                   )}
+
                 </ScrollView>
               </Animated.View>
             </View>
@@ -636,7 +644,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                 style={styles.drawerContent}
                 showsVerticalScrollIndicator={false}
               >
-                {isAdmin ? (
+               {isAdminScreen ? (
                   <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
                 ) : (
                   <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
