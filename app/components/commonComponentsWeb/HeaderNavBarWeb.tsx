@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Pressable,
+  Modal,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -19,6 +20,10 @@ import { useAuth } from "@/context/AuthContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useSelector } from "react-redux";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { useWindowDimensions } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
+import { AdminSidebarWeb } from "./AdminSidebarWeb";
+import { UserSidebarWeb } from "./UserSidebarWeb";
 
 type NavItem = {
   label: string;
@@ -38,6 +43,7 @@ interface HeaderNavBarProps {
   backgroundColor?: string;
   onCategorySelect?: (category: Category) => void;
   hideNavItems?: boolean;
+  hasSidebar?: boolean;
 }
 
 const quickLinks: QuickLinkItem[] = [
@@ -85,11 +91,13 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   backgroundColor = colors.primary,
   onCategorySelect,
   hideNavItems = false,
+  hasSidebar = false,
 }) => {
-  const { loading: roleLoading, isValidUser } = useRoleContext();
+  const { loading: roleLoading, isValidUser, isAdmin } = useRoleContext();
   const { logout } = useAuth();
   const userData_redux = useSelector((state: any) => state.user.user);
   const { isMobile } = useWebMediaQuery();
+  const { width } = useWindowDimensions();
 
   const isAuthenticated = isValidUser;
 
@@ -98,6 +106,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+  const [showSidebarDrawer, setShowSidebarDrawer] = useState(false);
+
+  // Animation values for drawer - use pixel values
+  const drawerWidth = Math.min(width * 0.8, 320);
+  const drawerTranslateX = useSharedValue(-drawerWidth);
+  const overlayOpacity = useSharedValue(0);
 
   const navItems = !hideNavItems 
     ? allNavItems.filter(item => !item.requiresAuth || isAuthenticated)
@@ -127,6 +141,45 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
     loadCategories();
   }, [hideNavItems, roleLoading]);
+
+  // Handle drawer open/close with animation
+  useEffect(() => {
+    if (showSidebarDrawer) {
+      drawerTranslateX.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+      });
+      overlayOpacity.value = withTiming(0.5, {
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+      });
+    } else {
+      drawerTranslateX.value = withTiming(-drawerWidth, {
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+      });
+      overlayOpacity.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+      });
+    }
+  }, [showSidebarDrawer, drawerTranslateX, overlayOpacity, drawerWidth]);
+
+  const drawerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: drawerTranslateX.value }],
+    };
+  }, []);
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: overlayOpacity.value,
+    };
+  });
+
+  const handleDrawerClose = () => {
+    setShowSidebarDrawer(false);
+  };
 
   const handleNavPress = (item: NavItem) => {
     if (item.isDropdown && item.dropdownType) {
@@ -232,6 +285,16 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     return (
       <>
         <View style={[styles.container, { backgroundColor }]}>
+          {/* Menu button - Always show on mobile when authenticated */}
+          {isMobile && isAuthenticated && (
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setShowSidebarDrawer(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="menu" size={24} color={colors.white} />
+            </TouchableOpacity>
+          )}
           {!isMobile && <View style={styles.emptyBelt} />}
           {renderAuthButtons()}
         </View>
@@ -255,6 +318,59 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           cancelText="No"
           handleCancel={() => setDeleteAccountModalOpen(false)}
         />
+        {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
+        {isMobile && isAuthenticated && (
+          <Modal
+            visible={showSidebarDrawer}
+            transparent={true}
+            animationType="none"
+            onRequestClose={handleDrawerClose}
+          >
+            <View style={styles.drawerContainer}>
+              {/* Overlay */}
+              <Animated.View
+                style={[styles.drawerOverlay, overlayAnimatedStyle]}
+              >
+                <Pressable
+                  style={styles.overlayPressable}
+                  onPress={handleDrawerClose}
+                />
+              </Animated.View>
+
+              {/* Drawer */}
+              <Animated.View
+                style={[
+                  styles.drawer,
+                  drawerAnimatedStyle,
+                  isAdmin ? styles.drawerAdmin : styles.drawerUser,
+                ]}
+              >
+                {/* Close Button */}
+                <View style={styles.drawerHeader}>
+                  <TouchableOpacity
+                    style={styles.drawerCloseButton}
+                    onPress={handleDrawerClose}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="close" size={28} color={colors.black} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Sidebar Content */}
+                <ScrollView
+                  style={styles.drawerContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {isAdmin ? (
+                    <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                  ) : (
+                    <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                  )}
+                </ScrollView>
+              </Animated.View>
+            </View>
+          </Modal>
+        )}
       </>
     );
   }
@@ -263,8 +379,18 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     <>
       <View style={[styles.container, { backgroundColor }]}>
         {isMobile ? (
-          // Mobile: Show Categories dropdown and auth buttons
+          // Mobile: Show menu button, Categories dropdown and auth buttons
           <>
+            {/* Menu button - Always show on mobile when authenticated */}
+            {isAuthenticated && (
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => setShowSidebarDrawer(true)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="menu" size={24} color={colors.white} />
+              </TouchableOpacity>
+            )}
             {categoriesItem && (
               <View style={styles.mobileCategoriesContainer}>
                 <TouchableOpacity
@@ -406,6 +532,60 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
       />
+
+      {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
+      {isMobile && isAuthenticated && (
+        <Modal
+          visible={showSidebarDrawer}
+          transparent={true}
+          animationType="none"
+          onRequestClose={handleDrawerClose}
+        >
+          <View style={styles.drawerContainer}>
+            {/* Overlay */}
+            <Animated.View
+              style={[styles.drawerOverlay, overlayAnimatedStyle]}
+            >
+              <Pressable
+                style={styles.overlayPressable}
+                onPress={handleDrawerClose}
+              />
+            </Animated.View>
+
+            {/* Drawer */}
+            <Animated.View
+              style={[
+                styles.drawer,
+                drawerAnimatedStyle,
+                isAdmin ? styles.drawerAdmin : styles.drawerUser,
+              ]}
+            >
+              {/* Close Button */}
+              <View style={styles.drawerHeader}>
+                <TouchableOpacity
+                  style={styles.drawerCloseButton}
+                  onPress={handleDrawerClose}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="close" size={28} color={colors.black} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Sidebar Content */}
+              <ScrollView
+                style={styles.drawerContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {isAdmin ? (
+                  <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                ) : (
+                  <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                )}
+              </ScrollView>
+            </Animated.View>
+          </View>
+        </Modal>
+      )}
     </>
   );
 };
@@ -560,5 +740,68 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     fontWeight: "600",
+  },
+  menuButton: {
+    padding: 8,
+    marginLeft: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  drawerContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  drawerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 10000,
+  },
+  overlayPressable: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  drawer: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: "80%",
+    maxWidth: 320,
+    backgroundColor: colors.white,
+    zIndex: 10001,
+    shadowColor: colors.black,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 2, height: 0 },
+    elevation: 10,
+  },
+  drawerAdmin: {
+    width: "80%",
+    maxWidth: 320,
+  },
+  drawerUser: {
+    width: "80%",
+    maxWidth: 320,
+  },
+  drawerHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  drawerCloseButton: {
+    padding: 4,
+  },
+  drawerContent: {
+    flex: 1,
   },
 });

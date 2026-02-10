@@ -81,7 +81,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
           <View style={styles.topHeader}>{headerComponent}</View>
 
           <View style={styles.navbarWrapper}>
-            <HeaderNavBar hideNavItems={hideNavItems}/>
+            <HeaderNavBar hideNavItems={hideNavItems} hasSidebar={hasSidebar}/>
           </View>
         </View>
       )}
@@ -95,7 +95,8 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
           },
         ]}
       >
-        {hasSidebar && (
+        {/* Sidebar - Only render on tablet/desktop, hidden on mobile (accessible via menu button drawer) */}
+        {hasSidebar && !isMobile && (
           <View
             style={[
               styles.sidebar,
@@ -106,8 +107,6 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
           >
         {sidebarComponent ? (
           sidebarComponent
-        ) : userSidebar ? (
-          <UserSidebarWeb />
         ) : isAdmin ? (
           <AdminSidebarWeb />
         ) : (

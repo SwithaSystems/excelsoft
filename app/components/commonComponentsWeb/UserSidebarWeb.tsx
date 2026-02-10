@@ -31,6 +31,11 @@ interface QuickLinkItem {
   route: string;
 }
 
+interface UserSidebarWebProps {
+  isDrawer?: boolean;
+  onClose?: () => void;
+}
+
 const navItems: NavItem[] = [
   { id: "profile", label: "Profile Settings", icon: "person", route: containers.editProfileScreen },
   { id: "address", label: "Saved Address", icon: "location", route: containers.savedAddressScreen },
@@ -47,7 +52,10 @@ const navItems: NavItem[] = [
 //   // { id: "payments", label: "Payments", icon: "credit-card", route: "/payments" },
 // ];
 
-export const UserSidebarWeb: React.FC = () => {
+export const UserSidebarWeb: React.FC<UserSidebarWebProps> = ({
+  isDrawer = false,
+  onClose,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isWeb } = useWebMediaQuery();
@@ -95,6 +103,10 @@ export const UserSidebarWeb: React.FC = () => {
   const handleNavigation = (route: string, params?: any) => {
     if (params) router.push({ pathname: route as any, params });
     else router.push(route as any);
+    // Close drawer if it's open
+    if (isDrawer && onClose) {
+      onClose();
+    }
   };
 
   // const handleQuickLinkPress = (item: QuickLinkItem) => {
@@ -113,24 +125,32 @@ export const UserSidebarWeb: React.FC = () => {
 
   if (!isWeb) return null;
 
+  // Don't render on mobile browser unless it's in drawer mode
+  const { isMobile } = useWebMediaQuery();
+  if (!isDrawer && isMobile) {
+    return null;
+  }
+
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, isDrawer && styles.containerDrawer]}>
       {/* Profile */}
-      <View style={styles.profileSection}>
-        <Image
-          source={
-            user?.profileImageUrl
-              ? { uri: user.profileImageUrl }
-              : require("@/assets/default_user_profile.png")
-          }
-          style={styles.profileImage}
-        />
-        <Text style={styles.userName} numberOfLines={1}>
-          {user?.firstName && user?.lastName
-            ? `${user.firstName} ${user.lastName}`
-            : user?.firstName || "User"}
-        </Text>
-      </View>
+      {!isDrawer && (
+        <View style={styles.profileSection}>
+          <Image
+            source={
+              user?.profileImageUrl
+                ? { uri: user.profileImageUrl }
+                : require("@/assets/default_user_profile.png")
+            }
+            style={styles.profileImage}
+          />
+          <Text style={styles.userName} numberOfLines={1}>
+            {user?.firstName && user?.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : user?.firstName || "User"}
+          </Text>
+        </View>
+      )}
 
       {/* Navigation */}
       <View style={styles.navList}>
@@ -233,6 +253,10 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: colors.lightgrey,
     overflow: "visible",
+  },
+  containerDrawer: {
+    borderRightWidth: 0,
+    paddingTop: 0,
   },
 
   profileSection: {
