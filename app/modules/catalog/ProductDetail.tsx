@@ -290,7 +290,7 @@ const ProductDetailScreen = () => {
                   >
                     <Ionicons
                       name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                      size={24}
+                      size={30}
                       color={
                         isItemSaved(product.id)
                           ? colors.primaryRed
@@ -486,7 +486,7 @@ const ProductDetailScreen = () => {
                 <TouchableOpacity onPress={(e) => handleHeartPress(e, product)}>
                   <Ionicons
                     name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                    size={20}
+                    size={30}
                     color={
                       isItemSaved(product.id) ? colors.primaryRed : colors.black
                     }

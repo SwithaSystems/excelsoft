@@ -50,24 +50,50 @@ const AdminProfile = () => {
   } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const userData_redux = useSelector((state: RootState) => state.user.user);
+  const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
+  
 
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const isMobile = !isWeb;
+   const fetchUser = async () => {
+      try {
+        // console.log("userData in admin dashboard", userData);
+        const user = await UserAPI.getUserById(
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
+        );
+        // console.log("user in admin dashboard", user.data);
+        if (user) {
+          setIsSuperAdmin(user?.data?.isSuperAdmin);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+  
+    React.useEffect(() => {
+      fetchUser();
+    }, []);
 
-  const settingsMenu = {
-    // "Edit Profile": containers.editProfileScreen,
+  // Define base settings menu
+  const baseSettingsMenu = {
     "Notification Settings": containers.adminNotificationSettingsScreen,
     "Store Information": containers.AdminStoreInformationScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
     "Promotion Management": containers.AdminPromotionScreen,
+    "Upload Bulk Data": containers.fileUploadAddProductCategoryScreen,
   };
 
+  // Conditionally add User Admin Access if isSuperAdmin is true
+  const settingsMenu = {
+    ...baseSettingsMenu,
+    ...(isSuperAdmin && { "User Admin Access": containers.adminAccessControlScreen }),
+  };
   // Responsive components
   const HeaderComponent = isWeb ? <BrandHeaderWeb hideUserGreeting={true} /> : (
     <Header
       headerText={ADMIN_PROFILE_SCREEN_TITLE}
-      needResetNavigation={true}
+      needResetNavigation={false}
     />
   );
   

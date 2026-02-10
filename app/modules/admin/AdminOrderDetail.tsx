@@ -32,6 +32,7 @@ import { NotificationService } from "@/services/notificationService";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import colors from "../../../constants/colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const AdminOrderDetail = () => {
   const [status, setStatus] = useState("Pending");
@@ -41,6 +42,7 @@ const AdminOrderDetail = () => {
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
   const [reason, setReason] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const props = useLocalSearchParams();
@@ -316,34 +318,45 @@ const AdminOrderDetail = () => {
             </Text>
 
             <ModalSelector
-              data={allOrderStatuses.map((item, index) => ({
-                key: index,
-                label: item,
-                value: item,
-              }))}
-              initValue=""
-              onChange={(option) => setStatus(option.value)}
-              optionTextStyle={{ color: colors.primary }}
-              optionContainerStyle={{ backgroundColor: colors.white }}
-              cancelStyle={{ backgroundColor: colors.white }}
-              accessible
-              accessibilityLabel="Select order status"
-            >
-              <View
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ddd",
-                  borderRadius: 8,
-                  backgroundColor: "#fff",
-                  height: 50,
-                  justifyContent: "center",
-                  paddingHorizontal: 12,
-                }}
-              >
-                <Text style={{ fontSize: 16, color: "#000" }}>{status}</Text>
-              </View>
-            </ModalSelector>
-
+    data={allOrderStatuses.map((item, index) => ({
+      key: index,
+      label: item,
+      value: item,
+    }))}
+    initValue=""
+    onChange={(option) => {
+      setStatus(option.value);
+      setIsModalOpen(false); 
+    }}
+    onModalOpen={() => setIsModalOpen(true)} 
+    onModalClose={() => setIsModalOpen(false)}
+    optionTextStyle={{ color: colors.primary }}
+    optionContainerStyle={{ backgroundColor: colors.white }}
+    cancelStyle={{ backgroundColor: colors.white }}
+    accessible
+    accessibilityLabel="Select order status"
+  >
+    <View
+      style={{
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        backgroundColor: "#fff",
+        height: 50,
+        flexDirection: "row", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        paddingHorizontal: 12,
+      }}
+    >
+      <Text style={{ fontSize: 16, color: "#000", flex: 1 }}>{status}</Text>
+      <Ionicons
+        name={isModalOpen ? "chevron-up" : "chevron-down"}
+        size={20}
+        color={colors.black}
+      />
+    </View>
+  </ModalSelector>
             <View
               style={{
                 marginTop: 16,

@@ -15,25 +15,9 @@ import {
 } from "@/store/slices/savedItemsSlice";
 import { Product } from "@/services/productService";
 
-// interface ProductCardProps {
-//   id: string;
-//   name: string;
-//   description: string;
-//   discount: number;
-//   netPrice: number;
-//   image: any;
-//   productColors: string[];
-//   category: string;
-//   rating: number;
-//   noOfreviews: number;
-//   reviews: {
-//     id: string;
-//     name: string;
-//     review: string;
-//     rating: number;
-//     text: string;
-//   }[];
-// }
+interface ProductCardProps extends Product {
+  onAddToCart?: () => void;
+}
 
 const ProductCard = ({
   _id,
@@ -49,7 +33,8 @@ const ProductCard = ({
   vatRate,
   vatAmount,
   image,
-}: Product) => {
+  onAddToCart,
+}: ProductCardProps) => {
   const router = useRouter();
   const isWeb = Platform.OS === "web";
   const isRemoteImage = typeof image === "string";
@@ -79,12 +64,17 @@ const ProductCard = ({
       quantity: 1,
     };
 
-    // console.log("saved item", currentItem);
-
     if (isItemSaved(id)) {
       dispatch(removeFromSavedItems(id));
     } else {
       dispatch(addToSavedItems(currentItem));
+    }
+  };
+
+  const handleAddToCart = (e: any) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart();
     }
   };
 
@@ -102,11 +92,9 @@ const ProductCard = ({
   const titleFontSize = isWeb ? 13 : 18;
   const ratingFontSize = isWeb ? 11 : 16;
   const priceFontSize = isWeb ? 13 : 16;
-  const heartSize = isWeb ? 16 : 20;
+  const heartSize = isWeb ? 40 : 30;
   const starSize = isWeb ? 12 : 16;
   const contentPadding = isWeb ? 6 : 8;
-  // const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
-
 
   return (
     <TouchableOpacity
@@ -116,13 +104,7 @@ const ProductCard = ({
       }
     >
       {/* Only render image if product has one */}
-      {/* {image ? ( */}
       <View style={[styles.image, { height: imageHeight }]}>
-        {/* <Image
-            source={{ uri: image }}
-            style={styles.image}
-            resizeMode="cover"
-          /> */}
         <Image
           source={
             typeof image === "string" && image !== ""
@@ -135,7 +117,6 @@ const ProductCard = ({
           resizeMode="cover"
         />
       </View>
-      {/* ) : null} */}
 
       <View style={[styles.content, { padding: contentPadding }]}>
         <View style={globalStyles.savedContainer}>
@@ -153,6 +134,7 @@ const ProductCard = ({
             />
           </TouchableOpacity>
         </View>
+
         {noOfreviews > 0 && (
           <View style={styles.ratingContainer}>
             <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{rating}</Text>
@@ -160,36 +142,33 @@ const ProductCard = ({
             <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
         )}
-        {netPrice > 0 && 
-        // discountPercentage > 0 &&
-           (
+
+        {netPrice > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
-              {/* <View style={styles.saleTag}>
-                <Text style={styles.saleText}>Sale</Text>
-              </View> */}
-              {/* <Text style={styles.time}>02:48:26</Text> */}
+              {/* Sale/Time content removed as per your code */}
             </View>
-            {/* <Text style={[styles.discount, { fontSize: priceFontSize }]}> */}
-              {/* {Math.round((discount / netPrice) * 100)}% */}
-              {/* {discountPercentage}% */}
-            {/* </Text> */}
           </View>
         )}
 
-        <View style={styles.priceContainer}>
-          <Text style={[
-            // styles.discount,
-             { fontSize: priceFontSize }]}>
-            {CurrencySymbol}
-            {(netPrice /*- discount*/).toFixed(2)}
-          </Text>
-          {/* {discount > 0 && (
-            <Text style={[styles.netPrice, { fontSize: isWeb ? 12 : 14 }]}>
+        <View style={styles.priceAndButtonContainer}>
+          <View style={styles.priceContainer}>
+            <Text style={[styles.priceText, { fontSize: priceFontSize }]}>
               {CurrencySymbol}
-              {Number(netPrice).toFixed(2)}
+              {netPrice.toFixed(2)}
             </Text>
-          )} */}
+          </View>
+          
+          {onAddToCart && (
+            <TouchableOpacity
+              style={styles.addToCartButton}
+              onPress={handleAddToCart}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="cart-outline" size={isWeb ? 16 : 20} color={colors.white} />
+              <Text style={styles.addToCartText}>Add</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -232,11 +211,20 @@ const styles = StyleSheet.create({
     margin: 4,
     color: colors.reviewsColor,
   },
+  priceAndButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap",
-    marginTop: 4,
+    flex: 1,
+  },
+  priceText: {
+    fontWeight: "600",
+    color: colors.primary,
   },
   saleContainer: {
     flexDirection: "row",
@@ -245,7 +233,6 @@ const styles = StyleSheet.create({
   saleTimeBox: {
     flexDirection: "row",
     backgroundColor: colors.secondary,
-    //borderRadius: 5,
     alignItems: "center",
   },
   saleText: {
@@ -258,14 +245,8 @@ const styles = StyleSheet.create({
     color: colors.white,
     paddingHorizontal: 6,
     paddingVertical: 4,
-    //borderRadius: 4,
     marginRight: 6,
   },
-  // discount: {
-  //   fontWeight: "600",
-  //   color: colors.primary,
-  //   marginRight: 6,
-  // },
   netPrice: {
     color: colors.secondaryText,
     textDecorationLine: "line-through",
@@ -275,20 +256,26 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 14,
     color: colors.primary,
-    //backgroundColor: colors.secondary,
     borderRadius: 5,
     paddingRight: 6,
     marginTop: 2,
     marginRight: 8,
   },
-  // discount: {
-  //   fontSize: 14,
-  //   color: colors.primary,
-  //   marginLeft: 6,
-  //   backgroundColor: colors.secondary,
-  //   padding: 4,
-  //   borderRadius: 5,
-  // },
+  addToCartButton: {
+    backgroundColor: colors.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    gap: 4,
+  },
+  addToCartText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "600",
+  },
 });
 
 export default ProductCard;

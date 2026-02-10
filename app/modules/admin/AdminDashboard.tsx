@@ -339,7 +339,7 @@ const AdminDashboard = () => {
 
   const ListHeaderComponent = () => (
     <View style={[globalStyles.pt_0]}>
-      <View style={styles.headerContainer}>
+      {/* <View style={styles.headerContainer}>
         <Text style={styles.title}>Dashboard</Text>
         {!isWeb && (
           <Text
@@ -351,7 +351,7 @@ const AdminDashboard = () => {
             Upload Data
           </Text>
         )}
-      </View>
+      </View> */}
 
       <View
         style={[
@@ -433,7 +433,7 @@ const AdminDashboard = () => {
             </View> */}
           </View>
         </View>
-        {isSuperAdmin && (
+        {/* {isSuperAdmin && (
           <View
             style={[
               styles.metricBox,
@@ -450,7 +450,7 @@ const AdminDashboard = () => {
               </TouchableOpacity>
             </View>
           </View>
-        )}
+        )} */}
       </View>
 
       <View style={styles.ordersHeader}>

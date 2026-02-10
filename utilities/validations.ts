@@ -124,8 +124,17 @@ export const isValidPhoneNumber = (phone: string): string | null => {
     return null;
   }
 
-  if (digitsOnly.length !== 10) {
-    return "Phone number must contain exactly 10 digits";
+  // FIXED: Accept both 10 digits (without leading 0) and 11 digits (with leading 0)
+  if (digitsOnly.startsWith("0")) {
+    // If starts with 0, must be 11 digits (UK format: 07700900000)
+    if (digitsOnly.length !== 11) {
+      return "Phone number must contain exactly 11 digits (including leading 0)";
+    }
+  } else {
+    // If doesn't start with 0, must be 10 digits (7700900000)
+    if (digitsOnly.length !== 10) {
+      return "Phone number must contain exactly 10 digits";
+    }
   }
 
   return null;

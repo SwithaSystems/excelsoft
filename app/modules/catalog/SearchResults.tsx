@@ -34,6 +34,9 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import CategoryBadges from "./Components/CategoryBadges";
 import colors from "@/constants/colors";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
+import { moveToCart } from "@/store/slices/savedItemsSlice";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
@@ -76,6 +79,12 @@ const SearchResultsScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
   const [isSortDropdownVisible, setIsSortDropdownVisible] = useState(false);
+   const dispatch = useDispatch();
+
+   const handleMoveToCart = (item: any) => {
+       dispatch(addToCart(item));
+       dispatch(moveToCart(item.id));
+     };
   
   const sortOptions = [
     { label: "Relevance", value: "default" },
@@ -426,6 +435,7 @@ const SearchResultsScreen = () => {
               isVatApplicable={false}
               vatRate={0}
               vatAmount={0}
+              onAddToCart={() =>handleMoveToCart({...item, quantity: 1})}
             />
           </View>
         );
@@ -457,6 +467,7 @@ const SearchResultsScreen = () => {
               isVatApplicable={false}
               vatRate={0}
               vatAmount={0}
+              onAddToCart={()=>handleMoveToCart({...item,quantity : 1})}
             />
           </View>
         );
@@ -558,6 +569,7 @@ const SearchResultsScreen = () => {
                   isVatApplicable={false}
                   vatRate={0}
                   vatAmount={0}
+                  onAddToCart={() => handleMoveToCart({ ...item, quantity: 1 })}
                 />
               </View>
             ))}

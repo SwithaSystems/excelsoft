@@ -13,6 +13,7 @@ interface ConfirmationModalProps {
   handleCancel?: () => void;
   animationType?: "none" | "slide" | "fade";
   isDestructive?: boolean;
+   disabled?: boolean,
 }
 
 function ConfirmationModal({
@@ -25,7 +26,8 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
-  isDestructive = false, // Default to non-destructive (primary color)
+  isDestructive = false,
+  disabled = false, 
 }: ConfirmationModalProps) {
   const isWeb = Platform.OS === "web";
 
@@ -34,7 +36,7 @@ function ConfirmationModal({
       visible={isModalVisible}
       transparent
       animationType={animationType}
-      onRequestClose={onClose}
+      onRequestClose={disabled ? undefined : onClose}
     >
       <View style={styles.modalContainer}>
         <View style={[

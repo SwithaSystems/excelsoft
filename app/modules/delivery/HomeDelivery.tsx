@@ -164,10 +164,10 @@ const HomeDeliveryScreen = () => {
       const token = await SecureStore.getItemAsync("token");
       const refreshToken = await SecureStore.getItemAsync("refreshtoken");
       
-      console.log("=== Fetch Addresses Debug ===");
-      console.log("Token exists:", !!token);
-      console.log("Refresh token exists:", !!refreshToken);
-      console.log("Retry attempt:", retryCount);
+      // console.log("=== Fetch Addresses Debug ===");
+      // console.log("Token exists:", !!token);
+      // console.log("Refresh token exists:", !!refreshToken);
+      // console.log("Retry attempt:", retryCount);
       
       if (!token && !refreshToken) {
         console.error("No tokens found - user may need to login again");
@@ -181,14 +181,14 @@ const HomeDeliveryScreen = () => {
         return;
       }
       
-      console.log("Attempting to fetch addresses...");
+      // console.log("Attempting to fetch addresses...");
       const response = await addressService.getAllAddress();
-      console.log("Successfully fetched addresses:", response.length, "addresses");
+      // console.log("Successfully fetched addresses:", response.length, "addresses");
       setExistingAddress(response);
       
       // If there's only one address and none is selected, auto-select it
       if (response.length === 1 && !selectedAddressId) {
-        console.log("Auto-selecting single address");
+        // console.log("Auto-selecting single address");
         setSelectedAddressId(response[0]._id);
         setAddress(response[0]);
       }
@@ -203,12 +203,12 @@ const HomeDeliveryScreen = () => {
       
       // If it's a 401 error and we haven't exceeded retries, wait and retry
       if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
-        console.log("Got 401 error, waiting before retry...");
+        // console.log("Got 401 error, waiting before retry...");
         setIsLoadingAddresses(false);
         
         // Exponential backoff: wait longer with each retry
         const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-        console.log(`Retrying in ${delay}ms...`);
+        // console.log(`Retrying in ${delay}ms...`);
         
         setTimeout(() => {
           fetchAddresses(retryCount + 1);
@@ -229,7 +229,7 @@ const HomeDeliveryScreen = () => {
           
           // If 401 after all retries, consider redirecting to login
           if (err.response?.status === 401) {
-            console.log("Authentication failed after retries, may need to login");
+            // console.log("Authentication failed after retries, may need to login");
             // Uncomment to auto-redirect to login:
             // setTimeout(() => redirectToPage(containers.signInScreen), 2000);
           }
@@ -242,14 +242,14 @@ const HomeDeliveryScreen = () => {
   // This ensures addresses are fetched when navigating back from add address screen
   useFocusEffect(
     useCallback(() => {
-      console.log("HomeDeliveryScreen focused - fetching addresses");
+      // console.log("HomeDeliveryScreen focused - fetching addresses");
       fetchAddresses(0);
     }, [fetchAddresses])
   );
 
   // Also fetch on mount
   useEffect(() => {
-    console.log("HomeDeliveryScreen mounted - initial address fetch");
+    // console.log("HomeDeliveryScreen mounted - initial address fetch");
     fetchAddresses(0);
   }, []);
 

@@ -10,7 +10,6 @@ import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -52,6 +51,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useNavigation } from "@react-navigation/native";
 import { color } from "react-native-elements/dist/helpers";
+import React, { useEffect, useState, useRef } from "react";
 
 interface User {
   id: string;
@@ -89,6 +89,8 @@ const editProfileScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
+  const webImageFileRef = useRef<File | null>(null);
+
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -154,6 +156,15 @@ const editProfileScreen = () => {
     setLastName(text);
     if (lastNameError) setLastNameError(null);
   };
+
+  const handleWebImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  webImageFileRef.current = file; 
+  setProfileImage(URL.createObjectURL(file));
+};
+
 
   const openImagePickerAsync = async (type: "camera" | "gallery") => {
     let result;
@@ -232,17 +243,20 @@ const editProfileScreen = () => {
     if (!isFirstNameValid || !isLastNameValid) return;
 
     const formData = new FormData();
-    if (
-      profileImage &&
-      typeof profileImage === "string" &&
-      (profileImage.startsWith("http") || profileImage.startsWith("file://"))
-    ) {
-      formData.append("image", {
-        uri: profileImage,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      } as any);
-    }
+    if (isWeb && webImageFileRef.current) {
+  formData.append("image", webImageFileRef.current);
+} else if (
+  profileImage &&
+  typeof profileImage === "string" &&
+  profileImage.startsWith("file://")
+) {
+  formData.append("image", {
+    uri: profileImage,
+    name: "profile.jpg",
+    type: "image/jpeg",
+  } as any);
+}
+
 
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
@@ -283,6 +297,17 @@ const editProfileScreen = () => {
       redirectToPage(containers.userProfileScreen);
     }
   };
+  const handleFirstNameBlur = () => {
+     if (firstName.trim()) {
+       validateFirstName(firstName);
+     }
+   };
+
+   const handleLastNameBlur = () => {
+     if (lastName.trim()) {
+       validateLastName(lastName);
+     }
+   };
 
   const handleErrorModalClose = () => {
     setIsErrorModalVisible(false);
@@ -353,12 +378,25 @@ const editProfileScreen = () => {
                   }
                   style={globalStyles.profileImage}
                 />
-                <TouchableOpacity
-                  style={styles.changePictureButton}
-                  onPress={showImageOptions}
-                >
-                  <Feather name="camera" size={24} color={colors.primary} />
-                </TouchableOpacity>
+               {isWeb ? (
+  <label style={{ cursor: "pointer" }}>
+    <Feather name="camera" size={24} color={colors.primary} />
+    <input
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={handleWebImagePick}
+    />
+  </label>
+) : (
+  <TouchableOpacity
+    style={styles.changePictureButton}
+    onPress={showImageOptions}
+  >
+    <Feather name="camera" size={24} color={colors.primary} />
+  </TouchableOpacity>
+)}
+
                 <Text style={styles.changePictureText}>
                   Change Profile Picture
                 </Text>
@@ -385,6 +423,7 @@ const editProfileScreen = () => {
                     onPress={() => {}}
                     setValue={setFirstName}
                     onChangeText={handleFirstNameChange}
+                    onblur={handleFirstNameBlur}
                   />
                   {firstNameError && (
                     <Text style={globalStyles.errorText}>{firstNameError}</Text>
@@ -413,6 +452,7 @@ const editProfileScreen = () => {
                     onPress={() => {}}
                     setValue={setLastName}
                     onChangeText={handleLastNameChange}
+                    onblur={handleLastNameBlur}
                   />
                   {lastNameError && (
                     <Text style={globalStyles.errorText}>{lastNameError}</Text>
@@ -482,9 +522,9 @@ const editProfileScreen = () => {
                     textStyle={webStyles.cancelButtonText}
                   />
                   <Button
-                    title="Save"
+                    title={loading ? "Saving..." : "Save"}
                     onPress={handleEditProfile}
-                    style={webStyles.saveButton}
+                    style={[webStyles.saveButton,loading && { opacity: 0.6 }]}
                     textStyle={webStyles.saveButtonText}
                   />
                 </View>
@@ -496,7 +536,8 @@ const editProfileScreen = () => {
 
           {!isWeb && (
           <View style={{ marginTop: 16 }}>
-            <Button onPress={handleEditProfile} title="Save" />
+            <Button onPress={handleEditProfile} title={loading ? "Saving..." : "Save"}
+  disabled={loading} />
           </View>
         )}
 

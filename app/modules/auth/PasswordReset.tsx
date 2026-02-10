@@ -32,6 +32,7 @@ const passwordResetScreen = () => {
       confirmPassword?: string;
     }>
   >({});
+
   const validateFields = () => {
     const newErrors = {} as {
       password?: string;
@@ -54,26 +55,60 @@ const passwordResetScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const showSuccessAlert = (title: string, message: string, onPress?: () => void) => {
+    if (isWeb) {
+      // For web, execute callback immediately after a short delay
+      Alert.alert(title, message);
+      if (onPress) {
+        setTimeout(() => {
+          onPress();
+        }, 100);
+      }
+    } else {
+      // For mobile, use standard alert with callback
+      Alert.alert(
+        title,
+        message,
+        [
+          {
+            text: "OK",
+            onPress: onPress || (() => {}),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  };
+
   const handlePress = async () => {
     if (validateFields()) {
       if (typeof phoneNumber === "string") {
-        const response = await UserAPI.resetPassword({
-          newPassword: password,
-          phoneNumber: phoneNumber,
-        });
-        Alert.alert("Message", response.data.message, [
-          {
-            text: "OK",
-            onPress: () => redirectToPage(containers.signInScreen),
-          },
-        ]);
+        try {
+          const response = await UserAPI.resetPassword({
+            newPassword: password,
+            phoneNumber: phoneNumber,
+          });
+          
+          showSuccessAlert(
+            "Success",
+            response.data.message || "Password reset successfully",
+            () => redirectToPage(containers.signInScreen)
+          );
+        } catch (error: any) {
+          console.error("Password reset error:", error);
+          Alert.alert(
+            "Error",
+            error?.response?.data?.message || "Failed to reset password. Please try again."
+          );
+        }
       } else {
         console.error("phoneNumber is not a string");
+        Alert.alert("Error", "Invalid phone number. Please try again.");
       }
     }
   };
+
   return (
-    // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <PageLayout
       hasFooter={false}
       hasHeader
@@ -86,10 +121,7 @@ const passwordResetScreen = () => {
         />
       }
     >
-      {" "}
       <KeyBoardWrapper>
-        {/* <View style={styles.container}> */}
-        {/* <Header headerText={" Reset Your Password"} /> */}
         <View style={[
           styles.sectionContainer,
           isWeb && styles.sectionContainerWeb
@@ -134,9 +166,7 @@ const passwordResetScreen = () => {
             onPress={handlePress}
           />
         </View>
-        {/* </View> */}
       </KeyBoardWrapper>
-      {/* </SafeAreaView> */}
     </PageLayout>
   );
 };

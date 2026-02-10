@@ -128,7 +128,7 @@ export class NotificationService {
   static async registerForPushNotificationsAsync(userId: string) {
     // Skip on web platform
     if (Platform.OS === "web") {
-      console.log("Push notifications not supported on web");
+      // console.log("Push notifications not supported on web");
       return null;
     }
 
@@ -158,7 +158,7 @@ export class NotificationService {
       }
 
       if (finalStatus !== "granted") {
-        console.log("❌ Permission not granted for notifications");
+        // console.log("❌ Permission not granted for notifications");
         return null;
       }
 
@@ -168,7 +168,7 @@ export class NotificationService {
         })
       ).data;
 
-      console.log("✅ Push token obtained:", token);
+      // console.log("✅ Push token obtained:", token);
 
       if (token) {
         try {
@@ -176,13 +176,13 @@ export class NotificationService {
             userId,
             token,
           });
-          console.log("✅ Token registered with backend");
+          // console.log("✅ Token registered with backend");
         } catch (error) {
           console.error("❌ Error registering push token:", error);
         }
       }
     } else {
-      console.log("⚠️ Must use physical device for Push Notifications");
+      // console.log("⚠️ Must use physical device for Push Notifications");
     }
 
     return token;
@@ -254,7 +254,7 @@ export class NotificationService {
     data: any = {}
   ) {
     if (Platform.OS === "web") {
-      console.log("Local notifications not supported on web");
+      // console.log("Local notifications not supported on web");
       return false;
     }
 
