@@ -20,6 +20,8 @@ const EXCLUDED_APIS = [
   "/categories",
   "/auth/login",
   "/auth/register",
+"/promotions/live/all"
+
 ];
 
 // Track if a refresh is in progress to prevent multiple simultaneous refresh attempts

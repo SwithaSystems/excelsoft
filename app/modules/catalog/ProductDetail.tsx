@@ -302,7 +302,7 @@ const ProductDetailScreen = () => {
 
                 {product.reviews.length > 0 && (
                   <View style={styles.webRatingContainer}>
-                    <Text style={styles.webRatingText}>{product.rating}</Text>
+                    <Text style={styles.webRatingText}>{Number(product.rating).toFixed(1)}</Text>
                     <Text style={styles.webStarIcon}> ★ </Text>
                     <Text style={styles.webReviewsText}>
                       ({product?.reviews?.length || 0})
@@ -645,7 +645,7 @@ const ProductDetailScreen = () => {
                     productId: productId,
                     totalReviews: JSON.stringify(product.reviews),
                     productRating:
-                      JSON.stringify(product.rating) || product.rating,
+                      JSON.stringify(Number(product.rating).toFixed(1)) || Number(product.rating).toFixed(1),
                   })
                 }
               >
