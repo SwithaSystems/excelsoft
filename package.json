@@ -7,9 +7,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "web:serve": "npx expo export -p web && node scripts/copy-public.js && npx serve dist -p 8081",
     "create": "node ./scripts/generate.js",
     "build": "echo 'No build script needed for client; handled by EAS'",
-    "vercel-build": "npx expo export"
+    "vercel-build": "npx expo export && node scripts/copy-public.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",

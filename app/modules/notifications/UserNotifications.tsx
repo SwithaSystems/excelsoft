@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Alert,
   DeviceEventEmitter,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "@/services/notificationService";
@@ -21,17 +22,31 @@ export default function UserNotificationsScreen() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadNotifications = async () => {
+  useEffect(() => {
+    if (typeof console !== "undefined") console.log("[UserNotifications] Screen mounted");
+    return () => { if (typeof console !== "undefined") console.log("[UserNotifications] Screen unmounted"); };
+  }, []);
+
+  const loadNotifications = useCallback(async () => {
+    if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start");
     const stored = await NotificationService.getStoredNotifications();
-    setNotifications(stored);
-    DeviceEventEmitter.emit("notificationUpdate");
-  };
+    if (typeof console !== "undefined") console.log("[UserNotifications] loaded", stored?.length ?? 0, "notifications");
+    setNotifications(stored ?? []);
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadNotifications();
-    }, [])
+    }, [loadNotifications])
   );
+
+  // Refresh list when a new web push (or other source) triggers notificationUpdate
+  useEffect(() => {
+    if (!DeviceEventEmitter?.addListener) return;
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", loadNotifications);
+    return () => sub.remove();
+  }, [loadNotifications]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -186,6 +201,11 @@ export default function UserNotificationsScreen() {
           <Text style={styles.emptySubtext}>
             You'll see notifications here when you receive them
           </Text>
+          {Platform.OS === "web" && (
+            <Text style={styles.emptyHint}>
+              Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
+            </Text>
+          )}
         </View>
       ) : (
         <FlatList
@@ -313,5 +333,13 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     lineHeight: 22,
+  },
+  emptyHint: {
+    marginTop: 16,
+    fontSize: 14,
+    color: colors.primary,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 24,
   },
 });

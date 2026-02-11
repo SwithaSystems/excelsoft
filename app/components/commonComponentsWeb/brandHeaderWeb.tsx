@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
@@ -18,9 +19,17 @@ import { useRoleContext } from "@/context/RoleContext";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import {
+  requestNotificationPermission,
+  registerWebPush,
+  isWebPushSupported,
+} from "@/utilities/registerWebPush";
+import { NotificationService } from "@/services/notificationService";
+import { DeviceEventEmitter } from "react-native";
 
 
 // Storage key for recent searches
@@ -41,6 +50,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
     0
   );
 
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -59,6 +70,17 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   useEffect(() => {
     loadRecentSearches();
   }, []);
+
+  const fetchUnreadNotificationCount = useCallback(async () => {
+    const count = await NotificationService.getUnreadCount();
+    setUnreadNotificationCount(count);
+  }, []);
+
+  useEffect(() => {
+    fetchUnreadNotificationCount();
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", fetchUnreadNotificationCount);
+    return () => sub.remove();
+  }, [fetchUnreadNotificationCount]);
 
   // Load recent searches from SecureStore
   const loadRecentSearches = async () => {
@@ -534,10 +556,50 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => redirectToPage(containers.userNotificationsScreen)}
+            style={[styles.iconButton, Platform.OS === "web" && { cursor: "pointer" }]}
+            onPress={() => {
+              console.log("[Notifications] Bell icon clicked");
+              const pageName = containers.userNotificationsScreen;
+              console.log("[Notifications] Navigating to:", pageName, "pathname:", `/${pageName}`);
+              redirectToPage(pageName);
+              console.log("[Notifications] redirectToPage called");
+              if (Platform.OS === "web" && isWebPushSupported() && isValidUser) {
+                (async () => {
+                  try {
+                    console.log("[Notifications] Web push: checking registration...");
+                    const alreadyRegistered = await AsyncStorage.getItem("web_push_registered");
+                    if (alreadyRegistered !== "true") {
+                      console.log("[Notifications] Web push: requesting permission...");
+                      const permission = await requestNotificationPermission();
+                      console.log("[Notifications] Web push: permission =", permission);
+                      if (permission === "granted") {
+                        const ok = await registerWebPush(() => SecureStore.getItemAsync("token"));
+                        console.log("[Notifications] Web push: registerWebPush result =", ok);
+                        if (ok) await AsyncStorage.setItem("web_push_registered", "true");
+                        if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+                      }
+                    } else {
+                      console.log("[Notifications] Web push: already registered");
+                    }
+                  } catch (e) {
+                    console.warn("[Notifications] Web push background error:", e);
+                  }
+                })();
+              } else {
+                console.log("[Notifications] Skip web push: Platform=", Platform.OS, "supported=", Platform.OS === "web" ? isWebPushSupported() : "-", "validUser=", isValidUser);
+              }
+            }}
           >
-            <Ionicons name="notifications" size={24} color={colors.primary} />
+            <View style={styles.iconContainer}>
+              <Ionicons name="notifications" size={24} color={colors.primary} />
+              {unreadNotificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
         )}
       </View>
