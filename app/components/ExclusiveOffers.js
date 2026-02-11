@@ -69,7 +69,7 @@ function ExclusiveOffers(props) {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.ratingContainer}>
-                  <Text style={styles.ratingText}>{item.rating}</Text>
+                  <Text style={styles.ratingText}>{Number(item.rating).toFixed(1)}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>

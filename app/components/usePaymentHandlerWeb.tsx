@@ -345,7 +345,7 @@ export default function usePaymentHandlerWeb() {
       const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: Math.round(amount * 100), // cents
+          amount: amount, // cents
           currency: CURRENCY_CODE,
           clientId: CLIENT_ID,
         }

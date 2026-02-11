@@ -23,6 +23,8 @@ import {
 } from "../../constants/stringLiterals";
 import { useEffect, useState } from "react";
 import globalSettingsAPI from "@/services/globalSettingsService";
+import { PaymentIntent } from "@stripe/stripe-react-native";
+
 
 type Product = {
   productId: string;
@@ -106,16 +108,18 @@ export const usePaymentHandler = () => {
     const quantity = item.quantity || 1;
     const netPrice = item.netPrice;
 
-    // Calculate VAT per unit
-    const vatPerUnit = item.isVatApplicable
-      ? (netPrice * (item.vatRate || 0)) / 100
-      : 0;
+     // Calculate net price excluding VAT
+    const netPriceExVAT = item.isVatApplicable
+      ? netPrice / (1 + item.vatRate)
+      : netPrice;
 
-    // Price including VAT per unit
-    const netPriceIncVat = netPrice + vatPerUnit;
-
+      // Calculate VAT amount per unit
+    const vatPerUnit = item.isVatApplicable ? netPrice - netPriceExVAT : 0;
     // Total VAT for all quantities
-    const vatAmount = vatPerUnit * quantity;
+    const vatAmount =  Number((vatPerUnit * quantity).toFixed(2));
+    // Total price including VAT (which is just netPrice * quantity since netPrice is RRP)
+    const netPriceIncVat = Number((netPrice * quantity).toFixed(2));
+    const grossPrice = netPriceIncVat;
 
     return {
       productId: Number(item.id),
@@ -123,9 +127,9 @@ export const usePaymentHandler = () => {
       quantity,
       netPrice: netPrice,
       netPriceIncVat: netPriceIncVat,
-      grossPrice: netPriceIncVat,
+      grossPrice: grossPrice,
       isVatApplicable: item.isVatApplicable,
-      vatRate: item.vatRate,
+      vatRate: item.vatRate || 20,
       vatAmount: vatAmount,
     };
   });
@@ -151,7 +155,7 @@ export const usePaymentHandler = () => {
       finalTotal: total.toFixed(2),
     });
 
-    return total;
+   return Number(total.toFixed(2));
   };
 
   /* -------------------- PAYMENT INTENT -------------------- */
@@ -178,7 +182,7 @@ export const usePaymentHandler = () => {
       const orderDetails = {
         products,
         shippingCharges:
-          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
+        params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
         totalAmount,
         paymentMethod: "credit_card",
         pickupMode: params.selectedMode as PickupMode,
@@ -260,7 +264,7 @@ export const usePaymentHandler = () => {
       expectedTotal: expectedTotal.toFixed(2),
     });
 
-    const { error } = await confirmPlatformPayPayment(
+    const result  = await confirmPlatformPayPayment(
       paymentData.paymentIntent.client_secret,
       {
         applePay: {
@@ -277,26 +281,31 @@ export const usePaymentHandler = () => {
       }
     );
 
-    if (error) {
-      //  FIXED: Enhanced error logging
-      console.error(" Apple Pay Error Details:", {
-        code: error.code,
-        message: error.message,
-        declineCode: error.declineCode,
-        type: error.type,
-        localizedMessage: error.localizedMessage,
-      });
+    console.log("PlatformPay Result:", result);
 
-      Alert.alert(
-        "Payment Error",
-        error.message || "Apple Pay payment failed. Please try another payment method."
-      );
-      return;
-    }
+    if (result.error) {
+  console.error("PlatformPay Error:", result.error);
 
-    console.log(" Apple Pay payment confirmed");
+  // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
+  if (
+    result.paymentIntent?.status === "Succeeded"
+  ) {
+    console.log("Payment succeeded despite SDK error");
     await createOrder(params, totalAmount);
-  };
+    return;
+  }
+
+  Alert.alert(
+    "Payment Failed",
+    result.error.message || "Payment failed. Please try again."
+  );
+  return;
+}
+
+// Normal success
+if (result.paymentIntent?.status === "Succeeded") {
+  await createOrder(params, totalAmount);
+}}
 
   /* -------------------- CARD PAYMENT -------------------- */
   const handlePayment = async (items: Product[], params: any) => {

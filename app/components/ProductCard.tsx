@@ -137,7 +137,7 @@ const ProductCard = ({
 
         {noOfreviews > 0 && (
           <View style={styles.ratingContainer}>
-            <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{rating}</Text>
+            <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{Number(rating).toFixed(1)}</Text>
             <Star filled={false} size={starSize} />
             <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
