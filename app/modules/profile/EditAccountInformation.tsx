@@ -34,6 +34,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
 import colors from "@/constants/colors";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import { getAllCountries } from "react-native-country-picker-modal";
 
 const EditAccountInformationScreen = () => {
   const dispatch = useDispatch();
@@ -60,7 +61,9 @@ const EditAccountInformationScreen = () => {
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
   const [localPhone, setLocalPhone] = useState("");       
-  const [newLocalPhone, setNewLocalPhone] = useState(""); 
+  const [newLocalPhone, setNewLocalPhone] = useState("");
+  const [newCountryCode, setNewCountryCode] = useState<CountryCode>("GB");
+  const [newCallingCode, setNewCallingCode] = useState("44"); 
 
 
   const userData = useSelector((state: RootState) => state.user.user);
@@ -89,14 +92,32 @@ const EditAccountInformationScreen = () => {
       if (user?.data) {
         setId(user.data._id);
 
-        const fullPhone = user.data.phone || ""; // example: +447911123456
+   const fullPhone = user.data.phone || "";
 
         if (fullPhone.startsWith("+")) {
-          const match = fullPhone.match(/^\+(\d{1,3})(\d+)$/);
-          if (match) {
-            setCallingCode(match[1]);   // 44
-            setLocalPhone(match[2]);   // 7911123456
+          const number = fullPhone.slice(1);
+
+          // calling codes are max 3 digits
+          const code1 = number.slice(0, 1);
+          const code2 = number.slice(0, 2);
+          const code3 = number.slice(0, 3);
+
+          let code = "";
+
+          // check manually for common lengths
+          if (number.length > 10) {
+            code = code2; // most countries (91,44,61)
+          } else if (number.length > 9) {
+            code = code1; // US (+1)
+          } else {
+            code = code3; // rare cases
           }
+
+          setCallingCode(code);
+
+          const local = number.slice(code.length);
+          setLocalPhone(local);
+          setPhone(fullPhone);
         }
 
         setEmail(user.data.email || "");
@@ -113,11 +134,15 @@ const EditAccountInformationScreen = () => {
 }, [userData]);
 
 
-  const handlePhoneChange = (value: string) => {
-    setPhone(value);
-    const error = isValidPhoneNumber(value);
-    setPhoneError(value.trim() ? error : null);
+  const handlePhoneChange = (text: string) => {
+    setLocalPhone(text);
+
+    const full = `+${callingCode}${text}`;
+    const error = isValidPhoneNumber(full);
+
+    setPhoneError(text.trim() ? error : null);
   };
+
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
@@ -139,7 +164,9 @@ const EditAccountInformationScreen = () => {
 
   const handleVerifyPhone = async () => {
     try {
-      const phoneToVerify = showChangePhone ? newPhone : phone;
+      const phoneToVerify = showChangePhone
+        ? `+${callingCode}${newLocalPhone}`
+        : `+${callingCode}${localPhone}`;
       const hasError = showChangePhone ? newPhoneError : phoneError;
 
       if (!phoneToVerify || hasError) {
@@ -413,10 +440,7 @@ const EditAccountInformationScreen = () => {
                   style={styles.phoneInput}
                   placeholder="Enter phone number"
                   value={localPhone}
-                  onChangeText={(text) => {
-                    setLocalPhone(text);
-                    handlePhoneChange(`+${callingCode}${text}`);
-                  }}
+                  onChangeText={handlePhoneChange}
                   keyboardType="phone-pad"
                   editable={!isPhoneVerified && !showChangePhone}
                 />

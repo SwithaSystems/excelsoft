@@ -368,7 +368,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       hasFooter
       hasHeader
       scrollable={false}
-      headerComponent={<Header headerText={FILE_UPLOAD} />}
+      // headerComponent={<Header headerText={FILE_UPLOAD} />}
     >
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>
