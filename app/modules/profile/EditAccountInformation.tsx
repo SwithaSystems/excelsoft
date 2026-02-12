@@ -165,7 +165,7 @@ const EditAccountInformationScreen = () => {
   const handleVerifyPhone = async () => {
     try {
       const phoneToVerify = showChangePhone
-        ? `+${callingCode}${newLocalPhone}`
+        ? `+${newCallingCode}${newLocalPhone}`
         : `+${callingCode}${localPhone}`;
       const hasError = showChangePhone ? newPhoneError : phoneError;
 
@@ -455,16 +455,31 @@ const EditAccountInformationScreen = () => {
                 <>
                   <Text style={styles.changeLabel}>New Phone Number</Text>
 
-                  <TextInput
-                    style={styles.phoneInput}
-                    placeholder="New phone number"
-                    value={newLocalPhone}
-                    onChangeText={(text) => {
-                      setNewLocalPhone(text);
-                      handleNewPhoneChange(`+${callingCode}${text}`);
-                    }}
-                    keyboardType="phone-pad"
-                  />
+                  <View style={styles.phoneInputContainer}>
+                    <View style={styles.countryPickerContainer}>
+                      <CountryPicker
+                        countryCode={newCountryCode}
+                        withFilter
+                        withCallingCode
+                        withCallingCodeButton
+                        onSelect={(country) => {
+                          setNewCountryCode(country.cca2 || "GB");
+                          setNewCallingCode(country.callingCode[0] || "44");
+                        }}
+                      />
+                    </View>
+
+                    <TextInput
+                      style={styles.phoneInput}
+                      placeholder="New phone number"
+                      value={newLocalPhone}
+                      onChangeText={(text) => {
+                        setNewLocalPhone(text);
+                        handleNewPhoneChange(`+${newCallingCode}${text}`);
+                      }}
+                      keyboardType="phone-pad"
+                    />
+                  </View>
 
                   {newPhoneError && (
                     <Text style={globalStyles.errorText}>{newPhoneError}</Text>
