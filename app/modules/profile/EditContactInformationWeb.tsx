@@ -220,6 +220,28 @@ const editContactInformationWebScreen = () => {
       const calling = showChangePhone ? newCallingCode : callingCode;
 
       const phoneToVerify = `+${calling}${local}`;
+     // 🔹 Duplicate check before sending OTP
+      try {
+        const existingUser = await UserAPI.getUserByPhonenumber(phoneToVerify);
+
+        if (existingUser?.data) {
+          const existingUserId = existingUser.data._id || existingUser.data.id;
+
+          // ❗ If phone belongs to another user → block
+          if (existingUserId !== userId) {
+            if (showChangePhone) {
+              setNewPhoneError("This phone number is already registered");
+            } else {
+              setPhoneError("This phone number is already registered");
+            }
+            return; // 🚫 Stop here
+          }
+        }
+      } catch (err: any) {
+        // 404 means phone doesn't exist → safe to continue
+      }
+
+
       const hasError = showChangePhone ? newPhoneError : phoneError;
 
       if (!phoneToVerify || hasError) {
@@ -650,7 +672,7 @@ const editContactInformationWebScreen = () => {
               </View>
             </View>
 
-            <View style={webStyles.inlineButtonRow}>
+            {/* <View style={webStyles.inlineButtonRow}>
               <Button
                 primary={false}
                 title="Cancel"
@@ -666,7 +688,7 @@ const editContactInformationWebScreen = () => {
                 textStyle={webStyles.saveButtonText}
                 disabled={loading}
               />
-            </View>
+            </View> */}
           </View>
         </ScrollView>
       </KeyBoardWrapper>

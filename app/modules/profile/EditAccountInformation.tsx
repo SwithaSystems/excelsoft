@@ -164,6 +164,17 @@ const EditAccountInformationScreen = () => {
 
       const phoneToVerify = `+${callingCode}${local}`;
 
+      try {
+        const existingUser = await UserAPI.getUserByPhonenumber(phoneToVerify);
+
+        if (existingUser?.data) {
+          setNewPhoneError("This phone number is already registered");
+          return;
+        }
+      } catch (err) {
+        // 404 means phone doesn't exist — safe to continue
+      }
+
       if (!isPhoneVerified) {
         const res = await TwilioApi.sendOtp({ phone: phoneToVerify });
         // console.log("Send OTP response:", res);
