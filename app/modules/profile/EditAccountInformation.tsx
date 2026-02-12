@@ -33,7 +33,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
 import colors from "@/constants/colors";
-import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import CountryPicker, { CountryCode, FlagType } from "react-native-country-picker-modal";
 import { getAllCountries } from "react-native-country-picker-modal";
 
 const EditAccountInformationScreen = () => {
@@ -61,9 +61,7 @@ const EditAccountInformationScreen = () => {
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
   const [localPhone, setLocalPhone] = useState("");       
-  const [newLocalPhone, setNewLocalPhone] = useState("");
-  const [newCountryCode, setNewCountryCode] = useState<CountryCode>("GB");
-  const [newCallingCode, setNewCallingCode] = useState("44"); 
+  const [newLocalPhone, setNewLocalPhone] = useState(""); 
 
 
   const userData = useSelector((state: RootState) => state.user.user);
@@ -92,33 +90,28 @@ const EditAccountInformationScreen = () => {
       if (user?.data) {
         setId(user.data._id);
 
-   const fullPhone = user.data.phone || "";
+        const fullPhone = user.data.phone || "";
 
-        if (fullPhone.startsWith("+")) {
-          const number = fullPhone.slice(1);
+          if (fullPhone.startsWith("+")) {
 
-          // calling codes are max 3 digits
-          const code1 = number.slice(0, 1);
-          const code2 = number.slice(0, 2);
-          const code3 = number.slice(0, 3);
+            const countries = await getAllCountries("emoji" as FlagType);
 
-          let code = "";
+            const foundCountry = countries.find((c: any) =>
+              fullPhone.startsWith(`+${c.callingCode[0]}`)
+            );
 
-          // check manually for common lengths
-          if (number.length > 10) {
-            code = code2; // most countries (91,44,61)
-          } else if (number.length > 9) {
-            code = code1; // US (+1)
-          } else {
-            code = code3; // rare cases
+            if (foundCountry) {
+              const extractedCallingCode = foundCountry.callingCode[0];
+
+              setCountryCode(foundCountry.cca2 as CountryCode);
+              setCallingCode(extractedCallingCode);
+
+              const extractedLocal = fullPhone.slice(extractedCallingCode.length + 1);
+
+              setLocalPhone(extractedLocal);
+            }
           }
-
-          setCallingCode(code);
-
-          const local = number.slice(code.length);
-          setLocalPhone(local);
-          setPhone(fullPhone);
-        }
+        
 
         setEmail(user.data.email || "");
         setProfileImage(user.data.profileImageUrl || "");
@@ -134,15 +127,11 @@ const EditAccountInformationScreen = () => {
 }, [userData]);
 
 
-  const handlePhoneChange = (text: string) => {
-    setLocalPhone(text);
-
-    const full = `+${callingCode}${text}`;
-    const error = isValidPhoneNumber(full);
-
-    setPhoneError(text.trim() ? error : null);
+  const handlePhoneChange = (value: string) => {
+    // setPhone(value);
+    const error = isValidPhoneNumber(value);
+    setPhoneError(value.trim() ? error : null);
   };
-
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
@@ -151,7 +140,7 @@ const EditAccountInformationScreen = () => {
   };
 
   const handleNewPhoneChange = (value: string) => {
-    setNewPhone(value);
+    // setNewPhone(value);
     const error = isValidPhoneNumber(value);
     setNewPhoneError(value.trim() ? error : null);
   };
@@ -164,15 +153,16 @@ const EditAccountInformationScreen = () => {
 
   const handleVerifyPhone = async () => {
     try {
-      const phoneToVerify = showChangePhone
-        ? `+${newCallingCode}${newLocalPhone}`
-        : `+${callingCode}${localPhone}`;
+      // const phoneToVerify = showChangePhone ? newPhone : phone;
+      const local = showChangePhone ? newLocalPhone : localPhone;
       const hasError = showChangePhone ? newPhoneError : phoneError;
 
-      if (!phoneToVerify || hasError) {
+      if (!local || hasError) {
         Alert.alert("Error", "Please enter a valid phone number");
         return;
       }
+
+      const phoneToVerify = `+${callingCode}${local}`;
 
       if (!isPhoneVerified) {
         const res = await TwilioApi.sendOtp({ phone: phoneToVerify });
@@ -245,18 +235,20 @@ const EditAccountInformationScreen = () => {
           Alert.alert("Error", errorMsg);
         }
       } else if (showChangeEmail) {
-        if (!phone || !isPhoneVerified) {
+        if (!localPhone || !isPhoneVerified) {
           Alert.alert("Error", "You need a verified phone to change your email");
           return;
         }
-        const res = await TwilioApi.sendOtp({ phone });
+
+        const fullPhone = `+${callingCode}${localPhone}`;
+        const res = await TwilioApi.sendOtp({ phone: fullPhone });
         // console.log("Send OTP response:", res);
         if (
           res?.status === 201 &&
           res.data?.status === "pending"
         ) {
           redirectToPage(containers.verificationScreen, {
-            phoneNumber_editAccount: phone,
+            phoneNumber_editAccount: fullPhone,
             verificationType: "phone",
             from: "change_email",
             newEmail: emailToVerify,
@@ -285,8 +277,9 @@ const EditAccountInformationScreen = () => {
     let phoneFieldChanged = false;
     let emailFieldChanged = false;
 
-    if (!isPhoneVerified && phone && !phoneError) {
-      formData.append("phone", phone);
+    if (!isPhoneVerified && localPhone && !phoneError) {
+      const fullPhone = `+${callingCode}${localPhone}`;
+      formData.append("phone", fullPhone);
       hasChanges = true;
       phoneFieldChanged = true;
     }
@@ -423,28 +416,36 @@ const EditAccountInformationScreen = () => {
 
               {/* Current Phone */}
               <View style={styles.phoneInputContainer}>
-                <View style={styles.countryPickerContainer}>
-                  <CountryPicker
-                    countryCode={countryCode}
-                    withFilter
-                    withCallingCode
-                    withCallingCodeButton
-                    onSelect={(country) => {
-                      setCountryCode(country.cca2 || "GB");
-                      setCallingCode(country.callingCode[0] || "44");
-                    }}
-                  />
-                </View>
-
-                <TextInput
-                  style={styles.phoneInput}
-                  placeholder="Enter phone number"
-                  value={localPhone}
-                  onChangeText={handlePhoneChange}
-                  keyboardType="phone-pad"
-                  editable={!isPhoneVerified && !showChangePhone}
+              <View style={styles.countryPickerContainer}>
+                <CountryPicker
+                  countryCode={countryCode}
+                  withFilter
+                  withCallingCode
+                  withCallingCodeButton
+                  onSelect={(country) => {
+                    setCountryCode(country.cca2);
+                    setCallingCode(country.callingCode[0]);
+                  }}
                 />
               </View>
+
+              <Text style={styles.callingCodeText}>
+                +{callingCode}
+              </Text>
+
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="Enter phone number"
+                value={localPhone}
+                onChangeText={(text) => {
+                  setLocalPhone(text);
+                  handlePhoneChange(text); 
+                }}
+                keyboardType="phone-pad"
+                editable={!isPhoneVerified && !showChangePhone}
+              />
+            </View>
+
 
               {phoneError && (
                 <Text style={globalStyles.errorText}>{phoneError}</Text>
@@ -455,31 +456,36 @@ const EditAccountInformationScreen = () => {
                 <>
                   <Text style={styles.changeLabel}>New Phone Number</Text>
 
-                  <View style={styles.phoneInputContainer}>
-                    <View style={styles.countryPickerContainer}>
-                      <CountryPicker
-                        countryCode={newCountryCode}
-                        withFilter
-                        withCallingCode
-                        withCallingCodeButton
-                        onSelect={(country) => {
-                          setNewCountryCode(country.cca2 || "GB");
-                          setNewCallingCode(country.callingCode[0] || "44");
-                        }}
-                      />
-                    </View>
-
-                    <TextInput
-                      style={styles.phoneInput}
-                      placeholder="New phone number"
-                      value={newLocalPhone}
-                      onChangeText={(text) => {
-                        setNewLocalPhone(text);
-                        handleNewPhoneChange(`+${newCallingCode}${text}`);
+                 <View style={styles.phoneInputContainer}>
+                  <View style={styles.countryPickerContainer}>
+                    <CountryPicker
+                      countryCode={countryCode}
+                      withFilter
+                      withCallingCode
+                      withCallingCodeButton
+                      onSelect={(country) => {
+                        // ✅ Allow country change during phone change
+                        setCountryCode(country.cca2);
+                        setCallingCode(country.callingCode[0]);
                       }}
-                      keyboardType="phone-pad"
                     />
                   </View>
+
+                  <Text style={styles.callingCodeText}>
+                    +{callingCode}
+                  </Text>
+
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="New phone number"
+                    value={newLocalPhone}
+                    onChangeText={(text) => {
+                      setNewLocalPhone(text);
+                      handleNewPhoneChange(text);
+                    }}
+                    keyboardType="phone-pad"
+                  />
+                </View>
 
                   {newPhoneError && (
                     <Text style={globalStyles.errorText}>{newPhoneError}</Text>
@@ -669,7 +675,12 @@ const styles = StyleSheet.create({
   paddingHorizontal: 8,
   marginTop: 6,
 },
-
+callingCodeText: {
+  fontSize: 16,
+  marginRight: 8,
+  fontWeight: "500",
+  color: "#000",
+},
 phoneInput: {
   flex: 1,
   paddingVertical: 10,
