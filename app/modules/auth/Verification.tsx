@@ -27,6 +27,7 @@ import colors from "../../../constants/colors";
 
 const verificationScreen = () => {
   const isWeb = Platform.OS === "web";
+  const editContactScreen = isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen;
   const dispatch = useDispatch();
 
   const {
@@ -377,7 +378,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your phone number has been verified and added to your account.",
-            () => clearNavigationStack(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update phone:", updateError);
@@ -418,7 +419,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your email address has been verified and added to your account.",
-            () => clearNavigationStack(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update email:", updateError);
@@ -459,7 +460,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your phone number has been updated and verified successfully.",
-            () => clearNavigationStack(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update phone:", updateError);
@@ -503,7 +504,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your email address has been updated and verified successfully.",
-            () => clearNavigationStack(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update email:", updateError);

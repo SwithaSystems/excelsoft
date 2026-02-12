@@ -65,7 +65,7 @@ const UserProfileScreen = () => {
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const settingsMenu = {
-    "Contact Information": containers.editAccountInformationScreen,
+    "Contact Information": isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen,
     "Change Password": containers.changePasswordScreen,
     "Notification Settings": containers.notificationsScreen,
     "Customer Support": containers.customerSupportScreen,

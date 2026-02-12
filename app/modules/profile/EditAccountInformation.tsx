@@ -429,9 +429,9 @@ const EditAccountInformationScreen = () => {
                 />
               </View>
 
-              <Text style={styles.callingCodeText}>
+              {/* <Text style={styles.callingCodeText}>
                 +{callingCode}
-              </Text>
+              </Text> */}
 
               <TextInput
                 style={styles.phoneInput}
@@ -471,9 +471,9 @@ const EditAccountInformationScreen = () => {
                     />
                   </View>
 
-                  <Text style={styles.callingCodeText}>
+                  {/* <Text style={styles.callingCodeText}>
                     +{callingCode}
-                  </Text>
+                  </Text> */}
 
                   <TextInput
                     style={styles.phoneInput}
