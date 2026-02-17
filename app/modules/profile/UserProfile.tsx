@@ -29,6 +29,7 @@ import {
   ACCOUNT_DELETION_ERROR,
 } from "../../../constants/customErrorMessages";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

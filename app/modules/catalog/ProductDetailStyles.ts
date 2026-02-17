@@ -297,8 +297,8 @@ const styles = StyleSheet.create({
     maxWidth: 1200,
     alignSelf: "center",
     width: "100%",
-    paddingHorizontal: 40,
-    paddingVertical: 40,
+    // paddingHorizontal: 40,
+    // paddingVertical: 40,
     gap: 40,
   },
   webLeftSection: {
@@ -344,12 +344,13 @@ const styles = StyleSheet.create({
   webRightSection: {
     flex: 0.5,
   },
-webProductHeader: {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  gap: 12,
-},
+  webProductHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: Platform.OS === "web" ? 8 : 0,
+  },
   webProductTitle: {
     fontSize: 28,
     fontWeight: "bold",
@@ -466,12 +467,12 @@ webProductHeader: {
   },
   webAddToCartButton: {
     width: "100%",
-    marginBottom: 32,
+    marginBottom: 16,
   },
   webProductInfo: {
     borderTopWidth: 1,
     borderTopColor: colors.lightgrey,
-    paddingTop: 24,
+    paddingTop: 16,
   },
   webInfoTitle: {
     fontSize: 20,
@@ -488,8 +489,8 @@ webProductHeader: {
     maxWidth: 1200,
     alignSelf: "center",
     width: "100%",
-    paddingHorizontal: 40,
-    paddingVertical: 40,
+    // paddingHorizontal: 40,
+    // paddingVertical: 40,
     borderTopWidth: 1,
     borderTopColor: colors.lightgrey,
   },

@@ -49,6 +49,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -63,6 +64,11 @@ const HomeDeliveryScreen = () => {
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
+
+  const isWeb = Platform.OS === "web";
+      
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
@@ -609,7 +615,7 @@ const HomeDeliveryScreen = () => {
     validateTime(date, hours, minutes, period);
   };
 
-  const isWeb = Platform.OS === "web";
+  // const isWeb = Platform.OS === "web";
   
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
@@ -631,14 +637,14 @@ const HomeDeliveryScreen = () => {
       <View
         style={[
           globalStyles.pt_0,
-          isWeb
-            ? {
-                width: "70%",
-                alignSelf: "center",
-                paddingVertical: 20,
-              }
-            : { paddingHorizontal: 0 },
-        ]}
+           isWeb
+                ? {
+                    width: isMobileWeb ? "95%" : "70%",
+                    alignSelf: "center",
+                    paddingVertical: isMobileWeb ? 12 : 20,
+                  }
+                : { paddingHorizontal: 0 },
+            ]}
       >
         <KeyBoardWrapper>
           {isWeb && (

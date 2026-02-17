@@ -51,10 +51,15 @@ import {
 } from "../../../constants/customErrorMessages";
 import { Product, ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
   const isWeb = Platform.OS === "web";
+
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
@@ -356,7 +361,7 @@ const CartScreen = () => {
       footerComponent={FooterComponent}
       scrollable={true}
     >
-      {isWeb ? (
+      {isWeb && !isMobileWeb ? (
         // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
         <View style={[globalStyles.container]}>
           <View style={[globalStyles.pt_0]}>

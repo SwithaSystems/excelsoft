@@ -42,12 +42,15 @@ import {
   DELIVERY_MODE_HOME,
 } from "../../../constants/stringLiterals";
 import OrderTimeline from "../delivery/Components/OrderTimeline";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const orderDetailsScreen = () => {
   const { from } = useLocalSearchParams();
   const { orderId } = useLocalSearchParams();
   const { orderData } = useLocalSearchParams();
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
   const [cartItemsWithDetails, setCartItemsWithDetails] = useState<any[]>([]);
@@ -443,11 +446,11 @@ const orderDetailsScreen = () => {
                 <Text style={styles.webPageTitle}>Order Details</Text>
               </View>
               {/* Top Section: QR Code and Order Summary */}
-              <View style={styles.webTopSection}>
+              <View style={[styles.webTopSection, isMobileWeb && styles.webMobileStack]}>
                 {/* Left: QR Code */}
-                <View style={styles.webQrCard}>
-                  <View style={styles.webQrContent}>
-                    <View style={styles.webQrContainer}>
+                <View style={[styles.webQrCard, isMobileWeb && styles.webMobileCard]}>
+                  <View style={[styles.webQrContent, isMobileWeb && styles.webMobileQrContent]}>
+                    <View style={[styles.webQrContainer, isMobileWeb && styles.webMobileQrContainer]}>
                       <QRCodeDisplay
                         qrValue={orderDetails.orderNumber?.toString()}
                         size={isWeb ? 165 : 200}
@@ -473,7 +476,7 @@ const orderDetailsScreen = () => {
                 </View>
 
                 {/* Right: Order Summary */}
-                <View style={styles.webStatusCard}>
+                <View style={[styles.webStatusCard, isMobileWeb && styles.webMobileCard]}>
                   {[
                     {
                       label: "Status",
@@ -550,9 +553,21 @@ const orderDetailsScreen = () => {
               </View>
 
               {/* Middle Section: Ordered Items and Tracking Timeline */}
-              <View style={styles.webMiddleSection}>
+              <View
+                style={[
+                  styles.webMiddleSection,
+                  isMobileWeb && styles.webMiddleSectionMobile,
+                  isMobileWeb && styles.webMobileStack,
+                ]}
+              >
                 {/* Left: Ordered Items */}
-                <View style={styles.webOrderItemsCard}>
+                <View
+                  style={[
+                    styles.webOrderItemsCard,
+                    isMobileWeb && styles.webMobileCard,
+                    isMobileWeb && styles.webMobileOrderItemsCard,
+                  ]}
+                >
                   {(cartItemsWithDetails.length > 0
                     ? cartItemsWithDetails
                     : orderDetails.products || []
@@ -567,15 +582,24 @@ const orderDetailsScreen = () => {
                 </View>
 
                 {/* Right: Order Tracking Timeline */}
-                <View style={styles.webTimelineCard}>
+                  <View
+                    style={[
+                      styles.webTimelineCard,
+                      isMobileWeb && styles.webMobileCard,
+                      isMobileWeb && styles.webMobileTimelineCard,
+                    ]}
+                  >
                   <Text style={styles.webTimelineTitle}>
                     Track Your Order here:
                   </Text>
                   <Text style={styles.webTimelineSubtitle}>
                     Your Order packed Successfully!! Let's see the Progress!
                   </Text>
-                  <ScrollView 
-                    style={styles.webTimelineContainer}
+                  <ScrollView
+                    style={[
+                      styles.webTimelineContainer,
+                      isMobileWeb && styles.webMobileTimelineContainer,
+                    ]}
                     contentContainerStyle={styles.webTimelineContent}
                     showsVerticalScrollIndicator={false}
                   >

@@ -52,6 +52,7 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import { useNavigation } from "@react-navigation/native";
 import { color } from "react-native-elements/dist/helpers";
 import React, { useEffect, useState, useRef } from "react";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface User {
   id: string;
@@ -89,6 +90,9 @@ const editProfileScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const webImageFileRef = useRef<File | null>(null);
 
 
@@ -364,6 +368,7 @@ const editProfileScreen = () => {
           style={[
             globalStyles.container as ViewStyle,
             isWeb && webStyles.contentWidth,
+            isMobileWeb && webStyles.mobileWebContentWidth,
           ]}
         >
           <ScrollView>
@@ -376,7 +381,10 @@ const editProfileScreen = () => {
                       ? { uri: profileImage }
                       : require("@/assets/default_user_profile.png")
                   }
-                  style={globalStyles.profileImage}
+                 style={[
+                    globalStyles.profileImage,
+                    isMobileWeb && webStyles.mobileWebProfileImage,
+                  ]}
                 />
                {isWeb ? (
   <label style={{ cursor: "pointer" }}>
@@ -513,18 +521,30 @@ const editProfileScreen = () => {
                 </View>
               </View>
               {isWeb && (
-                <View style={webStyles.inlineButtonRow}>
+                <View
+                style={[
+                  webStyles.inlineButtonRow,
+                  isMobileWeb && webStyles.mobileWebInlineButtonRow,
+                ]}
+              >
                   <Button
                     primary={false}
                     title="Cancel"
                     onPress={() => redirectToPage(containers.homeScreen)}
-                    style={webStyles.cancelButton}
+                    style={[
+                      webStyles.cancelButton,
+                      isMobileWeb && webStyles.mobileWebButton,
+                    ]}
                     textStyle={webStyles.cancelButtonText}
                   />
                   <Button
                     title={loading ? "Saving..." : "Save"}
                     onPress={handleEditProfile}
-                    style={[webStyles.saveButton,loading && { opacity: 0.6 }]}
+                    style={[
+                      webStyles.saveButton,
+                      loading && { opacity: 0.6 },
+                      isMobileWeb && webStyles.mobileWebButton,
+                    ]}
                     textStyle={webStyles.saveButtonText}
                   />
                 </View>
@@ -600,8 +620,10 @@ const webStyles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 16,
   },
-
-
+  mobileWebProfileImage: {
+    width: 90,
+    height: 90,
+  },
   saveButton: {
     minWidth: 160,
     height: 44,
@@ -631,4 +653,20 @@ const webStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
   },
+
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+
+  mobileWebInlineButtonRow: {
+    flexDirection: "column",
+    gap: 12,
+  },
+
+  mobileWebButton: {
+    width: "100%",
+    minWidth: undefined,
+  },
+
 });
