@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Alert,
   DeviceEventEmitter,
   Platform,
 } from "react-native";
@@ -18,12 +17,15 @@ import { jsonAxios } from "@/services/axiosConfig";
 import colors from "@/constants/colors";
 import { useFocusEffect } from "@react-navigation/native";
 import { handleNotificationNavigation } from "@/services/navigationService";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 const FOCUS_LOAD_THROTTLE_MS = 1200;
 
 export default function UserNotificationsScreen() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [notificationToDeleteId, setNotificationToDeleteId] = useState<string | null>(null);
   const lastFocusLoadRef = useRef<number>(0);
 
   useEffect(() => {
@@ -39,20 +41,23 @@ export default function UserNotificationsScreen() {
     // Web only: fetch from backend (GET /web-push/notifications) and merge. Mobile uses only AsyncStorage above.
     if (Platform.OS === "web") {
       try {
-        const [res, readApiIds] = await Promise.all([
+        const [res, readApiIds, deletedApiIds] = await Promise.all([
           jsonAxios.get<{ notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }> }>("/web-push/notifications"),
           NotificationService.getReadApiIds(),
+          NotificationService.getDeletedApiIds(),
         ]);
         const data = res.data;
-        const apiList = (data?.notifications ?? []).map((n) => ({
-          id: "api-" + n._id,
-          title: n.title,
-          body: n.body,
-          data: n.data ?? {},
-          timestamp: new Date(n.createdAt).getTime(),
-          isRead: readApiIds.includes("api-" + n._id),
-          type: (n.data?.type as string) || "general",
-        }));
+        const apiList = (data?.notifications ?? [])
+          .filter((n) => !deletedApiIds.includes("api-" + n._id))
+          .map((n) => ({
+            id: "api-" + n._id,
+            title: n.title,
+            body: n.body,
+            data: n.data ?? {},
+            timestamp: new Date(n.createdAt).getTime(),
+            isRead: readApiIds.includes("api-" + n._id),
+            type: (n.data?.type as string) || "general",
+          }));
         const seen = new Set(list.map((x) => x.id));
         for (const n of apiList) {
           if (!seen.has(n.id)) {
@@ -143,23 +148,21 @@ export default function UserNotificationsScreen() {
   };
 
   const handleDeleteNotification = (notificationId: string) => {
-    Alert.alert(
-      "Delete Notification",
-      "Are you sure you want to delete this notification?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await NotificationService.deleteNotification(notificationId);
-            await loadNotifications();
-            if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
-          },
-        },
-      ]
-    );
+    setNotificationToDeleteId(notificationId);
+    setDeleteModalVisible(true);
   };
+
+  const performDeleteNotification = async () => {
+    if (!notificationToDeleteId) return;
+    await NotificationService.deleteNotification(notificationToDeleteId);
+    setNotificationToDeleteId(null);
+    setDeleteModalVisible(false);
+    await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+  };
+
+  const formatOrderNumberInText = (text: string) =>
+    (text || "").replace(/#(\d+)/g, "#ORD-$1");
 
   const formatTimestamp = (timestamp: number) => {
     const now = Date.now();
@@ -207,13 +210,13 @@ export default function UserNotificationsScreen() {
           ]}
           numberOfLines={1}
         >
-          {item.title}
+          {formatOrderNumberInText(item.title)}
         </Text>
         <Text
           style={[styles.body, item.isRead && styles.readBody]}
           numberOfLines={2}
         >
-          {item.body}
+          {formatOrderNumberInText(item.body)}
         </Text>
         <Text style={styles.timestamp}>
           {formatTimestamp(item.timestamp)}
@@ -278,6 +281,24 @@ export default function UserNotificationsScreen() {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
+
+      <ConfirmationModal
+        isModalVisible={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setNotificationToDeleteId(null);
+        }}
+        handleCancel={() => {
+          setDeleteModalVisible(false);
+          setNotificationToDeleteId(null);
+        }}
+        handleSubmit={performDeleteNotification}
+        title="Delete Notification"
+        text="Are you sure you want to delete this notification?"
+        submitText="Delete"
+        cancelText="Cancel"
+        isDestructive
+      />
     </View>
   );
 }

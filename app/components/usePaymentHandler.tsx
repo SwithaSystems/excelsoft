@@ -23,8 +23,6 @@ import {
 } from "../../constants/stringLiterals";
 import { useEffect, useState } from "react";
 import globalSettingsAPI from "@/services/globalSettingsService";
-import { PaymentIntent } from "@stripe/stripe-react-native";
-
 
 type Product = {
   productId: string;
@@ -108,18 +106,16 @@ export const usePaymentHandler = () => {
     const quantity = item.quantity || 1;
     const netPrice = item.netPrice;
 
-     // Calculate net price excluding VAT
-    const netPriceExVAT = item.isVatApplicable
-      ? netPrice / (1 + item.vatRate)
-      : netPrice;
+    // Calculate VAT per unit
+    const vatPerUnit = item.isVatApplicable
+      ? (netPrice * (item.vatRate || 0)) / 100
+      : 0;
 
-      // Calculate VAT amount per unit
-    const vatPerUnit = item.isVatApplicable ? netPrice - netPriceExVAT : 0;
+    // Price including VAT per unit
+    const netPriceIncVat = netPrice + vatPerUnit;
+
     // Total VAT for all quantities
-    const vatAmount =  Number((vatPerUnit * quantity).toFixed(2));
-    // Total price including VAT (which is just netPrice * quantity since netPrice is RRP)
-    const netPriceIncVat = Number((netPrice * quantity).toFixed(2));
-    const grossPrice = netPriceIncVat;
+    const vatAmount = vatPerUnit * quantity;
 
     return {
       productId: Number(item.id),
@@ -127,21 +123,26 @@ export const usePaymentHandler = () => {
       quantity,
       netPrice: netPrice,
       netPriceIncVat: netPriceIncVat,
-      grossPrice: grossPrice,
+      grossPrice: netPriceIncVat,
       isVatApplicable: item.isVatApplicable,
-      vatRate: item.vatRate || 20,
+      vatRate: item.vatRate,
       vatAmount: vatAmount,
     };
   });
 
   /* -------------------- PRICE CALCULATION -------------------- */
   const calculateSubtotal = (items: Product[]) => {
-  const total = items.reduce((sum, item) => {
-    return sum + (item.netPrice * item.quantity);  // ✅ netPrice already includes VAT
-  }, 0);
+    const total = items.reduce((sum, item) => {
+      const itemSubtotal = item.netPrice * item.quantity;
+      const itemVAT = item.isVatApplicable
+        ? (itemSubtotal * item.vatRate) / 100
+        : 0;
 
-  return total;
-};
+      return sum + itemSubtotal + itemVAT;
+    }, 0);
+
+    return total;
+  };
 
   const getFinalAmount = (items: Product[], mode: string): number => {
     const subtotal = calculateSubtotal(items);
@@ -155,22 +156,37 @@ export const usePaymentHandler = () => {
       finalTotal: total.toFixed(2),
     });
 
-   return Number(total.toFixed(2));
+    return total;
   };
 
   /* -------------------- PAYMENT INTENT -------------------- */
-  const fetchPaymentIntent = async (amount: number) => {
+  const fetchPaymentIntent = async (amountInMajorUnits: number) => {
     try {
+      const amountInCents = Math.round(amountInMajorUnits * 100);
+      
+      console.log(" Creating PaymentIntent:", {
+        amountInMajorUnits,
+        amountInCents,
+        currency: CURRENCY_CODE.toUpperCase(),
+      });
+
       const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount,
-          currency: CURRENCY_CODE,
+          amount: amountInCents, // backend expects cents
+          currency: CURRENCY_CODE.toUpperCase(), // FIXED: Uppercase currency
           clientId: CLIENT_ID,
         }
       );
+
+      console.log(" PaymentIntent created:", {
+        clientSecret: resp.data?.paymentIntent?.client_secret?.substring(0, 20) + "...",
+        amount: resp.data?.paymentIntent?.amount,
+      });
+
       return resp.data;
-    } catch {
+    } catch (error: any) {
+      console.error(" PaymentIntent creation failed:", error.response?.data || error.message);
       Alert.alert("Error", "Failed to initialize payment");
       return null;
     }
@@ -182,7 +198,7 @@ export const usePaymentHandler = () => {
       const orderDetails = {
         products,
         shippingCharges:
-        params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
+          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
         totalAmount,
         paymentMethod: "credit_card",
         pickupMode: params.selectedMode as PickupMode,
@@ -198,6 +214,8 @@ export const usePaymentHandler = () => {
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
+
+      await orderService.notifyOrderPlaced(response);
 
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
@@ -232,7 +250,9 @@ export const usePaymentHandler = () => {
     const cartSummary: PlatformPay.CartSummaryItem[] = items.map((i) => ({
       label: i.name,
       amount: (
-        i.netPrice * i.quantity).toFixed(2),
+        i.netPrice * i.quantity +
+        (i.isVatApplicable ? i.vatAmount : 0)
+      ).toFixed(2),
       paymentType: PlatformPay.PaymentType.Immediate,
     }));
 
@@ -264,7 +284,7 @@ export const usePaymentHandler = () => {
       expectedTotal: expectedTotal.toFixed(2),
     });
 
-    const result  = await confirmPlatformPayPayment(
+    const { error } = await confirmPlatformPayPayment(
       paymentData.paymentIntent.client_secret,
       {
         applePay: {
@@ -281,31 +301,26 @@ export const usePaymentHandler = () => {
       }
     );
 
-    console.log("PlatformPay Result:", result);
+    if (error) {
+      //  FIXED: Enhanced error logging
+      console.error(" Apple Pay Error Details:", {
+        code: error.code,
+        message: error.message,
+        declineCode: error.declineCode,
+        type: error.type,
+        localizedMessage: error.localizedMessage,
+      });
 
-    if (result.error) {
-  console.error("PlatformPay Error:", result.error);
+      Alert.alert(
+        "Payment Error",
+        error.message || "Apple Pay payment failed. Please try another payment method."
+      );
+      return;
+    }
 
-  // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
-  if (
-    result.paymentIntent?.status === "Succeeded"
-  ) {
-    console.log("Payment succeeded despite SDK error");
+    console.log(" Apple Pay payment confirmed");
     await createOrder(params, totalAmount);
-    return;
-  }
-
-  Alert.alert(
-    "Payment Failed",
-    result.error.message || "Payment failed. Please try again."
-  );
-  return;
-}
-
-// Normal success
-if (result.paymentIntent?.status === "Succeeded") {
-  await createOrder(params, totalAmount);
-}}
+  };
 
   /* -------------------- CARD PAYMENT -------------------- */
   const handlePayment = async (items: Product[], params: any) => {

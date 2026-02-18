@@ -33,6 +33,10 @@ export interface NotificationItem {
 const NOTIFICATIONS_STORAGE_KEY = "@app_notifications";
 /** Web: IDs of API-sourced notifications marked as read (so badge count includes them as read). */
 const READ_API_IDS_KEY = "@app_notifications_read_api_ids";
+/** Web: last known unread count when API succeeded (so badge doesn't disappear on remount/failure). */
+const LAST_UNREAD_COUNT_KEY = "@app_notifications_last_unread_count";
+/** Web: IDs of API-sourced notifications that user deleted (hide from list). */
+const DELETED_API_IDS_KEY = "@app_notifications_deleted_api_ids";
 
 export class NotificationService {
   /** Web only: IDs of API-sourced notifications marked as read. */
@@ -40,6 +44,17 @@ export class NotificationService {
     if (Platform.OS !== "web") return [];
     try {
       const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /** Web only: IDs of API-sourced notifications user deleted (exclude from list). */
+  static async getDeletedApiIds(): Promise<string[]> {
+    if (Platform.OS !== "web") return [];
+    try {
+      const raw = await AsyncStorage.getItem(DELETED_API_IDS_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
@@ -84,6 +99,7 @@ export class NotificationService {
           ids.push(notificationId);
           await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
         }
+        await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
         return;
       }
       const notifications = await this.getStoredNotifications();
@@ -112,6 +128,7 @@ export class NotificationService {
             const combined = [...new Set([...ids, ...apiIds])];
             await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(combined));
           }
+          await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, "0");
         } catch (_) {}
       }
       const notifications = await this.getStoredNotifications();
@@ -141,25 +158,30 @@ export class NotificationService {
   static async getUnreadCount(): Promise<number> {
     try {
       if (Platform.OS === "web") {
-        const [stored, readApiIdsRaw] = await Promise.all([
+        const [stored, readApiIdsRaw, deletedApiIds] = await Promise.all([
           this.getStoredNotifications(),
           AsyncStorage.getItem(READ_API_IDS_KEY),
+          this.getDeletedApiIds(),
         ]);
         const readApiIds: string[] = readApiIdsRaw ? JSON.parse(readApiIdsRaw) : [];
         let list: NotificationItem[] = [...(stored ?? [])];
+        let apiSucceeded = false;
         try {
           const { data } = await jsonAxios.get<{
             notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }>;
           }>("/web-push/notifications");
-          const apiList = (data?.notifications ?? []).map((n) => ({
-            id: "api-" + n._id,
-            title: n.title,
-            body: n.body,
-            data: n.data ?? {},
-            timestamp: new Date(n.createdAt).getTime(),
-            isRead: false,
-            type: (n.data?.type as string) || "general",
-          }));
+          apiSucceeded = true;
+          const apiList = (data?.notifications ?? [])
+            .filter((n) => !deletedApiIds.includes("api-" + n._id))
+            .map((n) => ({
+              id: "api-" + n._id,
+              title: n.title,
+              body: n.body,
+              data: n.data ?? {},
+              timestamp: new Date(n.createdAt).getTime(),
+              isRead: false,
+              type: (n.data?.type as string) || "general",
+            }));
           const seen = new Set(list.map((x) => x.id));
           for (const n of apiList) {
             if (!seen.has(n.id)) {
@@ -171,12 +193,32 @@ export class NotificationService {
         const unread = list.filter((n) =>
           n.id.startsWith("api-") ? !readApiIds.includes(n.id) : !n.isRead
         );
-        return unread.length;
+        const count = unread.length;
+        if (apiSucceeded && count >= 0) {
+          await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, String(count));
+        }
+        if (!apiSucceeded && list.length === 0) {
+          const cached = await AsyncStorage.getItem(LAST_UNREAD_COUNT_KEY);
+          if (cached !== null) {
+            const n = parseInt(cached, 10);
+            if (!Number.isNaN(n) && n >= 0) return n;
+          }
+        }
+        return count;
       }
       const notifications = await this.getStoredNotifications();
       return notifications.filter((n) => !n.isRead).length;
     } catch (error) {
       console.error("Error getting unread count:", error);
+      if (Platform.OS === "web") {
+        try {
+          const cached = await AsyncStorage.getItem(LAST_UNREAD_COUNT_KEY);
+          if (cached !== null) {
+            const n = parseInt(cached, 10);
+            if (!Number.isNaN(n) && n >= 0) return n;
+          }
+        } catch (_) {}
+      }
       return 0;
     }
   }
@@ -184,6 +226,16 @@ export class NotificationService {
   // Delete single notification
   static async deleteNotification(notificationId: string): Promise<void> {
     try {
+      if (Platform.OS === "web" && notificationId.startsWith("api-")) {
+        const raw = await AsyncStorage.getItem(DELETED_API_IDS_KEY);
+        const ids: string[] = raw ? JSON.parse(raw) : [];
+        if (!ids.includes(notificationId)) {
+          ids.push(notificationId);
+          await AsyncStorage.setItem(DELETED_API_IDS_KEY, JSON.stringify(ids));
+        }
+        await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
+        return;
+      }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.filter((n) => n.id !== notificationId);
       await AsyncStorage.setItem(
