@@ -66,7 +66,7 @@ const decodeToken = (token: string) => {
 // Check if token is close to expiry (within 24 hours)
 const isTokenNearExpiry = (
   token: string,
-  bufferTime: number = 24 * 60 * 60
+  bufferTime: number = 2 * 60 
 ) => {
   const decoded = decodeToken(token);
   if (!decoded || !decoded.exp) return false;
