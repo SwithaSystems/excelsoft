@@ -39,7 +39,10 @@ import globalSettingsAPI from "@/services/globalSettingsService";
 import { recommendationService, RecommendedProduct } from "@/services/recommendationService";
 import ProductCard from "@/app/components/ProductCard";
 import { useAuth } from "@/context/AuthContext";
-
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { ProductsAPI, Product } from "@/services/productService";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
 interface Promotion {
   imageURL: string;
   link?: string;
@@ -86,10 +89,10 @@ const HomePage = () => {
   const [recommendationType, setRecommendationType] = useState<"recommended" | "hot_selling">("hot_selling");
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-
+const dispatch = useDispatch();
   const { width } = useWindowDimensions();
-  const isWeb = Platform.OS === 'web';
-  const isMobile = !isWeb;
+  // const isWeb = Platform.OS === 'web';
+  // const isMobile = !isWeb;
 
   // Split categories for two-row layout: first half in row 1, second half in row 2
   // Items fill Row 1 left to right, then continue in Row 2
@@ -98,7 +101,12 @@ const HomePage = () => {
     // Split roughly in half, with preference for row 1 if odd number
     return Math.ceil(categories.length / 2);
   }, [categories.length]);
-
+ const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
+  
+  // Always use web components when Platform.OS is "web" (including mobile browsers)
+  // Use media queries for responsive behavior
+  const isTabOrDesktop = isWeb && (isTablet || isDesktop);
+  const isMobileWeb = isWeb && isMobile;
   const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
   const FooterComponent = isWeb ? (
     <FooterWeb />
@@ -110,8 +118,15 @@ const HomePage = () => {
   // For web, use wider carousel that accounts for PageLayoutWeb padding
   // PageLayoutWeb uses dynamic padding (max 80px per side), so we subtract more for web
   // This ensures the carousel is properly sized for desktop layout
-  const carouselWidth = isWeb ? Math.max(width - 200, 800) : width - 32;
-
+  // const carouselWidth = isWeb ? Math.max(width - 200, 800) : width - 32;
+const carouselWidth = isWeb 
+    ? (isDesktop 
+        ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
+        : isTablet 
+          ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
+          : width - 64  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
+      )
+    : width - 32;
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
@@ -232,7 +247,7 @@ const HomePage = () => {
     return promotions.map((promo: any, index) => ({
       id: index + 1,
       image: promo.imageURL,
-      link: promo.link, // Preserved for future CMS usage
+      link: promo.link, 
       title: promo.title,
       description: "", // Add if you have description in your schema
       isInternalLink: promo.isInternalLink, // Metadata only
@@ -356,7 +371,18 @@ const HomePage = () => {
     };
     fetchRecommendedProducts();
   }, [isAuthenticated, isAuthLoading]);
-
+const handleAddToCart = (item: any) => {
+    dispatch(addToCart({
+      id: item.id,
+      name: item.title,
+      netPrice: item.netPrice,
+      image: item.imageUrl,
+      quantity: 1,
+      isVatApplicable: item.isVatApplicable || false,
+      vatRate: item.vatRate || 0,
+      vatAmount: item.vatAmount || 0,
+    }));
+  };
   // Show full-screen loader until all required data is loaded
   if (isInitialLoading) {
     return (
@@ -374,10 +400,14 @@ const HomePage = () => {
       footerComponent={FooterComponent}
       scrollable
     >
-      <View style={styles.container}>
-        <Header />
+           <View style={[
+        styles.container, 
+        !isWeb && styles.containerMobile,
+        isWeb && styles.containerWeb
+      ]}>
+        {!isWeb && <Header />}        <Header />
 
-        {isMobile && (
+        {!isWeb && (
           <View style={styles.categoriesContainer}>
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
@@ -445,7 +475,8 @@ const HomePage = () => {
           <View
             style={[
               styles.carouselSection,
-              isWeb && { marginTop: 32 },
+              isTabOrDesktop && styles.carouselSectionDesktop,
+              isMobileWeb && styles.carouselSectionMobile,
             ]}
           >
             {promotionsLoading ? (
@@ -463,7 +494,7 @@ const HomePage = () => {
                 showArrows={true}
                 showIndicators={true}
                 width={carouselWidth}
-                height={isWeb ? 420 : 230}
+                height={isDesktop ? 420 : isTablet ? 350 : 230}
                 borderRadius={12}
               />
             ) : null}
@@ -472,13 +503,17 @@ const HomePage = () => {
         
          {/* Recommended / Hot Selling Products Section */}
          {!isAuthLoading && (recommendedProductsLoading || recommendedProducts.length > 0 || recommendedProductsError) && (
-           <View style={styles.recommendedSection}>
+           <View  style={[
+              styles.recommendedSection,
+              isTabOrDesktop && styles.recommendedSectionDesktop,
+              isMobileWeb && styles.recommendedSectionMobile,
+            ]}>
              <Text style={styles.sectionTitle}>
                {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
              </Text>
             {recommendedProductsLoading ? (
               <View style={styles.recommendedLoader}>
-                <ActivityIndicator size="small" color={colors.primary} />
+                <ActivityIndicator size="large" color={colors.primary} />
               </View>
             ) : recommendedProductsError ? (
               <View style={styles.recommendedLoader}>
@@ -499,7 +534,6 @@ const HomePage = () => {
                   // ProductCard shows discount percentage if discount > 0
                   // The API returns: price (final price), netPrice (original price if discount exists)
                   const finalPrice = item.price || 0;
-                  const originalPrice = item.netPrice || item.price || 0;
                   
                   // To hide discount percentage, set discount to 0
                   // If there's an actual discount, we could show it, but user wants to hide it
@@ -548,9 +582,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.white,
   },
+   containerWeb: {
+    marginVertical: 0,
+  },
+  containerMobile: {
+    flex: 0, // Remove flex: 1 to allow scrolling in ScrollView - content determines height
+    flexGrow: 1, // Allow content to grow but don't force full height
+  },
   carouselSection: {
     marginVertical: 16,
     paddingHorizontal: 16,
+    width: "100%",
+    alignItems: "center",
+  },
+  carouselSectionMobile: {
+    paddingHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 12,
+    width: "100%",
+  },
+  carouselSectionDesktop: {
+    marginTop: 32,
+    paddingHorizontal: 0, // Padding handled by PageLayoutWeb
   },
   carouselLoader: {
     height: 230,
@@ -562,8 +615,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   recommendedSection: {
-    marginTop: 24,
+    marginVertical: 16,
+    paddingHorizontal: 16,
+    width: "100%",
+  },
+  recommendedSectionMobile: {
+    paddingHorizontal: 16,
+    marginTop: 8,
     marginBottom: 16,
+     width: "100%",
   },
   sectionTitle: {
     fontSize: 18,
@@ -579,8 +639,12 @@ const styles = StyleSheet.create({
     width: 160,
     marginHorizontal: 8,
   },
+   recommendedSectionDesktop: {
+    marginTop: 32,
+    paddingHorizontal: 0, // Padding handled by PageLayoutWeb
+  },
   recommendedLoader: {
-    height: 200,
+    height: 280,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -588,6 +652,14 @@ const styles = StyleSheet.create({
     color: colors.secondaryText,
     fontSize: 14,
     textAlign: "center",
+  },
+  recommendedTitleMobile: {
+    fontSize: 18,
+    marginLeft: 0,
+  },
+  categoriesViewport: {
+    width: "100%",
+    alignSelf: "flex-start",
   },
   categoriesScrollContent: {
     // paddingHorizontal: 8,
@@ -601,10 +673,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 8,
   },
-  categoriesViewport: {
-    width: "100%",
-    alignSelf: "flex-start",
-  },
+  
 
 });
 

@@ -28,6 +28,7 @@ import BrandHeader from "@/app/components/BrandHeader";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
@@ -40,6 +41,7 @@ const AdminDashboard = () => {
   // const { width } = useWindowDimensions();
   // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
   const fetchUser = async () => {
     try {
@@ -356,7 +358,8 @@ const AdminDashboard = () => {
       <View
         style={[
           styles.metricsContainer,
-          isWeb && {
+          // Only apply row layout on desktop/tablet web, not mobile web browser
+          isWeb && (isTablet || isDesktop) && {
             flexDirection: "row",
             justifyContent: "space-between",
             flexWrap: "wrap",
@@ -367,7 +370,8 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isWeb && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -393,7 +397,8 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isWeb && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -410,7 +415,8 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isWeb && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>

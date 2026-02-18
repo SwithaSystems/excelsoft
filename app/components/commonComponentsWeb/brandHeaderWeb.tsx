@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
@@ -20,17 +18,9 @@ import { useRoleContext } from "@/context/RoleContext";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
-import {
-  requestNotificationPermission,
-  registerWebPush,
-  isWebPushSupported,
-} from "@/utilities/registerWebPush";
-import { NotificationService } from "@/services/notificationService";
-import { DeviceEventEmitter } from "react-native";
 
 
 // Storage key for recent searches
@@ -42,17 +32,14 @@ interface BrandHeaderWebProps {
 }
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
-  const router = useRouter();
   const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
-  const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
+  const { isMobile, isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
     (total: any, item: any) => total + item.quantity,
     0
   );
-
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,17 +59,6 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   useEffect(() => {
     loadRecentSearches();
   }, []);
-
-  const fetchUnreadNotificationCount = useCallback(async () => {
-    const count = await NotificationService.getUnreadCount();
-    setUnreadNotificationCount(count);
-  }, []);
-
-  useEffect(() => {
-    fetchUnreadNotificationCount();
-    const sub = DeviceEventEmitter.addListener("notificationUpdate", fetchUnreadNotificationCount);
-    return () => sub.remove();
-  }, [fetchUnreadNotificationCount]);
 
   // Load recent searches from SecureStore
   const loadRecentSearches = async () => {
@@ -403,8 +379,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : 12,
-          paddingVertical: isDesktop ? 8 : 10,
+          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : isMobile ? 8 : 12,
+          paddingVertical: isDesktop ? 8 : isMobile ? 6 : 10,
         },
       ]}
     >
@@ -511,12 +487,14 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           style={styles.profileButton}
           onPress={handleProfileClick}
         >
-          <Text style={styles.greetingText}>
-            {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
-          </Text>
+          {!isMobile && (
+            <Text style={styles.greetingText}>
+              {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+            </Text>
+          )}
           <Ionicons
             name="person-circle-outline"
-            size={24}
+            size={isMobile ? 28 : 24}
             color={colors.primary}
           />
         </TouchableOpacity>
@@ -544,7 +522,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              <Ionicons name="cart-outline" size={isMobile ? 22 : 24} color={colors.primary} />
               {cartItemCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -557,47 +535,12 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
         )}
 
         {!hideUserGreeting && (
-          <Pressable
-            style={[styles.iconButton, Platform.OS === "web" && { cursor: "pointer" }]}
-            onPress={() => {
-              const pathname = "/" + containers.userNotificationsScreen;
-              if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
-              try {
-                router.push(pathname);
-              } catch (e) {
-                console.error("[Notifications] router.push failed:", e);
-                redirectToPage(containers.userNotificationsScreen);
-              }
-              if (Platform.OS === "web" && isWebPushSupported() && isValidUser) {
-                (async () => {
-                  try {
-                    const alreadyRegistered = await AsyncStorage.getItem("web_push_registered");
-                    if (alreadyRegistered !== "true") {
-                      const permission = await requestNotificationPermission();
-                      if (permission === "granted") {
-                        const ok = await registerWebPush(() => SecureStore.getItemAsync("token"));
-                        if (ok) await AsyncStorage.setItem("web_push_registered", "true");
-                        if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
-                      }
-                    }
-                  } catch (e) {
-                    console.warn("[Notifications] Web push background error:", e);
-                  }
-                })();
-              }
-            }}
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => redirectToPage(containers.userNotificationsScreen)}
           >
-            <View style={styles.iconContainer} pointerEvents="none">
-              <Ionicons name="notifications" size={24} color={colors.primary} />
-              {unreadNotificationCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </Pressable>
+            <Ionicons name="notifications" size={isMobile ? 22 : 24} color={colors.primary} />
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -624,6 +567,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexShrink: 0,
+    gap: 4,
   },
   leftSection: {
     flexDirection: "row",
@@ -733,8 +677,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginLeft: 14,
-    padding: 6,
+    marginLeft: 8,
+    padding: 4,
   },
   iconContainer: {
     position: "relative",
@@ -757,7 +701,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   adminButton: {
-    marginLeft: 16,
+    marginLeft: 8,
     backgroundColor: colors.primary,
     borderRadius: 16,
     paddingHorizontal: 12,
@@ -771,7 +715,8 @@ const styles = StyleSheet.create({
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: 8,
+    padding: 4,
   },
   greetingText: {
     marginRight: 8,

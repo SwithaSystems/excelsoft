@@ -13,7 +13,7 @@ import styles from "./VerifcationStyles";
 import Header from "../../components/Header";
 import { TwilioApi } from "@/services/twilioService";
 import { useLocalSearchParams } from "expo-router";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { redirectToPage, clearNavigationStack } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { authService } from "@/services/auth.service";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
@@ -27,6 +27,7 @@ import colors from "../../../constants/colors";
 
 const verificationScreen = () => {
   const isWeb = Platform.OS === "web";
+  const editContactScreen = isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen;
   const dispatch = useDispatch();
 
   const {
@@ -377,7 +378,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your phone number has been verified and added to your account.",
-            () => redirectToPage(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update phone:", updateError);
@@ -418,7 +419,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your email address has been verified and added to your account.",
-            () => redirectToPage(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update email:", updateError);
@@ -459,7 +460,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your phone number has been updated and verified successfully.",
-            () => redirectToPage(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update phone:", updateError);
@@ -503,7 +504,7 @@ const verificationScreen = () => {
           showSuccessAlert(
             "Success!",
             "Your email address has been updated and verified successfully.",
-            () => redirectToPage(containers.editAccountInformationScreen)
+            () => clearNavigationStack(editContactScreen)
           );
         } catch (updateError: any) {
           //console.error("Failed to update email:", updateError);
@@ -698,9 +699,9 @@ const verificationScreen = () => {
           </Text>
 
           {/* DEBUG INFO - Remove this in production */}
-          <Text style={{ fontSize: 10, color: 'gray', marginVertical: 10 }}>
+          {/* <Text style={{ fontSize: 10, color: 'gray', marginVertical: 10 }}>
             DEBUG: from={from}, email={email || 'EMPTY'}, phone={phoneNumber || 'EMPTY'}
-          </Text>
+          </Text> */}
 
           <View style={[styles.codeContainer, isWeb && styles.codeContainerDesktop]}>
             {code.map((digit, index) => (
