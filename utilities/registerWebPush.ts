@@ -45,6 +45,25 @@ export async function registerWebPush(getToken: GetTokenFn): Promise<boolean> {
     const registration = await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
     await navigator.serviceWorker.ready;
     console.log("[Web Push] Service worker registered and ready");
+    // So push messages reach this tab: wait for this page to be controlled by the SW (after claim()).
+    if (!navigator.serviceWorker.controller) {
+      await new Promise<void>((resolve) => {
+        const t = setTimeout(() => resolve(), 3000);
+        navigator.serviceWorker.addEventListener(
+          "controllerchange",
+          () => {
+            clearTimeout(t);
+            resolve();
+          },
+          { once: true }
+        );
+      });
+    }
+    if (navigator.serviceWorker.controller) {
+      console.log("[Web Push] Page is controlled by SW; in-app notifications will work when push arrives.");
+    } else {
+      console.warn("[Web Push] Page not yet controlled by SW. Reload the page once to receive in-app updates.");
+    }
 
     const vapidUrl = `${API_BASE}/web-push/vapid-public-key`;
     console.log("[Web Push] Fetching VAPID key from", vapidUrl);

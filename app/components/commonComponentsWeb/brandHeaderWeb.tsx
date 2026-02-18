@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
@@ -41,6 +42,7 @@ interface BrandHeaderWebProps {
 }
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
+  const router = useRouter();
   const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
   const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
@@ -555,42 +557,37 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
         )}
 
         {!hideUserGreeting && (
-          <TouchableOpacity
+          <Pressable
             style={[styles.iconButton, Platform.OS === "web" && { cursor: "pointer" }]}
             onPress={() => {
-              console.log("[Notifications] Bell icon clicked");
-              const pageName = containers.userNotificationsScreen;
-              console.log("[Notifications] Navigating to:", pageName, "pathname:", `/${pageName}`);
-              redirectToPage(pageName);
-              console.log("[Notifications] redirectToPage called");
+              const pathname = "/" + containers.userNotificationsScreen;
+              if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
+              try {
+                router.push(pathname);
+              } catch (e) {
+                console.error("[Notifications] router.push failed:", e);
+                redirectToPage(containers.userNotificationsScreen);
+              }
               if (Platform.OS === "web" && isWebPushSupported() && isValidUser) {
                 (async () => {
                   try {
-                    console.log("[Notifications] Web push: checking registration...");
                     const alreadyRegistered = await AsyncStorage.getItem("web_push_registered");
                     if (alreadyRegistered !== "true") {
-                      console.log("[Notifications] Web push: requesting permission...");
                       const permission = await requestNotificationPermission();
-                      console.log("[Notifications] Web push: permission =", permission);
                       if (permission === "granted") {
                         const ok = await registerWebPush(() => SecureStore.getItemAsync("token"));
-                        console.log("[Notifications] Web push: registerWebPush result =", ok);
                         if (ok) await AsyncStorage.setItem("web_push_registered", "true");
                         if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
                       }
-                    } else {
-                      console.log("[Notifications] Web push: already registered");
                     }
                   } catch (e) {
                     console.warn("[Notifications] Web push background error:", e);
                   }
                 })();
-              } else {
-                console.log("[Notifications] Skip web push: Platform=", Platform.OS, "supported=", Platform.OS === "web" ? isWebPushSupported() : "-", "validUser=", isValidUser);
               }
             }}
           >
-            <View style={styles.iconContainer}>
+            <View style={styles.iconContainer} pointerEvents="none">
               <Ionicons name="notifications" size={24} color={colors.primary} />
               {unreadNotificationCount > 0 && (
                 <View style={styles.badge}>
@@ -600,7 +597,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
                 </View>
               )}
             </View>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
     </View>

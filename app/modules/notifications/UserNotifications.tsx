@@ -1,6 +1,6 @@
 // screens/UserNotificationsScreen.tsx
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -14,13 +14,17 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NotificationService } from "@/services/notificationService";
+import { jsonAxios } from "@/services/axiosConfig";
 import colors from "@/constants/colors";
 import { useFocusEffect } from "@react-navigation/native";
 import { handleNotificationNavigation } from "@/services/navigationService";
 
+const FOCUS_LOAD_THROTTLE_MS = 1200;
+
 export default function UserNotificationsScreen() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const lastFocusLoadRef = useRef<number>(0);
 
   useEffect(() => {
     if (typeof console !== "undefined") console.log("[UserNotifications] Screen mounted");
@@ -30,21 +34,60 @@ export default function UserNotificationsScreen() {
   const loadNotifications = useCallback(async () => {
     if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start");
     const stored = await NotificationService.getStoredNotifications();
-    if (typeof console !== "undefined") console.log("[UserNotifications] loaded", stored?.length ?? 0, "notifications");
-    setNotifications(stored ?? []);
-    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+    let list = stored ?? [];
+
+    // Web only: fetch from backend (GET /web-push/notifications) and merge. Mobile uses only AsyncStorage above.
+    if (Platform.OS === "web") {
+      try {
+        const [res, readApiIds] = await Promise.all([
+          jsonAxios.get<{ notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }> }>("/web-push/notifications"),
+          NotificationService.getReadApiIds(),
+        ]);
+        const data = res.data;
+        const apiList = (data?.notifications ?? []).map((n) => ({
+          id: "api-" + n._id,
+          title: n.title,
+          body: n.body,
+          data: n.data ?? {},
+          timestamp: new Date(n.createdAt).getTime(),
+          isRead: readApiIds.includes("api-" + n._id),
+          type: (n.data?.type as string) || "general",
+        }));
+        const seen = new Set(list.map((x) => x.id));
+        for (const n of apiList) {
+          if (!seen.has(n.id)) {
+            seen.add(n.id);
+            list.push(n);
+          }
+        }
+        list.sort((a, b) => b.timestamp - a.timestamp);
+      } catch (e) {
+        if (typeof console !== "undefined") console.warn("[UserNotifications] API fetch failed:", e);
+      }
+    }
+
+    if (typeof console !== "undefined") console.log("[UserNotifications] loaded", list.length, "notifications");
+    setNotifications(list);
   }, []);
 
+  // Throttle: on web, useFocusEffect can fire repeatedly and cause an infinite loop. Run load at most once per throttle window.
   useFocusEffect(
     useCallback(() => {
+      const now = Date.now();
+      if (now - lastFocusLoadRef.current < FOCUS_LOAD_THROTTLE_MS) return;
+      lastFocusLoadRef.current = now;
       loadNotifications();
     }, [loadNotifications])
   );
 
-  // Refresh list when a new web push (or other source) triggers notificationUpdate
+  // When _layout saves a web push (or mobile receives a notification), refresh the list. Do NOT emit from loadNotifications.
   useEffect(() => {
     if (!DeviceEventEmitter?.addListener) return;
-    const sub = DeviceEventEmitter.addListener("notificationUpdate", loadNotifications);
+    const onUpdate = () => {
+      lastFocusLoadRef.current = 0;
+      loadNotifications();
+    };
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", onUpdate);
     return () => sub.remove();
   }, [loadNotifications]);
 
@@ -59,6 +102,7 @@ export default function UserNotificationsScreen() {
     
     await NotificationService.markAsRead(notification.id);
     await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
     
     // Parse notification data - handle both object and string formats
     let notificationData = notification.data;
@@ -95,6 +139,7 @@ export default function UserNotificationsScreen() {
   const handleMarkAllAsRead = async () => {
     await NotificationService.markAllAsRead();
     await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
   };
 
   const handleDeleteNotification = (notificationId: string) => {
@@ -109,6 +154,7 @@ export default function UserNotificationsScreen() {
           onPress: async () => {
             await NotificationService.deleteNotification(notificationId);
             await loadNotifications();
+            if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
           },
         },
       ]
@@ -140,7 +186,10 @@ export default function UserNotificationsScreen() {
 
   const renderNotification = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
+      style={[
+        styles.notificationItem,
+        item.isRead ? styles.readItem : styles.unreadItem,
+      ]}
       onPress={() => handleNotificationPress(item)}
       activeOpacity={0.6}
     >
@@ -152,12 +201,18 @@ export default function UserNotificationsScreen() {
       {/* Content Section */}
       <View style={styles.contentSection}>
         <Text
-          style={[styles.title, !item.isRead && styles.unreadTitle]}
+          style={[
+            styles.title,
+            item.isRead ? styles.readTitle : styles.unreadTitle,
+          ]}
           numberOfLines={1}
         >
           {item.title}
         </Text>
-        <Text style={styles.body} numberOfLines={2}>
+        <Text
+          style={[styles.body, item.isRead && styles.readBody]}
+          numberOfLines={2}
+        >
           {item.body}
         </Text>
         <Text style={styles.timestamp}>
@@ -202,9 +257,14 @@ export default function UserNotificationsScreen() {
             You'll see notifications here when you receive them
           </Text>
           {Platform.OS === "web" && (
-            <Text style={styles.emptyHint}>
-              Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
-            </Text>
+            <>
+              <Text style={styles.emptyHint}>
+                Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
+              </Text>
+              <Text style={[styles.emptyHint, { marginTop: 8, fontSize: 13 }]}>
+                Keep this tab open when you place an order so notifications appear here.
+              </Text>
+            </>
           )}
         </View>
       ) : (
@@ -257,10 +317,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
   },
   unreadItem: {
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f0f7ff",
+  },
+  readItem: {
+    backgroundColor: "#fff",
   },
   dotContainer: {
     width: 20,
@@ -280,19 +342,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#1a1a1a",
     marginBottom: 4,
   },
   unreadTitle: {
     fontWeight: "700",
     color: "#000",
   },
+  readTitle: {
+    fontWeight: "600",
+    color: "#6b7280",
+  },
   body: {
     fontSize: 14,
-    color: "#666",
     lineHeight: 20,
     marginBottom: 6,
+    color: "#374151",
+  },
+  readBody: {
+    color: "#9ca3af",
   },
   timestamp: {
     fontSize: 13,

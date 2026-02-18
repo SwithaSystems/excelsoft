@@ -6,10 +6,11 @@ export const redirectToPage = (pageName, params = {}) => {
     console.log("[redirectToPage] pathname:", pathname, "params:", params);
   }
   try {
-    router.push({
-      pathname,
-      params: { ...params },
-    });
+    if (Object.keys(params).length === 0) {
+      router.push(pathname);
+    } else {
+      router.push({ pathname: pathname, params: { ...params } });
+    }
   } catch (e) {
     console.error("[redirectToPage] Error:", e);
   }

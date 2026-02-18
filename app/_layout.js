@@ -43,7 +43,14 @@ function NotificationsHandler() {
   // Web only: listen for push payloads from the service worker so the in-app list updates
   useEffect(() => {
     if (Platform.OS !== "web" || typeof navigator === "undefined" || !navigator.serviceWorker) return;
-    console.log("[Layout] Web: added service worker message listener for PUSH_PAYLOAD");
+    const hasController = !!navigator.serviceWorker.controller;
+    console.log("[Layout] Web: PUSH_PAYLOAD listener added. Controller:", hasController);
+    if (!hasController) {
+      navigator.serviceWorker.addEventListener("controllerchange", function onCtrl() {
+        console.log("[Layout] Web: SW now controlling page; ready to receive push.");
+        navigator.serviceWorker.removeEventListener("controllerchange", onCtrl);
+      }, { once: true });
+    }
     const onMessage = async (event) => {
       if (event.data?.type !== "PUSH_PAYLOAD") return;
       console.log("[Layout] PUSH_PAYLOAD received from service worker", event.data.payload);
@@ -57,11 +64,15 @@ function NotificationsHandler() {
         isRead: false,
         type: (data && data.type) || "general",
       };
-      await NotificationService.saveNotification(notificationItem);
-      if (DeviceEventEmitter && DeviceEventEmitter.emit) {
-        DeviceEventEmitter.emit("notificationUpdate");
+      try {
+        await NotificationService.saveNotification(notificationItem);
+        if (DeviceEventEmitter && DeviceEventEmitter.emit) {
+          DeviceEventEmitter.emit("notificationUpdate");
+        }
+        console.log("[Layout] Notification saved and notificationUpdate emitted");
+      } catch (err) {
+        console.error("[Layout] Failed to save notification:", err);
       }
-      console.log("[Layout] Notification saved and notificationUpdate emitted");
     };
     navigator.serviceWorker.addEventListener("message", onMessage);
     return () => navigator.serviceWorker.removeEventListener("message", onMessage);

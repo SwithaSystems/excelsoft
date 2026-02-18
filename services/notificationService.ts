@@ -31,8 +31,21 @@ export interface NotificationItem {
 }
 
 const NOTIFICATIONS_STORAGE_KEY = "@app_notifications";
+/** Web: IDs of API-sourced notifications marked as read (so badge count includes them as read). */
+const READ_API_IDS_KEY = "@app_notifications_read_api_ids";
 
 export class NotificationService {
+  /** Web only: IDs of API-sourced notifications marked as read. */
+  static async getReadApiIds(): Promise<string[]> {
+    if (Platform.OS !== "web") return [];
+    try {
+      const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
   // Get all stored notifications
   static async getStoredNotifications(): Promise<NotificationItem[]> {
     try {
@@ -53,6 +66,9 @@ export class NotificationService {
         NOTIFICATIONS_STORAGE_KEY,
         JSON.stringify(updated)
       );
+      if (Platform.OS === "web" && typeof console !== "undefined") {
+        console.log("[NotificationService] Saved notification to storage, total:", updated.length);
+      }
     } catch (error) {
       console.error("Error saving notification:", error);
     }
@@ -61,6 +77,15 @@ export class NotificationService {
   // Mark notification as read
   static async markAsRead(notificationId: string): Promise<void> {
     try {
+      if (Platform.OS === "web" && notificationId.startsWith("api-")) {
+        const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+        const ids: string[] = raw ? JSON.parse(raw) : [];
+        if (!ids.includes(notificationId)) {
+          ids.push(notificationId);
+          await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
+        }
+        return;
+      }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.map((notif) =>
         notif.id === notificationId ? { ...notif, isRead: true } : notif
@@ -77,6 +102,18 @@ export class NotificationService {
   // Mark all as read
   static async markAllAsRead(): Promise<void> {
     try {
+      if (Platform.OS === "web") {
+        try {
+          const { data } = await jsonAxios.get<{ notifications: Array<{ _id: string }> }>("/web-push/notifications");
+          const apiIds = (data?.notifications ?? []).map((n) => "api-" + n._id);
+          if (apiIds.length > 0) {
+            const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+            const ids: string[] = raw ? JSON.parse(raw) : [];
+            const combined = [...new Set([...ids, ...apiIds])];
+            await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(combined));
+          }
+        } catch (_) {}
+      }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.map((notif) => ({
         ...notif,
@@ -100,9 +137,42 @@ export class NotificationService {
     }
   }
 
-  // Get unread count
+  // Get unread count (on web includes API-sourced notifications and read state for api-* ids)
   static async getUnreadCount(): Promise<number> {
     try {
+      if (Platform.OS === "web") {
+        const [stored, readApiIdsRaw] = await Promise.all([
+          this.getStoredNotifications(),
+          AsyncStorage.getItem(READ_API_IDS_KEY),
+        ]);
+        const readApiIds: string[] = readApiIdsRaw ? JSON.parse(readApiIdsRaw) : [];
+        let list: NotificationItem[] = [...(stored ?? [])];
+        try {
+          const { data } = await jsonAxios.get<{
+            notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }>;
+          }>("/web-push/notifications");
+          const apiList = (data?.notifications ?? []).map((n) => ({
+            id: "api-" + n._id,
+            title: n.title,
+            body: n.body,
+            data: n.data ?? {},
+            timestamp: new Date(n.createdAt).getTime(),
+            isRead: false,
+            type: (n.data?.type as string) || "general",
+          }));
+          const seen = new Set(list.map((x) => x.id));
+          for (const n of apiList) {
+            if (!seen.has(n.id)) {
+              seen.add(n.id);
+              list.push(n);
+            }
+          }
+        } catch (_) {}
+        const unread = list.filter((n) =>
+          n.id.startsWith("api-") ? !readApiIds.includes(n.id) : !n.isRead
+        );
+        return unread.length;
+      }
       const notifications = await this.getStoredNotifications();
       return notifications.filter((n) => !n.isRead).length;
     } catch (error) {
