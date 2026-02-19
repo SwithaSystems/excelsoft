@@ -28,45 +28,90 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkAuth();
   }, []);
 
+  // const checkAuth = async () => {
+  //   try {
+  //     setIsLoading(true);
+      
+
+  //     // First try to get cached user data from AsyncStorage
+  //     const storedUser = await AsyncStorage.getItem("user");
+  //     if (storedUser) {
+  //       const parsedUser = JSON.parse(storedUser);
+  //       setUser(parsedUser);
+  //       dispatch(setUserData(parsedUser)); // Update Redux store
+  //       setIsAuthenticated(true);
+  //     }
+
+  //     // Then verify with authService and get fresh data
+  //     const isAuth = await authService.isAuthenticated();
+  //     if (isAuth) {
+  //       const currentUser = await authService.getCurrentUser();
+  //       setUser(currentUser);
+  //       setIsAuthenticated(true);
+
+  //       // Update AsyncStorage with fresh data
+  //       // await AsyncStorage.setItem("user", JSON.stringify(currentUser));
+
+  //       // Update Redux store
+  //       dispatch(setUserData(currentUser));
+  //     } else if (storedUser) {
+  //       // Clear stale data if server says not authenticated
+  //       // await AsyncStorage.removeItem("user");
+  //       dispatch(clearUserData());
+  //       setIsAuthenticated(false);
+  //       setUser(null);
+  //     }
+  //   } catch (error) {
+  //     console.error("Auth check failed:", error);
+  //     // Optional: Handle specific error cases
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   const checkAuth = async () => {
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      // First try to get cached user data from AsyncStorage
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        dispatch(setUserData(parsedUser)); // Update Redux store
-        setIsAuthenticated(true);
-      }
-
-      // Then verify with authService and get fresh data
-      const isAuth = await authService.isAuthenticated();
-      if (isAuth) {
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
-        setIsAuthenticated(true);
-
-        // Update AsyncStorage with fresh data
-        // await AsyncStorage.setItem("user", JSON.stringify(currentUser));
-
-        // Update Redux store
-        dispatch(setUserData(currentUser));
-      } else if (storedUser) {
-        // Clear stale data if server says not authenticated
-        // await AsyncStorage.removeItem("user");
-        dispatch(clearUserData());
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      // Optional: Handle specific error cases
-    } finally {
-      setIsLoading(false);
+    // ✅ CHECK TOKEN FIRST, not user data!
+    const token = await SecureStore.getItemAsync("token");
+    if (!token) {
+      console.log("No token - clearing everything");
+      await SecureStore.deleteItemAsync("user").catch(() => {});
+      await AsyncStorage.removeItem("user").catch(() => {});
+      dispatch(clearUserData());
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
     }
-  };
+
+    // ✅ Token exists, load user
+    const storedUser = await SecureStore.getItemAsync("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      dispatch(setUserData(parsedUser));
+      setIsAuthenticated(true);
+    } else {
+      // Get from server (axios will refresh token if needed)
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
+      setIsAuthenticated(true);
+      await SecureStore.setItemAsync("user", JSON.stringify(currentUser));
+      dispatch(setUserData(currentUser));
+    }
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    // Clear everything
+    await SecureStore.deleteItemAsync("user").catch(() => {});
+    await SecureStore.deleteItemAsync("token").catch(() => {});
+    await AsyncStorage.removeItem("user").catch(() => {});
+    dispatch(clearUserData());
+    setIsAuthenticated(false);
+    setUser(null);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const login = async (loginId: string, password: string) => {
     try {
@@ -76,6 +121,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Save to AsyncStorage
       // await AsyncStorage.setItem("user", JSON.stringify(response.user));
+       await SecureStore.setItemAsync("user", JSON.stringify(response.user));
+    
 
       // Update Redux
       dispatch(setUserData(response.user));

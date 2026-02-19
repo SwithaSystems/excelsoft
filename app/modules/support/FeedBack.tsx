@@ -22,6 +22,8 @@ import { FEEDBACK_SCREEN2_TITLE } from "../../../constants/stringLiterals";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import * as SecureStore from "expo-secure-store";
+
 
 const MAX_IMAGES = 5;
 
@@ -86,6 +88,8 @@ const feedBackScreen = () => {
   }
 
   setIsSubmitting(true);
+  const token = await SecureStore.getItemAsync("token");
+console.log("Token exists:", !!token);
   try {
     const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
     const user = await UserAPI.getUserById(userID);
