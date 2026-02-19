@@ -38,38 +38,38 @@ export default function UserNotificationsScreen() {
     const stored = await NotificationService.getStoredNotifications();
     let list = stored ?? [];
 
-    // Web only: fetch from backend (GET /web-push/notifications) and merge. Mobile uses only AsyncStorage above.
-    if (Platform.OS === "web") {
-      try {
-        const [res, readApiIds, deletedApiIds] = await Promise.all([
-          jsonAxios.get<{ notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }> }>("/web-push/notifications"),
-          NotificationService.getReadApiIds(),
-          NotificationService.getDeletedApiIds(),
-        ]);
-        const data = res.data;
-        const apiList = (data?.notifications ?? [])
-          .filter((n) => !deletedApiIds.includes("api-" + n._id))
-          .map((n) => ({
-            id: "api-" + n._id,
-            title: n.title,
-            body: n.body,
-            data: n.data ?? {},
-            timestamp: new Date(n.createdAt).getTime(),
-            isRead: readApiIds.includes("api-" + n._id),
-            type: (n.data?.type as string) || "general",
-          }));
-        const seen = new Set(list.map((x) => x.id));
-        for (const n of apiList) {
-          if (!seen.has(n.id)) {
-            seen.add(n.id);
-            list.push(n);
-          }
+    // Fetch from backend (GET /web-push/notifications) and merge on both web and mobile, so orders placed on web appear on the mobile notifications page too.
+    try {
+      const [res, readApiIds, deletedApiIds] = await Promise.all([
+        jsonAxios.get<{ notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }> }>("/web-push/notifications"),
+        NotificationService.getReadApiIds(),
+        NotificationService.getDeletedApiIds(),
+      ]);
+      const data = res.data;
+      const apiList = (data?.notifications ?? [])
+        .filter((n) => !deletedApiIds.includes("api-" + n._id))
+        .map((n) => ({
+          id: "api-" + n._id,
+          title: n.title,
+          body: n.body,
+          data: n.data ?? {},
+          timestamp: new Date(n.createdAt).getTime(),
+          isRead: readApiIds.includes("api-" + n._id),
+          type: (n.data?.type as string) || "general",
+        }));
+      const seen = new Set(list.map((x) => x.id));
+      for (const n of apiList) {
+        if (!seen.has(n.id)) {
+          seen.add(n.id);
+          list.push(n);
         }
-        list.sort((a, b) => b.timestamp - a.timestamp);
-      } catch (e) {
-        if (typeof console !== "undefined") console.warn("[UserNotifications] API fetch failed:", e);
       }
+      list.sort((a, b) => b.timestamp - a.timestamp);
+    } catch (e) {
+      if (typeof console !== "undefined") console.warn("[UserNotifications] API fetch failed:", e);
     }
+
+    list = NotificationService.deduplicateOrderNotifications(list);
 
     if (typeof console !== "undefined") console.log("[UserNotifications] loaded", list.length, "notifications");
     setNotifications(list);

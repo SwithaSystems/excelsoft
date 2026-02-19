@@ -90,7 +90,7 @@ bulkHardDelete: async (ids: string[]): Promise<any> => {
     return response.data;
   },
 
-  getProductByCategoryID: async (id: number): Promise<Product[]> => {
+  getProductByCategoryID: async (id: number | string): Promise<Product[]> => {
     // console.log(id);
     const response = await jsonAxios.get(`/products/category/${id}`);
     // console.log("AllProducts", response.data);
