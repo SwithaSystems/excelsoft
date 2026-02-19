@@ -342,27 +342,17 @@ export default function usePaymentHandlerWeb() {
   /* -------------------- PAYMENT INTENT -------------------- */
   const fetchPaymentIntent = async (amount: number) => {
     try {
-      const amountInCents = Math.round(amount * 100);
-
-      console.log(" Creating PaymentIntent:", {
-        amount: amount.toFixed(2),
-        amountInCents,
-        currency: CURRENCY_CODE.toUpperCase(),
-      });
-
       const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: amountInCents, // cents/pence
-          currency: CURRENCY_CODE.toUpperCase(), //  Uppercase for backend
+          amount: amount, // cents
+          currency: CURRENCY_CODE,
           clientId: CLIENT_ID,
         }
       );
-
-      console.log(" PaymentIntent created");
       return resp.data;
     } catch (error) {
-      console.error(" Payment intent error:", error);
+      console.error("Payment intent error:", error);
       Alert.alert("Error", "Failed to initialize payment");
       return null;
     }
@@ -392,9 +382,7 @@ export default function usePaymentHandlerWeb() {
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
-
-      await orderService.notifyOrderPlaced(response);
-
+await orderService.notifyOrderPlaced(response);
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
         `Your order number is #ORD-${response.orderNumber}`,
