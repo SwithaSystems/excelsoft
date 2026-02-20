@@ -3,9 +3,12 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
-import { jsonAxios } from "./axiosConfig";
+import { jsonAxios, API_BASE_URL } from "./axiosConfig";
 import colors from "@/constants/colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const getNotificationsApiUrl = () =>
+  API_BASE_URL ? `${String(API_BASE_URL).replace(/\/$/, "")}/web-push/notifications` : "/web-push/notifications";
 
 // Only configure on mobile platforms
 if (Platform.OS !== "web") {
@@ -57,6 +60,21 @@ export class NotificationService {
     } catch {
       return [];
     }
+  }
+
+  /** Extract notifications array from various backend response shapes. */
+  static getNotificationsFromResponse(data: unknown): Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }> {
+    if (!data || typeof data !== "object") return [];
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d)) return d as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>;
+    const inner = d.data;
+    const arr =
+      d.notifications ??
+      (typeof inner === "object" && inner !== null && !Array.isArray(inner) ? (inner as Record<string, unknown>).notifications : null) ??
+      (Array.isArray(inner) ? inner : null) ??
+      d.list ??
+      d.items;
+    return Array.isArray(arr) ? (arr as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>) : [];
   }
 
   /** Deduplicate order notifications: same order can come from local + API. Keep one per order, prefer api- id. */
@@ -143,8 +161,9 @@ export class NotificationService {
   static async markAllAsRead(): Promise<void> {
     try {
       try {
-        const { data } = await jsonAxios.get<{ notifications: Array<{ _id: string }> }>("/web-push/notifications");
-        const apiIds = (data?.notifications ?? []).map((n) => "api-" + n._id);
+        const { data } = await jsonAxios.get(getNotificationsApiUrl());
+        const rawList = this.getNotificationsFromResponse(data);
+        const apiIds = (rawList ?? []).map((n) => "api-" + n._id);
         if (apiIds.length > 0) {
           const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
           const ids: string[] = raw ? JSON.parse(raw) : [];
@@ -188,11 +207,10 @@ export class NotificationService {
       let list: NotificationItem[] = [...(stored ?? [])];
       let apiSucceeded = false;
       try {
-        const { data } = await jsonAxios.get<{
-          notifications: Array<{ _id: string; title: string; body: string; data: Record<string, unknown>; createdAt: string }>;
-        }>("/web-push/notifications");
+        const { data } = await jsonAxios.get(getNotificationsApiUrl());
         apiSucceeded = true;
-        const apiList = (data?.notifications ?? [])
+        const rawList = this.getNotificationsFromResponse(data);
+        const apiList = rawList
           .filter((n) => !deletedApiIds.includes("api-" + n._id))
           .map((n) => ({
             id: "api-" + n._id,

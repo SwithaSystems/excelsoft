@@ -56,12 +56,36 @@ self.addEventListener("push", function (event) {
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
   const data = event.notification.data || {};
-  const path = data.path || data.url || "/";
-  const fullUrl = self.location.origin + (path.startsWith("/") ? path : "/" + path);
+  var path = data.path || data.url || "";
+  // If backend sent a full URL (e.g. old ngrok link), use only pathname + search so we open the app at the user's current origin.
+  if (path.indexOf("http://") === 0 || path.indexOf("https://") === 0) {
+    try {
+      var u = new URL(path);
+      path = u.pathname + (u.search || "");
+    } catch (_) {
+      path = "";
+    }
+  }
+  // Build path from orderId/screen when backend doesn't send path/url (e.g. order notification).
+  if (!path && (data.orderId || data.orderNumber)) {
+    var oid = data.orderId || data.orderNumber;
+    path = "/modules/orders/OrderDetails?orderId=" + encodeURIComponent(String(oid));
+  }
+  if (!path) path = "/";
+  if (!path.startsWith("/")) path = "/" + path;
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
-      for (const client of clientList) {
-        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+      // Prefer the origin of an open app tab so we don't open an offline ngrok URL when the user now uses localhost or another host.
+      var targetOrigin = self.location.origin;
+      if (clientList.length > 0) {
+        try {
+          targetOrigin = new URL(clientList[0].url).origin;
+        } catch (_) {}
+      }
+      var fullUrl = targetOrigin + path;
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if (client.url.startsWith(targetOrigin) && "focus" in client) {
           if (typeof client.navigate === "function") {
             return client.navigate(fullUrl).then(function () { return client.focus(); });
           }
