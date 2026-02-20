@@ -59,6 +59,7 @@ import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
 import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import { PaymentRequestButton } from "@/app/components/commonComponentsWeb/paymentRequestButton.web";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Conditionally import PlatformPayButton only on mobile (not web)
 let PlatformPayButton: any = null;
@@ -135,6 +136,9 @@ const orderSummeryScreen = () => {
   const [accordionOpen, setAccordionOpen] = useState(false);
   const rotateAnimation = useRef(new Animated.Value(0)).current;
   const isWeb = Platform.OS === "web";
+
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   // console.log("All module:", All);
   // console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
@@ -939,9 +943,19 @@ Contact Number: ${pickupAddress.phone || ""}`;
           >
             <Text style={styles.webPageTitle}>Order Details</Text>
 
-            <View style={styles.webContentWrapper}>
+            <View
+              style={[
+                styles.webContentWrapper,
+                isMobileWeb && styles.webContentWrapperMobile,
+              ]}
+            >
               {/* Left Section - Cart Items */}
-              <View style={styles.webLeftSection}>
+              <View
+                style={[
+                  styles.webRightSection,
+                  isMobileWeb && styles.webRightSectionMobile,
+                ]}
+              >
                 {cartItems.map((eachCartItem: any) => (
                   <CartItem
                     handleDelete={handleDelete}
@@ -953,7 +967,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
               </View>
 
               {/* Right Section - Order Summary */}
-              <View style={styles.webRightSection}>
+              <View
+                style={[
+                  styles.webRightSection,
+                  isMobileWeb && styles.webRightSectionMobile,
+                ]}
+              >
                 {/* Address Section */}
                 <View style={styles.webSectionCard}>
                   <Text style={styles.webSectionTitle}>Address</Text>

@@ -19,6 +19,7 @@ import colors from "@/constants/colors";
 import axios from "axios";
 import { ProductsAPI } from "@/services/productService";
 import { EntityAPI } from "@/services/entityService";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface FileUploadProps {
   onUploadComplete?: (result: any) => void;
@@ -73,6 +74,11 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   );
 
   const [result, setResult] = useState<any | null>(null);
+
+    const isWeb = Platform.OS === "web";
+    const { isMobile } = useWebMediaQuery();
+    const isMobileWeb = isWeb && isMobile;
+    const isDesktopWeb = isWeb && !isMobileWeb;
 
   const isChooseDisabled =
     selectedEntityLabel === "Select Entity" &&

@@ -33,6 +33,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
 
+  headerRowMobileWeb: {
+    flexDirection: "column",
+    gap: 12,
+  },
+
   separator: {
     height: 1,
     backgroundColor: colors.secondary,
@@ -68,6 +73,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     position: "relative",
     zIndex: 1000,
+  },
+
+  categoryActionColumn: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
   },
 
   categoryContainer: {

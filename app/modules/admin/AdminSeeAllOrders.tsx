@@ -28,6 +28,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import SearchBar from "@/app/components/searchBar";
 import OrderStatusDropdown from "./componentsWeb/OrderStatusDropdown";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -35,9 +36,11 @@ const AdminSeeAllOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
+
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -81,7 +84,7 @@ const AdminSeeAllOrders = () => {
           <View
             style={[
               styles.eachOrderItem,
-              isTabOrDesktop ? styles.eachOrderItemWeb : null,
+              isWeb ? styles.eachOrderItemWeb : null,
             ]}
           >
             <View
@@ -230,10 +233,10 @@ const AdminSeeAllOrders = () => {
   };
 
   // Pagination for desktop/tablet grid
-  const ITEMS_PER_PAGE = isTabOrDesktop ? 12 : 50;
+  const ITEMS_PER_PAGE = isWeb ? 12 : 50;
   const filteredOrders = getFilteredOrders();
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
-  const paginatedData = isTabOrDesktop
+  const paginatedData = isWeb
     ? filteredOrders.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -245,27 +248,27 @@ const AdminSeeAllOrders = () => {
     setCurrentPage(1);
   }, [debouncedSearchQuery, activeFilter]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
 
 
   return (
-    <LayoutComponent
+   <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
-      scrollable={isTabOrDesktop ? true : true}
+      hasSidebar={isWeb}
+      scrollable={true}
       hideNavItems={true}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         <>
         <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
               <View
@@ -285,20 +288,27 @@ const AdminSeeAllOrders = () => {
                 </Text>
               </View>
               <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
-                <View style={localStyles.searchFilterRow}>
+                <View style={[
+                    localStyles.searchFilterRow,
+                    isMobileWeb && localStyles.searchFilterMobile
+                  ]}>
                   <SearchBar
                     placeholder="Search orders..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     onSubmitEditing={() => {}}
                     onPress={() => {}}
-                    widthPercent={35}
+                    widthPercent={isMobileWeb ? 100 : 40}
                     height={40}
                   />
                   <OrderStatusDropdown
                     selectedStatus={activeFilter}
                     onSelectStatus={setActiveFilter}
-                    containerStyle={localStyles.dropdownContainer}
+                    isMobileWeb={isMobileWeb}
+                    containerStyle={[
+                      localStyles.dropdownContainer,
+                      isMobileWeb && localStyles.dropdownFullWidth
+                    ]}
                   />
                 </View>
               </View>
@@ -312,13 +322,14 @@ const AdminSeeAllOrders = () => {
                   data={sortOrdersByTime(paginatedData)}
                   renderItem={renderOrderItem}
                   keyExtractor={(item) => String(item._id)}
-                  contentContainerStyle={
-                    isTabOrDesktop ? styles.ordersGridContent : { 
-                      // paddingVertical: 8 
-                    }
+                 contentContainerStyle={
+                   isMobileWeb
+                      ? { paddingVertical: 8 }
+                      : styles.ordersGridContent
                   }
+
                   showsVerticalScrollIndicator={true}
-                  scrollEnabled={false}
+                  scrollEnabled={!isDesktopWeb}
                   ListEmptyComponent={
                     <View style={localStyles.emptyContainer}>
                       <Text style={localStyles.emptyText}>
@@ -329,7 +340,7 @@ const AdminSeeAllOrders = () => {
                 />
               </View>
             </View>
-          {isTabOrDesktop && totalPages > 1 && (
+          {isDesktopWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -341,9 +352,15 @@ const AdminSeeAllOrders = () => {
         </>
       ) : (
         <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
-          {!isTabOrDesktop && (
+          {!isWeb && (
             <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
-              <View style={localStyles.searchFilterRow}>
+              <View
+                style={[
+                  localStyles.searchFilterRow,
+                  // isMobileWeb && { flexDirection: "column", alignItems: "stretch" },
+                  isMobileWeb && localStyles.searchFilterColumn
+                ]}
+              >
                 <SearchBar
                   placeholder="Search orders..."
                   value={searchQuery}
@@ -412,6 +429,17 @@ const localStyles = StyleSheet.create({
     minHeight: Platform.OS === "ios" ? 50 : 44,
   },
 
+  searchFilterColumn: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
+
+  searchFilterMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    width: "100%",
+  },
+
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -428,6 +456,11 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
+  },
+
+  dropdownFullWidth: {
+    width: "100%",
+    alignSelf: "stretch",
   },
 
   statusPill: {
@@ -474,7 +507,7 @@ const localStyles = StyleSheet.create({
   },
 
   searchFilterRow: {
-    flexDirection: Platform.OS === "web" ? "row" : "column",
+    flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "flex-start",
@@ -486,6 +519,7 @@ const localStyles = StyleSheet.create({
   },
   dropdownContainer: {
     flexShrink: 0,
+    width: "100%",
   },
   emptyContainer: {
     flex: 1,

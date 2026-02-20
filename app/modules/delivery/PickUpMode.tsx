@@ -28,6 +28,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const modeConfig: Record<
   string,
@@ -75,6 +76,11 @@ const pickUpModescreen = () => {
   const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const isWeb = Platform.OS === "web";
+  
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
@@ -113,7 +119,7 @@ const pickUpModescreen = () => {
 
   // console.log("Final options:", options);
 
-  const isWeb = Platform.OS === "web";
+  // const isWeb = Platform.OS === "web";
 
   // Now the loading check comes AFTER all hooks
   if (loading) {
@@ -150,17 +156,17 @@ const pickUpModescreen = () => {
       scrollable={true}
     >
       {isWeb && (
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "300",
-            marginBottom: 20,
-            color: colors.black,
-            textAlign: "center",
-            width: "100%",
-            marginTop: 20,
-          }}
-        >
+      <Text
+        style={{
+          fontSize: isMobileWeb ? 22 : 28,
+          fontWeight: "300",
+          marginBottom: isMobileWeb ? 12 : 20,
+          color: colors.black,
+          textAlign: "center",
+          width: "100%",
+          marginTop: isMobileWeb ? 8 : 20,
+        }}
+      >
           {PICKUP_MODE_SCREEN_TITLE}
         </Text>
       )}
@@ -170,9 +176,9 @@ const pickUpModescreen = () => {
           globalStyles.pt_0,
           isWeb
             ? {
-                width: "70%",
+                width: isMobileWeb ? "95%" : "75%",
                 alignSelf: "center",
-                paddingVertical: 20,
+                paddingVertical: isMobileWeb ? 12 : 20,
               }
             : { paddingHorizontal: 0 },
         ]}
@@ -182,6 +188,10 @@ const pickUpModescreen = () => {
             key={option.id}
             style={[
               styles.option,
+              isMobileWeb && {
+                paddingVertical: 12,
+                paddingHorizontal: 12,
+              },
               selected?.id == option.id && styles.selectedOption,
             ]}
             onPress={() => setSelected(option)}

@@ -37,17 +37,18 @@ import colors from "@/constants/colors";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
 import { moveToCart } from "@/store/slices/savedItemsSlice";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
     useLocalSearchParams();
   const router = useRouter();
   const { width: windowWidth } = useWindowDimensions();
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
-  const width =
-    Platform.OS === "web"
-      ? Math.max(windowWidth, 1200)
-      : windowWidth;
+  // IMPORTANT: On web, always use the actual viewport width.
+  // Forcing a minimum (e.g. 1200) makes cards too wide on mobile browsers (causing a single column).
+  const width = windowWidth;
 
   const isWeb = Platform.OS === "web";
 
@@ -530,13 +531,16 @@ const SearchResultsScreen = () => {
       const numColumns = isWeb ? 5 : 2;
 
       if (isWeb) {
-        const numColumns = 5;
+        const numColumns = isMobile ? 2 : isTablet ? 3 : 5;
         const gap = 16;
-        const horizontalPadding = Math.max(24, Math.min(width * 0.05, 80));
-        const availableWidth = width - (horizontalPadding * 2);
+        // PageLayoutWeb uses these paddings when contentPadding is enabled
+        const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
+        const availableWidth = Math.max(0, width - (horizontalPadding * 2));
         const totalGapWidth = gap * (numColumns - 1);
-        const calculatedCardWidth = (availableWidth - totalGapWidth) / numColumns;
-        const cardWidth = Math.max(180, calculatedCardWidth);
+        const calculatedCardWidth =
+          numColumns > 0 ? (availableWidth - totalGapWidth) / numColumns : availableWidth;
+        const minCardWidth = isMobile ? 160 : 180;
+        const cardWidth = Math.max(minCardWidth, calculatedCardWidth);
         
         return (
           <View style={styles.productsGridWeb}>
@@ -546,8 +550,8 @@ const SearchResultsScreen = () => {
                 style={[
                   styles.productItemWeb,
                   {
-                    width: cardWidth,
-                    maxWidth: cardWidth,
+                    width: Math.floor(cardWidth),
+                    maxWidth: Math.floor(cardWidth),
                   }
                 ]}
               >

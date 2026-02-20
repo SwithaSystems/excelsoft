@@ -23,6 +23,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { isValidPassword } from "../../../utilities/validations";
 import colors from "@/constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -37,6 +38,9 @@ const changePasswordScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const user = useSelector((state: any) => state.user.user);
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -305,8 +309,9 @@ const changePasswordScreen = () => {
         <ScrollView>
           <View
             style={[
-              globalStyles.pt_0,
-              isWeb && webStyles.contentWidth,
+             globalStyles.pt_0,
+              webStyles.contentWidth,
+              isMobileWeb && webStyles.mobileWebContentWidth,
             ]}
           >
             <View style={globalStyles.profileInputContainer}>
@@ -418,19 +423,30 @@ const changePasswordScreen = () => {
             </View>
             
             {isWeb ? (
-              <View style={webStyles.inlineButtonRow}>
+              <View
+                style={[
+                  webStyles.inlineButtonRow,
+                  isMobileWeb && webStyles.mobileWebInlineButtonRow,
+                ]}
+              >
                 <Button
                   primary={false}
                   title="Cancel"
                   onPress={() => redirectToPage(containers.userProfileScreen)}
-                  style={webStyles.cancelButton}
+                  style={[
+                    webStyles.cancelButton,
+                    isMobileWeb && webStyles.mobileWebButton,
+                  ]}
                   textStyle={webStyles.cancelButtonText}
                   disabled={isLoading}
                 />
                 <Button
                   title={isLoading ? "Saving..." : "Save Password"}
                   onPress={handleChangePassword}
-                  style={webStyles.saveButton}
+                  style={[
+                    webStyles.saveButton,
+                    isMobileWeb && webStyles.mobileWebButton,
+                  ]}
                   textStyle={webStyles.saveButtonText}
                   disabled={isLoading}
                 />
@@ -495,4 +511,17 @@ const webStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
   },
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+  mobileWebInlineButtonRow: {
+    flexDirection: "column",
+    gap: 12,
+  },
+  mobileWebButton: {
+    width: "100%",
+    minWidth: undefined,
+  },
+
 });

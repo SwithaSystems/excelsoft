@@ -22,6 +22,7 @@ import * as SecureStore from "expo-secure-store";
 import { FontAwesome } from "@expo/vector-icons";
 import CountryPicker, { CountryCode, FlagType } from "react-native-country-picker-modal";
 import { getAllCountries } from "react-native-country-picker-modal";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const EDIT_CONTACT_INFORMATION_WEB_SCREEN_TITLE = "Edit Contact Information";
 
@@ -71,6 +72,9 @@ const editContactInformationWebScreen = () => {
   const dispatch = useDispatch();
   const userData = useSelector((state: RootState) => state.user.user);
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
 
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -448,6 +452,7 @@ const editContactInformationWebScreen = () => {
             style={[
               globalStyles.pt_0,
               isWeb && webStyles.contentWidth,
+              isMobileWeb && webStyles.mobileWebContentWidth,
             ]}
           >
             {/* PHONE SECTION */}
@@ -463,9 +468,10 @@ const editContactInformationWebScreen = () => {
                   </View>
                 </View>
                 <View style={webStyles.inputWithLinkContainer}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "stretch", gap: 8 }}>
 
                   {/* Country Picker */}
+                 <View style={webStyles.countryPickerContainer}>
                   <CountryPicker
                     countryCode={countryCode}
                     withFilter
@@ -476,24 +482,23 @@ const editContactInformationWebScreen = () => {
                       setCallingCode(country.callingCode[0]);
                     }}
                   />
+                  </View>
 
-                  {/* <Text style={{ fontSize: 16, fontWeight: "500" }}>
-                    +{callingCode}
-                  </Text> */}
-
-                  <CustomTextInput
-                    containerStyle={[globalStyles.userInputContainer, webStyles.inputContainer] as any}
-                    TextStyle={[globalStyles.input, webStyles.inputWithLink] as any}
-                    placeholder="phone number"
-                    value={localPhone}
-                    onPress={() => {}}
-                    setValue={(text) => {
-                      setLocalPhone(text);
-                      handlePhoneChange(`+${callingCode}${text}`);
-                    }}
-                    keyboardType="phone-pad"
-                    editable={!isPhoneVerified && !showChangePhone}
-                  />
+                  <View style={{ flex: 1 }}>
+                    <CustomTextInput
+                      containerStyle={[globalStyles.userInputContainer, webStyles.inputContainer] as any}
+                      TextStyle={[globalStyles.input, webStyles.inputWithLink] as any}
+                      placeholder="phone number"
+                      value={localPhone}
+                      onPress={() => {}}
+                      setValue={(text) => {
+                        setLocalPhone(text);
+                        handlePhoneChange(`+${callingCode}${text}`);
+                      }}
+                      keyboardType="phone-pad"
+                      editable={!isPhoneVerified && !showChangePhone}
+                    />
+                  </View>
                 </View>
 
                   {!isPhoneVerified && localPhone && !phoneError && !showChangePhone && (
@@ -528,8 +533,15 @@ const editContactInformationWebScreen = () => {
                     <Text style={webStyles.changeLabel}>New Phone Number</Text>
                     <View style={webStyles.inputWithLinkContainer}>
 
-                    <View style={webStyles.phoneRow}>
+                    <View
+                      style={[
+                        webStyles.phoneRow,
+                        isMobileWeb && webStyles.mobileWebPhoneRow,
+                        { alignItems: "stretch" },
+                      ]}
+                    >
 
+                    <View style={[webStyles.countryPickerContainer, { justifyContent: "center" }]}>
                       <CountryPicker
                         countryCode={newCountryCode}
                         withFilter
@@ -540,11 +552,13 @@ const editContactInformationWebScreen = () => {
                           setNewCallingCode(country.callingCode[0]);
                         }}
                       />
+                      </View>
 
                       {/* <Text style={{ fontSize: 16, fontWeight: "500" }}>
                         +{newCallingCode}
                       </Text> */}
 
+                    <View style={webStyles.phoneInputWrapper}>
                       <CustomTextInput
                         containerStyle={[globalStyles.userInputContainer, webStyles.inputContainer] as any}
                         TextStyle={[globalStyles.input, webStyles.inputWithLink] as any}
@@ -557,6 +571,7 @@ const editContactInformationWebScreen = () => {
                         }}
                         keyboardType="phone-pad"
                       />
+                      </View>
                     </View>
 
                       {newLocalPhone && !newPhoneError && (
@@ -713,12 +728,8 @@ const webStyles = StyleSheet.create({
 
   phoneRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 8,
-  },
-
-  phoneInputWrapper: {
-    flex: 1,             
   },
 
   /* SAVE (Primary) */
@@ -791,7 +802,9 @@ const webStyles = StyleSheet.create({
   },
   inputContainer: {
     position: "relative",
+    width: "100%",
   },
+
   inputWithLink: {
     width: "100%",
   },
@@ -812,5 +825,51 @@ const webStyles = StyleSheet.create({
     fontSize: 12,
     color: colors.blue,
     textDecorationLine: "underline",
+  },
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+  countryPickerContainer: {
+    height: 42,                 // same as input
+    minWidth: 90,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    borderRadius: 8,
+    backgroundColor: colors.lightgrey,
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+
+  countryPickerMobileWeb: {
+    minWidth: 90,
+  },
+  mobileWebPhoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
+  phoneInputWrapper: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  phoneInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    borderRadius: 8,
+    overflow: "hidden",
+    height: 48,
+    backgroundColor: colors.lightgrey,
+    width: "100%",
+  },
+
+  phoneInput: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 10,
+    backgroundColor: colors.lightgrey,
   },
 });

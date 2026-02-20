@@ -10,6 +10,11 @@ const styles = StyleSheet.create({
     // padding: 16,
     paddingBottom: 32,
   },
+  headerRowMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   section: {
     marginBottom: 32,
     overflow: "visible",
@@ -19,6 +24,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.black,
     marginBottom: 16,
+  },
+  pageTitleMobileWeb: {
+    textAlign: "center",
+    alignSelf: "center",
+    width: "100%",
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.black,
   },
   imageUploadArea: {
     width: "100%",
