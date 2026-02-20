@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Switch, ActivityIndicator, Alert, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Switch,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  Platform,
+  TextInput,
+} from "react-native";
 
 import styles from "./AdminGlobalSettingsStyles";
 import colors from "@/constants/colors";
@@ -10,6 +19,10 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import globalSettingsAPI, {
   GlobalSettingsDto,
 } from "@/services/globalSettingsService";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface SettingConfig {
   key: keyof Omit<GlobalSettingsDto, "updatedAt">;
@@ -61,6 +74,10 @@ const SETTINGS_CONFIG: SettingConfig[] = [
 ];
 
 const AdminGlobalSettings = () => {
+  const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const [settings, setSettings] = useState<GlobalSettingsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
@@ -167,10 +184,18 @@ const AdminGlobalSettings = () => {
     const isUpdating = updatingKey === fieldKey;
 
     return (
-      <View style={styles.inputContainer}>
+      <View
+        style={[
+          styles.inputContainer,
+          styles.inputContainerBelowLabel,
+          isWeb && !isMobile && styles.inputContainerBelowLabelDesktopWeb,
+          isMobileWeb && styles.inputContainerMobileWeb,
+        ]}
+      >
         <TextInput
           style={[
             styles.input,
+            styles.inputText,
             !isEditing && styles.inputReadOnly,
           ]}
           keyboardType="numeric"
@@ -182,8 +207,9 @@ const AdminGlobalSettings = () => {
           onChangeText={(value) =>
             setTempValues((prev) => ({ ...prev, [fieldKey]: value }))
           }
-          editable={isEditing}
+          editable={isEditing && updatingKey === null}
           placeholder="Enter amount"
+          placeholderTextColor={colors.slateGrey}
         />
         
         {!isEditing ? (
@@ -192,7 +218,7 @@ const AdminGlobalSettings = () => {
             style={styles.editButton}
             disabled={updatingKey !== null}
           >
-            <Text style={styles.editIcon}>✏️</Text>
+            <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.actionButtons}>
@@ -220,52 +246,93 @@ const AdminGlobalSettings = () => {
     );
   };
 
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <Header headerText={GLOOBAL_SETTINGS_SCREEN_TITLE} />
+  );
+  const FooterComponent = isWeb ? <FooterWeb /> : undefined;
+
   if (loading) {
     return (
-      <PageLayout
-        hasFooter={false}
+      <LayoutComponent
         hasHeader
+        headerComponent={HeaderComponent}
         scrollable
-        headerComponent={<Header headerText={GLOOBAL_SETTINGS_SCREEN_TITLE} />}
+        hasFooter={isWeb}
+        footerComponent={FooterComponent}
+        hasSidebar={isWeb}
+        hideNavItems={isWeb}
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading settings...</Text>
         </View>
-      </PageLayout>
+      </LayoutComponent>
     );
   }
 
   if (!settings) {
     return (
-      <PageLayout
-        hasFooter={false}
+      <LayoutComponent
         hasHeader
+        headerComponent={HeaderComponent}
         scrollable
-        headerComponent={<Header headerText={GLOOBAL_SETTINGS_SCREEN_TITLE} />}
+        hasFooter={isWeb}
+        footerComponent={FooterComponent}
+        hasSidebar={isWeb}
+        hideNavItems={isWeb}
       >
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load settings</Text>
         </View>
-      </PageLayout>
+      </LayoutComponent>
     );
   }
 
   return (
-    <PageLayout
-      hasFooter={false}
+    <LayoutComponent
       hasHeader
+      headerComponent={HeaderComponent}
       scrollable
-      headerComponent={<Header headerText={GLOOBAL_SETTINGS_SCREEN_TITLE} />}
+      hasFooter={isWeb}
+      footerComponent={FooterComponent}
+      hasSidebar={isWeb}
+      hideNavItems={isWeb}
     >
-      <View style={[globalStyles.pt_0]}>
+      <View
+        style={[
+          globalStyles.pt_0,
+          isWeb && styles.webContent,
+          isMobileWeb && styles.webContentMobile,
+        ]}
+      >
         {SETTINGS_CONFIG.map((config) => (
           <View key={config.key}>
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>{config.label}</Text>
+            <View
+              style={[
+                styles.switchContainer,
+                config.type === "input" && styles.switchContainerInput,
+                isMobileWeb && styles.switchContainerMobileWeb,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.switchLabel,
+                  config.type === "input" && styles.switchLabelInput,
+                ]}
+              >
+                {config.label}
+              </Text>
 
               {config.type === "switch" ? (
-                <View style={styles.switchWrapper}>
+                <View
+                  style={[
+                    styles.switchWrapper,
+                    isMobileWeb && styles.switchWrapperMobileWeb,
+                  ]}
+                >
                   {updatingKey === config.key && (
                     <ActivityIndicator
                       size="small"
@@ -295,7 +362,7 @@ const AdminGlobalSettings = () => {
           </View>
         ))}
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

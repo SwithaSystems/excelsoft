@@ -2,6 +2,15 @@ import { StyleSheet } from "react-native";
 import colors from "@/constants/colors";
 
 const styles = StyleSheet.create({
+  webContent: {
+    width: "100%",
+    maxWidth: 980,
+    alignSelf: "center",
+  },
+  webContentMobile: {
+    maxWidth: "100%",
+    alignSelf: "stretch",
+  },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -11,19 +20,46 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.lightgrey,
   },
+  // For input-type settings: put control on next line
+  switchContainerInput: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    gap: 10,
+  },
+  switchContainerMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   inputContainer: {
   flexDirection: "row",
   alignItems: "center",
   gap: 8,
 },
+  inputContainerBelowLabel: {
+    alignSelf: "stretch",
+    width: "100%",
+  },
+  inputContainerBelowLabelDesktopWeb: {
+    alignSelf: "flex-end",
+    maxWidth: 420,
+  },
+  inputContainerMobileWeb: {
+    width: "100%",
+    alignSelf: "stretch",
+    justifyContent: "space-between",
+  },
 inputReadOnly: {
   backgroundColor: colors.lightgrey, // or any color to indicate read-only
 },
 editButton: {
   padding: 8,
 },
-editIcon: {
-  fontSize: 18,
+editText: {
+  fontSize: 14,
+  fontWeight: "600",
+  color: colors.primary,
 },
 actionButtons: {
   flexDirection: "row",
@@ -54,9 +90,15 @@ cancelIcon: {
     color: colors.black,
     flex: 1,
   },
+  switchLabelInput: {
+    flex: 0,
+  },
   switchWrapper: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  switchWrapperMobileWeb: {
+    alignSelf: "flex-end",
   },
   switchLoader: {
     marginRight: 8,
@@ -75,15 +117,22 @@ cancelIcon: {
     paddingVertical: 40,
   },
   input: {
+  height: 48,
+  flex: 1,
+  minWidth: 0,
   borderWidth: 1,
-  // borderColor: colors.border,
-  borderRadius: 6,
+  borderColor: colors.primary,
+  borderRadius: 8,
   paddingHorizontal: 10,
-  paddingVertical: 6,
-  minWidth: 100,
-  textAlign: "right",
-  // color: colors.primary,
+  backgroundColor: colors.white,
 },
+  inputMobileWeb: {
+    // kept for backward compatibility
+    maxWidth: "100%",
+  },
+  inputText: {
+    textAlign: "right",
+  },
 
   loadingText: {
     marginTop: 12,

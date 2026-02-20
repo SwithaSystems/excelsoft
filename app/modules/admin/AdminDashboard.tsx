@@ -615,6 +615,10 @@ const AdminDashboard = () => {
         ListHeaderComponent={ListHeaderComponent}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
+       contentContainerStyle={{
+          paddingTop: isWeb ? 24 : 12, 
+          paddingBottom: 24,
+        }}
         maxToRenderPerBatch={5}
         windowSize={10}
         initialNumToRender={3}
