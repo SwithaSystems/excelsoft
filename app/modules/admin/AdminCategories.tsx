@@ -29,6 +29,7 @@ import containers from "@/containers";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import SearchBar from "@/app/components/searchBar";
 import Pagination from "./componentsWeb/PaginationWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface Category {
   _id: any;
@@ -73,6 +74,9 @@ const AdminCategories = () => {
   // const { width } = useWindowDimensions();
   // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   // Get params to detect refresh
   const params = useLocalSearchParams();
@@ -459,17 +463,29 @@ const AdminCategories = () => {
     >
       {isWeb ? (
         <View style={styles.listSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
+              <View style={[
+                    styles.sectionHeader,
+                    isMobileWeb && styles.headerRowMobileWeb,
+                  ]}>
+                <Text style={[styles.sectionTitle, { fontSize: isDesktopWeb ? 35 : 24 }]}>Categories</Text>
 
                 {/* Desktop/Tablet: Show button to redirect to add category page */}
                 <TouchableOpacity
-                  style={styles.addButton}
+                  style={[
+                    styles.addButton,
+                    isMobileWeb && styles.addButtonMobileWeb,
+                  ]}
                   onPress={() => {
                     redirectToPage(containers.AdminAddCategoriesWebScreen);
                   }}
                 >
-                  <Text style={styles.addButtonText}>+ Add New Category</Text>
+                  <Text style={[
+                    styles.addButtonText,
+                    isMobileWeb && { width: "100%" },
+                    ]}
+                  >
+                      + Add New Category
+                  </Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.listContainer}>
@@ -539,7 +555,7 @@ const AdminCategories = () => {
               </View>
           
           {/* Pagination for web/tablet only */}
-          {isWeb && totalPages > 1 && (
+          {isDesktopWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -791,6 +807,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+  },
+   headerRowMobileWeb: {
+    flexDirection: "column",
+    gap: 12,
+  },
+  addButtonMobileWeb: {
+    width: "100%",
+    minWidth: 0,
+    alignSelf: "stretch",
   },
   sectionTitle: {
     // fontSize is set dynamically in the component

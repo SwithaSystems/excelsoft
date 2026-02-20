@@ -16,6 +16,7 @@ interface OrderStatusDropdownProps {
   selectedStatus: string;
   onSelectStatus: (status: string) => void;
   containerStyle?: any;
+  isMobileWeb?: boolean;
 }
 
 const statusOptions = ["All Orders", "Cancelled", "Replaced", "Returned"];
@@ -24,6 +25,7 @@ const OrderStatusDropdown = ({
   selectedStatus,
   onSelectStatus,
   containerStyle,
+  isMobileWeb = false,
 }: OrderStatusDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -47,7 +49,13 @@ const OrderStatusDropdown = ({
   );
 
   return (
-    <View style={[styles.categoryContainer, containerStyle]}>
+    <View
+        style={[
+          styles.categoryContainer,
+          isMobileWeb && styles.categoryContainerMobileWeb, 
+          containerStyle,
+        ]}
+      >
       <TouchableOpacity
         onPress={() => setIsOpen((prev) => !prev)}
         activeOpacity={0.7}
@@ -115,7 +123,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === "web" ? 40 : 52,
     minWidth: Platform.OS === "web" ? 180 : undefined,
     width: Platform.OS === "web" ? undefined : "100%", // Full width on mobile
-    maxWidth: Platform.OS === "web" ? 250 : "100%",
+    maxWidth: Platform.OS === "web" ? 250 : undefined,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
@@ -124,6 +132,12 @@ const styles = StyleSheet.create({
     position: "relative",
     zIndex: 1000,
     overflow: Platform.OS === "web" ? "visible" : "hidden",
+  },
+  categoryContainerMobileWeb: {
+    width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+    alignSelf: "stretch",
   },
   categorySelector: {
     flexDirection: "row",

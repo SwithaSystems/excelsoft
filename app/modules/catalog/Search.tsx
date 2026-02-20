@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
-  StyleSheet,
   ScrollView,
   Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
   Alert,
-  SafeAreaView,
+  Platform,
 } from "react-native";
 import colors from "../../../constants/colors";
 import SearchHistoryItem from "../../components/SearchHistoryItem";
@@ -19,12 +18,14 @@ import Header from "../../components/Header";
 import useDebounce from "../../../utilities/customHooks/useDebounce";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/app/components/Footer";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMessages";
@@ -61,6 +62,7 @@ const categories = [
 ];
 
 const SearchScreen = () => {
+  const isWeb = Platform.OS === "web";
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -297,8 +299,8 @@ const SearchScreen = () => {
       );
     }
 
-    return (
-      <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+    const mainContent = (
+      <>
         {/* Recent Searches */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Searches</Text>
@@ -326,9 +328,51 @@ const SearchScreen = () => {
             ))}
           </View>
         </View> */}
-      </ScrollView>
+      </>
+    );
+
+    return (
+      isWeb ? (
+        <View style={styles.content}>{mainContent}</View>
+      ) : (
+        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+          {mainContent}
+        </ScrollView>
+      )
     );
   };
+
+  const content = (
+    <KeyBoardWrapper>
+      <View style={styles.container}>
+        <View style={styles.searchBarContainer}>
+          <SearchBar
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            onPress={handleSearch}
+          />
+        </View>
+
+        {renderMainContent()}
+      </View>
+    </KeyBoardWrapper>
+  );
+
+  if (isWeb) {
+    return (
+      <PageLayoutWeb
+        hasHeader
+        hasFooter
+        scrollable
+        headerComponent={<BrandHeaderWeb />}
+        footerComponent={<FooterWeb />}
+      >
+        {content}
+      </PageLayoutWeb>
+    );
+  }
 
   return (
     <PageLayout
@@ -337,26 +381,9 @@ const SearchScreen = () => {
       hasFooter
       headerComponent={<Header headerText={"Search"} />}
       footerComponent={<Footer activeTab="search" />}
-      children={
-        <KeyBoardWrapper
-          children={
-            <View style={styles.container}>
-              <View style={styles.searchBarContainer}>
-                <SearchBar
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                  onPress={handleSearch}
-                />
-              </View>
-
-              {renderMainContent()}
-            </View>
-          }
-        />
-      }
-    ></PageLayout>
+    >
+      {content}
+    </PageLayout>
   );
 };
 

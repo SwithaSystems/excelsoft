@@ -18,6 +18,11 @@ import colors from "../../../constants/colors";
 import { UserAPI } from "@/services/userService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./AdminAccessControlStyles";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { Platform } from "react-native";
 
 const AdminAccessControlScreen = () => {
   const [accessList, setAccessList] = useState<boolean[]>([]);
@@ -28,6 +33,11 @@ const AdminAccessControlScreen = () => {
   const [updatingAccess, setUpdatingAccess] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   const toggleAccess = async (index: number, userId: string) => {
     try {
@@ -326,32 +336,44 @@ const AdminAccessControlScreen = () => {
     </View>
   );
 
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+
+  const HeaderComponent = isWeb ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
+  );
+
+  // const FooterComponent = isWeb ? <FooterWeb /> : null;
+
   if (loading) {
     return (
-      <PageLayout
-        hasHeader
-        hasFooter={false}
-        scrollable={false}
-        headerComponent={
-          <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
-        }
-      >
+       <LayoutComponent
+          hasHeader
+          headerComponent={HeaderComponent}
+          // hasFooter={isWeb}
+          // footerComponent={FooterComponent}
+          hasSidebar={isDesktopWeb}
+          scrollable={false}
+        >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading users...</Text>
         </View>
-      </PageLayout>
+      </LayoutComponent>
     );
   }
 
+  
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      hasFooter={false}
+      headerComponent={HeaderComponent}
+      // hasFooter={isWeb}
+      // footerComponent={FooterComponent}
+      hasSidebar={isDesktopWeb}
       scrollable={false}
-      headerComponent={
-        <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
-      }
     >
       <View style={styles.container}>
         {/* Search Bar */}
@@ -401,9 +423,9 @@ const AdminAccessControlScreen = () => {
         </View>
 
         {/* Pagination */}
-        {renderPagination()}
+        {isDesktopWeb && renderPagination()}
       </View>
-    </PageLayout>
+    </LayoutComponent>
   );
 };
 

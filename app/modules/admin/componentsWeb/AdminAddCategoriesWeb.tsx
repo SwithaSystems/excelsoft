@@ -27,6 +27,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface Category {
   _id: any;
@@ -63,6 +64,9 @@ const AdminAddCategoriesWeb = () => {
   // const { width } = useWindowDimensions();
   // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   // Get params if editing
   const params = useLocalSearchParams();
@@ -475,9 +479,27 @@ const AdminAddCategoriesWeb = () => {
       scrollable={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
+        <View
+             style={[
+               styles.formContainer,
+               isWeb
+                 ? {
+                     width: isMobileWeb ? "100%" : "70%",
+                     paddingVertical: isMobileWeb ? 0 : 20,
+                   }
+                 : { paddingHorizontal: 0 },
+             ]}
+           >
+          <View
+            style={[
+              styles.sectionHeader,
+              isMobileWeb && styles.sectionHeaderMobile,
+            ]}
+          >
+            <Text style={[
+                styles.sectionTitle,
+                isMobileWeb && styles.sectionTitleMobile,  
+              ]}>
               {isEditMode ? "Edit Category" : "Add New Category"}
             </Text>
             {isEditMode && (
@@ -615,14 +637,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 16,
   },
+  mobileWebContainer: {
+    width: "95%",
+    alignSelf: "center",
+  },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },
+  sectionHeaderMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   sectionTitle: {
     fontSize: 35,
+    color: colors.black,
+  },
+  sectionTitleMobile: {
+    fontSize: 24,
     color: colors.black,
   },
   cancelButton: {

@@ -40,6 +40,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface ApiResponse {
   data: Product[];
@@ -80,6 +81,10 @@ const AdminProductDashboard = () => {
   const [bulkDeleteModalVisible, setBulkDeleteModalVisible] = useState(false);
 
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
+  
 
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
@@ -704,6 +709,7 @@ const AdminProductDashboard = () => {
         <View
           style={[
             styles.headerRow,
+             isMobileWeb && styles.headerRowMobileWeb,
             {
               justifyContent: "space-between",
               paddingTop: 10,
@@ -714,7 +720,7 @@ const AdminProductDashboard = () => {
           ]}
         >
           {isWeb && (
-            <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+            <Text style={{ fontSize: isMobileWeb ? 24 : 35, color: colors.black, paddingHorizontal: 0 }}>
               Product List
             </Text>
           )}
@@ -722,7 +728,8 @@ const AdminProductDashboard = () => {
             style={[
               styles.addButton,
               isWeb && styles.addButtonWebSmall,
-              !isWeb && styles.addButtonMobile
+              !isWeb && styles.addButtonMobile,
+              isMobileWeb && { width: "100%" },
             ]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
@@ -738,7 +745,10 @@ const AdminProductDashboard = () => {
 
         <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
           <View style={styles.stickyTopContainer}>
-            <View style={styles.categoryActionRow}>
+            <View style={[
+                styles.categoryActionRow, 
+                 isMobileWeb && styles.categoryActionColumn,
+                ]}>
               {isWeb && (
                 <View style={styles.searchWithToggle}>
                   <SearchBar
@@ -747,26 +757,33 @@ const AdminProductDashboard = () => {
                     onChangeText={setSearchQuery}
                     onSubmitEditing={handleSearch}
                     onPress={handleSearch}
-                    widthPercent={35}
+                    widthPercent={isMobileWeb ? 100 : 35}
                     height={40}
                   />
 
-                  <TouchableOpacity
-                    onPress={() =>
-                      setViewMode(viewMode === "list" ? "grid" : "list")
-                    }
-                    style={styles.viewToggleIcon}
-                  >
-                    <Ionicons
-                      name={viewMode === "list" ? "grid-outline" : "list-outline"}
-                      size={22}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
+                  {isDesktopWeb && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        setViewMode(viewMode === "list" ? "grid" : "list")
+                      }
+                      style={styles.viewToggleIcon}
+                    >
+                      <Ionicons
+                        name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
 
-              <View style={styles.categoryContainer}>
+              <View
+                style={[
+                  styles.categoryContainer,
+                  isMobileWeb && { width: "100%" },
+                ]}
+              >
                 <TouchableOpacity
                   onPress={() => setIsCategoryOpen((prev) => !prev)}
                   activeOpacity={0.7}
@@ -1036,7 +1053,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
-        {isWeb && shouldShowPagination && (
+        {isDesktopWeb && shouldShowPagination && (
         <View style={styles.stickyBottomContainer}>
           <Pagination
             currentPage={currentPage}

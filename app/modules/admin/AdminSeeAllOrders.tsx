@@ -288,20 +288,27 @@ const AdminSeeAllOrders = () => {
                 </Text>
               </View>
               <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
-                <View style={localStyles.searchFilterRow}>
+                <View style={[
+                    localStyles.searchFilterRow,
+                    isMobileWeb && localStyles.searchFilterMobile
+                  ]}>
                   <SearchBar
                     placeholder="Search orders..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     onSubmitEditing={() => {}}
                     onPress={() => {}}
-                    widthPercent={35}
+                    widthPercent={isMobileWeb ? 100 : 40}
                     height={40}
                   />
                   <OrderStatusDropdown
                     selectedStatus={activeFilter}
                     onSelectStatus={setActiveFilter}
-                    containerStyle={localStyles.dropdownContainer}
+                    isMobileWeb={isMobileWeb}
+                    containerStyle={[
+                      localStyles.dropdownContainer,
+                      isMobileWeb && localStyles.dropdownFullWidth
+                    ]}
                   />
                 </View>
               </View>
@@ -322,7 +329,7 @@ const AdminSeeAllOrders = () => {
                   }
 
                   showsVerticalScrollIndicator={true}
-                  scrollEnabled={false}
+                  scrollEnabled={!isDesktopWeb}
                   ListEmptyComponent={
                     <View style={localStyles.emptyContainer}>
                       <Text style={localStyles.emptyText}>
@@ -333,7 +340,7 @@ const AdminSeeAllOrders = () => {
                 />
               </View>
             </View>
-          {isWeb && totalPages > 1 && (
+          {isDesktopWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -350,7 +357,8 @@ const AdminSeeAllOrders = () => {
               <View
                 style={[
                   localStyles.searchFilterRow,
-                  isMobileWeb && { flexDirection: "column", alignItems: "stretch" },
+                  // isMobileWeb && { flexDirection: "column", alignItems: "stretch" },
+                  isMobileWeb && localStyles.searchFilterColumn
                 ]}
               >
                 <SearchBar
@@ -421,6 +429,17 @@ const localStyles = StyleSheet.create({
     minHeight: Platform.OS === "ios" ? 50 : 44,
   },
 
+  searchFilterColumn: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
+
+  searchFilterMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    width: "100%",
+  },
+
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -437,6 +456,11 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
+  },
+
+  dropdownFullWidth: {
+    width: "100%",
+    alignSelf: "stretch",
   },
 
   statusPill: {
@@ -495,6 +519,7 @@ const localStyles = StyleSheet.create({
   },
   dropdownContainer: {
     flexShrink: 0,
+    width: "100%",
   },
   emptyContainer: {
     flex: 1,
