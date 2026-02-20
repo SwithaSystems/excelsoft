@@ -125,17 +125,27 @@ export const orderService = {
   },
 
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
-    // console.log("orderPayload", orderPayload);
     try {
       const response = await jsonAxios.post<Order>(
         `${API_BASE_URL}/orders`,
         orderPayload
       );
-      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error create orders:", error);
       throw error;
+    }
+  },
+
+  /** Send "order placed" to both mobile (Expo) and web push. Call after createOrder from web or mobile. */
+  notifyOrderPlaced: async (order: { _id: string; userId: string; orderNumber?: number | string }) => {
+    try {
+      await jsonAxios.post(
+        `${API_BASE_URL}/notifications/orders/${order.userId}/placed`,
+        { orderId: order._id, orderNumber: order.orderNumber }
+      );
+    } catch (e) {
+      console.warn("Order placed notification request failed:", e);
     }
   },
 

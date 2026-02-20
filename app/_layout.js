@@ -40,12 +40,47 @@ function NotificationsHandler() {
   const responseListener = useRef();
   const appState = useRef(AppState.currentState);
 
+  // Web only: listen for push payloads from the service worker so the in-app list updates
   useEffect(() => {
-    // Skip notifications on web platform
-    if (Platform.OS === "web") {
-      // console.log("Notifications not supported on web");
-      return;
+    if (Platform.OS !== "web" || typeof navigator === "undefined" || !navigator.serviceWorker) return;
+    const hasController = !!navigator.serviceWorker.controller;
+    console.log("[Layout] Web: PUSH_PAYLOAD listener added. Controller:", hasController);
+    if (!hasController) {
+      navigator.serviceWorker.addEventListener("controllerchange", function onCtrl() {
+        console.log("[Layout] Web: SW now controlling page; ready to receive push.");
+        navigator.serviceWorker.removeEventListener("controllerchange", onCtrl);
+      }, { once: true });
     }
+    const onMessage = async (event) => {
+      if (event.data?.type !== "PUSH_PAYLOAD") return;
+      console.log("[Layout] PUSH_PAYLOAD received from service worker", event.data.payload);
+      const { title, body, data } = event.data.payload || {};
+      const notificationItem = {
+        id: "web-push-" + Date.now(),
+        title: title || "Notification",
+        body: body || "",
+        data: data || {},
+        timestamp: Date.now(),
+        isRead: false,
+        type: (data && data.type) || "general",
+      };
+      try {
+        await NotificationService.saveNotification(notificationItem);
+        if (DeviceEventEmitter && DeviceEventEmitter.emit) {
+          DeviceEventEmitter.emit("notificationUpdate");
+        }
+        console.log("[Layout] Notification saved and notificationUpdate emitted");
+      } catch (err) {
+        console.error("[Layout] Failed to save notification:", err);
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    // Skip Expo notification listeners on web (web uses service worker + message above)
+    if (Platform.OS === "web") return;
 
     const initializeNotifications = async () => {
       const currentUser = await authService.getCurrentUser();
