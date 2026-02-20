@@ -1,6 +1,23 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
+const fs = require("fs");
 const config = getDefaultConfig(__dirname);
+
+// Serve service worker at /sw.js in web dev so web push can register
+const swPath = path.join(__dirname, "public", "sw.js");
+config.server = config.server || {};
+config.server.enhanceMiddleware = (middleware) => {
+  return (req, res, next) => {
+    if (req.url === "/sw.js" || req.url === "/sw.js/") {
+      if (fs.existsSync(swPath)) {
+        res.setHeader("Content-Type", "application/javascript");
+        fs.createReadStream(swPath).pipe(res);
+        return;
+      }
+    }
+    return middleware(req, res, next);
+  };
+};
 
 //font extensions for web
 config.resolver.assetExts.push("ttf", "otf", "woff", "woff2");

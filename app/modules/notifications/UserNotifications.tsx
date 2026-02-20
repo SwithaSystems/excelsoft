@@ -1,6 +1,6 @@
 // screens/UserNotificationsScreen.tsx
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -8,30 +8,118 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Alert,
   DeviceEventEmitter,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationService } from "@/services/notificationService";
+import { jsonAxios, API_BASE_URL } from "@/services/axiosConfig";
 import colors from "@/constants/colors";
 import { useFocusEffect } from "@react-navigation/native";
 import { handleNotificationNavigation } from "@/services/navigationService";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+
+const FOCUS_LOAD_THROTTLE_MS = 1200;
 
 export default function UserNotificationsScreen() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [notificationToDeleteId, setNotificationToDeleteId] = useState<string | null>(null);
+  const lastFocusLoadRef = useRef<number>(0);
 
-  const loadNotifications = async () => {
+  useEffect(() => {
+    if (typeof console !== "undefined") console.log("[UserNotifications] Screen mounted");
+    return () => { if (typeof console !== "undefined") console.log("[UserNotifications] Screen unmounted"); };
+  }, []);
+
+  const loadNotifications = useCallback(async (isRetry = false) => {
+    if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start", isRetry ? "(retry)" : "");
+    setLoadError(null);
     const stored = await NotificationService.getStoredNotifications();
-    setNotifications(stored);
-    DeviceEventEmitter.emit("notificationUpdate");
-  };
+    let list = stored ?? [];
 
+    // Fetch from backend (GET /web-push/notifications). Use full URL so request hits backend on web (not the dev server).
+    const notificationsUrl = API_BASE_URL ? `${String(API_BASE_URL).replace(/\/$/, "")}/web-push/notifications` : "/web-push/notifications";
+    try {
+      const res = await jsonAxios.get(notificationsUrl);
+      const [readApiIds, deletedApiIds] = await Promise.all([
+        NotificationService.getReadApiIds(),
+        NotificationService.getDeletedApiIds(),
+      ]);
+      const rawList = NotificationService.getNotificationsFromResponse(res.data);
+      const apiList = rawList
+        .filter((n) => n && n._id && !deletedApiIds.includes("api-" + n._id))
+        .map((n) => ({
+          id: "api-" + n._id,
+          title: n.title ?? "",
+          body: n.body ?? "",
+          data: n.data ?? {},
+          timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
+          isRead: readApiIds.includes("api-" + n._id),
+          type: (n.data?.type as string) || "general",
+        }));
+      const seen = new Set(list.map((x) => x.id));
+      for (const n of apiList) {
+        if (!seen.has(n.id)) {
+          seen.add(n.id);
+          list.push(n);
+        }
+      }
+      list.sort((a, b) => b.timestamp - a.timestamp);
+    } catch (e: any) {
+      let msg = e?.response?.data?.message ?? e?.message ?? "Failed to load notifications";
+      if (typeof msg === "string" && msg.includes("Cannot GET")) {
+        msg = "Notifications API not reached. Set EXPO_PUBLIC_API_URL in .env to your backend URL (e.g. https://your-api.herokuapp.com).";
+      }
+      setLoadError(msg);
+      if (typeof console !== "undefined") console.warn("[UserNotifications] API fetch failed:", e);
+    }
+
+    list = NotificationService.deduplicateOrderNotifications(list);
+
+    if (typeof console !== "undefined") console.log("[UserNotifications] loaded", list.length, "notifications");
+    setNotifications(list);
+
+    // On web, if list is still empty but we have a cached unread count, retry once (transient API failure).
+    if (Platform.OS === "web" && list.length === 0 && !isRetry) {
+      try {
+        const cached = await AsyncStorage.getItem("@app_notifications_last_unread_count");
+        if (cached !== null && parseInt(cached, 10) > 0) {
+          if (typeof console !== "undefined") console.log("[UserNotifications] empty list but cached count", cached, "- retrying load");
+          setTimeout(() => loadNotifications(true), 300);
+        }
+      } catch (_) {}
+    }
+  }, []);
+
+  // Ensure we load at least once on mount (avoids empty list when focus throttle skips on web).
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  // Throttle: on web, useFocusEffect can fire repeatedly and cause an infinite loop. Run load at most once per throttle window.
   useFocusEffect(
     useCallback(() => {
+      const now = Date.now();
+      if (now - lastFocusLoadRef.current < FOCUS_LOAD_THROTTLE_MS) return;
+      lastFocusLoadRef.current = now;
       loadNotifications();
-    }, [])
+    }, [loadNotifications])
   );
+
+  // When _layout saves a web push (or mobile receives a notification), refresh the list. Do NOT emit from loadNotifications.
+  useEffect(() => {
+    if (!DeviceEventEmitter?.addListener) return;
+    const onUpdate = () => {
+      lastFocusLoadRef.current = 0;
+      loadNotifications();
+    };
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", onUpdate);
+    return () => sub.remove();
+  }, [loadNotifications]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -44,6 +132,7 @@ export default function UserNotificationsScreen() {
     
     await NotificationService.markAsRead(notification.id);
     await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
     
     // Parse notification data - handle both object and string formats
     let notificationData = notification.data;
@@ -80,25 +169,25 @@ export default function UserNotificationsScreen() {
   const handleMarkAllAsRead = async () => {
     await NotificationService.markAllAsRead();
     await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
   };
 
   const handleDeleteNotification = (notificationId: string) => {
-    Alert.alert(
-      "Delete Notification",
-      "Are you sure you want to delete this notification?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await NotificationService.deleteNotification(notificationId);
-            await loadNotifications();
-          },
-        },
-      ]
-    );
+    setNotificationToDeleteId(notificationId);
+    setDeleteModalVisible(true);
   };
+
+  const performDeleteNotification = async () => {
+    if (!notificationToDeleteId) return;
+    await NotificationService.deleteNotification(notificationToDeleteId);
+    setNotificationToDeleteId(null);
+    setDeleteModalVisible(false);
+    await loadNotifications();
+    if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+  };
+
+  const formatOrderNumberInText = (text: string) =>
+    (text || "").replace(/#(\d+)/g, "#ORD-$1");
 
   const formatTimestamp = (timestamp: number) => {
     const now = Date.now();
@@ -125,7 +214,10 @@ export default function UserNotificationsScreen() {
 
   const renderNotification = ({ item }: { item: any }) => (
     <TouchableOpacity
-      style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
+      style={[
+        styles.notificationItem,
+        item.isRead ? styles.readItem : styles.unreadItem,
+      ]}
       onPress={() => handleNotificationPress(item)}
       activeOpacity={0.6}
     >
@@ -137,13 +229,19 @@ export default function UserNotificationsScreen() {
       {/* Content Section */}
       <View style={styles.contentSection}>
         <Text
-          style={[styles.title, !item.isRead && styles.unreadTitle]}
+          style={[
+            styles.title,
+            item.isRead ? styles.readTitle : styles.unreadTitle,
+          ]}
           numberOfLines={1}
         >
-          {item.title}
+          {formatOrderNumberInText(item.title)}
         </Text>
-        <Text style={styles.body} numberOfLines={2}>
-          {item.body}
+        <Text
+          style={[styles.body, item.isRead && styles.readBody]}
+          numberOfLines={2}
+        >
+          {formatOrderNumberInText(item.body)}
         </Text>
         <Text style={styles.timestamp}>
           {formatTimestamp(item.timestamp)}
@@ -179,13 +277,41 @@ export default function UserNotificationsScreen() {
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
-            <Ionicons name="notifications-off-outline" size={48} color="#999" />
-          </View>
-          <Text style={styles.emptyText}>No notifications yet</Text>
-          <Text style={styles.emptySubtext}>
-            You'll see notifications here when you receive them
-          </Text>
+          {loadError ? (
+            <>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="cloud-offline-outline" size={48} color="#999" />
+              </View>
+              <Text style={styles.emptyText}>Couldn't load notifications</Text>
+              <Text style={styles.emptySubtext}>{loadError}</Text>
+              <TouchableOpacity
+                style={[styles.markAllButton, { marginTop: 16, paddingVertical: 10, paddingHorizontal: 20, backgroundColor: colors.primary, borderRadius: 8 }]}
+                onPress={() => { setLoadError(null); loadNotifications(); }}
+              >
+                <Text style={[styles.markAllText, { color: "#fff" }]}>Retry</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="notifications-off-outline" size={48} color="#999" />
+              </View>
+              <Text style={styles.emptyText}>No notifications yet</Text>
+              <Text style={styles.emptySubtext}>
+                You'll see notifications here when you receive them
+              </Text>
+              {Platform.OS === "web" && (
+                <>
+                  <Text style={styles.emptyHint}>
+                    Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
+                  </Text>
+                  <Text style={[styles.emptyHint, { marginTop: 8, fontSize: 13 }]}>
+                    Keep this tab open when you place an order so notifications appear here.
+                  </Text>
+                </>
+              )}
+            </>
+          )}
         </View>
       ) : (
         <FlatList
@@ -198,6 +324,24 @@ export default function UserNotificationsScreen() {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
+
+      <ConfirmationModal
+        isModalVisible={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false);
+          setNotificationToDeleteId(null);
+        }}
+        handleCancel={() => {
+          setDeleteModalVisible(false);
+          setNotificationToDeleteId(null);
+        }}
+        handleSubmit={performDeleteNotification}
+        title="Delete Notification"
+        text="Are you sure you want to delete this notification?"
+        submitText="Delete"
+        cancelText="Cancel"
+        isDestructive
+      />
     </View>
   );
 }
@@ -237,10 +381,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
   },
   unreadItem: {
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f0f7ff",
+  },
+  readItem: {
+    backgroundColor: "#fff",
   },
   dotContainer: {
     width: 20,
@@ -260,19 +406,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#1a1a1a",
     marginBottom: 4,
   },
   unreadTitle: {
     fontWeight: "700",
     color: "#000",
   },
+  readTitle: {
+    fontWeight: "600",
+    color: "#6b7280",
+  },
   body: {
     fontSize: 14,
-    color: "#666",
     lineHeight: 20,
     marginBottom: 6,
+    color: "#374151",
+  },
+  readBody: {
+    color: "#9ca3af",
   },
   timestamp: {
     fontSize: 13,
@@ -313,5 +464,13 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     lineHeight: 22,
+  },
+  emptyHint: {
+    marginTop: 16,
+    fontSize: 14,
+    color: colors.primary,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 24,
   },
 });

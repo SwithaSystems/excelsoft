@@ -123,14 +123,9 @@ const AdminProductDashboard = () => {
     getallCategories();
   }, []);
 
-  const category_Products = productsList.filter((product: any) =>
-    selectCategory && selectCategory !== ""
-      ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
-      : true
-  );
-
-  const productsListToShow =
-    selectCategory && selectCategory !== "" ? category_Products : productsList;
+  // When a category is selected, productsList is set from getProductByCategoryID in useEffect.
+  // When no category is selected, productsList comes from getAllProducts (paginated).
+  const productsListToShow = productsList;
 
   // Calculate total pages for pagination - hide pagination when category is selected
   // since filtering is client-side and doesn't use server pagination
@@ -287,13 +282,19 @@ const AdminProductDashboard = () => {
     lastPageLoadedRef.current = 0;
 
     try {
-      const response = await fetchData(1);
-
-      setAllProductsList(response.data);
-      setTotalProducts(response.total);
-      setHasMore(response.hasMore);
-      setCurrentPage(1);
-      lastPageLoadedRef.current = 1;
+      if (selectCategory && selectCategory !== "") {
+        const data = await ProductsAPI.getProductByCategoryID(selectCategory);
+        setAllProductsList(data ?? []);
+        setTotalProducts((data ?? []).length);
+        setHasMore(false);
+      } else {
+        const response = await fetchData(1);
+        setAllProductsList(response.data);
+        setTotalProducts(response.total);
+        setHasMore(response.hasMore);
+        setCurrentPage(1);
+        lastPageLoadedRef.current = 1;
+      }
     } catch (error) {
       console.error("Failed to refresh data:", error);
       Alert.alert("Error", "Failed to refresh products");
@@ -312,9 +313,40 @@ const AdminProductDashboard = () => {
   }, []);
 
   useEffect(() => {
-    loadInitialData();
     fetchAllCategories();
   }, [fetchAllCategories]);
+
+  // When category selection changes: fetch by category from API (same as user side) or load all products.
+  useEffect(() => {
+    if (!selectCategory || selectCategory === "") {
+      loadInitialData();
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
+    ProductsAPI.getProductByCategoryID(selectCategory)
+      .then((data) => {
+        if (!cancelled) {
+          setAllProductsList(data ?? []);
+          setTotalProducts((data ?? []).length);
+          setHasMore(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("Error fetching products by category:", err);
+          setAllProductsList([]);
+          setTotalProducts(0);
+          setHasMore(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectCategory]);
 
   const performDelete = async (item: Product) => {
     try {

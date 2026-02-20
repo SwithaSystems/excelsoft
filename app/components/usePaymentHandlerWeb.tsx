@@ -382,7 +382,7 @@ export default function usePaymentHandlerWeb() {
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
-
+await orderService.notifyOrderPlaced(response);
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
         `Your order number is #ORD-${response.orderNumber}`,
