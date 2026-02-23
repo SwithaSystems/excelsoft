@@ -43,6 +43,12 @@ import containers from "@/containers";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
+const RECOMMENDED_PROMOTION_IMAGE = {
+  width: 1536,
+  height: 834,
+  maxSizeBytes: 200 * 1024,
+};
+
 const EditPromotion = () => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const router = useRouter();
@@ -85,10 +91,16 @@ const EditPromotion = () => {
   const [isLoadingPromotion, setIsLoadingPromotion] = useState(false);
   const [errorLoadingPromotion, setErrorLoadingPromotion] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+  const [selectedImageMeta, setSelectedImageMeta] = useState<{
+    width?: number;
+    height?: number;
+    fileSize?: number;
+  } | null>(null);
 
   const isWeb = Platform.OS === "web";
   const { isMobile } = useWebMediaQuery();
   const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   const fetchAvailableProducts = useCallback(async () => {
     try {
@@ -271,12 +283,18 @@ const EditPromotion = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [16, 9],
+        aspect: [RECOMMENDED_PROMOTION_IMAGE.width, RECOMMENDED_PROMOTION_IMAGE.height],
         quality: 0.8,
       });
 
       if (!result.canceled && result.assets[0]) {
-        setPromotionImage(result.assets[0].uri);
+        const pickedAsset = result.assets[0];
+        setPromotionImage(pickedAsset.uri);
+        setSelectedImageMeta({
+          width: pickedAsset.width,
+          height: pickedAsset.height,
+          fileSize: pickedAsset.fileSize,
+        });
         // Mark that image was changed
         setOriginalImageUrl(null);
       }
@@ -339,6 +357,37 @@ const EditPromotion = () => {
     }
     return true;
   };
+
+  const imageRecommendationNote = `Recommended upload: ${RECOMMENDED_PROMOTION_IMAGE.width} x ${RECOMMENDED_PROMOTION_IMAGE.height}px, under 200 KB.`;
+
+  const imageRecommendationWarning = React.useMemo(() => {
+    if (!selectedImageMeta) return "";
+
+    const warnings: string[] = [];
+    const { width, height, fileSize } = selectedImageMeta;
+
+    if (
+      typeof width === "number" &&
+      typeof height === "number" &&
+      (width !== RECOMMENDED_PROMOTION_IMAGE.width ||
+        height !== RECOMMENDED_PROMOTION_IMAGE.height)
+    ) {
+      warnings.push(
+        `Selected image is ${width} x ${height}px; recommended is ${RECOMMENDED_PROMOTION_IMAGE.width} x ${RECOMMENDED_PROMOTION_IMAGE.height}px.`
+      );
+    }
+
+    if (
+      typeof fileSize === "number" &&
+      fileSize > RECOMMENDED_PROMOTION_IMAGE.maxSizeBytes
+    ) {
+      warnings.push(
+        `Selected image is ${(fileSize / 1024).toFixed(0)} KB; recommended is under 200 KB.`
+      );
+    }
+
+    return warnings.join(" ");
+  }, [selectedImageMeta]);
 
   const navigateToAdminPromotion = () => {
     if (Platform.OS === "web") {
@@ -858,7 +907,11 @@ const handleGoLive = async () => {
     <Header headerText={headerText} />
   );
 
-  const FooterComponent = isWeb ? null : <AdminFooter activeTab="home" />;
+  const FooterComponent = isMobileWeb
+    ? <FooterWeb />
+    : isWeb
+    ? null
+    : <AdminFooter activeTab="home" />;
 
   // Modal content component to avoid duplication
   const renderModalContent = () => (
@@ -948,7 +1001,7 @@ const handleGoLive = async () => {
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={!isWeb}
+      hasFooter={isMobileWeb || !isWeb}
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
       scrollable={false}
@@ -983,7 +1036,10 @@ const handleGoLive = async () => {
           <ScrollView
             style={{ flex: 1, backgroundColor: colors.white }}
             showsVerticalScrollIndicator={true}
-            contentContainerStyle={isMobileWeb ? styles.scrollContentMobile as ViewStyle : styles.scrollContent as ViewStyle}
+            contentContainerStyle={[
+              (isMobileWeb ? styles.scrollContentMobile : styles.scrollContent) as ViewStyle,
+              isDesktopWeb && ({ paddingTop: 16 } as ViewStyle),
+            ]}
             nestedScrollEnabled={true}
             bounces={true}
           >
@@ -1022,6 +1078,14 @@ const handleGoLive = async () => {
                   </View>
                 )}
               </TouchableOpacity>
+              <Text style={styles.imageRecommendationText as TextStyle}>
+                {imageRecommendationNote}
+              </Text>
+              {!!imageRecommendationWarning && (
+                <Text style={styles.imageRecommendationWarningText as TextStyle}>
+                  {imageRecommendationWarning}
+                </Text>
+              )}
             </View>
 
         {/* Title Input */}
@@ -1201,7 +1265,7 @@ const handleGoLive = async () => {
                     ]}
                   >
                     <Text style={styles.dateLabel as TextStyle}>Starting From</Text>
-                    {Platform.OS === "web" ? (
+                    {Platform.OS === "web" && !isMobileWeb ? (
                       <input
                         type="date"
                         style={globalStyles.webDateInput}
@@ -1223,17 +1287,24 @@ const handleGoLive = async () => {
                   </View>
 
                   {Platform.OS === "web" && (
-                    <Text style={styles.dateToLabel as TextStyle}>to</Text>
+                    <Text
+                      style={[
+                        styles.dateToLabel,
+                        isMobileWeb && styles.dateToLabelMobileWebOverride,
+                      ]}
+                    >
+                      to
+                    </Text>
                   )}
 
                   <View
                     style={[
-                      styles.dateInputWrapper as ViewStyle,
+                      styles.dateInputWrapper,
                       isMobileWeb && (styles.dateInputWrapperMobileWeb as any),
                     ]}
                   >
                     <Text style={styles.dateLabel as TextStyle}>Ending On</Text>
-                    {Platform.OS === "web" ? (
+                    {Platform.OS === "web" && !isMobileWeb ? (
                       <input
                         type="date"
                         style={
@@ -1336,7 +1407,7 @@ const handleGoLive = async () => {
       </View>
 
       {/* Date Pickers for Mobile */}
-      {!isWeb && (
+      {(!isWeb || isMobileWeb) && (
         <>
           <DateTimePickerModal
             isVisible={showStartDatePicker}

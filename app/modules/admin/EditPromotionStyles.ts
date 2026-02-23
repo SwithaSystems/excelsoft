@@ -22,8 +22,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   webFormContainerMobileWeb: {
-    width: "100%",
-    paddingHorizontal: 16,
+    width: "95%",
+    alignSelf: "center",
+    paddingHorizontal: 0,
   },
   section: {
     marginBottom: 24,
@@ -85,6 +86,17 @@ const styles = StyleSheet.create({
   },
   imageClickableContainer: {
     width: "100%",
+  },
+  imageRecommendationText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: colors.secondaryText,
+  },
+  imageRecommendationWarningText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: colors.error,
+    fontWeight: "500",
   },
   inputLabel: {
     fontSize: 14,
@@ -183,9 +195,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dateInputWrapper: {
-    flex: Platform.select({ web: 0, default: 1 }),
-    minWidth: Platform.select({ web: 200, default: 0 }),
-    ...(Platform.OS === "web" ? { maxWidth: 250 } : { maxWidth: "100%" }),
+    flex: 1,
+    minWidth: 0,
   },
   dateInputWrapperMobileWeb: {
     minWidth: 0,
@@ -552,8 +563,14 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
-    fontWeight: "500",
     color: colors.black,
+  },
+ dateToLabelMobileWebOverride: {
+    alignSelf: "center",
+    marginBottom: 0,
+    lineHeight: 20,
+    paddingHorizontal: 0,
+    marginVertical: 4,
   },
 });
 

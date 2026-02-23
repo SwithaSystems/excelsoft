@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
@@ -573,7 +573,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
               const pathname = "/" + containers.userNotificationsScreen;
               if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
               try {
-                router.push(pathname);
+                router.push(pathname as Href);
               } catch (e) {
                 console.error("[Notifications] router.push failed:", e);
                 redirectToPage(containers.userNotificationsScreen);

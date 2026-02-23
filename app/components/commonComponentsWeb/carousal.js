@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 
-const { width: WINDOW_WIDTH } = Dimensions.get("window");
+const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get("window");
 
 function normalizeImage(image) {
   if (typeof image === "object" && image?.uri) return image;
@@ -42,7 +42,7 @@ function preparePromotionalData(backendData) {
 export default function CarouselWeb({
   data = [],
   width = WINDOW_WIDTH - 32,
-  height = 230,
+  // height = 230,
   autoPlay = true,
   autoPlayInterval = 4500,
   loop = true,
@@ -73,6 +73,9 @@ export default function CarouselWeb({
     // Otherwise, use data as is (existing behavior)
     return data;
   }, [data, isPromotional]);
+
+  const MAX_CONTAINER_WIDTH = 1200;
+  const containerWidth = Math.min(WINDOW_WIDTH - 32, MAX_CONTAINER_WIDTH);
 
   const goTo = useCallback(
     (i, animated = true) => {
@@ -180,6 +183,53 @@ export default function CarouselWeb({
 
   if (!items.length) return null;
 
+  const BANNER_RATIO = 1536 / 834;
+  const calculatedHeight = width / BANNER_RATIO;
+  const minHeightPercent = 0.28;
+  const maxHeightPercent = 0.55;
+  const minHeight = WINDOW_HEIGHT * minHeightPercent;
+  const maxHeight = WINDOW_HEIGHT * maxHeightPercent;
+  const responsiveHeight = Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
+
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    title: "",
+    x: 0,
+    y: 0,
+  });
+
+  const handleMouseEnter = (item) => {
+    if (Platform.OS !== "web") return;
+    if (!item?.title) return;
+
+    setTooltip((prev) => ({
+      ...prev,
+      visible: true,
+      title: item.title,
+    }));
+  };
+
+  const handleMouseMove = (e) => {
+    if (Platform.OS !== "web") return;
+
+    setTooltip((prev) => ({
+      ...prev,
+      x: e.clientX + 12,
+      y: e.clientY + 12,
+    }));
+  };
+
+  const handleMouseLeave = () => {
+    if (Platform.OS !== "web") return;
+
+    setTooltip({
+      visible: false,
+      title: "",
+      x: 0,
+      y: 0,
+    });
+  };
+
   return (
     <View style={[styles.root, { width }]} {...containerProps}>
       <FlatList
@@ -192,12 +242,19 @@ export default function CarouselWeb({
         renderItem={({ item, index: idx }) => (
           <TouchableOpacity
             activeOpacity={0.9}
-            style={[styles.slide, { width, height }]}
+            style={[styles.slide, { width, height: responsiveHeight }]}
             onPress={() => handleSlidePress(item, idx)}
+            {...(Platform.OS === "web"
+              ? {
+                  onMouseEnter: () => handleMouseEnter(item),
+                  onMouseMove: handleMouseMove,
+                  onMouseLeave: handleMouseLeave,
+                }
+              : {})}
           >
             <Image
               source={normalizeImage(item.image)}
-              style={{ width, height, borderRadius }}
+              style={{ width: "100%", height: "100%", borderRadius }}
               resizeMode="cover"
               onError={(e) =>
                 console.warn("CarouselWeb image error:", e?.nativeEvent ?? e)
@@ -234,6 +291,20 @@ export default function CarouselWeb({
         })}
         style={{ width }}
       />
+
+        {Platform.OS === "web" && tooltip.visible && (
+          <View
+            style={[
+              styles.tooltip,
+              {
+                left: tooltip.x,
+                top: tooltip.y,
+              },
+            ]}
+          >
+            <Text style={styles.tooltipText}>{tooltip.title}</Text>
+          </View>
+        )}
 
       {showArrows && items.length > 1 && (
         <>
@@ -384,5 +455,22 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     backgroundColor: "rgba(0,0,0,0.85)",
+  },
+
+  tooltip: {
+    position: "fixed",
+    backgroundColor: "rgba(0,0,0,0.85)",
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    zIndex: 9999,
+    pointerEvents: "none",
+    maxWidth: 300,
+  },
+
+  tooltipText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "500",
   },
 });
