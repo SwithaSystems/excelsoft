@@ -33,7 +33,6 @@ import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
   PICKUP_TIME_REQUIRED,
@@ -98,6 +97,29 @@ const HomeDeliveryScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Initialize default time values based on new business rules
   useEffect(() => {
@@ -882,6 +904,19 @@ const HomeDeliveryScreen = () => {
                   handleSubmit={confirmDelete}
                   cancelText="Cancel"
                   handleCancel={cancelDelete}
+                  isDestructive={true}
+                />
+                <ConfirmationModal
+                  onClose={() =>
+                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+                  }
+                  isModalVisible={errorModalState.isVisible}
+                  title={errorModalState.title}
+                  text={errorModalState.message}
+                  submitText={errorModalState.buttonLabel}
+                  handleSubmit={() =>
+                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+                  }
                 />
               </>
             }

@@ -21,6 +21,7 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import colors from "../../../constants/colors";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import {
   FIX_VALIDATION_ERRORS,
   REGISTRATION_FAILED,
@@ -30,7 +31,6 @@ import {
   ACCOUNT_CREATION_FAILED,
 } from "../../../constants/customErrorMessages";
 
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import styles from "./SignUpStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 
@@ -51,6 +51,12 @@ const signUpScreen = () => {
   const [callingCode, setCallingCode] = useState("44");
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const [errors, setErrors] = useState<
     Partial<{
@@ -60,6 +66,23 @@ const signUpScreen = () => {
       confirmPassword?: string;
     }>
   >({});
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const toggleMode = (selected: any) => {
     setMode(selected);
@@ -544,6 +567,18 @@ const signUpScreen = () => {
           </Text>
         </View>
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </PageLayout>
   );
 };

@@ -13,7 +13,7 @@ import {
 } from "../../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../../store/slices/cartSlice";
-import { showErrorAlert } from "../../../../utilities/showErrorAlert";
+import ConfirmationModal from "../../../components/commonComponents/ConfirmationModal";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
@@ -22,11 +22,25 @@ import {
 function CartItem(props) {
   const item = props.cartItem;
   const dispatch = useDispatch();
+  const [errorModalState, setErrorModalState] = React.useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   // const cartItems = useSelector((state) => [...state.cart.items]);
   const cartItems = useSelector((state) => state.cart.items);
   const savedForLaterItems = useSelector(
     (state) => state.savedForLaterItems.items
   );
+  const showErrorAlert = ({ title, message, buttonLabel = "OK" }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
   // console.log("props", props);
 
   const getImageSource = () => {
@@ -247,6 +261,18 @@ function CartItem(props) {
           )}
         </View>
       </View>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </>
   );
 }

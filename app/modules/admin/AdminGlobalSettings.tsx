@@ -4,7 +4,6 @@ import {
   Text,
   Switch,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
   Platform,
   TextInput,
@@ -23,6 +22,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface SettingConfig {
   key: keyof Omit<GlobalSettingsDto, "updatedAt">;
@@ -74,6 +74,7 @@ const SETTINGS_CONFIG: SettingConfig[] = [
 ];
 
 const AdminGlobalSettings = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
   const { isMobile } = useWebMediaQuery();
   const isMobileWeb = isWeb && isMobile;
@@ -101,7 +102,7 @@ const AdminGlobalSettings = () => {
       setSettings(response.data);
     } catch (error) {
       console.error("Failed to fetch settings:", error);
-      Alert.alert("Error", "Failed to load settings. Please try again.");
+      showAlert("Error", "Failed to load settings. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -123,7 +124,7 @@ const AdminGlobalSettings = () => {
     const numericValue = parseFloat(tempValues[fieldKey]);
 
     if (isNaN(numericValue) || numericValue < 0) {
-      Alert.alert("Invalid value", `Please enter a valid ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
+      showAlert("Invalid value", `Please enter a valid ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
       return;
     }
 
@@ -139,7 +140,7 @@ const AdminGlobalSettings = () => {
       setEditingField(null);
     } catch (error) {
       console.error(`Failed to update ${fieldKey}:`, error);
-      Alert.alert("Error", `Failed to update ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
+      showAlert("Error", `Failed to update ${fieldKey.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
       fetchSettings();
     } finally {
       setUpdatingKey(null);
@@ -172,7 +173,7 @@ const AdminGlobalSettings = () => {
       console.error(`Failed to update ${key}:`, error);
       // Revert on error
       setSettings((prev) => (prev ? { ...prev, [key]: !newValue } : prev));
-      Alert.alert("Error", `Failed to update ${key}. Please try again.`);
+      showAlert("Error", `Failed to update ${key}. Please try again.`);
     } finally {
       setUpdatingKey(null);
     }
@@ -269,6 +270,7 @@ const AdminGlobalSettings = () => {
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading settings...</Text>
         </View>
+        {confirmationModal}
       </LayoutComponent>
     );
   }
@@ -287,6 +289,7 @@ const AdminGlobalSettings = () => {
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load settings</Text>
         </View>
+        {confirmationModal}
       </LayoutComponent>
     );
   }
@@ -362,6 +365,7 @@ const AdminGlobalSettings = () => {
           </View>
         ))}
       </View>
+      {confirmationModal}
     </LayoutComponent>
   );
 };

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Alert,
   Platform,
 } from "react-native";
 import colors from "../../../constants/colors";
@@ -27,10 +26,11 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMessages";
 import styles from "./SearchStyles";
 import { secureStore } from "@/store/secureStore";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "app_recent_searches";
@@ -62,12 +62,36 @@ const categories = [
 ];
 
 const SearchScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<any>([]);
   const debouncedQuery = useDebounce(searchQuery, 300);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Load recent searches from AsyncStorage on component mount
   useEffect(() => {
@@ -173,7 +197,7 @@ const SearchScreen = () => {
   // Clear all recent searches
   const clearAllRecentSearches = async () => {
     try {
-      Alert.alert(
+      showAlert(
         "Clear Recent Searches",
         "Are you sure you want to clear all recent searches?",
         [
@@ -370,6 +394,18 @@ const SearchScreen = () => {
         footerComponent={<FooterWeb />}
       >
         {content}
+        <ConfirmationModal
+          isModalVisible={errorModalState.isVisible}
+          onClose={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+          title={errorModalState.title}
+          text={errorModalState.message}
+          submitText={errorModalState.buttonLabel}
+          handleSubmit={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
       </PageLayoutWeb>
     );
   }
@@ -383,6 +419,19 @@ const SearchScreen = () => {
       footerComponent={<Footer activeTab="search" />}
     >
       {content}
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
     </PageLayout>
   );
 };

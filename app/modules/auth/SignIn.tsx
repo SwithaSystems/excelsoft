@@ -14,7 +14,6 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FIX_VALIDATION_ERRORS,
   INVALID_CREDENTIALS,
@@ -22,6 +21,7 @@ import {
 } from "../../../constants/customErrorMessages";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import {
   isValidEmail,
   isValidPhoneNumber,
@@ -43,7 +43,16 @@ const signIn = () => {
   const [errors, setErrors] = useState<
     Partial<{ input?: string; password?: string }>
   >({});
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorModalTitle, setErrorModalTitle] = useState("Error");
+  const [errorModalText, setErrorModalText] = useState("");
   const { login } = useAuth();
+
+  const showErrorModal = (title: string, message: string) => {
+    setErrorModalTitle(title);
+    setErrorModalText(message);
+    setErrorModalVisible(true);
+  };
 
   const toggleMode = (selected: any) => {
     setMode(selected);
@@ -82,10 +91,7 @@ const signIn = () => {
 
   const handleSignIn = async () => {
     if (!validateFields()) {
-      showErrorAlert({
-        title: "Let's fix that",
-        message: FIX_VALIDATION_ERRORS,
-      });
+      showErrorModal("Let's fix that", FIX_VALIDATION_ERRORS);
 
       return;
     }
@@ -103,10 +109,7 @@ const signIn = () => {
 
         // After removing leading zero, should be exactly 10 digits
         if (normalizedPhone.length !== 10) {
-          showErrorAlert({
-            title: "Phone Number Error",
-            message: PHONE_NUMBER_VALIDATION,
-          });
+          showErrorModal("Phone Number Error", PHONE_NUMBER_VALIDATION);
           return;
         }
 
@@ -118,10 +121,7 @@ const signIn = () => {
       await login(loginId, password);
       redirectToPage(containers.homeScreen);
     } catch (error) {
-      showErrorAlert({
-        title: "Oops!",
-        message: INVALID_CREDENTIALS,
-      });
+      showErrorModal("Oops!", INVALID_CREDENTIALS);
     }
   };
 
@@ -320,6 +320,14 @@ const signIn = () => {
             </Text>
           </TouchableOpacity>
         </View>
+        <ConfirmationModal
+          isModalVisible={errorModalVisible}
+          onClose={() => setErrorModalVisible(false)}
+          title={errorModalTitle}
+          text={errorModalText}
+          submitText="OK"
+          handleSubmit={() => setErrorModalVisible(false)}
+        />
       </KeyBoardWrapper>
     </PageLayout>
   );

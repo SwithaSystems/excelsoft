@@ -280,6 +280,7 @@ const selectBillingAddressScreen = () => {
                   cancelText="Cancel"
                   handleCancel={cancelDelete}
                   title="Delete Address"
+                  isDestructive={true}
                 />
               </>
             }

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   Platform,
   StyleSheet,
@@ -20,6 +19,7 @@ import axios from "axios";
 import { ProductsAPI } from "@/services/productService";
 import { EntityAPI } from "@/services/entityService";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface FileUploadProps {
   onUploadComplete?: (result: any) => void;
@@ -56,6 +56,7 @@ const resolveOption = (option: any, dataset: any[]) => {
 const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
 }) => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [selectedEntity, setSelectedEntity] = useState<string>("");
   const [selectedEntityLabel, setSelectedEntityLabel] =
     useState<string>("Select Entity");
@@ -86,7 +87,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
   const handleChooseFile = async () => {
     if (isChooseDisabled) {
-      Alert.alert(
+      showAlert(
         "Error",
         "Please select at least an entity or a vendor first"
       );
@@ -112,7 +113,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         // console.log("File URI:", file.uri);
         // console.log("Full file object:", JSON.stringify(file, null, 2));
 
-        Alert.alert("Success", `File selected: ${file.name}`);
+        showAlert("Success", `File selected: ${file.name}`);
       } else if (res && (res as any).name && (res as any).uri) {
         setSelectedFile(res);
 
@@ -124,7 +125,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         // console.log("File URI:", (res as any).uri);
         // console.log("Full file object:", JSON.stringify(res, null, 2));
 
-        Alert.alert("Success", `File selected: ${(res as any).name}`);
+        showAlert("Success", `File selected: ${(res as any).name}`);
       } else if ((res as any).canceled) {
         // console.log("User cancelled file selection");
       } else {
@@ -132,7 +133,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       }
     } catch (err) {
       console.error("Error picking file:", err);
-      Alert.alert("File Selection Error", "Unable to select file.");
+      showAlert("File Selection Error", "Unable to select file.");
     }
   };
 
@@ -142,7 +143,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         selectedVendorLabel === "Select Vendor") ||
       !selectedFile
     ) {
-      Alert.alert("Error", "Please select entity or vendor and choose a file");
+      showAlert("Error", "Please select entity or vendor and choose a file");
       return;
     }
 
@@ -220,9 +221,9 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           );
 
           if (response.data?.success) {
-            Alert.alert("Success", "PDF import uploaded successfully");
+            showAlert("Success", "PDF import uploaded successfully");
           } else {
-            Alert.alert(
+            showAlert(
               "Upload result",
               response.data?.message ?? "Completed with warnings"
             );
@@ -252,7 +253,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
               failed: 0,
             },
           });
-          Alert.alert("Upload Error", "Vendor PDF upload failed");
+          showAlert("Upload Error", "Vendor PDF upload failed");
         }
       } else {
         // ENTITY BRANCH
@@ -277,7 +278,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
             }
           );
 
-          Alert.alert("Success", "File uploaded successfully");
+          showAlert("Success", "File uploaded successfully");
           setSelectedEntity("");
           setSelectedEntityLabel("Select Entity");
           setSelectedVendor("");
@@ -299,7 +300,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
               failed: 0,
             },
           });
-          Alert.alert(
+          showAlert(
             "Upload",
             "Server upload failed — saved locally for now (simulated)"
           );
@@ -315,7 +316,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         message: err.message ?? String(err),
         statistics: { totalProducts: 0, inserted: 0, updated: 0, failed: 0 },
       });
-      Alert.alert("Upload Error", String(err));
+      showAlert("Upload Error", String(err));
     } finally {
       setIsUploading(false);
     }
@@ -518,6 +519,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           </View>
         </View>
       )}
+      {confirmationModal}
     </PageLayout>
   );
 };

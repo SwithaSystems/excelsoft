@@ -390,6 +390,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           handleSubmit={handleSoftDelete}
           cancelText="No"
           handleCancel={() => setDeleteAccountModalOpen(false)}
+          isDestructive={true}
         />
         {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
         {isMobile && isAuthenticated && (
@@ -653,6 +654,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
+        isDestructive={true}
       />
 
       {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}

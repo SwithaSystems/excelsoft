@@ -35,7 +35,7 @@ import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import styles from "./ProductDetailStyles";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
@@ -56,6 +56,12 @@ const ProductDetailScreen = () => {
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   
   // Track image load errors
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
@@ -65,6 +71,22 @@ const ProductDetailScreen = () => {
 
   const isMobileWeb = isWeb && isMobile;
   const isTabletWeb = isWeb && isTablet;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const webScale = 
     isTabletWeb ? 0.8 :
@@ -707,6 +729,18 @@ const ProductDetailScreen = () => {
         </ScrollView>
       </View>
     )}
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </LayoutComponent>
   );
 };

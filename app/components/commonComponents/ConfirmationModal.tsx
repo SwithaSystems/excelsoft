@@ -38,7 +38,7 @@ function ConfirmationModal({
       animationType={animationType}
       onRequestClose={disabled ? undefined : onClose}
     >
-      <View style={styles.modalContainer}>
+      <View style={[styles.modalContainer, isWeb && styles.modalContainerWeb]}>
         <View style={[
           styles.dialogBox,
           isWeb && styles.dialogBoxWeb
@@ -63,8 +63,19 @@ function ConfirmationModal({
             isWeb && styles.buttonRowWeb
           ]}>
             {cancelText && (
-              <TouchableOpacity onPress={handleCancel} style={styles.button}>
-                <Text style={styles.cancelText}>{cancelText}</Text>
+              <TouchableOpacity
+                onPress={handleCancel}
+                style={[
+                  styles.button,
+                  isWeb && styles.buttonWeb,
+                  isWeb && styles.cancelButtonWeb,
+                  isWeb && submitText && styles.buttonSpacingWeb,
+                ]}
+              >
+                <Text style={[
+                  styles.cancelText,
+                  isWeb && styles.cancelTextWeb
+                ]}>{cancelText}</Text>
               </TouchableOpacity>
             )}
             
@@ -96,6 +107,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalContainerWeb: {
+    zIndex: 100000,
   },
   dialogBox: {
     width: "85%",
@@ -139,11 +153,13 @@ const styles = StyleSheet.create({
   },
   buttonRowWeb: {
     justifyContent: "flex-end",
-    gap: 12,
   },
   button: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  buttonSpacingWeb: {
+    marginRight: 12,
   },
   buttonWeb: {
     paddingHorizontal: 24,
@@ -169,6 +185,10 @@ const styles = StyleSheet.create({
   cancelTextWeb: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  cancelButtonWeb: {
+    backgroundColor: colors.white,
+    borderColor: colors.primary,
   },
   submitText: {
     fontSize: 15,

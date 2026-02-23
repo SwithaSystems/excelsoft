@@ -33,9 +33,9 @@ import Button from "@/app/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
-import { Alert } from "react-native";
 import { showAlert } from "@/utilities/alertHelper";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import axios from "axios";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
@@ -100,6 +100,7 @@ type shippingAddressDTo = {
 };
 
 const orderSummeryScreen = () => {
+  const { showAlert: showConfirmationAlert, confirmationModal } = useConfirmationAlert();
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -607,7 +608,7 @@ const orderSummeryScreen = () => {
         });
       } catch (error) {
         console.error("Error handling edit:", error);
-        Alert.alert("Error", "Failed to edit address. Please try again.");
+        showConfirmationAlert("Error", "Failed to edit address. Please try again.");
       }
     },
     [setSelectedBillingAddress]
@@ -631,7 +632,7 @@ const orderSummeryScreen = () => {
       });
     } catch (error) {
       console.error("Error navigating to add address:", error);
-      Alert.alert("Error", "Failed to open add address screen.");
+      showConfirmationAlert("Error", "Failed to open add address screen.");
     }
   }, [setSelectedBillingAddress]);
 
@@ -652,13 +653,13 @@ const orderSummeryScreen = () => {
             setSelectedBillingAddress(null);
           }
 
-          Alert.alert("Success", "Billing address deleted successfully");
+          showConfirmationAlert("Success", "Billing address deleted successfully");
         } else {
-          Alert.alert("Error", "Failed to delete billing address");
+          showConfirmationAlert("Error", "Failed to delete billing address");
         }
       } catch (error) {
         console.error("Failed to delete billing address:", error);
-        Alert.alert("Error", "Failed to delete billing address");
+        showConfirmationAlert("Error", "Failed to delete billing address");
       }
     },
     [selectedId, setSelectedBillingAddress]
@@ -1527,6 +1528,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
         cancelText="Save for Later"
         handleCancel={cancelDelete}
       />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

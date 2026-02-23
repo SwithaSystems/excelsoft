@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   Platform,
   FlatList,
   Modal,
@@ -41,8 +40,11 @@ import CategoryDropdown from "./components/categoryDropdown";
 import { BlurView } from "expo-blur";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const EditPromotion = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const router = useRouter();
   const params = useLocalSearchParams();
   const isNewPromotion = params.newPromotion === "true" || params.newPromotion === "1" || (Array.isArray(params.newPromotion) && params.newPromotion[0] === "true");
@@ -85,6 +87,8 @@ const EditPromotion = () => {
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
 
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const fetchAvailableProducts = useCallback(async () => {
     try {
@@ -93,7 +97,7 @@ const EditPromotion = () => {
       setAvailableProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
-      Alert.alert("Error", "Failed to load products");
+      showAlert("Error", "Failed to load products");
     } finally {
       setIsLoadingProducts(false);
     }
@@ -112,7 +116,7 @@ const EditPromotion = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
-      Alert.alert("Error", "Failed to search products");
+      showAlert("Error", "Failed to search products");
     } finally {
       setIsLoadingProducts(false);
     }
@@ -200,7 +204,7 @@ const EditPromotion = () => {
         setErrorLoadingPromotion(
           error?.response?.data?.message || "Failed to load promotion"
         );
-        Alert.alert(
+        showAlert(
           "Error",
           error?.response?.data?.message || "Failed to load promotion data"
         );
@@ -257,7 +261,7 @@ const EditPromotion = () => {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
-        Alert.alert(
+        showAlert(
           "Permission Required",
           "Permission to access camera roll is required!"
         );
@@ -278,7 +282,7 @@ const EditPromotion = () => {
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image");
+      showAlert("Error", "Failed to pick image");
     }
   }, []);
 
@@ -306,7 +310,7 @@ const EditPromotion = () => {
         }
       } else {
         // If it's a require() asset, we can't upload it - user needs to select a new image
-        Alert.alert("Error", "Please select a new image for upload");
+        showAlert("Error", "Please select a new image for upload");
         return null;
       }
     } else {
@@ -318,7 +322,7 @@ const EditPromotion = () => {
           name: "promotion-image.jpg",
         };
       } else {
-        Alert.alert("Error", "Please select a new image for upload");
+        showAlert("Error", "Please select a new image for upload");
         return null;
       }
     }
@@ -326,11 +330,11 @@ const EditPromotion = () => {
 
   const validateForm = (): boolean => {
     if (!promotionImage) {
-      Alert.alert("Error", "Please add an image");
+      showAlert("Error", "Please add an image");
       return false;
     }
     if (!promotionTitle.trim()) {
-      Alert.alert("Error", "Please enter a promotional slide title");
+      showAlert("Error", "Please enter a promotional slide title");
       return false;
     }
     return true;
@@ -359,7 +363,7 @@ const EditPromotion = () => {
       const imageFile = await prepareImageFile();
       if (!imageFile) {
         console.error("Image file preparation failed");
-        Alert.alert("Error", "Please select an image for the promotion");
+        showAlert("Error", "Please select an image for the promotion");
         setIsSaving(false);
         return;
       }
@@ -396,7 +400,7 @@ const EditPromotion = () => {
       if (Platform.OS === "web") {
         navigateToAdminPromotion();
       } else {
-        Alert.alert("Success", "Promotion saved successfully", [
+        showAlert("Success", "Promotion saved successfully", [
           {
             text: "OK",
             onPress: navigateToAdminPromotion,
@@ -407,7 +411,7 @@ const EditPromotion = () => {
       console.error("Error saving promotion:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
       console.error("Full error details:", error);
-      Alert.alert("Error", errorMessage);
+      showAlert("Error", errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -431,7 +435,7 @@ const handleGoLive = async () => {
     if (imageChanged) {
       imageFile = await prepareImageFile();
       if (!imageFile && isNewPromotion) {
-        Alert.alert("Error", "Please select an image for the promotion");
+        showAlert("Error", "Please select an image for the promotion");
         setIsSaving(false);
         return;
       }
@@ -466,7 +470,7 @@ const handleGoLive = async () => {
       if (Platform.OS === "web") {
         navigateToAdminPromotion();
       } else {
-        Alert.alert("Success", "Promotion is now live!", [
+        showAlert("Success", "Promotion is now live!", [
           { text: "OK", onPress: navigateToAdminPromotion }
         ]);
       }
@@ -508,17 +512,17 @@ const handleGoLive = async () => {
         if (Platform.OS === "web") {
           navigateToAdminPromotion();
         } else {
-          Alert.alert("Success", "Promotion is now live!", [
+          showAlert("Success", "Promotion is now live!", [
             { text: "OK", onPress: navigateToAdminPromotion }
           ]);
         }
       } else {
-        Alert.alert("Error", "Promotion ID not found");
+        showAlert("Error", "Promotion ID not found");
       }
     }
   } catch (error: any) {
     console.error("Error making promotion live:", error);
-    Alert.alert("Error", error?.response?.data?.message || "Failed to make promotion live");
+    showAlert("Error", error?.response?.data?.message || "Failed to make promotion live");
   } finally {
     setIsSaving(false);
   }
@@ -546,7 +550,7 @@ const handleGoLive = async () => {
         imageFile = await prepareImageFile();
         if (!imageFile && isNewPromotion) {
           console.error("Image file preparation failed for new promotion");
-          Alert.alert("Error", "Please select an image for the promotion");
+          showAlert("Error", "Please select an image for the promotion");
           setIsSaving(false);
           return;
         }
@@ -591,7 +595,7 @@ const handleGoLive = async () => {
           if (Platform.OS === "web") {
             navigateToAdminPromotion();
           } else {
-            Alert.alert("Success", "Promotion updated and is live!", [
+            showAlert("Success", "Promotion updated and is live!", [
               {
                 text: "OK",
                 onPress: navigateToAdminPromotion,
@@ -602,7 +606,7 @@ const handleGoLive = async () => {
           // Create new live promotion
           if (!imageFile) {
             console.error("Image file is required for new live promotion");
-            Alert.alert("Error", "Please select an image for the promotion");
+            showAlert("Error", "Please select an image for the promotion");
             setIsSaving(false);
             return;
           }
@@ -638,7 +642,7 @@ const handleGoLive = async () => {
           if (Platform.OS === "web") {
             navigateToAdminPromotion();
           } else {
-            Alert.alert("Success", "Promotion is now live!", [
+            showAlert("Success", "Promotion is now live!", [
               {
                 text: "OK",
                 onPress: navigateToAdminPromotion,
@@ -685,7 +689,7 @@ const handleGoLive = async () => {
           if (Platform.OS === "web") {
             navigateToAdminPromotion();
           } else {
-            Alert.alert("Success", "Promotion saved successfully", [
+            showAlert("Success", "Promotion saved successfully", [
               {
                 text: "OK",
                 onPress: navigateToAdminPromotion,
@@ -696,7 +700,7 @@ const handleGoLive = async () => {
           // Create new draft promotion
           if (!imageFile) {
             console.error("Image file is required for new draft promotion");
-            Alert.alert("Error", "Please select an image for the promotion");
+            showAlert("Error", "Please select an image for the promotion");
             setIsSaving(false);
             return;
           }
@@ -731,7 +735,7 @@ const handleGoLive = async () => {
           if (Platform.OS === "web") {
             navigateToAdminPromotion();
           } else {
-            Alert.alert("Success", "Promotion saved successfully", [
+            showAlert("Success", "Promotion saved successfully", [
               {
                 text: "OK",
                 onPress: navigateToAdminPromotion,
@@ -744,14 +748,14 @@ const handleGoLive = async () => {
       console.error("Error saving promotion:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to save promotion";
       console.error("Full error details:", error);
-      Alert.alert("Error", errorMessage);
+      showAlert("Error", errorMessage);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeletePromotion = async () => {
-    Alert.alert(
+    showAlert(
       "Delete Promotion",
       "Are you sure you want to delete this promotion?",
       [
@@ -770,7 +774,7 @@ const handleGoLive = async () => {
                 if (Platform.OS === "web") {
                   navigateToAdminPromotion();
                 } else {
-                  Alert.alert("Success", "Promotion deleted successfully", [
+                  showAlert("Success", "Promotion deleted successfully", [
                     {
                       text: "OK",
                       onPress: navigateToAdminPromotion,
@@ -784,12 +788,12 @@ const handleGoLive = async () => {
                 });
                 navigateToAdminPromotion();
                 if (Platform.OS !== "web") {
-                  Alert.alert("Success", "Promotion deleted successfully");
+                  showAlert("Success", "Promotion deleted successfully");
                 }
               }
             } catch (error: any) {
               console.error("Error deleting promotion:", error);
-              Alert.alert("Error", error?.response?.data?.message || "Failed to delete promotion");
+              showAlert("Error", error?.response?.data?.message || "Failed to delete promotion");
             } finally {
               setIsSaving(false);
             }
@@ -854,11 +858,11 @@ const handleGoLive = async () => {
     <Header headerText={headerText} />
   );
 
-  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="home" />;
+  const FooterComponent = isWeb ? null : <AdminFooter activeTab="home" />;
 
   // Modal content component to avoid duplication
   const renderModalContent = () => (
-    <View style={styles.modalContent as ViewStyle}>
+    <View style={[styles.modalContent, isMobileWeb && styles.modalContentMobileWeb] as any}>
       <View style={styles.modalHeader as ViewStyle}>
         <Text style={styles.modalTitle as TextStyle}>Select Products</Text>
         <TouchableOpacity
@@ -944,7 +948,7 @@ const handleGoLive = async () => {
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter
+      hasFooter={!isWeb}
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
       scrollable={false}
@@ -952,7 +956,12 @@ const handleGoLive = async () => {
     >
 
       <View style={{ flex: 1 }}>
-        <View style={isWeb ? styles.webFormContainer as ViewStyle : { flex: 1 }}>
+        <View
+          style={[
+            isWeb ? (styles.webFormContainer as any) : { flex: 1 },
+            isMobileWeb && (styles.webFormContainerMobileWeb as any),
+          ]}
+        >
           {isLoadingPromotion ? (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
               <ActivityIndicator size="large" color={colors.primary} />
@@ -972,9 +981,9 @@ const handleGoLive = async () => {
             </View>
           ) : (
           <ScrollView
-            style={[styles.container as ViewStyle, { flex: 1 }]}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent as ViewStyle}
+            style={{ flex: 1, backgroundColor: colors.white }}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={isMobileWeb ? styles.scrollContentMobile as ViewStyle : styles.scrollContent as ViewStyle}
             nestedScrollEnabled={true}
             bounces={true}
           >
@@ -1061,7 +1070,13 @@ const handleGoLive = async () => {
 
         {/* Choose Category Section */}
         {productDisplayMode === "category" && (
-          <View style={[styles.categorySelectionSection as ViewStyle, { overflow: "visible", zIndex: 1000 }]}>
+          <View
+            style={[
+              styles.categorySelectionSection as ViewStyle,
+              isMobileWeb && (styles.categorySelectionSectionMobileWeb as any),
+              { overflow: "visible", zIndex: 1000 },
+            ]}
+          >
             <Text style={styles.categorySelectionTitle as TextStyle}>Select Category</Text>
             {isWeb ? (
               <WebCategoryDropdown
@@ -1085,14 +1100,22 @@ const handleGoLive = async () => {
         {/* Attach Products Section */}
         {productDisplayMode === "product" && (
           <View style={styles.attachProductsSection as ViewStyle}>
-          <View style={styles.attachProductsHeader as ViewStyle}>
+          <View
+            style={[
+              styles.attachProductsHeader as ViewStyle,
+              isMobileWeb && (styles.attachProductsHeaderMobileWeb as any),
+            ]}
+          >
             <View style={styles.attachProductsTitleContainer as ViewStyle}>
               <Text style={styles.attachProductsTitle as TextStyle}>
                 Attach Products to this Promotion
               </Text>
             </View>
             <TouchableOpacity
-              style={styles.selectProductsButton as ViewStyle}
+              style={[
+                styles.selectProductsButton as ViewStyle,
+                isMobileWeb && (styles.selectProductsButtonMobileWeb as any),
+              ]}
               onPress={handleSelectProducts}
             >
               <Ionicons name="add" size={20} color={colors.primary} />
@@ -1165,8 +1188,18 @@ const handleGoLive = async () => {
         )}
 
         {/* Date Range Selection */}
-        <View style={styles.dateRangeContainer as ViewStyle}>
-                  <View style={styles.dateInputWrapper as ViewStyle}>
+        <View
+          style={[
+            styles.dateRangeContainer as ViewStyle,
+            isMobileWeb && (styles.dateRangeContainerMobileWeb as any),
+          ]}
+        >
+                  <View
+                    style={[
+                      styles.dateInputWrapper as ViewStyle,
+                      isMobileWeb && (styles.dateInputWrapperMobileWeb as any),
+                    ]}
+                  >
                     <Text style={styles.dateLabel as TextStyle}>Starting From</Text>
                     {Platform.OS === "web" ? (
                       <input
@@ -1193,12 +1226,21 @@ const handleGoLive = async () => {
                     <Text style={styles.dateToLabel as TextStyle}>to</Text>
                   )}
 
-                  <View style={styles.dateInputWrapper as ViewStyle}>
+                  <View
+                    style={[
+                      styles.dateInputWrapper as ViewStyle,
+                      isMobileWeb && (styles.dateInputWrapperMobileWeb as any),
+                    ]}
+                  >
                     <Text style={styles.dateLabel as TextStyle}>Ending On</Text>
                     {Platform.OS === "web" ? (
                       <input
                         type="date"
-                        style={globalStyles.webDateInput}
+                        style={
+                          isMobileWeb
+                            ? ({ ...globalStyles.webDateInput, width: "100%" } as any)
+                            : (globalStyles.webDateInput as any)
+                        }
                         value={endingDate}
                         onChange={(e) => setEndingDate(e.target.value)}
                         min={formatDateForInput(getMinEndDate())}
@@ -1218,11 +1260,20 @@ const handleGoLive = async () => {
                 </View>
 
             {/* Action Buttons */}
-            <View style={styles.buttonContainer as ViewStyle}>
+            <View
+              style={[
+                styles.buttonContainer as ViewStyle,
+                isMobileWeb && (styles.buttonContainerMobileWeb as any),
+              ]}
+            >
               {isNewPromotion ? (
                 <>
                   <TouchableOpacity
-                    style={[styles.saveButton as ViewStyle, isWeb && styles.webButton]}
+                    style={[
+                      styles.saveButton as ViewStyle,
+                      isWeb && styles.webButton,
+                      isMobileWeb && styles.webButtonMobileWeb,
+                    ]}
                     onPress={handleAddPromotion}
                     disabled={isSaving}
                   >
@@ -1233,7 +1284,11 @@ const handleGoLive = async () => {
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.goLiveButton as ViewStyle, isWeb && styles.webButton]}
+                    style={[
+                      styles.goLiveButton as ViewStyle,
+                      isWeb && styles.webButton,
+                      isMobileWeb && styles.webButtonMobileWeb,
+                    ]}
                     onPress={handleGoLive}
                     disabled={isSaving}
                   >
@@ -1247,7 +1302,11 @@ const handleGoLive = async () => {
               ) : (
                 <>
                   <TouchableOpacity
-                    style={[styles.saveButton as ViewStyle, isWeb && styles.webButton]}
+                    style={[
+                      styles.saveButton as ViewStyle,
+                      isWeb && styles.webButton,
+                      isMobileWeb && styles.webButtonMobileWeb,
+                    ]}
                     onPress={handleSavePromotion}
                     disabled={isSaving}
                   >
@@ -1258,7 +1317,11 @@ const handleGoLive = async () => {
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.deleteButton as ViewStyle, isWeb && styles.webButton]}
+                    style={[
+                      styles.deleteButton as ViewStyle,
+                      isWeb && styles.webButton,
+                      isMobileWeb && styles.webButtonMobileWeb,
+                    ]}
                     onPress={handleDeletePromotion}
                     disabled={isSaving}
                   >
@@ -1298,7 +1361,7 @@ const handleGoLive = async () => {
               if (selectedDate >= minDate) {
                 setEndingDate(formatDateForInput(selectedDate));
               } else {
-                Alert.alert("Invalid Date", "Ending date must be after the starting date");
+                showAlert("Invalid Date", "Ending date must be after the starting date");
               }
             }}
             onCancel={() => setShowEndDatePicker(false)}
@@ -1315,7 +1378,7 @@ const handleGoLive = async () => {
         onRequestClose={() => setShowProductModal(false)}
       >
         {Platform.OS === "web" ? (
-          <View style={styles.modalOverlay as ViewStyle}>
+          <View style={[styles.modalOverlay, isMobileWeb && styles.modalOverlayMobileWeb] as any}>
             {renderModalContent()}
           </View>
         ) : (
@@ -1328,6 +1391,7 @@ const handleGoLive = async () => {
           </BlurView>
         )}
       </Modal>
+      {confirmationModal}
     </LayoutComponent>
   );
 };
