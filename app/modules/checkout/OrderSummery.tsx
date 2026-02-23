@@ -914,7 +914,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
             Value Not Met
           </Text>
           <Text style={styles.movWarningText}>
-            Your order total is ${movStatus.currentTotal.toFixed(2)}. Please add
+            Your order total is {CurrencySymbol}{movStatus.currentTotal.toFixed(2)}. Please add
             ${movStatus.difference.toFixed(2)} more to reach the minimum
             {movStatus.movType === "checkout" ? " checkout" : ""} order value of
             ${movStatus.requiredMOV.toFixed(2)}.
@@ -1425,9 +1425,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 />
               </View>
             </View>
-            <Text style={styles.noteText}>
-              *please select a billing address before proceeding to payment
-            </Text>
+            {!selectedBillingAddress &&
+ !(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+  <Text style={styles.noteText}>
+    *please select a billing address before proceeding to payment
+  </Text>
+)}
 
             {/* Mobile Payment Buttons Section */}
             <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
