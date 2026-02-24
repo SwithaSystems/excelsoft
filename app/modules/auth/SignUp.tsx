@@ -93,6 +93,57 @@ const signUpScreen = () => {
     setErrors({}); // Clear all errors when switching modes
   };
 
+  const handleEmailBlur = async () => {
+  const trimmedEmail = email.trim();
+  if (!trimmedEmail) {
+    setErrors((prev) => ({ ...prev, email: "Email is required." }));
+    return;
+  }
+  if (!isValidEmail(trimmedEmail)) {
+    setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
+    return;
+  }
+  // Format is valid — now check existence
+  await checkIfEmailExists();
+};
+
+const handlePhoneBlur = async () => {
+  const trimmedPhone = phone.trim();
+  if (!trimmedPhone) {
+    setErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
+    return;
+  }
+  let normalized = trimmedPhone.startsWith("0")
+    ? trimmedPhone.slice(1)
+    : trimmedPhone;
+  const fullPhone = `+${callingCode}${normalized}`;
+  const formatError = isValidPhoneNumber(fullPhone);
+  if (formatError) {
+    setErrors((prev) => ({ ...prev, phone: formatError }));
+    return;
+  }
+  // Format is valid — now check existence
+  await checkIfPhoneExists();
+};
+
+const handlePasswordBlur = () => {
+  const passwordError = isValidPassword(password);
+  if (passwordError) {
+    setErrors((prev) => ({ ...prev, password: passwordError }));
+  } else {
+    setErrors((prev) => ({ ...prev, password: undefined }));
+  }
+};
+
+const handleConfirmPasswordBlur = () => {
+  if (!confirmPassword) {
+    setErrors((prev) => ({ ...prev, confirmPassword: "Please confirm your password." }));
+  } else if (confirmPassword !== password) {
+    setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
+  } else {
+    setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+  }
+};
   const checkIfUserExists = async () => {
     if (mode === "phone") {
       await checkIfPhoneExists();
@@ -117,10 +168,12 @@ const signUpScreen = () => {
           title: "Phone Number Already Exists!",
           message: PHONE_ALREADY_REGISTERED,
         });
-        setPhoneNumber("");
-        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));
-      }
-    } catch (error) {
+        // setPhoneNumber("");
+        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));}
+        else{
+        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));}
+
+          } catch (error) {
       console.error("Error checking phone number", error);
       // If error is 404, phone doesn't exist (which is good for signup)
       // Clear any existing phone error
@@ -145,7 +198,8 @@ const signUpScreen = () => {
           title: "Email Already Exists!",
           message: EMAIL_ALREADY_REGISTERED,
         });
-        setEmail("");
+         setErrors((prev) => ({ ...prev, email: "This email is already registered." }));}
+         else {
         setErrors((prev) => ({ ...prev, email: "This email is already registered" }));
       }
     } catch (error) {
@@ -383,7 +437,7 @@ const signUpScreen = () => {
                     setErrors((prev) => ({ ...prev, email: undefined }));
                   }
                 }}
-                onBlur={checkIfEmailExists}
+                onBlur={handleEmailBlur}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 editable={!isLoading}
@@ -448,7 +502,7 @@ const signUpScreen = () => {
                   onFocus={() => setIsPhoneFocused(true)}
                   onBlur={() => {
                     setIsPhoneFocused(false);
-                    checkIfPhoneExists();
+                    handlePhoneBlur();
                   }}
                   maxLength={11}
                   keyboardType="phone-pad"
@@ -479,7 +533,7 @@ const signUpScreen = () => {
               placeholderTextColor={isWeb ? colors.slateGrey : undefined}
               secureTextEntry
               value={password}
-              onFocus={checkIfUserExists}
+               onBlur={handlePasswordBlur}  
               onChangeText={(text) => {
                 setPassword(text);
                 // Clear error as user types
@@ -512,6 +566,7 @@ const signUpScreen = () => {
                 errors.confirmPassword && globalStyles.errorInput,
                 isWeb && { fontSize: 16 },
               ]}
+              onBlur={handleConfirmPasswordBlur} 
               placeholder="Confirm Password"
               placeholderTextColor={isWeb ? colors.slateGrey : undefined}
               secureTextEntry
@@ -519,11 +574,9 @@ const signUpScreen = () => {
               onChangeText={(text) => {
                 setConfirmPassword(text);
                 // Clear error as user types and check match
-                if (text === password) {
-                  setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
-                } else if (text && text !== password) {
-                  setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
-                }
+               if (text === password) {
+      setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+    }
               }}
               editable={!isLoading}
             />
