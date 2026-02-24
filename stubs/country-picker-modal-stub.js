@@ -200,11 +200,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
   },
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    width: 500,
+    // Responsive on mobile web: avoid overflowing viewport width
+    width: '92vw',
+    maxWidth: 520,
+    minWidth: 280,
     maxHeight: '80vh',
     overflow: 'hidden',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
@@ -271,11 +275,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     flex: 1,
+    flexShrink: 1,
   },
   countryCallingCode: {
     fontSize: 14,
     color: '#666',
     marginLeft: 8,
+    flexShrink: 0,
   },
 });
 

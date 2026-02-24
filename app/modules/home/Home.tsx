@@ -103,8 +103,6 @@ const dispatch = useDispatch();
   }, [categories.length]);
  const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
   
-  // Always use web components when Platform.OS is "web" (including mobile browsers)
-  // Use media queries for responsive behavior
   const isTabOrDesktop = isWeb && (isTablet || isDesktop);
   const isMobileWeb = isWeb && isMobile;
   const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
@@ -124,7 +122,7 @@ const carouselWidth = isWeb
         ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
         : isTablet 
           ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
-          : width - 64  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
+          : width - 32  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
       )
     : width - 32;
   const fetchGlobalSettings = async () => {
@@ -616,11 +614,11 @@ const styles = StyleSheet.create({
   },
   recommendedSection: {
     marginVertical: 16,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     width: "100%",
   },
   recommendedSectionMobile: {
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
      width: "100%",

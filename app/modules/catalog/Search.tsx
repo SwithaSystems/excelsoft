@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
-  StyleSheet,
   ScrollView,
   Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Alert,
-  SafeAreaView,
+  Platform,
 } from "react-native";
 import colors from "../../../constants/colors";
 import SearchHistoryItem from "../../components/SearchHistoryItem";
@@ -19,17 +17,20 @@ import Header from "../../components/Header";
 import useDebounce from "../../../utilities/customHooks/useDebounce";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Footer from "@/app/components/Footer";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMessages";
 import styles from "./SearchStyles";
 import { secureStore } from "@/store/secureStore";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "app_recent_searches";
@@ -61,11 +62,36 @@ const categories = [
 ];
 
 const SearchScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
+  const isWeb = Platform.OS === "web";
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<any>([]);
   const debouncedQuery = useDebounce(searchQuery, 300);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Load recent searches from AsyncStorage on component mount
   useEffect(() => {
@@ -171,7 +197,7 @@ const SearchScreen = () => {
   // Clear all recent searches
   const clearAllRecentSearches = async () => {
     try {
-      Alert.alert(
+      showAlert(
         "Clear Recent Searches",
         "Are you sure you want to clear all recent searches?",
         [
@@ -297,8 +323,8 @@ const SearchScreen = () => {
       );
     }
 
-    return (
-      <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+    const mainContent = (
+      <>
         {/* Recent Searches */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Searches</Text>
@@ -326,9 +352,63 @@ const SearchScreen = () => {
             ))}
           </View>
         </View> */}
-      </ScrollView>
+      </>
+    );
+
+    return (
+      isWeb ? (
+        <View style={styles.content}>{mainContent}</View>
+      ) : (
+        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+          {mainContent}
+        </ScrollView>
+      )
     );
   };
+
+  const content = (
+    <KeyBoardWrapper>
+      <View style={styles.container}>
+        <View style={styles.searchBarContainer}>
+          <SearchBar
+            placeholder="Search..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            onPress={handleSearch}
+          />
+        </View>
+
+        {renderMainContent()}
+      </View>
+    </KeyBoardWrapper>
+  );
+
+  if (isWeb) {
+    return (
+      <PageLayoutWeb
+        hasHeader
+        hasFooter
+        scrollable
+        headerComponent={<BrandHeaderWeb />}
+        footerComponent={<FooterWeb />}
+      >
+        {content}
+        <ConfirmationModal
+          isModalVisible={errorModalState.isVisible}
+          onClose={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+          title={errorModalState.title}
+          text={errorModalState.message}
+          submitText={errorModalState.buttonLabel}
+          handleSubmit={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
+      </PageLayoutWeb>
+    );
+  }
 
   return (
     <PageLayout
@@ -337,26 +417,22 @@ const SearchScreen = () => {
       hasFooter
       headerComponent={<Header headerText={"Search"} />}
       footerComponent={<Footer activeTab="search" />}
-      children={
-        <KeyBoardWrapper
-          children={
-            <View style={styles.container}>
-              <View style={styles.searchBarContainer}>
-                <SearchBar
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                  onPress={handleSearch}
-                />
-              </View>
-
-              {renderMainContent()}
-            </View>
-          }
-        />
-      }
-    ></PageLayout>
+    >
+      {content}
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
+    </PageLayout>
   );
 };
 

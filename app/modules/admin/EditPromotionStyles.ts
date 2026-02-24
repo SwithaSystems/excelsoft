@@ -1,19 +1,30 @@
 import { StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: colors.white,
   },
   scrollContent: {
     // padding: 16,
     paddingBottom: 32,
   },
+
+  scrollContentMobile: {
+    // padding: 16,
+    paddingBottom: 16,
+  },
   webFormContainer: {
     width: "75%",
     alignSelf: "center",
     flex: 1,
+  },
+  webFormContainerMobileWeb: {
+    width: "95%",
+    alignSelf: "center",
+    paddingHorizontal: 0,
   },
   section: {
     marginBottom: 24,
@@ -76,6 +87,17 @@ const styles = StyleSheet.create({
   imageClickableContainer: {
     width: "100%",
   },
+  imageRecommendationText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: colors.secondaryText,
+  },
+  imageRecommendationWarningText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: colors.error,
+    fontWeight: "500",
+  },
   inputLabel: {
     fontSize: 14,
     fontWeight: "500",
@@ -98,10 +120,16 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
   },
+  buttonContainerMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+  },
   saveButton: {
     flex: Platform.OS === "web" ? 0 : 1,
     backgroundColor: colors.primary,
     paddingVertical: 14,
+    minHeight: 48,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
@@ -113,6 +141,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Platform.OS === "web" ? 24 : undefined,
     minWidth: Platform.OS === "web" ? 120 : undefined,
   },
+  webButtonMobileWeb: {
+    width: "100%",
+    minWidth: undefined,
+    // Keep mobile-web buttons tap-friendly (override smaller web padding)
+    paddingVertical: 14,
+    minHeight: 48,
+  },
   saveButtonText: {
     color: colors.white,
     fontSize: Platform.OS === "web" ? 13 : 16,
@@ -122,6 +157,7 @@ const styles = StyleSheet.create({
     flex: Platform.OS === "web" ? 0 : 1,
     backgroundColor: colors.placeholdergrey,
     paddingVertical: 14,
+    minHeight: 48,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
@@ -136,6 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 8,
     paddingVertical: 14,
+    minHeight: 48,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -152,10 +189,18 @@ const styles = StyleSheet.create({
     alignItems: Platform.select({ web: "flex-end", default: "flex-start" }),
     flexWrap: "nowrap",
   },
+  dateRangeContainerMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   dateInputWrapper: {
-    flex: Platform.select({ web: 0, default: 1 }),
-    minWidth: Platform.select({ web: 200, default: 0 }),
-    ...(Platform.OS === "web" ? { maxWidth: 250 } : { maxWidth: "100%" }),
+    flex: 1,
+    minWidth: 0,
+  },
+  dateInputWrapperMobileWeb: {
+    minWidth: 0,
+    maxWidth: "100%",
   },
   dateToLabel: {
     fontSize: 16,
@@ -200,6 +245,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     ...(Platform.OS === "web" ? {} : { flexDirection: "column", gap: 12 }),
   },
+  attachProductsHeaderMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   attachProductsTitleContainer: {
     flex: 1,
   },
@@ -225,6 +275,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     ...(Platform.OS === "web" ? {} : { alignSelf: "flex-start" }),
+  },
+  selectProductsButtonMobileWeb: {
+    alignSelf: "flex-start",
   },
   selectProductsButtonText: {
     fontSize: 14,
@@ -295,15 +348,15 @@ const styles = StyleSheet.create({
     alignItems: Platform.OS === "web" ? "center" : "flex-start",
     gap: 16,
   },
+  categorySelectionSectionMobileWeb: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
   categorySelectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
     marginBottom: 0,
-  },
-  mobileCategoryDropdown: {
-    width: "100%",
-    marginTop: 8,
   },
   mobileCategoryDropdown: {
     width: "100%",
@@ -386,6 +439,9 @@ const styles = StyleSheet.create({
       WebkitBackdropFilter: "blur(10px)",
     }),
   },
+  modalOverlayMobileWeb: {
+    paddingHorizontal: 12,
+  },
   modalContent: {
     backgroundColor: colors.white,
     borderRadius: 12,
@@ -400,6 +456,11 @@ const styles = StyleSheet.create({
         maxHeight: "80%",
       },
     }),
+  },
+  modalContentMobileWeb: {
+    width: "100%",
+    maxWidth: 520,
+    maxHeight: "85%",
   },
   modalHeader: {
     flexDirection: "row",
@@ -502,8 +563,14 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
-    fontWeight: "500",
     color: colors.black,
+  },
+ dateToLabelMobileWebOverride: {
+    alignSelf: "center",
+    marginBottom: 0,
+    lineHeight: 20,
+    paddingHorizontal: 0,
+    marginVertical: 4,
   },
 });
 

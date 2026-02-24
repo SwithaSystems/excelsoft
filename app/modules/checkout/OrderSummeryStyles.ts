@@ -142,6 +142,27 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 40,
   },
+  webLeftSectionMobile: {
+    width: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+  },
+
+  webRightSectionMobile: {
+    width: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+  },
+
+  webContentWrapperMobile: {
+    flexDirection: "column",
+    gap: 16,
+    paddingHorizontal: 16,
+    maxWidth: "100%",
+    alignItems: "stretch",
+  },
   webLeftSection: {
     flex: 0.6,
     gap: 16,

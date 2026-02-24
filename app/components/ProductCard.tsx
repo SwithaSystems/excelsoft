@@ -14,6 +14,7 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import { Product } from "@/services/productService";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface ProductCardProps extends Product {
   onAddToCart?: () => void;
@@ -38,6 +39,9 @@ const ProductCard = ({
   const router = useRouter();
   const isWeb = Platform.OS === "web";
   const isRemoteImage = typeof image === "string";
+
+  const { isTablet, isMobile, isDesktop } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
@@ -92,7 +96,11 @@ const ProductCard = ({
   const titleFontSize = isWeb ? 13 : 18;
   const ratingFontSize = isWeb ? 11 : 16;
   const priceFontSize = isWeb ? 13 : 16;
-  const heartSize = isWeb ? 40 : 30;
+  const heartSize =
+    isMobileWeb ? 24 :
+    isTablet ? 30 :
+    isWeb ? 34 : 
+    30;
   const starSize = isWeb ? 12 : 16;
   const contentPadding = isWeb ? 6 : 8;
 

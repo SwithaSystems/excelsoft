@@ -28,6 +28,7 @@ import containers from "@/containers";
 import { promotionService, Promotion as APIPromotion } from "@/services/promotionService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { showAlert } from "@/utilities/alertHelper";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Utility functions
 const formatDateForAPI = (dateString: string): string => {
@@ -142,6 +143,9 @@ const AdminPromotion = () => {
   const [promotionToDeleteSaved, setPromotionToDeleteSaved] = useState<string | null>(null);
 
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   // Fetch all promotions from API
   const fetchAllPromotions = useCallback(async () => {
@@ -426,7 +430,10 @@ const AdminPromotion = () => {
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isDesktopWeb && ({ paddingTop: 16 } as ViewStyle),
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Mobile: Add New Promotion Button */}
@@ -446,9 +453,19 @@ const AdminPromotion = () => {
         )}
 
         {/* Header with Title and Add Button */}
-        <View style={styles.headerRow as ViewStyle}>
+        <View style={[
+          styles.headerRow as ViewStyle, 
+          isMobileWeb && styles.headerRowMobileWeb,
+        ]}>
           {isWeb && (
-            <Text style={styles.pageTitle as TextStyle}>Promotions</Text>
+            <Text
+              style={[
+                styles.pageTitle as TextStyle,
+                isMobileWeb && styles.pageTitleMobileWeb,
+              ]}
+            >
+              Promotions
+            </Text>
           )}
           {isWeb && (
             <TouchableOpacity
@@ -485,7 +502,7 @@ const AdminPromotion = () => {
             </TouchableOpacity>
           </View>
         ) : allPromotions.length > 0 ? (
-          isWeb ? (
+          isDesktopWeb ? (
             <View style={styles.gridContainer as ViewStyle}>
               {allPromotions.map((item, index) => (
                 <View 

@@ -9,6 +9,7 @@ import styles from "./NotificationsStyles";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
@@ -106,6 +107,9 @@ const notificationsScreen: React.FC = () => {
   };
 
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -127,11 +131,12 @@ const notificationsScreen: React.FC = () => {
     >
       <View
         style={[
-          // globalStyles.sectionContent,
           globalStyles.pt_0,
           isWeb && webStyles.contentWidth,
+          isMobileWeb && webStyles.mobileWebContentWidth,
         ]}
       >
+
         <View
           style={
             [
@@ -162,7 +167,13 @@ const notificationsScreen: React.FC = () => {
                 keyof NotificationOptions
               >
             ).map((optionKey) => (
-              <View style={styles.switchContainer} key={optionKey}>
+              <View
+                style={[
+                  styles.switchContainer,
+                  isWeb && webStyles.mobileWebOptionSpacing,
+                ]}
+                key={optionKey}
+              >
                 <Text style={styles.switchLabel}>
                   {formatOptionLabel(optionKey)}
                 </Text>
@@ -181,9 +192,11 @@ const notificationsScreen: React.FC = () => {
             ))}
         </View>
 
-        {/* Email Notifications */}
+       {/* Email Notifications */}
         <View
-        // style={[globalStyles.mb_2]}
+          style={[
+            isMobileWeb && webStyles.mobileWebEmailSectionSpacing,
+          ]}
         >
           <View
             style={[
@@ -208,7 +221,13 @@ const notificationsScreen: React.FC = () => {
                 keyof NotificationOptions
               >
             ).map((optionKey) => (
-              <View style={styles.switchContainer} key={optionKey}>
+              <View
+                style={[
+                  styles.switchContainer,
+                  isWeb && webStyles.mobileWebOptionSpacing,
+                ]}
+                key={optionKey}
+              >
                 <Text style={styles.switchLabel}>
                   {formatOptionLabel(optionKey)}
                 </Text>
@@ -238,4 +257,18 @@ const webStyles = StyleSheet.create({
     width: "70%",
     alignSelf: "center",
   },
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+  mobileWebSwitchContainer: {
+    paddingVertical: 4,
+  },
+  mobileWebEmailSectionSpacing: {
+    // marginTop: 16,
+  },
+  mobileWebOptionSpacing: {
+    marginBottom: 8,
+  },
+
 });

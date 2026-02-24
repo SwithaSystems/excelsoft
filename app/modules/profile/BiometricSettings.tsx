@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Switch,
-  Alert,
   StyleSheet,
   SafeAreaView,
   Platform,
@@ -15,8 +14,10 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import Header from "../../components/Header";
 import styles from "./BiometricSettingsStyles";
 import colors from "@/constants/colors";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const BiometricSettingsScreen = ({ navigation }: any) => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [biometricType, setBiometricType] = useState("");
@@ -135,7 +136,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       if (result.success) {
         await SecureStore.setItemAsync("biometric_enabled", "true");
         setIsBiometricEnabled(true);
-        Alert.alert("Success", `${biometricType} has been enabled.`);
+        showAlert("Success", `${biometricType} has been enabled.`);
       } else {
         if (result.error === "user_cancel") {
           // console.log("User cancelled the authentication");
@@ -146,19 +147,19 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         } else {
           // console.log(" Authentication failed:", result.error);
         }
-        Alert.alert(
+        showAlert(
           "Authentication Failed",
           `${biometricType} authentication was not successful. Please try again.`
         );
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not enable biometric auth.");
+      showAlert("Error", "Could not enable biometric auth.");
     }
   };
 
   const disableBiometricAuth = async () => {
-    Alert.alert(
+    showAlert(
       "Disable Biometric Authentication",
       `Are you sure you want to disable ${biometricType}?`,
       [
@@ -169,7 +170,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             await SecureStore.deleteItemAsync("biometric_enabled");
             setIsBiometricEnabled(false);
-            Alert.alert("Disabled", `${biometricType} has been turned off.`);
+            showAlert("Disabled", `${biometricType} has been turned off.`);
           },
         },
       ]
@@ -190,19 +191,19 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       // console.log("Test result:", result);
 
       if (result.success) {
-        Alert.alert(
+        showAlert(
           "Success",
           `${biometricType} authentication works correctly!`
         );
       } else {
-        Alert.alert(
+        showAlert(
           "Test Failed",
           `${biometricType} authentication test failed: ${result.error}`
         );
       }
     } catch (error: any) {
       console.error("Test error:", error);
-      Alert.alert("Error", `Test failed: ${error.message}`);
+      showAlert("Error", `Test failed: ${error.message}`);
     }
   };
 
@@ -274,6 +275,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         <View style={styles.loadingContainer}>
           <Text>Loading biometric settings...</Text>
         </View>
+        {confirmationModal}
       </SafeAreaView>
     );
   }
@@ -337,6 +339,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
           </View>
         )}
       </View>
+      {confirmationModal}
     </PageLayout>
   );
 };

@@ -11,6 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const FooterWeb = () => {
   const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
@@ -37,7 +39,11 @@ const FooterWeb = () => {
         isMobile && styles.middleSectionMobile,
         isTablet && styles.middleSectionTablet,
       ]}>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            redirectToPage(containers.homeScreen);
+          }}
+        >
           <Text style={[
             styles.linkText,
             isMobile && styles.linkTextMobile,

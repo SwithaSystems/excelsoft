@@ -4,7 +4,6 @@ import Header from "../../components/Header";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -23,6 +22,7 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const savedAddressScreen = () => {
   const [addressData, setAddressData] = useState<Address[]>([]);
@@ -83,6 +83,8 @@ const savedAddressScreen = () => {
   };
 
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isDesktopWeb = isWeb && !isMobile;
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -91,6 +93,9 @@ const savedAddressScreen = () => {
     <Header headerText={SAVED_ADDRESS_SCREEN_TITLE} />
   );
   const FooterComponent = isWeb ? <FooterWeb /> : null;
+  const sortedAddresses = [...addressData].sort(
+    (a, b) => Number(b.isDefault) - Number(a.isDefault)
+  );
 
   return (
     <LayoutComponent
@@ -102,89 +107,81 @@ const savedAddressScreen = () => {
       hasSidebar={isWeb}
       userSidebar={true}
     >
-      <View style={globalStyles.container}>
-        <ScrollView>
-          <FlatList
-            ListHeaderComponent={
-              <>
-                {addressData.length === 0 ? (
-                  <View
-                    style={{
-                      flex: 1,
-                      padding: 16,
+      <View style={[globalStyles.container, styles.pageContainer]}>
+        <View style={[styles.contentContainer, isDesktopWeb && styles.contentContainerWeb]}>
+          {isDesktopWeb ? (
+            <>
+              <View style={styles.headerRow}>
+                <Text style={styles.pageTitle}>Saved Address</Text>
+                <View style={styles.addButtonContainer}>
+                  <Button
+                    title="Add New Address"
+                    onPress={() => {
+                      redirectToPage(containers.addAddressScreen);
                     }}
-                  >
-                    <NoContentFound message="No saved address found" />
-                  </View>
-                ) : (
-                  <View style={styles.centeredContainer}>
-                    <View
-                      style={[
-                        globalStyles.pt_0,
-                        {
-                          width: 350,
-                        },
-                      ]}
-                    >
-                      <Text style={styles.sectionTitle}>Default Address</Text>
-                      <FlatList
-                        data={addressData.filter(
-                          (address) => address.isDefault
-                        )}
-                        renderItem={({ item }) => (
-                          <AddressItem
-                            item={item}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                          />
-                        )}
-                        keyExtractor={(item) => item._id}
-                        contentContainerStyle={styles.addressList}
-                      />
+                  />
+                </View>
+              </View>
 
-                      <Text style={styles.sectionTitle}>Address</Text>
-                      <FlatList
-                        data={addressData.filter(
-                          (address) => !address.isDefault
-                        )}
-                        renderItem={({ item }) => (
-                          <AddressItem
-                            item={item}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                          />
-                        )}
-                        keyExtractor={(item) => item._id}
-                        contentContainerStyle={styles.addressList}
-                      />
+              {addressData.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <NoContentFound message="No saved address found" />
+                </View>
+              ) : (
+                <FlatList
+                  data={sortedAddresses}
+                  renderItem={({ item }) => (
+                    <View style={styles.rowItem}>
+                      {item.isDefault && <Text style={styles.defaultBadge}>Default</Text>}
+                      <AddressItem item={item} onEdit={handleEdit} onDelete={handleDelete} />
                     </View>
-                  </View>
-                )}
-                <ConfirmationModal
-                  onClose={() => {
-                    setIsModalVisible(false);
-                  } }
-                  isModalVisible={isModalVisible}
-                  text="Are you sure you want to delete this address?"
-                  submitText="Delete Address"
-                  handleSubmit={confirmDelete}
-                  cancelText="Cancel"
-                  handleCancel={cancelDelete} 
-                  title="Delete Address"                
+                  )}
+                  keyExtractor={(item) => item._id}
+                  contentContainerStyle={styles.addressList}
+                  showsVerticalScrollIndicator={false}
                 />
-              </>
-            }
-            data={[]} // No actual data here — just to use FlatList as scroll container
-            renderItem={null}
-          />
-        </ScrollView>
+              )}
+            </>
+          ) : (
+            <>
+              {addressData.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <NoContentFound message="No saved address found" />
+                </View>
+              ) : (
+                <FlatList
+                  data={sortedAddresses}
+                  renderItem={({ item }) => (
+                    <AddressItem item={item} onEdit={handleEdit} onDelete={handleDelete} />
+                  )}
+                  keyExtractor={(item) => item._id}
+                  contentContainerStyle={styles.addressList}
+                  showsVerticalScrollIndicator={false}
+                />
+              )}
+              <View style={styles.mobileButtonContainer}>
+                <Button
+                  title="Add New Address"
+                  onPress={() => {
+                    redirectToPage(containers.addAddressScreen);
+                  }}
+                />
+              </View>
+            </>
+          )}
 
-        <View style={styles.addressList}>
-          <Button
-            title="Add New Address"
-            onPress={() => {
-              redirectToPage(containers.addAddressScreen);
+          <ConfirmationModal
+            onClose={() => {
+              setIsModalVisible(false);
             }}
+            isModalVisible={isModalVisible}
+            text="Are you sure you want to delete this address?"
+            submitText="Delete Address"
+            handleSubmit={confirmDelete}
+            cancelText="Cancel"
+            handleCancel={cancelDelete}
+            title="Delete Address"
+            isDestructive={true}
           />
         </View>
       </View>

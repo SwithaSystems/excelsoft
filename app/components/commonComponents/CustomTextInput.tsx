@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
   TouchableWithoutFeedback,
+  StyleProp,
 } from "react-native";
 
 interface Props {
@@ -19,8 +20,8 @@ interface Props {
   setValue?: (value: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: string;
-  containerStyle?: ViewStyle;
-  TextStyle?: TextStyle;
+  containerStyle?: StyleProp<ViewStyle>;
+  TextStyle?: StyleProp<TextStyle>;
   onPress: () => void;
   iconName?: string;
   iconType?: string;
@@ -31,7 +32,7 @@ interface Props {
   disabled?: boolean;
   required?: boolean;
   onblur?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   maxLength?: number;
   editable?:boolean;
   placeholderTextColor?: string;

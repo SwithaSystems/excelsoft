@@ -24,7 +24,7 @@ import {
   ADD_ADDRESS_SCREEN_TITLE,
   EDIT_ADDRESS_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import {
   ADDRESS_NOT_SAVED,
   ADDRESS_UPDATE_FAILED,
@@ -48,6 +48,18 @@ const addAddressScreen = () => {
   const [isDefault, setIsDefault] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addressId, setAddressId] = useState("");
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+  const [successModalState, setSuccessModalState] = useState({
+    isVisible: false,
+    title: "Success",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   // console.log("params", params);
   const from = params.from;
@@ -66,6 +78,33 @@ const addAddressScreen = () => {
   }>({});
 
   const isWeb = Platform.OS === "web";
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
+
+  const handleSuccessModalClose = () => {
+    setSuccessModalState((prev) => ({ ...prev, isVisible: false }));
+    if (from === "homeDelivery") {
+      clearNavigationStack(containers.homeDeliveryScreen, {
+        newAddressAdded: true,
+      });
+    } else {
+      clearNavigationStack(containers.savedAddressScreen);
+    }
+  };
 
   // Load existing address data if in edit mode
   useEffect(() => {
@@ -396,14 +435,12 @@ const addAddressScreen = () => {
       }
 
       if (response.status === 200 || response.status === 201) {
-        alert(`Address ${isEditMode ? "updated" : "added"} successfully`);
-        if (from === "homeDelivery") {
-          clearNavigationStack(containers.homeDeliveryScreen, {
-            newAddressAdded: true,
-          });
-        } else {
-          clearNavigationStack(containers.savedAddressScreen);
-        }
+        setSuccessModalState({
+          isVisible: true,
+          title: "Success",
+          message: `Address ${isEditMode ? "updated" : "added"} successfully`,
+          buttonLabel: "OK",
+        });
       } else {
         showErrorAlert({
           title: "Error",
@@ -595,6 +632,26 @@ const addAddressScreen = () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      <ConfirmationModal
+        isModalVisible={successModalState.isVisible}
+        onClose={handleSuccessModalClose}
+        title={successModalState.title}
+        text={successModalState.message}
+        submitText={successModalState.buttonLabel}
+        handleSubmit={handleSuccessModalClose}
+      />
     </LayoutComponent>
   );
 };

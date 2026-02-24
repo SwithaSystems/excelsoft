@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
   Image,
   useWindowDimensions,
   Platform,
@@ -27,6 +26,8 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface Category {
   _id: any;
@@ -40,6 +41,7 @@ interface Category {
 const MAX_IMAGES = 5;
 
 const AdminAddCategoriesWeb = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImages, setCategoryImages] = useState<any[]>([]);
@@ -63,6 +65,9 @@ const AdminAddCategoriesWeb = () => {
   // const { width } = useWindowDimensions();
   // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   // Get params if editing
   const params = useLocalSearchParams();
@@ -74,7 +79,7 @@ const AdminAddCategoriesWeb = () => {
           if (isWeb) {
             alert(`You can only upload up to ${MAX_IMAGES} images.`);
           } else {
-            Alert.alert(
+            showAlert(
               "Limit Reached",
               `You can only upload up to ${MAX_IMAGES} images.`
             );
@@ -90,7 +95,7 @@ const AdminAddCategoriesWeb = () => {
             if (isWeb) {
               alert("Permission to access camera is required!");
             } else {
-              Alert.alert(
+              showAlert(
                 "Permission Required",
                 "Permission to access camera is required!"
               );
@@ -111,7 +116,7 @@ const AdminAddCategoriesWeb = () => {
             if (isWeb) {
               alert("Permission to access gallery is required!");
             } else {
-              Alert.alert(
+              showAlert(
                 "Permission Required",
                 "Permission to access gallery is required!"
               );
@@ -142,7 +147,7 @@ const AdminAddCategoriesWeb = () => {
               if (isWeb) {
                 alert(`Only the first ${MAX_IMAGES} images have been added.`);
               } else {
-                Alert.alert(
+                showAlert(
                   "Limit Exceeded",
                   `Only the first ${MAX_IMAGES} images have been added.`
                 );
@@ -157,7 +162,7 @@ const AdminAddCategoriesWeb = () => {
         if (isWeb) {
           alert("Something went wrong while picking the image.");
         } else {
-          Alert.alert("Error", "Something went wrong while picking the image.");
+          showAlert("Error", "Something went wrong while picking the image.");
         }
       }
     },
@@ -169,7 +174,7 @@ const AdminAddCategoriesWeb = () => {
     if (isWeb) {
       openImagePickerAsync("gallery");
     } else {
-      Alert.alert("Select Image", "Choose image source", [
+      showAlert("Select Image", "Choose image source", [
         {
           text: "Take Photo",
           onPress: () => openImagePickerAsync("camera"),
@@ -198,7 +203,7 @@ const AdminAddCategoriesWeb = () => {
       }
     } else {
       // On mobile, use Alert.alert
-      Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+      showAlert("Remove Image", "Are you sure you want to remove this image?", [
         {
           text: "Cancel",
           style: "cancel",
@@ -226,7 +231,7 @@ const AdminAddCategoriesWeb = () => {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
-      Alert.alert("Error", "Failed to fetch categories");
+      showAlert("Error", "Failed to fetch categories");
     }
   }
 
@@ -247,7 +252,7 @@ const AdminAddCategoriesWeb = () => {
       setShowCancelModal(true);
     } else {
       // On mobile, use Alert.alert
-      Alert.alert(
+      showAlert(
         "Cancel",
         "Are you sure you want to cancel? All changes will be lost.",
         [
@@ -287,7 +292,7 @@ const AdminAddCategoriesWeb = () => {
         if (isWeb) {
           alert("Category name is required");
         } else {
-          Alert.alert("Error", "Category name is required");
+          showAlert("Error", "Category name is required");
         }
         setLoading(false);
         return;
@@ -387,7 +392,7 @@ const AdminAddCategoriesWeb = () => {
         if (isWeb) {
           alert(`Failed to ${isEditMode ? "update" : "add"} category`);
         } else {
-          Alert.alert(
+          showAlert(
             "Error",
             `Failed to ${isEditMode ? "update" : "add"} category`
           );
@@ -410,7 +415,7 @@ const AdminAddCategoriesWeb = () => {
       if (isWeb) {
         alert(`Failed to ${isEditMode ? "update" : "add"} category`);
       } else {
-        Alert.alert(
+        showAlert(
           "Error",
           `Failed to ${isEditMode ? "update" : "add"} category`
         );
@@ -475,9 +480,27 @@ const AdminAddCategoriesWeb = () => {
       scrollable={true}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
+        <View
+             style={[
+               styles.formContainer,
+               isWeb
+                 ? {
+                     width: isMobileWeb ? "100%" : "70%",
+                     paddingVertical: isMobileWeb ? 0 : 20,
+                   }
+                 : { paddingHorizontal: 0 },
+             ]}
+           >
+          <View
+            style={[
+              styles.sectionHeader,
+              isMobileWeb && styles.sectionHeaderMobile,
+            ]}
+          >
+            <Text style={[
+                styles.sectionTitle,
+                isMobileWeb && styles.sectionTitleMobile,  
+              ]}>
               {isEditMode ? "Edit Category" : "Add New Category"}
             </Text>
             {isEditMode && (
@@ -606,6 +629,7 @@ const AdminAddCategoriesWeb = () => {
           handleCancel={handleCancelModal}
         />
       )}
+      {confirmationModal}
     </LayoutComponent>
   );
 };
@@ -615,14 +639,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 16,
   },
+  mobileWebContainer: {
+    width: "95%",
+    alignSelf: "center",
+  },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },
+  sectionHeaderMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
+  },
   sectionTitle: {
     fontSize: 35,
+    color: colors.black,
+  },
+  sectionTitleMobile: {
+    fontSize: 24,
     color: colors.black,
   },
   cancelButton: {

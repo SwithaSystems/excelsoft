@@ -33,13 +33,13 @@ import { RootState } from "@/store/store";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   MISSING_REQUIRED_FIELDS,
   PICKUP_TIME_REQUIRED,
   PICKUP_TIME_IN_PAST,
   ADDRESS_NOT_SAVED,
 } from "../../../constants/customErrorMessages";
+import { format, parse } from "date-fns";
 import { format, parse } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
@@ -49,6 +49,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -65,6 +66,11 @@ const HomeDeliveryScreen = () => {
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [period, setPeriod] = useState("am");
+
+  const isWeb = Platform.OS === "web";
+      
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
@@ -94,6 +100,29 @@ const HomeDeliveryScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Initialize default time values based on new business rules
   useEffect(() => {
@@ -155,90 +184,136 @@ const HomeDeliveryScreen = () => {
       periodValue
     );
   }, []);
+  const selectedAddressIdRef = useRef(selectedAddressId);
+useEffect(() => {
+  selectedAddressIdRef.current = selectedAddressId;
+}, [selectedAddressId]);
+const fetchAddresses = useCallback(async (retryCount = 0) => {
+  const MAX_RETRIES = 3;
+  setIsLoadingAddresses(true);
 
-  // Fetch addresses function with retry logic and token check
-  const fetchAddresses = useCallback(async (retryCount = 0) => {
-    const MAX_RETRIES = 3;
-    setIsLoadingAddresses(true);
-    
-    try {
-      // First, verify token exists
-      const token = await SecureStore.getItemAsync("token");
-      const refreshToken = await SecureStore.getItemAsync("refreshtoken");
-      
-      // console.log("=== Fetch Addresses Debug ===");
-      // console.log("Token exists:", !!token);
-      // console.log("Refresh token exists:", !!refreshToken);
-      // console.log("Retry attempt:", retryCount);
-      
-      if (!token && !refreshToken) {
-        console.error("No tokens found - user may need to login again");
-        setIsLoadingAddresses(false);
-        showErrorAlert({
-          title: "Session Expired",
-          message: "Please login again to continue.",
-        });
-        // Optionally redirect to login
-        // redirectToPage(containers.signInScreen);
-        return;
-      }
-      
-      // console.log("Attempting to fetch addresses...");
-      const response = await addressService.getAllAddress();
-      // console.log("Successfully fetched addresses:", response.length, "addresses");
-      setExistingAddress(response);
-      
-      // If there's only one address and none is selected, auto-select it
-      if (response.length === 1 && !selectedAddressId) {
-        // console.log("Auto-selecting single address");
-        setSelectedAddressId(response[0]._id);
-        setAddress(response[0]);
-      }
+  try {
+    const token = await SecureStore.getItemAsync("token");
+    const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+
+    if (!token && !refreshToken) {
       setIsLoadingAddresses(false);
-    } catch (err: any) {
-      console.error("=== Error fetching addresses ===");
-      console.error("Attempt:", retryCount + 1, "of", MAX_RETRIES + 1);
-      console.error("Error:", err);
-      console.error("Error message:", err.message);
-      console.error("Error response:", err.response?.data);
-      console.error("Error status:", err.response?.status);
-      
-      // If it's a 401 error and we haven't exceeded retries, wait and retry
-      if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
-        // console.log("Got 401 error, waiting before retry...");
-        setIsLoadingAddresses(false);
-        
-        // Exponential backoff: wait longer with each retry
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-        // console.log(`Retrying in ${delay}ms...`);
-        
-        setTimeout(() => {
-          fetchAddresses(retryCount + 1);
-        }, delay);
-      } else {
-        setIsLoadingAddresses(false);
-        
-        // Only show error alert after all retries exhausted
-        if (retryCount >= MAX_RETRIES) {
-          const errorMessage = err.response?.status === 401 
-            ? "Session expired. Please login again."
-            : "Failed to load addresses. Please check your connection and try again.";
-            
-          showErrorAlert({
-            title: "Error Loading Addresses",
-            message: errorMessage,
-          });
-          
-          // If 401 after all retries, consider redirecting to login
-          if (err.response?.status === 401) {
-            // console.log("Authentication failed after retries, may need to login");
-            // Uncomment to auto-redirect to login:
-            // setTimeout(() => redirectToPage(containers.signInScreen), 2000);
-          }
-        }
+      showErrorAlert({
+        title: "Session Expired",
+        message: "Please login again to continue.",
+      });
+      return;
+    }
+
+    const response = await addressService.getAllAddress();
+    setExistingAddress(response);
+
+    // ✅ Use ref instead of state value — no dependency needed
+    if (response.length === 1 && !selectedAddressIdRef.current) {
+      setSelectedAddressId(response[0]._id);
+      setAddress(response[0]);
+    }
+    setIsLoadingAddresses(false);
+  } catch (err: any) {
+    if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
+      setIsLoadingAddresses(false);
+      const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+      setTimeout(() => fetchAddresses(retryCount + 1), delay);
+    } else {
+      setIsLoadingAddresses(false);
+      if (retryCount >= MAX_RETRIES) {
+        const errorMessage = err.response?.status === 401
+          ? "Session expired. Please login again."
+          : "Failed to load addresses. Please check your connection and try again.";
+        showErrorAlert({ title: "Error Loading Addresses", message: errorMessage });
       }
     }
-  }, [selectedAddressId]);
+  }
+}, []);
+
+  // Fetch addresses function with retry logic and token check
+  // const fetchAddresses = useCallback(async (retryCount = 0) => {
+  //   const MAX_RETRIES = 3;
+  //   setIsLoadingAddresses(true);
+    
+  //   try {
+  //     // First, verify token exists
+  //     const token = await SecureStore.getItemAsync("token");
+  //     const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+      
+  //     // console.log("=== Fetch Addresses Debug ===");
+  //     // console.log("Token exists:", !!token);
+  //     // console.log("Refresh token exists:", !!refreshToken);
+  //     // console.log("Retry attempt:", retryCount);
+      
+  //     if (!token && !refreshToken) {
+  //       console.error("No tokens found - user may need to login again");
+  //       setIsLoadingAddresses(false);
+  //       showErrorAlert({
+  //         title: "Session Expired",
+  //         message: "Please login again to continue.",
+  //       });
+  //       // Optionally redirect to login
+  //       // redirectToPage(containers.signInScreen);
+  //       return;
+  //     }
+      
+  //     // console.log("Attempting to fetch addresses...");
+  //     const response = await addressService.getAllAddress();
+  //     // console.log("Successfully fetched addresses:", response.length, "addresses");
+  //     setExistingAddress(response);
+      
+  //     // If there's only one address and none is selected, auto-select it
+  //     if (response.length === 1 && !selectedAddressId) {
+  //       // console.log("Auto-selecting single address");
+  //       setSelectedAddressId(response[0]._id);
+  //       setAddress(response[0]);
+  //     }
+  //     setIsLoadingAddresses(false);
+  //   } catch (err: any) {
+  //     console.error("=== Error fetching addresses ===");
+  //     console.error("Attempt:", retryCount + 1, "of", MAX_RETRIES + 1);
+  //     console.error("Error:", err);
+  //     console.error("Error message:", err.message);
+  //     console.error("Error response:", err.response?.data);
+  //     console.error("Error status:", err.response?.status);
+      
+  //     // If it's a 401 error and we haven't exceeded retries, wait and retry
+  //     if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
+  //       // console.log("Got 401 error, waiting before retry...");
+  //       setIsLoadingAddresses(false);
+        
+  //       // Exponential backoff: wait longer with each retry
+  //       const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+  //       // console.log(`Retrying in ${delay}ms...`);
+        
+  //       setTimeout(() => {
+  //         fetchAddresses(retryCount + 1);
+  //       }, delay);
+  //     } else {
+  //       setIsLoadingAddresses(false);
+        
+  //       // Only show error alert after all retries exhausted
+  //       if (retryCount >= MAX_RETRIES) {
+  //         const errorMessage = err.response?.status === 401 
+  //           ? "Session expired. Please login again."
+  //           : "Failed to load addresses. Please check your connection and try again.";
+            
+  //         showErrorAlert({
+  //           title: "Error Loading Addresses",
+  //           message: errorMessage,
+  //         });
+          
+  //         // If 401 after all retries, consider redirecting to login
+  //         if (err.response?.status === 401) {
+  //           // console.log("Authentication failed after retries, may need to login");
+  //           // Uncomment to auto-redirect to login:
+  //           // setTimeout(() => redirectToPage(containers.signInScreen), 2000);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }, [selectedAddressId]);
 
   // Use useFocusEffect to refresh addresses when screen comes into focus
   // This ensures addresses are fetched when navigating back from add address screen
@@ -250,11 +325,15 @@ const HomeDeliveryScreen = () => {
   );
 
   // Also fetch on mount
-  useEffect(() => {
-    // console.log("HomeDeliveryScreen mounted - initial address fetch");
+  // useEffect(() => {
+  //   // console.log("HomeDeliveryScreen mounted - initial address fetch");
+  //   fetchAddresses(0);
+  // }, []);
+useFocusEffect(
+  useCallback(() => {
     fetchAddresses(0);
-  }, []);
-
+  }, [fetchAddresses]) // fetchAddresses is now stable, so this only runs on focus
+);
   // Validate if selected time is in the future and at least 30 minutes ahead
   const validateTime = (
     selectedDate: any,
@@ -611,7 +690,7 @@ const HomeDeliveryScreen = () => {
     validateTime(date, hours, minutes, period);
   };
 
-  const isWeb = Platform.OS === "web";
+  // const isWeb = Platform.OS === "web";
   
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
@@ -633,14 +712,14 @@ const HomeDeliveryScreen = () => {
       <View
         style={[
           globalStyles.pt_0,
-          isWeb
-            ? {
-                width: "70%",
-                alignSelf: "center",
-                paddingVertical: 20,
-              }
-            : { paddingHorizontal: 0 },
-        ]}
+           isWeb
+                ? {
+                    width: isMobileWeb ? "95%" : "70%",
+                    alignSelf: "center",
+                    paddingVertical: isMobileWeb ? 12 : 20,
+                  }
+                : { paddingHorizontal: 0 },
+            ]}
       >
         <KeyBoardWrapper>
           {isWeb && (
@@ -684,16 +763,14 @@ const HomeDeliveryScreen = () => {
                             : format(new Date(), "yyyy-MM-dd")
                         }
                         onChange={(e) => {
-                          const htmlDate = e.target.value;
+                          const isoDate = e.target.value;
                           setDate(
-                            htmlDate
-                              ? format(
-                                  parse(htmlDate, "yyyy-MM-dd", new Date()),
-                                  DATE_FORMAT_Display
-                                )
+                            isoDate
+                              ? format(new Date(isoDate), DATE_FORMAT_Display)
                               : ""
                           );
                         }}
+                        min={format(new Date(), "yyyy-MM-dd")}
                       />
                     ) : (
                       <TouchableOpacity
@@ -895,6 +972,19 @@ const HomeDeliveryScreen = () => {
                   handleSubmit={confirmDelete}
                   cancelText="Cancel"
                   handleCancel={cancelDelete}
+                  isDestructive={true}
+                />
+                <ConfirmationModal
+                  onClose={() =>
+                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+                  }
+                  isModalVisible={errorModalState.isVisible}
+                  title={errorModalState.title}
+                  text={errorModalState.message}
+                  submitText={errorModalState.buttonLabel}
+                  handleSubmit={() =>
+                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+                  }
                 />
               </>
             }

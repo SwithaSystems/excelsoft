@@ -28,7 +28,7 @@ import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -62,7 +62,30 @@ const UserProfileScreen = () => {
     profileImageUrl: string;
   } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   const userData_redux = useSelector((state: RootState) => state.user.user);
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const settingsMenu = {
     "Contact Information": isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen,
@@ -383,6 +406,19 @@ const UserProfileScreen = () => {
         handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
+        isDestructive={true}
+      />
+      <ConfirmationModal
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        isModalVisible={errorModalState.isVisible}
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
       />
     </LayoutComponent>
   );

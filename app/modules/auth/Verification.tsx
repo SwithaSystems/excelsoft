@@ -5,7 +5,6 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -24,9 +23,15 @@ import { setUserData } from "@/store/slices/userSlice";
 import { UserAPI } from "@/services/userService";
 import * as SecureStore from "expo-secure-store";
 import colors from "../../../constants/colors";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const verificationScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
   const editContactScreen = isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen;
   const dispatch = useDispatch();
 
@@ -86,7 +91,7 @@ const verificationScreen = () => {
         }
       } catch (e) {
         ////console.error("Invalid JSON in userData", e);
-        Alert.alert("Error", "Invalid user data. Please try signing up again.");
+        showAlert("Error", "Invalid user data. Please try signing up again.");
       }
     }
 
@@ -222,7 +227,7 @@ const verificationScreen = () => {
   const showSuccessAlert = (title: string, message: string, onPress?: () => void) => {
     if (isWeb) {
       // For web, execute callback immediately after a short delay
-      Alert.alert(title, message);
+      showAlert(title, message);
       if (onPress) {
         setTimeout(() => {
           onPress();
@@ -230,7 +235,7 @@ const verificationScreen = () => {
       }
     } else {
       // For mobile, use standard alert with callback
-      Alert.alert(
+      showAlert(
         title,
         message,
         [
@@ -245,7 +250,7 @@ const verificationScreen = () => {
   };
 
   const showErrorAlertCustom = (title: string, message: string) => {
-    Alert.alert(
+    showAlert(
       title,
       message,
       [{ text: "OK" }],
@@ -675,18 +680,34 @@ const verificationScreen = () => {
         <Header
           headerText={VERIFICATION_SCREEN_TITLE}
           hideBackArrow={isWeb}
-          headerStyle={isWeb ? styles.verificationHeaderStyle : undefined}
-          headerTitleStyle={isWeb ? styles.verificationHeaderTitle : undefined}
+          headerStyle={isDesktopWeb ? styles.verificationHeaderStyle : isMobileWeb ? styles.verificationHeaderStyleMobileWeb : undefined}
+          headerTitleStyle={isDesktopWeb ? styles.verificationHeaderTitle : isMobileWeb ? styles.verificationHeaderTitleMobileWeb : undefined}
         />
       }
     >
       <KeyBoardWrapper>
-        <View style={[styles.contentContainer, isWeb && styles.contentContainerDesktop]}>
+        <View
+          style={[
+            styles.contentContainer,
+            isDesktopWeb && styles.contentContainerDesktop,
+            isMobileWeb && styles.contentContainerMobileWeb,
+          ]}
+        >
           <Image
-            style={[styles.image, isWeb && styles.imageDesktop]}
+            style={[
+              styles.image,
+              isDesktopWeb && styles.imageDesktop,
+              isMobileWeb && styles.imageMobileWeb,
+            ]}
             source={require("assets/UserVerificationSuccessful.png")}
           />
-          <Text style={[styles.description, isWeb && styles.descriptionDesktop]}>
+          <Text
+            style={[
+              styles.description,
+              isDesktopWeb && styles.descriptionDesktop,
+              isMobileWeb && styles.descriptionMobileWeb,
+            ]}
+          >
             {from === "change_phone" || from === "first_add_email" ? (
               "We've sent a verification code to your email address. Please enter it below."
             ) : from === "change_email" || from === "first_add_phone" ? (
@@ -703,14 +724,24 @@ const verificationScreen = () => {
             DEBUG: from={from}, email={email || 'EMPTY'}, phone={phoneNumber || 'EMPTY'}
           </Text> */}
 
-          <View style={[styles.codeContainer, isWeb && styles.codeContainerDesktop]}>
+          <View
+            style={[
+              styles.codeContainer,
+              isDesktopWeb && styles.codeContainerDesktop,
+              isMobileWeb && styles.codeContainerMobileWeb,
+            ]}
+          >
             {code.map((digit, index) => (
               <TextInput
                 key={index}
                 ref={(ref) => {
                   if (ref) inputRefs.current[index] = ref;
                 }}
-                style={[styles.inputBox, isWeb && styles.inputBoxDesktop]}
+                style={[
+                  styles.inputBox,
+                  isDesktopWeb && styles.inputBoxDesktop,
+                  isMobileWeb && styles.inputBoxMobileWeb,
+                ]}
                 keyboardType="numeric"
                 maxLength={1}
                 value={digit}
@@ -726,11 +757,18 @@ const verificationScreen = () => {
             ))}
           </View>
 
-          <View style={[styles.buttonContainer, isWeb && styles.buttonContainerDesktop]}>
+          <View
+            style={[
+              styles.buttonContainer,
+              isDesktopWeb && styles.buttonContainerDesktop,
+              isMobileWeb && styles.buttonContainerMobileWeb,
+            ]}
+          >
             <TouchableOpacity
               style={[
                 styles.verifyButton,
-                isWeb && styles.verifyButtonDesktop,
+                isDesktopWeb && styles.verifyButtonDesktop,
+                isMobileWeb && styles.verifyButtonMobileWeb,
                 (isVerifying || isResending) && { opacity: 0.6 },
               ]}
               onPress={handleVerify}
@@ -743,7 +781,13 @@ const verificationScreen = () => {
               )}
             </TouchableOpacity>
 
-            <Text style={[styles.resendText, isWeb && styles.resendTextDesktop]}>
+            <Text
+              style={[
+                styles.resendText,
+                isDesktopWeb && styles.resendTextDesktop,
+                isMobileWeb && styles.resendTextMobileWeb,
+              ]}
+            >
               Didn't receive the code?{" "}
               <Text
                 style={[
@@ -758,6 +802,7 @@ const verificationScreen = () => {
           </View>
         </View>
       </KeyBoardWrapper>
+      {confirmationModal}
     </PageLayout>
   );
 };

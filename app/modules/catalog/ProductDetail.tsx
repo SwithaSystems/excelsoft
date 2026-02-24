@@ -35,13 +35,14 @@ import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import styles from "./ProductDetailStyles";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import ProductImageCarousel from "@/app/components/commonComponents/ProductImageCarousal";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -55,11 +56,44 @@ const ProductDetailScreen = () => {
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   
   // Track image load errors
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
   const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
+
+  const isMobileWeb = isWeb && isMobile;
+  const isTabletWeb = isWeb && isTablet;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
+
+  const webScale = 
+    isTabletWeb ? 0.8 :
+    isMobileWeb ? 0.75 :
+    1;
+
+    const s = (value: number) => value * webScale;
   
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
@@ -212,11 +246,34 @@ const ProductDetailScreen = () => {
     {isWeb ? (
       <View style={styles.webContainer}>
         <ScrollView style={{ flex: 1 }}>
-            <View style={styles.webContentWrapper}>
+            <View style={[
+              styles.webContentWrapper,
+              isMobileWeb && {flexDirection: 'column'},
+              {
+                // paddingHorizontal: s(40),
+                paddingVertical: s(16),
+                gap: s(16),
+              },
+              !isMobileWeb && {
+                paddingVertical: s(40),
+                gap: s(40),
+              },
+            ]}>
               {/* Left Section - Images */}
-              <View style={styles.webLeftSection}>
+              <View style={[
+                styles.webLeftSection,
+                isMobileWeb && {
+                  width: '100%',
+                  flex: undefined,       
+                  alignItems: "center",
+                },
+              ]}>
                 {/* Main Image */}
-                <View style={styles.webMainImageContainer}>
+                <View style={[styles.webMainImageContainer,
+                  isMobileWeb && {
+                    height: 350
+                  }
+                ]}>
                   {product?.image?.[selectedImageIndex] && 
                    isValidImage(product.image[selectedImageIndex]) &&
                    !imageErrors[selectedImageIndex] ? (
@@ -224,7 +281,7 @@ const ProductDetailScreen = () => {
                       source={{ uri: product.image[selectedImageIndex] }}
                       style={styles.webMainImage}
                       onError={() => handleImageError(selectedImageIndex)}
-                      resizeMode="contain"
+                      resizeMode={isMobileWeb ? 'cover' : 'contain'}
                     />
                   ) : (
                     <View style={[styles.webMainImage, { 
@@ -281,16 +338,32 @@ const ProductDetailScreen = () => {
 
 
               {/* Right Section - Product Details */}
-              <View style={styles.webRightSection}>
+              <View style={[
+                styles.webRightSection,
+                isMobileWeb && {
+                  width: '100%',
+                  // marginTop: s(16),
+                },
+              ]}>
                 <View style={styles.webProductHeader}>
-                  <Text style={styles.webProductTitle}>{product.name}</Text>
+                  <Text 
+                    style={[
+                      styles.webProductTitle,
+                      {
+                        fontSize: s(28),
+                      },
+                    ]}>
+                        {product.name}
+                    </Text>
                   <TouchableOpacity
                     onPress={(e) => handleHeartPress(e, product)}
                     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   >
                     <Ionicons
                       name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                      size={30}
+                      size={
+                        s(24)
+                      }
                       color={
                         isItemSaved(product.id)
                           ? colors.primaryRed
@@ -425,7 +498,7 @@ const ProductDetailScreen = () => {
             {/* Reviews Section - Full Width */}
             <View style={styles.webReviewsSection}>
               <View style={styles.webReviewsHeader}>
-                <Text style={styles.webReviewsTitle}>
+                <Text style={[styles.webReviewsTitle, {fontSize: s(24 )}]}>
                   What do Customers say?
                 </Text>
                 <TouchableOpacity
@@ -656,6 +729,18 @@ const ProductDetailScreen = () => {
         </ScrollView>
       </View>
     )}
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </LayoutComponent>
   );
 };

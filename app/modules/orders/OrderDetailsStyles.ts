@@ -86,11 +86,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   webMiddleSection: {
-    flexDirection: "row",
-    marginTop: -12,
-    marginBottom: 4,
-    alignItems: "stretch",
-  },
+  flexDirection: "row",
+  marginTop: -12,
+  marginBottom: 4,
+  alignItems: "stretch",
+},
+
+webMiddleSectionMobile: {
+  marginTop: 0,       
+  marginBottom: 12,
+},
+
   webBottomSection: {
     width: "100%",
     marginBottom: 16,
@@ -127,6 +133,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginTop: -12,
   },
+  webMobileOrderItemsCard: {
+    marginTop: 0,
+  },
   webTimelineCard: {
     backgroundColor: colors.white,
     borderRadius: 8,
@@ -135,6 +144,11 @@ const styles = StyleSheet.create({
     minWidth: 0,
     marginHorizontal: 8,
   },
+  webMobileTimelineCard: {
+    paddingTop: 8,     
+    paddingBottom: 12,
+  },
+
   webQrContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -183,10 +197,44 @@ const styles = StyleSheet.create({
     marginTop: 8,
     maxHeight: 400,
   },
+  webMobileTimelineContainer: {
+    marginTop: 0,
+    maxHeight: undefined,
+  },  
   webTimelineContent: {
     paddingHorizontal: 20,
     paddingBottom: 8,
   },
+  webMobileStack: {
+    flexDirection: "column",
+    width: "100%",
+    gap: 16,
+    alignItems: "flex-start",
+  },
+    webMobileCard: {
+      width: "100%",
+      // flex: undefined,     
+      flexGrow: 0,
+  flexShrink: 0,
+  flexBasis: "auto",
+      marginHorizontal: 0,
+      marginTop: 0,
+      minWidth: 0,
+    },
+
+    webMobileQrContent: {
+      flexDirection: "column",
+      alignItems: "center",
+    },
+
+    webMobileQrContainer: {
+      marginRight: 0,
+      marginBottom: 12,
+    },
+
+    webMobileTextCenter: {
+      textAlign: "center",
+    },
 });
 
 export default styles;

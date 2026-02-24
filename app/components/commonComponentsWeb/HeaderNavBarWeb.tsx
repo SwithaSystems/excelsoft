@@ -232,6 +232,11 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     setShowDropdown(null);
   };
 
+  const handleSearchIconPress = () => {
+    setShowDropdown(null);
+    redirectToPage(containers.searchScreen);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -347,6 +352,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
   // Get only Categories item for mobile
   const categoriesItem = navItems.find(item => item.dropdownType === 'categories');
+  const quickLinksItem = navItems.find(item => item.dropdownType === 'quicklinks');
 
   if (roleLoading || hideNavItems) {
     return (
@@ -384,6 +390,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           handleSubmit={handleSoftDelete}
           cancelText="No"
           handleCancel={() => setDeleteAccountModalOpen(false)}
+          isDestructive={true}
         />
         {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
         {isMobile && isAuthenticated && (
@@ -504,6 +511,54 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                 )}
               </View>
             )}
+
+            {/* Quick Links dropdown (mobile web, user-side screens only) */}
+            {!isAdminScreen && quickLinksItem && (
+              <View style={styles.mobileQuickLinksContainer}>
+                <View style={styles.mobileQuickLinksHeaderRow}>
+                  <TouchableOpacity
+                    style={styles.mobileCategoriesButton}
+                    onPress={() => handleNavPress(quickLinksItem)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.navItemContent}>
+                      <Text style={styles.navText}>{quickLinksItem.label}</Text>
+                      <Ionicons
+                        name={showDropdown === quickLinksItem.dropdownType ? "chevron-up" : "chevron-down"}
+                        size={18}
+                        color={colors.white}
+                        style={styles.dropdownIcon}
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.searchIconButton}
+                    onPress={handleSearchIconPress}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons name="search-outline" size={20} color={colors.white} />
+                  </TouchableOpacity>
+                </View>
+                {showDropdown === quickLinksItem.dropdownType && (
+                  <View style={styles.mobileDropdownMenu}>
+                    <View>
+                      {quickLinks.map((link) => (
+                        <TouchableOpacity
+                          key={link.id}
+                          onPress={() => handleQuickLinkPress(link)}
+                          style={styles.dropdownItem}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.dropdownText}>{link.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
           </>
         ) : (
           // Desktop: Show full navigation
@@ -599,6 +654,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
+        isDestructive={true}
       />
 
       {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
@@ -753,6 +809,24 @@ const styles = StyleSheet.create({
     zIndex: 100,
     flexShrink: 1,
     flexGrow: 0,
+  },
+  mobileQuickLinksContainer: {
+    paddingHorizontal: 8,
+    position: "relative",
+    zIndex: 100,
+    flexShrink: 1,
+    flexGrow: 0,
+  },
+  mobileQuickLinksHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  searchIconButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    justifyContent: "center",
+    alignItems: "center",
   },
   mobileCategoriesButton: {
     paddingVertical: 8,

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Alert,
   Keyboard,
   Platform,
   useWindowDimensions,
@@ -29,12 +28,14 @@ import {
 import ModalSelector from "react-native-modal-selector";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { NotificationService } from "@/services/notificationService";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import colors from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const AdminOrderDetail = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [status, setStatus] = useState("Pending");
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = useState<any>({});
@@ -43,12 +44,34 @@ const AdminOrderDetail = () => {
   const [reason, setReason] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   const scrollViewRef = useRef<ScrollView>(null);
 
   const props = useLocalSearchParams();
   const orderId = props.orderId;
 
   const statusesRequiringReason = ["Failed", "Rejected", "Cancelled"];
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const getOrderdetails = async () => {
     try {
@@ -153,7 +176,7 @@ const AdminOrderDetail = () => {
         window.alert("Order updated successfully!");
         router.replace("/modules/admin/AdminDashboard");
       } else {
-        Alert.alert("Success", "Order updated successfully.", [
+        showAlert("Success", "Order updated successfully.", [
           {
             text: "OK",
             onPress: () => router.replace("/modules/admin/AdminDashboard"),
@@ -409,6 +432,19 @@ const AdminOrderDetail = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

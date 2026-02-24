@@ -2,7 +2,7 @@ import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, TextInput, Platform } from "react-native";
+import { Dimensions, TextInput, Platform } from "react-native";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
@@ -43,7 +43,7 @@ import { RootState } from "@/store/store";
 import NoContentFound from "@/app/components/NoContentFound";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import {
   SESSION_EXPIRED,
   ITEM_OUT_OF_STOCK,
@@ -51,10 +51,15 @@ import {
 } from "../../../constants/customErrorMessages";
 import { Product, ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
   const isWeb = Platform.OS === "web";
+
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
@@ -69,6 +74,30 @@ const CartScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [isLoadingSimilarProducts, setIsLoadingSimilarProducts] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+  const { showAlert, confirmationModal } = useConfirmationAlert();
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Bulk product validation using single API call
   const validateAndRefreshProducts = async (items: any[]) => {
@@ -311,7 +340,7 @@ const CartScreen = () => {
   };
 
   const handleClearCart = () => {
-    Alert.alert(
+    showAlert(
       "Clear Cart",
       "Are you sure you want to remove all items from your cart?",
       [
@@ -356,7 +385,7 @@ const CartScreen = () => {
       footerComponent={FooterComponent}
       scrollable={true}
     >
-      {isWeb ? (
+      {isWeb && !isMobileWeb ? (
         // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
         <View style={[globalStyles.container]}>
           <View style={[globalStyles.pt_0]}>
@@ -455,6 +484,18 @@ const CartScreen = () => {
             cancelText="Save for Later"
             handleCancel={cancelDelete}
           />
+          <ConfirmationModal
+            onClose={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+            isModalVisible={errorModalState.isVisible}
+            title={errorModalState.title}
+            text={errorModalState.message}
+            submitText={errorModalState.buttonLabel}
+            handleSubmit={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+          />
         </View>
       ) : (
         // Mobile: Use ScrollView
@@ -545,10 +586,23 @@ const CartScreen = () => {
               cancelText="Save for Later"
               handleCancel={cancelDelete}
             />
+            <ConfirmationModal
+              onClose={() =>
+                setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+              }
+              isModalVisible={errorModalState.isVisible}
+              title={errorModalState.title}
+              text={errorModalState.message}
+              submitText={errorModalState.buttonLabel}
+              handleSubmit={() =>
+                setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+              }
+            />
           </ScrollView>
         </View>
       )}
 
+      {confirmationModal}
     </LayoutComponent>
   );
 };

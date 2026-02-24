@@ -13,7 +13,6 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { FORGOT_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import styles from "./ForgotPasswordStyles";
 
@@ -26,10 +25,33 @@ const forgotPasswordScreen = () => {
   const [mode, setMode] = useState("phone");
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const [errors, setErrors] = useState<
     Partial<{ email?: string; phone?: string }>
   >({});
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const toggleMode = (selected: any) => {
     setMode(selected);
@@ -62,44 +84,46 @@ const forgotPasswordScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendCode = async () => {
-    const isValid = validateFields();
-    if (!isValid) {
-      showErrorAlert({
-        title: "Let's fix that",
-        message: FIX_VALIDATION_ERRORS,
+ const handleSendCode = async () => {
+  const isValid = validateFields();
+  if (!isValid) {
+    showErrorAlert({
+      title: "Let's fix that",
+      message: FIX_VALIDATION_ERRORS,
+    });
+    return;
+  }
+
+  // If user doesn't exist, show modal for both phone and email
+  if (!user) {
+    setModalOpen(true);
+    return;
+  }
+
+  const fullPhone = `+${callingCode}${phoneNumber}`;
+
+  if (mode === "phone") {
+    await TwilioApi.sendOtp({ phone: fullPhone });
+    redirectToPage(containers.verificationScreen, {
+      phoneNumber_forgetPwd: fullPhone,
+      from: "forgotPassword",
+    });
+  } else if (mode === "email") {
+    try {
+      await TwilioApi.sendOtp_Email({ email });
+      redirectToPage(containers.verificationScreen, {
+        email_forgetPwd: email,
+        from: "forgotPassword",
+        verificationType: "email",
       });
-      return;
+    } catch {
+      showErrorAlert({
+        title: "Failed to send OTP",
+        message: "Please try again later.",
+      });
     }
-
-    const fullPhone = `+${callingCode}${phoneNumber}`;
-
-    if (mode === "phone") {
-      if (user) {
-        await TwilioApi.sendOtp({ phone: fullPhone });
-        redirectToPage(containers.verificationScreen, {
-          phoneNumber_forgetPwd: fullPhone,
-          from: "forgotPassword",
-        });
-      } else {
-        setModalOpen(true);
-      }
-    } else if (mode === "email") {
-      try {
-        await TwilioApi.sendOtp_Email({ email });
-        redirectToPage(containers.verificationScreen, {
-          email_forgetPwd: email,
-          from: "forgotPassword",
-          verificationType: "email",
-        });
-      } catch {
-        showErrorAlert({
-          title: "Failed to send OTP",
-          message: "Please try again later.",
-        });
-      }
-    }
-  };
+  }
+};
 
   useEffect(() => {
     if (mode === "phone" && phoneNumber) {
@@ -119,7 +143,11 @@ const forgotPasswordScreen = () => {
           setUser(null);
         });
     }
-  }, [phoneNumber]);
+    else {
+    setUser(null); // reset if fields are cleared
+  }
+
+  }, [phoneNumber,email,mode]);
 
   return (
     <PageLayout
@@ -273,6 +301,18 @@ const forgotPasswordScreen = () => {
             handleSubmit={() => setModalOpen(false)}
             handleCancel={() => setModalOpen(false)}
             title="Check Details" 
+          />
+          <ConfirmationModal
+            onClose={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+            isModalVisible={errorModalState.isVisible}
+            title={errorModalState.title}
+            text={errorModalState.message}
+            submitText={errorModalState.buttonLabel}
+            handleSubmit={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
           />
         </View>
       </KeyBoardWrapper>
