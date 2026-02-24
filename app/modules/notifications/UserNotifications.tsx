@@ -32,8 +32,6 @@ export default function UserNotificationsScreen() {
   const [notificationToDeleteId, setNotificationToDeleteId] = useState<string | null>(null);
   const lastFocusLoadRef = useRef<number>(0);
 
-  const isSignedOutOnWeb = Platform.OS === "web" && !isValidUser;
-
   useEffect(() => {
     if (typeof console !== "undefined") console.log("[UserNotifications] Screen mounted");
     return () => { if (typeof console !== "undefined") console.log("[UserNotifications] Screen unmounted"); };
@@ -283,7 +281,7 @@ export default function UserNotificationsScreen() {
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          {!isSignedOutOnWeb && loadError ? (
+          {isValidUser && loadError ? (
             <>
               <View style={styles.emptyIconCircle}>
                 <Ionicons name="cloud-offline-outline" size={48} color="#999" />
