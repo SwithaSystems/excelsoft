@@ -123,6 +123,10 @@ const ProductDetailScreen = () => {
   const handleImageError = (index: number) => {
     setImageErrors(prev => ({ ...prev, [index]: true }));
   };
+  const savedItemsRef = useRef(savedItems);
+useEffect(() => {
+  savedItemsRef.current = savedItems;
+}, [savedItems]);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -135,9 +139,7 @@ const ProductDetailScreen = () => {
       if (!fetchedProduct) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
-          const savedItem = savedItems.find(
-            (item: any) => item.id === Number(productId)
-          );
+           const savedItem = savedItemsRef.current.find( (item: any) => item.id === Number(productId));
           if (savedItem) {
             dispatch(removeFromSavedItems(savedItem.id));
           }
@@ -156,7 +158,7 @@ const ProductDetailScreen = () => {
       if (error?.response?.status === 404) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
-          const savedItem = savedItems.find(
+          const savedItem = savedItemsRef.current.find(
             (item: any) => item.id === Number(productId)
           );
           if (savedItem) {
@@ -171,7 +173,7 @@ const ProductDetailScreen = () => {
     } finally {
       setIsProductLoading(false);
     }
-  }, [productId, setIsProductLoading, from, savedItems, dispatch]);
+  }, [productId, setIsProductLoading, from, dispatch]);
 
   useFocusEffect(
     useCallback(() => {
