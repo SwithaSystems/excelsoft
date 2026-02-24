@@ -11,7 +11,6 @@ import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import {
-  Alert,
   ScrollView,
   TouchableOpacity,
   View,
@@ -37,7 +36,6 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FAILED_TO_UPDATE_DETAILS,
   CAMERA_ACCESS_REQUIRED,
@@ -53,6 +51,7 @@ import { useNavigation } from "@react-navigation/native";
 import { color } from "react-native-elements/dist/helpers";
 import React, { useEffect, useState, useRef } from "react";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface User {
   id: string;
@@ -65,6 +64,7 @@ interface User {
 }
 
 const editProfileScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -86,12 +86,34 @@ const editProfileScreen = () => {
   // Confirmation Modal States
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { isMobile } = useWebMediaQuery();
   const isMobileWeb = isWeb && isMobile;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const webImageFileRef = useRef<File | null>(null);
 
@@ -221,7 +243,7 @@ const editProfileScreen = () => {
   };
 
   const showImageOptions = () => {
-    Alert.alert("Select Image", "Choose image source", [
+    showAlert("Select Image", "Choose image source", [
       { text: "Take Photo", onPress: () => openImagePickerAsync("camera") },
       { text: "Choose from Gallery", onPress: () => openImagePickerAsync("gallery") },
       { text: "Cancel", style: "cancel" },
@@ -591,6 +613,19 @@ const editProfileScreen = () => {
           submitText="OK"
           handleSubmit={handleErrorModalClose}
         />
+        <ConfirmationModal
+          isModalVisible={errorModalState.isVisible}
+          onClose={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+          title={errorModalState.title}
+          text={errorModalState.message}
+          submitText={errorModalState.buttonLabel}
+          handleSubmit={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
+        {confirmationModal}
       </KeyBoardWrapper>
     </LayoutComponent>
   );

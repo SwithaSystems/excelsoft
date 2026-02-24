@@ -70,7 +70,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const shouldUseFixedHeader = !isMobile;
 
   return (
-    <View style={[styles.root, { backgroundColor, minHeight: height }]}>
+    <View style={[styles.root, { backgroundColor }]}>
       {/* HEADER */}
       {hasHeader && (
         <View style={[
@@ -89,10 +89,10 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
       <View
         style={[
           styles.mainContainer,
-          hasHeader && {
+          hasHeader && shouldUseFixedHeader && {
             marginTop: headerHeight,
-            // paddingTop: !shouldUseFixedHeader ? totalHeaderHeight : 0,
           },
+          isMobile && { marginTop: 6 },
         ]}
       >
         {/* Sidebar - Only render on tablet/desktop, hidden on mobile (accessible via menu button drawer) */}
@@ -120,7 +120,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
             styles.content,
             { 
               paddingHorizontal: contentPadding ? horizontalPadding : 0,
-              paddingBottom: hasFooter ? 80 : 24,
+              paddingBottom: 0,
              },
           ]}
           // contentContainerStyle={[
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.lightgrey,
     borderTopWidth: 1,
     paddingVertical: 16,
-    marginTop: "auto", // Push footer to bottom
+    // marginTop: "auto", // Push footer to bottom
   },
   footerMobile: {
     paddingVertical: 12,

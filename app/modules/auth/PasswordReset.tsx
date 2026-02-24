@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  Alert,
   SafeAreaView,
   Platform,
 } from "react-native";
@@ -20,8 +19,10 @@ import containers from "@/containers";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { CHANGE_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const passwordResetScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
   const { phoneNumber } = useLocalSearchParams();
   const [password, setPassword] = React.useState("");
@@ -58,7 +59,7 @@ const passwordResetScreen = () => {
   const showSuccessAlert = (title: string, message: string, onPress?: () => void) => {
     if (isWeb) {
       // For web, execute callback immediately after a short delay
-      Alert.alert(title, message);
+      showAlert(title, message);
       if (onPress) {
         setTimeout(() => {
           onPress();
@@ -66,7 +67,7 @@ const passwordResetScreen = () => {
       }
     } else {
       // For mobile, use standard alert with callback
-      Alert.alert(
+      showAlert(
         title,
         message,
         [
@@ -96,14 +97,14 @@ const passwordResetScreen = () => {
           );
         } catch (error: any) {
           console.error("Password reset error:", error);
-          Alert.alert(
+          showAlert(
             "Error",
             error?.response?.data?.message || "Failed to reset password. Please try again."
           );
         }
       } else {
         console.error("phoneNumber is not a string");
-        Alert.alert("Error", "Invalid phone number. Please try again.");
+        showAlert("Error", "Invalid phone number. Please try again.");
       }
     }
   };
@@ -167,6 +168,7 @@ const passwordResetScreen = () => {
           />
         </View>
       </KeyBoardWrapper>
+      {confirmationModal}
     </PageLayout>
   );
 };

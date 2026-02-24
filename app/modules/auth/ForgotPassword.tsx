@@ -13,7 +13,6 @@ import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { FORGOT_PASSWORD_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import styles from "./ForgotPasswordStyles";
 
@@ -26,10 +25,33 @@ const forgotPasswordScreen = () => {
   const [mode, setMode] = useState("phone");
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const [errors, setErrors] = useState<
     Partial<{ email?: string; phone?: string }>
   >({});
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const toggleMode = (selected: any) => {
     setMode(selected);
@@ -279,6 +301,18 @@ const forgotPasswordScreen = () => {
             handleSubmit={() => setModalOpen(false)}
             handleCancel={() => setModalOpen(false)}
             title="Check Details" 
+          />
+          <ConfirmationModal
+            onClose={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+            isModalVisible={errorModalState.isVisible}
+            title={errorModalState.title}
+            text={errorModalState.message}
+            submitText={errorModalState.buttonLabel}
+            handleSubmit={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
           />
         </View>
       </KeyBoardWrapper>

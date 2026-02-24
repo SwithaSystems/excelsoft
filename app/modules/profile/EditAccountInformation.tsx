@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Alert,
   StyleSheet,
   Platform,
   TouchableOpacity,
@@ -35,8 +34,10 @@ import { isValidEmail, isValidPhoneNumber } from "@/utilities/validations";
 import colors from "@/constants/colors";
 import CountryPicker, { CountryCode, FlagType } from "react-native-country-picker-modal";
 import { getAllCountries } from "react-native-country-picker-modal";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const EditAccountInformationScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const dispatch = useDispatch();
 
   const [phone, setPhone] = useState("");
@@ -127,29 +128,79 @@ const EditAccountInformationScreen = () => {
 }, [userData]);
 
 
-  const handlePhoneChange = (value: string) => {
-    // setPhone(value);
-    const error = isValidPhoneNumber(value);
-    setPhoneError(value.trim() ? error : null);
-  };
+ const handlePhoneChange = async (value: string) => {
+  const error = isValidPhoneNumber(value);
+  setPhoneError(value.trim() ? error : null);
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    const isValid = isValidEmail(value);
-    setEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
-  };
+  if (!error && value.trim()) {
+    const fullPhone = `+${callingCode}${value}`;
 
-  const handleNewPhoneChange = (value: string) => {
-    // setNewPhone(value);
-    const error = isValidPhoneNumber(value);
-    setNewPhoneError(value.trim() ? error : null);
-  };
+    try {
+      const response = await UserAPI.getUserByPhonenumber(fullPhone);
 
-  const handleNewEmailChange = (value: string) => {
-    setNewEmail(value);
-    const isValid = isValidEmail(value);
-    setNewEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
-  };
+      if (response?.data && response.data._id !== id) {
+        setPhoneError("This phone number is already registered");
+      }
+    } catch (err) {
+      // 404 → number does not exist → good
+    }
+  }
+};
+
+  const handleEmailChange = async (value: string) => {
+  setEmail(value);
+
+  const isValid = isValidEmail(value);
+  setEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
+
+  if (isValid && value.trim()) {
+    try {
+      const response = await UserAPI.getUserByEmail(value.trim());
+
+      if (response?.data && response.data._id !== id) {
+        setEmailError("This email is already registered");
+      }
+    } catch (err) {
+      // 404 → good
+    }
+  }
+};
+  const handleNewPhoneChange = async (value: string) => {
+  const error = isValidPhoneNumber(value);
+  setNewPhoneError(value.trim() ? error : null);
+
+  if (!error && value.trim()) {
+    const fullPhone = `+${callingCode}${value}`;
+
+    try {
+      const response = await UserAPI.getUserByPhonenumber(fullPhone);
+
+      if (response?.data && response.data._id !== id) {
+        setNewPhoneError("This phone number is already registered");
+      }
+    } catch (err) {
+      // 404 → safe
+    }
+  }
+};
+  const handleNewEmailChange = async (value: string) => {
+  setNewEmail(value);
+
+  const isValid = isValidEmail(value);
+  setNewEmailError(value.trim() && !isValid ? "Please enter a valid email address" : null);
+
+  if (isValid && value.trim()) {
+    try {
+      const response = await UserAPI.getUserByEmail(value.trim());
+
+      if (response?.data && response.data._id !== id) {
+        setNewEmailError("This email is already registered");
+      }
+    } catch (err) {
+      // 404 → safe
+    }
+  }
+};
 
   const handleVerifyPhone = async () => {
     try {
@@ -158,7 +209,7 @@ const EditAccountInformationScreen = () => {
       const hasError = showChangePhone ? newPhoneError : phoneError;
 
       if (!local || hasError) {
-        Alert.alert("Error", "Please enter a valid phone number");
+        showAlert("Error", "Please enter a valid phone number");
         return;
       }
 
@@ -191,11 +242,11 @@ const EditAccountInformationScreen = () => {
         } else {
           const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
           console.error("OTP send failed:", res);
-          Alert.alert("Error", errorMsg);
+          showAlert("Error", errorMsg);
         }
       } else if (showChangePhone) {
         if (!email || !isEmailVerified) {
-          Alert.alert("Error", "You need a verified email to change your phone number");
+          showAlert("Error", "You need a verified email to change your phone number");
           return;
         }
         const res = await TwilioApi.sendOtp_Email({ email });
@@ -211,13 +262,13 @@ const EditAccountInformationScreen = () => {
         } else {
           const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
           console.error("OTP send failed:", res);
-          Alert.alert("Error", errorMsg);
+          showAlert("Error", errorMsg);
         }
       }
     } catch (error: any) {
       console.error("Verification error:", error);
       const errorMsg = error?.response?.data?.message || error?.message || "Failed to send verification code. Please try again.";
-      Alert.alert("Error", errorMsg);
+      showAlert("Error", errorMsg);
     }
   };
 
@@ -227,7 +278,7 @@ const EditAccountInformationScreen = () => {
       const hasError = showChangeEmail ? newEmailError : emailError;
 
       if (!emailToVerify || hasError) {
-        Alert.alert("Error", "Please enter a valid email address");
+        showAlert("Error", "Please enter a valid email address");
         return;
       }
       if (!isEmailVerified) {
@@ -243,11 +294,11 @@ const EditAccountInformationScreen = () => {
         } else {
           const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
           console.error("OTP send failed:", res);
-          Alert.alert("Error", errorMsg);
+          showAlert("Error", errorMsg);
         }
       } else if (showChangeEmail) {
         if (!localPhone || !isPhoneVerified) {
-          Alert.alert("Error", "You need a verified phone to change your email");
+          showAlert("Error", "You need a verified phone to change your email");
           return;
         }
 
@@ -268,13 +319,13 @@ const EditAccountInformationScreen = () => {
         } else {
           const errorMsg = res?.data?.message || res?.message || "Failed to send OTP. Please try again.";
           console.error("OTP send failed:", res);
-          Alert.alert("Error", errorMsg);
+          showAlert("Error", errorMsg);
         }
       }
     } catch (error: any) {
       console.error("Verification error:", error);
       const errorMsg = error?.response?.data?.message || error?.message || "Failed to send verification code. Please try again.";
-      Alert.alert("Error", errorMsg);
+      showAlert("Error", errorMsg);
     }
   };
 
@@ -302,7 +353,7 @@ const EditAccountInformationScreen = () => {
     }
 
     if (!hasChanges) {
-      Alert.alert("No Changes", "All contacts are verified or no changes made");
+      showAlert("No Changes", "All contacts are verified or no changes made");
       return;
     }
 
@@ -311,7 +362,7 @@ const EditAccountInformationScreen = () => {
       if (response?.data?.user) {
         dispatch(setUserData(response.data.user));
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
-        Alert.alert("Success", "Profile updated successfully", [
+        showAlert("Success", "Profile updated successfully", [
           { text: "OK", onPress: () => redirectToPage(containers.userProfileScreen) },
         ]);
       }
@@ -366,7 +417,7 @@ const EditAccountInformationScreen = () => {
       if (!phoneError && !emailError) {
         // Only show alert for network/server errors, not validation errors
         if (error?.response?.status >= 500 || !error?.response) {
-          Alert.alert("Error", errorMessage || "Something went wrong. Please try again.");
+          showAlert("Error", errorMessage || "Something went wrong. Please try again.");
         }
       }
     }
@@ -625,6 +676,7 @@ const EditAccountInformationScreen = () => {
         </View>
       
       </KeyBoardWrapper>
+      {confirmationModal}
     </LayoutComponent>
   );
 };

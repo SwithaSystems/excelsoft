@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
-  Alert,
   // Button,
 } from "react-native";
 import styles from "./BillingAddressStyles";
@@ -39,8 +38,10 @@ import {
   isValidPhoneNumber,
 } from "@/utilities/validations";
 import colors from "@/constants/colors";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const addBillingAddressScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const params = useLocalSearchParams();
   const router = useRouter();
   // const cartItems = useSelector((state: any) => [...state.cart.items]);
@@ -247,7 +248,7 @@ const addBillingAddressScreen = () => {
             setSelectedBillingAddress(savedAddress);
           }
 
-          Alert.alert("Success", "Address updated successfully");
+          showAlert("Success", "Address updated successfully");
         } else {
           throw new Error("Failed to update address");
         }
@@ -274,7 +275,7 @@ const addBillingAddressScreen = () => {
             setSelectedBillingAddress(savedAddress);
           }
 
-          Alert.alert("Success", "Address added successfully");
+          showAlert("Success", "Address added successfully");
         } else {
           throw new Error("Failed to add address");
         }
@@ -304,7 +305,7 @@ const addBillingAddressScreen = () => {
       );
 
       if (isMountedRef.current) {
-        Alert.alert(
+        showAlert(
           "Error",
           `Failed to ${
             isEditMode ? "update" : "add"
@@ -495,6 +496,7 @@ const addBillingAddressScreen = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
+      {confirmationModal}
     </PageLayout>
   );
 };

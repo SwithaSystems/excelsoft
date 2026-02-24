@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Alert,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
@@ -23,8 +22,10 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import { Platform } from "react-native";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const AdminAccessControlScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [accessList, setAccessList] = useState<boolean[]>([]);
   const [searchText, setSearchText] = useState("");
   const [allUsersData, setAllUsersData] = useState([]);
@@ -54,7 +55,7 @@ const AdminAccessControlScreen = () => {
       const response = await UserAPI.updateUserAccess(userId, newAccessValue);
       // console.log("response in toggleAccess", response.data);
 
-      Alert.alert(
+      showAlert(
         "Access Updated",
         `User access has been ${
           newAccessValue ? "granted" : "revoked"
@@ -67,7 +68,7 @@ const AdminAccessControlScreen = () => {
       revertedList[index] = !revertedList[index];
       setAccessList(revertedList);
 
-      Alert.alert("Error", "Failed to update user access. Please try again.");
+      showAlert("Error", "Failed to update user access. Please try again.");
     } finally {
       setUpdatingAccess(null);
     }
@@ -91,7 +92,7 @@ const AdminAccessControlScreen = () => {
       setAccessList(simplifiedUsers.map((user: any) => user.isAdmin));
     } catch (error) {
       console.error("Error fetching users:", error);
-      Alert.alert("Error", "Failed to load users. Please try again.");
+      showAlert("Error", "Failed to load users. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -360,6 +361,7 @@ const AdminAccessControlScreen = () => {
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading users...</Text>
         </View>
+        {confirmationModal}
       </LayoutComponent>
     );
   }
@@ -425,6 +427,7 @@ const AdminAccessControlScreen = () => {
         {/* Pagination */}
         {isDesktopWeb && renderPagination()}
       </View>
+      {confirmationModal}
     </LayoutComponent>
   );
 };

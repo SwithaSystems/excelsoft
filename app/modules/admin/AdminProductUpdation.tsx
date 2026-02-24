@@ -15,7 +15,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
   Image,
   ActivityIndicator,
   Modal,
@@ -32,7 +31,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import {
   isValidProductName,
@@ -57,8 +55,10 @@ import AdminFooter from "@/app/components/AdminFooter";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { parse } from "date-fns";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const AdminProductUpdation = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const props = useLocalSearchParams();
   const newProduct = props.newProduct;
   const maxId = props.maxId;
@@ -101,8 +101,30 @@ const AdminProductUpdation = () => {
   const [selectedColors, setSelectedColors] = useState<any>([]);
   const [showColorModal, setShowColorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const isWeb = Platform.OS === "web";
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const [errors, setErrors] = useState<
     Partial<{
@@ -244,7 +266,7 @@ const calculatePrices = () => {
     async (type: "camera" | "gallery") => {
       try {
         if (productImages.length >= MAX_IMAGES) {
-          Alert.alert(
+          showAlert(
             "Limit Reached",
             `You can only upload up to ${MAX_IMAGES} images.`
           );
@@ -256,7 +278,7 @@ const calculatePrices = () => {
         if (type === "camera") {
           const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
           if (!cameraPerm.granted) {
-            Alert.alert(
+            showAlert(
               "Permission Required",
               "Permission to access camera is required!"
             );
@@ -273,7 +295,7 @@ const calculatePrices = () => {
           const galleryPerm =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!galleryPerm.granted) {
-            Alert.alert(
+            showAlert(
               "Permission Required",
               "Permission to access gallery is required!"
             );
@@ -301,7 +323,7 @@ const calculatePrices = () => {
             const updatedImages = [...prev, ...newImages];
 
             if (updatedImages.length > MAX_IMAGES) {
-              Alert.alert(
+              showAlert(
                 "Limit Exceeded",
                 `Only the first ${MAX_IMAGES} images have been added.`
               );
@@ -312,7 +334,7 @@ const calculatePrices = () => {
         }
       } catch (error) {
         console.error("Error picking image:", error);
-        Alert.alert("Error", "Something went wrong while picking the image.");
+        showAlert("Error", "Something went wrong while picking the image.");
       }
     },
     [productImages.length]
@@ -324,7 +346,7 @@ const calculatePrices = () => {
       openImagePickerAsync("gallery");
     } else {
 
-      Alert.alert("Select Image", "Choose image source", [
+      showAlert("Select Image", "Choose image source", [
         {
           text: "Take Photo",
           onPress: () => openImagePickerAsync("camera"),
@@ -351,7 +373,7 @@ const calculatePrices = () => {
         });
       }
     } else {
-      Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+      showAlert("Remove Image", "Are you sure you want to remove this image?", [
         {
           text: "Cancel",
           style: "cancel",
@@ -1307,6 +1329,19 @@ const calculatePrices = () => {
         }}
         animationType="fade"
       />
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
 
     </LayoutComponent>
   );

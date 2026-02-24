@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Alert,
   Platform,
   useWindowDimensions,
   ScrollView,
@@ -32,7 +31,6 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import SearchBar from "@/app/components/searchBar";
-import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
@@ -41,6 +39,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface ApiResponse {
   data: Product[];
@@ -53,6 +52,7 @@ interface Category {
 }
 
 const AdminProductDashboard = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [productsList, setAllProductsList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -74,11 +74,34 @@ const AdminProductDashboard = () => {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   // Bulk selection state (additive feature only)
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
   const [bulkDeleteModalVisible, setBulkDeleteModalVisible] = useState(false);
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const isWeb = Platform.OS === "web";
   const { isMobile } = useWebMediaQuery();
@@ -102,7 +125,7 @@ const AdminProductDashboard = () => {
       setTotalProducts(response.total);
       setHasMore(response.hasMore);
     } catch (error) {
-      Alert.alert("Error", "Failed to load page data");
+      showAlert("Error", "Failed to load page data");
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +246,7 @@ const AdminProductDashboard = () => {
 
     } catch (error) {
       console.error("Failed to load initial data:", error);
-      Alert.alert("Error", "Failed to load products");
+      showAlert("Error", "Failed to load products");
       setAllProductsList([]);
       setTotalProducts(0);
       setHasMore(false);
@@ -266,7 +289,7 @@ const AdminProductDashboard = () => {
       setHasMore(response.hasMore);
     } catch (error) {
       console.error("Failed to load more data:", error);
-      Alert.alert("Error", "Failed to load more products");
+      showAlert("Error", "Failed to load more products");
     } finally {
       setIsLoadingMore(false);
       loadingMoreRef.current = false;
@@ -297,7 +320,7 @@ const AdminProductDashboard = () => {
       }
     } catch (error) {
       console.error("Failed to refresh data:", error);
-      Alert.alert("Error", "Failed to refresh products");
+      showAlert("Error", "Failed to refresh products");
     } finally {
       setIsRefreshing(false);
     }
@@ -357,7 +380,7 @@ const AdminProductDashboard = () => {
         if (isWeb) {
           setSuccessModalVisible(true);
         } else {
-          Alert.alert("Success", "Product deleted successfully");
+          showAlert("Success", "Product deleted successfully");
         }
       }
     } catch (error: any) {
@@ -368,7 +391,7 @@ const AdminProductDashboard = () => {
       if (isWeb) {
         alert(errorMessage);
       } else {
-        Alert.alert("Error", errorMessage);
+        showAlert("Error", errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -396,7 +419,7 @@ const AdminProductDashboard = () => {
      if (isWeb) {
       setSuccessModalVisible(true);
     } else {
-      Alert.alert("Success", successMessage);
+      showAlert("Success", successMessage);
     }
   } catch (error: any) {
     const errorMessage = error?.response?.data?.message || "Something went wrong while deleting products.";
@@ -404,7 +427,7 @@ const AdminProductDashboard = () => {
     if (isWeb) {
       alert(errorMessage);
     } else {
-      Alert.alert("Error", errorMessage);
+      showAlert("Error", errorMessage);
     }
   } finally {
     setIsLoading(false);
@@ -463,7 +486,7 @@ const AdminProductDashboard = () => {
         setProductToDelete(item);
         setDeleteModalVisible(true);
       } else {
-        Alert.alert(
+        showAlert(
           "Delete Product",
           "Are you sure you want to delete this product?",
           [
@@ -672,7 +695,7 @@ const AdminProductDashboard = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
-      Alert.alert("Error", "Failed to search products");
+      showAlert("Error", "Failed to search products");
       setAllProductsList([]);
       setTotalProducts(0);
       setHasMore(false);
@@ -1118,6 +1141,7 @@ const AdminProductDashboard = () => {
         text="Are you sure you want to delete this product?"
         submitText="Delete"
         cancelText="Cancel"
+        isDestructive={true}
       />
 
       <ConfirmationModal
@@ -1145,7 +1169,21 @@ const AdminProductDashboard = () => {
         text={`Are you sure you want to delete ${selectedProductIds.size} product(s)?`}
         submitText="Delete"
         cancelText="Cancel"
+        isDestructive={true}
       />
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

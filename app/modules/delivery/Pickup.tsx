@@ -7,7 +7,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Alert,
   TextInputProps,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -39,7 +38,7 @@ import {
   PICKUP_TIME_REQUIRED,
   PICKUP_DETAILS_REQUIRED,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { format, set } from "date-fns";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
@@ -53,6 +52,7 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -71,6 +71,7 @@ const TIME_PERIOD_OPTIONS = [
 const MIN_PICKUP_MINUTES = 30;
 
 const PickupScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const { mode, orderId } = useLocalSearchParams();
   const isStorePickup = mode === DELIVERY_MODE_STORE;
   const isCurbsidePickup = mode === DELIVERY_MODE_CURBSIDE;
@@ -111,12 +112,34 @@ const PickupScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formErrors, setFormErrors] = useState<string[] | null>([]);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
   // console.log("userData in pickupscreen", userData);
 
   const DEFAULT_PICKUP_HOURS = usePickupTime();
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
   // console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
 
   // Refs for focusing fields
@@ -369,7 +392,7 @@ const PickupScreen = () => {
       if (!vehicleType) {
         // For modal selector, we can't focus, but we can scroll to it
         // You might want to show an alert or highlight the field
-        Alert.alert("Required Field", "Please select a vehicle type");
+        showAlert("Required Field", "Please select a vehicle type");
         return;
       }
 
@@ -600,7 +623,7 @@ const PickupScreen = () => {
       });
     } catch (error) {
       console.error("Error processing pickup request:", error);
-      Alert.alert(
+      showAlert(
         "Error",
         "Failed to process pickup request. Please try again later."
       );
@@ -1036,6 +1059,19 @@ const PickupScreen = () => {
         </ScrollView>
         {/* </View> */}
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
       {/* </SafeAreaView> */}
     </LayoutComponent>
   );

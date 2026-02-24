@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from "react";
-import { View, Text, Alert } from "react-native";
+import { View, Text } from "react-native";
 import styles from "./ReviewsStyles";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -14,10 +14,12 @@ import { useAppContext } from "@/context/AppContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ReviewsScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const { setIsLoading } = useAppContext();
   const idForReview = useId();
   const { productId, totalReviews, productRating } = useLocalSearchParams();
@@ -49,7 +51,7 @@ const ReviewsScreen = () => {
 
   const handleAddReviews = () => {
     if (!user) {
-      Alert.alert("Login Required", "You need to log in to submit a review.", [
+      showAlert("Login Required", "You need to log in to submit a review.", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Login",
@@ -114,6 +116,7 @@ const ReviewsScreen = () => {
           style={styles.addReviewBtn}
         />
       </View>
+      {confirmationModal}
     </View>
   );
 };

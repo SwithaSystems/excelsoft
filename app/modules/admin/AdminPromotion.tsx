@@ -430,7 +430,10 @@ const AdminPromotion = () => {
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isDesktopWeb && ({ paddingTop: 16 } as ViewStyle),
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Mobile: Add New Promotion Button */}

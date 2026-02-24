@@ -7,7 +7,7 @@ import Button from "@/app/components/commonComponents/Button";
 import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInput";
 import { UserAPI } from "@/services/userService";
 import { TwilioApi } from "@/services/twilioService";
-import { showErrorAlert } from "@/utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
@@ -24,7 +24,7 @@ import CountryPicker, { CountryCode, FlagType } from "react-native-country-picke
 import { getAllCountries } from "react-native-country-picker-modal";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
-const EDIT_CONTACT_INFORMATION_WEB_SCREEN_TITLE = "Edit Contact Information";
+const EDIT_CONTACT_INFORMATION_WEB_SCREEN_TITLE = "Contact Information";
 
 const CALLING_CODE_TO_CCA2: Record<string, CountryCode> = {
   "1": "US", "7": "RU", "20": "EG", "27": "ZA", "30": "GR", "31": "NL", "32": "BE", "33": "FR",
@@ -94,6 +94,12 @@ const editContactInformationWebScreen = () => {
   const [showChangePhone, setShowChangePhone] = useState(false);
   const [showChangeEmail, setShowChangeEmail] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const [countryCode, setCountryCode] = useState<CountryCode>("GB");
   const [callingCode, setCallingCode] = useState("44");
@@ -102,6 +108,22 @@ const editContactInformationWebScreen = () => {
   const [newCountryCode, setNewCountryCode] = useState<CountryCode>("GB");
   const [newCallingCode, setNewCallingCode] = useState("44");
   const [newLocalPhone, setNewLocalPhone] = useState("");
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
@@ -707,6 +729,18 @@ const editContactInformationWebScreen = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </LayoutComponent>
   );
 };

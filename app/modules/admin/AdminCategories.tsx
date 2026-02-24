@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
   Image,
   useWindowDimensions,
   Platform,
@@ -30,6 +29,7 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import SearchBar from "@/app/components/searchBar";
 import Pagination from "./componentsWeb/PaginationWeb";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface Category {
   _id: any;
@@ -44,6 +44,7 @@ const MAX_IMAGES = 5;
 const ITEMS_PER_PAGE = 10;
 
 const AdminCategories = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImages, setCategoryImages] = useState<any[]>([]);
@@ -151,7 +152,7 @@ const AdminCategories = () => {
     if (isWeb) {
       openImagePickerAsync("gallery");
     } else {
-      Alert.alert("Select Image", "Choose image source", [
+      showAlert("Select Image", "Choose image source", [
         {
           text: "Take Photo",
           onPress: () => openImagePickerAsync("camera"),
@@ -756,6 +757,7 @@ const AdminCategories = () => {
           setShowDeleteConfirmModal(false);
           setCategoryToDelete(null);
         }}
+        isDestructive={true}
       />
 
       {/* Cancel Edit Modal */}
@@ -794,6 +796,7 @@ const AdminCategories = () => {
         submitText="OK"
         handleSubmit={() => setShowPermissionModal(false)}
       />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

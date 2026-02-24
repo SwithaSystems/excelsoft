@@ -15,7 +15,6 @@ import {
   PASSWORD_CHANGE_FAILED,
   PASSWORD_CHANGED,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -24,6 +23,7 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import { isValidPassword } from "../../../utilities/validations";
 import colors from "@/constants/colors";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
@@ -36,10 +36,32 @@ const changePasswordScreen = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   const user = useSelector((state: any) => state.user.user);
   const isWeb = Platform.OS === "web";
   const { isMobile } = useWebMediaQuery();
   const isMobileWeb = isWeb && isMobile;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
@@ -462,6 +484,18 @@ const changePasswordScreen = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </LayoutComponent>
   );
 };
