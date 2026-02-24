@@ -214,8 +214,8 @@ export default function CarouselWeb({
 
     setTooltip((prev) => ({
       ...prev,
-      x: e.clientX + 12,
-      y: e.clientY + 12,
+      x: e.clientX + 6,
+      y: e.clientY + 6,
     }));
   };
 
