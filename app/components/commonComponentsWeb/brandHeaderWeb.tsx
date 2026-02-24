@@ -89,10 +89,17 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   }, []);
 
   useEffect(() => {
-    fetchUnreadNotificationCount();
-    const sub = DeviceEventEmitter.addListener("notificationUpdate", fetchUnreadNotificationCount);
+    if (isValidUser) {
+      fetchUnreadNotificationCount();
+    } else {
+      setUnreadNotificationCount(0);
+    }
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", () => {
+      if (isValidUser) fetchUnreadNotificationCount();
+      else setUnreadNotificationCount(0);
+    });
     return () => sub.remove();
-  }, [fetchUnreadNotificationCount]);
+  }, [fetchUnreadNotificationCount, isValidUser]);
 
   // Load recent searches from SecureStore
   const loadRecentSearches = async () => {
@@ -599,7 +606,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           >
             <View style={styles.iconContainer} pointerEvents="none">
               <Ionicons name="notifications" size={24} color={colors.primary} />
-              {unreadNotificationCount > 0 && (
+              {isValidUser && unreadNotificationCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
                     {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}

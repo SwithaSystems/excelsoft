@@ -38,8 +38,10 @@ export default function UserNotificationsScreen() {
   const loadNotifications = useCallback(async (isRetry = false) => {
     if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start", isRetry ? "(retry)" : "");
     setLoadError(null);
-    const stored = await NotificationService.getStoredNotifications();
-    let list = stored ?? [];
+    // On web, use only API list so notifications are strictly user-specific (stored list is not user-scoped).
+    const stored = Platform.OS === "web" ? [] : (await NotificationService.getStoredNotifications() ?? []);
+
+    let list = [...stored];
 
     // Fetch from backend (GET /web-push/notifications). Use full URL so request hits backend on web (not the dev server).
     const notificationsUrl = API_BASE_URL ? `${String(API_BASE_URL).replace(/\/$/, "")}/web-push/notifications` : "/web-push/notifications";
