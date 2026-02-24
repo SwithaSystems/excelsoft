@@ -11,6 +11,7 @@ import {
   DeviceEventEmitter,
   Platform,
 } from "react-native";
+import { useRoleContext } from "@/context/RoleContext";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationService } from "@/services/notificationService";
@@ -23,12 +24,15 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 const FOCUS_LOAD_THROTTLE_MS = 1200;
 
 export default function UserNotificationsScreen() {
+  const { isValidUser } = useRoleContext();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [notificationToDeleteId, setNotificationToDeleteId] = useState<string | null>(null);
   const lastFocusLoadRef = useRef<number>(0);
+
+  const isSignedOutOnWeb = Platform.OS === "web" && !isValidUser;
 
   useEffect(() => {
     if (typeof console !== "undefined") console.log("[UserNotifications] Screen mounted");
@@ -279,7 +283,7 @@ export default function UserNotificationsScreen() {
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          {loadError ? (
+          {!isSignedOutOnWeb && loadError ? (
             <>
               <View style={styles.emptyIconCircle}>
                 <Ionicons name="cloud-offline-outline" size={48} color="#999" />
@@ -302,7 +306,7 @@ export default function UserNotificationsScreen() {
               <Text style={styles.emptySubtext}>
                 You'll see notifications here when you receive them
               </Text>
-              {Platform.OS === "web" && (
+              {/* {Platform.OS === "web" && (
                 <>
                   <Text style={styles.emptyHint}>
                     Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
@@ -311,7 +315,7 @@ export default function UserNotificationsScreen() {
                     Keep this tab open when you place an order so notifications appear here.
                   </Text>
                 </>
-              )}
+              )} */}
             </>
           )}
         </View>
