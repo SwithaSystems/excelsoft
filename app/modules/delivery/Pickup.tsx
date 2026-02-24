@@ -39,7 +39,7 @@ import {
   PICKUP_DETAILS_REQUIRED,
 } from "../../../constants/customErrorMessages";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
-import { format, set } from "date-fns";
+import { format, parse, set } from "date-fns";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   isValidEmail,
@@ -768,12 +768,23 @@ const PickupScreen = () => {
                 <input
                   type="date"
                   style={globalStyles.webDateInput}
-                  value={date}
+                  value={
+                    date
+                      ? format(
+                          parse(date, DATE_FORMAT_Display, new Date()),
+                          "yyyy-MM-dd"
+                        )
+                      : format(new Date(), "yyyy-MM-dd")
+                  }
                   onChange={(e) => {
-                    setDate(e.target.value);
-                    validateTime(e.target.value, hours, minutes, period);
+                    const isoDate = e.target.value;
+                    const displayDate = isoDate
+                      ? format(new Date(isoDate), DATE_FORMAT_Display)
+                      : "";
+                    setDate(displayDate);
+                    validateTime(displayDate, hours, minutes, period);
                   }}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={format(new Date(), "yyyy-MM-dd")}
                 />
               ) : (
                 <TouchableOpacity

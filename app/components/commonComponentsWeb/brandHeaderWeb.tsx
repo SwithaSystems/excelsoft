@@ -522,7 +522,9 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           onPress={handleProfileClick}
         >
           <Text style={styles.greetingText}>
-            {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+            {isValidUser
+              ? `Hello, ${(username || "User").length > 12 ? (username || "User").slice(0, 12) + "..." : username || "User"}`
+              : "Sign In"}
           </Text>
           <Ionicons
             name="person-circle-outline"
@@ -787,5 +789,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     color: colors.primary,
     fontWeight: "500",
+    maxWidth: 160,
+    overflow: "hidden",
   },
 });

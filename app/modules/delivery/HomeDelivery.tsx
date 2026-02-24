@@ -39,7 +39,7 @@ import {
   PICKUP_TIME_IN_PAST,
   ADDRESS_NOT_SAVED,
 } from "../../../constants/customErrorMessages";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
@@ -751,8 +751,23 @@ useFocusEffect(
                       <input
                         type="date"
                         style={globalStyles.webDateInput}
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
+                        value={
+                          date
+                            ? format(
+                                parse(date, DATE_FORMAT_Display, new Date()),
+                                "yyyy-MM-dd"
+                              )
+                            : format(new Date(), "yyyy-MM-dd")
+                        }
+                        onChange={(e) => {
+                          const isoDate = e.target.value;
+                          setDate(
+                            isoDate
+                              ? format(new Date(isoDate), DATE_FORMAT_Display)
+                              : ""
+                          );
+                        }}
+                        min={format(new Date(), "yyyy-MM-dd")}
                       />
                     ) : (
                       <TouchableOpacity
