@@ -31,8 +31,8 @@ import colors from "../../../constants/colors";
 
 const signIn = () => {
   const isWeb = Platform.OS === "web";
-  const [inputValue, setInputValue] = useState(""); // Combined input field value
-  const [isEmail, setIsEmail] = useState(true); // Track if input is email or phone
+  // const [inputValue, setInputValue] = useState(""); // Combined input field value
+  // const [isEmail, setIsEmail] = useState(true); // Track if input is email or phone
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("phone");
   const [email, setEmail] = useState("");
@@ -125,6 +125,47 @@ const signIn = () => {
     }
   };
 
+  const handleEmailBlur = () => {
+  const newErrors = { ...errors };
+  if (!email.trim()) {
+    newErrors.input = "Email is required.";
+  } else if (!isValidEmail(email)) {
+    newErrors.input = "Enter a valid email address.";
+  } else {
+    delete newErrors.input;
+  }
+  setErrors(newErrors);
+};
+
+const handlePhoneBlur = () => {
+  const newErrors = { ...errors };
+  const phoneError = isValidPhoneNumber(phone);
+  if (phoneError) {
+    newErrors.input = phoneError;
+  } else {
+    // Also enforce the 10-digit rule after stripping leading zero
+    let normalized = phone.trim();
+    if (normalized.startsWith("0")) normalized = normalized.slice(1);
+    if (normalized.length !== 10) {
+      newErrors.input = PHONE_NUMBER_VALIDATION;
+    } else {
+      delete newErrors.input;
+    }
+  }
+  setErrors(newErrors);
+};
+
+const handlePasswordBlur = () => {
+  const newErrors = { ...errors };
+  const passwordError = isValidPassword(password);
+  if (passwordError) {
+    newErrors.password = passwordError;
+  } else {
+    delete newErrors.password;
+  }
+  setErrors(newErrors);
+};
+
   const handleBlur = () => {
     validateFields();
   };
@@ -200,6 +241,7 @@ const signIn = () => {
                     setEmail(text);
                     setPhoneNumber("");
                   }}
+                  onBlur={handleEmailBlur}
                 />
                 {errors.input && (
                   <Text style={[
@@ -259,7 +301,7 @@ const signIn = () => {
                     setEmail("");
                   }}
                   onFocus={() => setIsPhoneFocused(true)}
-                  onBlur={() => setIsPhoneFocused(false)}
+                  onBlur={handlePhoneBlur}
                   maxLength={11}
                   keyboardType="phone-pad"
                 />
@@ -290,7 +332,7 @@ const signIn = () => {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
-              onBlur={handleBlur}
+              onBlur={handlePasswordBlur}
             />
             {errors.password && (
               <Text style={[
