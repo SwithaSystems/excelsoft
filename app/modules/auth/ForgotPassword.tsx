@@ -84,44 +84,46 @@ const forgotPasswordScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendCode = async () => {
-    const isValid = validateFields();
-    if (!isValid) {
-      showErrorAlert({
-        title: "Let's fix that",
-        message: FIX_VALIDATION_ERRORS,
+ const handleSendCode = async () => {
+  const isValid = validateFields();
+  if (!isValid) {
+    showErrorAlert({
+      title: "Let's fix that",
+      message: FIX_VALIDATION_ERRORS,
+    });
+    return;
+  }
+
+  // If user doesn't exist, show modal for both phone and email
+  if (!user) {
+    setModalOpen(true);
+    return;
+  }
+
+  const fullPhone = `+${callingCode}${phoneNumber}`;
+
+  if (mode === "phone") {
+    await TwilioApi.sendOtp({ phone: fullPhone });
+    redirectToPage(containers.verificationScreen, {
+      phoneNumber_forgetPwd: fullPhone,
+      from: "forgotPassword",
+    });
+  } else if (mode === "email") {
+    try {
+      await TwilioApi.sendOtp_Email({ email });
+      redirectToPage(containers.verificationScreen, {
+        email_forgetPwd: email,
+        from: "forgotPassword",
+        verificationType: "email",
       });
-      return;
+    } catch {
+      showErrorAlert({
+        title: "Failed to send OTP",
+        message: "Please try again later.",
+      });
     }
-
-    const fullPhone = `+${callingCode}${phoneNumber}`;
-
-    if (mode === "phone") {
-      if (user) {
-        await TwilioApi.sendOtp({ phone: fullPhone });
-        redirectToPage(containers.verificationScreen, {
-          phoneNumber_forgetPwd: fullPhone,
-          from: "forgotPassword",
-        });
-      } else {
-        setModalOpen(true);
-      }
-    } else if (mode === "email") {
-      try {
-        await TwilioApi.sendOtp_Email({ email });
-        redirectToPage(containers.verificationScreen, {
-          email_forgetPwd: email,
-          from: "forgotPassword",
-          verificationType: "email",
-        });
-      } catch {
-        showErrorAlert({
-          title: "Failed to send OTP",
-          message: "Please try again later.",
-        });
-      }
-    }
-  };
+  }
+};
 
   useEffect(() => {
     if (mode === "phone" && phoneNumber) {
@@ -141,7 +143,11 @@ const forgotPasswordScreen = () => {
           setUser(null);
         });
     }
-  }, [phoneNumber]);
+    else {
+    setUser(null); // reset if fields are cleared
+  }
+
+  }, [phoneNumber,email,mode]);
 
   return (
     <PageLayout
