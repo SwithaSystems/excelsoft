@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, Platform, ActivityIndicator } from "react-native";
 import Header from "../../components/Header";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -26,9 +26,6 @@ const forgotPasswordScreen = () => {
   const [callingCode, setCallingCode] = useState("44");
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLookingUp, setIsLookingUp] = useState(false); // ✅ tracks API lookup in progress
-  const [user, setUser] = useState<any>(null);
-  const [userChecked, setUserChecked] = useState(false); // ✅ tracks whether a lookup has completed — fixes race condition
 
   const [errors, setErrors] = useState<Partial<{ email: string; phone: string }>>({});
 
@@ -39,6 +36,12 @@ const forgotPasswordScreen = () => {
     buttonLabel: "OK",
   });
 
+  // ─── Refs — always current, never stale in async calls ───────────────────────
+  const phoneNumberRef = useRef(phoneNumber);
+  const callingCodeRef = useRef(callingCode);
+  const emailRef = useRef(email);
+  const modeRef = useRef(mode);
+
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
   const showModal = (title: string, message: string, buttonLabel = "OK") => {
@@ -47,133 +50,154 @@ const forgotPasswordScreen = () => {
 
   const closeModal = () => setModalState((prev) => ({ ...prev, isVisible: false }));
 
-  // ✅ Shared normalizer — used consistently for both validation and API calls
   const normalizePhone = (raw: string): string => {
     const trimmed = raw.trim();
     return trimmed.startsWith("0") ? trimmed.slice(1) : trimmed;
   };
 
-  const getFullPhone = (): string => `+${callingCode}${normalizePhone(phoneNumber)}`;
+  const buildFullPhone = (phone: string, code: string): string => {
+    return `+${code}${normalizePhone(phone)}`;
+  };
 
   // ─── Toggle ──────────────────────────────────────────────────────────────────
 
   const toggleMode = (selected: string) => {
     setMode(selected);
+    modeRef.current = selected;
     setEmail("");
+    emailRef.current = "";
     setPhoneNumber("");
+    phoneNumberRef.current = "";
     setErrors({});
-    setUser(null);
-    setUserChecked(false); // ✅ reset on mode switch
+  };
+
+  // ─── Synced setters ──────────────────────────────────────────────────────────
+
+  const handleSetPhone = (text: string) => {
+    setPhoneNumber(text);
+    phoneNumberRef.current = text;
+    if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+  };
+
+  const handleSetEmail = (text: string) => {
+    setEmail(text);
+    emailRef.current = text;
+    if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+  };
+
+  const handleSetCallingCode = (code: string) => {
+    setCallingCode(code);
+    callingCodeRef.current = code;
+  };
+
+  // ─── Blur handlers — format validation only, NO API calls ────────────────────
+
+  const handleEmailBlur = () => {
+    const trimmed = emailRef.current.trim();
+    if (!trimmed) {
+      setErrors((prev) => ({ ...prev, email: "Email is required." }));
+    } else if (!isValidEmail(trimmed)) {
+      setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
+    } else {
+      setErrors((prev) => ({ ...prev, email: undefined }));
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    setIsPhoneFocused(false);
+    const normalized = normalizePhone(phoneNumberRef.current);
+    if (!normalized) {
+      setErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
+    } else if (!/^\d{10}$/.test(normalized)) {
+      setErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit phone number." }));
+    } else {
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    }
   };
 
   // ─── Validation ──────────────────────────────────────────────────────────────
 
-  const validateEmailFormat = (): boolean => {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setErrors((prev) => ({ ...prev, email: "Email is required." }));
-      return false;
-    }
-    if (!isValidEmail(trimmed)) { // ✅ shared utility instead of inline regex
-      setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
-      return false;
-    }
-    setErrors((prev) => ({ ...prev, email: undefined }));
-    return true;
-  };
-
-  const validatePhoneFormat = (): boolean => {
-    const normalized = normalizePhone(phoneNumber); // ✅ consistent normalization
-    if (!normalized) {
-      setErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
-      return false;
-    }
-    if (!/^\d{10}$/.test(normalized)) {
-      setErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit phone number." }));
-      return false;
-    }
-    setErrors((prev) => ({ ...prev, phone: undefined }));
-    return true;
-  };
-
   const validateFields = (): boolean => {
-    if (mode === "email") return validateEmailFormat();
-    if (mode === "phone") return validatePhoneFormat();
+    const currentMode = modeRef.current;
+
+    if (currentMode === "email") {
+      const trimmed = emailRef.current.trim();
+      if (!trimmed) {
+        setErrors((prev) => ({ ...prev, email: "Email is required." }));
+        return false;
+      }
+      if (!isValidEmail(trimmed)) {
+        setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
+        return false;
+      }
+      setErrors((prev) => ({ ...prev, email: undefined }));
+      return true;
+    }
+
+    if (currentMode === "phone") {
+      const normalized = normalizePhone(phoneNumberRef.current);
+      if (!normalized) {
+        setErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
+        return false;
+      }
+      if (!/^\d{10}$/.test(normalized)) {
+        setErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit phone number." }));
+        return false;
+      }
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+      return true;
+    }
+
     return false;
   };
 
-  // ─── User Existence Check ─────────────────────────────────────────────────────
-  // ✅ Called only from blur handlers (never useEffect) — only runs after format is valid
+  // ─── Check user exists — returns result directly, no state dependency ─────────
 
-  const checkUserExists = async () => {
-    setIsLookingUp(true);
-    setUser(null);
-    setUserChecked(false);
-
+  const checkUserExists = async (): Promise<any | null> => {
     try {
       let response;
-      if (mode === "phone") {
-        response = await UserAPI.getUserByPhonenumber(getFullPhone()); // ✅ normalized phone
+      if (modeRef.current === "phone") {
+        const fullPhone = buildFullPhone(phoneNumberRef.current, callingCodeRef.current);
+        response = await UserAPI.getUserByPhonenumber(fullPhone);
       } else {
-        response = await UserAPI.getUserByEmail(email.trim());
+        response = await UserAPI.getUserByEmail(emailRef.current.trim());
       }
-      setUser(response?.data ?? null);
+      return response?.data ?? null;
     } catch {
-      // 404 = user not found — user stays null
-      setUser(null);
-    } finally {
-      setUserChecked(true);  // ✅ marks lookup as done regardless of result
-      setIsLookingUp(false);
+      // 404 = not found
+      return null;
     }
   };
 
-  // ─── Blur Handlers ────────────────────────────────────────────────────────────
-  // ✅ Format validate first → only call API if format passes
-
-  const handleEmailBlur = async () => {
-    const isFormatValid = validateEmailFormat();
-    if (!isFormatValid) return;
-    await checkUserExists();
-  };
-
-  const handlePhoneBlur = async () => {
-    setIsPhoneFocused(false);
-    const isFormatValid = validatePhoneFormat();
-    if (!isFormatValid) return;
-    await checkUserExists();
-  };
-
-  // ─── Send Code ────────────────────────────────────────────────────────────────
+  // ─── Send Code — all logic happens here on button press ──────────────────────
 
   const handleSendCode = async () => {
-    if (isLoading || isLookingUp) return;
+    if (isLoading) return;
 
+    // Step 1: validate format first
     const isValid = validateFields();
     if (!isValid) {
       showModal("Let's fix that", FIX_VALIDATION_ERRORS);
       return;
     }
 
-    // ✅ Edge case: user used autofill or never blurred the field before tapping submit
-    // Run the lookup now before proceeding
-    if (!userChecked) {
-      await checkUserExists();
-    }
-
-    if (!user) {
-      showModal(
-        "Check Details",
-        "Uh-oh! It seems the email/phone you entered doesn't exist. Please try again."
-      );
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      if (mode === "phone") {
-        // ✅ try/catch added — previously phone had none while email did
-        const fullPhone = getFullPhone();
+      // Step 2: check user exists — use returned value directly, never state
+      const foundUser = await checkUserExists();
+
+      if (!foundUser) {
+        showModal(
+          "Check Details",
+          "Uh-oh! It seems the email/phone you entered doesn't exist. Please try again."
+        );
+        return;
+      }
+
+      // Step 3: send OTP
+      if (modeRef.current === "phone") {
+        const fullPhone = buildFullPhone(phoneNumberRef.current, callingCodeRef.current);
         const response = await TwilioApi.sendOtp({ phone: fullPhone });
 
         if (response?.status === 201) {
@@ -184,12 +208,12 @@ const forgotPasswordScreen = () => {
         } else {
           showModal("Failed to Send Code", "Please try again later.");
         }
-      } else if (mode === "email") {
-        const response = await TwilioApi.sendOtp_Email({ email: email.trim() });
+      } else if (modeRef.current === "email") {
+        const response = await TwilioApi.sendOtp_Email({ email: emailRef.current.trim() });
 
         if (response?.status === 201) {
           redirectToPage(containers.verificationScreen, {
-            email_forgetPwd: email.trim(),
+            email_forgetPwd: emailRef.current.trim(),
             from: "forgotPassword",
             verificationType: "email",
           });
@@ -200,7 +224,6 @@ const forgotPasswordScreen = () => {
     } catch {
       showModal("Failed to Send Code", "Please try again later.");
     } finally {
-      // ✅ Single finally covers both phone and email — previously only email had this
       setIsLoading(false);
     }
   };
@@ -259,13 +282,7 @@ const forgotPasswordScreen = () => {
                 ]}
                 placeholder="Enter your email address"
                 value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                  // ✅ Field edited — previous lookup is stale, reset it
-                  setUser(null);
-                  setUserChecked(false);
-                }}
+                onChangeText={handleSetEmail}
                 onBlur={handleEmailBlur}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -276,12 +293,11 @@ const forgotPasswordScreen = () => {
                   {errors.email}
                 </Text>
               )}
-              {isLookingUp && <ActivityIndicator size="small" style={{ marginTop: 4 }} />}
             </>
           ) : (
             /* ── Phone Input ── */
             <>
-              <Text style={[styles.label ]}>Phone Number</Text>
+              <Text style={[styles.label]}>Phone Number</Text>
               <View
                 style={[
                   styles.phoneInputContainer,
@@ -299,30 +315,21 @@ const forgotPasswordScreen = () => {
                     withCallingCodeButton
                     onSelect={(country) => {
                       setCountryCode(country.cca2 || "GB");
-                      setCallingCode(country.callingCode[0] || "44");
-                      // ✅ Country changed — previous lookup result no longer valid
-                      setUser(null);
-                      setUserChecked(false);
+                      handleSetCallingCode(country.callingCode[0] || "44");
                     }}
                     containerButtonStyle={[
                       styles.countryPickerButton,
                       isWeb && styles.countryPickerButtonDesktop,
                     ]}
                   />
-                  {!isWeb && <Text style={styles.callingCode}>+{callingCode}</Text>}
+                  {/* ✅ No manual +callingCode Text — withCallingCodeButton renders it on all platforms */}
                 </View>
 
                 <TextInput
                   style={[styles.phoneInput, isWeb && styles.phoneInputDesktop]}
                   placeholder="Enter your phone number"
                   value={phoneNumber}
-                  onChangeText={(text) => {
-                    setPhoneNumber(text);
-                    if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
-                    // ✅ Field edited — previous lookup is stale, reset it
-                    setUser(null);
-                    setUserChecked(false);
-                  }}
+                  onChangeText={handleSetPhone}
                   onFocus={() => setIsPhoneFocused(true)}
                   onBlur={handlePhoneBlur}
                   maxLength={11}
@@ -335,16 +342,14 @@ const forgotPasswordScreen = () => {
                   {errors.phone}
                 </Text>
               )}
-              {isLookingUp && <ActivityIndicator size="small" style={{ marginTop: 4 }} />}
             </>
           )}
 
-          {/* ✅ Disabled while lookup or send is in progress — prevents double submission */}
           <Button
             title={isLoading ? "Sending..." : "Send Verification Code"}
             style={styles.signInButton}
             onPress={handleSendCode}
-            disabled={isLoading || isLookingUp}
+            disabled={isLoading}
           />
 
           <Button
@@ -354,7 +359,6 @@ const forgotPasswordScreen = () => {
             disabled={isLoading}
           />
 
-          {/* ✅ Single ConfirmationModal handles all cases — no more two modals stacking */}
           <ConfirmationModal
             isModalVisible={modalState.isVisible}
             onClose={closeModal}
