@@ -195,6 +195,23 @@ export class NotificationService {
     }
   }
 
+  /**
+   * Clear notification storage on logout so the badge does not persist.
+   * Does NOT clear READ_API_IDS_KEY or DELETED_API_IDS_KEY, so "marked as read" and
+   * deleted state persist for the same user after login (API ids are unique per notification).
+   */
+  static async clearAllForLogout(): Promise<void> {
+    try {
+      await Promise.all([
+        AsyncStorage.removeItem(NOTIFICATIONS_STORAGE_KEY),
+        AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY),
+        AsyncStorage.removeItem("web_push_registered"),
+      ]);
+    } catch (error) {
+      console.error("Error clearing notification data on logout:", error);
+    }
+  }
+
   // Get unread count (web and mobile: include API-sourced notifications and read state for api-* ids)
   static async getUnreadCount(): Promise<number> {
     try {
@@ -204,7 +221,8 @@ export class NotificationService {
         this.getDeletedApiIds(),
       ]);
       const readApiIds: string[] = readApiIdsRaw ? JSON.parse(readApiIdsRaw) : [];
-      let list: NotificationItem[] = [...(stored ?? [])];
+      // On web, use only API list so count is user-specific (stored is not user-scoped).
+      let list: NotificationItem[] = Platform.OS === "web" ? [] : [...(stored ?? [])];
       let apiSucceeded = false;
       try {
         const { data } = await jsonAxios.get(getNotificationsApiUrl());
@@ -214,10 +232,10 @@ export class NotificationService {
           .filter((n) => !deletedApiIds.includes("api-" + n._id))
           .map((n) => ({
             id: "api-" + n._id,
-            title: n.title,
-            body: n.body,
+            title: n.title ?? "",
+            body: n.body ?? "",
             data: n.data ?? {},
-            timestamp: new Date(n.createdAt).getTime(),
+            timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
             isRead: false,
             type: (n.data?.type as string) || "general",
           }));

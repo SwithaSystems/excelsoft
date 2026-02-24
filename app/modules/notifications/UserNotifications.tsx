@@ -11,6 +11,7 @@ import {
   DeviceEventEmitter,
   Platform,
 } from "react-native";
+import { useRoleContext } from "@/context/RoleContext";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationService } from "@/services/notificationService";
@@ -23,6 +24,7 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 const FOCUS_LOAD_THROTTLE_MS = 1200;
 
 export default function UserNotificationsScreen() {
+  const { isValidUser } = useRoleContext();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -38,8 +40,10 @@ export default function UserNotificationsScreen() {
   const loadNotifications = useCallback(async (isRetry = false) => {
     if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start", isRetry ? "(retry)" : "");
     setLoadError(null);
-    const stored = await NotificationService.getStoredNotifications();
-    let list = stored ?? [];
+    // On web, use only API list so notifications are strictly user-specific (stored list is not user-scoped).
+    const stored = Platform.OS === "web" ? [] : (await NotificationService.getStoredNotifications() ?? []);
+
+    let list = [...stored];
 
     // Fetch from backend (GET /web-push/notifications). Use full URL so request hits backend on web (not the dev server).
     const notificationsUrl = API_BASE_URL ? `${String(API_BASE_URL).replace(/\/$/, "")}/web-push/notifications` : "/web-push/notifications";
@@ -277,7 +281,7 @@ export default function UserNotificationsScreen() {
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          {loadError ? (
+          {isValidUser && loadError ? (
             <>
               <View style={styles.emptyIconCircle}>
                 <Ionicons name="cloud-offline-outline" size={48} color="#999" />
@@ -300,7 +304,7 @@ export default function UserNotificationsScreen() {
               <Text style={styles.emptySubtext}>
                 You'll see notifications here when you receive them
               </Text>
-              {Platform.OS === "web" && (
+              {/* {Platform.OS === "web" && (
                 <>
                   <Text style={styles.emptyHint}>
                     Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
@@ -309,7 +313,7 @@ export default function UserNotificationsScreen() {
                     Keep this tab open when you place an order so notifications appear here.
                   </Text>
                 </>
-              )}
+              )} */}
             </>
           )}
         </View>

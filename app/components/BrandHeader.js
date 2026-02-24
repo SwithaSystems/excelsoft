@@ -136,7 +136,9 @@ function BrandHeader(props) {
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               {!props?.hideUserGreeting && (
                 <Text style={{ marginRight: 8, color: colors.primary }}>
-                  {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+                  {isValidUser
+                    ? `Hello, ${(username || "User").length > 12 ? (username || "User").slice(0, 12) + "..." : username || "User"}`
+                    : "Sign In"}
                 </Text>
               )}
               <Ionicons
