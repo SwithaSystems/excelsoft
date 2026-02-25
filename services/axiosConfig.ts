@@ -17,7 +17,10 @@ const EXCLUDED_APIS = [
   "/products/category",
   "/products/subCategories",
   "/products/search",
-  "/categories",
+  // "/categories/findAll",
+  // "/categories/findAllSubCategories",
+  // "/categories/findSubcategories",
+  // "/categories/findOne",
   "/auth/login",
   "/auth/register",
 "/promotions/live/all"
