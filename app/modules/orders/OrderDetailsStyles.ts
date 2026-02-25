@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
   webPageTitle: {
     fontSize: 35,
     color: colors.black,
+    paddingTop: 8,
   },
   webTopSection: {
     flexDirection: "row",

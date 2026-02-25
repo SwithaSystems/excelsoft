@@ -172,17 +172,12 @@ const AdminOrderDetail = () => {
       await orderService.updateOrderStatus(orderPayload);
       await getOrderdetails();
 
-      if (Platform.OS === "web") {
-        window.alert("Order updated successfully!");
-        router.replace("/modules/admin/AdminDashboard");
-      } else {
-        showAlert("Success", "Order updated successfully.", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/modules/admin/AdminDashboard"),
-          },
-        ]);
-      }
+      showAlert("Success", "Order updated successfully.", [
+        {
+          text: "OK",
+          onPress: () => router.replace("/modules/admin/AdminDashboard"),
+        },
+      ]);
 
       if (Platform.OS !== "web") {
         await NotificationService.scheduleLocalNotification(
