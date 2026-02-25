@@ -56,6 +56,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { parse } from "date-fns";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import { Alert } from "react-native";
 
 const AdminProductUpdation = () => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
@@ -346,7 +347,7 @@ const calculatePrices = () => {
       openImagePickerAsync("gallery");
     } else {
 
-      showAlert("Select Image", "Choose image source", [
+      Alert.alert("Select Image", "Choose image source", [
         {
           text: "Take Photo",
           onPress: () => openImagePickerAsync("camera"),
