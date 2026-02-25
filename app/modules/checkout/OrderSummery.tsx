@@ -836,7 +836,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
         if (currentTotal < applicableMOV) {
           showAlert(
-            "Minimum Order Not Met",
+            "Minimum Checkout Order Not Met",
             `Your order value (${CurrencySymbol}${currentTotal.toFixed(
               2
             )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
