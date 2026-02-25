@@ -51,6 +51,13 @@
     },
     "plugins": [
       [
+    "@stripe/stripe-react-native",
+    {
+      "merchantIdentifier": "merchant.com.excelsoft.app",
+      "enableGooglePay": true
+    }
+  ],
+      [
         "expo-media-library",
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",

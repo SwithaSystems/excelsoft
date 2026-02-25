@@ -278,6 +278,8 @@ export const usePaymentHandler = () => {
           merchantName: STORE_NAME,
           merchantCountryCode: "GB",
           currencyCode: CURRENCY_CODE.toUpperCase(),
+          label: STORE_NAME,    
+  amount: totalAmount
         },
       }
     );
