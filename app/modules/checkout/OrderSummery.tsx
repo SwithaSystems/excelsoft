@@ -165,7 +165,8 @@ const orderSummeryScreen = () => {
     (items: any[]) => {
       const calculateItemSubtotal = (item: any) => {
         const basePrice = item.netPrice || 0; /*- (item.discount || 0)*/
-        return basePrice * (item?.quantity || 1);
+        const total = basePrice * (item?.quantity || 1);
+        return total
       };
 
       const calculateItemVAT = (item: any) => {
@@ -185,7 +186,7 @@ const orderSummeryScreen = () => {
       );
 
       const deliveryCharge = params?.shipping || 0;
-      return subtotalExVAT + totalVAT + deliveryCharge;
+      return subtotalExVAT  + deliveryCharge;
     },
     [params?.shipping]
   );
@@ -836,7 +837,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
         if (currentTotal < applicableMOV) {
           showAlert(
-            "Minimum Checkout Order Not Met",
+            "Minimum  Order Not Met",
             `Your order value (${CurrencySymbol}${currentTotal.toFixed(
               2
             )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
