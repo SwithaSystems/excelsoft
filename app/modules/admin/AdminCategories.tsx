@@ -8,6 +8,7 @@ import {
   Image,
   useWindowDimensions,
   Platform,
+  Alert,
 } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
@@ -152,7 +153,7 @@ const AdminCategories = () => {
     if (isWeb) {
       openImagePickerAsync("gallery");
     } else {
-      showAlert("Select Image", "Choose image source", [
+      Alert.alert("Select Image", "Choose image source", [
         {
           text: "Take Photo",
           onPress: () => openImagePickerAsync("camera"),
