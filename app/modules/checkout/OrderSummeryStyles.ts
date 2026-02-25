@@ -164,11 +164,13 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
   },
   webLeftSection: {
-    flex: 0.6,
+    flex: 0.5,
+    minWidth: 0,
     gap: 16,
   },
   webRightSection: {
-    flex: 0.4,
+    flex: 0.5,
+    minWidth: 0,
     gap: 8,
   },
   webSectionCard: {

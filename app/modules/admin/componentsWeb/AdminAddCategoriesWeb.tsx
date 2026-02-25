@@ -463,7 +463,7 @@ const AdminAddCategoriesWeb = () => {
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
-    <BrandHeaderWeb />
+    <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText="Add Category" />
   );
@@ -486,6 +486,7 @@ const AdminAddCategoriesWeb = () => {
                isWeb
                  ? {
                      width: isMobileWeb ? "100%" : "70%",
+                     alignSelf: "center",
                      paddingVertical: isMobileWeb ? 0 : 20,
                    }
                  : { paddingHorizontal: 0 },

@@ -953,8 +953,8 @@ Contact Number: ${pickupAddress.phone || ""}`;
               {/* Left Section - Cart Items */}
               <View
                 style={[
-                  styles.webRightSection,
-                  isMobileWeb && styles.webRightSectionMobile,
+                  styles.webLeftSection,
+                  isMobileWeb && styles.webLeftSectionMobile,
                 ]}
               >
                 {cartItems.map((eachCartItem: any) => (
