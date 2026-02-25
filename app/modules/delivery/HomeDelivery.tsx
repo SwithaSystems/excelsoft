@@ -40,7 +40,6 @@ import {
   ADDRESS_NOT_SAVED,
 } from "../../../constants/customErrorMessages";
 import { format, parse } from "date-fns";
-import { format, parse } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../constants/colors";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
