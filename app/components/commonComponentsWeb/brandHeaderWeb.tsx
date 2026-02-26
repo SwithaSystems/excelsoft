@@ -427,16 +427,23 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
     >
       {/* LEFT SECTION - Logo and Search */}
       <View style={styles.leftSection}>
-        <Image
-          source={require("@/assets/RecreatedLogo_2.png")}
-          style={[
-            styles.logo,
-            {
-              width: isDesktop ? 140 : isTablet ? 110 : 100,
-              height: isDesktop ? 60 : 36,
-            },
-          ]}
-        />
+        <Pressable
+          onPress={() => {
+            clearNavigationStack(containers.homeScreen);
+          }}
+          style={Platform.OS === "web" ? { cursor: "pointer" } : undefined}
+        >
+          <Image
+            source={require("@/assets/RecreatedLogo_2.png")}
+            style={[
+              styles.logo,
+              {
+                width: isDesktop ? 140 : isTablet ? 110 : 100,
+                height: isDesktop ? 60 : 36,
+              },
+            ]}
+          />
+        </Pressable>
         
         {isTabletOrLarger && (
           <View 
