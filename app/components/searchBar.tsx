@@ -73,8 +73,8 @@ const SearchBar = ({
   const defaultBarWidth = isMobileWidth 
     ? "100%" 
     : isWeb && isLargeDesktop 
-    ? "40%" 
-    : "60%";
+    ? "55%" 
+    : "70%";
   const barWidth = isMobileWidth
     ? "100%"
     : typeof widthPercent === "number"
@@ -86,16 +86,27 @@ const SearchBar = ({
     { 
       width: barWidth as `${number}%`, 
       alignSelf: (isMobileWidth ? "center" : "flex-start") as "center" | "flex-start",
-      height: typeof height === "number" ? height : isMobileWidth ? 52 : 40,
+      height: typeof height === "number" ? height : isMobileWidth ? 52 : 48,
       minWidth:0,
+      ...(!isMobileWidth && isWeb ? {
+        borderWidth: 1,
+        borderColor: colors.placeholdergrey,
+        borderRadius: 22,
+        paddingHorizontal: 14,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      } : {}),
     },
   ];
 
   const inputStyle = [
     styles.searchInput,
     { 
-      fontSize: isMobileWidth ? 14 : 16, 
-      paddingVertical: isMobileWidth ? 8 : 6,
+      fontSize: isMobileWidth ? 14 : 15, 
+      paddingVertical: isMobileWidth ? 8 : 10,
       minWidth:0,
       // Only on desktop/tablet: remove default web outline to avoid half-box
       ...(isWeb && !isMobileWidth
@@ -175,7 +186,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    // justifyContent: "center",
     backgroundColor: colors.white,
     borderColor: colors.primary,
     borderWidth: 0.5,

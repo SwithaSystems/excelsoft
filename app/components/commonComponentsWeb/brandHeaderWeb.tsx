@@ -420,8 +420,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : 12,
-          paddingVertical: isDesktop ? 8 : 10,
+          paddingHorizontal: isDesktop ? 48 : isTablet ? 24 : 12,
+          paddingVertical: isDesktop ? 12 : isTablet ? 10 : 10,
         },
       ]}
     >
@@ -438,8 +438,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             style={[
               styles.logo,
               {
-                width: isDesktop ? 140 : isTablet ? 110 : 100,
-                height: isDesktop ? 60 : 36,
+                width: isDesktop ? 152 : isTablet ? 110 : 100,
+                height: isDesktop ? 44 : 36,
               },
             ]}
           />
@@ -458,6 +458,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
               onPress={handleSearch}
               onFocus={handleSearchFocus}
               onBlur={handleSearchBlur}
+              widthPercent={isDesktop ? 100 : undefined}
+              height={isDesktop ? 48 : undefined}
               onLayout={(event) => {
                 const { width } = event.nativeEvent.layout;
                 // Measure the actual rendered SearchBar width
@@ -642,6 +644,13 @@ const styles = StyleSheet.create({
     position: "relative",
     zIndex: 10001,
     overflow: "visible",
+    ...(Platform.OS === "web" && {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 3,
+      elevation: 2,
+    }),
   },
   logo: {
     resizeMode: "contain",
@@ -656,37 +665,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     minWidth: 0,
+    gap: Platform.OS === "web" ? 24 : 0,
   },
   searchContainer: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 0 : 16,
     flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-    position: 'relative',
-    zIndex: 10001, 
-    minWidth: 0,
+    maxWidth: Platform.OS === "web" ? 640 : undefined,
+    minWidth: Platform.OS === "web" ? 380 : 0,
+    justifyContent: "center",
+    alignSelf: "center",
+    position: "relative",
+    zIndex: 10001,
   },
   suggestionsDropdown: {
     position: 'absolute',
     top: '100%',
     left: 0,
-    marginTop: 4,
+    marginTop: 6,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.lightgrey,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-      maxHeight: 300,
-      zIndex: 10002,
-      overflow: 'hidden',
-    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
+    maxHeight: 300,
+    zIndex: 10002,
+    overflow: 'hidden',
+  },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -759,8 +770,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginLeft: 14,
-    padding: 6,
+    marginLeft: Platform.OS === "web" ? 20 : 14,
+    padding: Platform.OS === "web" ? 8 : 6,
   },
   iconContainer: {
     position: "relative",
@@ -783,26 +794,29 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   adminButton: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   adminText: {
     color: colors.white,
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "600",
   },
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   greetingText: {
-    marginRight: 8,
+    marginRight: 10,
     color: colors.primary,
-    fontWeight: "500",
+    fontWeight: "600",
+    fontSize: Platform.OS === "web" ? 14 : undefined,
     maxWidth: 160,
     overflow: "hidden",
   },

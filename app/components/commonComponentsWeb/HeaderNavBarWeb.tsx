@@ -112,6 +112,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [hoveredNavLabel, setHoveredNavLabel] = useState<string | null>(null);
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [showSidebarDrawer, setShowSidebarDrawer] = useState(false);
@@ -564,9 +565,17 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           // Desktop: Show full navigation
           <View style={styles.scrollContainer}>
             {navItems.map((item, index) => (
-              <View key={index} style={styles.itemWrapper}>
+              <View
+                key={index}
+                style={styles.itemWrapper}
+                onMouseEnter={() => !isMobile && setHoveredNavLabel(item.label)}
+                onMouseLeave={() => !isMobile && setHoveredNavLabel(null)}
+              >
                 <TouchableOpacity
-                  style={styles.navItem}
+                  style={[
+                    styles.navItem,
+                    !isMobile && hoveredNavLabel === item.label && styles.navItemHovered,
+                  ]}
                   onPress={() => handleNavPress(item)}
                   activeOpacity={0.7}
                 >
@@ -718,33 +727,39 @@ export default HeaderNavBar;
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 32,
-    justifyContent: "space-between", // Space between nav items and auth buttons
+    minHeight: 36,
+    justifyContent: "space-between",
     paddingVertical: 0,
     marginTop: 0,
     overflow: "visible",
     zIndex: 9998,
     flexDirection: "row",
     alignItems: "center",
-    width: "100%", // Ensure full width
+    width: "100%",
   },
   scrollContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 4,
+    paddingBottom: 6,
+    paddingTop: 6,
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 0, // Allow flexbox to shrink below content size
   },
   itemWrapper: {
-    marginRight: 16,
+    marginRight: 6,
     position: "relative",
     zIndex: 100,
+    borderRadius: 8,
   },
   navItem: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  navItemHovered: {
+    backgroundColor: "rgba(255, 255, 255, 0.14)",
   },
   navItemContent: {
     flexDirection: "row",
@@ -754,39 +769,43 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 15,
     fontWeight: "600",
+    letterSpacing: 0.2,
   },
   dropdownIcon: {
-    marginLeft: 4,
+    marginLeft: 5,
     marginTop: 4,
   },
   dropdownMenu: {
     position: "absolute",
-    top: 40,
+    top: 44,
     left: 0,
-    width: 200,
+    width: 220,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 12,
     shadowColor: colors.black,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
-    maxHeight: 300,
+    maxHeight: 320,
     zIndex: 9999,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
   },
   dropdownScroll: {
-    maxHeight: 300,
+    maxHeight: 320,
   },
   dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.lightgrey,
   },
   dropdownText: {
     fontSize: 14,
     color: colors.black,
+    fontWeight: "500",
   },
   loadingContainer: {
     paddingVertical: 20,

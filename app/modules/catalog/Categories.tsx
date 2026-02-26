@@ -49,9 +49,11 @@ const categoriesScreen = () => {
     fetchAllCategories();
   }, []);
 
-  const numColumns = isWeb ? 4 : 2;
-  // Use flex-basis percentage for responsive layout
-  const itemFlexBasis = isWeb ? "23%" : "47%";
+  // const numColumns = isWeb ? 3 : 2;
+  // Use flex-basis percentage for responsive layout (3 columns on web with gap)
+const numColumns = isWeb ? 4 : 2;
+const GAP = 24; // total row gap for web
+const itemFlexBasis = isWeb ? "20%" : "47%";
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
@@ -61,8 +63,8 @@ const categoriesScreen = () => {
           {
             flexBasis: itemFlexBasis,
             maxWidth: itemFlexBasis,
-            marginRight: isWeb ? 15 : 0,
-            marginBottom: 16,
+            marginBottom: 24,
+            // marginRight: isWeb ? 24 : 0,
           },
         ]}
       >
@@ -113,7 +115,8 @@ const categoriesScreen = () => {
               columnWrapperStyle={[
                 styles.row,
                 {
-                  justifyContent: isWeb ? "flex-start" : "space-between",
+                  justifyContent: "space-between",
+                  marginBottom: 24,
                 },
               ]}
               contentContainerStyle={styles.listContainer}
