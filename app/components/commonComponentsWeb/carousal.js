@@ -9,6 +9,7 @@ import {
   Text,
   Platform,
 } from "react-native";
+import { useWindowDimensions } from "react-native";
 
 const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get("window");
 
@@ -57,9 +58,20 @@ export default function CarouselWeb({
 }) {
   const listRef = useRef(null);
   const autoplayRef = useRef(null);
+  const initialScrollDoneRef = useRef(false);
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
   const [arrowPressed, setArrowPressed] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    title: "",
+    x: 0,
+    y: 0,
+  });
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  const isWeb = Platform.OS === "web";
 
   // Process data based on whether it's promotional content
   const items = React.useMemo(() => {
@@ -74,21 +86,69 @@ export default function CarouselWeb({
     return data;
   }, [data, isPromotional]);
 
+  // Web loop: extended list [last, ...items, first] for circular/infinite scroll
+  const listData = React.useMemo(() => {
+    if (!isWeb || !loop || items.length <= 1) return items;
+    const last = items[items.length - 1];
+    const first = items[0];
+    return [
+      { ...last, _loopClone: "start" },
+      ...items,
+      { ...first, _loopClone: "end" },
+    ];
+  }, [isWeb, loop, items]);
+
+  const listLength = listData.length;
+  const isWebLoop = isWeb && loop && items.length > 1;
+
   const MAX_CONTAINER_WIDTH = 1200;
-  const containerWidth = Math.min(WINDOW_WIDTH - 32, MAX_CONTAINER_WIDTH);
+
+  const isDesktop = Platform.OS === "web" && screenWidth >= 1024;
+
+  const containerWidth = isDesktop
+    ? Math.min(screenWidth - 32, MAX_CONTAINER_WIDTH)
+    : width;
+
+  // Web coverflow: 30–40% viewport height on desktop; lower on mobile web
+  // On mobile web, cap card width to container so carousel doesn't get cut off
+  const BANNER_RATIO = 1536 / 834;
+  const heightRatioWeb = isDesktop ? 0.35 : 0.25;
+  const preferredHeightWeb = screenHeight * heightRatioWeb;
+  let itemWidthWeb = preferredHeightWeb * BANNER_RATIO;
+  let carouselHeightWeb = preferredHeightWeb;
+  if (isWeb && itemWidthWeb > containerWidth * 0.9) {
+    itemWidthWeb = containerWidth * 0.9;
+    carouselHeightWeb = itemWidthWeb / BANNER_RATIO;
+  }
+  const scrollStepWeb = itemWidthWeb;
 
   const goTo = useCallback(
     (i, animated = true) => {
       if (!listRef.current || items.length === 0) return;
       const safeIndex = Math.max(0, Math.min(i, items.length - 1));
+      const step = isWeb ? scrollStepWeb : containerWidth;
       try {
-        listRef.current.scrollToIndex({ index: safeIndex, animated });
+        if (isWeb) {
+          const offset = isWebLoop
+            ? (safeIndex + 1) * step
+            : safeIndex * step;
+          listRef.current.scrollToOffset({
+            offset,
+            animated,
+          });
+        } else {
+          listRef.current.scrollToIndex({ index: safeIndex, animated });
+        }
       } catch (err) {
-        listRef.current.scrollToOffset({ offset: safeIndex * width, animated });
+        const offset = isWeb ? (isWebLoop ? (safeIndex + 1) * step : safeIndex * step) : safeIndex * containerWidth;
+        listRef.current.scrollToOffset({
+          offset,
+          animated,
+        });
       }
       setIndex(safeIndex);
     },
-    [items.length, width]
+    [items.length, containerWidth, isWeb, isWebLoop, scrollStepWeb]
   );
 
   const next = useCallback(() => {
@@ -118,7 +178,7 @@ export default function CarouselWeb({
     function start() {
       if (autoplayRef.current) clearInterval(autoplayRef.current);
       autoplayRef.current = setInterval(() => {
-        if (Platform.OS === "web" && hovering) return;
+        if (isWeb && hovering) return;
         next();
       }, autoPlayInterval);
     }
@@ -133,14 +193,71 @@ export default function CarouselWeb({
     if (index >= items.length) setIndex(Math.max(0, items.length - 1));
   }, [items.length, index]);
 
+  // Web loop: start with first real item in center (offset = 1 * itemWidth)
+  useEffect(() => {
+    if (!isWebLoop || !listRef.current) return;
+    if (initialScrollDoneRef.current) return;
+    initialScrollDoneRef.current = true;
+    const id = requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({
+        offset: scrollStepWeb,
+        animated: false,
+      });
+      setScrollOffset(scrollStepWeb);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isWebLoop, scrollStepWeb]);
+
+  useEffect(() => {
+    if (!isWebLoop) initialScrollDoneRef.current = false;
+  }, [isWebLoop]);
+
   const onMomentumScrollEnd = (e) => {
     const offsetX = e.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(offsetX / width);
-    setIndex(newIndex);
+    const step = isWeb ? scrollStepWeb : containerWidth;
+    const listIndex = Math.round(offsetX / step);
+
+    if (isWebLoop) {
+      const n = items.length;
+      if (listIndex === 0) {
+        setIndex(n - 1);
+        setScrollOffset(n * scrollStepWeb);
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToOffset({
+            offset: n * scrollStepWeb,
+            animated: false,
+          });
+        });
+        return;
+      }
+      if (listIndex === listLength - 1) {
+        setIndex(0);
+        setScrollOffset(scrollStepWeb);
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToOffset({
+            offset: scrollStepWeb,
+            animated: false,
+          });
+        });
+        return;
+      }
+      setIndex(listIndex - 1);
+      return;
+    }
+
+    setIndex(Math.max(0, Math.min(listIndex, items.length - 1)));
   };
 
+  const onScrollWeb = useCallback(
+    (e) => {
+      const offsetX = e.nativeEvent.contentOffset.x;
+      setScrollOffset(offsetX);
+    },
+    []
+  );
+
   const containerProps =
-    Platform.OS === "web"
+    isWeb
       ? {
           onMouseEnter: () => setHovering(true),
           onMouseLeave: () => setHovering(false),
@@ -171,7 +288,7 @@ export default function CarouselWeb({
     }
     // For external links without custom handler, open the URL
     if (item.link && !item.isInternalLink) {
-      if (Platform.OS === "web") {
+      if (isWeb) {
         window?.open?.(item.link, "_blank");
       } else {
         // For mobile, you can use Linking
@@ -183,23 +300,12 @@ export default function CarouselWeb({
 
   if (!items.length) return null;
 
-  const BANNER_RATIO = 1536 / 834;
-  const calculatedHeight = width / BANNER_RATIO;
-  const minHeightPercent = 0.28;
-  const maxHeightPercent = 0.55;
-  const minHeight = WINDOW_HEIGHT * minHeightPercent;
-  const maxHeight = WINDOW_HEIGHT * maxHeightPercent;
-  const responsiveHeight = Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
-
-  const [tooltip, setTooltip] = useState({
-    visible: false,
-    title: "",
-    x: 0,
-    y: 0,
-  });
+  const responsiveHeight = isWeb
+    ? carouselHeightWeb
+    : screenHeight * 0.25;
 
   const handleMouseEnter = (item) => {
-    if (Platform.OS !== "web") return;
+    if (!isWeb) return;
     if (!item?.title) return;
 
     setTooltip((prev) => ({
@@ -210,7 +316,7 @@ export default function CarouselWeb({
   };
 
   const handleMouseMove = (e) => {
-    if (Platform.OS !== "web") return;
+    if (!isWeb) return;
 
     setTooltip((prev) => ({
       ...prev,
@@ -220,7 +326,7 @@ export default function CarouselWeb({
   };
 
   const handleMouseLeave = () => {
-    if (Platform.OS !== "web") return;
+    if (!isWeb) return;
 
     setTooltip({
       visible: false,
@@ -231,68 +337,127 @@ export default function CarouselWeb({
   };
 
   return (
-    <View style={[styles.root, { width }]} {...containerProps}>
+    <View
+      style={[
+        styles.root,
+        { width: containerWidth },
+        isWeb && {
+          height: carouselHeightWeb,
+          overflow: "hidden",
+          maxWidth: containerWidth,
+        },
+      ]}
+      {...containerProps}
+    >
       <FlatList
         ref={listRef}
-        data={items}
+        data={listData}
         horizontal
-        pagingEnabled
+        pagingEnabled={!isWeb}
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item, i) => (item.id ?? i).toString()}
-        renderItem={({ item, index: idx }) => (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            style={[styles.slide, { width, height: responsiveHeight }]}
-            onPress={() => handleSlidePress(item, idx)}
-            {...(Platform.OS === "web"
-              ? {
-                  onMouseEnter: () => handleMouseEnter(item),
-                  onMouseMove: handleMouseMove,
-                  onMouseLeave: handleMouseLeave,
-                }
-              : {})}
-          >
-            <Image
-              source={normalizeImage(item.image)}
-              style={{ width: "100%", height: "100%", borderRadius }}
-              resizeMode="cover"
-              onError={(e) =>
-                console.warn("CarouselWeb image error:", e?.nativeEvent ?? e)
-              }
-            />
-            
-            {showOverlay && (item.title || item.description) && (
-              <View style={styles.overlay}>
-                {item.title && (
-                  <Text style={styles.title} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                )}
-                {item.description && (
-                  <Text style={styles.description} numberOfLines={2}>
-                    {item.description}
-                  </Text>
-                )}
-              </View>
-            )}
-            
-            {typeof renderItemExtras === "function" && (
-              <View style={styles.extrasContainer}>
-                {renderItemExtras(item, idx)}
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
+        keyExtractor={(item, i) =>
+          item._loopClone
+            ? `${item.id ?? i}-${item._loopClone}`
+            : (item.id ?? i).toString()
+        }
         onMomentumScrollEnd={onMomentumScrollEnd}
-        getItemLayout={(_, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        style={{ width }}
+        scrollEventThrottle={isWeb ? 16 : undefined}
+        onScroll={isWeb ? onScrollWeb : undefined}
+        snapToInterval={isWeb ? scrollStepWeb : undefined}
+        snapToAlignment={isWeb ? "center" : undefined}
+        decelerationRate={isWeb ? "fast" : undefined}
+        contentContainerStyle={
+          isWeb
+            ? {
+                paddingHorizontal: (containerWidth - itemWidthWeb) / 2,
+              }
+            : undefined
+        }
+        getItemLayout={(_, listIdx) => {
+          const length = isWeb ? itemWidthWeb : containerWidth;
+          return {
+            length,
+            offset: length * listIdx,
+            index: listIdx,
+          };
+        }}
+        style={{
+          width: containerWidth,
+          ...(isWeb && { overflow: "hidden" }),
+        }}
+        renderItem={({ item, index: listIdx }) => {
+          const slideWidth = isWeb ? itemWidthWeb : containerWidth;
+          const slideHeight = responsiveHeight;
+          const distanceFromCenter = isWeb
+            ? scrollOffset / itemWidthWeb - listIdx
+            : 0;
+          const scale = isWeb
+            ? 1 - 0.15 * Math.min(Math.abs(distanceFromCenter), 1)
+            : 1;
+          const opacity = isWeb
+            ? 1 - 0.25 * Math.min(Math.abs(distanceFromCenter), 1)
+            : 1;
+          const logicalIndex = isWebLoop
+            ? listIdx === 0
+              ? items.length - 1
+              : listIdx === listLength - 1
+                ? 0
+                : listIdx - 1
+            : listIdx;
+
+          return (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={[
+                styles.slide,
+                {
+                  width: slideWidth,
+                  height: slideHeight,
+                  opacity,
+                  transform: [{ scale }],
+                },
+              ]}
+              onPress={() => handleSlidePress(item, logicalIndex)}
+              {...(isWeb
+                ? {
+                    onMouseEnter: () => handleMouseEnter(item),
+                    onMouseMove: handleMouseMove,
+                    onMouseLeave: handleMouseLeave,
+                  }
+                : {})}
+            >
+              <Image
+                source={normalizeImage(item.image)}
+                style={{ width: "100%", height: "100%", borderRadius }}
+                resizeMode="cover"
+              />
+
+              {showOverlay && (item.title || item.description) && (
+                <View style={styles.overlay}>
+                  {item.title && (
+                    <Text style={styles.title} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                  )}
+                  {item.description && (
+                    <Text style={styles.description} numberOfLines={2}>
+                      {item.description}
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {typeof renderItemExtras === "function" && (
+                <View style={styles.extrasContainer}>
+                  {renderItemExtras(item, logicalIndex)}
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        }}
       />
 
-        {Platform.OS === "web" && tooltip.visible && (
+        {isWeb && tooltip.visible && (
           <View
             style={[
               styles.tooltip,

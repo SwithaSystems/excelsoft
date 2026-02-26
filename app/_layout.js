@@ -21,6 +21,7 @@ import * as Notifications from "expo-notifications";
 import axios from "axios";
 import { handleNotificationNavigation } from "@/services/navigationService";
 import { DeviceEventEmitter, AppState, Platform } from "react-native";
+import WebPullToRefresh, { webPullToRefresh } from "../app/components/commonComponentsWeb/webPullToRefresh";
 
 // Only configure notification handler on mobile platforms
 if (Platform.OS !== "web") {
@@ -334,7 +335,9 @@ export default function Layout() {
             <AuthProvider>
               <RoleProvider>
                 <NotificationsHandler />
-                <LayoutContent />
+                <WebPullToRefresh>
+                  <LayoutContent />
+                </WebPullToRefresh>
                 <Toast
                   config={{
                     customToast: ({ text1, text2, onPress }) => (
