@@ -10,6 +10,8 @@ interface Props {
   children: ReactNode;
 }
 
+const SCROLL_TOP_THRESHOLD = 10; // Only allow pull-to-refresh when scroll is within this from top
+
 const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const translateY = useRef(new Animated.Value(0)).current;
 
@@ -19,6 +21,10 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
 
   const [showSpinner, setShowSpinner] = useState(false);
 
+  const isAtTop = () =>
+    typeof window !== "undefined" &&
+    (window.scrollY === undefined || window.scrollY <= SCROLL_TOP_THRESHOLD);
+
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
@@ -26,12 +32,35 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
     document.body.style.overscrollBehaviorY = "contain";
 
     const handleTouchStart = (e: TouchEvent) => {
+      // Ignore multi-touch (pinch zoom) so zoom doesn't trigger refresh
+      if (e.touches.length >= 2) {
+        isDragging.current = false;
+        return;
+      }
+      // Only start pull gesture when page is scrolled to top (avoids triggering on scroll-up)
+      if (!isAtTop()) return;
+
       startY.current = e.touches[0].clientY;
       isDragging.current = true;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      // Cancel pull on multi-touch (e.g. second finger for pinch zoom)
+      if (e.touches.length >= 2) {
+        isDragging.current = false;
+        pullValue.current = 0;
+        translateY.setValue(0);
+        return;
+      }
       if (!isDragging.current) return;
+
+      // If user scrolled the page (not at top anymore), cancel pull
+      if (!isAtTop()) {
+        isDragging.current = false;
+        pullValue.current = 0;
+        translateY.setValue(0);
+        return;
+      }
 
       const diff = e.touches[0].clientY - startY.current;
 
