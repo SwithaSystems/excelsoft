@@ -109,10 +109,11 @@ export default function CarouselWeb({
     ? Math.min(screenWidth - 32, MAX_CONTAINER_WIDTH)
     : width;
 
-  // Web coverflow: 30–40% viewport height, 1536:834 aspect ratio
+  // Web coverflow: 30–40% viewport height on desktop; lower on mobile web
   // On mobile web, cap card width to container so carousel doesn't get cut off
   const BANNER_RATIO = 1536 / 834;
-  const preferredHeightWeb = screenHeight * 0.35;
+  const heightRatioWeb = isDesktop ? 0.35 : 0.25;
+  const preferredHeightWeb = screenHeight * heightRatioWeb;
   let itemWidthWeb = preferredHeightWeb * BANNER_RATIO;
   let carouselHeightWeb = preferredHeightWeb;
   if (isWeb && itemWidthWeb > containerWidth * 0.9) {
@@ -301,7 +302,7 @@ export default function CarouselWeb({
 
   const responsiveHeight = isWeb
     ? carouselHeightWeb
-    : screenHeight * 0.35;
+    : screenHeight * 0.25;
 
   const handleMouseEnter = (item) => {
     if (!isWeb) return;
