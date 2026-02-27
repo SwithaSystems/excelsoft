@@ -534,7 +534,7 @@ const SearchResultsScreen = () => {
         const numColumns = isMobile ? 2 : isTablet ? 3 : 5;
         const gap = 16;
         // PageLayoutWeb uses these paddings when contentPadding is enabled
-        const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
+        const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : isMobile ? 10 : 16;
         const availableWidth = Math.max(0, width - (horizontalPadding * 2));
         const totalGapWidth = gap * (numColumns - 1);
         const calculatedCardWidth =
@@ -639,7 +639,7 @@ const SearchResultsScreen = () => {
             </Text>
             <View style={styles.filterSortContainerWeb}>
               <TouchableOpacity
-                style={styles.filterButtonWeb}
+                style={styles.iconButtonWeb}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 onPress={() => {
                   redirectToPage(containers.filterScreen, {
@@ -647,16 +647,14 @@ const SearchResultsScreen = () => {
                   });
                 }}
               >
-                <Ionicons name="filter-outline" size={18} color={colors.black} />
-                <Text style={styles.filterButtonTextWeb}>Filter</Text>
+                <Ionicons name="funnel-outline" size={24} color={colors.black} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.sortButtonWeb}
+                style={[styles.iconButtonWeb, styles.iconButtonWebSpacing]}
                 onPress={() => setIsSortDropdownVisible(true)}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="swap-vertical" size={18} color={colors.black} />
-                <Text style={styles.sortButtonTextWeb}>Sort</Text>
+                <Ionicons name="swap-vertical" size={24} color={colors.black} />
               </TouchableOpacity>
             </View>
           </View>
