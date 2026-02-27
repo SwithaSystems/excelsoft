@@ -44,7 +44,7 @@ interface BrandHeaderWebProps {
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
   const router = useRouter();
   const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
-  const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
+  const { isMobile, isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
@@ -420,23 +420,30 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 20 : 12,
-          paddingVertical: isDesktop ? 8 : 10,
+          paddingHorizontal: isDesktop ? 48 : isTablet ? 24 : 12,
+          paddingVertical: isDesktop ? 12 : isTablet ? 8 : 6,
         },
       ]}
     >
       {/* LEFT SECTION - Logo and Search */}
       <View style={styles.leftSection}>
-        <Image
-          source={require("@/assets/RecreatedLogo_2.png")}
-          style={[
-            styles.logo,
-            {
-              width: isDesktop ? 140 : isTablet ? 110 : 100,
-              height: isDesktop ? 60 : 36,
-            },
-          ]}
-        />
+        <Pressable
+          onPress={() => {
+            clearNavigationStack(containers.homeScreen);
+          }}
+          style={Platform.OS === "web" ? { cursor: "pointer" } : undefined}
+        >
+          <Image
+            source={require("@/assets/RecreatedLogo_2.png")}
+            style={[
+              styles.logo,
+              {
+                width: isDesktop ? 152 : isTablet ? 110 : 100,
+                height: isDesktop ? 44 : 36,
+              },
+            ]}
+          />
+        </Pressable>
         
         {isTabletOrLarger && (
           <View 
@@ -451,6 +458,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
               onPress={handleSearch}
               onFocus={handleSearchFocus}
               onBlur={handleSearchBlur}
+              widthPercent={isDesktop ? 100 : undefined}
+              height={isDesktop ? 48 : undefined}
               onLayout={(event) => {
                 const { width } = event.nativeEvent.layout;
                 // Measure the actual rendered SearchBar width
@@ -521,11 +530,11 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       </View>
 
       {/* RIGHT SECTION */}
-      <View style={styles.rightSection}>
+      <View style={[styles.rightSection, isMobile && styles.rightSectionMobile]}>
 
         {/* Profile/Sign In */}
         <TouchableOpacity
-          style={styles.profileButton}
+          style={[styles.profileButton, isMobile && styles.profileButtonMobile]}
           onPress={handleProfileClick}
         >
           <Text style={styles.greetingText}>
@@ -535,14 +544,14 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </Text>
           <Ionicons
             name="person-circle-outline"
-            size={24}
+            size={22}
             color={colors.primary}
           />
         </TouchableOpacity>
 
         {isAdmin && (
           <TouchableOpacity
-            style={styles.adminButton}
+            style={[styles.adminButton, isMobile && styles.adminButtonMobile]}
             onPress={() => {
               if (hideUserGreeting) {
                 clearNavigationStack(containers.homeScreen);
@@ -559,11 +568,11 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <TouchableOpacity
-            style={styles.iconButton}
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile]}
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              <Ionicons name="cart-outline" size={22} color={colors.primary} />
               {cartItemCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -577,7 +586,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <Pressable
-            style={[styles.iconButton, Platform.OS === "web" && { cursor: "pointer" }]}
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile, Platform.OS === "web" && { cursor: "pointer" }]}
             onPress={() => {
               const pathname = "/" + containers.userNotificationsScreen;
               if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
@@ -607,7 +616,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             }}
           >
             <View style={styles.iconContainer} pointerEvents="none">
-              <Ionicons name="notifications" size={24} color={colors.primary} />
+              <Ionicons name="notifications" size={22} color={colors.primary} />
               {isValidUser && unreadNotificationCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -635,6 +644,13 @@ const styles = StyleSheet.create({
     position: "relative",
     zIndex: 10001,
     overflow: "visible",
+    ...(Platform.OS === "web" && {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 3,
+      elevation: 2,
+    }),
   },
   logo: {
     resizeMode: "contain",
@@ -644,42 +660,60 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexShrink: 0,
   },
+  rightSectionMobile: {
+    gap: 6,
+  },
+  profileButtonMobile: {
+    marginLeft: 6,
+    paddingHorizontal: 2,
+  },
+  adminButtonMobile: {
+    marginLeft: 0,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  iconButtonMobile: {
+    marginLeft: 0,
+    padding: 4,
+  },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
     minWidth: 0,
+    gap: Platform.OS === "web" ? 24 : 0,
   },
   searchContainer: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 0 : 16,
     flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-    position: 'relative',
-    zIndex: 10001, 
-    minWidth: 0,
+    maxWidth: Platform.OS === "web" ? 640 : undefined,
+    minWidth: Platform.OS === "web" ? 380 : 0,
+    justifyContent: "center",
+    alignSelf: "center",
+    position: "relative",
+    zIndex: 10001,
   },
   suggestionsDropdown: {
     position: 'absolute',
     top: '100%',
     left: 0,
-    marginTop: 4,
+    marginTop: 6,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.lightgrey,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-      maxHeight: 300,
-      zIndex: 10002,
-      overflow: 'hidden',
-    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
+    maxHeight: 300,
+    zIndex: 10002,
+    overflow: 'hidden',
+  },
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -752,8 +786,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginLeft: 14,
-    padding: 6,
+    marginLeft: Platform.OS === "web" ? 20 : 14,
+    padding: Platform.OS === "web" ? 8 : 6,
   },
   iconContainer: {
     position: "relative",
@@ -776,11 +810,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   adminButton: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   adminText: {
     color: colors.white,
@@ -790,12 +824,15 @@ const styles = StyleSheet.create({
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   greetingText: {
     marginRight: 8,
     color: colors.primary,
-    fontWeight: "500",
+    fontWeight: "600",
+    fontSize: Platform.OS === "web" ? 13 : undefined,
     maxWidth: 160,
     overflow: "hidden",
   },

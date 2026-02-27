@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
 
   // Web-specific Styles
   webContainer: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: colors.white,
   },
   webContentWrapper: {

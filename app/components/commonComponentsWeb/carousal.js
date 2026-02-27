@@ -525,6 +525,15 @@ const styles = StyleSheet.create({
   root: {
     alignSelf: "center",
     position: "relative",
+    ...(Platform.OS === "web" && {
+      borderRadius: 14,
+      overflow: "hidden",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 16,
+      elevation: 6,
+    }),
   },
   slide: {
     justifyContent: "center",
@@ -543,20 +552,20 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "rgba(0, 0, 0, 0.6)",
-    padding: 12,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    padding: 14,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
   },
   title: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "bold",
     marginBottom: 4,
   },
   description: {
     color: "#fff",
     fontSize: 14,
-    opacity: 0.9,
+    opacity: 0.92,
   },
   leftArrowTouchArea: {
     position: "absolute",
@@ -581,16 +590,16 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   arrow: {
-    backgroundColor: "rgba(255,255,255,0.7)",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
   leftArrow: {
     // Removed position absolute - now inside touch area
@@ -612,14 +621,15 @@ const styles = StyleSheet.create({
     zIndex: 30,
   },
   indicator: {
-    width: 36,
+    width: 40,
     height: 6,
     borderRadius: 6,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    marginHorizontal: 6,
+    backgroundColor: "rgba(0,0,0,0.22)",
+    marginHorizontal: 5,
   },
   activeIndicator: {
-    backgroundColor: "rgba(0,0,0,0.85)",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    width: 40,
   },
 
   tooltip: {

@@ -403,7 +403,7 @@ const handleAddToCart = (item: any) => {
         !isWeb && styles.containerMobile,
         isWeb && styles.containerWeb
       ]}>
-        {!isWeb && <Header />}        <Header />
+        {!isWeb && <Header />}
 
         {!isWeb && (
           <View style={styles.categoriesContainer}>
@@ -506,7 +506,10 @@ const handleAddToCart = (item: any) => {
               isTabOrDesktop && styles.recommendedSectionDesktop,
               isMobileWeb && styles.recommendedSectionMobile,
             ]}>
-             <Text style={styles.sectionTitle}>
+             <Text style={[
+                styles.sectionTitle,
+                isTabOrDesktop && styles.sectionTitleDesktop,
+              ]}>
                {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
              </Text>
             {recommendedProductsLoading ? (
@@ -582,6 +585,7 @@ const styles = StyleSheet.create({
   },
    containerWeb: {
     marginVertical: 0,
+    // backgroundColor: colors.offWhite,
   },
   containerMobile: {
     flex: 0, // Remove flex: 1 to allow scrolling in ScrollView - content determines height
@@ -600,8 +604,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   carouselSectionDesktop: {
-    marginTop: 32,
-    paddingHorizontal: 0, // Padding handled by PageLayoutWeb
+    marginTop: 40,
+    marginBottom: 48,
+    paddingHorizontal: 0,
   },
   carouselLoader: {
     height: 230,
@@ -626,20 +631,26 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    // marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     color: colors.black,
+    letterSpacing: 0.3,
+  },
+  sectionTitleDesktop: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 20,
   },
   recommendedList: {
-    // paddingHorizontal: 8,
+    paddingRight: 4,
   },
   recommendedCardWrapper: {
     width: 160,
-    marginHorizontal: 8,
+    marginHorizontal: 10,
   },
    recommendedSectionDesktop: {
-    marginTop: 32,
-    paddingHorizontal: 0, // Padding handled by PageLayoutWeb
+    marginTop: 40,
+    marginBottom: 48,
+    paddingHorizontal: 0,
   },
   recommendedLoader: {
     height: 280,

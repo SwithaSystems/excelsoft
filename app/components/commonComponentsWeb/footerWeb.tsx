@@ -24,14 +24,20 @@ const FooterWeb = () => {
       isTablet && styles.footerContainerTablet,
     ]}>
       <View style={styles.leftSection}>
-        <Image
-          source={require("@/assets/RecreatedLogo_2.png")}
-          style={[
-            styles.logo,
-            isMobile && styles.logoMobile,
-          ]}
-          resizeMode="contain"
-        />
+        <TouchableOpacity
+          onPress={() => redirectToPage(containers.homeScreen)}
+          activeOpacity={0.7}
+          style={Platform.OS === "web" ? { cursor: "pointer" } : undefined}
+        >
+          <Image
+            source={require("@/assets/RecreatedLogo_2.png")}
+            style={[
+              styles.logo,
+              isMobile && styles.logoMobile,
+            ]}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
 
       <View style={[

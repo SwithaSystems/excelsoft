@@ -23,23 +23,27 @@ const styles = StyleSheet.create({
   },
   eachNotificationSection: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    // marginBottom: 8,
+    alignItems: "center",
+    paddingBottom: 12,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F3F3",
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: colors.black,
   },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    // paddingVertical: 8,
+    paddingVertical: 14,
   },
   switchLabel: {
-    fontSize: 16,
-    color: colors.black,
+    fontSize: 15,
+    color: "#555",
   },
 });
 

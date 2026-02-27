@@ -23,12 +23,19 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import * as SecureStore from "expo-secure-store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 
 const MAX_IMAGES = 5;
 
 const feedBackScreen = () => {
   const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isTabletWeb = isWeb && isTablet;
+
+  const webScale = isTabletWeb ? 0.9 : isMobileWeb ? 0.85 : 1;
+  const s = (value: number) => value * webScale;
 
   const params = useLocalSearchParams();
   const productId = params.productId as string;
@@ -159,96 +166,188 @@ console.log("Token exists:", !!token);
       scrollable
     >
       <KeyBoardWrapper>
-        <ScrollView>
-          <View
-            style={{
-              width: isWeb ? "60%" : "100%",
-              alignSelf: "center",
-            }}
-          >
-            <View style={[globalStyles.pt_0]}>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingTitle}>What is your Rating?</Text>
-                <ProductStars
-                  starsContainer={{ justifyContent: "space-between" }}
-                  rating={rating}
-                  needAction={true}
-                  size={60}
-                  onChangeRating={setRating}
-                />
-              </View>
-
-              <View style={styles.reviewInputContainer}>
-                <TextInput
-                  style={[styles.reviewInput, { height: 333 }]}
-                  placeholder="Add Your Review"
-                  multiline
-                  value={reviewText}
-                  onChangeText={setReviewText}
-                  editable={!isSubmitting}
-                />
-              </View>
-
-              <View style={styles.imagePickerContainer}>
-                <Text style={styles.ratingTitle}>
-                  Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
-                </Text>
-
-                <TouchableOpacity
-                  style={styles.addImageButton}
-                  onPress={pickImage}
-                  disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
-                >
-                  <Ionicons
-                    name="add"
-                    size={30}
-                    color={
-                      isSubmitting || selectedImages.length >= MAX_IMAGES
-                        ? colors.placeholdergrey
-                        : colors.darkGray
-                    }
-                  />
-                </TouchableOpacity>
-
-                <View style={styles.selectedImagesContainer}>
-                  {selectedImages.map((image, index) => (
-                    <View key={index} style={styles.imgContainer}>
-                      <Image source={{ uri: image.uri }} style={styles.selectedImage} />
-
-                      <TouchableOpacity
-                        onPress={() => removeImage(index)}
-                        style={styles.removeImageButton}
-                        disabled={isSubmitting}
-                      >
-                        <Ionicons
-                          name="close"
-                          size={20}
-                          color={
-                            isSubmitting ? colors.placeholdergrey : colors.darkGray
-                          }
-                        />
-                      </TouchableOpacity>
+        <ScrollView
+          contentContainerStyle={isMobileWeb ? styles.webScrollContent : undefined}
+          style={isMobileWeb ? styles.webScroll : undefined}
+        >
+          {/* Mobile web: structured layout with heading and full-width form */}
+          {isMobileWeb ? (
+            <View style={[styles.contentWrapper, styles.webContentWrapper]}>
+              <Text style={[styles.pageHeading, { fontSize: s(28), marginBottom: s(24) }]}>
+                Add Your Review
+              </Text>
+              <View style={[styles.formContainer, styles.webFormMobile]}>
+                <View style={[globalStyles.pt_0]}>
+                  <View style={[styles.ratingContainer, { marginBottom: s(20) }]}>
+                    <Text style={[styles.ratingTitle, { fontSize: s(18), marginBottom: s(12) }]}>
+                      What is your Rating?
+                    </Text>
+                    <ProductStars
+                      starsContainer={{ justifyContent: "space-between" }}
+                      rating={rating}
+                      needAction={true}
+                      size={s(44)}
+                      onChangeRating={setRating}
+                    />
+                  </View>
+                  <View style={[styles.reviewInputContainer, { marginBottom: s(20) }]}>
+                    <TextInput
+                      style={[
+                        styles.reviewInput,
+                        {
+                          height: 140,
+                          fontSize: s(16),
+                          padding: s(12),
+                          borderRadius: 8,
+                        },
+                      ]}
+                      placeholder="Add Your Review"
+                      multiline
+                      value={reviewText}
+                      onChangeText={setReviewText}
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                  <View style={[styles.imagePickerContainer, { marginBottom: s(20) }]}>
+                    <Text style={[styles.ratingTitle, { fontSize: s(18), marginBottom: s(12) }]}>
+                      Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.addImageButton, styles.webAddImageButton]}
+                      onPress={pickImage}
+                      disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={s(28)}
+                        color={
+                          isSubmitting || selectedImages.length >= MAX_IMAGES
+                            ? colors.placeholdergrey
+                            : colors.darkGray
+                        }
+                      />
+                    </TouchableOpacity>
+                    <View style={[styles.selectedImagesContainer, styles.webSelectedImagesContainer]}>
+                      {selectedImages.map((image, index) => (
+                        <View key={index} style={[styles.imgContainer, styles.webImgContainer]}>
+                          <Image source={{ uri: image.uri }} style={[styles.selectedImage, styles.webSelectedImage]} />
+                          <TouchableOpacity
+                            onPress={() => removeImage(index)}
+                            style={styles.removeImageButton}
+                            disabled={isSubmitting}
+                          >
+                            <Ionicons
+                              name="close"
+                              size={s(18)}
+                              color={isSubmitting ? colors.placeholdergrey : colors.darkGray}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
                     </View>
-                  ))}
+                  </View>
+                </View>
+                <View style={[styles.submitSection, { marginTop: s(8) }]}>
+                  <Button
+                    title={isSubmitting ? "Submitting..." : "Submit Review"}
+                    onPress={handleAddReview}
+                    disabled={isSubmitting || !rating || reviewText.trim() === ""}
+                    loading={isSubmitting}
+                    style={styles.webSubmitButton}
+                  />
                 </View>
               </View>
-            </View>
-
-            <View>
-              <Button
-                title={isSubmitting ? "Submitting..." : "Submit Review"}
-                onPress={handleAddReview}
-                disabled={isSubmitting || !rating || reviewText.trim() === ""}
-                loading={isSubmitting}
+              <ConfirmationModal
+                isModalVisible={showReviewconfirmationModal}
+                text="Review Added Successfully"
+                onClose={() => setShowReviewconfirmationModal(false)}
               />
             </View>
-
-            <ConfirmationModal
-              isModalVisible={showReviewconfirmationModal}
-              text="Review Added Successfully"
-              onClose={() => setShowReviewconfirmationModal(false)}
-            />
-          </View>
+          ) : (
+            /* Desktop web + native: original layout unchanged */
+            <View
+              style={{
+                width: isWeb ? "60%" : "100%",
+                alignSelf: "center",
+              }}
+            >
+              <View style={[globalStyles.pt_0]}>
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingTitle}>What is your Rating?</Text>
+                  <ProductStars
+                    starsContainer={{ justifyContent: "space-between" }}
+                    rating={rating}
+                    needAction={true}
+                    size={60}
+                    onChangeRating={setRating}
+                  />
+                </View>
+                <View style={styles.reviewInputContainer}>
+                  <TextInput
+                    style={[styles.reviewInput, { height: 333 }]}
+                    placeholder="Add Your Review"
+                    multiline
+                    value={reviewText}
+                    onChangeText={setReviewText}
+                    editable={!isSubmitting}
+                  />
+                </View>
+                <View style={styles.imagePickerContainer}>
+                  <Text style={styles.ratingTitle}>
+                    Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.addImageButton}
+                    onPress={pickImage}
+                    disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
+                  >
+                    <Ionicons
+                      name="add"
+                      size={30}
+                      color={
+                        isSubmitting || selectedImages.length >= MAX_IMAGES
+                          ? colors.placeholdergrey
+                          : colors.darkGray
+                      }
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.selectedImagesContainer}>
+                    {selectedImages.map((image, index) => (
+                      <View key={index} style={styles.imgContainer}>
+                        <Image source={{ uri: image.uri }} style={styles.selectedImage} />
+                        <TouchableOpacity
+                          onPress={() => removeImage(index)}
+                          style={styles.removeImageButton}
+                          disabled={isSubmitting}
+                        >
+                          <Ionicons
+                            name="close"
+                            size={20}
+                            color={
+                              isSubmitting ? colors.placeholdergrey : colors.darkGray
+                            }
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </View>
+              <View>
+                <Button
+                  title={isSubmitting ? "Submitting..." : "Submit Review"}
+                  onPress={handleAddReview}
+                  disabled={isSubmitting || !rating || reviewText.trim() === ""}
+                  loading={isSubmitting}
+                />
+              </View>
+              <ConfirmationModal
+                isModalVisible={showReviewconfirmationModal}
+                text="Review Added Successfully"
+                onClose={() => setShowReviewconfirmationModal(false)}
+              />
+            </View>
+          )}
         </ScrollView>
       </KeyBoardWrapper>
     </LayoutComponent>
