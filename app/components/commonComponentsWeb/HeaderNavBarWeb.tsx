@@ -68,15 +68,10 @@ const allNavItems: NavItem[] = [
     requiresAuth: false,
   },
   {
-    label: "Home",
-    onPress: () => redirectToPage(containers.homeScreen),
-    requiresAuth: false,
-  },
-  {
     label: "Quick Links",
     isDropdown: true,
     dropdownType: 'quicklinks',
-    requiresAuth: true, 
+    requiresAuth: true,
   },
   // {
   //   label: "Feedback",
@@ -91,7 +86,7 @@ const allNavItems: NavItem[] = [
   // {
   //   label: "My Accounts",
   //   onPress: () => redirectToPage(containers.editProfileScreen),
-  //   requiresAuth: true, 
+  //   requiresAuth: true,
   // },
 ];
 

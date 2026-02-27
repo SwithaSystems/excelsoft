@@ -44,7 +44,7 @@ interface BrandHeaderWebProps {
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
   const router = useRouter();
   const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
-  const { isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
+  const { isMobile, isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
@@ -530,11 +530,11 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       </View>
 
       {/* RIGHT SECTION */}
-      <View style={styles.rightSection}>
+      <View style={[styles.rightSection, isMobile && styles.rightSectionMobile]}>
 
         {/* Profile/Sign In */}
         <TouchableOpacity
-          style={styles.profileButton}
+          style={[styles.profileButton, isMobile && styles.profileButtonMobile]}
           onPress={handleProfileClick}
         >
           <Text style={styles.greetingText}>
@@ -551,7 +551,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {isAdmin && (
           <TouchableOpacity
-            style={styles.adminButton}
+            style={[styles.adminButton, isMobile && styles.adminButtonMobile]}
             onPress={() => {
               if (hideUserGreeting) {
                 clearNavigationStack(containers.homeScreen);
@@ -568,7 +568,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <TouchableOpacity
-            style={styles.iconButton}
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile]}
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
@@ -586,7 +586,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <Pressable
-            style={[styles.iconButton, Platform.OS === "web" && { cursor: "pointer" }]}
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile, Platform.OS === "web" && { cursor: "pointer" }]}
             onPress={() => {
               const pathname = "/" + containers.userNotificationsScreen;
               if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
@@ -659,6 +659,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexShrink: 0,
+  },
+  rightSectionMobile: {
+    gap: 6,
+  },
+  profileButtonMobile: {
+    marginLeft: 6,
+    paddingHorizontal: 2,
+  },
+  adminButtonMobile: {
+    marginLeft: 0,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  iconButtonMobile: {
+    marginLeft: 0,
+    padding: 4,
   },
   leftSection: {
     flexDirection: "row",

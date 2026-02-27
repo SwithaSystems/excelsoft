@@ -247,7 +247,7 @@ useEffect(() => {
   >
     {isWeb ? (
       <View style={styles.webContainer}>
-        <ScrollView style={{ flex: 1 }}>
+        <View>
             <View style={[
               styles.webContentWrapper,
               isMobileWeb && {flexDirection: 'column'},
@@ -279,12 +279,15 @@ useEffect(() => {
                   {product?.image?.[selectedImageIndex] && 
                    isValidImage(product.image[selectedImageIndex]) &&
                    !imageErrors[selectedImageIndex] ? (
-                    <Image
-                      source={{ uri: product.image[selectedImageIndex] }}
-                      style={styles.webMainImage}
-                      onError={() => handleImageError(selectedImageIndex)}
-                      resizeMode={isMobileWeb ? 'cover' : 'contain'}
-                    />
+                   <Image
+                    source={{ uri: product.image[selectedImageIndex] }}
+                    style={[
+                      styles.webMainImage,
+                      isMobileWeb && { height: 350 }
+                    ]}
+                    onError={() => handleImageError(selectedImageIndex)}
+                    resizeMode={isMobileWeb ? 'cover' : 'contain'}
+                  />
                   ) : (
                     <View style={[styles.webMainImage, { 
                       backgroundColor: '#f0f0f0', 
@@ -296,46 +299,54 @@ useEffect(() => {
                   )}
                 </View>
 
-                {/* Thumbnails */}
-                <View style={styles.webThumbnailContainer}>
-                  {product?.image?.map((imageUrl: string, index: number) => {
-                    // Skip placeholder images but keep the index intact
-                    if (!isValidImage(imageUrl)) {
-                      return null;
-                    }
-                    
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => setSelectedImageIndex(index)}
-                        style={[
-                          styles.webThumbnail,
-                          selectedImageIndex === index && styles.webThumbnailActive,
-                        ]}
-                      >
-                        {!imageErrors[index] ? (
-                          <Image
-                            source={{ uri: imageUrl }}
-                            style={styles.webThumbnailImage}
-                            onError={() => handleImageError(index)}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={[
-                            styles.webThumbnailImage, 
-                            { 
-                              backgroundColor: '#f0f0f0', 
-                              justifyContent: 'center', 
-                              alignItems: 'center' 
-                            }
-                          ]}>
-                            <Text style={{ color: '#999', fontSize: 10 }}>N/A</Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+                {/* Thumbnails - show on desktop/tablet web only */}
+                {!isMobileWeb && (
+                  <View style={styles.webThumbnailContainer}>
+                    {product?.image
+                      ?.map((imageUrl: string, index: number) => {
+                        // Skip placeholder images but keep the index intact
+                        if (!isValidImage(imageUrl)) {
+                          return null;
+                        }
+
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => setSelectedImageIndex(index)}
+                            style={[
+                              styles.webThumbnail,
+                              selectedImageIndex === index &&
+                                styles.webThumbnailActive,
+                            ]}
+                          >
+                            {!imageErrors[index] ? (
+                              <Image
+                                source={{ uri: imageUrl }}
+                                style={styles.webThumbnailImage}
+                                onError={() => handleImageError(index)}
+                                resizeMode="cover"
+                              />
+                            ) : (
+                              <View
+                                style={[
+                                  styles.webThumbnailImage,
+                                  {
+                                    backgroundColor: "#f0f0f0",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                  },
+                                ]}
+                              >
+                                <Text style={{ color: "#999", fontSize: 10 }}>
+                                  N/A
+                                </Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                  </View>
+                )}
               </View>
 
 
@@ -540,8 +551,8 @@ useEffect(() => {
                 </TouchableOpacity>
               )}
             </View>
-          </ScrollView>
-
+          {/* </ScrollView> */}
+</View>
       </View>
     ) : (
       <View style={styles.container}>

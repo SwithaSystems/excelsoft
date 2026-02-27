@@ -409,23 +409,23 @@ const editProfileScreen = () => {
                   ]}
                 />
                {isWeb ? (
-  <label style={{ cursor: "pointer" }}>
-    <Feather name="camera" size={24} color={colors.primary} />
-    <input
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handleWebImagePick}
-    />
-  </label>
-) : (
-  <TouchableOpacity
-    style={styles.changePictureButton}
-    onPress={showImageOptions}
-  >
-    <Feather name="camera" size={24} color={colors.primary} />
-  </TouchableOpacity>
-)}
+                  <label style={{ cursor: "pointer" }}>
+                    <Feather name="camera" size={24} color={colors.primary} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={handleWebImagePick}
+                    />
+                  </label>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.changePictureButton}
+                    onPress={showImageOptions}
+                  >
+                    <Feather name="camera" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                )}
 
                 <Text style={styles.changePictureText}>
                   Change Profile Picture
@@ -519,14 +519,15 @@ const editProfileScreen = () => {
                         }
                       }}
                       style={{
-                        width: "98%",
-                        height: 40,
-                        borderColor: colors.darkGray,
+                        width: "100%",
+                        height: 48, // ✅ match CustomTextInput container
                         borderWidth: 1,
-                        borderRadius: 8,
-                        padding: 10,
-                        fontSize: 16,
+                        borderColor: colors.placeholdergrey, // ✅ same as CustomTextInput
+                        borderRadius: 6,             // ✅ same radius
+                        padding: 10,                 // ✅ same inner padding
+                        fontSize: 14,                // ✅ same font size
                         backgroundColor: colors.lightgrey,
+                        boxSizing: "border-box",     // ✅ critical for web
                       }}
                     />
                   ) : (

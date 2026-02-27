@@ -19,12 +19,21 @@ const CategoryItem = ({
   const isWeb = Platform.OS === "web";
 
   return (
-    <View
-      onMouseEnter={() => isWeb && setHovered(true)}
-      onMouseLeave={() => isWeb && setHovered(false)}
-      style={[styles.wrapper, hovered && isWeb && styles.wrapperHovered]}
+    <View style={[styles.wrapper, hovered && isWeb && styles.wrapperHovered]}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      {...(isWeb && {
+        onMouseEnter: () => setHovered(true),
+        onMouseLeave: () => setHovered(false),
+      })}
+      style={[
+        styles.container,
+        containerStyle,
+        hovered && isWeb && styles.containerHovered,
+      ]}
     >
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[
           styles.container,
           containerStyle,
@@ -32,7 +41,7 @@ const CategoryItem = ({
         ]}
         onPress={onPress}
         activeOpacity={0.85}
-      >
+      > */}
         <Image
           source={
             typeof image === "string" && image !== ""
@@ -46,8 +55,14 @@ const CategoryItem = ({
         />
 
         <View style={styles.titleWrapper}>
-          <Text style={styles.title} numberOfLines={2}>{title}</Text>
-        </View>
+          <Text
+            style={styles.title}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {title}
+          </Text>
+      </View>
       </TouchableOpacity>
     </View>
   );
@@ -66,7 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: "hidden",
     backgroundColor: colors.white,
-    marginBottom: 20,
+    marginBottom: Platform.OS === "web" ? 20 : 12,
     ...(Platform.OS === "web"
       ? {
           shadowColor: "#000",
@@ -85,7 +100,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: "76%",
+    height: "75%",
   },
   titleWrapper: {
     flex: 1,
@@ -93,9 +108,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 8,
+    height: "22%",
   },
   title: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
     color: colors.black,
     textAlign: "center",

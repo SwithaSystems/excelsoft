@@ -48,7 +48,10 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
   // Responsive padding based on media queries
-  const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
+  const horizontalPadding =
+  isDesktop ? 64 :
+  isTablet ? 32 :
+  isMobile ? 10 : 16;
   const ContentWrapper = scrollable ? ScrollView : View;
 
   // Responsive header heights
@@ -155,7 +158,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    minHeight: "100vh" as unknown as number,
+    minHeight: Platform.OS === "web" ? "100%" : undefined,
   },
   headerContainer: {
     width: "100%",
@@ -191,9 +194,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0, 0, 0, 0.08)",
   },
-  mainContainer: {
+ mainContainer: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: Platform.OS === "web" ? "row" : "column",
   },
   sidebar: {
     backgroundColor: colors.white,

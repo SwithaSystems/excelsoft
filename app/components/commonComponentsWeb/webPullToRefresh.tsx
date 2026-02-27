@@ -20,11 +20,19 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const pullValue = useRef(0);
 
   const [showSpinner, setShowSpinner] = useState(false);
+  const startedAtTop = useRef(false);
 
   const isAtTop = () =>
     typeof window !== "undefined" &&
     (window.scrollY === undefined || window.scrollY <= SCROLL_TOP_THRESHOLD);
 
+    const cancelPull = () => {
+      isDragging.current = false;
+      pullValue.current = 0;
+      startedAtTop.current = false;
+      translateY.setValue(0);
+    }; 
+    
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
@@ -32,43 +40,39 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
     document.body.style.overscrollBehaviorY = "contain";
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Ignore multi-touch (pinch zoom) so zoom doesn't trigger refresh
       if (e.touches.length >= 2) {
         isDragging.current = false;
         return;
       }
-      // Only start pull gesture when page is scrolled to top (avoids triggering on scroll-up)
-      if (!isAtTop()) return;
+
+      startedAtTop.current = isAtTop(); // capture initial state
+
+      if (!startedAtTop.current) return;
 
       startY.current = e.touches[0].clientY;
       isDragging.current = true;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // Cancel pull on multi-touch (e.g. second finger for pinch zoom)
       if (e.touches.length >= 2) {
-        isDragging.current = false;
-        pullValue.current = 0;
-        translateY.setValue(0);
-        return;
-      }
-      if (!isDragging.current) return;
-
-      // If user scrolled the page (not at top anymore), cancel pull
-      if (!isAtTop()) {
-        isDragging.current = false;
-        pullValue.current = 0;
-        translateY.setValue(0);
+        cancelPull();
         return;
       }
 
-      const diff = e.touches[0].clientY - startY.current;
+      if (!isDragging.current || !startedAtTop.current) return;
 
-      if (diff > 0) {
-        const pull = Math.min(diff * 0.6, 120);
-        pullValue.current = pull;
-        translateY.setValue(pull);
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - startY.current;
+
+      // 🚨 CRITICAL: Only allow downward movement
+      if (diff <= 0) {
+        cancelPull();
+        return;
       }
+
+      const pull = Math.min(diff * 0.6, 120);
+      pullValue.current = pull;
+      translateY.setValue(pull);
     };
 
     const handleTouchEnd = () => {
