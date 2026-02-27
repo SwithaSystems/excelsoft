@@ -13,6 +13,7 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import styles from "./CategoriesStyles";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -22,8 +23,12 @@ const categoriesScreen = () => {
   const { categoryId } = useLocalSearchParams();
 
   // Responsive design: detect if device is tablet or desktop
-  const { width } = useWindowDimensions();
-  const isWeb = Platform.OS === "web";
+  const {
+    isWeb,
+    isMobile,
+    isTablet,
+    isDesktopOrLarger,
+  } = useWebMediaQuery();
 
   useEffect(() => {
     // console.log("categoryId", categoryId);
@@ -49,9 +54,21 @@ const categoriesScreen = () => {
     fetchAllCategories();
   }, []);
 
-  const numColumns = isWeb ? 4 : 2;
-  // Use flex-basis percentage for responsive layout
-  const itemFlexBasis = isWeb ? "23%" : "47%";
+  // const numColumns = isWeb ? 3 : 2;
+  // Use flex-basis percentage for responsive layout (3 columns on web with gap)
+  const numColumns =
+    isWeb
+      ? isMobile
+        ? 2       
+        : 4        
+      : 2;       
+const GAP = 24; // total row gap for web
+const itemFlexBasis =
+  isWeb
+    ? isMobile
+      ? "46%"  
+      : "22%"   
+    : "47%";   
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
@@ -61,8 +78,8 @@ const categoriesScreen = () => {
           {
             flexBasis: itemFlexBasis,
             maxWidth: itemFlexBasis,
-            marginRight: isWeb ? 15 : 0,
-            marginBottom: 16,
+            marginBottom: 24,
+            // marginRight: isWeb ? 24 : 0,
           },
         ]}
       >
@@ -94,38 +111,36 @@ const categoriesScreen = () => {
   );
 
   return (
-    <LayoutComponent
-      scrollable
-      hasHeader
-      hasFooter
-      headerComponent={HeaderComponent}
-      footerComponent={FooterComponent}
-    >
-      <FlatList
-        ListHeaderComponent={
-          <View style={[{ backgroundColor: colors.white }]}>
-            <FlatList
-              data={allCategories}
-              keyExtractor={(item: any) => item.id}
-              renderItem={renderItem}
-              numColumns={numColumns}
-              key={numColumns}
-              columnWrapperStyle={[
-                styles.row,
-                {
-                  justifyContent: isWeb ? "flex-start" : "space-between",
-                },
-              ]}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        }
-        data={[]}
-        renderItem={null}
-      />
-    </LayoutComponent>
-  );
+  <LayoutComponent
+    scrollable
+    hasHeader
+    hasFooter
+    headerComponent={HeaderComponent}
+    footerComponent={FooterComponent}
+  >
+    <FlatList
+      data={allCategories}
+      keyExtractor={(item: any) => item.id.toString()}
+      renderItem={renderItem}
+      numColumns={numColumns}
+      key={numColumns}
+      columnWrapperStyle={
+        numColumns > 1
+          ? {
+              justifyContent: "space-between",
+              marginBottom: isMobile ? 12 : 24,
+            }
+          : undefined
+      }
+     contentContainerStyle={[
+        styles.listContainer,
+        !isWeb && { paddingHorizontal: 12 },
+        // isMobile && { marginHorizontal: 10 },
+      ]}
+      showsVerticalScrollIndicator={false}
+    />
+  </LayoutComponent>
+);
 };
 
 export default categoriesScreen;

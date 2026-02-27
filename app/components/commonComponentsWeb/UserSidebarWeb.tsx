@@ -7,6 +7,7 @@ import {
   Image,
   Animated,
   Easing,
+  ScrollView,
 } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
@@ -34,6 +35,8 @@ interface QuickLinkItem {
 interface UserSidebarWebProps {
   isDrawer?: boolean;
   onClose?: () => void;
+  onLogout?: () => void;
+  onDeleteAccount?: () => void;
 }
 
 const navItems: NavItem[] = [
@@ -55,6 +58,8 @@ const navItems: NavItem[] = [
 export const UserSidebarWeb: React.FC<UserSidebarWebProps> = ({
   isDrawer = false,
   onClose,
+  onLogout,
+  onDeleteAccount,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -133,7 +138,7 @@ export const UserSidebarWeb: React.FC<UserSidebarWebProps> = ({
 
   return (
     <View style={[styles.container, isDrawer && styles.containerDrawer]}>
-      {/* Profile */}
+      {/* Profile (desktop only) */}
       {!isDrawer && (
         <View style={styles.profileSection}>
           <Image
@@ -152,37 +157,114 @@ export const UserSidebarWeb: React.FC<UserSidebarWebProps> = ({
         </View>
       )}
 
-      {/* Navigation */}
-      <View style={styles.navList}>
-        {navItems.map((item) => {
-          const active = isActive(item.route);
-          return (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.navItem, active && styles.navItemActive]}
-              onPress={() => handleNavigation(item.route)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.navItemContent}>
-                <Ionicons
-                  name={item.icon}
-                  size={22}
-                  color={active ? colors.white : colors.darkGray}
-                />
-                <Text
-                  style={[
-                    styles.navLabel,
-                    active && styles.navLabelActive,
-                  ]}
-                  numberOfLines={1}
+      {isDrawer ? (
+        <>
+          {/* Drawer: scrollable nav list fills space, bottom section pinned */}
+          <ScrollView
+            style={styles.drawerScroll}
+            contentContainerStyle={styles.drawerScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.navListDrawer}>
+              {navItems.map((item) => {
+                const active = isActive(item.route);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.navItem, active && styles.navItemActive]}
+                    onPress={() => handleNavigation(item.route)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.navItemContent}>
+                      <Ionicons
+                        name={item.icon}
+                        size={22}
+                        color={active ? colors.white : colors.darkGray}
+                      />
+                      <Text
+                        style={[
+                          styles.navLabel,
+                          active && styles.navLabelActive,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+          <View style={styles.drawerBottomSection}>
+            <View style={styles.divider} />
+            <View style={styles.drawerBottomActions}>
+              {onLogout && (
+                <TouchableOpacity
+                  style={styles.drawerBottomButton}
+                  onPress={() => {
+                    onLogout();
+                    onClose?.();
+                  }}
+                  activeOpacity={0.7}
                 >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                  <Ionicons name="log-out-outline" size={20} color={colors.darkGray} />
+                  <Text style={styles.drawerBottomButtonText}>Log Out</Text>
+                </TouchableOpacity>
+              )}
+              {onDeleteAccount && (
+                <TouchableOpacity
+                  style={styles.drawerBottomButton}
+                  onPress={() => {
+                    onDeleteAccount();
+                    onClose?.();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
+                  <Text style={[styles.drawerBottomButtonText, styles.drawerBottomButtonTextDanger]}>
+                    Delete Account
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </>
+      ) : (
+        <>
+          {/* Desktop: single column, nav list then (no bottom section) */}
+          <View style={styles.navList}>
+            {navItems.map((item) => {
+              const active = isActive(item.route);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.navItem, active && styles.navItemActive]}
+                  onPress={() => handleNavigation(item.route)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Ionicons
+                      name={item.icon}
+                      size={22}
+                      color={active ? colors.white : colors.darkGray}
+                    />
+                    <Text
+                      style={[
+                        styles.navLabel,
+                        active && styles.navLabelActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      )}
 
       {/* Quick Links Section */}
       {/* <View style={styles.quickLinksContainer}>
@@ -285,6 +367,18 @@ const styles = StyleSheet.create({
     gap: 8,
     flex: 1,
   },
+  drawerScroll: {
+    flex: 1,
+  },
+  drawerScrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  navListDrawer: {
+    gap: 8,
+  },
   navItem: {
     flexDirection: "row",
     paddingVertical: 12,
@@ -319,6 +413,28 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.lightgrey,
     marginBottom: 12,
+  },
+
+  drawerBottomSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  drawerBottomActions: {
+    gap: 0,
+  },
+  drawerBottomButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+  },
+  drawerBottomButtonText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: colors.darkGray,
+  },
+  drawerBottomButtonTextDanger: {
+    color: colors.primaryRed,
   },
 
   // quickLinksWrapper: {

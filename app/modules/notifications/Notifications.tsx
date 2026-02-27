@@ -123,7 +123,7 @@ const notificationsScreen: React.FC = () => {
     <LayoutComponent
       hasFooter={isWeb}
       hasHeader
-      scrollable={!isWeb}
+      scrollable={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
       hasSidebar={isWeb}
@@ -141,6 +141,7 @@ const notificationsScreen: React.FC = () => {
           style={
             [
               // globalStyles.mb_2
+               webStyles.sectionCard,
             ]
           }
         >
@@ -196,6 +197,7 @@ const notificationsScreen: React.FC = () => {
         <View
           style={[
             isMobileWeb && webStyles.mobileWebEmailSectionSpacing,
+            webStyles.sectionCard,
           ]}
         >
           <View
@@ -254,7 +256,7 @@ export default notificationsScreen;
 
 const webStyles = StyleSheet.create({
   contentWidth: {
-    width: "70%",
+    width: "60%",
     alignSelf: "center",
   },
   mobileWebContentWidth: {
@@ -269,6 +271,14 @@ const webStyles = StyleSheet.create({
   },
   mobileWebOptionSpacing: {
     marginBottom: 8,
+  },
+  sectionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey, // very subtle
+    marginBottom: 24,
   },
 
 });

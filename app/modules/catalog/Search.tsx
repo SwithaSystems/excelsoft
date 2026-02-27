@@ -31,6 +31,7 @@ import { SEARCH_QUERY_REQUIRED_MESSAGE } from "../../../constants/customErrorMes
 import styles from "./SearchStyles";
 import { secureStore } from "@/store/secureStore";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "app_recent_searches";
@@ -64,6 +65,15 @@ const categories = [
 const SearchScreen = () => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+
+  // On mobile web, do not show this page; search is done from the header nav bar. Redirect to home.
+  useEffect(() => {
+    if (isWeb && isMobile) {
+      redirectToPage(containers.homeScreen);
+    }
+  }, [isWeb, isMobile]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);

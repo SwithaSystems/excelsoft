@@ -20,9 +20,9 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   listContainer: {
-    padding: 16,
-    paddingTop: 8,
-
+    padding: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
   rightItem: {
     paddingLeft: 8,
@@ -34,8 +34,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
-    //marginHorizontal: -8,
-
+    gap: 20,
   },
 })
 

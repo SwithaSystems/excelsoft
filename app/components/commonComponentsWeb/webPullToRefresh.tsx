@@ -10,6 +10,8 @@ interface Props {
   children: ReactNode;
 }
 
+const SCROLL_TOP_THRESHOLD = 10; // Only allow pull-to-refresh when scroll is within this from top
+
 const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const translateY = useRef(new Animated.Value(0)).current;
 
@@ -18,7 +20,19 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const pullValue = useRef(0);
 
   const [showSpinner, setShowSpinner] = useState(false);
+  const startedAtTop = useRef(false);
 
+  const isAtTop = () =>
+    typeof window !== "undefined" &&
+    (window.scrollY === undefined || window.scrollY <= SCROLL_TOP_THRESHOLD);
+
+    const cancelPull = () => {
+      isDragging.current = false;
+      pullValue.current = 0;
+      startedAtTop.current = false;
+      translateY.setValue(0);
+    }; 
+    
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
@@ -26,20 +40,39 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
     document.body.style.overscrollBehaviorY = "contain";
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        isDragging.current = false;
+        return;
+      }
+
+      startedAtTop.current = isAtTop(); // capture initial state
+
+      if (!startedAtTop.current) return;
+
       startY.current = e.touches[0].clientY;
       isDragging.current = true;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current) return;
-
-      const diff = e.touches[0].clientY - startY.current;
-
-      if (diff > 0) {
-        const pull = Math.min(diff * 0.6, 120);
-        pullValue.current = pull;
-        translateY.setValue(pull);
+      if (e.touches.length >= 2) {
+        cancelPull();
+        return;
       }
+
+      if (!isDragging.current || !startedAtTop.current) return;
+
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - startY.current;
+
+      // 🚨 CRITICAL: Only allow downward movement
+      if (diff <= 0) {
+        cancelPull();
+        return;
+      }
+
+      const pull = Math.min(diff * 0.6, 120);
+      pullValue.current = pull;
+      translateY.setValue(pull);
     };
 
     const handleTouchEnd = () => {

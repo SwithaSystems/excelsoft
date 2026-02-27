@@ -48,16 +48,19 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
   // Responsive padding based on media queries
-  const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : 16;
+  const horizontalPadding =
+  isDesktop ? 64 :
+  isTablet ? 32 :
+  isMobile ? 10 : 16;
   const ContentWrapper = scrollable ? ScrollView : View;
 
   // Responsive header heights
-  const navBarHeight = isMobile ? 32 : 50;
+  const navBarHeight = isMobile ? 32 : 54;
 
   const headerHeight = isDesktop
-    ? 68 + 50
+    ? 72 + 54
     : isTablet
-    ? 56 + 50
+    ? 60 + 54
     : 52; 
     
   const totalHeaderHeight = isMobile
@@ -121,7 +124,8 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
             { 
               paddingHorizontal: contentPadding ? horizontalPadding : 0,
               paddingBottom: 0,
-             },
+              paddingTop: contentPadding && (isTablet || isDesktop) ? 24 : 0,
+            },
           ]}
           // contentContainerStyle={[
           //   styles.scrollContainer,
@@ -154,7 +158,7 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    minHeight: "100vh" as unknown as number,
+    minHeight: Platform.OS === "web" ? "100%" : undefined,
   },
   headerContainer: {
     width: "100%",
@@ -186,11 +190,13 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: colors.primary,
     overflow: "visible",
-    zIndex: 9998, // Lower than topHeader to allow search dropdown above
+     zIndex: 9998,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0, 0, 0, 0.08)",
   },
-  mainContainer: {
+ mainContainer: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: Platform.OS === "web" ? "row" : "column",
   },
   sidebar: {
     backgroundColor: colors.white,
