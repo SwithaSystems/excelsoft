@@ -25,7 +25,7 @@ import { isValidPassword } from "../../../utilities/validations";
 const passwordResetScreen = () => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const isWeb = Platform.OS === "web";
-  const { phoneNumber } = useLocalSearchParams();
+const { phoneNumber, email } = useLocalSearchParams<{ phoneNumber: string; email: string }>();
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -90,47 +90,40 @@ const passwordResetScreen = () => {
 
   // ─── Submit ─────────────────────────────────────────────────────────────────
 
-  const handlePress = async () => {
-    setSubmitAttempted(true);
+ const handlePress = async () => {
+  setSubmitAttempted(true);
+  if (!validateFields()) return;
 
-    if (!validateFields()) return;
+  const isPhoneReset = typeof phoneNumber === "string" && phoneNumber.trim();
+  const isEmailReset = typeof email === "string" && email.trim();
 
-    if (typeof phoneNumber !== "string") {
-      console.error("phoneNumber is not a string");
-      showAlert("Error", "Invalid phone number. Please try again.");
-      return;
-    }
+  if (!isPhoneReset && !isEmailReset) {
+    showAlert("Error", "Missing identifier. Please restart the reset flow.");
+    return;
+  }
 
-    setIsLoading(true);
-    try {
-      const response = await UserAPI.resetPassword({
-        newPassword: password,
-        phoneNumber: phoneNumber,
-      });
+  setIsLoading(true);
+  try {
+    const response = await UserAPI.resetPassword({
+      newPassword: password,
+      ...(isPhoneReset ? { phoneNumber } : { email }),
+    });
 
-      // Show success modal; redirect happens only after user dismisses it
-      showAlert(
-        "Success",
-        response.data.message || "Password reset successfully",
-        [
-          {
-            text: "OK",
-            onPress: () => redirectToPage(containers.signInScreen),
-          },
-        ],
-        { cancelable: false }
-      );
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      showAlert(
-        "Error",
-        error?.response?.data?.message || "Failed to reset password. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+    showAlert(
+      "Success",
+      response.data.message || "Password reset successfully",
+      [{ text: "OK", onPress: () => redirectToPage(containers.signInScreen) }],
+      { cancelable: false }
+    );
+  } catch (error: any) {
+    showAlert(
+      "Error",
+      error?.response?.data?.message || "Failed to reset password. Please try again."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
