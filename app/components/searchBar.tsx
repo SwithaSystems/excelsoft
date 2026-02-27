@@ -39,6 +39,7 @@ const Touchable = ({ onPress, children, style }: any) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          outline: "none",
           ...style,
         }}
       >
@@ -87,7 +88,9 @@ const SearchBar = ({
       width: barWidth as `${number}%`, 
       alignSelf: (isMobileWidth ? "center" : "flex-start") as "center" | "flex-start",
       height: typeof height === "number" ? height : isMobileWidth ? 52 : 48,
-      minWidth:0,
+      minWidth: 0,
+      // On mobile web: prevent any focus box/outline on the container when input is focused
+      ...(isWeb && isMobileWidth ? { outlineStyle: "none", outlineWidth: 0 } as any : {}),
       ...(!isMobileWidth && isWeb ? {
         borderWidth: 1,
         borderColor: colors.placeholdergrey,
@@ -107,19 +110,19 @@ const SearchBar = ({
     { 
       fontSize: isMobileWidth ? 14 : 15, 
       paddingVertical: isMobileWidth ? 8 : 10,
-      minWidth:0,
-      // Only on desktop/tablet: remove default web outline to avoid half-box
-      ...(isWeb && !isMobileWidth
-      ? ({
-          outlineStyle: "none",
-          outlineWidth: 0,
-          outlineColor: "transparent",
-          boxShadow: "none",
-          borderWidth: 0,
-        } as any)
-      : {}),
-  },
-];
+      minWidth: 0,
+      // Remove default web focus outline/box on all web (avoids black box on mobile web when focused)
+      ...(isWeb
+        ? ({
+            outlineStyle: "none",
+            outlineWidth: 0,
+            outlineColor: "transparent",
+            boxShadow: "none",
+            borderWidth: 0,
+          } as any)
+        : {}),
+    },
+  ];
 
   const showClear = value && value.length > 0;
 

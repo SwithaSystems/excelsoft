@@ -112,6 +112,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [showSidebarDrawer, setShowSidebarDrawer] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
 
   // Animation values for drawer - use pixel values
   const drawerWidth = Math.min(width * 0.8, 320);
@@ -227,6 +228,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
       });
     }
     setShowDropdown(null);
+  };
+
+  const handleMobileSearchSubmit = () => {
+    setShowDropdown(null);
+    const q = (mobileSearchQuery || "").trim();
+    redirectToPage(containers.searchResultsScreen, q ? { query: q } : {});
   };
 
   const handleLogout = async () => {
@@ -528,11 +535,14 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               </View>
             )}
 
-            {/* Inline SearchBar at end of mobile row */}
+            {/* Inline SearchBar: search globally from nav (go to results, not search page) */}
             <View style={styles.mobileSearchWrapper}>
               <SearchBar
                 placeholder="Search..."
-                onPress={() => redirectToPage(containers.searchScreen)}
+                value={mobileSearchQuery}
+                onChangeText={setMobileSearchQuery}
+                onPress={handleMobileSearchSubmit}
+                onSubmitEditing={handleMobileSearchSubmit}
                 height={32}
               />
             </View>
