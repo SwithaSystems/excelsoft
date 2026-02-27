@@ -79,7 +79,7 @@ const feedBackScreen = () => {
     setSelectedImages(updatedImages);
   };
 
-  const handleAddReview = async () => {
+ const handleAddReview = async () => {
   if (isSubmitting) return;
 
   if (!rating || reviewText.trim() === "") {
@@ -89,13 +89,15 @@ const feedBackScreen = () => {
 
   setIsSubmitting(true);
   const token = await SecureStore.getItemAsync("token");
-console.log("Token exists:", !!token);
+  console.log("Token exists:", !!token);
+
   try {
     if (!userData_redux?._id && !userData_redux?.id) {
-  alert("User session not found. Please log in again.");
-  return;
-}
-    const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
+      alert("User session not found. Please log in again.");
+      return;
+    }
+
+    const userID = userData_redux._id ?? userData_redux.id;
     const user = await UserAPI.getUserById(userID);
     const UserParsed = user.data;
 
@@ -104,31 +106,41 @@ console.log("Token exists:", !!token);
     formData.append("name", UserParsed?.firstName || "");
     formData.append("review", reviewText);
 
-    // Append images correctly for React Native
     for (let i = 0; i < selectedImages.length; i++) {
       const img = selectedImages[i];
-      
-      if (Platform.OS === 'web') {
-        // For web platform
+
+      if (Platform.OS === "web") {
         try {
           const response = await fetch(img.uri);
           const blob = await response.blob();
-          formData.append("images", blob, img.name);
+          formData.append("images", blob, img.name || `image_${i}.jpg`);
         } catch (error) {
           console.error("Error converting image to blob:", error);
         }
       } else {
-        // For mobile (iOS/Android) - React Native format
+        // FIX: Ensure mime type is always a valid MIME string, not "image"
+        const mimeType = img.type && img.type.includes("/")
+          ? img.type
+          : "image/jpeg";
+
+        // FIX: Ensure name always has a proper extension
+        const fileName = img.name && img.name.includes(".")
+          ? img.name
+          : `image_${Date.now()}_${i}.jpg`;
+
         const file: any = {
-          uri: img.uri,
-          type: img.type || "image/jpeg",
-          name: img.name || `image_${Date.now()}.jpg`,
+          uri: Platform.OS === "android" ? img.uri : img.uri.replace("file://", ""),
+          type: mimeType,
+          name: fileName,
         };
+
         formData.append("images", file);
       }
     }
 
     console.log("FormData prepared, sending request...");
+
+    // FIX: Pass token explicitly if your ProductsAPI doesn't attach it automatically
     await ProductsAPI.addReview(Number(productId), formData);
 
     setShowReviewconfirmationModal(true);
@@ -136,10 +148,10 @@ console.log("Token exists:", !!token);
       setShowReviewconfirmationModal(false);
       redirectToPage(containers.productDetailScreen, { productId });
     }, 1500);
-  }  catch (error) {
-  console.error("Failed to add review:", error );
-  alert(`Error: ${error || "Something went wrong."}`);
-} finally {
+  } catch (error) {
+    console.error("Failed to add review:", error);
+    alert(`Error: ${error || "Something went wrong."}`);
+  } finally {
     setIsSubmitting(false);
   }
 };
