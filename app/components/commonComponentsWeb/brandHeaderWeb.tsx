@@ -421,7 +421,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
         styles.container,
         {
           paddingHorizontal: isDesktop ? 48 : isTablet ? 24 : 12,
-          paddingVertical: isDesktop ? 12 : isTablet ? 10 : 10,
+          paddingVertical: isDesktop ? 12 : isTablet ? 8 : 6,
         },
       ]}
     >
@@ -544,7 +544,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
           </Text>
           <Ionicons
             name="person-circle-outline"
-            size={24}
+            size={22}
             color={colors.primary}
           />
         </TouchableOpacity>
@@ -572,7 +572,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              <Ionicons name="cart-outline" size={22} color={colors.primary} />
               {cartItemCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -616,7 +616,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
             }}
           >
             <View style={styles.iconContainer} pointerEvents="none">
-              <Ionicons name="notifications" size={24} color={colors.primary} />
+              <Ionicons name="notifications" size={22} color={colors.primary} />
               {isValidUser && unreadNotificationCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -669,8 +669,8 @@ const styles = StyleSheet.create({
   },
   adminButtonMobile: {
     marginLeft: 0,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   iconButtonMobile: {
     marginLeft: 0,
@@ -818,8 +818,8 @@ const styles = StyleSheet.create({
   },
   adminText: {
     color: colors.white,
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "500",
   },
   profileButton: {
     flexDirection: "row",
@@ -829,10 +829,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   greetingText: {
-    marginRight: 10,
+    marginRight: 8,
     color: colors.primary,
     fontWeight: "600",
-    fontSize: Platform.OS === "web" ? 14 : undefined,
+    fontSize: Platform.OS === "web" ? 13 : undefined,
     maxWidth: 160,
     overflow: "hidden",
   },

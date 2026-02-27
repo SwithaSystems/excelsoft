@@ -178,7 +178,8 @@ const styles = StyleSheet.create({
   productsGridWeb: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginHorizontal: -8, 
+    gap: 16,
+    justifyContent: "center",
   },
   rowWeb: {
     justifyContent: "flex-start",

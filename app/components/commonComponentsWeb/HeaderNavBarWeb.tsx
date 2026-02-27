@@ -32,6 +32,7 @@ import {
   ACCOUNT_DELETION_ERROR,
 } from "@/constants/customErrorMessages";
 import { usePathname } from "expo-router";
+import SearchBar from "../searchBar";
 
 type NavItem = {
   label: string;
@@ -228,11 +229,6 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     setShowDropdown(null);
   };
 
-  const handleSearchIconPress = () => {
-    setShowDropdown(null);
-    redirectToPage(containers.searchScreen);
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -297,30 +293,11 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   };
 
   const renderAuthButtons = () => {
-    // Debug: Check authentication status
-    // console.log("renderAuthButtons - isAuthenticated:", isAuthenticated, "isValidUser:", isValidUser);
     if (!isAuthenticated) return null;
 
+    // Mobile: do not show auth buttons in the green bar (they are in the drawer)
     if (isMobile) {
-      // Mobile: Show only icons
-      return (
-        <View style={styles.authButtonsContainerMobile}>
-          <TouchableOpacity
-            style={styles.authButtonIcon}
-            onPress={() => setLogOutModalOpen(true)}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="log-out-outline" size={22} color={colors.white} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.authButtonIcon}
-            onPress={() => setDeleteAccountModalOpen(true)}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="delete" size={22} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-      );
+      return null;
     }
 
     // Desktop: Show icons with text
@@ -427,17 +404,23 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                 </View>
 
                 {/* Sidebar Content */}
-                <ScrollView
-                  style={styles.drawerContent}
-                  showsVerticalScrollIndicator={false}
-                >
                 {isAdminScreen ? (
+                  <ScrollView
+                    style={styles.drawerContent}
+                    showsVerticalScrollIndicator={false}
+                  >
                     <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
-                  ) : (
-                    <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
-                  )}
-
-                </ScrollView>
+                  </ScrollView>
+                ) : (
+                  <View style={styles.drawerContent}>
+                    <UserSidebarWeb
+                      isDrawer={true}
+                      onClose={handleDrawerClose}
+                      onLogout={() => setLogOutModalOpen(true)}
+                      onDeleteAccount={() => setDeleteAccountModalOpen(true)}
+                    />
+                  </View>
+                )}
               </Animated.View>
             </View>
           </Modal>
@@ -470,10 +453,10 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                   activeOpacity={0.7}
                 >
                   <View style={styles.navItemContent}>
-                    <Text style={styles.navText}>{categoriesItem.label}</Text>
+                    <Text style={[styles.navText, styles.mobileNavText]}>{categoriesItem.label}</Text>
                     <Ionicons
                       name={showDropdown === categoriesItem.dropdownType ? "chevron-up" : "chevron-down"}
-                      size={18}
+                      size={16}
                       color={colors.white}
                       style={styles.dropdownIcon}
                     />
@@ -511,32 +494,21 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
             {/* Quick Links dropdown (mobile web, user-side screens only) */}
             {!isAdminScreen && quickLinksItem && (
               <View style={styles.mobileQuickLinksContainer}>
-                <View style={styles.mobileQuickLinksHeaderRow}>
-                  <TouchableOpacity
-                    style={styles.mobileCategoriesButton}
-                    onPress={() => handleNavPress(quickLinksItem)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.navItemContent}>
-                      <Text style={styles.navText}>{quickLinksItem.label}</Text>
-                      <Ionicons
-                        name={showDropdown === quickLinksItem.dropdownType ? "chevron-up" : "chevron-down"}
-                        size={18}
-                        color={colors.white}
-                        style={styles.dropdownIcon}
-                      />
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.searchIconButton}
-                    onPress={handleSearchIconPress}
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  >
-                    <Ionicons name="search-outline" size={20} color={colors.white} />
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={styles.mobileCategoriesButton}
+                  onPress={() => handleNavPress(quickLinksItem)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={[styles.navText, styles.mobileNavText]}>{quickLinksItem.label}</Text>
+                    <Ionicons
+                      name={showDropdown === quickLinksItem.dropdownType ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color={colors.white}
+                      style={styles.dropdownIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
                 {showDropdown === quickLinksItem.dropdownType && (
                   <View style={styles.mobileDropdownMenu}>
                     <View>
@@ -555,6 +527,15 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                 )}
               </View>
             )}
+
+            {/* Inline SearchBar at end of mobile row */}
+            <View style={styles.mobileSearchWrapper}>
+              <SearchBar
+                placeholder="Search..."
+                onPress={() => redirectToPage(containers.searchScreen)}
+                height={32}
+              />
+            </View>
           </>
         ) : (
           // Desktop: Show full navigation
@@ -700,16 +681,23 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               </View>
 
               {/* Sidebar Content */}
-              <ScrollView
-                style={styles.drawerContent}
-                showsVerticalScrollIndicator={false}
-              >
-               {isAdminScreen ? (
+              {isAdminScreen ? (
+                <ScrollView
+                  style={styles.drawerContent}
+                  showsVerticalScrollIndicator={false}
+                >
                   <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
-                ) : (
-                  <UserSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
-                )}
-              </ScrollView>
+                </ScrollView>
+              ) : (
+                <View style={styles.drawerContent}>
+                  <UserSidebarWeb
+                    isDrawer={true}
+                    onClose={handleDrawerClose}
+                    onLogout={() => setLogOutModalOpen(true)}
+                    onDeleteAccount={() => setDeleteAccountModalOpen(true)}
+                  />
+                </View>
+              )}
             </Animated.View>
           </View>
         </Modal>
@@ -750,7 +738,7 @@ const styles = StyleSheet.create({
   },
   navItem: {
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 8,
   },
   navItemHovered: {
@@ -762,8 +750,8 @@ const styles = StyleSheet.create({
   },
   navText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
     letterSpacing: 0.2,
   },
   dropdownIcon: {
@@ -818,7 +806,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   mobileCategoriesContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     position: "relative",
     zIndex: 100,
     flexShrink: 1,
@@ -831,19 +819,17 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     flexGrow: 0,
   },
-  mobileQuickLinksHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  mobileSearchWrapper: {
+    flex: 1,
+    marginLeft: 6,
+    marginRight: 12,
+    maxWidth: 160,
   },
-  searchIconButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    justifyContent: "center",
-    alignItems: "center",
+  mobileNavText: {
+    fontSize: 13,
   },
   mobileCategoriesButton: {
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   mobileDropdownMenu: {
     position: "absolute",
