@@ -161,6 +161,16 @@ export default function usePaymentHandlerWeb() {
         const stripeInstance = await loadStripe(resp.data.stripePublishableKey);
         if (!stripeInstance || !mounted) return;
 
+        // Help debug "Failed to tokenize payment method with payment gateway" (Google Pay error 8):
+        // ensure stripePublishableKey is correct and matches the Stripe account used by the backend
+        const key = resp.data.stripePublishableKey;
+        if (key) {
+          const masked = key.slice(0, 12) + "…" + key.slice(-4);
+          console.log(" Stripe loaded for wallets (Apple/Google Pay). Key:", masked);
+        } else {
+          console.warn(" Stripe publishable key missing – Google/Apple Pay tokenization may fail (error 8).");
+        }
+
         setStripe(stripeInstance);
         stripeRef.current = stripeInstance;
 
@@ -237,7 +247,10 @@ export default function usePaymentHandlerWeb() {
                 );
 
               if (confirmError) {
-                console.error(" Payment confirmation failed:", confirmError);
+                console.error(" Payment confirmation failed:", confirmError, {
+                  code: (confirmError as any)?.code,
+                  decline_code: (confirmError as any)?.decline_code,
+                });
                 ev.complete("fail");
                 Alert.alert("Payment Failed", confirmError.message);
                 return;
@@ -263,7 +276,11 @@ export default function usePaymentHandlerWeb() {
 
               await createOrderFn(params, totalAmount);
             } catch (error) {
-              console.error(" Wallet payment error:", error);
+              console.error(" Wallet payment error:", error, {
+                message: (error as any)?.message,
+                code: (error as any)?.code,
+                decline_code: (error as any)?.decline_code,
+              });
               ev.complete("fail");
               Alert.alert("Error", "Payment processing failed");
             }

@@ -91,6 +91,10 @@ const feedBackScreen = () => {
   const token = await SecureStore.getItemAsync("token");
 console.log("Token exists:", !!token);
   try {
+    if (!userData_redux?._id && !userData_redux?.id) {
+  alert("User session not found. Please log in again.");
+  return;
+}
     const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
     const user = await UserAPI.getUserById(userID);
     const UserParsed = user.data;
@@ -117,8 +121,8 @@ console.log("Token exists:", !!token);
         // For mobile (iOS/Android) - React Native format
         const file: any = {
           uri: img.uri,
-          type: img.type,
-          name: img.name,
+          type: img.type || "image/jpeg",
+          name: img.name || `image_${Date.now()}.jpg`,
         };
         formData.append("images", file);
       }
@@ -132,10 +136,10 @@ console.log("Token exists:", !!token);
       setShowReviewconfirmationModal(false);
       redirectToPage(containers.productDetailScreen, { productId });
     }, 1500);
-  } catch (error) {
-    console.error("Failed to add review:", error);
-    alert("Something went wrong. Please try again.");
-  } finally {
+  }  catch (error) {
+  console.error("Failed to add review:", error );
+  alert(`Error: ${error || "Something went wrong."}`);
+} finally {
     setIsSubmitting(false);
   }
 };

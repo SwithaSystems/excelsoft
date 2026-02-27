@@ -104,14 +104,13 @@ export const UserAPI = {
     return response;
   },
 
-  resetPassword: async (body: { newPassword: string; phoneNumber: string }) => {
-    // console.log("newPassword", body.newPassword, body.phoneNumber);
-    const response = await jsonAxios.post("/users/resetPassword", {
-      newPassword: body.newPassword,
-      phoneNumber: body.phoneNumber,
-    });
-    return response;
-  },
+ resetPassword: async (body: { newPassword: string; phoneNumber?: string; email?: string }) => {
+  const response = await jsonAxios.post("/users/resetPassword", {
+    newPassword: body.newPassword,
+    ...(body.phoneNumber ? { phoneNumber: body.phoneNumber } : { email: body.email }),
+  });
+  return response;
+},
 
   getAllUsers: async () => {
     const response = await jsonAxios.get("/users");

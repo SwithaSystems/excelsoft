@@ -6,6 +6,7 @@ import {
   useStripe,
   isPlatformPaySupported,
   PlatformPay,
+  AddressCollectionMode,
 } from "@stripe/stripe-react-native";
 import axios from "axios";
 import { orderService, PickupMode } from "@/services/orderService";
@@ -72,8 +73,9 @@ export const usePaymentHandler = () => {
     (async () => {
       try {
         const applePaySupported = await isPlatformPaySupported();
+        // Use testEnv only in development; production must use false for real charges
         const googlePaySupported = await isPlatformPaySupported({
-          googlePay: { testEnv: true },
+          googlePay: { testEnv: __DEV__ },
         });
 
         console.log(' Apple Pay supported:', applePaySupported);
@@ -274,7 +276,7 @@ export const usePaymentHandler = () => {
           cartItems: cartSummary,
         },
         googlePay: {
-          testEnv: true,
+          testEnv: __DEV__,
           merchantName: STORE_NAME,
           merchantCountryCode: "GB",
           currencyCode: CURRENCY_CODE.toUpperCase(),
@@ -287,7 +289,12 @@ export const usePaymentHandler = () => {
     console.log("PlatformPay Result:", result);
 
     if (result.error) {
-  console.error("PlatformPay Error:", result.error);
+  console.error("PlatformPay Error:", result.error, {
+    code: result.error.code,
+    message: result.error.message,
+    declineCode: (result.error as any)?.declineCode,
+    stripeErrorCode: (result.error as any)?.stripeErrorCode,
+  });
 
   // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
   if (
@@ -331,10 +338,16 @@ if (result.paymentIntent?.status === "Succeeded") {
     const { error: initError } = await initPaymentSheet({
       merchantDisplayName: STORE_NAME,
       paymentIntentClientSecret: paymentData.paymentIntent.client_secret,
+      defaultBillingDetails: {
+        address: { country: "GB" },
+      },
+      billingDetailsCollectionConfiguration: {
+        address: AddressCollectionMode.NEVER,
+      },
       applePay: {
         merchantCountryCode: "GB",
       },
-      googlePay: { merchantCountryCode: "GB", testEnv: true },
+      googlePay: { merchantCountryCode: "GB", testEnv: __DEV__ },
     });
 
     if (initError) {

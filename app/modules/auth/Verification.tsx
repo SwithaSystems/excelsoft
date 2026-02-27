@@ -304,15 +304,17 @@ const verificationScreen = () => {
         }
 
         if (from === "forgotPassword") {
-          showSuccessAlert(
-            "Verification Successful",
-            "Your identity has been verified. You can now reset your password.",
-            () => {
-              redirectToPage(containers.passwordResetScreen, { phoneNumber });
-            }
-          );
-          return;
-        }
+  showSuccessAlert(
+    "Verification Successful",
+    "Your identity has been verified. You can now reset your password.",
+    () => {
+      redirectToPage(containers.passwordResetScreen, {
+        ...(phoneNumber ? { phoneNumber } : { email }),
+      });
+    }
+  );
+  return;
+}
 
         if (from === "signup") {
           if (!parsedUserData) {
