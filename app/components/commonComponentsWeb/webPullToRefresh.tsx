@@ -12,6 +12,10 @@ interface Props {
 
 const SCROLL_TOP_THRESHOLD = 10; // Only allow pull-to-refresh when scroll is within this from top
 
+const WEB_PULL_REFRESH_KEY = "webPullRefresh";
+
+export const webPullToRefresh = { WEB_PULL_REFRESH_KEY };
+
 const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const translateY = useRef(new Animated.Value(0)).current;
 
@@ -20,7 +24,45 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
   const pullValue = useRef(0);
 
   const [showSpinner, setShowSpinner] = useState(false);
+  const [showRefreshOverlay, setShowRefreshOverlay] = useState(false);
   const startedAtTop = useRef(false);
+
+  // After reload: show overlay until the new page has finished loading
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof sessionStorage === "undefined") return;
+    if (!sessionStorage.getItem(WEB_PULL_REFRESH_KEY)) return;
+
+    setShowRefreshOverlay(true);
+
+    const clearOverlay = () => {
+      sessionStorage.removeItem(WEB_PULL_REFRESH_KEY);
+      setShowRefreshOverlay(false);
+    };
+
+    const minDelayMs = 600;
+    const maxWaitMs = 5000;
+    const startedAt = Date.now();
+
+    const tryClear = () => {
+      const elapsed = Date.now() - startedAt;
+      const remaining = Math.max(0, minDelayMs - elapsed);
+      setTimeout(() => {
+        clearOverlay();
+      }, remaining);
+    };
+
+    if (document.readyState === "complete") {
+      tryClear();
+    } else {
+      window.addEventListener("load", tryClear, { once: true });
+    }
+
+    const safety = setTimeout(clearOverlay, maxWaitMs);
+    return () => {
+      window.removeEventListener("load", tryClear);
+      clearTimeout(safety);
+    };
+  }, []);
 
   const isAtTop = () =>
     typeof window !== "undefined" &&
@@ -87,11 +129,15 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
 
       if (shouldRefresh) {
         setShowSpinner(true);
-
-        setTimeout(() => {
-          setShowSpinner(false);
-          window.location.reload();
-        }, 700); // spinner visible briefly
+        // Signal that we're refreshing so the new page shows loader until ready
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.setItem(WEB_PULL_REFRESH_KEY, Date.now().toString());
+        }
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            window.location.reload();
+          }, 50);
+        });
       }
 
       isDragging.current = false;
@@ -111,6 +157,23 @@ const WebPullToRefresh: React.FC<Props> = ({ children }) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {showRefreshOverlay && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255,255,255,0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 99999,
+          }}
+        >
+          <ActivityIndicator size="large" />
+        </View>
+      )}
       {showSpinner && (
         <View
           style={{
