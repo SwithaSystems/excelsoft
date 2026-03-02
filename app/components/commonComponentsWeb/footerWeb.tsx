@@ -121,7 +121,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
     gap: 16,
   },
   footerContainerTablet: {
