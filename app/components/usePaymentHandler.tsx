@@ -49,7 +49,7 @@ export const usePaymentHandler = () => {
   const [isApplePaySupported, setIsApplePaySupported] = useState(false);
   const [isGooglePaySupported, setIsGooglePaySupported] = useState(false);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
-  
+
   /* -------------------- FETCH SHIPPING CHARGE -------------------- */
   const fetchSettings = async () => {
     try {
@@ -110,15 +110,15 @@ export const usePaymentHandler = () => {
     const quantity = item.quantity || 1;
     const netPrice = item.netPrice;
 
-     // Calculate net price excluding VAT
+    // Calculate net price excluding VAT
     const netPriceExVAT = item.isVatApplicable
       ? netPrice / (1 + item.vatRate)
       : netPrice;
 
-      // Calculate VAT amount per unit
+    // Calculate VAT amount per unit
     const vatPerUnit = item.isVatApplicable ? netPrice - netPriceExVAT : 0;
     // Total VAT for all quantities
-    const vatAmount =  Number((vatPerUnit * quantity).toFixed(2));
+    const vatAmount = Number((vatPerUnit * quantity).toFixed(2));
     // Total price including VAT (which is just netPrice * quantity since netPrice is RRP)
     const netPriceIncVat = Number((netPrice * quantity).toFixed(2));
     const grossPrice = netPriceIncVat;
@@ -138,12 +138,12 @@ export const usePaymentHandler = () => {
 
   /* -------------------- PRICE CALCULATION -------------------- */
   const calculateSubtotal = (items: Product[]) => {
-  const total = items.reduce((sum, item) => {
-    return sum + (item.netPrice * item.quantity);  // ✅ netPrice already includes VAT
-  }, 0);
+    const total = items.reduce((sum, item) => {
+      return sum + (item.netPrice * item.quantity);  // ✅ netPrice already includes VAT
+    }, 0);
 
-  return total;
-};
+    return total;
+  };
 
   const getFinalAmount = (items: Product[], mode: string): number => {
     const subtotal = calculateSubtotal(items);
@@ -157,7 +157,7 @@ export const usePaymentHandler = () => {
       finalTotal: total.toFixed(2),
     });
 
-   return Number(total.toFixed(2));
+    return Number(total.toFixed(2));
   };
 
   /* -------------------- PAYMENT INTENT -------------------- */
@@ -184,7 +184,7 @@ export const usePaymentHandler = () => {
       const orderDetails = {
         products,
         shippingCharges:
-        params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
+          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
         totalAmount,
         paymentMethod: "credit_card",
         pickupMode: params.selectedMode as PickupMode,
@@ -200,7 +200,7 @@ export const usePaymentHandler = () => {
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
-       await orderService.notifyOrderPlaced(response);
+      await orderService.notifyOrderPlaced(response);
 
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
@@ -209,7 +209,7 @@ export const usePaymentHandler = () => {
       );
     } catch (error) {
       console.error(" Order creation failed:", error);
-      Alert.alert("Error", "Payment successful but order creation failed");
+      Alert.alert("Order Could Not Be Placed", "Your payment was processed but the order could not be created. Please contact support.");
     }
   };
 
@@ -224,7 +224,7 @@ export const usePaymentHandler = () => {
 
     const mov = await getMinimumOrderValue();
     if (mov !== null && totalAmount < mov) {
-      Alert.alert("Minimum Order Not Met");
+      Alert.alert("Minimum Order Not Met", "Please add more items to your cart to meet the minimum order value.");
       return;
     }
 
@@ -267,7 +267,7 @@ export const usePaymentHandler = () => {
       expectedTotal: expectedTotal.toFixed(2),
     });
 
-    const result  = await confirmPlatformPayPayment(
+    const result = await confirmPlatformPayPayment(
       paymentData.paymentIntent.client_secret,
       {
         applePay: {
@@ -280,8 +280,8 @@ export const usePaymentHandler = () => {
           merchantName: STORE_NAME,
           merchantCountryCode: "GB",
           currencyCode: CURRENCY_CODE.toUpperCase(),
-          label: STORE_NAME,    
-  amount: totalAmount
+          label: STORE_NAME,
+          amount: totalAmount
         },
       }
     );
@@ -289,33 +289,34 @@ export const usePaymentHandler = () => {
     console.log("PlatformPay Result:", result);
 
     if (result.error) {
-  console.error("PlatformPay Error:", result.error, {
-    code: result.error.code,
-    message: result.error.message,
-    declineCode: (result.error as any)?.declineCode,
-    stripeErrorCode: (result.error as any)?.stripeErrorCode,
-  });
+      console.error("PlatformPay Error:", result.error, {
+        code: result.error.code,
+        message: result.error.message,
+        declineCode: (result.error as any)?.declineCode,
+        stripeErrorCode: (result.error as any)?.stripeErrorCode,
+      });
 
-  // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
-  if (
-    result.paymentIntent?.status === "Succeeded"
-  ) {
-    console.log("Payment succeeded despite SDK error");
-    await createOrder(params, totalAmount);
-    return;
+      // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
+      if (
+        result.paymentIntent?.status === "Succeeded"
+      ) {
+        console.log("Payment succeeded despite SDK error");
+        await createOrder(params, totalAmount);
+        return;
+      }
+
+      Alert.alert(
+        "Payment Failed",
+        result.error.message || "Payment failed. Please try again."
+      );
+      return;
+    }
+
+    // Normal success
+    if (result.paymentIntent?.status === "Succeeded") {
+      await createOrder(params, totalAmount);
+    }
   }
-
-  Alert.alert(
-    "Payment Failed",
-    result.error.message || "Payment failed. Please try again."
-  );
-  return;
-}
-
-// Normal success
-if (result.paymentIntent?.status === "Succeeded") {
-  await createOrder(params, totalAmount);
-}}
 
   /* -------------------- CARD PAYMENT -------------------- */
   const handlePayment = async (items: Product[], params: any) => {
@@ -323,7 +324,7 @@ if (result.paymentIntent?.status === "Succeeded") {
       Alert.alert("Please Wait", "Loading payment settings...");
       return;
     }
-    
+
     const totalAmount = getFinalAmount(items, params.selectedMode);
 
     const mov = await getMinimumOrderValue();
