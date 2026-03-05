@@ -133,7 +133,7 @@ const AdminDashboard = () => {
     []
   );
 
-  const getStatusBadgeStyle = useCallback((status: String) => {
+  const getStatusBadgeStyle = useCallback((status: string) => {
     switch (status) {
       case "Order Placed":
         return globalStyles.orderPlacedBadge;

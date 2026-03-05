@@ -180,7 +180,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       // console.log("=== FORMDATA DEBUG ===");
       if (Platform.OS === "web") {
         // On web, we can iterate FormData
-        for (let pair of (formData as any).entries()) {
+        for (const pair of (formData as any).entries()) {
           // console.log(`${pair[0]}:`, pair[1]);
         }
       } else {

@@ -113,7 +113,7 @@ const handlePhoneBlur = async () => {
     setErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
     return;
   }
-  let normalized = trimmedPhone.startsWith("0")
+  const normalized = trimmedPhone.startsWith("0")
     ? trimmedPhone.slice(1)
     : trimmedPhone;
   const fullPhone = `+${callingCode}${normalized}`;

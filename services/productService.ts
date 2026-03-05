@@ -131,7 +131,7 @@ bulkHardDelete: async (ids: string[]): Promise<any> => {
     return response.data;
   },
 
-  addReview: async (productId: Number, review: any): Promise<void> => {
+  addReview: async (productId: number, review: any): Promise<void> => {
     console.log("productId", productId);
     console.log("review", review);
     const formDataAxios = createAxiosInstance("formdata");

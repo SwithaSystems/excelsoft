@@ -52,7 +52,7 @@ const ProductDetailScreen = () => {
   const [isProductLoading, setIsProductLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
+  const [toast, setToast] = useState<{ text1: string; text2?: string } | null>(
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
