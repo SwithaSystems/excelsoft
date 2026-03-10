@@ -6,6 +6,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  type DimensionValue,
 } from "react-native";
 import colors from "@/constants/colors";
 import HeaderNavBar from "./HeaderNavBarWeb";
@@ -73,7 +74,11 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
   const shouldUseFixedHeader = !isMobile;
 
   return (
-    <View style={[styles.root, { backgroundColor }]}>
+    <View style={[
+      styles.root,
+      { backgroundColor },
+      Platform.OS === "web" && hasFooter && isMobile && styles.rootWithFooterMobile,
+    ]}>
       {/* HEADER */}
       {hasHeader && (
         <View style={[
@@ -127,16 +132,15 @@ export const PageLayoutWeb: React.FC<PageLayoutWebProps> = ({
               paddingTop: contentPadding && (isTablet || isDesktop) ? 24 : 0,
             },
           ]}
-          // contentContainerStyle={[
-          //   styles.scrollContainer,
-          //   { 
-          //     paddingBottom: hasFooter ? 80 : 24,
-          //     paddingTop: isMobile ? 0 : 16,
-          //     // Ensure content doesn't get cut off on mobile
-          //     minHeight: isMobile ? height - totalHeaderHeight : undefined,
-          //   },
-          // ]}
-          showsVerticalScrollIndicator={false}
+          {...(scrollable && {
+            contentContainerStyle: [
+              styles.scrollContainer,
+              {
+                paddingBottom: hasFooter ? (isMobile ? 40 : 24) : 24,
+              },
+            ],
+          })}
+          showsVerticalScrollIndicator={scrollable ? false : undefined}
         >
           {children}
         </ContentWrapper>
@@ -159,6 +163,10 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     minHeight: Platform.OS === "web" ? "100%" : undefined,
+  },
+  rootWithFooterMobile: {
+    // Mobile web: ensure root has viewport height so flex layout works and footer stays below scroll
+    minHeight: "100vh" as DimensionValue,
   },
   headerContainer: {
     width: "100%",
@@ -197,6 +205,7 @@ const styles = StyleSheet.create({
  mainContainer: {
     flex: 1,
     flexDirection: Platform.OS === "web" ? "row" : "column",
+    minHeight: 0, // Allow flex item to shrink so footer stays visible when hasFooter
   },
   sidebar: {
     backgroundColor: colors.white,
@@ -217,11 +226,10 @@ const styles = StyleSheet.create({
     borderTopColor: colors.lightgrey,
     borderTopWidth: 1,
     paddingVertical: 16,
-    // marginTop: "auto", // Push footer to bottom
   },
   footerMobile: {
-    paddingVertical: 12,
-    // Ensure footer is visible on mobile browsers
+    paddingTop: 6,
+    paddingBottom: 12,
     position: "relative",
   },
 });
