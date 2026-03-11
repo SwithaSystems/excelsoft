@@ -302,12 +302,20 @@ const changePasswordScreen = () => {
           <View
             style={[
               globalStyles.pt_0,
-              webStyles.contentWidth,
+              isWeb && webStyles.contentWidth,
               isMobileWeb && webStyles.mobileWebContentWidth,
+              !isWeb && styles.mobileContentWidth,
             ]}
           >
+
+            <View style={[isWeb && webStyles.formCard]}>
             {/* Current Password */}
-            <View style={globalStyles.profileInputContainer}>
+            <View
+              style={[
+                globalStyles.profileInputContainer,
+                isWeb && !isMobileWeb && webStyles.fieldSpacing,
+              ]}
+            >
               <View style={{ flex: 1 }}>
                 <Text style={globalStyles.userInputLabel}>Current Password</Text>
                 <CustomTextInput
@@ -445,6 +453,7 @@ const changePasswordScreen = () => {
               />
             )}
           </View>
+          </View>
         </ScrollView>
       </KeyBoardWrapper>
 
@@ -461,6 +470,32 @@ const changePasswordScreen = () => {
 };
 
 export default changePasswordScreen;
+
+const styles = StyleSheet.create({
+  mobileContentWidth: {
+    width: "92%",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  mobileInputContainer: {
+    width: "100%",
+  },
+  mobileHeader: {
+    // marginBottom: 24,
+  },
+
+  mobileTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: colors.black,
+  },
+
+  mobileSubtitle: {
+    fontSize: 14,
+    color: colors.black,
+  },
+});
 
 const webStyles = StyleSheet.create({
   contentWidth: {
@@ -512,5 +547,24 @@ const webStyles = StyleSheet.create({
   mobileWebButton: {
     width: "100%",
     minWidth: undefined,
+  },
+  formCard: {
+    backgroundColor: colors.white,
+    padding: 28,
+    borderRadius: 12,
+    maxWidth: 520,
+    width: "100%",
+    alignSelf: "center",
+
+    shadowColor: colors.black,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+
+    borderWidth: Platform.OS === "web" ? 1 : 0,
+    borderColor: "#E5E7EB",
+  },
+  fieldSpacing: {
+    marginBottom: 20,
   },
 });

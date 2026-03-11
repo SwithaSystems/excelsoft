@@ -61,7 +61,11 @@ const FooterWeb = () => {
             isMobile && styles.linkTextMobile,
           ]}>About</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            redirectToPage(containers.customerSupportScreen);
+          }}
+        >
           <Text style={[
             styles.linkText,
             isMobile && styles.linkTextMobile,

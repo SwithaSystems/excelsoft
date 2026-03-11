@@ -207,17 +207,21 @@ function NotificationsHandler() {
   return null;
 }
 
-// Biometric Wrapper
+// Biometric Wrapper: only show biometric when app is reopened after kill (cold start with existing session).
+// Run the check ONLY once after initial auth load; do not re-run when user changes (e.g. after login).
 function BiometricAuthWrapper({ children }) {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isBiometricAuthenticated, setIsBiometricAuthenticated] =
     useState(false);
   const [isCheckingBiometric, setIsCheckingBiometric] = useState(true);
   const { user } = useAuth();
+  const hasRunInitialCheck = useRef(false);
 
   useEffect(() => {
+    if (hasRunInitialCheck.current) return;
+    hasRunInitialCheck.current = true;
     checkBiometricSettings();
-  }, [user]);
+  }, []);
 
   const checkBiometricSettings = async () => {
     try {
@@ -233,6 +237,7 @@ function BiometricAuthWrapper({ children }) {
         "biometric_enabled"
       );
 
+      // Use current user from context (at mount this is the restored session or null; we do not re-run after login)
       if (user && biometricEnabled === "true") {
         setIsBiometricEnabled(true);
         setIsBiometricAuthenticated(false);
@@ -281,8 +286,10 @@ function BiometricAuthWrapper({ children }) {
 // Main layout content
 function LayoutContent() {
   const { isLoading } = useAppContext();
+  const { isLoading: authLoading } = useAuth();
 
-  if (isLoading) {
+  // Wait for initial auth check so BiometricAuthWrapper sees restored session (or null) — not post-login user
+  if (isLoading || authLoading) {
     return <SplashScreen />;
   }
 
