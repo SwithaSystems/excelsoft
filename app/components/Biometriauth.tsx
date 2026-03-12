@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  Image,
+  Platform,
 } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
@@ -115,49 +115,68 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Top Bar */}
-      {/* <View style={styles.topBar}>
-        <TouchableOpacity onPress={onLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View> */}
+      <View style={styles.card}>
+        {/* Avatar & greeting */}
+        <View style={styles.avatarWrapper}>
+          <View style={styles.avatarCircle}>
+            <Ionicons
+              name="person-circle-outline"
+              size={80}
+              color={colors.primary}
+            />
+          </View>
+          <Text style={styles.greeting}>Welcome back</Text>
+          <Text style={styles.userName}>{userName}</Text>
+        </View>
 
-      {/* Avatar */}
-      <View style={styles.avatarContainer}>
-        <Ionicons
-          name="person-circle-outline"
-          size={100}
-          color={colors.primary}
-        />
-        <Text style={styles.userName}>{userName}</Text>
+        {/* Biometric section */}
+        {isBiometricSupported && isEnrolled ? (
+          <>
+            <View style={styles.biometricPrompt}>
+              <View style={styles.biometricIconCircle}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={40}
+                  color={colors.primary}
+                />
+              </View>
+              <Text style={styles.promptTitle}>
+                Secure Access
+              </Text>
+              <Text style={styles.promptSubtitle}>
+                Use your device lock to sign in quickly and securely
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={handleBiometricAuth}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="lock-open-outline"
+                size={24}
+                color={colors.white}
+              />
+              <Text style={styles.authButtonText}>
+                Unlock
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.infoCard}>
+            <Ionicons
+              name="information-circle-outline"
+              size={32}
+              color={colors.primary}
+            />
+            <Text style={styles.infoTitle}>Device lock not available</Text>
+            <Text style={styles.infoText}>
+              Set up a screen lock in your device settings to use quick sign-in.
+            </Text>
+          </View>
+        )}
       </View>
-
-      {/* Biometric Auth Button */}
-      {isBiometricSupported && isEnrolled ? (
-        <TouchableOpacity
-          style={styles.authButton}
-          onPress={handleBiometricAuth}
-        >
-          <Ionicons
-            name="finger-print-outline"
-            size={28}
-            color={colors.primary}
-          />
-          <Text style={styles.authButtonText}>Quick Secure Access</Text>
-        </TouchableOpacity>
-      ) : (
-        <Text style={styles.infoText}>
-          Please set up biometric authentication in your device settings.
-        </Text>
-      )}
-
-      {/* Branding */}
-      {/* <View style={styles.footer}>
-        <Text style={styles.branding}>ExcelSoft</Text>
-        <TouchableOpacity onPress={clearBiometricData}>
-          <Text style={styles.clearText}>Clear Biometric Data</Text>
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 };
@@ -167,63 +186,110 @@ export default BiometricAuth;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: colors.offWhite,
+    padding: 24,
     justifyContent: "center",
   },
-  topBar: {
-    position: "absolute",
-    top: 40,
-    left: 20,
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
-  // logoutText: {
-  //   fontSize: 16,
-  //   color: "#007AFF",
-  // },
-  avatarContainer: {
+  avatarWrapper: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 28,
+  },
+  avatarCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  greeting: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.black,
+    marginBottom: 4,
   },
   userName: {
     fontSize: 16,
-    marginTop: 10,
-    color: colors.primary,
+    color: colors.secondaryText,
+  },
+  biometricPrompt: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  biometricIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  promptTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 6,
+  },
+  promptSubtitle: {
+    fontSize: 14,
+    color: colors.secondaryText,
+    textAlign: "center",
+    paddingHorizontal: 16,
   },
   authButton: {
     flexDirection: "row",
     alignItems: "center",
-    borderColor: colors.primary,
-    borderWidth: 1.5,
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    alignSelf: "center",
-    marginBottom: 40,
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    gap: 10,
   },
   authButtonText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: colors.white,
+  },
+  infoCard: {
+    flexDirection: "column",
+    alignItems: "center",
+    backgroundColor: colors.secondary,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "rgba(13, 123, 75, 0.15)",
+  },
+  infoTitle: {
     fontSize: 16,
-    color: colors.primary,
-    marginLeft: 10,
+    fontWeight: "600",
+    color: colors.black,
+    marginTop: 10,
+    marginBottom: 6,
   },
   infoText: {
-    textAlign: "center",
-    color: "#FF3B30",
     fontSize: 14,
-    marginTop: 10,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    alignSelf: "center",
-    alignItems: "center",
-  },
-  branding: {
-    fontSize: 12,
-    color: "#aaa",
-    marginBottom: 8,
-  },
-  clearText: {
-    fontSize: 13,
-    color: "#FF3B30",
+    color: colors.secondaryText,
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
