@@ -131,6 +131,8 @@ const changePasswordScreen = () => {
     if (submitAttempted || newPassword.trim()) {
       if (!newPassword.trim()) {
         setNewPasswordError("New password is required");
+      } else if (currPassword.trim() && newPassword.trim() === currPassword.trim()) {
+        setNewPasswordError("New password should be different from current password");
       } else {
         const passwordValidationError = isValidPassword(newPassword);
         if (passwordValidationError) {
@@ -193,6 +195,9 @@ const changePasswordScreen = () => {
         const passwordValidationError = isValidPassword(newPassword);
         if (passwordValidationError) {
           setNewPasswordError(passwordValidationError);
+          hasErrors = true;
+        } else if (currPassword.trim() === newPassword.trim()) {
+          setNewPasswordError("New password should be different from current password");
           hasErrors = true;
         }
       }
