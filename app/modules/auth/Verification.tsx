@@ -339,12 +339,12 @@ const verificationScreen = () => {
               );
             }
           } catch (registerError: any) {
-            //console.error("Registration error:", registerError);
-            const errorMessage =
-              registerError?.response?.data?.message ||
+            const data = registerError?.response?.data;
+            const message =
+              (Array.isArray(data?.message) ? data.message[0] : data?.message) ||
               registerError?.message ||
               "Failed to create account. Please try again.";
-            showErrorAlertCustom("Registration Failed", errorMessage);
+            showErrorAlertCustom("Registration Failed", message);
           }
         }
         return;

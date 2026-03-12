@@ -228,11 +228,16 @@ const UserProfileScreen = () => {
         router.replace("/modules/home/Home");
       }, 1500);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Deletion error:", error);
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      ACCOUNT_DELETION_ERROR ||
+      "Failed to delete account. Please try again.";
     showErrorAlert({
       title: "Deletion Failed",
-      message: ACCOUNT_DELETION_ERROR || "Failed to delete account. Please try again.",
+      message,
     });
   }
 };
