@@ -16,6 +16,9 @@ import styles from "./BiometricSettingsStyles";
 import colors from "@/constants/colors";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
+// Neutral label for all user-facing text (works for face, fingerprint, or passcode)
+const APP_LOCK_LABEL = "App lock";
+
 const BiometricSettingsScreen = ({ navigation }: any) => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
@@ -126,9 +129,9 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
     // console.log(" Starting biometric authentication...");
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: `Enable ${biometricType} for secure app access`,
+        promptMessage: "Unlock to enable app lock for secure app access",
         disableDeviceFallback: false,
-        fallbackLabel: "Use Password",
+        fallbackLabel: "Use passcode",
       });
 
       // console.log("Authentication result:", result);
@@ -136,7 +139,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       if (result.success) {
         await SecureStore.setItemAsync("biometric_enabled", "true");
         setIsBiometricEnabled(true);
-        showAlert("Success", `${biometricType} has been enabled.`);
+        showAlert("Success", "App lock has been enabled.");
       } else {
         if (result.error === "user_cancel") {
           // console.log("User cancelled the authentication");
@@ -149,19 +152,19 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         }
         showAlert(
           "Authentication Failed",
-          `${biometricType} authentication was not successful. Please try again.`
+          "Authentication was not successful. Please try again."
         );
       }
     } catch (error) {
       console.error(error);
-      showAlert("Error", "Could not enable biometric auth.");
+      showAlert("Error", "Could not enable app lock.");
     }
   };
 
   const disableBiometricAuth = async () => {
     showAlert(
-      "Disable Biometric Authentication",
-      `Are you sure you want to disable ${biometricType}?`,
+      "Disable app lock",
+      "Are you sure you want to disable app lock?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -170,7 +173,7 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             await SecureStore.deleteItemAsync("biometric_enabled");
             setIsBiometricEnabled(false);
-            showAlert("Disabled", `${biometricType} has been turned off.`);
+            showAlert("Disabled", "App lock has been turned off.");
           },
         },
       ]
@@ -183,9 +186,9 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       // console.log("Testing biometric authentication...");
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: `Test ${biometricType} Authentication`,
+        promptMessage: "Unlock to test app lock",
         disableDeviceFallback: false,
-        fallbackLabel: "Use Passcode",
+        fallbackLabel: "Use passcode",
       });
 
       // console.log("Test result:", result);
@@ -193,12 +196,12 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
       if (result.success) {
         showAlert(
           "Success",
-          `${biometricType} authentication works correctly!`
+          "App lock works correctly."
         );
       } else {
         showAlert(
           "Test Failed",
-          `${biometricType} authentication test failed: ${result.error}`
+          `App lock test failed: ${result.error}`
         );
       }
     } catch (error: any) {
@@ -291,12 +294,12 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         <View style={styles.settingItem}>
           <View style={styles.settingInfo}>
             <Text style={styles.settingTitle}>
-              Biometric authenticatin
+              App lock
             </Text>
             <Text style={styles.settingDescription}>
               {isBiometricSupported
-                ? `Use biometrics to quickly and securely access your account`
-                : `${biometricType} is not available on this device`}
+                ? "Use your device lock to quickly and securely access the app"
+                : "App lock is not available on this device"}
             </Text>
           </View>
           <Switch
@@ -333,8 +336,8 @@ const BiometricSettingsScreen = ({ navigation }: any) => {
         {!isBiometricSupported && (
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              {biometricType} authentication is not available on this device.
-              Please ensure it's set up in your device settings.
+              App lock is not available on this device. Please set up a screen
+              lock or passcode in your device settings.
             </Text>
           </View>
         )}

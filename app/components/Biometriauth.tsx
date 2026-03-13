@@ -84,7 +84,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
         // promptMessage: `Authenticate as ${userName}`,
         promptMessage: `Login to Weekes`,
         cancelLabel: "Cancel",
-        fallbackLabel: "Use Pattern",
+        fallbackLabel: "Use passcode",
         disableDeviceFallback: false,
       });
 
