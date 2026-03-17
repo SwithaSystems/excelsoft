@@ -1,11 +1,9 @@
-import React from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   StyleSheet,
-  useWindowDimensions,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,7 +13,7 @@ import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 
 const FooterWeb = () => {
-  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
+  const { isMobile, isTablet } = useWebMediaQuery();
 
   return (
     <View style={[

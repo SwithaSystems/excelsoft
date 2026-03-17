@@ -22,7 +22,6 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import { UserAPI } from "@/services/userService";
 import * as SecureStore from "expo-secure-store";
-import colors from "../../../constants/colors";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
