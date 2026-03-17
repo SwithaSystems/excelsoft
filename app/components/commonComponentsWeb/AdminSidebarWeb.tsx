@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
@@ -121,7 +122,11 @@ export const AdminSidebarWeb: React.FC<AdminSidebarWebProps> = ({
 
   return (
     <View style={[styles.container, isDrawer && styles.containerDrawer]}>
-      <View style={styles.navList}>
+      <ScrollView
+        style={styles.navScroll}
+        contentContainerStyle={styles.navList}
+        showsVerticalScrollIndicator={false}
+      >
         {navItems.map((item) => {
           const active = isActive(item.route);
           return (
@@ -148,7 +153,7 @@ export const AdminSidebarWeb: React.FC<AdminSidebarWebProps> = ({
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -166,8 +171,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
     paddingTop: 0,
   },
+  navScroll: {
+    flex: 1,
+  },
   navList: {
     gap: 8,
+    paddingBottom: 16,
   },
   navItem: {
     flexDirection: "row",
