@@ -176,41 +176,13 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         formData.append("file", fileObject as any);
       }
 
-      // DEBUG: Log FormData contents (note: can't directly log FormData on mobile)
-      // console.log("=== FORMDATA DEBUG ===");
-      if (Platform.OS === "web") {
-        // On web, we can iterate FormData
-        for (let pair of (formData as any).entries()) {
-          // console.log(`${pair[0]}:`, pair[1]);
-        }
-      } else {
-        // console.log("FormData created (cannot iterate on mobile)");
-        // console.log("FormData fields: entityType, fileName, vendor, file");
-      }
-
       const vendorSelected = selectedVendor && selectedVendor.trim() !== "";
       const vendorLabelSelected = selectedVendorLabel !== "Select Vendor";
 
-      // console.log("=== UPLOAD BRANCH DEBUG ===");
-      // console.log("Vendor selected:", vendorSelected);
-      // console.log("Vendor label selected:", vendorLabelSelected);
-      // console.log(
-      //   "Will use vendor branch:",
-      //   vendorSelected || vendorLabelSelected
-      // );
-
       if (vendorSelected || vendorLabelSelected) {
         // VENDOR BRANCH
-        // console.log("=== VENDOR PDF UPLOAD ===");
         try {
           const url = `${API_URL}/product-import/upload-pdf`;
-          // console.log("Upload URL:", url);
-          // console.log("Request headers:", {
-          //   "Content-Type": "multipart/form-data",
-          // });
-          // console.log("Timeout: 300000ms");
-
-          // console.log("Sending request to backend...");
           const response = await axios.post(url, formData, {
             headers: { "Content-Type": "multipart/form-data" },
             timeout: 300000,
@@ -257,7 +229,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
         }
       } else {
         // ENTITY BRANCH
-        // console.log("=== ENTITY UPLOAD ===");
         try {
           const resp = await ProductsAPI.addProduct_Catagory_Upload_File(
             formData
@@ -287,7 +258,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
           if (onUploadComplete) onUploadComplete(json);
         } catch (apiErr: any) {
-          console.error("=== ENTITY UPLOAD ERROR ===");
           console.error("Error:", apiErr);
 
           setResult({
@@ -375,7 +345,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       hasFooter
       hasHeader
       scrollable={false}
-      // headerComponent={<Header headerText={FILE_UPLOAD} />}
     >
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Select Entity:</Text>

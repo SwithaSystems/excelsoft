@@ -404,8 +404,6 @@ const AdminProductDashboard = () => {
   const performBulkDelete = async (productIds: string[]) => {
     try {
       setIsLoading(true);
-      let successCount = 0;
-      let errorCount = 0;
 
       const result = await ProductsAPI.deleteProduct(productIds);
 
