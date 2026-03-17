@@ -271,7 +271,6 @@ const changePasswordScreen = () => {
         }
       }
     } catch (err: any) {
-      console.error("API call error:", err);
       setIsLoading(false);
 
       const errorMessage =
