@@ -22,7 +22,6 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "@/store/slices/userSlice";
 import { UserAPI } from "@/services/userService";
 import * as SecureStore from "expo-secure-store";
-import colors from "../../../constants/colors";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
@@ -339,12 +338,12 @@ const verificationScreen = () => {
               );
             }
           } catch (registerError: any) {
-            //console.error("Registration error:", registerError);
-            const errorMessage =
-              registerError?.response?.data?.message ||
+            const data = registerError?.response?.data;
+            const message =
+              (Array.isArray(data?.message) ? data.message[0] : data?.message) ||
               registerError?.message ||
               "Failed to create account. Please try again.";
-            showErrorAlertCustom("Registration Failed", errorMessage);
+            showErrorAlertCustom("Registration Failed", message);
           }
         }
         return;

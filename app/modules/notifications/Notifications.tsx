@@ -123,7 +123,7 @@ const notificationsScreen: React.FC = () => {
     <LayoutComponent
       hasFooter={isWeb}
       hasHeader
-      scrollable={isWeb}
+      scrollable={true}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
       hasSidebar={isWeb}

@@ -5,7 +5,7 @@ import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInp
 import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, Text, View, StyleSheet, Platform } from "react-native";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
@@ -24,12 +24,12 @@ import { isValidPassword } from "../../../utilities/validations";
 import colors from "@/constants/colors";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { Ionicons } from "@expo/vector-icons";
 
 const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
   const [currentPasswordError, setCurrentPasswordError] = useState("");
   const [newPasswordError, setNewPasswordError] = useState<string>("");
@@ -75,7 +75,6 @@ const changePasswordScreen = () => {
   useEffect(() => {
     const fetchUser = async () => {
       if (user) {
-        setPhoneNumber(user.phone);
         try {
           const userId = user._id || user.id;
           if (userId) {
@@ -129,6 +128,8 @@ const changePasswordScreen = () => {
     if (submitAttempted || newPassword.trim()) {
       if (!newPassword.trim()) {
         setNewPasswordError("New password is required");
+      } else if (currPassword.trim() && newPassword.trim() === currPassword.trim()) {
+        setNewPasswordError("New password should be different from current password");
       } else {
         const passwordValidationError = isValidPassword(newPassword);
         if (passwordValidationError) {
@@ -191,6 +192,9 @@ const changePasswordScreen = () => {
         const passwordValidationError = isValidPassword(newPassword);
         if (passwordValidationError) {
           setNewPasswordError(passwordValidationError);
+          hasErrors = true;
+        } else if (currPassword.trim() === newPassword.trim()) {
+          setNewPasswordError("New password should be different from current password");
           hasErrors = true;
         }
       }
@@ -299,24 +303,51 @@ const changePasswordScreen = () => {
           <View
             style={[
               globalStyles.pt_0,
-              webStyles.contentWidth,
+              isWeb && webStyles.contentWidth,
               isMobileWeb && webStyles.mobileWebContentWidth,
+              !isWeb && styles.mobileContentWidth,
             ]}
           >
-            {/* Current Password */}
-            <View style={globalStyles.profileInputContainer}>
+            {!isWeb && (
+              <View style={styles.mobileHeader}>
+                <View style={styles.mobileIconWrap}>
+                  <Ionicons name="lock-closed" size={28} color={colors.primary} />
+                </View>
+                <Text style={styles.mobileTitle}>Change your password</Text>
+                <Text style={styles.mobileSubtitle}>
+                  Enter your current password, then choose a new one. You'll be signed out after saving.
+                </Text>
+              </View>
+            )}
+
+            <View
+              style={[
+                isWeb && webStyles.formCard,
+                isMobileWeb && webStyles.formCardMobileWeb,
+                !isWeb && styles.mobileCard,
+              ]}
+            >
+              {/* Current Password */}
+            <View
+              style={[
+                globalStyles.profileInputContainer,
+                isWeb && !isMobileWeb && webStyles.fieldSpacing,
+                !isWeb && styles.mobileField,
+              ]}
+            >
               <View style={{ flex: 1 }}>
-                <Text style={globalStyles.userInputLabel}>Current Password</Text>
+                <Text style={[globalStyles.userInputLabel, !isWeb && styles.mobileLabel]}>Current Password</Text>
                 <CustomTextInput
                   secureTextEntry={true}
-                  containerStyle={globalStyles.userInputContainer}
+                  containerStyle={[
+                    globalStyles.userInputContainer,
+                  ]}
                   TextStyle={globalStyles.input}
                   placeholder="Enter your current Password"
                   value={currPassword}
                   onPress={() => {}}
                   setValue={(value) => {
                     setCurrPassword(value);
-                    // Clear "required" error when user starts typing
                     if (currentPasswordError === "Current password is required") {
                       setCurrentPasswordError("");
                     }
@@ -324,7 +355,7 @@ const changePasswordScreen = () => {
                   onblur={handleCurrentPasswordBlur}
                 />
                 {currentPasswordError ? (
-                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }, !isWeb && styles.mobileErrorText]}>
                     {currentPasswordError}
                   </Text>
                 ) : null}
@@ -332,20 +363,20 @@ const changePasswordScreen = () => {
             </View>
 
             {/* New Password */}
-            <View style={globalStyles.profileInputContainer}>
+            <View style={[globalStyles.profileInputContainer, !isWeb && styles.mobileField]}>
               <View style={{ flex: 1 }}>
-                <Text style={globalStyles.userInputLabel}>New Password</Text>
+                <Text style={[globalStyles.userInputLabel, !isWeb && styles.mobileLabel]}>New Password</Text>
                 <CustomTextInput
                   secureTextEntry={true}
-                  containerStyle={globalStyles.userInputContainer}
+                  containerStyle={[
+                    globalStyles.userInputContainer
+                  ]}
                   TextStyle={globalStyles.input}
                   placeholder="Enter your new Password"
                   value={newPassword}
                   onPress={() => {}}
                   setValue={(value) => {
                     setNewPassword(value);
-
-                    // Validate new password format in real-time after first submit attempt
                     if (submitAttempted) {
                       if (value.trim()) {
                         const passwordValidationError = isValidPassword(value);
@@ -354,9 +385,6 @@ const changePasswordScreen = () => {
                         setNewPasswordError("");
                       }
                     }
-
-                    // Always re-validate confirm password match in real-time
-                    // if the user has already typed something in confirm field
                     if (confirmPassword.trim()) {
                       if (value !== confirmPassword) {
                         setConfirmPasswordError("New and Confirm passwords do not match");
@@ -368,7 +396,7 @@ const changePasswordScreen = () => {
                   onblur={handleNewPasswordBlur}
                 />
                 {newPasswordError ? (
-                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }, !isWeb && styles.mobileErrorText]}>
                     {newPasswordError}
                   </Text>
                 ) : null}
@@ -376,23 +404,21 @@ const changePasswordScreen = () => {
             </View>
 
             {/* Confirm New Password */}
-            <View style={globalStyles.profileInputContainer}>
+            <View style={[globalStyles.profileInputContainer, !isWeb && styles.mobileField]}>
               <View style={{ flex: 1 }}>
-                <Text style={globalStyles.userInputLabel}>Confirm New Password</Text>
+                <Text style={[globalStyles.userInputLabel, !isWeb && styles.mobileLabel]}>Confirm New Password</Text>
                 <CustomTextInput
                   secureTextEntry={true}
-                  containerStyle={globalStyles.userInputContainer}
+                  containerStyle={[
+                    globalStyles.userInputContainer
+                  ]}
                   TextStyle={globalStyles.input}
                   placeholder="Re-enter your new Password"
                   value={confirmPassword}
                   onPress={() => {}}
                   setValue={(value) => {
                     setConfirmPassword(value);
-
-                    // Always show/clear mismatch error in real-time while retyping
-                    // Don't gate on submitAttempted — user expects immediate feedback
                     if (!value.trim()) {
-                      // Don't show "required" while actively clearing the field, just remove error
                       setConfirmPasswordError("");
                     } else if (newPassword && value !== newPassword) {
                       setConfirmPasswordError("New and Confirm passwords do not match");
@@ -403,7 +429,7 @@ const changePasswordScreen = () => {
                   onblur={handleConfirmPasswordBlur}
                 />
                 {confirmPasswordError ? (
-                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }]}>
+                  <Text style={[globalStyles.errorText, isWeb && { marginTop: -8, marginBottom: 0 }, !isWeb && styles.mobileErrorText]}>
                     {confirmPasswordError}
                   </Text>
                 ) : null}
@@ -435,12 +461,25 @@ const changePasswordScreen = () => {
                 />
               </View>
             ) : (
-              <Button
-                onPress={handleChangePassword}
-                title={isLoading ? "Saving..." : "Save Password"}
-                disabled={isLoading}
-              />
+              <View style={styles.mobileButtons}>
+                <Button
+                  primary={false}
+                  title="Cancel"
+                  onPress={() => redirectToPage(containers.userProfileScreen)}
+                  style={styles.mobileCancelButton}
+                  textStyle={styles.mobileCancelButtonText}
+                  disabled={isLoading}
+                />
+                <Button
+                  onPress={handleChangePassword}
+                  title={isLoading ? "Saving..." : "Save Password"}
+                  disabled={isLoading}
+                  style={styles.mobileSaveButton}
+                  textStyle={styles.mobileSaveButtonText}
+                />
+              </View>
             )}
+          </View>
           </View>
         </ScrollView>
       </KeyBoardWrapper>
@@ -458,6 +497,102 @@ const changePasswordScreen = () => {
 };
 
 export default changePasswordScreen;
+
+const styles = StyleSheet.create({
+  mobileContentWidth: {
+    width: "92%",
+    alignSelf: "center",
+    paddingHorizontal: 4,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  mobileHeader: {
+    marginBottom: 24,
+    alignItems: "center",
+  },
+  mobileIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  mobileTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: colors.black,
+    textAlign: "center",
+  },
+  mobileSubtitle: {
+    fontSize: 14,
+    color: colors.slateGrey,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 8,
+  },
+  mobileCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    marginBottom: 16,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.lightgrey,
+  },
+  mobileField: {
+    // marginBottom: 12,
+  },
+  mobileLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 6,
+  },
+  mobileErrorText: {
+    marginTop: 4,
+    fontSize: 13,
+  },
+  mobileButtons: {
+    marginTop: 28,
+    gap: 12,
+  },
+  mobileSaveButton: {
+    backgroundColor: colors.primary,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+  mobileSaveButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  mobileCancelButton: {
+    backgroundColor: "transparent",
+    height: 50,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  mobileCancelButtonText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});
 
 const webStyles = StyleSheet.create({
   contentWidth: {
@@ -509,5 +644,28 @@ const webStyles = StyleSheet.create({
   mobileWebButton: {
     width: "100%",
     minWidth: undefined,
+  },
+  formCard: {
+    backgroundColor: colors.white,
+    padding: 28,
+    borderRadius: 12,
+    maxWidth: 520,
+    width: "100%",
+    alignSelf: "center",
+
+    shadowColor: colors.black,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+
+    borderWidth: Platform.OS === "web" ? 1 : 0,
+    borderColor: "#E5E7EB",
+  },
+  formCardMobileWeb: {
+    padding: 20,
+    maxWidth: "100%",
+  },
+  fieldSpacing: {
+    marginBottom: 12,
   },
 });
