@@ -287,7 +287,7 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         }
       }
     } catch (error: any) {
-      console.error("Deletion error:", error);
+      // console.error("Deletion error:", error);
       const message =
         error?.response?.data?.message ||
         error?.message ||
