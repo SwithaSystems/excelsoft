@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -91,11 +91,11 @@ const allNavItems: NavItem[] = [
   // },
 ];
 
-const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
+const HeaderNavBar: FC<HeaderNavBarProps> = ({
   backgroundColor = colors.primary,
   onCategorySelect,
   hideNavItems = false,
-  hasSidebar = false,
+  hasSidebar: _hasSidebar = false,
 }) => {
   const { loading: roleLoading, isValidUser, isAdmin } = useRoleContext();
   const { logout } = useAuth();
@@ -559,8 +559,8 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
               <View
                 key={index}
                 style={styles.itemWrapper}
-                onMouseEnter={() => !isMobile && setHoveredNavLabel(item.label)}
-                onMouseLeave={() => !isMobile && setHoveredNavLabel(null)}
+                onPointerEnter={() => !isMobile && setHoveredNavLabel(item.label)}
+                onPointerLeave={() => !isMobile && setHoveredNavLabel(null)}
               >
                 <TouchableOpacity
                   style={[
@@ -873,25 +873,12 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     marginLeft: "auto", // Push buttons to the right
   },
-  authButtonsContainerMobile: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingRight: 8,
-    gap: 4,
-    flexShrink: 0,
-    marginLeft: "auto",
-  },
   authButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     gap: 6,
-  },
-  authButtonIcon: {
-    padding: 8,
-    justifyContent: "center",
-    alignItems: "center",
   },
   authButtonText: {
     color: colors.white,

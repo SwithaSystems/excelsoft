@@ -5,7 +5,7 @@ import { CustomTextInput } from "@/app/components/commonComponents/CustomTextInp
 import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, Text, View, StyleSheet, Platform } from "react-native";
 import { UserAPI } from "@/services/userService";
 import Bcrypt from "react-native-bcrypt";
@@ -30,7 +30,6 @@ const changePasswordScreen = () => {
   const [currPassword, setCurrPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [existingPassword, setExistingPassword] = useState("");
   const [currentPasswordError, setCurrentPasswordError] = useState("");
   const [newPasswordError, setNewPasswordError] = useState<string>("");
@@ -76,7 +75,6 @@ const changePasswordScreen = () => {
   useEffect(() => {
     const fetchUser = async () => {
       if (user) {
-        setPhoneNumber(user.phone);
         try {
           const userId = user._id || user.id;
           if (userId) {
@@ -332,7 +330,7 @@ const changePasswordScreen = () => {
                 !isWeb && styles.mobileCard,
               ]}
             >
-            {/* Current Password */}
+              {/* Current Password */}
             <View
               style={[
                 globalStyles.profileInputContainer,
@@ -345,8 +343,7 @@ const changePasswordScreen = () => {
                 <CustomTextInput
                   secureTextEntry={true}
                   containerStyle={[
-                    globalStyles.userInputContainer, 
-                    // !isWeb && styles.mobileInput
+                    globalStyles.userInputContainer,
                   ]}
                   TextStyle={globalStyles.input}
                   placeholder="Enter your current Password"
@@ -375,8 +372,7 @@ const changePasswordScreen = () => {
                 <CustomTextInput
                   secureTextEntry={true}
                   containerStyle={[
-                    globalStyles.userInputContainer, 
-                    // !isWeb && styles.mobileInput
+                    globalStyles.userInputContainer
                   ]}
                   TextStyle={globalStyles.input}
                   placeholder="Enter your new Password"
@@ -417,8 +413,7 @@ const changePasswordScreen = () => {
                 <CustomTextInput
                   secureTextEntry={true}
                   containerStyle={[
-                    globalStyles.userInputContainer, 
-                    // !isWeb && styles.mobileInput
+                    globalStyles.userInputContainer
                   ]}
                   TextStyle={globalStyles.input}
                   placeholder="Re-enter your new Password"
@@ -564,11 +559,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginBottom: 6,
   },
-  mobileInput: {
-    borderRadius: 10,
-    borderColor: colors.placeholdergrey,
-    backgroundColor: colors.lightgrey,
-  },
   mobileErrorText: {
     marginTop: 4,
     fontSize: 13,
@@ -604,9 +594,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 15,
     fontWeight: "600",
-  },
-  mobileInputContainer: {
-    width: "100%",
   },
 });
 
