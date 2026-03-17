@@ -178,15 +178,15 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
 
       // DEBUG: Log FormData contents (note: can't directly log FormData on mobile)
       // console.log("=== FORMDATA DEBUG ===");
-      if (Platform.OS === "web") {
-        // On web, we can iterate FormData
-        for (const pair of (formData as any).entries()) {
-          // console.log(`${pair[0]}:`, pair[1]);
-        }
-      } else {
-        // console.log("FormData created (cannot iterate on mobile)");
-        // console.log("FormData fields: entityType, fileName, vendor, file");
-      }
+      // if (Platform.OS === "web") {
+      //   // On web, we can iterate FormData
+      //   for (const pair of (formData as any).entries()) {
+      //     // console.log(`${pair[0]}:`, pair[1]);
+      //   }
+      // } else {
+      //   // console.log("FormData created (cannot iterate on mobile)");
+      //   // console.log("FormData fields: entityType, fileName, vendor, file");
+      // }
 
       const vendorSelected = selectedVendor && selectedVendor.trim() !== "";
       const vendorLabelSelected = selectedVendorLabel !== "Select Vendor";
