@@ -78,6 +78,7 @@ const SearchScreen = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<any>([]);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [errorModalState, setErrorModalState] = useState({
     isVisible: false,
@@ -231,11 +232,13 @@ const SearchScreen = () => {
     const fetchSuggestions = async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         setSuggestions([]);
+        setSuggestionsError(null);
         return;
       }
 
       const API_URL = process.env.EXPO_PUBLIC_API_URL;
       setIsLoading(true);
+      setSuggestionsError(null);
       try {
         const response = await axios.get(
           `${API_URL}/products/suggestions/search?q=${debouncedQuery}`
@@ -248,6 +251,7 @@ const SearchScreen = () => {
       } catch (error) {
         console.error("Error fetching suggestions:", error);
         setSuggestions([]);
+        setSuggestionsError("Couldn't load suggestions. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -314,12 +318,16 @@ const SearchScreen = () => {
   );
 
   const renderMainContent = () => {
-    if (searchQuery && (suggestions.length > 0 || isLoading)) {
+    if (searchQuery && (suggestions.length > 0 || isLoading || suggestionsError)) {
       return (
         <View style={styles.suggestionsContainer}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={colors.primary} />
+            </View>
+          ) : suggestionsError ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.emptyStateText}>{suggestionsError}</Text>
             </View>
           ) : (
             <FlatList

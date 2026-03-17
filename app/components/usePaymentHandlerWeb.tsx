@@ -399,7 +399,7 @@ export default function usePaymentHandlerWeb() {
       redirectToPage(containers.orderSuccessfulScreen, {
         orderData: JSON.stringify(response),
       });
-await orderService.notifyOrderPlaced(response);
+      await orderService.notifyOrderPlaced(response);
       await NotificationService.scheduleLocalNotification(
         "Your Order is Placed",
         `Your order number is #ORD-${response.orderNumber}`,
@@ -418,7 +418,7 @@ await orderService.notifyOrderPlaced(response);
   /* -------------------- CARD PAYMENT -------------------- */
   const handlePayment = async (items: any[], params: any) => {
     if (!stripe || !cardElement || !isStripeReady) {
-      Alert.alert("Payment system is still loading");
+      Alert.alert("Payment System Loading", "Please wait a moment for the payment system to finish loading, then try again.");
       return;
     }
 
@@ -475,7 +475,7 @@ await orderService.notifyOrderPlaced(response);
     try {
       await createOrder(params, totalAmount);
     } catch {
-      Alert.alert("Error", "Payment successful but order creation failed");
+      Alert.alert("Order Could Not Be Placed", "Your payment was processed but the order could not be created. Please contact support.");
     }
   };
 
