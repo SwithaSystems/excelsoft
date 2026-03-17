@@ -120,7 +120,6 @@ const changePasswordScreen = () => {
         setCurrentPasswordError("");
       }
     } catch (error) {
-      console.error("Error comparing passwords:", error);
       setCurrentPasswordError("Failed to verify current password. Please try again.");
     }
   };
@@ -238,7 +237,6 @@ const changePasswordScreen = () => {
             return;
           }
         } catch (error) {
-          console.error("Error validating current password:", error);
           const errorMsg = "Failed to verify current password. Please try again.";
           setCurrentPasswordError(errorMsg);
           setIsLoading(false);
@@ -267,7 +265,6 @@ const changePasswordScreen = () => {
         }
       }
     } catch (err: any) {
-      console.error("API call error:", err);
       setIsLoading(false);
 
       const errorMessage =
