@@ -287,7 +287,6 @@ const HeaderNavBar: FC<HeaderNavBarProps> = ({
         }
       }
     } catch (error: any) {
-      // console.error("Deletion error:", error);
       const message =
         error?.response?.data?.message ||
         error?.message ||
