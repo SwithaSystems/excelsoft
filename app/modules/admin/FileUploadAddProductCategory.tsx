@@ -3,10 +3,9 @@ import { Platform, View } from "react-native";
 import FileUploadComponent from "./components/FileUploadComponent";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
-import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import BrandHeader from "@/app/components/BrandHeader";
 import Header from "@/app/components/Header";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 
 const fileUploadAddProductCategory = () => {
   const handleUploadComplete = (result: any) => {
@@ -15,28 +14,28 @@ const fileUploadAddProductCategory = () => {
   };
 
   const isWeb = Platform.OS === "web";
-  const isMobile = !isWeb;
   
-    const HeaderComponent = isWeb ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
-    ) : (
-      <Header headerText="File Upload" />
-    );
-    const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  ) : (
+    <Header headerText="File Upload" />
+  );
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
-      <LayoutComponent
+    <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter
-      footerComponent={false}
+      hasFooter={isWeb}
+      footerComponent={FooterComponent || undefined}
       hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >
-    <View style={{ flex: 1 }}>
-      <FileUploadComponent onUploadComplete={handleUploadComplete} />
-    </View>
+      <View style={{ flex: 1 }}>
+        <FileUploadComponent onUploadComplete={handleUploadComplete} />
+      </View>
     </LayoutComponent>
   );
 };

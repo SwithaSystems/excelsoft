@@ -51,6 +51,12 @@ const navItems: NavItem[] = [
     route: "/modules/admin/AdminCategories",
   },
   {
+    id: "store-information",
+    label: "Store Information",
+    icon: "storefront",
+    route: `/${containers.AdminStoreInformationScreen}`,
+  },
+  {
     id: "scan",
     label: "Scan & Deliver",
     icon: "people",
@@ -79,6 +85,12 @@ const navItems: NavItem[] = [
     label: "Global Settings",
     icon: "settings",
     route: "/modules/admin/AdminGlobalSettings",
+  },
+  {
+    id: "notification-settings",
+    label: "Notification Settings",
+    icon: "notifications",
+    route: `/${containers.adminNotificationSettingsScreen}`,
   },
 ];
 
