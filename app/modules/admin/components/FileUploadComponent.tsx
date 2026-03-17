@@ -10,9 +10,6 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import Header from "@/app/components/Header";
-import { FILE_UPLOAD } from "@/constants/stringLiterals";
 import styles from "../FileUploadAddProductCategoryStyles";
 import colors from "@/constants/colors";
 import axios from "axios";
@@ -341,155 +338,174 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   });
 
   return (
-    <PageLayout
-      hasFooter
-      hasHeader
-      scrollable={false}
-    >
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.label}>Select Entity:</Text>
-        <ModalSelector
-          data={entityOptions}
-          initValue={selectedEntityLabel}
-          onChange={(option: any) => {
-            const resolved = resolveOption(option, entityOptions as any);
-            setSelectedEntity(resolved.value);
-            setSelectedEntityLabel(resolved.label);
-          }}
-          keyExtractor={(item: any) => item.key}
-          labelExtractor={(item: any) => item.label}
-          style={styles.modalSelector}
-          initValueTextStyle={styles.modalInitValue}
-          selectTextStyle={styles.modalSelectedText}
-          optionTextStyle={styles.modalOptionText}
-          selectedItemTextStyle={styles.modalSelectedItemText}
-        >
-          <View style={styles.modalTrigger}>
-            <Text style={styles.modalTriggerText}>{selectedEntityLabel}</Text>
-            <View style={styles.modalTriggerIcon}>
-              <Ionicons name="caret-down" size={20} color={colors.primary} />
-            </View>
-          </View>
-        </ModalSelector>
-      </View>
-
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.label}>Select Vendor:</Text>
-        <ModalSelector
-          data={vendorOptions}
-          initValue={selectedVendorLabel}
-          onChange={(option: any) => {
-            const resolved = resolveOption(option, vendorOptions as any);
-            setSelectedVendor(resolved.value);
-            setSelectedVendorLabel(resolved.label);
-          }}
-          keyExtractor={(item: any) => item.key}
-          labelExtractor={(item: any) => item.label}
-          style={styles.modalSelector}
-          initValueTextStyle={styles.modalInitValue}
-          selectTextStyle={styles.modalSelectedText}
-          optionTextStyle={styles.modalOptionText}
-          selectedItemTextStyle={styles.modalSelectedItemText}
-        >
-          <View style={styles.modalTrigger}>
-            <Text style={styles.modalTriggerText}>{selectedVendorLabel}</Text>
-            <View style={styles.modalTriggerIcon}>
-              <Ionicons name="caret-down" size={20} color={colors.primary} />
-            </View>
-          </View>
-        </ModalSelector>
-      </View>
-
-      {selectedFile && (
-        <View style={styles.fileInfoContainer}>
-          <Text style={styles.fileInfoText}>
-            Selected File: {selectedFile.name}
-          </Text>
-          <Text style={styles.fileInfoText}>
-            Size:{" "}
-            {selectedFile.size
-              ? `${(selectedFile.size / 1024).toFixed(2)} KB`
-              : "Unknown"}
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.chooseButton,
-            isChooseDisabled && styles.buttonDisabled,
-          ]}
-          onPress={handleChooseFile}
-          disabled={isChooseDisabled}
-        >
-          <Text style={styles.buttonText}>Choose File</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
+    <View style={[styles.pageContainer, isWeb && styles.pageContainerWeb]}>
+      <View
         style={[
-          styles.button,
-          styles.uploadButton,
-          (!selectedFile || isUploading) && styles.buttonDisabled,
+          styles.card,
+          isWeb && styles.cardWeb,
+          isMobileWeb && styles.cardMobileWeb,
         ]}
-        onPress={handleUpload}
-        disabled={!selectedFile || isUploading}
       >
-        {isUploading ? (
-          <ActivityIndicator size="small" color={colors.white} />
-        ) : (
-          <Text style={styles.buttonText}>Upload File</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.title}>Upload bulk data</Text>
+            <Text style={styles.subtitle}>
+              Choose an entity or vendor, then select a file and upload it.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.infoBanner}>
+          <Text style={styles.infoBannerTitle}>Tip</Text>
+          <Text style={styles.infoBannerText}>
+            Select a Vendor for PDF imports, or an Entity for products/categories uploads. Then choose a file to continue.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.dropdownContainer}>
+            <Text style={styles.label}>Select Entity</Text>
+            <ModalSelector
+              data={entityOptions}
+              initValue={selectedEntityLabel}
+              onChange={(option: any) => {
+                const resolved = resolveOption(option, entityOptions as any);
+                setSelectedEntity(resolved.value);
+                setSelectedEntityLabel(resolved.label);
+              }}
+              keyExtractor={(item: any) => item.key}
+              labelExtractor={(item: any) => item.label}
+              style={styles.modalSelector}
+              initValueTextStyle={styles.modalInitValue}
+              selectTextStyle={styles.modalSelectedText}
+              optionTextStyle={styles.modalOptionText}
+              selectedItemTextStyle={styles.modalSelectedItemText}
+            >
+              <View style={styles.modalTrigger}>
+                <Text style={styles.modalTriggerText}>{selectedEntityLabel}</Text>
+                <View style={styles.modalTriggerIcon}>
+                  <Ionicons name="caret-down" size={20} color={colors.primary} />
+                </View>
+              </View>
+            </ModalSelector>
+          </View>
+
+          <View style={styles.dropdownContainer}>
+            <Text style={styles.label}>Select Vendor</Text>
+            <ModalSelector
+              data={vendorOptions}
+              initValue={selectedVendorLabel}
+              onChange={(option: any) => {
+                const resolved = resolveOption(option, vendorOptions as any);
+                setSelectedVendor(resolved.value);
+                setSelectedVendorLabel(resolved.label);
+              }}
+              keyExtractor={(item: any) => item.key}
+              labelExtractor={(item: any) => item.label}
+              style={styles.modalSelector}
+              initValueTextStyle={styles.modalInitValue}
+              selectTextStyle={styles.modalSelectedText}
+              optionTextStyle={styles.modalOptionText}
+              selectedItemTextStyle={styles.modalSelectedItemText}
+            >
+              <View style={styles.modalTrigger}>
+                <Text style={styles.modalTriggerText}>{selectedVendorLabel}</Text>
+                <View style={styles.modalTriggerIcon}>
+                  <Ionicons name="caret-down" size={20} color={colors.primary} />
+                </View>
+              </View>
+            </ModalSelector>
+          </View>
+        </View>
+
+        {selectedFile && (
+          <View style={styles.fileInfoContainer}>
+            <Text style={styles.fileInfoText}>Selected File: {selectedFile.name}</Text>
+            <Text style={styles.fileInfoText}>
+              Size:{" "}
+              {selectedFile.size
+                ? `${(selectedFile.size / 1024).toFixed(2)} KB`
+                : "Unknown"}
+            </Text>
+          </View>
         )}
-      </TouchableOpacity>
 
-      {isUploading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Processing PDF…</Text>
-        </View>
-      )}
-
-      {result && (
-        <View style={resultStyles.container}>
-          <View
+        <View style={[styles.buttonRow, isMobileWeb && styles.buttonRowMobileWeb]}>
+          <TouchableOpacity
             style={[
-              resultStyles.header,
-              result.success
-                ? resultStyles.successHeader
-                : resultStyles.errorHeader,
+              styles.button,
+              styles.chooseButton,
+              isChooseDisabled && styles.buttonDisabled,
             ]}
+            onPress={handleChooseFile}
+            disabled={isChooseDisabled}
+            activeOpacity={0.85}
           >
-            <Text style={resultStyles.title}>
-              {result.success ? "Import Complete" : "Import Failed"}
-            </Text>
-          </View>
+            <Text style={styles.buttonText}>Choose File</Text>
+          </TouchableOpacity>
 
-          <View style={resultStyles.stats}>
-            <Text style={resultStyles.statRow}>
-              Message: {result.message ?? result.msg ?? "No message"}
-            </Text>
-            <Text style={resultStyles.statRow}>
-              Total Products:{" "}
-              {result.statistics?.totalProducts ??
-                result.statistics?.total ??
-                "N/A"}
-            </Text>
-            <Text style={resultStyles.statRow}>
-              Inserted: {result.statistics?.inserted ?? "N/A"}
-            </Text>
-            <Text style={resultStyles.statRow}>
-              Updated: {result.statistics?.updated ?? "N/A"}
-            </Text>
-            <Text style={resultStyles.statRow}>
-              Failed: {result.statistics?.failed ?? "N/A"}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              styles.uploadButton,
+              (!selectedFile || isUploading) && styles.buttonDisabled,
+            ]}
+            onPress={handleUpload}
+            disabled={!selectedFile || isUploading}
+            activeOpacity={0.85}
+          >
+            {isUploading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.buttonText}>Upload File</Text>
+            )}
+          </TouchableOpacity>
         </View>
-      )}
-      {confirmationModal}
-    </PageLayout>
+
+        {isUploading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.loadingText}>Processing PDF…</Text>
+          </View>
+        )}
+
+        {result && (
+          <View style={resultStyles.container}>
+            <View
+              style={[
+                resultStyles.header,
+                result.success ? resultStyles.successHeader : resultStyles.errorHeader,
+              ]}
+            >
+              <Text style={resultStyles.title}>
+                {result.success ? "Import Complete" : "Import Failed"}
+              </Text>
+            </View>
+
+            <View style={resultStyles.stats}>
+              <Text style={resultStyles.statRow}>
+                Message: {result.message ?? result.msg ?? "No message"}
+              </Text>
+              <Text style={resultStyles.statRow}>
+                Total Products:{" "}
+                {result.statistics?.totalProducts ?? result.statistics?.total ?? "N/A"}
+              </Text>
+              <Text style={resultStyles.statRow}>
+                Inserted: {result.statistics?.inserted ?? "N/A"}
+              </Text>
+              <Text style={resultStyles.statRow}>
+                Updated: {result.statistics?.updated ?? "N/A"}
+              </Text>
+              <Text style={resultStyles.statRow}>
+                Failed: {result.statistics?.failed ?? "N/A"}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {confirmationModal}
+      </View>
+    </View>
   );
 };
 

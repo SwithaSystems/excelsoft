@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
@@ -51,6 +52,12 @@ const navItems: NavItem[] = [
     route: "/modules/admin/AdminCategories",
   },
   {
+    id: "store-information",
+    label: "Store Information",
+    icon: "storefront",
+    route: `/${containers.AdminStoreInformationScreen}`,
+  },
+  {
     id: "scan",
     label: "Scan & Deliver",
     icon: "people",
@@ -79,6 +86,12 @@ const navItems: NavItem[] = [
     label: "Global Settings",
     icon: "settings",
     route: "/modules/admin/AdminGlobalSettings",
+  },
+  {
+    id: "notification-settings",
+    label: "Notification Settings",
+    icon: "notifications",
+    route: `/${containers.adminNotificationSettingsScreen}`,
   },
 ];
 
@@ -109,7 +122,11 @@ export const AdminSidebarWeb: React.FC<AdminSidebarWebProps> = ({
 
   return (
     <View style={[styles.container, isDrawer && styles.containerDrawer]}>
-      <View style={styles.navList}>
+      <ScrollView
+        style={styles.navScroll}
+        contentContainerStyle={styles.navList}
+        showsVerticalScrollIndicator={false}
+      >
         {navItems.map((item) => {
           const active = isActive(item.route);
           return (
@@ -136,7 +153,7 @@ export const AdminSidebarWeb: React.FC<AdminSidebarWebProps> = ({
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -154,8 +171,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 0,
     paddingTop: 0,
   },
+  navScroll: {
+    flex: 1,
+  },
   navList: {
     gap: 8,
+    paddingBottom: 16,
   },
   navItem: {
     flexDirection: "row",

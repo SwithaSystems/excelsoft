@@ -1,22 +1,17 @@
 import { ADMIN_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons";
 import colors from "../../../constants/colors";
-import { router } from "expo-router";
-import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React, { useState, useEffect, useRef } from "react";
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../../services/notificationService";
-import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
-import Footer from "@/app/components/Footer";
-import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
 import styles from "./AdminProfileStyle";
 import AdminFooter from "@/app/components/AdminFooter";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -58,11 +53,9 @@ const AdminProfile = () => {
   const isMobile = !isWeb;
    const fetchUser = async () => {
       try {
-        // console.log("userData in admin dashboard", userData);
         const user = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        // console.log("user in admin dashboard", user.data);
         if (user) {
           setIsSuperAdmin(user?.data?.isSuperAdmin);
         }
@@ -81,6 +74,7 @@ const AdminProfile = () => {
     "Store Information": containers.AdminStoreInformationScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
     "Promotion Management": containers.AdminPromotionScreen,
+    "Scan & Deliver": containers.AdminOrderQRScanScreen,
     "Upload Bulk Data": containers.fileUploadAddProductCategoryScreen,
   };
 
@@ -100,7 +94,6 @@ const AdminProfile = () => {
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="menu" />;
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  // console.log("userData_redux in userProfilescreen", userData_redux);
   
   useEffect(() => {
     const fetchUser = async () => {
@@ -113,7 +106,6 @@ const AdminProfile = () => {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        // console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -128,8 +120,6 @@ const AdminProfile = () => {
 
     fetchUser();
   }, [userData_redux]);
-
-  // console.log("user details fetched", user);
   
   useEffect(() => {
     const getToken = async () => {
@@ -138,21 +128,11 @@ const AdminProfile = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        // console.log("Expo Push Token:", token);
         setExpoPushToken(token ?? null);
       }
     };
     getToken();
 
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        // console.log("Notification received:", notification);
-      });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        // console.log("User interacted with notification:", response);
-      });
 
     return () => {
       if (notificationListener.current) {
@@ -208,28 +188,6 @@ const AdminProfile = () => {
           responsiveStyles.profileCard,
           isWeb && responsiveStyles.profileCardWeb
         ]}>
-          {/* <Text style={[
-            isMobile ? styles.greeting : responsiveStyles.greetingWeb
-          ]}>
-            {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
-          </Text> */}
-          
-          {/* <Image
-            source={
-              user?.profileImageUrl
-                ? { uri: user?.profileImageUrl }
-                : require("@/assets/default_user_profile.png")
-            }
-            style={[
-              isMobile ? globalStyles.profileImage : responsiveStyles.profileImageWeb
-            ]}
-          />
-          
-          <Text style={[
-            isMobile ? styles.userName : responsiveStyles.userNameWeb
-          ]}>
-            {user?.firstName || ""} {user?.lastName || ""}
-          </Text>*/}
         </View> 
 
         <View style={[
