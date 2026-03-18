@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   Platform,
   TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import styles from "./AdminGlobalSettingsStyles";
 import colors from "@/constants/colors";
@@ -294,77 +296,112 @@ const AdminGlobalSettings = () => {
     );
   }
 
+  const settingsContent = (
+    <View
+      style={[
+        globalStyles.pt_0,
+        isWeb && styles.webContent,
+        isMobileWeb && styles.webContentMobile,
+      ]}
+    >
+      {SETTINGS_CONFIG.map((config) => (
+        <View key={config.key}>
+          <View
+            style={[
+              styles.switchContainer,
+              config.type === "input" && styles.switchContainerInput,
+              isMobileWeb && styles.switchContainerMobileWeb,
+            ]}
+          >
+            <Text
+              style={[
+                styles.switchLabel,
+                config.type === "input" && styles.switchLabelInput,
+              ]}
+            >
+              {config.label}
+            </Text>
+
+            {config.type === "switch" ? (
+              <View
+                style={[
+                  styles.switchWrapper,
+                  isMobileWeb && styles.switchWrapperMobileWeb,
+                ]}
+              >
+                {updatingKey === config.key && (
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.primary}
+                    style={styles.switchLoader}
+                  />
+                )}
+                <Switch
+                  trackColor={{
+                    false: colors.placeholdergrey,
+                    true: colors.primary,
+                  }}
+                  thumbColor={colors.white}
+                  value={Boolean(settings[config.key])}
+                  onValueChange={() => handleToggle(config.key)}
+                  disabled={updatingKey !== null}
+                />
+              </View>
+            ) : (
+              renderInputField(config)
+            )}
+          </View>
+
+          <Text style={styles.switchDescription}>
+            {config.description}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+
+  if (isWeb) {
+    return (
+      <LayoutComponent
+        hasHeader
+        headerComponent={HeaderComponent}
+        scrollable
+        hasFooter={isWeb}
+        footerComponent={FooterComponent}
+        hasSidebar={isWeb}
+        hideNavItems={isWeb}
+      >
+        {settingsContent}
+        {confirmationModal}
+      </LayoutComponent>
+    );
+  }
+
   return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      scrollable
-      hasFooter={isWeb}
-      footerComponent={FooterComponent}
-      hasSidebar={isWeb}
-      hideNavItems={isWeb}
+      scrollable={false}
+      hasFooter={false}
+      footerComponent={undefined}
+      hasSidebar={false}
+      hideNavItems={false}
     >
-      <View
-        style={[
-          globalStyles.pt_0,
-          isWeb && styles.webContent,
-          isMobileWeb && styles.webContentMobile,
-        ]}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={80}
       >
-        {SETTINGS_CONFIG.map((config) => (
-          <View key={config.key}>
-            <View
-              style={[
-                styles.switchContainer,
-                config.type === "input" && styles.switchContainerInput,
-                isMobileWeb && styles.switchContainerMobileWeb,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.switchLabel,
-                  config.type === "input" && styles.switchLabelInput,
-                ]}
-              >
-                {config.label}
-              </Text>
-
-              {config.type === "switch" ? (
-                <View
-                  style={[
-                    styles.switchWrapper,
-                    isMobileWeb && styles.switchWrapperMobileWeb,
-                  ]}
-                >
-                  {updatingKey === config.key && (
-                    <ActivityIndicator
-                      size="small"
-                      color={colors.primary}
-                      style={styles.switchLoader}
-                    />
-                  )}
-                  <Switch
-                    trackColor={{
-                      false: colors.placeholdergrey,
-                      true: colors.primary,
-                    }}
-                    thumbColor={colors.white}
-                    value={Boolean(settings[config.key])}
-                    onValueChange={() => handleToggle(config.key)}
-                    disabled={updatingKey !== null}
-                  />
-                </View>
-              ) : (
-                renderInputField(config)
-              )}
-            </View>
-
-            <Text style={styles.switchDescription}>
-              {config.description}
-            </Text>
-          </View>
-        ))}
-      </View>
+        <KeyboardAwareScrollView
+          enableOnAndroid
+          extraScrollHeight={100}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {settingsContent}
+        </KeyboardAwareScrollView>
+      </KeyboardAvoidingView>
       {confirmationModal}
     </LayoutComponent>
   );

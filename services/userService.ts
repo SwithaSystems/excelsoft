@@ -85,6 +85,19 @@ export const UserAPI = {
     const response = await jsonAxios.get(`/users/getUserByEmail/${email}`);
     return response;
   },
+
+  /**
+   * Signup-only status checks (includes soft-deleted accounts).
+   */
+  checkEmailStatus: async (email: string) => {
+    const response = await jsonAxios.get(`/users/check-email/${email}`);
+    return response;
+  },
+
+  checkPhoneStatus: async (phone: string) => {
+    const response = await jsonAxios.get(`/users/check-phone/${phone}`);
+    return response;
+  },
   // changePassword: async (phoneNumber: any, body: any) => {
   //   const response = await axiosInstance.put(
   //     `/users/changePassword/${phoneNumber}`,

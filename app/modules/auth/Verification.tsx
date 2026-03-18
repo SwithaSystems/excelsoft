@@ -44,8 +44,14 @@ const verificationScreen = () => {
     newPhone,
     newEmail,
     userId,
-    email_forgetPwd
+    email_forgetPwd,
+    intent,
   } = useLocalSearchParams();
+
+  // `useLocalSearchParams()` can return `string | string[] | undefined`.
+  // Normalize so comparisons like `intentValue === "recover"` are reliable.
+  const fromValue = Array.isArray(from) ? from[0] : from;
+  const intentValue = Array.isArray(intent) ? intent[0] : intent;
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -53,7 +59,28 @@ const verificationScreen = () => {
   const [parsedUserData, setParsedUserData] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [resendCooldownSeconds, setResendCooldownSeconds] = useState(30);
+  const [resendCooldownKey, setResendCooldownKey] = useState(0);
   const inputRefs = useRef<TextInput[]>([]);
+  const resendTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 30-second cooldown before Resend is allowed (matches backend)
+  useEffect(() => {
+    setResendCooldownSeconds(30);
+    resendTimerRef.current = setInterval(() => {
+      setResendCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          if (resendTimerRef.current) clearInterval(resendTimerRef.current);
+          resendTimerRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (resendTimerRef.current) clearInterval(resendTimerRef.current);
+    };
+  }, [resendCooldownKey]);
 
   // DEBUG: Log all params on mount
   useEffect(() => {
@@ -75,7 +102,7 @@ const verificationScreen = () => {
     ////console.log("from:", from);
     
     // Signup flow
-    if (from === "signup" && userData) {
+    if (fromValue === "signup" && userData) {
       try {
         const parsed = JSON.parse(String(userData));
         ////console.log("Parsed userData:", parsed);
@@ -95,14 +122,14 @@ const verificationScreen = () => {
     }
 
     // Forgot password flow
-    if (from === "forgotPassword" && phoneNumber_forgetPwd) {
+    if (fromValue === "forgotPassword" && phoneNumber_forgetPwd) {
       const phone = Array.isArray(phoneNumber_forgetPwd)
         ? phoneNumber_forgetPwd[0]
         : phoneNumber_forgetPwd;
       ////console.log("Setting phoneNumber from forgotPassword:", phone);
       setPhoneNumber(phone);
     }
-    if (from === "forgotPassword" && email_forgetPwd) {
+    if (fromValue === "forgotPassword" && email_forgetPwd) {
   const emailVal = Array.isArray(email_forgetPwd)
     ? email_forgetPwd[0]
     : email_forgetPwd;
@@ -112,7 +139,7 @@ const verificationScreen = () => {
 }
 
     // FIRST TIME ADDING PHONE - OTP sent to phone
-    if (from === "first_add_phone") {
+    if (fromValue === "first_add_phone") {
       ////console.log("Flow: first_add_phone");
       ////console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
       
@@ -128,7 +155,7 @@ const verificationScreen = () => {
     }
 
     // FIRST TIME ADDING EMAIL - OTP sent to email
-    if (from === "first_add_email") {
+    if (fromValue === "first_add_email") {
       //console.log("Flow: first_add_email");
       //console.log("email_editAccount:", email_editAccount);
       
@@ -144,7 +171,7 @@ const verificationScreen = () => {
     }
 
     // CHANGING PHONE - OTP sent to email (for verification)
-    if (from === "change_phone") {
+    if (fromValue === "change_phone") {
       //console.log("Flow: change_phone");
       //console.log("email_editAccount:", email_editAccount);
       //console.log("newPhone:", newPhone);
@@ -162,7 +189,7 @@ const verificationScreen = () => {
     }
 
     // CHANGING EMAIL - OTP sent to phone (for verification)
-    if (from === "change_email") {
+    if (fromValue === "change_email") {
       //console.log("Flow: change_email");
       //console.log("phoneNumber_editAccount:", phoneNumber_editAccount);
       //console.log("newEmail:", newEmail);
@@ -315,30 +342,106 @@ const verificationScreen = () => {
   return;
 }
 
-        if (from === "signup") {
+      if (fromValue === "signup") {
           if (!parsedUserData) {
             showErrorAlertCustom("Error", "User data is missing. Please try signing up again.");
             return;
           }
 
           try {
-            const response = await authService.register({ userData: parsedUserData });
-            if (response?.access_token) {
-              showSuccessAlert(
-                "Registration Successful!",
-                "Your account has been created successfully. Please sign in to continue.",
-                () => {
-                  redirectToPage(containers.signInScreen);
-                }
-              );
+          if (intentValue === "recover") {
+              const response = await authService.recover({
+                userData: parsedUserData,
+              });
+
+              if (response?.access_token) {
+                // 1) OTP verified successfully
+                showSuccessAlert(
+                  "Verification Successful",
+                  "Your identity has been verified.",
+                  () => {
+                    // 2) Then show recovery success and redirect to Sign In.
+                    showAlert(
+                      "Account Recovered",
+                      "Your account has been recovered successfully. You can now login to your account.",
+                      [
+                        {
+                          text: "OK",
+                          onPress: () => redirectToPage(containers.signInScreen),
+                        },
+                      ],
+                      { cancelable: true }
+                    );
+                  }
+                );
+              } else {
+                showErrorAlertCustom(
+                  "Recovery Failed",
+                  response?.message ||
+                    "Unable to recover your account. Please try again."
+                );
+              }
             } else {
-              showErrorAlertCustom(
-                "Registration Failed",
-                response?.message || "Unable to create your account. Please try again."
-              );
+              const response = await authService.register({
+                userData: parsedUserData,
+              });
+
+              if (response?.access_token) {
+                showSuccessAlert(
+                  "Registration Successful!",
+                  "Your account has been created successfully. Please sign in to continue.",
+                  () => {
+                    redirectToPage(containers.signInScreen);
+                  }
+                );
+              } else {
+                showErrorAlertCustom(
+                  "Registration Failed",
+                  response?.message ||
+                    "Unable to create your account. Please try again."
+                );
+              }
             }
           } catch (registerError: any) {
             const data = registerError?.response?.data;
+
+            // If signup failed because the account was soft-deleted,
+            // transparently recover and avoid showing the registration error.
+            if (
+              (data?.code === "ACCOUNT_SOFT_DELETED" || data?.canRecover === true) &&
+              parsedUserData
+            ) {
+              try {
+                const response = await authService.recover({
+                  userData: parsedUserData,
+                });
+
+                if (response?.access_token) {
+                  showSuccessAlert(
+                    "Verification Successful",
+                    "Your identity has been verified.",
+                    () => {
+                      showAlert(
+                        "Account Recovered",
+                        "Your account has been recovered successfully. You can now login to your account.",
+                        [
+                          {
+                            text: "OK",
+                            onPress: () =>
+                              redirectToPage(containers.signInScreen),
+                          },
+                        ],
+                        { cancelable: true }
+                      );
+                    }
+                  );
+                  return;
+                }
+              } catch (_) {
+                // Fall through to the registration failed message
+              }
+            }
+
             const message =
               (Array.isArray(data?.message) ? data.message[0] : data?.message) ||
               registerError?.message ||
@@ -350,7 +453,7 @@ const verificationScreen = () => {
       }
 
       // FIRST TIME ADDING PHONE
-      if (from === "first_add_phone") {
+      if (fromValue === "first_add_phone") {
         //console.log("Verifying first_add_phone with:", { phoneNumber, OtpNumber });
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
@@ -394,7 +497,7 @@ const verificationScreen = () => {
       }
 
       // FIRST TIME ADDING EMAIL
-      if (from === "first_add_email") {
+      if (fromValue === "first_add_email") {
         //console.log("Verifying first_add_email with:", { email, OtpNumber });
         res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         const isVerified = res?.success === true || res?.data?.success === true;
@@ -435,7 +538,7 @@ const verificationScreen = () => {
       }
 
       // CHANGING PHONE (OTP sent to email)
-      if (from === "change_phone") {
+      if (fromValue === "change_phone") {
         //console.log("Verifying change_phone with:", { email, OtpNumber });
         res = await TwilioApi.verifyOtp_Email({ email, OtpNumber });
         const isVerified = res?.success === true || res?.data?.success === true;
@@ -476,7 +579,7 @@ const verificationScreen = () => {
       }
 
       // CHANGING EMAIL (OTP sent to phone)
-      if (from === "change_email") {
+      if (fromValue === "change_email") {
         //console.log("Verifying change_email with:", { phoneNumber, OtpNumber });
         res = await TwilioApi.verifyOtp({ phoneNumber, OtpNumber });
         const isVerified =
@@ -587,6 +690,15 @@ const verificationScreen = () => {
   const handleResend = async () => {
     if (isResending) return;
 
+    if (resendCooldownSeconds > 0) {
+      const unit = resendCooldownSeconds === 1 ? "second" : "seconds";
+      showErrorAlertCustom(
+        "Please wait",
+        `Wait ${resendCooldownSeconds} ${unit} before requesting for the new OTP.`
+      );
+      return;
+    }
+
     ////console.log("=== RESEND DEBUG ===");
     ////console.log("from:", from);
     ////console.log("email state:", email);
@@ -652,6 +764,7 @@ const verificationScreen = () => {
       
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
+      setResendCooldownKey((k) => k + 1);
       showSuccessAlert("Code Resent", "A new verification code has been sent successfully.");
     } catch (error: any) {
       ////console.error("Resend error:", error);
@@ -793,11 +906,15 @@ const verificationScreen = () => {
               <Text
                 style={[
                   styles.resendLink,
-                  (isVerifying || isResending) && { opacity: 0.5 },
+                  (isVerifying || isResending || resendCooldownSeconds > 0) && { opacity: 0.5 },
                 ]}
                 onPress={!isVerifying && !isResending ? handleResend : undefined}
               >
-                {isResending ? "Sending..." : "Resend"}
+                {isResending
+                  ? "Sending..."
+                  : resendCooldownSeconds > 0
+                  ? `Resend in ${resendCooldownSeconds}s`
+                  : "Resend"}
               </Text>
             </Text>
           </View>

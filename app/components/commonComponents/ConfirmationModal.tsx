@@ -38,11 +38,19 @@ function ConfirmationModal({
       animationType={animationType}
       onRequestClose={disabled ? undefined : onClose}
     >
-      <View style={[styles.modalContainer, isWeb && styles.modalContainerWeb]}>
-        <View style={[
-          styles.dialogBox,
-          isWeb && styles.dialogBoxWeb
-        ]}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.modalContainer, isWeb && styles.modalContainerWeb]}
+        onPress={onClose}
+      >
+        <View
+          style={[
+            styles.dialogBox,
+            isWeb && styles.dialogBoxWeb,
+          ]}
+          // Prevent backdrop taps from reaching the parent TouchableOpacity
+          onStartShouldSetResponder={() => true}
+        >
           {/* Title */}
           {title && <Text style={[
             styles.title,
@@ -96,7 +104,7 @@ function ConfirmationModal({
             )}
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 }
