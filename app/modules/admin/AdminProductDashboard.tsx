@@ -405,7 +405,7 @@ const AdminProductDashboard = () => {
     try {
       setIsLoading(true);
 
-      const result = await ProductsAPI.deleteProduct(productIds);
+      const result = await ProductsAPI.bulkSoftDelete(productIds);
 
       // Clear selection and refresh
       setSelectedProductIds(new Set());
@@ -420,7 +420,11 @@ const AdminProductDashboard = () => {
       showAlert("Success", successMessage);
     }
   } catch (error: any) {
-    const errorMessage = error?.response?.data?.message || "Something went wrong while deleting products.";
+    const apiMessage = error?.response?.data?.message;
+    const errorMessage =
+      typeof apiMessage === "string"
+        ? apiMessage
+        : JSON.stringify(apiMessage || "Something went wrong while deleting products.");
     
     if (isWeb) {
       alert(errorMessage);

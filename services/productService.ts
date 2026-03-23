@@ -67,7 +67,7 @@ deleteProduct_Permanently: async (id: any): Promise<Product> => {
   // For bulk soft delete
 bulkSoftDelete: async (ids: string[]): Promise<any> => {
   const response = await jsonAxios.delete(`/products/bulk-delete`, {
-    data: { ids }
+    data: { productIds: ids }
   });
   return response.data;
 },
@@ -75,7 +75,7 @@ bulkSoftDelete: async (ids: string[]): Promise<any> => {
 // For bulk hard delete
 bulkHardDelete: async (ids: string[]): Promise<any> => {
   const response = await jsonAxios.delete(`/products/bulk-hard-delete`, {
-    data: { ids }
+    data: { productIds: ids }
   });
   return response.data;
 },
