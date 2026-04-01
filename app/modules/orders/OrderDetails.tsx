@@ -19,7 +19,7 @@ import styles from "./OrderDetailsStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import CartItem from "../cart/Components/CartItem";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import products from "@/data/products";
 import Footer from "@/app/components/Footer";
 import {
@@ -65,8 +65,6 @@ const orderDetailsScreen = () => {
   const loadedProductIds = useRef(new Set<string>());
   const isMounted = useRef(true);
 
-  // console.log("orderId", orderId);
-
   // Cleanup on unmount
   useEffect(() => {
     isMounted.current = true;
@@ -74,6 +72,49 @@ const orderDetailsScreen = () => {
       isMounted.current = false;
     };
   }, []);
+
+  const loadOrderDetails = useCallback(async () => {
+    if (!isMounted.current) return;
+
+    try {
+      setIsLoadingOrder(true);
+      let orderData_parsed = null;
+
+      if (orderData) {
+        try {
+          orderData_parsed =
+            typeof orderData === "string" ? JSON.parse(orderData) : orderData;
+        } catch (parseError) {
+          console.error("Failed to parse orderData param:", parseError);
+          orderData_parsed = null;
+        }
+      }
+
+      if (!orderData_parsed && orderId) {
+        try {
+          orderData_parsed = await orderService.getOrderByMongoId(
+            String(orderId)
+          );
+        } catch (mongoErr) {
+          console.warn(
+            "getOrderByMongoId failed, falling back to getOrderById",
+            mongoErr
+          );
+          orderData_parsed = await orderService.getOrderById(String(orderId));
+        }
+      }
+
+      if (isMounted.current && orderData_parsed) {
+        setOrderDetails(orderData_parsed);
+      }
+    } catch (err) {
+      console.error("Failed to load order details:", err);
+    } finally {
+      if (isMounted.current) {
+        setIsLoadingOrder(false);
+      }
+    }
+  }, [orderData, orderId]);
 
   // Load all order statuses
   useEffect(() => {
@@ -100,63 +141,14 @@ const orderDetailsScreen = () => {
 
   // Load order details - runs only once when component mounts
   useEffect(() => {
-    let isActive = true;
+    void loadOrderDetails();
+  }, [loadOrderDetails]);
 
-    const loadOrderDetails = async () => {
-      if (!isActive || !isMounted.current) return;
-
-      try {
-        setIsLoadingOrder(true);
-        let orderData_parsed = null;
-
-        if (orderData) {
-          try {
-            orderData_parsed =
-              typeof orderData === "string"
-                ? JSON.parse(orderData)
-                : orderData;
-          } catch (parseError) {
-            console.error("Failed to parse orderData param:", parseError);
-            orderData_parsed = null;
-          }
-        }
-
-        if (!orderData_parsed && orderId) {
-          // Some flows send the Mongo _id instead of the public orderNumber.
-          try {
-            orderData_parsed = await orderService.getOrderByMongoId(
-              String(orderId)
-            );
-          } catch (mongoErr) {
-            console.warn(
-              "getOrderByMongoId failed, falling back to getOrderById",
-              mongoErr
-            );
-            orderData_parsed = await orderService.getOrderById(
-              String(orderId)
-            );
-          }
-        }
-
-        if (isActive && isMounted.current && orderData_parsed) {
-          setOrderDetails(orderData_parsed);
-          // console.log("Order details loaded:", orderData_parsed);
-        }
-      } catch (err) {
-        console.error("Failed to load order details:", err);
-      } finally {
-        if (isActive && isMounted.current) {
-          setIsLoadingOrder(false);
-        }
-      }
-    };
-
-    loadOrderDetails();
-
-    return () => {
-      isActive = false;
-    };
-  }, [orderId, orderData]); // Only depend on orderId and orderData
+  useFocusEffect(
+    useCallback(() => {
+      void loadOrderDetails();
+    }, [loadOrderDetails])
+  );
 
   // Memoize the formatted date
   const formattedDate = useMemo(() => {
@@ -177,15 +169,12 @@ const orderDetailsScreen = () => {
 
     const fetchShippingAddress = async () => {
       if (!isActive || !isMounted.current) return;
-
-      // console.log("fetching address", orderDetails.shippingAddress);
       try {
         const response = await addressService.getAddressById(
           orderDetails.shippingAddress
         );
 
         if (isActive && isMounted.current) {
-          // console.log("response shipping address", response);
           setShippingAddress_order(response);
         }
       } catch (err) {
@@ -215,12 +204,6 @@ const orderDetailsScreen = () => {
 
     const fetchProductDetails = async () => {
       if (!isActive || !isMounted.current) return;
-
-      // console.log(
-      //   "Starting to fetch product details for:",
-      //   orderDetails.products.length,
-      //   "products"
-      // );
       setIsLoadingProducts(true);
       hasLoadedProducts.current = true;
 
@@ -231,12 +214,10 @@ const orderDetailsScreen = () => {
 
             // Skip if already loaded
             if (loadedProductIds.current.has(item.productId.toString())) {
-              // console.log("Skipping already loaded product:", item.productId);
               return item;
             }
 
             try {
-              // console.log("Fetching product details for ID:", item.productId);
               const productDetails = await ProductsAPI.getProductBYID(
                 item.productId
               );
@@ -260,7 +241,6 @@ const orderDetailsScreen = () => {
         );
 
         if (isActive && isMounted.current) {
-          // console.log("Setting detailed cart items:", detailedCartItems.length);
           setCartItemsWithDetails(detailedCartItems);
         }
       } catch (err) {
@@ -281,13 +261,6 @@ const orderDetailsScreen = () => {
       isActive = false;
     };
   }, [orderDetails?.products?.length, isLoadingOrder]); // Only depend on products length and loading state
-
-  // console.log("orderDetails in orderDetails", orderDetails);
-  // console.log("shippingAddress_id", orderDetails?.shippingAddress);
-  // console.log("formattedDate", formattedDate);
-  // console.log("cartItemsWithDetails", cartItemsWithDetails);
-
-  // console.log("orderDetails by order ID", orderDetails);
 
   // Function to get ordered statuses for timeline
   const getOrderedStatusesForTimeline = (): string[] => {
@@ -608,6 +581,8 @@ const orderDetailsScreen = () => {
                       actualStatus={orderDetails?.status}
                       reason={orderDetails?.reason}
                       compact={true}
+                      pickupMode={orderDetails?.pickupMode}
+                      horizontal={!isMobileWeb}
                     />
                   </ScrollView>
                 </View>
@@ -636,54 +611,58 @@ const orderDetailsScreen = () => {
         footerComponent={<Footer />}
       >
         <View style={styles.container}>
-          <View style={[globalStyles.pt_0]}>
-            <View style={{}}>
+          <View style={[globalStyles.pt_0, styles.mobileContent]}>
+            <View style={styles.mobileCard}>
               <QRCodeDisplay
                 qrValue={orderDetails.orderNumber?.toString()}
                 noteText="Please present this QR code to our store personnel at the time of pickup. Also, ensure you carry a valid ID proof."
               />
             </View>
-            <View style={styles.orderSummaryItem}>
-              <Text
-                style={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                ]}
-              >
-                Status
-              </Text>
-              <Text
-                style={[
-                  styles.orderSummaryItemText,
-                  globalStyles.fontWeight500,
-                ]}
-              >
-                {orderDetails.status}
-              </Text>
+            <View style={styles.mobileCard}>
+              <Text style={styles.mobileSectionTitle}>Order Summary</Text>
+              <View style={styles.orderSummaryItem}>
+                <Text
+                  style={[
+                    styles.orderSummaryItemText,
+                    globalStyles.fontWeight500,
+                  ]}
+                >
+                  Status
+                </Text>
+                <Text
+                  style={[
+                    styles.orderSummaryItemText,
+                    globalStyles.fontWeight500,
+                  ]}
+                >
+                  {orderDetails.status}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Order Number: </Text>
+                <Text style={styles.orderSummaryItemText}>
+                  {orderDetails.orderNumber}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
+                <Text style={styles.orderSummaryItemText}>{formattedDate}</Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Shipping:</Text>
+                <Text style={styles.orderSummaryItemText}>
+                  £{orderDetails.shippingCharges?.toFixed(2)}
+                </Text>
+              </View>
+              <View style={styles.orderSummaryItem}>
+                <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
+                <Text style={styles.orderSummaryItemText}>
+                  £{orderDetails.totalAmount?.toFixed(2)}
+                </Text>
+              </View>
             </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Order Number: </Text>
-              <Text style={styles.orderSummaryItemText}>
-                {orderDetails.orderNumber}
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Date Placed: </Text>
-              <Text style={styles.orderSummaryItemText}>{formattedDate}</Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Shipping:</Text>
-              <Text style={styles.orderSummaryItemText}>
-                £{orderDetails.shippingCharges?.toFixed(2)}
-              </Text>
-            </View>
-            <View style={styles.orderSummaryItem}>
-              <Text style={styles.orderSummaryItemText}>Sub Total:</Text>
-              <Text style={styles.orderSummaryItemText}>
-                £{orderDetails.totalAmount?.toFixed(2)}
-              </Text>
-            </View>
-            <View>
+            <View style={styles.mobileItemsCard}>
+              <Text style={styles.mobileSectionTitle}>Order Items</Text>
               {(cartItemsWithDetails.length > 0
                 ? cartItemsWithDetails
                 : orderDetails.products || []
@@ -696,47 +675,49 @@ const orderDetailsScreen = () => {
                 />
               ))}
             </View>
-            <View style={[globalStyles.mb_2, styles.deliverSection]}>
-              <Text
-                style={[
-                  globalStyles.fontWeight500,
-                  styles.orderSummaryItemText,
-                ]}
-              >
-                Deliver To:
+            <View style={styles.mobileCard}>
+              <View style={[globalStyles.mb_2, styles.deliverSection]}>
+                <Text
+                  style={[
+                    globalStyles.fontWeight500,
+                    styles.orderSummaryItemText,
+                  ]}
+                >
+                  Deliver To:
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    redirectToPage(containers.deliveryTrackingScreen, {
+                      orderId: orderDetails._id,
+                    });
+                  }}
+                >
+                  <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
+                    Track Order
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={[globalStyles.mb_2, styles.addressText]}>
+                Choosen Delivery: {orderDetails.pickupMode}
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  redirectToPage(containers.deliveryTrackingScreen, {
-                    orderId: orderDetails._id,
-                  });
-                }}
-              >
-                <Text style={[globalStyles.btnSmUnderLine, { fontSize: 12 }]}>
-                  Track Order
-                </Text>
-              </TouchableOpacity>
+              {orderDetails.pickupMode === DELIVERY_MODE_HOME &&
+                shippingAddress_order && (
+                  <Text>
+                    Address:{" "}
+                    {[
+                      shippingAddress_order.name,
+                      shippingAddress_order.line1,
+                      shippingAddress_order.line2,
+                      shippingAddress_order.city,
+                      shippingAddress_order.state,
+                      shippingAddress_order.postalCode?.toString(),
+                      shippingAddress_order.phone?.toString(),
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </Text>
+                )}
             </View>
-            <Text style={[globalStyles.mb_2, styles.addressText]}>
-              Choosen Delivery: {orderDetails.pickupMode}
-            </Text>
-            {orderDetails.pickupMode === DELIVERY_MODE_HOME &&
-              shippingAddress_order && (
-                <Text>
-                  Address:{" "}
-                  {[
-                    shippingAddress_order.name,
-                    shippingAddress_order.line1,
-                    shippingAddress_order.line2,
-                    shippingAddress_order.city,
-                    shippingAddress_order.state,
-                    shippingAddress_order.postalCode?.toString(),
-                    shippingAddress_order.phone?.toString(),
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
-                </Text>
-              )}
           </View>
         </View>
       </PageLayout>

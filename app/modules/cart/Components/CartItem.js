@@ -160,8 +160,17 @@ function CartItem(props) {
           </View>
           {props?.hideActions ? (
             <>
-              <View style={[globalStyles.pl_3, { justifyContent: "center" }]}>
-                <Text style={globalStyles.h6}>
+              <View
+                style={[
+                  globalStyles.pl_3,
+                  styles.readOnlyContent,
+                ]}
+              >
+                <Text
+                  style={[globalStyles.h6, styles.readOnlyItemName]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
                   {getItemName()}
                   {props.showStockStatus && (
                     <Text style={styles.stockStatus}>
@@ -297,6 +306,17 @@ const styles = StyleSheet.create({
   cartItemImageContainer: {
     justifyContent: "center",
     height: 136,
+  },
+  readOnlyContent: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: "center",
+    paddingRight: 12,
+  },
+  readOnlyItemName: {
+    flexShrink: 1,
+    fontSize: 14,
+    lineHeight: 20,
   },
   itemImage: {
     width: 140,

@@ -96,6 +96,7 @@ const routes = {
   AdminDashboardScreen: "modules/admin/AdminDashboard",
   AdminSeeAllOrdersScreen: "modules/admin/AdminSeeAllOrders",
   AdminOrderDetailScreen: "modules/admin/AdminOrderDetail",
+  AdminOrderConfirmationScreen: "modules/admin/AdminOrderConfirmation",
   AdminProductDashboardScreen: "modules/admin/AdminProductDashboard",
   AdminProductUpdationScreen: "modules/admin/AdminProductUpdation",
   AdminStoreInformationScreen: "modules/admin/AdminStoreInformation",

@@ -18,6 +18,14 @@ export default StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 32,
   },
+  contentContainerMobileWeb: {
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
   card: {
     width: "100%",
   },
@@ -34,8 +42,10 @@ export default StyleSheet.create({
     elevation: 3,
   },
   cardMobileWeb: {
+    width: "100%",
     maxWidth: "100%",
-    padding: 18,
+    padding: 20,
+    borderRadius: 18,
   },
   headerRow: {
     flexDirection: "row",
@@ -43,6 +53,9 @@ export default StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
     marginBottom: 18,
+  },
+  headerRowMobileWeb: {
+    marginBottom: 16,
   },
   headerTextWrap: {
     flex: 1,
@@ -63,10 +76,18 @@ export default StyleSheet.create({
     color: colors.black,
     marginBottom: 6,
   },
+  titleMobileWeb: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
   subtitle: {
     fontSize: 13,
     color: colors.slateGrey,
     lineHeight: 18,
+  },
+  subtitleMobileWeb: {
+    fontSize: 15,
+    lineHeight: 22,
   },
   scanFrame: {
     borderWidth: 1,
@@ -78,6 +99,10 @@ export default StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.secondary,
   },
+  scanFrameMobileWeb: {
+    paddingVertical: 22,
+    paddingHorizontal: 14,
+  },
   scanIconCircle: {
     width: 96,
     height: 96,
@@ -88,6 +113,11 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lightgrey,
     marginBottom: 10,
+  },
+  scanIconCircleMobileWeb: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
   },
   scanHint: {
     fontSize: 13,
@@ -117,6 +147,9 @@ export default StyleSheet.create({
     marginTop: 2,
     // paddingHorizontal: 16,
   },
+  inputSectionMobileWeb: {
+    marginTop: 6,
+  },
   inputLabel: {
     fontSize: 14,
     color: colors.black,
@@ -129,6 +162,10 @@ export default StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
     alignItems: "center",
+  },
+  verifyButtonMobileWeb: {
+    marginTop: 18,
+    borderRadius: 14,
   },
   buttonText: {
     color: colors.white,

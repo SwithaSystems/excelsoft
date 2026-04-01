@@ -7,11 +7,14 @@ const OrderTimeline = (props) => {
   const statusList = props.statusList;
   const reason = props.reason;
   const compact = props.compact || false;
-  // const from = props.from;
-  const currentStatus = statusList.indexOf(props?.actualStatus);
+  const horizontal = props.horizontal || false;
+  const isPickupTimeline = statusList.includes("Collected") && !statusList.includes("Delivered");
+  const normalizedActualStatus =
+    isPickupTimeline && props?.actualStatus === "Delivered"
+      ? "Collected"
+      : props?.actualStatus;
+  const currentStatus = statusList.indexOf(normalizedActualStatus);
   const negativeStatuses = ["Cancelled", "Rejected", "Failed"];
-  // console.log("currentStatus", currentStatus);
-  // console.log("statusList", statusList);
 
   const icons = [
     "cart-outline",
@@ -31,6 +34,74 @@ const OrderTimeline = (props) => {
     "cash-outline",
   ];
 
+  if (horizontal) {
+    return (
+      <View style={styles.horizontalContainer}>
+        {statusList.map((item, index) => {
+          const isCurrent = index === currentStatus;
+          const isNegative = negativeStatuses.includes(item);
+          const isActive = index <= currentStatus;
+          const circleSize = compact ? 36 : 42;
+          const iconSize = compact ? 18 : 22;
+          const fontSize = compact ? 13 : 15;
+
+          return (
+            <View key={`${item}-${index}`} style={styles.horizontalItem}>
+              <View style={styles.horizontalTopRow}>
+                <View
+                  style={[
+                    styles.horizontalCircle,
+                    {
+                      width: circleSize,
+                      height: circleSize,
+                      borderRadius: circleSize / 2,
+                      backgroundColor: isActive
+                        ? colors.primary
+                        : colors.inactivegrey,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={icons[index]}
+                    size={iconSize}
+                    color={colors.white}
+                  />
+                </View>
+                {index !== statusList.length - 1 && (
+                  <View
+                    style={[
+                      styles.horizontalLine,
+                      {
+                        backgroundColor: isActive
+                          ? colors.primary
+                          : colors.inactivegrey,
+                      },
+                    ]}
+                  />
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.horizontalStatusText,
+                  {
+                    fontSize,
+                    color: isActive ? colors.primary : colors.secondaryText,
+                  },
+                ]}
+                numberOfLines={2}
+              >
+                {item}
+              </Text>
+              {isCurrent && isNegative && reason ? (
+                <Text style={styles.horizontalReasonText}>{reason}</Text>
+              ) : null}
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -41,12 +112,6 @@ const OrderTimeline = (props) => {
           const isNegative = negativeStatuses.includes(item);
           const isActive = index <= currentStatus;
 
-          if (isCurrent && isNegative) {
-            // console.log("Reason received in props:", reason);
-            // console.log("Actual Status:", props.actualStatus);
-            // console.log("Is Negative?", isNegative);
-          }
-
           const itemMarginBottom = compact ? 40 : 90;
           const lineHeight = compact ? 40 : 90;
           const circleSize = compact ? 32 : 40;
@@ -55,7 +120,6 @@ const OrderTimeline = (props) => {
 
           return (
             <View style={[styles.itemContainer, { marginBottom: itemMarginBottom }]}>
-              {/* Timeline Circle */}
               <View
                 style={[
                   styles.circle,
@@ -69,14 +133,12 @@ const OrderTimeline = (props) => {
                   },
                 ]}
               >
-                {/*Icon for each status */}
                 <Ionicons
                   name={icons[index]}
                   size={iconSize}
                   color={isActive ? colors.white : colors.white}
                 />
               </View>
-              {/* Status Text */}
               <View style={{ flexDirection: "column" }}>
                 <Text
                   style={[
@@ -92,14 +154,10 @@ const OrderTimeline = (props) => {
 
                 {isCurrent && isNegative && reason ? (
                   <Text style={styles.reasonText}>
-                    {/* {from === "admin"
-                  ? `You Reasoned: ${reason}`
-                  : `Seller Reasoned: ${reason}`} */}
                     {reason}
                   </Text>
                 ) : null}
               </View>
-              {/* Connecting Line */}
               {index !== statusList.length && (
                 <View
                   style={[
@@ -162,6 +220,46 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: colors.primaryRed,
     maxWidth: 250,
+  },
+  horizontalContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 0,
+    width: "100%",
+  },
+  horizontalItem: {
+    flex: 1,
+    minWidth: 0,
+  },
+  horizontalTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  horizontalCircle: {
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  horizontalLine: {
+    height: 3,
+    flex: 1,
+    marginHorizontal: 8,
+    borderRadius: 999,
+  },
+  horizontalStatusText: {
+    fontWeight: "600",
+    paddingRight: 10,
+    lineHeight: 18,
+  },
+  horizontalReasonText: {
+    fontSize: 12,
+    fontStyle: "italic",
+    fontWeight: "400",
+    color: colors.primaryRed,
+    marginTop: 6,
+    paddingRight: 10,
   },
 });
 

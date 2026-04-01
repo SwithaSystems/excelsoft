@@ -73,7 +73,18 @@ const pickUpModescreen = () => {
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
   const [pickupModes, setPickupModes] = useState<any>([]);
-  const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
+  // const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
+  const [deliveryModes, setDeliveryModes] = useState<
+  {
+    homeDelivery: boolean;
+    curbsidePickup: boolean;
+    storePickup: boolean;
+  }
+  >({
+    homeDelivery: true,
+    curbsidePickup: true,
+    storePickup: true
+  });
   const [loading, setLoading] = useState<boolean>(true);
 
   const isWeb = Platform.OS === "web";
@@ -85,10 +96,14 @@ const pickUpModescreen = () => {
     try {
       const response = await globalSettingsAPI.getSettings();
       // console.log("response global settings", response.data);
-      setDeliveryModeEnabled(response.data?.deliveryMode);
+      setDeliveryModes(response.data?.deliveryModes);
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
-      setDeliveryModeEnabled(true);
+      setDeliveryModes({
+        homeDelivery: true,
+        curbsidePickup: true,
+        storePickup: true
+      });
     }
   };
 
@@ -111,8 +126,17 @@ const pickUpModescreen = () => {
   const options = pickupModes
     .map((mode: any) => modeConfig[mode.name])
     .filter((option: any) => {
+      if(!option) return false
       if (option?.id === "home") {
-        return deliveryModeEnabled;
+        return deliveryModes.homeDelivery;
+      }
+
+      if (option?.id === "curbside") {
+        return deliveryModes.curbsidePickup;
+      }
+
+      if (option?.id === "store") {
+        return deliveryModes.storePickup;
       }
       return Boolean(option);
     });

@@ -27,10 +27,10 @@ import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface SettingConfig {
-  key: keyof Omit<GlobalSettingsDto, "updatedAt">;
+  key: keyof GlobalSettingsDto;
   label: string;
   description: string;
-  type?: "switch" | "input";
+  type?: "switch" | "input" | "deliveryModes";
 }
 
 const SETTINGS_CONFIG: SettingConfig[] = [
@@ -42,18 +42,18 @@ const SETTINGS_CONFIG: SettingConfig[] = [
     type: "switch",
   },
   {
+    key: "deliveryModes",
+    label: "Delivery Modes",
+    description:
+      "Allow customers to place delivery orders when enabled. Turn off to stop accepting deliveries.",
+    type: "deliveryModes",
+  },
+  {
     key: "timeWindow",
     label: "Time Window",
     description:
-      "Add two hours default period to deliver the package once the user placed the order.",
-    type: "switch",
-  },
-  {
-    key: "deliveryMode",
-    label: "Delivery Mode",
-    description:
-      "Allow customers to place delivery orders when enabled. Turn off to stop accepting deliveries.",
-    type: "switch",
+      "Add default period to deliver the package once the user placed the order. Please add the time in minutes only.",
+    type: "input",
   },
   {
     key: "shippingCharge",
@@ -155,6 +155,7 @@ const AdminGlobalSettings = () => {
       shippingCharge: "",
       minimumCheckoutOrderValue: "",
       minimumDeliveryOrderValue: "",
+      timeWindow: "",
     });
   };
 
@@ -211,7 +212,11 @@ const AdminGlobalSettings = () => {
             setTempValues((prev) => ({ ...prev, [fieldKey]: value }))
           }
           editable={isEditing && updatingKey === null}
-          placeholder="Enter amount"
+          placeholder={
+            fieldKey === "timeWindow"
+              ? "Enter minutes (e.g., 120)"
+              : "Enter amount"
+          }
           placeholderTextColor={colors.slateGrey}
         />
         
@@ -248,6 +253,110 @@ const AdminGlobalSettings = () => {
       </View>
     );
   };
+const renderDeliveryModes = () => {
+  if (!settings) return null;
+
+  const modes = settings.deliveryModes;
+
+  const toggleMode = async (
+    key: keyof GlobalSettingsDto["deliveryModes"]
+  ) => {
+    const updatedModes = {
+      ...modes,
+      [key]: !modes[key],
+    };
+
+    setUpdatingKey("deliveryModes");
+
+    setSettings((prev) =>
+      prev ? { ...prev, deliveryModes: updatedModes } : prev
+    );
+
+    try {
+      await globalSettingsAPI.updateAllSettings({
+        deliveryModes: updatedModes,
+      });
+    } catch (error) {
+      console.error("Failed to update delivery modes:", error);
+      showAlert("Error", "Failed to update delivery modes");
+      fetchSettings();
+    } finally {
+      setUpdatingKey(null);
+    }
+  };
+
+  const deliveryModeOptions: {
+    key: keyof GlobalSettingsDto["deliveryModes"];
+    label: string;
+    description: string;
+  }[] = [
+    {
+      key: "homeDelivery",
+      label: "Home Delivery",
+      description:
+        "Allow customers to place delivery orders when enabled. Turn off to stop accepting deliveries.",
+    },
+    {
+      key: "curbsidePickup",
+      label: "Curbside Pickup",
+      description:
+        "Allow customers to pick up orders without entering the store.",
+    },
+    {
+      key: "storePickup",
+      label: "Store Pickup",
+      description:
+        "Allow customers to pick up orders directly from the store.",
+    },
+  ];
+
+  return (
+    <View style={{ width: "100%", marginTop: 8 }}>
+      <Text style={styles.switchLabel}>Delivery Modes</Text>
+      <Text style={{ fontSize: 14,
+          fontWeight: "300",
+          color: colors.black,
+          flex: 1,
+          marginTop: 8}}>
+        Choose which delivery options that a user can avail.
+      </Text>
+      {deliveryModeOptions.map((item) => (
+        <View key={item.key}>
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchLabel}>{item.label}</Text>
+
+            <View
+              style={[
+                styles.switchWrapper,
+                isMobileWeb && styles.switchWrapperMobileWeb,
+              ]}
+            >
+              {updatingKey === "deliveryModes" && (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  style={styles.switchLoader}
+                />
+              )}
+              <Switch
+                trackColor={{
+                  false: colors.placeholdergrey,
+                  true: colors.primary,
+                }}
+                thumbColor={colors.white}
+                value={Boolean(modes[item.key])}
+                onValueChange={() => toggleMode(item.key)}
+                disabled={updatingKey !== null}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.switchDescription}>{item.description}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -313,6 +422,7 @@ const AdminGlobalSettings = () => {
               isMobileWeb && styles.switchContainerMobileWeb,
             ]}
           >
+            {config.type !== "deliveryModes" && (
             <Text
               style={[
                 styles.switchLabel,
@@ -321,44 +431,49 @@ const AdminGlobalSettings = () => {
             >
               {config.label}
             </Text>
-
-            {config.type === "switch" ? (
-              <View
-                style={[
-                  styles.switchWrapper,
-                  isMobileWeb && styles.switchWrapperMobileWeb,
-                ]}
-              >
-                {updatingKey === config.key && (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.primary}
-                    style={styles.switchLoader}
-                  />
-                )}
-                <Switch
-                  trackColor={{
-                    false: colors.placeholdergrey,
-                    true: colors.primary,
-                  }}
-                  thumbColor={colors.white}
-                  value={Boolean(settings[config.key])}
-                  onValueChange={() => handleToggle(config.key)}
-                  disabled={updatingKey !== null}
+          )}
+          {config.type === "switch" ? (
+            <View
+              style={[
+                styles.switchWrapper,
+                isMobileWeb && styles.switchWrapperMobileWeb,
+              ]}
+            >
+              {updatingKey === config.key && (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primary}
+                  style={styles.switchLoader}
                 />
+              )}
+              <Switch
+                trackColor={{
+                  false: colors.placeholdergrey,
+                  true: colors.primary,
+                }}
+                thumbColor={colors.white}
+                value={Boolean(settings[config.key])}
+                onValueChange={() => handleToggle(config.key as keyof Omit<GlobalSettingsDto, "updatedAt">)}
+                disabled={updatingKey !== null}
+              />
+            </View>
+          ) : config.type === "deliveryModes" ? (
+            renderDeliveryModes()
+          ) : (
+            renderInputField(config)
+          )}
+                </View>
+              {config.type !== "deliveryModes" && (
+                <Text style={styles.switchDescription}>
+                  {config.description}
+                </Text>
+              )}
               </View>
-            ) : (
-              renderInputField(config)
-            )}
+            ))}
           </View>
+        );
 
-          <Text style={styles.switchDescription}>
-            {config.description}
-          </Text>
-        </View>
-      ))}
-    </View>
-  );
+        console.log("settings:", settings);
 
   if (isWeb) {
     return (

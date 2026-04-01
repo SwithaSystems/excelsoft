@@ -1,5 +1,6 @@
-// import axiosInstance from "./axiosConfig";
-// import { get } from "axios";
+import axios from "axios";
+import { Platform } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { jsonAxios } from "./axiosConfig";
 
 export enum PickupMode {
@@ -70,7 +71,31 @@ export interface Order {
   lastValidStatus?: string;
 }
 
+export interface OrderVerificationScanResponse {
+  _id: string;
+  orderNumber?: string | number;
+  products?: OrderProduct[];
+  status?: string;
+  pickupMode?: PickupMode | string;
+}
+
+export interface OrderVerificationCompleteResponse {
+  success: boolean;
+  message: string;
+}
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+const getAuthToken = async (): Promise<string | null> => {
+  if (Platform.OS === "web") {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return window.localStorage.getItem("token");
+    }
+    return null;
+  }
+
+  return SecureStore.getItemAsync("token");
+};
 
 export const orderService = {
   getAllOrders: async (): Promise<Order[]> => {
@@ -203,6 +228,65 @@ export const orderService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching order by orderNumber:", error);
+      throw error;
+    }
+  },
+
+  scanOrderVerification: async (
+    code: string
+  ): Promise<OrderVerificationScanResponse> => {
+    try {
+      const token = await getAuthToken();
+
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await axios.post<OrderVerificationScanResponse>(
+        `${API_BASE_URL}/admin/order-verification/scan`,
+        { code },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 10000,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error scanning order verification:", error);
+      throw error;
+    }
+  },
+
+  completeOrderVerification: async (
+    orderId: string,
+    success: boolean
+  ): Promise<OrderVerificationCompleteResponse> => {
+    try {
+      const token = await getAuthToken();
+
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await axios.post<OrderVerificationCompleteResponse>(
+        `${API_BASE_URL}/admin/order-verification/complete`,
+        { orderId, success },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 10000,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error completing order verification:", error);
       throw error;
     }
   },

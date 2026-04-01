@@ -47,13 +47,10 @@ const deliveryTrackingScreen = () => {
   const [allOrderStatuses, setAllOrderStatuses] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = React.useState<any>(null);
 
-  // console.log("orderId", orderId.orderId);
-
   const getOrderById = async () => {
     const order_Details = await orderService.getOrderByMongoId(
       String(orderId.orderId)
     );
-    // console.log("order_Details", order_Details);
     setOrderDetails(order_Details);
   };
 
@@ -63,7 +60,6 @@ const deliveryTrackingScreen = () => {
 
   const getAllOrderStatuses = async () => {
     const orderStatuses = await orderService.getAllOrderStatuses();
-    // console.log("all Order statuses", orderStatuses);
     setAllOrderStatuses(orderStatuses?.statuses);
   };
 
@@ -139,8 +135,6 @@ const deliveryTrackingScreen = () => {
       orderDetails?.pickupMode === DELIVERY_MODE_STORE ||
       orderDetails?.type === DELIVERY_MODE_CURBSIDE;
 
-    // let relevantFlow: any = hasAgeRestriction ? ageRestrictedFlow : baseFlow;
-
     if (isPickupOrder) {
       flow = flow
         .map((status: any) =>
@@ -182,12 +176,6 @@ const deliveryTrackingScreen = () => {
     // Filter to only include statuses that exist in the backend response
     return flow.filter((status: any) => allOrderStatuses.includes(status));
   };
-
-  // console.log("orderDetails in tracking order", orderDetails?.status);
-  // console.log(
-  //   "hasAgeRestrictedProducts",
-  //   orderDetails && hasAgeRestrictedProducts(orderDetails)
-  // );
 
   // Get the appropriate statuses for display
   const displayStatuses = getOrderedStatusesForTimeline();
