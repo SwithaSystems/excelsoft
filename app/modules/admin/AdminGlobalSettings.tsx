@@ -8,7 +8,9 @@ import {
   Platform,
   TextInput,
   KeyboardAvoidingView,
+  KeyboardAvoidingView,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import styles from "./AdminGlobalSettingsStyles";
