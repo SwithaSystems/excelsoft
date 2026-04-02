@@ -7,6 +7,7 @@ import {
   Platform,
   ActivityIndicator,
   Modal,
+  Pressable,
 } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
@@ -36,8 +37,18 @@ const AdminOrderQRScan = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
-  const getErrorMessage = (error: any, fallback: string) => {
-    const message = error?.response?.data?.message || fallback;
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    const errorObject =
+      error && typeof error === "object"
+        ? (error as {
+            response?: {
+              data?: {
+                message?: string | string[];
+              };
+            };
+          })
+        : undefined;
+    const message = errorObject?.response?.data?.message || fallback;
     return Array.isArray(message) ? message.join("\n") : message;
   };
 
@@ -61,7 +72,7 @@ const AdminOrderQRScan = () => {
       redirectToPage(containers.AdminOrderConfirmationScreen, {
         orderId: order._id,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Scan order error:", error);
       showAlert("Error", getErrorMessage(error, "Failed to verify order."));
     } finally {
@@ -77,6 +88,14 @@ const AdminOrderQRScan = () => {
 
   const openScanner = async () => {
     try {
+      if (isMobileWeb) {
+        showAlert(
+          "Security Notice",
+          "For a secure scanning experience, please use the mobile app or desktop web app to access this feature."
+        );
+        return;
+      }
+
       let granted = hasPermission === true;
 
       if (!granted) {
@@ -113,11 +132,90 @@ const AdminOrderQRScan = () => {
   ) : (
     <Header headerText={ADMIN_ORDER_QR_SCREEN_TITLE} />
   );
-
   const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <AdminFooter activeTab="scan&deliver" />
+  );
+
+  const scannerContent = (
+    <View style={styles.scannerModalBackdrop}>
+      <Pressable
+        style={styles.scannerBackdropTouchable}
+        onPress={() => setShowScanner(false)}
+      />
+      <View
+        style={[
+          styles.scannerModalCard,
+          isMobileWeb && styles.scannerModalCardMobileWeb,
+        ]}
+      >
+        <View style={styles.scannerHeaderRow}>
+          <View style={styles.scannerHeaderTextWrap}>
+            <Text style={styles.scannerTitle}>Scan QR Code</Text>
+            <Text style={styles.scannerSubtitle}>
+              Place the order QR code inside the scan window to verify it.
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => setShowScanner(false)}
+            style={styles.scannerCloseButton}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="close" size={22} color={colors.white} />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={[
+            styles.cameraViewport,
+            isMobileWeb && styles.cameraViewportMobileWeb,
+          ]}
+        >
+          <CameraView
+            onBarcodeScanned={loading ? undefined : handleBarCodeScanned}
+            onMountError={() => {
+              setShowScanner(false);
+              showAlert(
+                "Camera Permission Required",
+                Platform.OS === "web"
+                  ? "Please allow camera access in your browser to scan QR codes."
+                  : "Please enable camera access to scan QR codes."
+              );
+            }}
+            style={styles.camera}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+          />
+
+          <View style={styles.cameraOverlay}>
+            <View
+              style={[
+                styles.scanWindow,
+                isMobileWeb && styles.scanWindowMobileWeb,
+              ]}
+            >
+              <View style={[styles.scanCorner, styles.scanCornerTopLeft]} />
+              <View style={[styles.scanCorner, styles.scanCornerTopRight]} />
+              <View style={[styles.scanCorner, styles.scanCornerBottomLeft]} />
+              <View style={[styles.scanCorner, styles.scanCornerBottomRight]} />
+              <View style={styles.scanIndicatorRow}>
+                <View style={styles.scanIndicatorIcon}>
+                  <MaterialIcons name="qr-code-scanner" size={26} color={colors.white} />
+                </View>
+                <Text style={styles.scanIndicatorText}>Ready to scan</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.scannerFooter}>
+          <Text style={styles.scannerFooterText}>
+            Hold steady for a second and the order will open automatically.
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 
   return (
@@ -144,54 +242,27 @@ const AdminOrderQRScan = () => {
             isMobileWeb && styles.cardMobileWeb,
           ]}
         >
-          <View
-            style={[
-              styles.headerRow,
-              isMobileWeb && styles.headerRowMobileWeb,
-            ]}
-          >
+          <View style={[styles.headerRow, isMobileWeb && styles.headerRowMobileWeb]}>
             <View style={styles.headerTextWrap}>
-              <Text
-                style={[styles.title, isMobileWeb && styles.titleMobileWeb]}
-              >
+              <Text style={[styles.title, isMobileWeb && styles.titleMobileWeb]}>
                 Scan &amp; Deliver
               </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  isMobileWeb && styles.subtitleMobileWeb,
-                ]}
-              >
-                Scan the consumer&apos;s order QR code, or enter the QR number
-                below.
+              <Text style={[styles.subtitle, isMobileWeb && styles.subtitleMobileWeb]}>
+                Scan the consumer&apos;s order QR code, or enter the QR number below.
               </Text>
             </View>
             <View style={styles.headerIconWrap}>
-              <MaterialIcons
-                name="flashlight-on"
-                size={22}
-                color={colors.primary}
-              />
+              <MaterialIcons name="flashlight-on" size={22} color={colors.primary} />
             </View>
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.scanFrame,
-              isMobileWeb && styles.scanFrameMobileWeb,
-            ]}
+            style={[styles.scanFrame, isMobileWeb && styles.scanFrameMobileWeb]}
             activeOpacity={0.85}
-            onPress={() => {
-              void openScanner();
-            }}
+            onPress={() => { void openScanner(); }}
             disabled={loading}
           >
-            <View
-              style={[
-                styles.scanIconCircle,
-                isMobileWeb && styles.scanIconCircleMobileWeb,
-              ]}
-            >
+            <View style={[styles.scanIconCircle, isMobileWeb && styles.scanIconCircleMobileWeb]}>
               <MaterialIcons
                 name="qr-code-scanner"
                 size={isMobileWeb ? 62 : 72}
@@ -207,14 +278,8 @@ const AdminOrderQRScan = () => {
             <View style={styles.dividerLine} />
           </View>
 
-          <View
-            style={[
-              styles.inputSection,
-              isMobileWeb && styles.inputSectionMobileWeb,
-            ]}
-          >
+          <View style={[styles.inputSection, isMobileWeb && styles.inputSectionMobileWeb]}>
             <Text style={styles.inputLabel}>Enter QR Number</Text>
-
             <CustomTextInput
               placeholder="Enter 5-Digit QR Code"
               value={qrCode}
@@ -222,15 +287,9 @@ const AdminOrderQRScan = () => {
               onPress={() => {}}
               disabled={loading}
             />
-
             <TouchableOpacity
-              style={[
-                styles.verifyButton,
-                isMobileWeb && styles.verifyButtonMobileWeb,
-              ]}
-              onPress={() => {
-                void handleScanOrder(qrCode);
-              }}
+              style={[styles.verifyButton, isMobileWeb && styles.verifyButtonMobileWeb]}
+              onPress={() => { void handleScanOrder(qrCode); }}
               activeOpacity={0.85}
               disabled={loading}
             >
@@ -246,35 +305,11 @@ const AdminOrderQRScan = () => {
 
       <Modal
         visible={showScanner}
-        animationType="slide"
-        transparent={false}
+        animationType="fade"
+        transparent={true}
         onRequestClose={() => setShowScanner(false)}
       >
-        <View style={{ flex: 1, backgroundColor: colors.black }}>
-          <CameraView
-            onBarcodeScanned={loading ? undefined : handleBarCodeScanned}
-            style={{ flex: 1 }}
-            facing="back"
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr"],
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={() => setShowScanner(false)}
-            style={{
-              position: "absolute",
-              top: 56,
-              right: 20,
-              backgroundColor: "rgba(0, 0, 0, 0.65)",
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: colors.white, fontWeight: "600" }}>Close</Text>
-          </TouchableOpacity>
-        </View>
+        {scannerContent}
       </Modal>
       {confirmationModal}
     </LayoutComponent>

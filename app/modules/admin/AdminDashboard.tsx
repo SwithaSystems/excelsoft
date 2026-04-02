@@ -288,16 +288,18 @@ const AdminDashboard = () => {
                           }`}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      redirectToPage(containers.deliveryTrackingScreen, {
-                        from: "admin",
-                        orderId: item._id,
-                      });
-                    }}
-                  >
-                    <Text style={styles.trackOrderText}>Track Order</Text>
-                  </TouchableOpacity>
+                  {!isWeb && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        redirectToPage(containers.deliveryTrackingScreen, {
+                          from: "admin",
+                          orderId: item._id,
+                        });
+                      }}
+                    >
+                      <Text style={styles.trackOrderText}>Track Order</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>

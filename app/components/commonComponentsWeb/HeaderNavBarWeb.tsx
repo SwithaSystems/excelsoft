@@ -116,6 +116,7 @@ const HeaderNavBar: FC<HeaderNavBarProps> = ({
 
   // Animation values for drawer - use pixel values
   const drawerWidth = Math.min(width * 0.8, 320);
+  const mobileDropdownWidth = Math.min(width * 0.58, 300);
   const drawerTranslateX = useSharedValue(-drawerWidth);
   const overlayOpacity = useSharedValue(0);
 
@@ -474,7 +475,12 @@ const HeaderNavBar: FC<HeaderNavBarProps> = ({
                   </View>
                 </TouchableOpacity>
                 {showDropdown === categoriesItem.dropdownType && (
-                  <View style={styles.mobileDropdownMenu}>
+                  <View
+                    style={[
+                      styles.mobileDropdownMenu,
+                      { width: mobileDropdownWidth },
+                    ]}
+                  >
                     {loading ? (
                       <View style={styles.loadingContainer}>
                         <ActivityIndicator color={colors.primary} />
@@ -521,7 +527,12 @@ const HeaderNavBar: FC<HeaderNavBarProps> = ({
                   </View>
                 </TouchableOpacity>
                 {showDropdown === quickLinksItem.dropdownType && (
-                  <View style={styles.mobileDropdownMenu}>
+                  <View
+                    style={[
+                      styles.mobileDropdownMenu,
+                      { width: mobileDropdownWidth },
+                    ]}
+                  >
                     <View>
                       {quickLinks.map((link) => (
                         <TouchableOpacity
@@ -849,7 +860,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "100%",
     left: 0,
-    width: "100%",
     maxWidth: 300,
     backgroundColor: colors.white,
     borderRadius: 8,

@@ -231,13 +231,20 @@ export const usePaymentHandler = () => {
     const paymentData = await fetchPaymentIntent(totalAmount);
     if (!paymentData) return;
 
-    // Build cart summary
-    const cartSummary: PlatformPay.CartSummaryItem[] = items.map((i) => ({
-      label: i.name,
-      amount: (
-        i.netPrice * i.quantity).toFixed(2),
-      paymentType: PlatformPay.PaymentType.Immediate,
-    }));
+    const productsAmount = items.reduce(
+      (sum, item) => sum + item.netPrice * item.quantity,
+      0
+    );
+
+    // Keep the direct Apple Pay sheet simple and explicit:
+    // show product subtotal, delivery charge if applicable, then final total.
+    const cartSummary: PlatformPay.CartSummaryItem[] = [
+      {
+        label: "Products",
+        amount: productsAmount.toFixed(2),
+        paymentType: PlatformPay.PaymentType.Immediate,
+      },
+    ];
 
     if (params.selectedMode === DELIVERY_MODE_HOME) {
       cartSummary.push({
@@ -247,8 +254,16 @@ export const usePaymentHandler = () => {
       });
     }
 
+    cartSummary.push({
+      label: STORE_NAME,
+      amount: totalAmount.toFixed(2),
+      paymentType: PlatformPay.PaymentType.Immediate,
+    });
+
     //  FIXED: Verify cart total matches PaymentIntent
-    const cartTotal = cartSummary.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+    const cartTotal = cartSummary
+      .slice(0, -1)
+      .reduce((sum, item) => sum + parseFloat(item.amount), 0);
     const expectedTotal = totalAmount;
 
     if (Math.abs(cartTotal - expectedTotal) > 0.01) {
@@ -296,7 +311,7 @@ export const usePaymentHandler = () => {
         stripeErrorCode: (result.error as any)?.stripeErrorCode,
       });
 
-      // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
+      // TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
       if (
         result.paymentIntent?.status === "Succeeded"
       ) {
