@@ -24,7 +24,6 @@ import {
 } from "../../constants/stringLiterals";
 import { useEffect, useState } from "react";
 import globalSettingsAPI from "@/services/globalSettingsService";
-import { PaymentIntent } from "@stripe/stripe-react-native";
 
 
 type Product = {
@@ -220,7 +219,8 @@ export const usePaymentHandler = () => {
       return;
     }
 
-    const totalAmount = getFinalAmount(items, params.selectedMode);
+    const walletItems = products.length ? products : items;
+    const totalAmount = getFinalAmount(walletItems, params.selectedMode);
 
     const mov = await getMinimumOrderValue();
     if (mov !== null && totalAmount < mov) {
@@ -231,8 +231,9 @@ export const usePaymentHandler = () => {
     const paymentData = await fetchPaymentIntent(totalAmount);
     if (!paymentData) return;
 
-    // Build cart summary
-    const cartSummary: PlatformPay.CartSummaryItem[] = items.map((i) => ({
+    // Apple Pay uses the last cart item as the displayed total, so the
+    // summary must end with the full grand total rather than shipping.
+    const cartSummary: PlatformPay.CartSummaryItem[] = walletItems.map((i: Product) => ({
       label: i.name,
       amount: (
         i.netPrice * i.quantity).toFixed(2),
@@ -247,9 +248,20 @@ export const usePaymentHandler = () => {
       });
     }
 
-    //  FIXED: Verify cart total matches PaymentIntent
-    const cartTotal = cartSummary.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+    cartSummary.push({
+      label: STORE_NAME,
+      amount: totalAmount.toFixed(2),
+      paymentType: PlatformPay.PaymentType.Immediate,
+    });
+
+    const lineItemsTotal = walletItems.reduce(
+      (sum: number, item: Product) => sum + item.netPrice * item.quantity,
+      0
+    );
+    const shippingTotal =
+      params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0;
     const expectedTotal = totalAmount;
+    const cartTotal = Number((lineItemsTotal + shippingTotal).toFixed(2));
 
     if (Math.abs(cartTotal - expectedTotal) > 0.01) {
       console.error(" Cart total mismatch:", {

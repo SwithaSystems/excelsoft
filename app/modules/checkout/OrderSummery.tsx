@@ -53,12 +53,9 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import { StripeCardInput } from "@/app/components/StripeCardInput";
-import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
-import * as All from "@/app/components/usePaymentHandlerWeb";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
 import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
 import CurrencySymbol from "@/constants/CurrencySymbol";
-import { PaymentRequestButton } from "@/app/components/commonComponentsWeb/paymentRequestButton.web";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Conditionally import PlatformPayButton only on mobile (not web)
@@ -150,8 +147,6 @@ const orderSummeryScreen = () => {
     handlePlatformPayPayment,
     isApplePaySupported = false,
     isGooglePaySupported = false,
-    canMakePayment,
-    paymentRequest,
   } = paymentHandler || {};
   const [total, settotal] = useState(0);
   const [currentMOV, setCurrentMOV] = useState<number | null>(null);
@@ -1124,59 +1119,6 @@ Contact Number: ${pickupAddress.phone || ""}`;
                 <MOVWarningMessage />
                 {/* Place Order Button */}
 
-                {isWeb && (
-                  <>
-                    {isApplePaySupported && (
-                      <TouchableOpacity
-                        style={styles.applePayButton}
-                        onPress={() => {
-                          handlePlatformPayPayment(
-                            cartItems,
-                            getPaymentParams()
-                          );
-                        }}
-                        disabled={!isPaymentEnabled}
-                      >
-                        <Text style={styles.applePayText}>Apple Pay</Text>
-                      </TouchableOpacity>
-                    )}
-
-                    {isGooglePaySupported && (
-                      <TouchableOpacity
-                        style={styles.googlePayButton}
-                        onPress={() => {
-                          handlePlatformPayPayment(
-                            cartItems,
-                            getPaymentParams()
-                          );
-                        }}
-                        disabled={!isPaymentEnabled}
-                      >
-                        <Text style={styles.googlePayText}>Google Pay</Text>
-                      </TouchableOpacity>
-                    )}
-
-                    <View style={styles.divider}>
-                      <View
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          backgroundColor: "#e0e0e0",
-                        }}
-                      />
-                      <Text style={{ marginHorizontal: 16, color: "#666" }}>
-                        or
-                      </Text>
-                      <View
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          backgroundColor: "#e0e0e0",
-                        }}
-                      />
-                    </View>
-                  </>
-                )}
                 {isWeb && <StripeCardInput />}
 
                 <Button

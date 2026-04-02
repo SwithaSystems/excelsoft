@@ -12,7 +12,6 @@ import {
 
 type props = {
   children: React.ReactNode;
-  // showHideButton?: boolean,
 };
 
 const KeyBoardWrapper = ({
