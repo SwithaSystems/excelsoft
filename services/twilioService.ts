@@ -1,7 +1,7 @@
 import { jsonAxios } from "./axiosConfig";
 
 export const TwilioApi = {
-  sendOtp: async (body: { phone: string }): Promise<any> => {
+  sendOtp: async (body: { phone: string; intent?: "register" | "recover" }): Promise<any> => {
     try {
       const response = await jsonAxios.post(`/twilio/SendOtp`, body);
       return response;
@@ -27,7 +27,10 @@ export const TwilioApi = {
     }
   },
 
-  sendOtp_Email: async (body: { email: string }): Promise<any> => {
+  sendOtp_Email: async (body: {
+    email: string;
+    intent?: "register" | "recover";
+  }): Promise<any> => {
     try {
       const response = await jsonAxios.post(`/sendGrid/SendOtpEmail`, body);
       return response;

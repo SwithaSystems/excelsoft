@@ -75,7 +75,18 @@ export default function useConfirmationAlert() {
     () => (
       <ConfirmationModal
         isModalVisible={modalState.isVisible}
-        onClose={modalState.cancelable ? closeModal : () => {}}
+        onClose={
+          modalState.cancelable
+            ? () => {
+                // Treat "dismiss" (tap outside / back) as cancel.
+                const onCancel = modalState.onCancel;
+                const onSubmit = modalState.onSubmit;
+                closeModal();
+                if (onCancel) onCancel();
+                else if (onSubmit) onSubmit();
+              }
+            : () => {}
+        }
         title={modalState.title}
         text={modalState.message}
         submitText={modalState.submitText}

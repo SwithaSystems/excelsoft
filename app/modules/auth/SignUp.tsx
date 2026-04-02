@@ -51,6 +51,9 @@ const signUpScreen = () => {
   const [callingCode, setCallingCode] = useState("44");
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [signupIntent, setSignupIntent] = useState<"register" | "recover">(
+    "register"
+  );
   const [errorModalState, setErrorModalState] = useState({
     isVisible: false,
     title: "",
@@ -162,21 +165,34 @@ const handleConfirmPasswordBlur = () => {
     const formattedPhone = `+${callingCode}${normalizedPhone}`;
     
     try {
-      const response = await UserAPI.getUserByPhonenumber(formattedPhone);
-      if (response?.data) {
+      const response = await UserAPI.checkPhoneStatus(formattedPhone);
+      const exists = !!response?.data?.exists;
+      const isDeleted = !!response?.data?.isDeleted;
+
+      // If it's a soft-deleted account, don't block the form and don't show the alert yet.
+      // We'll show the recover alert only when user taps "Sign Up".
+      if (exists && isDeleted) {
+        setSignupIntent("register");
+        setErrors((prev) => ({ ...prev, phone: undefined }));
+        return;
+      }
+
+      if (exists) {
         showErrorAlert({
           title: "Phone Number Already Exists!",
           message: PHONE_ALREADY_REGISTERED,
         });
-        // setPhoneNumber("");
-        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));}
-        else{
-        setErrors((prev) => ({ ...prev, phone: "This phone number is already registered" }));}
+        setErrors((prev) => ({
+          ...prev,
+          phone: "This phone number is already registered",
+        }));
+        return;
+      }
 
-          } catch (error) {
+      setSignupIntent("register");
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    } catch (error) {
       console.error("Error checking phone number", error);
-      // If error is 404, phone doesn't exist (which is good for signup)
-      // Clear any existing phone error
       setErrors((prev) => ({ ...prev, phone: undefined }));
     }
   };
@@ -192,20 +208,34 @@ const handleConfirmPasswordBlur = () => {
     }
 
     try {
-      const response = await UserAPI.getUserByEmail(trimmedEmail);
-      if (response?.data) {
+      const response = await UserAPI.checkEmailStatus(trimmedEmail);
+      const exists = !!response?.data?.exists;
+      const isDeleted = !!response?.data?.isDeleted;
+
+      // If it's a soft-deleted account, don't block the form and don't show the alert yet.
+      // We'll show the recover alert only when user taps "Sign Up".
+      if (exists && isDeleted) {
+        setSignupIntent("register");
+        setErrors((prev) => ({ ...prev, email: undefined }));
+        return;
+      }
+
+      if (exists) {
         showErrorAlert({
           title: "Email Already Exists!",
           message: EMAIL_ALREADY_REGISTERED,
         });
-         setErrors((prev) => ({ ...prev, email: "This email is already registered." }));}
-         else {
-        setErrors((prev) => ({ ...prev, email: "This email is already registered" }));
+        setErrors((prev) => ({
+          ...prev,
+          email: "This email is already registered.",
+        }));
+        return;
       }
+
+      setSignupIntent("register");
+      setErrors((prev) => ({ ...prev, email: undefined }));
     } catch (error) {
       console.error("Error checking email", error);
-      // If error is 404, email doesn't exist (which is good for signup)
-      // Clear any existing email error
       setErrors((prev) => ({ ...prev, email: undefined }));
     }
   };
@@ -276,12 +306,83 @@ const handleConfirmPasswordBlur = () => {
       return;
     }
 
-    setIsLoading(true);
     try {
       if (mode === "phone") {
-        await handlePhoneSignUp();
+        let normalizedPhone = phone.trim();
+        if (normalizedPhone.startsWith("0")) {
+          normalizedPhone = normalizedPhone.slice(1);
+        }
+        const formattedPhone = `+${callingCode}${normalizedPhone}`;
+
+        // If account exists but is soft-deleted, ask to recover ONLY on button tap.
+        const statusRes = await UserAPI.checkPhoneStatus(formattedPhone);
+        const exists = !!statusRes?.data?.exists;
+        const isDeleted = !!statusRes?.data?.isDeleted;
+
+        if (exists && isDeleted) {
+          setIsLoading(false);
+          Alert.alert(
+            "Recover account?",
+            "You have deleted this account previously. Do you want to recover it?",
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => setSignupIntent("register"),
+              },
+              {
+                text: "Recover",
+                onPress: async () => {
+                  setIsLoading(true);
+                  try {
+                    await handlePhoneSignUp("recover");
+                  } finally {
+                    setIsLoading(false);
+                  }
+                },
+              },
+            ]
+          );
+          return;
+        }
+
+        setIsLoading(true);
+        await handlePhoneSignUp("register");
       } else if (mode === "email") {
-        await handleEmailSignUp();
+        const trimmedEmail = email.trim();
+        const statusRes = await UserAPI.checkEmailStatus(trimmedEmail);
+        const exists = !!statusRes?.data?.exists;
+        const isDeleted = !!statusRes?.data?.isDeleted;
+
+        if (exists && isDeleted) {
+          setIsLoading(false);
+          Alert.alert(
+            "Recover account?",
+            "You have deleted this account previously. Do you want to recover it?",
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => setSignupIntent("register"),
+              },
+              {
+                text: "Recover",
+                onPress: async () => {
+                  setIsLoading(true);
+                  try {
+                    await handleEmailSignUp("recover");
+                  } finally {
+                    setIsLoading(false);
+                  }
+                },
+              },
+            ]
+          );
+          return;
+        }
+
+        setIsLoading(true);
+        await handleEmailSignUp("register");
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -294,7 +395,7 @@ const handleConfirmPasswordBlur = () => {
     }
   };
 
-  const handlePhoneSignUp = async () => {
+  const handlePhoneSignUp = async (intentOverride?: "register" | "recover") => {
     let normalizedPhone = phone.trim();
     if (normalizedPhone.startsWith("0")) {
       normalizedPhone = normalizedPhone.slice(1);
@@ -306,6 +407,7 @@ const handleConfirmPasswordBlur = () => {
     try {
       const responseFromTwilio = await TwilioApi.sendOtp({
         phone: userData.phone,
+        intent: intentOverride ?? signupIntent,
       });
       
       if (
@@ -316,6 +418,7 @@ const handleConfirmPasswordBlur = () => {
           userData: JSON.stringify(userData),
           from: "signup",
           verificationType: "phone",
+          intent: intentOverride ?? signupIntent,
         });
       } else {
         showErrorAlert({
@@ -327,18 +430,19 @@ const handleConfirmPasswordBlur = () => {
       console.error("Phone signup error:", error);
       const errorMessage = error?.response?.data?.message || error?.message || ACCOUNT_CREATION_FAILED;
       showErrorAlert({
-        title: "Registration Failed",
+        title: "Failed to Send OTP",
         message: errorMessage,
       });
     }
   };
 
-  const handleEmailSignUp = async () => {
+  const handleEmailSignUp = async (intentOverride?: "register" | "recover") => {
     const userData = { phone: "", email: email.trim(), password };
 
     try {
       const response = await TwilioApi.sendOtp_Email({
         email: userData.email,
+        intent: intentOverride ?? signupIntent,
       });
 
       if (response?.status === 201 && response?.data?.success) {
@@ -346,6 +450,7 @@ const handleConfirmPasswordBlur = () => {
           userData: JSON.stringify(userData),
           from: "signup",
           verificationType: "email",
+          intent: intentOverride ?? signupIntent,
         });
       } else {
         showErrorAlert({
