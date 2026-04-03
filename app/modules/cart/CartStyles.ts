@@ -209,6 +209,26 @@ const styles = StyleSheet.create({
     marginTop: 16,
     width: "100%",
   },
+  ageWarningContainer: {
+    backgroundColor: colors.ageRestrictionBg,
+    borderColor: colors.ageRestrictionBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  ageWarningTitle: {
+    color: colors.ageRestrictionText,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  ageWarningText: {
+    color: colors.ageRestrictionText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   emptyCartMessage: {
   padding: 20,
   backgroundColor: colors.lightgrey,

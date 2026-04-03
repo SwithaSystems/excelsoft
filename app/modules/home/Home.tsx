@@ -43,6 +43,7 @@ import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import { ProductsAPI, Product } from "@/services/productService";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/store/slices/cartSlice";
+
 interface Promotion {
   imageURL: string;
   link?: string;
@@ -51,29 +52,9 @@ interface Promotion {
   description?: string;
 }
 
-// const TEST_PROMOTIONS: Promotion[] = [
-//   {
-//     id: 1,
-//     image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
-//     link: "https://example.com/promo1",
-//     title: "Summer Sale",
-//     description: "Get 50% off on all items",
-//   },
-//   {
-//     id: 2,
-//     image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
-//     link: "https://example.com/promo2",
-//     title: "New Arrivals",
-//     description: "Check out our latest collection",
-//   },
-//   {
-//     id: 3,
-//     image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
-//     link: "https://example.com/promo3",
-//     title: "Special Offer",
-//     description: "Limited time only - Buy 2 Get 1 Free",
-//   },
-// ];
+type HomeRecommendedProduct = RecommendedProduct & {
+  isAgeRestricted?: boolean | "true" | "false";
+};
 
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -83,16 +64,14 @@ const HomePage = () => {
   const [carousalEnabled, setCarousalEnabled] = useState(false);
   const [globalSettingsLoaded, setGlobalSettingsLoaded] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [recommendedProducts, setRecommendedProducts] = useState<RecommendedProduct[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<HomeRecommendedProduct[]>([]);
   const [recommendedProductsLoading, setRecommendedProductsLoading] = useState(true);
   const [recommendedProductsError, setRecommendedProductsError] = useState<string | null>(null);
   const [recommendationType, setRecommendationType] = useState<"recommended" | "hot_selling">("hot_selling");
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const { width } = useWindowDimensions();
-  // const isWeb = Platform.OS === 'web';
-  // const isMobile = !isWeb;
 
   // Split categories for two-row layout: first half in row 1, second half in row 2
   // Items fill Row 1 left to right, then continue in Row 2
@@ -101,8 +80,8 @@ const dispatch = useDispatch();
     // Split roughly in half, with preference for row 1 if odd number
     return Math.ceil(categories.length / 2);
   }, [categories.length]);
- const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
-  
+  const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
+
   const isTabOrDesktop = isWeb && (isTablet || isDesktop);
   const isMobileWeb = isWeb && isMobile;
   const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
@@ -116,14 +95,13 @@ const dispatch = useDispatch();
   // For web, use wider carousel that accounts for PageLayoutWeb padding
   // PageLayoutWeb uses dynamic padding (max 80px per side), so we subtract more for web
   // This ensures the carousel is properly sized for desktop layout
-  // const carouselWidth = isWeb ? Math.max(width - 200, 800) : width - 32;
-const carouselWidth = isWeb 
-    ? (isDesktop 
-        ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
-        : isTablet 
-          ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
-          : width - 32  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
-      )
+  const carouselWidth = isWeb
+    ? (isDesktop
+      ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
+      : isTablet
+        ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
+        : width - 32  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
+    )
     : width - 32;
   const fetchGlobalSettings = async () => {
     try {
@@ -195,8 +173,8 @@ const carouselWidth = isWeb
             typeof item.category === "object"
               ? item.category.id
               : typeof item.category === "string"
-              ? parseInt(item.category, 10)
-              : item.category;
+                ? parseInt(item.category, 10)
+                : item.category;
 
           // Skip if not a valid number
           if (isNaN(categoryIdToFind)) {
@@ -245,7 +223,7 @@ const carouselWidth = isWeb
     return promotions.map((promo: any, index) => ({
       id: index + 1,
       image: promo.imageURL,
-      link: promo.link, 
+      link: promo.link,
       title: promo.title,
       description: "", // Add if you have description in your schema
       isInternalLink: promo.isInternalLink, // Metadata only
@@ -342,13 +320,53 @@ const carouselWidth = isWeb
         const response = await recommendationService.getRecommendedProducts(10);
         // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
         if (response && response.products && response.products.length > 0) {
-          // console.log("[Home] ✅ Products fetched successfully for recommendations");
-          // console.log("[Home] Product details:", response.products.map(p => ({ id: p.id, name: p.name })));
-          setRecommendedProducts(response.products);
+          const productsNeedingAgeLookup = response.products.filter(
+            (item) =>
+              typeof item?.ageRestricted !== "boolean" &&
+              Number.isFinite(Number(item?.id))
+          );
+
+          let resolvedAgeMap: Record<number, boolean> = {};
+          if (productsNeedingAgeLookup.length > 0) {
+            const lookupResults = await Promise.allSettled(
+              productsNeedingAgeLookup.map((item) =>
+                ProductsAPI.getProductBYID(Number(item.id))
+              )
+            );
+
+            lookupResults.forEach((result) => {
+              if (result.status === "fulfilled") {
+                const product: Product = result.value;
+                const productId = Number(product?.id);
+                if (Number.isFinite(productId)) {
+                  resolvedAgeMap[productId] =
+                    product?.isAgeRestricted === true ||
+                    product?.ageRestricted === true;
+                }
+              }
+            });
+          }
+
+          const normalizedProducts = response.products.map((item) => {
+            const productId = Number(item.id);
+            const hasDirectFlag =
+              typeof item?.isAgeRestricted === "boolean" ||
+              typeof item?.ageRestricted === "boolean";
+            const resolvedFlag =
+              Number.isFinite(productId) && productId in resolvedAgeMap
+                ? resolvedAgeMap[productId]
+                : undefined;
+
+            return {
+              ...item,
+              isAgeRestricted: hasDirectFlag
+                ? item.isAgeRestricted ?? item.ageRestricted
+                : resolvedFlag ?? item.isAgeRestricted ?? item.ageRestricted,
+            };
+          });
+          setRecommendedProducts(normalizedProducts);
           setRecommendationType(response.type);
         } else {
-          // console.log("[Home] ⚠️ No recommended products returned");
-          // console.log("[Home] This could mean: User has no orders, or products from orders not found in database");
           setRecommendedProducts([]);
           setRecommendationType("hot_selling");
         }
@@ -369,13 +387,14 @@ const carouselWidth = isWeb
     };
     fetchRecommendedProducts();
   }, [isAuthenticated, isAuthLoading]);
-const handleAddToCart = (item: any) => {
+  const handleAddToCart = (item: any) => {
     dispatch(addToCart({
       id: item.id,
       name: item.title,
       netPrice: item.netPrice,
       image: item.imageUrl,
       quantity: 1,
+      isAgeRestricted: item.isAgeRestricted ?? item.ageRestricted ?? false,
       isVatApplicable: item.isVatApplicable || false,
       vatRate: item.vatRate || 0,
       vatAmount: item.vatAmount || 0,
@@ -398,8 +417,8 @@ const handleAddToCart = (item: any) => {
       footerComponent={FooterComponent}
       scrollable
     >
-           <View style={[
-        styles.container, 
+      <View style={[
+        styles.container,
         !isWeb && styles.containerMobile,
         isWeb && styles.containerWeb
       ]}>
@@ -410,65 +429,61 @@ const handleAddToCart = (item: any) => {
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : (
-            <View style={styles.categoriesViewport}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoriesScrollContent}
-              >
-                <View style={styles.categoriesRowsContainer}>
-                  <View style={styles.categoryRow}>
-                    {categories.slice(0, categoriesPerRow).map((item) => (
-                      <CategoryItem_Home
-                        key={item.id}
-                        name={item.name}
-                        imageUrl={item.images?.[0] || ""}
-                        onPress={() =>
-                          item.name === "All"
-                            ? redirectToPage(containers.categoriesScreen, {
+              <View style={styles.categoriesViewport}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.categoriesScrollContent}
+                >
+                  <View style={styles.categoriesRowsContainer}>
+                    <View style={styles.categoryRow}>
+                      {categories.slice(0, categoriesPerRow).map((item) => (
+                        <CategoryItem_Home
+                          key={item.id}
+                          name={item.name}
+                          imageUrl={item.images?.[0] || ""}
+                          onPress={() =>
+                            item.name === "All"
+                              ? redirectToPage(containers.categoriesScreen, {
                                 category: item.name,
                                 categoryId: item.id,
                               })
-                            : redirectToPage(containers.searchResultsScreen, {
+                              : redirectToPage(containers.searchResultsScreen, {
                                 fromSearch: true,
                                 category: item.name,
                                 categoryId: item.id,
                               })
-                        }
-                      />
-                    ))}
-                  </View>
-                  <View style={styles.categoryRow}>
-                    {categories.slice(categoriesPerRow).map((item) => (
-                      <CategoryItem_Home
-                        key={item.id}
-                        name={item.name}
-                        imageUrl={item.images?.[0] || ""}
-                        onPress={() =>
-                          item.name === "All"
-                            ? redirectToPage(containers.categoriesScreen, {
+                          }
+                        />
+                      ))}
+                    </View>
+                    <View style={styles.categoryRow}>
+                      {categories.slice(categoriesPerRow).map((item) => (
+                        <CategoryItem_Home
+                          key={item.id}
+                          name={item.name}
+                          imageUrl={item.images?.[0] || ""}
+                          onPress={() =>
+                            item.name === "All"
+                              ? redirectToPage(containers.categoriesScreen, {
                                 category: item.name,
                                 categoryId: item.id,
                               })
-                            : redirectToPage(containers.searchResultsScreen, {
+                              : redirectToPage(containers.searchResultsScreen, {
                                 fromSearch: true,
                                 category: item.name,
                                 categoryId: item.id,
                               })
-                        }
-                      />
-                    ))}
+                          }
+                        />
+                      ))}
+                    </View>
                   </View>
-                </View>
-              </ScrollView>
-            </View>
+                </ScrollView>
+              </View>
             )}
           </View>
         )}
-        {/* <Button
-          title="Go to Upload Page"
-          onPress={() => redirectToPage(containers.uploadScreen)}
-        /> */}
         {carousalEnabled && (
           <View
             style={[
@@ -498,20 +513,20 @@ const handleAddToCart = (item: any) => {
             ) : null}
           </View>
         )}
-        
-         {/* Recommended / Hot Selling Products Section */}
-         {!isAuthLoading && (recommendedProductsLoading || recommendedProducts.length > 0 || recommendedProductsError) && (
-           <View  style={[
-              styles.recommendedSection,
-              isTabOrDesktop && styles.recommendedSectionDesktop,
-              isMobileWeb && styles.recommendedSectionMobile,
+
+        {/* Recommended / Hot Selling Products Section */}
+        {!isAuthLoading && (recommendedProductsLoading || recommendedProducts.length > 0 || recommendedProductsError) && (
+          <View style={[
+            styles.recommendedSection,
+            isTabOrDesktop && styles.recommendedSectionDesktop,
+            isMobileWeb && styles.recommendedSectionMobile,
+          ]}>
+            <Text style={[
+              styles.sectionTitle,
+              isTabOrDesktop && styles.sectionTitleDesktop,
             ]}>
-             <Text style={[
-                styles.sectionTitle,
-                isTabOrDesktop && styles.sectionTitleDesktop,
-              ]}>
-               {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
-             </Text>
+              {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
+            </Text>
             {recommendedProductsLoading ? (
               <View style={styles.recommendedLoader}>
                 <ActivityIndicator size="large" color={colors.primary} />
@@ -530,12 +545,8 @@ const handleAddToCart = (item: any) => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.recommendedList}
                 renderItem={({ item }) => {
-                  // Convert RecommendedProduct to ProductCard format
-                  // ProductCard calculates: Final price = netPrice - discount
-                  // ProductCard shows discount percentage if discount > 0
-                  // The API returns: price (final price), netPrice (original price if discount exists)
                   const finalPrice = item.price || 0;
-                  
+
                   // To hide discount percentage, set discount to 0
                   // If there's an actual discount, we could show it, but user wants to hide it
                   // So we'll set discount to 0 and use netPrice as the final price
@@ -552,9 +563,11 @@ const handleAddToCart = (item: any) => {
                     image: item.imageUrl || require("@/assets/Placeholder.png"),
                     categoryId: [],
                     description: "",
+                    isAgeRestricted: item.isAgeRestricted ?? item.ageRestricted ?? false,
                     isVatApplicable: false,
                     vatRate: 0,
                     vatAmount: 0,
+                    ageBadgeVariant: "compact" as const,
                   } as any; // Type assertion to handle ProductCard prop compatibility
                   return (
                     <View style={styles.recommendedCardWrapper}>
@@ -583,9 +596,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.white,
   },
-   containerWeb: {
+  containerWeb: {
     marginVertical: 0,
-    // backgroundColor: colors.offWhite,
   },
   containerMobile: {
     flex: 0, // Remove flex: 1 to allow scrolling in ScrollView - content determines height
@@ -626,7 +638,7 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
-     width: "100%",
+    width: "100%",
   },
   sectionTitle: {
     fontSize: 18,
@@ -647,7 +659,7 @@ const styles = StyleSheet.create({
     width: 160,
     marginHorizontal: 10,
   },
-   recommendedSectionDesktop: {
+  recommendedSectionDesktop: {
     marginTop: 40,
     marginBottom: 48,
     paddingHorizontal: 0,
@@ -682,7 +694,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 8,
   },
-  
+
 
 });
 

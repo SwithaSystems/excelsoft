@@ -53,6 +53,7 @@ import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -121,6 +122,20 @@ const PickupScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+  const hasAgeRestrictedItems = cartItems.some((item: any) => {
+    const directFlag =
+      item?.isAgeRestricted === true ||
+      item?.isAgeRestricted === "true" ||
+      item?.ageRestricted === true ||
+      item?.ageRestricted === "true";
+    const nestedFlag =
+      item?.product?.isAgeRestricted === true ||
+      item?.product?.isAgeRestricted === "true" ||
+      item?.product?.ageRestricted === true ||
+      item?.product?.ageRestricted === "true";
+    return directFlag || nestedFlag;
+  });
   // console.log("userData in pickupscreen", userData);
 
   const DEFAULT_PICKUP_HOURS = usePickupTime();
@@ -755,6 +770,23 @@ const PickupScreen = () => {
             ]}
           >
             {/* Instructions */}
+            {hasAgeRestrictedItems && (
+              <AgeRestrictionNote
+                containerStyle={[
+                  styles.noteContainer,
+                  isWeb && !isMobileWeb && styles.noteContainerWebDesktop,
+                  isMobileWeb && styles.noteContainerWebMobile,
+                ]}
+                titleStyle={[
+                  styles.noteTitle,
+                  isMobileWeb && styles.noteTitleWebMobile,
+                ]}
+                messageStyle={[
+                  styles.noteText,
+                  isMobileWeb && styles.noteTextWebMobile,
+                ]}
+              />
+            )}
             <Text style={styles.label}>
               {isStorePickup
                 ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
@@ -1055,10 +1087,6 @@ const PickupScreen = () => {
               emailRef
             )}
 
-            <Text style={inputStyles.note}>
-              *Please ensure you carry a valid ID Proof
-            </Text>
-
             {/* Submit button */}
             <Button
               title="Confirm"
@@ -1100,11 +1128,6 @@ const inputStyles = StyleSheet.create({
   multilineInput: {
     height: 80,
     textAlignVertical: "top",
-  },
-  note: {
-    color: colors.error,
-    fontSize: 14,
-    marginBottom: 16,
   },
   errorText: {
     color: "red",

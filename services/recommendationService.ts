@@ -13,6 +13,8 @@ export interface RecommendedProduct {
   category: string;
   netPrice?: number;
   reviews?: number;
+  ageRestricted?: boolean;
+  isAgeRestricted?: boolean | "true" | "false";
 }
 
 export interface RecommendationResponse {

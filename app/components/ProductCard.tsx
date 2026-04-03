@@ -15,6 +15,7 @@ import {
 } from "@/store/slices/savedItemsSlice";
 import { Product } from "@/services/productService";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionBadge from "@/app/components/commonComponents/AgeRestrictionBadge";
 
 interface ProductCardProps extends Product {
   onAddToCart?: () => void;
@@ -35,6 +36,8 @@ const ProductCard = ({
   vatAmount,
   image,
   onAddToCart,
+  isAgeRestricted,
+  ageRestricted,
 }: ProductCardProps) => {
   const router = useRouter();
   const isWeb = Platform.OS === "web";
@@ -45,6 +48,11 @@ const ProductCard = ({
 
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const showAgeRestrictionBadge =
+    isAgeRestricted === true ||
+    isAgeRestricted === "true" ||
+    ageRestricted === true ||
+    ageRestricted === "true";
   const isItemSaved = (itemId: any) => {
     return savedItems.some((savedItem: any) => savedItem.id === itemId);
   };
@@ -63,6 +71,8 @@ const ProductCard = ({
       isVatApplicable,
       vatRate,
       vatAmount,
+      isAgeRestricted,
+      ageRestricted,
       image,
       // discount: 0,
       quantity: 1,
@@ -151,6 +161,13 @@ const ProductCard = ({
           </View>
         )}
 
+        {showAgeRestrictionBadge && (
+          <AgeRestrictionBadge
+            variant={isWeb ? "compact" : "default"}
+            containerStyle={styles.ageBadge}
+          />
+        )}
+
         {netPrice > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
@@ -237,6 +254,10 @@ const styles = StyleSheet.create({
   saleContainer: {
     flexDirection: "row",
     marginBottom: 4,
+  },
+  ageBadge: {
+    marginTop: 2,
+    marginBottom: 6,
   },
   saleTimeBox: {
     flexDirection: "row",

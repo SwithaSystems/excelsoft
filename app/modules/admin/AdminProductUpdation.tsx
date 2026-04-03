@@ -176,7 +176,12 @@ const AdminProductUpdation = () => {
       setMinimumOrderQuantity(
         productData.minimumOrderQuantity?.toString() || ""
       );
-      setIsAgeRestricted(productData.isAgeRestricted || false);
+      const resolvedAgeRestricted =
+        productData.isAgeRestricted ||
+        productData.ageRestricted ||
+        productData.age_restricted ||
+        false;
+      setIsAgeRestricted(resolvedAgeRestricted);
       setIsChecked(productData.isReturnable || false);
       setIsVatApplicable(productData.isVatApplicable || false);
       setVatRate(
@@ -559,6 +564,7 @@ const calculatePrices = () => {
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+      formData.append("ageRestricted", isAgeRestricted ? "true" : "false");
 
       if (isVatApplicable) {
         formData.append("vatRate", vatRate);
@@ -673,6 +679,8 @@ const calculatePrices = () => {
       if (!response) {
         throw new Error("Failed to update product.");
       }
+
+      // No post-create patch needed now that backend handles age restriction on create.
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating product:", error);

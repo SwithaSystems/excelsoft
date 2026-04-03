@@ -49,6 +49,7 @@ import Footer from "@/app/components/Footer";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -82,6 +83,20 @@ const HomeDeliveryScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+  const hasAgeRestrictedItems = cartItems.some((item: any) => {
+    const directFlag =
+      item?.isAgeRestricted === true ||
+      item?.isAgeRestricted === "true" ||
+      item?.ageRestricted === true ||
+      item?.ageRestricted === "true";
+    const nestedFlag =
+      item?.product?.isAgeRestricted === true ||
+      item?.product?.isAgeRestricted === "true" ||
+      item?.product?.ageRestricted === true ||
+      item?.product?.ageRestricted === "true";
+    return directFlag || nestedFlag;
+  });
 
   // Refs
   const minutesRef = useRef(null);
@@ -105,6 +120,15 @@ const HomeDeliveryScreen = () => {
     message: "",
     buttonLabel: "OK",
   });
+  const isDefaultAddress = (addr: any) =>
+    addr?.isDefault === true || addr?.isDefault === "true";
+  const sortedAddresses = [...existingAddress].sort(
+    (a, b) => Number(isDefaultAddress(b)) - Number(isDefaultAddress(a))
+  );
+  const defaultAddress = sortedAddresses.find((addr) => isDefaultAddress(addr)) || null;
+  const additionalAddresses = sortedAddresses.filter(
+    (addr) => !defaultAddress || addr._id !== defaultAddress._id
+  );
 
   const showErrorAlert = ({
     title,
@@ -205,12 +229,17 @@ const fetchAddresses = useCallback(async (retryCount = 0) => {
     }
 
     const response = await addressService.getAllAddress();
-    setExistingAddress(response);
+    const orderedAddresses = [...response].sort(
+      (a, b) => Number(isDefaultAddress(b)) - Number(isDefaultAddress(a))
+    );
+    setExistingAddress(orderedAddresses);
 
     // ✅ Use ref instead of state value — no dependency needed
-    if (response.length === 1 && !selectedAddressIdRef.current) {
-      setSelectedAddressId(response[0]._id);
-      setAddress(response[0]);
+    if (!selectedAddressIdRef.current && orderedAddresses.length > 0) {
+      const preferredAddress =
+        orderedAddresses.find((addr) => isDefaultAddress(addr)) || orderedAddresses[0];
+      setSelectedAddressId(preferredAddress._id);
+      setAddress(preferredAddress);
     }
     setIsLoadingAddresses(false);
   } catch (err: any) {
@@ -230,90 +259,6 @@ const fetchAddresses = useCallback(async (retryCount = 0) => {
   }
 }, []);
 
-  // Fetch addresses function with retry logic and token check
-  // const fetchAddresses = useCallback(async (retryCount = 0) => {
-  //   const MAX_RETRIES = 3;
-  //   setIsLoadingAddresses(true);
-    
-  //   try {
-  //     // First, verify token exists
-  //     const token = await SecureStore.getItemAsync("token");
-  //     const refreshToken = await SecureStore.getItemAsync("refreshtoken");
-      
-  //     // console.log("=== Fetch Addresses Debug ===");
-  //     // console.log("Token exists:", !!token);
-  //     // console.log("Refresh token exists:", !!refreshToken);
-  //     // console.log("Retry attempt:", retryCount);
-      
-  //     if (!token && !refreshToken) {
-  //       console.error("No tokens found - user may need to login again");
-  //       setIsLoadingAddresses(false);
-  //       showErrorAlert({
-  //         title: "Session Expired",
-  //         message: "Please login again to continue.",
-  //       });
-  //       // Optionally redirect to login
-  //       // redirectToPage(containers.signInScreen);
-  //       return;
-  //     }
-      
-  //     // console.log("Attempting to fetch addresses...");
-  //     const response = await addressService.getAllAddress();
-  //     // console.log("Successfully fetched addresses:", response.length, "addresses");
-  //     setExistingAddress(response);
-      
-  //     // If there's only one address and none is selected, auto-select it
-  //     if (response.length === 1 && !selectedAddressId) {
-  //       // console.log("Auto-selecting single address");
-  //       setSelectedAddressId(response[0]._id);
-  //       setAddress(response[0]);
-  //     }
-  //     setIsLoadingAddresses(false);
-  //   } catch (err: any) {
-  //     console.error("=== Error fetching addresses ===");
-  //     console.error("Attempt:", retryCount + 1, "of", MAX_RETRIES + 1);
-  //     console.error("Error:", err);
-  //     console.error("Error message:", err.message);
-  //     console.error("Error response:", err.response?.data);
-  //     console.error("Error status:", err.response?.status);
-      
-  //     // If it's a 401 error and we haven't exceeded retries, wait and retry
-  //     if (err.response?.status === 401 && retryCount < MAX_RETRIES) {
-  //       // console.log("Got 401 error, waiting before retry...");
-  //       setIsLoadingAddresses(false);
-        
-  //       // Exponential backoff: wait longer with each retry
-  //       const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-  //       // console.log(`Retrying in ${delay}ms...`);
-        
-  //       setTimeout(() => {
-  //         fetchAddresses(retryCount + 1);
-  //       }, delay);
-  //     } else {
-  //       setIsLoadingAddresses(false);
-        
-  //       // Only show error alert after all retries exhausted
-  //       if (retryCount >= MAX_RETRIES) {
-  //         const errorMessage = err.response?.status === 401 
-  //           ? "Session expired. Please login again."
-  //           : "Failed to load addresses. Please check your connection and try again.";
-            
-  //         showErrorAlert({
-  //           title: "Error Loading Addresses",
-  //           message: errorMessage,
-  //         });
-          
-  //         // If 401 after all retries, consider redirecting to login
-  //         if (err.response?.status === 401) {
-  //           // console.log("Authentication failed after retries, may need to login");
-  //           // Uncomment to auto-redirect to login:
-  //           // setTimeout(() => redirectToPage(containers.signInScreen), 2000);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }, [selectedAddressId]);
-
   // Use useFocusEffect to refresh addresses when screen comes into focus
   // This ensures addresses are fetched when navigating back from add address screen
   useFocusEffect(
@@ -323,11 +268,6 @@ const fetchAddresses = useCallback(async (retryCount = 0) => {
     }, [fetchAddresses])
   );
 
-  // Also fetch on mount
-  // useEffect(() => {
-  //   // console.log("HomeDeliveryScreen mounted - initial address fetch");
-  //   fetchAddresses(0);
-  // }, []);
 useFocusEffect(
   useCallback(() => {
     fetchAddresses(0);
@@ -741,6 +681,23 @@ useFocusEffect(
             ListHeaderComponent={
               <>
                 <View style={[globalStyles.pt_0]}>
+                  {hasAgeRestrictedItems && (
+                    <AgeRestrictionNote
+                      containerStyle={[
+                        styles.noteContainer,
+                        isWeb && !isMobileWeb && styles.noteContainerWebDesktop,
+                        isMobileWeb && styles.noteContainerWebMobile,
+                      ]}
+                      titleStyle={[
+                        styles.noteTitle,
+                        isMobileWeb && styles.noteTitleWebMobile,
+                      ]}
+                      messageStyle={[
+                        styles.noteText,
+                        isMobileWeb && styles.noteTextWebMobile,
+                      ]}
+                    />
+                  )}
                   <Text style={styles.label}>
                     Do you prefer home delivery? Let us know your available day
                     and time.
@@ -921,23 +878,45 @@ useFocusEffect(
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    <FlatList
-                      data={existingAddress}
-                      keyExtractor={(item) => item._id}
-                      renderItem={({ item }) => (
-                        <AddressItem
-                          item={item}
-                          showRadio={true}
-                          isSelected={item._id === selectedAddressId}
-                          onSelect={() => {
-                            setSelectedAddressId(item._id);
-                            setAddress(item);
-                          }}
-                          onEdit={() => handleEditAddress(item)}
-                          onDelete={() => handleDeleteAddress(item)}
-                        />
+                    <View>
+                      {defaultAddress && (
+                        <View style={styles.addressSectionBlock}>
+                          <Text style={styles.addressSectionTitle}>Default Address</Text>
+                          <Text style={styles.defaultBadge}>Default</Text>
+                          <AddressItem
+                            item={defaultAddress}
+                            showRadio={true}
+                            isSelected={defaultAddress._id === selectedAddressId}
+                            onSelect={() => {
+                              setSelectedAddressId(defaultAddress._id);
+                              setAddress(defaultAddress);
+                            }}
+                            onEdit={() => handleEditAddress(defaultAddress)}
+                            onDelete={() => handleDeleteAddress(defaultAddress)}
+                          />
+                        </View>
                       )}
-                    />
+
+                      {additionalAddresses.length > 0 && (
+                        <View style={styles.addressSectionBlock}>
+                          <Text style={styles.addressSectionTitle}>Additional Addresses</Text>
+                          {additionalAddresses.map((item) => (
+                            <AddressItem
+                              key={item._id}
+                              item={item}
+                              showRadio={true}
+                              isSelected={item._id === selectedAddressId}
+                              onSelect={() => {
+                                setSelectedAddressId(item._id);
+                                setAddress(item);
+                              }}
+                              onEdit={() => handleEditAddress(item)}
+                              onDelete={() => handleDeleteAddress(item)}
+                            />
+                          ))}
+                        </View>
+                      )}
+                    </View>
                   )}
 
                   {/* Additional Instructions */}

@@ -10,7 +10,7 @@ import {
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
-import { addressService } from "@/services/addressService";
+import { addressService, Address } from "@/services/addressService";
 import {
   clearNavigationStack,
   redirectToPage,
@@ -41,7 +41,6 @@ const addAddressScreen = () => {
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
-  const [state, setState] = useState("");
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [addressType, setAddressType] = useState([]);
@@ -72,7 +71,6 @@ const addAddressScreen = () => {
     line1?: string;
     line2?: string;
     towncity?: string;
-    state?: string;
     phoneNumber?: string;
     general?: string;
   }>({});
@@ -121,7 +119,6 @@ const addAddressScreen = () => {
         setLine1(selectedAddress.line1 || "");
         setLine2(selectedAddress.line2 || "");
         setTownCity(selectedAddress.city || "");
-        setState(selectedAddress.state || "");
         setPostalCode(selectedAddress.postalCode || "");
         setPhoneNumber(selectedAddress.phone || "");
         setAddressType(selectedAddress.addressType || []);
@@ -341,9 +338,6 @@ const addAddressScreen = () => {
     const towncityError = validateTownCity(towncity);
     if (towncityError) newErrors.towncity = towncityError;
 
-    const stateError = validateState(state);
-    if (stateError) newErrors.state = stateError;
-
     const phoneNumberError = validatePhoneNumber(phoneNumber);
     if (phoneNumberError) newErrors.phoneNumber = phoneNumberError;
 
@@ -382,12 +376,6 @@ const addAddressScreen = () => {
     setErrors((prev) => ({ ...prev, towncity: error || undefined }));
   };
 
-  const handleStateChange = (text: string) => {
-    setState(text);
-    const error = validateState(text);
-    setErrors((prev) => ({ ...prev, state: error || undefined }));
-  };
-
   const handlePhoneNumberChange = (text: string) => {
     setPhoneNumber(text);
     const error = validatePhoneNumber(text);
@@ -411,12 +399,11 @@ const addAddressScreen = () => {
         });
         return;
       }
-      const addressData = {
+      const addressData: Omit<Address, "_id"> = {
         name: name.trim(),
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: state.trim(),
         postalCode: postalcode.trim(),
         phone: phoneNumber.trim(),
         isDefault,
@@ -424,6 +411,32 @@ const addAddressScreen = () => {
       };
 
       let response;
+
+      // Enforce single default address on frontend side:
+      // when current submit is marked default, unset default on all other addresses.
+      if (isDefault) {
+        try {
+          const existingAddresses = await addressService.getAllAddress();
+          const updates = existingAddresses
+            .filter(
+              (addr) =>
+                (addr.isDefault === true || (addr as any).isDefault === "true") &&
+                (!isEditMode || String(addr._id) !== String(addressId))
+            )
+            .map((addr) =>
+              addressService.updateAddress(addr._id, {
+                ...addr,
+                isDefault: false,
+              })
+            );
+
+          if (updates.length > 0) {
+            await Promise.all(updates);
+          }
+        } catch (enforceError) {
+          console.error("Failed to enforce single default address:", enforceError);
+        }
+      }
 
       if (isEditMode) {
         response = await addressService.updateAddress(addressId, {
@@ -576,20 +589,6 @@ const addAddressScreen = () => {
           />
           {errors.towncity && (
             <Text style={globalStyles.errorText}>{errors.towncity}</Text>
-          )}
-
-          <Text style={styles.fieldLabel}>State/Province</Text>
-          <TextInput
-            style={[styles.input, errors.state && globalStyles.errorInput]}
-            value={state}
-            onChangeText={handleStateChange}
-            placeholder="Enter state or province (optional)"
-            maxLength={50}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.state && (
-            <Text style={globalStyles.errorText}>{errors.state}</Text>
           )}
 
           <Text style={styles.fieldLabel}>Phone Number *</Text>

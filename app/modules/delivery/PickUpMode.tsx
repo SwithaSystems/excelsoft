@@ -67,6 +67,12 @@ const modeConfig: Record<
   },
 };
 
+const defaultDeliveryModes = {
+  homeDelivery: true,
+  curbsidePickup: true,
+  storePickup: true,
+};
+
 const pickUpModescreen = () => {
   // MOVE ALL HOOKS TO THE TOP - before any conditional returns
   const [selected, setSelected] = useState<
@@ -80,11 +86,7 @@ const pickUpModescreen = () => {
     curbsidePickup: boolean;
     storePickup: boolean;
   }
-  >({
-    homeDelivery: true,
-    curbsidePickup: true,
-    storePickup: true
-  });
+  >(defaultDeliveryModes);
   const [loading, setLoading] = useState<boolean>(true);
 
   const isWeb = Platform.OS === "web";
@@ -95,15 +97,14 @@ const pickUpModescreen = () => {
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
-      // console.log("response global settings", response.data);
-      setDeliveryModes(response.data?.deliveryModes);
+      const fetchedDeliveryModes = response.data?.deliveryModes;
+      setDeliveryModes({
+        ...defaultDeliveryModes,
+        ...(fetchedDeliveryModes ?? {}),
+      });
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
-      setDeliveryModes({
-        homeDelivery: true,
-        curbsidePickup: true,
-        storePickup: true
-      });
+      setDeliveryModes(defaultDeliveryModes);
     }
   };
 
@@ -141,9 +142,7 @@ const pickUpModescreen = () => {
       return Boolean(option);
     });
 
-  // console.log("Final options:", options);
-
-  // const isWeb = Platform.OS === "web";
+ 
 
   // Now the loading check comes AFTER all hooks
   if (loading) {

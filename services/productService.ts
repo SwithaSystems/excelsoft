@@ -23,6 +23,8 @@ export interface Product {
   isReturnable: boolean;
   isVatApplicable: boolean;
   vatRate: number;
+  ageRestricted?: boolean | "true" | "false";
+  isAgeRestricted?: boolean | "true" | "false";
   vatAmount: number;
   reviews: {
     id: string;

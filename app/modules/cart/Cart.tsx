@@ -52,6 +52,8 @@ import {
 import { Product, ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { isAgeRestrictedCartItem } from "@/utilities/ageRestriction";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
@@ -81,6 +83,10 @@ const CartScreen = () => {
     buttonLabel: "OK",
   });
   const { showAlert, confirmationModal } = useConfirmationAlert();
+  const hasAgeRestrictedItems = cartItems.some((item: any) =>
+    isAgeRestrictedCartItem(item)
+  );
+
 
   const showErrorAlert = ({
     title,
@@ -422,6 +428,13 @@ const CartScreen = () => {
                       <Text style={styles.clearCartText}>Clear Cart</Text>
                     </TouchableOpacity>
                   </View>
+                  {hasAgeRestrictedItems && (
+                    <AgeRestrictionNote
+                      containerStyle={styles.ageWarningContainer}
+                      titleStyle={styles.ageWarningTitle}
+                      messageStyle={styles.ageWarningText}
+                    />
+                  )}
 
                   {/* Cart Items */}
                   {cartItems.map((eachCartItem: any) => (
@@ -527,6 +540,13 @@ const CartScreen = () => {
                 </View>
               ) : (
                 <>
+                  {hasAgeRestrictedItems && (
+                    <AgeRestrictionNote
+                      containerStyle={styles.ageWarningContainer}
+                      titleStyle={styles.ageWarningTitle}
+                      messageStyle={styles.ageWarningText}
+                    />
+                  )}
                   {/* Cart Items */}
                   {cartItems.map((eachCartItem: any) => (
                     <CartItem
