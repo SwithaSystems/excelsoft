@@ -138,7 +138,7 @@ const PickupScreen = () => {
   });
   // console.log("userData in pickupscreen", userData);
 
-  const DEFAULT_PICKUP_HOURS = usePickupTime();
+  const { pickupTime, loading: pickupTimeLoading } = usePickupTime();
   const showErrorAlert = ({
     title,
     message,
@@ -177,6 +177,7 @@ const PickupScreen = () => {
 
   // Initialize default time values based on new business rules
   useEffect(() => {
+    if (pickupTimeLoading) return;
     const now = new Date();
     const currentHour = now.getHours();
     let targetDate, targetHour, targetMinute;
@@ -187,7 +188,7 @@ const PickupScreen = () => {
       currentHour < STORE_CLOSING_TIMINGS
     ) {
       // Within business hours: add 2 hours
-      const pickupHours = Math.max(Number(DEFAULT_PICKUP_HOURS) || 0, 0.5); // At least 30 minutes
+      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5); // At least 30 minutes
       const twoHoursLater = new Date(
         now.getTime() + pickupHours * 60 * 60 * 1000
       );
@@ -237,7 +238,7 @@ const PickupScreen = () => {
       minutesValue,
       periodValue
     );
-  }, []);
+  }, [pickupTime, pickupTimeLoading]);
 
   const displayDatePicker = () => setPickupDatePickerVisibility(true);
   const hideDatePicker = () => setPickupDatePickerVisibility(false);

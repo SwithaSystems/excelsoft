@@ -91,6 +91,7 @@ const AdminGlobalSettings = () => {
     shippingCharge: "",
     minimumCheckoutOrderValue: "",
     minimumDeliveryOrderValue: "",
+    timeWindow: "",
   });
 
   useEffect(() => {
@@ -186,6 +187,11 @@ const AdminGlobalSettings = () => {
     const fieldKey = config.key as string;
     const isEditing = editingField === fieldKey;
     const isUpdating = updatingKey === fieldKey;
+    const displayValue =
+      fieldKey === "timeWindow" &&
+      (settings?.[config.key] === null || settings?.[config.key] === undefined)
+        ? "120"
+        : String(settings?.[config.key] ?? "0");
 
     return (
       <View
@@ -203,11 +209,7 @@ const AdminGlobalSettings = () => {
             !isEditing && styles.inputReadOnly,
           ]}
           keyboardType="numeric"
-          value={
-            isEditing
-              ? tempValues[fieldKey]
-              : String(settings?.[config.key] ?? "0")
-          }
+          value={isEditing ? tempValues[fieldKey] : displayValue}
           onChangeText={(value) =>
             setTempValues((prev) => ({ ...prev, [fieldKey]: value }))
           }
