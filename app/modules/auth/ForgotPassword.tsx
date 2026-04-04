@@ -55,6 +55,8 @@ const forgotPasswordScreen = () => {
     return trimmed.startsWith("0") ? trimmed.slice(1) : trimmed;
   };
 
+  const normalizeEmail = (raw: string): string => raw.trim().toLowerCase();
+
   const buildFullPhone = (phone: string, code: string): string => {
     return `+${code}${normalizePhone(phone)}`;
   };
@@ -93,10 +95,10 @@ const forgotPasswordScreen = () => {
   // ─── Blur handlers — format validation only, NO API calls ────────────────────
 
   const handleEmailBlur = () => {
-    const trimmed = emailRef.current.trim();
-    if (!trimmed) {
+    const normalized = normalizeEmail(emailRef.current);
+    if (!normalized) {
       setErrors((prev) => ({ ...prev, email: "Email is required." }));
-    } else if (!isValidEmail(trimmed)) {
+    } else if (!isValidEmail(normalized)) {
       setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
     } else {
       setErrors((prev) => ({ ...prev, email: undefined }));
@@ -121,12 +123,12 @@ const forgotPasswordScreen = () => {
     const currentMode = modeRef.current;
 
     if (currentMode === "email") {
-      const trimmed = emailRef.current.trim();
-      if (!trimmed) {
+      const normalized = normalizeEmail(emailRef.current);
+      if (!normalized) {
         setErrors((prev) => ({ ...prev, email: "Email is required." }));
         return false;
       }
-      if (!isValidEmail(trimmed)) {
+      if (!isValidEmail(normalized)) {
         setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
         return false;
       }
@@ -160,7 +162,7 @@ const forgotPasswordScreen = () => {
         const fullPhone = buildFullPhone(phoneNumberRef.current, callingCodeRef.current);
         response = await UserAPI.getUserByPhonenumber(fullPhone);
       } else {
-        response = await UserAPI.getUserByEmail(emailRef.current.trim());
+        response = await UserAPI.getUserByEmail(normalizeEmail(emailRef.current));
       }
       return response?.data ?? null;
     } catch {
@@ -209,11 +211,12 @@ const forgotPasswordScreen = () => {
           showModal("Failed to Send Code", "Please try again later.");
         }
       } else if (modeRef.current === "email") {
-        const response = await TwilioApi.sendOtp_Email({ email: emailRef.current.trim() });
+        const normalizedEmail = normalizeEmail(emailRef.current);
+        const response = await TwilioApi.sendOtp_Email({ email: normalizedEmail });
 
         if (response?.status === 201) {
           redirectToPage(containers.verificationScreen, {
-            email_forgetPwd: emailRef.current.trim(),
+            email_forgetPwd: normalizedEmail,
             from: "forgotPassword",
             verificationType: "email",
           });
@@ -221,8 +224,9 @@ const forgotPasswordScreen = () => {
           showModal("Failed to Send Code", "Please try again later.");
         }
       }
-    } catch {
-      showModal("Failed to Send Code", "Please try again later.");
+    } catch (error: any) {
+      const message = error?.message || "Please try again later.";
+      showModal("Failed to Send Code", message);
     } finally {
       setIsLoading(false);
     }

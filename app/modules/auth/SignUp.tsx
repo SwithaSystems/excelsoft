@@ -70,6 +70,8 @@ const signUpScreen = () => {
     }>
   >({});
 
+  const normalizeEmail = (value: string) => value.trim().toLowerCase();
+
   const showErrorAlert = ({
     title,
     message,
@@ -96,13 +98,13 @@ const signUpScreen = () => {
     setErrors({}); // Clear all errors when switching modes
   };
 
-  const handleEmailBlur = async () => {
-  const trimmedEmail = email.trim();
-  if (!trimmedEmail) {
+const handleEmailBlur = async () => {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) {
     setErrors((prev) => ({ ...prev, email: "Email is required." }));
     return;
   }
-  if (!isValidEmail(trimmedEmail)) {
+  if (!isValidEmail(normalizedEmail)) {
     setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
     return;
   }
@@ -198,17 +200,17 @@ const handleConfirmPasswordBlur = () => {
   };
 
   const checkIfEmailExists = async () => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) return;
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) return;
     
     // Validate email format before checking existence
-    if (!isValidEmail(trimmedEmail)) {
+    if (!isValidEmail(normalizedEmail)) {
       setErrors((prev) => ({ ...prev, email: "Enter a valid email address." }));
       return;
     }
 
     try {
-      const response = await UserAPI.checkEmailStatus(trimmedEmail);
+      const response = await UserAPI.checkEmailStatus(normalizedEmail);
       const exists = !!response?.data?.exists;
       const isDeleted = !!response?.data?.isDeleted;
 
@@ -249,11 +251,11 @@ const handleConfirmPasswordBlur = () => {
     };
 
     if (mode === "email") {
-      const trimmedEmail = email.trim();
+      const normalizedEmail = normalizeEmail(email);
 
-      if (!trimmedEmail) {
+      if (!normalizedEmail) {
         newErrors.email = "Email is required.";
-      } else if (!isValidEmail(trimmedEmail)) {
+      } else if (!isValidEmail(normalizedEmail)) {
         newErrors.email = "Enter a valid email address.";
       }
     }
@@ -349,8 +351,8 @@ const handleConfirmPasswordBlur = () => {
         setIsLoading(true);
         await handlePhoneSignUp("register");
       } else if (mode === "email") {
-        const trimmedEmail = email.trim();
-        const statusRes = await UserAPI.checkEmailStatus(trimmedEmail);
+        const normalizedEmail = normalizeEmail(email);
+        const statusRes = await UserAPI.checkEmailStatus(normalizedEmail);
         const exists = !!statusRes?.data?.exists;
         const isDeleted = !!statusRes?.data?.isDeleted;
 
@@ -437,7 +439,7 @@ const handleConfirmPasswordBlur = () => {
   };
 
   const handleEmailSignUp = async (intentOverride?: "register" | "recover") => {
-    const userData = { phone: "", email: email.trim(), password };
+    const userData = { phone: "", email: normalizeEmail(email), password };
 
     try {
       const response = await TwilioApi.sendOtp_Email({

@@ -5,9 +5,15 @@ export const TwilioApi = {
     try {
       const response = await jsonAxios.post(`/twilio/SendOtp`, body);
       return response;
-    } catch (error) {
-      console.error("Twilio API Error:", error);
-      throw error;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message;
+      console.error("OTP Send Error:", error?.response?.data || error?.message || error);
+      if (status === 409 && backendMessage?.toLowerCase().includes("otp already sent")) {
+        const cooldownSeconds = 30;
+        throw new Error(`OTP already sent recently. Please wait ${cooldownSeconds} seconds before requesting another.`);
+      }
+      throw new Error(backendMessage || "Failed to send OTP. Please try again.");
     }
   },
 
@@ -34,9 +40,15 @@ export const TwilioApi = {
     try {
       const response = await jsonAxios.post(`/sendGrid/SendOtpEmail`, body);
       return response;
-    } catch (error) {
-      console.error("Twilio API Error:", error);
-      throw error;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.message;
+      console.error("OTP Send Error:", error?.response?.data || error?.message || error);
+      if (status === 409 && backendMessage?.toLowerCase().includes("otp already sent")) {
+        const cooldownSeconds = 30;
+        throw new Error(`OTP already sent recently. Please wait ${cooldownSeconds} seconds before requesting another.`);
+      }
+      throw new Error(backendMessage || "Failed to send OTP. Please try again.");
     }
   },
 

@@ -268,6 +268,18 @@ const editProfileScreen = () => {
     const isLastNameValid = validateLastName(lastName);
     if (!isFirstNameValid || !isLastNameValid) return;
 
+    const missingFields: string[] = [];
+    if (!firstName.trim()) missingFields.push("First name");
+    if (!lastName.trim()) missingFields.push("Last name");
+    if (!dateOfBirth?.trim()) missingFields.push("Date of birth");
+    if (missingFields.length) {
+      showErrorAlert({
+        title: "Missing Details",
+        message: `Please fill in: ${missingFields.join(", ")}.`,
+      });
+      return;
+    }
+
     const formData = new FormData();
     if (isWeb && webImageFileRef.current) {
   formData.append("image", webImageFileRef.current);
@@ -308,7 +320,14 @@ const editProfileScreen = () => {
       }
       return response?.data;
     } catch (error) {
-      setIsErrorModalVisible(true);
+      const serverMessage =
+        (error as any)?.response?.data?.message ||
+        (error as any)?.message ||
+        FAILED_TO_UPDATE_DETAILS;
+      showErrorAlert({
+        title: "Update Failed",
+        message: typeof serverMessage === "string" ? serverMessage : FAILED_TO_UPDATE_DETAILS,
+      });
     } finally {
       setLoading(false);
     }
