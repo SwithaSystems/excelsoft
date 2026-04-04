@@ -59,6 +59,27 @@ const ReviewsScreen = () => {
     (a: any, b: any) => b.id - a.id
   );
 
+  const normalizedRating = (() => {
+    if (typeof productRating === "string") {
+      try {
+        const parsed = JSON.parse(productRating);
+        return Number(parsed);
+      } catch {
+        return Number(productRating);
+      }
+    }
+    return Number(productRating);
+  })();
+
+  const ratingToShow = Number.isFinite(normalizedRating) && normalizedRating > 0
+    ? normalizedRating
+    : Number(product?.rating || 0);
+
+  const hasReviews =
+    (soretedReviews?.length || 0) > 0 ||
+    (reviewsArray?.length || 0) > 0 ||
+    (product?.reviews?.length || 0) > 0;
+
   const user = useSelector((state: RootState) => state.user.user);
 
   const handleAddReviews = () => {
@@ -104,13 +125,13 @@ const ReviewsScreen = () => {
         </View>
 
         <View style={[styles.overAllRatingContainer, isWeb && styles.webOverAllRatingContainer]}>
-          {Number(productRating) > 0 ? (
+          {ratingToShow > 0 ? (
             <ProductStars
               starsContainer={[styles.starsContainer, isWeb && styles.webStarsContainer]}
-              rating={productRating}
+              rating={ratingToShow}
               size={isWeb ? s(32) : 32}
             />
-          ) : (
+          ) : !hasReviews ? (
             <View style={[styles.emptyStateContainer, isWeb && styles.webEmptyStateContainer]}>
               <Text style={[styles.emptyStateStar, isWeb && { fontSize: s(48) }]}>⭐</Text>
               <Text style={[styles.emptyStateHeading, isWeb && { fontSize: s(20) }]}>
@@ -120,7 +141,7 @@ const ReviewsScreen = () => {
                 Share your thoughts about this product.
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={[styles.reviewsContainer, isWeb && styles.webReviewsContainer]}>

@@ -116,12 +116,16 @@ function OrderSummary(props) {
       <View style={styles.summarySection}>
         {/* VAT */}
         
-        <View style={styles.tableRow}>
-          {totalVAT > 0 && (<Text style={styles.summaryLabel}>
-    VAT - {CurrencySymbol} {totalVAT.toFixed(2)}
-  </Text>)}
-  
-</View>
+        {totalVAT > 0 && (
+          <View style={styles.tableRow}>
+            <Text style={styles.summaryLabel}>VAT</Text>
+            <Text style={styles.quantity}></Text>
+            <Text style={styles.price}>
+              {CurrencySymbol}
+              {totalVAT.toFixed(2)}
+            </Text>
+          </View>
+        )}
 
 
         {/* Delivery Charges */}
