@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
@@ -11,12 +12,18 @@ import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface NavItem {
   id: string;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: string;
+}
+
+interface AdminSidebarWebProps {
+  isDrawer?: boolean;
+  onClose?: () => void;
 }
 
 const navItems: NavItem[] = [
@@ -45,6 +52,12 @@ const navItems: NavItem[] = [
     route: "/modules/admin/AdminCategories",
   },
   {
+    id: "store-information",
+    label: "Store Information",
+    icon: "storefront",
+    route: `/${containers.AdminStoreInformationScreen}`,
+  },
+  {
     id: "scan",
     label: "Scan & Deliver",
     icon: "people",
@@ -56,37 +69,64 @@ const navItems: NavItem[] = [
     icon: "people",
     route: "/modules/admin/FileUploadAddProductCategory",
   },
+  {
+    id: "promotion",
+    label: "Promotion Management",
+    icon: "megaphone",
+    route: "/modules/admin/AdminPromotion",
+  },
+  {
+    id: "access-control",
+    label: "User Access Control",
+    icon: "shield-checkmark",
+    route: "/modules/admin/AdminAccessControl",
+  },
+  {
+    id: "global-settings",
+    label: "Global Settings",
+    icon: "settings",
+    route: "/modules/admin/AdminGlobalSettings",
+  },
+  {
+    id: "notification-settings",
+    label: "Notification Settings",
+    icon: "notifications",
+    route: `/${containers.adminNotificationSettingsScreen}`,
+  },
 ];
 
-export const AdminSidebarWeb: React.FC = () => {
+export const AdminSidebarWeb: React.FC<AdminSidebarWebProps> = ({
+  isDrawer = false,
+  onClose,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
-
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
-
-  // console.log("Current pathname:", pathname);
-  // console.log(
-  //   "Container routes:",
-  //   navItems.map((item) => ({ label: item.label, route: item.route }))
-  // );
+  const { isMobile } = useWebMediaQuery();
 
   const handleNavigation = (route: string) => {
     router.push(route as any);
+    // Close drawer if it's open
+    if (isDrawer && onClose) {
+      onClose();
+    }
   };
 
   const isActive = (route: string) => {
     return pathname === route || pathname?.startsWith(route);
   };
 
-  if (!isTablet && !isDesktop) {
+  // Don't render on mobile browser unless it's in drawer mode
+  if (!isDrawer && isMobile) {
     return null;
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.navList}>
+    <View style={[styles.container, isDrawer && styles.containerDrawer]}>
+      <ScrollView
+        style={styles.navScroll}
+        contentContainerStyle={styles.navList}
+        showsVerticalScrollIndicator={false}
+      >
         {navItems.map((item) => {
           const active = isActive(item.route);
           return (
@@ -113,7 +153,7 @@ export const AdminSidebarWeb: React.FC = () => {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -127,8 +167,16 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: colors.lightgrey,
   },
+  containerDrawer: {
+    borderRightWidth: 0,
+    paddingTop: 0,
+  },
+  navScroll: {
+    flex: 1,
+  },
   navList: {
     gap: 8,
+    paddingBottom: 16,
   },
   navItem: {
     flexDirection: "row",

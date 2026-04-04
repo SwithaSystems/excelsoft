@@ -12,44 +12,12 @@ import {
 
 type props = {
   children: React.ReactNode;
-  // showHideButton?: boolean,
 };
 
 const KeyBoardWrapper = ({
   children,
-}: // showHideButton = true,
+}: 
 props) => {
-  // const deviceTheme = useColorScheme();
-  // const iconColor = deviceTheme === "dark" ? colors.white : colors.black;
-  // const [keyboardVisible, setKeyboardVisible] = useState(false);
-  // const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // useEffect(()=>{
-  //     const showKeyboard = Keyboard.addListener("keyboardDidShow",
-  //         (e) => {
-  //             setKeyboardVisible(true);
-  //             setKeyboardHeight(e.endCoordinates.height);
-  //         });
-  //     const hideKeyboard = Keyboard.addListener("keyboardDidHide",
-  //         (e) => {
-  //             setKeyboardVisible(false)
-  //             setKeyboardHeight(0);
-  //         });
-
-  //     return () => {
-  //         showKeyboard.remove();
-  //         hideKeyboard.remove();
-  //     };
-  // }, []);
-
-  // const getBottomOffset = () => {
-  //     if (Platform.OS === 'ios') {
-  //         return keyboardHeight > 0 ? keyboardHeight - 60 : 0;
-  //     } else {
-  //         return keyboardHeight > 0 ? keyboardHeight - 40 : 0;
-  //     }
-  // };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -57,18 +25,6 @@ props) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
       {children}
-      {/* {showHideButton && keyboardVisible && (
-                <TouchableOpacity
-                    onPress={()=>Keyboard.dismiss()}
-                    style={[styles.dismissButton, {bottom: getBottomOffset()}]}
-                >
-                    <Ionicons 
-                        name="chevron-down-outline"
-                        size={24}
-                        color={iconColor}
-                    />
-                </TouchableOpacity>
-            )} */}
     </KeyboardAvoidingView>
   );
 };

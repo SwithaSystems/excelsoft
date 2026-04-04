@@ -33,6 +33,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
 
+  headerRowMobileWeb: {
+    flexDirection: "column",
+    gap: 12,
+  },
+
   separator: {
     height: 1,
     backgroundColor: colors.secondary,
@@ -65,9 +70,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
     marginHorizontal: 0,
-    marginBottom: 16,
+    marginBottom: 8,
     position: "relative",
     zIndex: 1000,
+  },
+
+  categoryActionColumn: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
   },
 
   categoryContainer: {
@@ -77,8 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
     height: Platform.OS === "web" ? 40 : 52,
-    width: Platform.OS === "web" ? "18%" : "100%",
-    minWidth: 220,
+    width: Platform.OS === "web" ? undefined : "100%",
+    minWidth: Platform.OS === "web" ? 140 : undefined,
     maxWidth: "100%",
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
@@ -113,6 +124,40 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  addButtonWebSmall: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+
+  addButtonTextWebSmall: {
+    fontSize: 13,
+  },
+
+  searchAndToggleWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchWithToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+
+  viewToggleIcon: {
+    padding: 4,
+    marginLeft: 8,
+  },
+
+  gridCard: {
+    flex: 1,
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+    maxWidth: "32%",
+    minWidth: "32%",
+  },
+
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -125,8 +170,8 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 1000,
     backgroundColor: colors.white,
-    paddingVertical: 6,
-    marginBottom: -20,
+    paddingVertical: 10,
+    marginBottom: 4,
   },
 
   stickyBottomContainer: {
@@ -263,6 +308,116 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     maxHeight: "70%",
     paddingVertical: 8,
+  },
+
+  // Bulk selection styles (additive feature only)
+  selectedCard: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+  },
+  checkboxContainer: {
+    marginRight: 12,
+    padding: 4,
+  },
+  selectionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.white,
+    // paddingVertical: 12,
+    // paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  selectionBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 8,
+  },
+  selectionBarRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  checkboxButton: {
+    // padding: 4,
+  },
+  selectionBarButton: {
+    // paddingHorizontal: 12,
+    // paddingVertical: 6,
+  },
+  deleteButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  deleteButtonActive: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  selectionBarButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  deleteButtonTextActive: {
+    color: colors.primary,
+  },
+  selectionBarButtonTextDisabled: {
+    color: colors.secondaryText,
+  },
+  selectionBarCount: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: colors.black,
+    // marginLeft: 4,
+  },
+  bulkActionBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.secondary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  bulkActionBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  bulkSelectAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  bulkSelectAllText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  bulkActionBarText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.black,
+  },
+  bulkDeleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  bulkDeleteButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
   },
   
 });

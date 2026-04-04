@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   ScrollView,
   ActivityIndicator,
   Pressable,
+  Modal,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -18,6 +21,18 @@ import { useRoleContext } from "@/context/RoleContext";
 import { useAuth } from "@/context/AuthContext";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useSelector } from "react-redux";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
+import { AdminSidebarWeb } from "./AdminSidebarWeb";
+import { UserSidebarWeb } from "./UserSidebarWeb";
+import { UserAPI } from "@/services/userService";
+import { showErrorAlert } from "@/utilities/showErrorAlert";
+import {
+  ACCOUNT_DELETED,
+  ACCOUNT_DELETION_ERROR,
+} from "@/constants/customErrorMessages";
+import { usePathname } from "expo-router";
+import SearchBar from "../searchBar";
 
 type NavItem = {
   label: string;
@@ -37,6 +52,7 @@ interface HeaderNavBarProps {
   backgroundColor?: string;
   onCategorySelect?: (category: Category) => void;
   hideNavItems?: boolean;
+  hasSidebar?: boolean;
 }
 
 const quickLinks: QuickLinkItem[] = [
@@ -53,49 +69,62 @@ const allNavItems: NavItem[] = [
     requiresAuth: false,
   },
   {
-    label: "Home",
-    onPress: () => redirectToPage(containers.homeScreen),
-    requiresAuth: false,
-  },
-  {
     label: "Quick Links",
     isDropdown: true,
     dropdownType: 'quicklinks',
-    requiresAuth: true, 
+    requiresAuth: true,
   },
-  {
-    label: "Feedback",
-    onPress: () => redirectToPage(containers.feedbackScreen),
-    requiresAuth: false,
-  },
+  // {
+  //   label: "Feedback",
+  //   onPress: () => redirectToPage(containers.feedbackScreen),
+  //   requiresAuth: false,
+  // },
   {
     label: "Customer Service",
     onPress: () => redirectToPage(containers.customerSupportScreen),
     requiresAuth: false,
   },
-  {
-    label: "My Accounts",
-    onPress: () => redirectToPage(containers.editProfileScreen),
-    requiresAuth: true, 
-  },
+  // {
+  //   label: "My Accounts",
+  //   onPress: () => redirectToPage(containers.editProfileScreen),
+  //   requiresAuth: true,
+  // },
 ];
 
-const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
+const HeaderNavBar: FC<HeaderNavBarProps> = ({
   backgroundColor = colors.primary,
   onCategorySelect,
   hideNavItems = false,
+  hasSidebar: _hasSidebar = false,
 }) => {
-  const { loading: roleLoading, isValidUser } = useRoleContext();
+  const { loading: roleLoading, isValidUser, isAdmin } = useRoleContext();
   const { logout } = useAuth();
   const userData_redux = useSelector((state: any) => state.user.user);
+  const { isMobile } = useWebMediaQuery();
+  const { width } = useWindowDimensions();
 
   const isAuthenticated = isValidUser;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [hoveredNavLabel, setHoveredNavLabel] = useState<string | null>(null);
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+  const [showSidebarDrawer, setShowSidebarDrawer] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+
+  // Animation values for drawer - use pixel values
+  const drawerWidth = Math.min(width * 0.8, 320);
+  const mobileDropdownWidth = Math.min(width * 0.58, 300);
+  const drawerTranslateX = useSharedValue(-drawerWidth);
+  const overlayOpacity = useSharedValue(0);
+
+  const pathname = usePathname();
+
+  // Detect screen type from route
+  const isAdminScreen = pathname.includes("/admin/");
+
 
   const navItems = !hideNavItems 
     ? allNavItems.filter(item => !item.requiresAuth || isAuthenticated)
@@ -125,6 +154,45 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
 
     loadCategories();
   }, [hideNavItems, roleLoading]);
+
+  // Handle drawer open/close with animation
+  useEffect(() => {
+    if (showSidebarDrawer) {
+      drawerTranslateX.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+      });
+      overlayOpacity.value = withTiming(0.5, {
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+      });
+    } else {
+      drawerTranslateX.value = withTiming(-drawerWidth, {
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+      });
+      overlayOpacity.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.in(Easing.ease),
+      });
+    }
+  }, [showSidebarDrawer, drawerTranslateX, overlayOpacity, drawerWidth]);
+
+  const drawerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: drawerTranslateX.value }],
+    };
+  }, []);
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: overlayOpacity.value,
+    };
+  });
+
+  const handleDrawerClose = () => {
+    setShowSidebarDrawer(false);
+  };
 
   const handleNavPress = (item: NavItem) => {
     if (item.isDropdown && item.dropdownType) {
@@ -163,6 +231,12 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     setShowDropdown(null);
   };
 
+  const handleMobileSearchSubmit = () => {
+    setShowDropdown(null);
+    const q = (mobileSearchQuery || "").trim();
+    redirectToPage(containers.searchResultsScreen, q ? { query: q } : {});
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -173,9 +247,72 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     }
   };
 
+  const handleSoftDelete = async () => {
+    // Get user ID from redux state
+    const userId = userData_redux?._id || userData_redux?.id;
+    
+    if (!userId) {
+      if (Platform.OS === 'web') {
+        alert("Error: User ID not found. Please try again.");
+      } else {
+        showErrorAlert({
+          title: "Error",
+          message: "User ID not found. Please try again.",
+        });
+      }
+      return;
+    }
+
+    try {
+      setDeleteAccountModalOpen(false); // Close modal first
+      
+      const response = await UserAPI.softDeleteUser(userId);
+      
+      if (response) {
+        // Show success message
+        if (Platform.OS === 'web') {
+          alert(ACCOUNT_DELETED || "Your account has been deleted successfully.");
+          // Logout and redirect immediately after alert is dismissed
+          await logout();
+          router.replace("/modules/home/Home");
+        } else {
+          showErrorAlert({
+            title: "Account Deleted",
+            message: ACCOUNT_DELETED || "Your account has been deleted successfully.",
+          });
+          // Logout and redirect after a short delay for mobile
+          setTimeout(async () => {
+            await logout();
+            router.replace("/modules/home/Home");
+          }, 1500);
+        }
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        ACCOUNT_DELETION_ERROR ||
+        "Failed to delete account. Please try again.";
+      if (Platform.OS === 'web') {
+        alert(message);
+      } else {
+        showErrorAlert({
+          title: "Deletion Failed",
+          message,
+        });
+      }
+    }
+  };
+
   const renderAuthButtons = () => {
     if (!isAuthenticated) return null;
 
+    // Mobile: do not show auth buttons in the green bar (they are in the drawer)
+    if (isMobile) {
+      return null;
+    }
+
+    // Desktop: Show icons with text
     return (
       <View style={styles.authButtonsContainer}>
         <TouchableOpacity
@@ -198,11 +335,25 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
     );
   };
 
+  // Get only Categories item for mobile
+  const categoriesItem = navItems.find(item => item.dropdownType === 'categories');
+  const quickLinksItem = navItems.find(item => item.dropdownType === 'quicklinks');
+
   if (roleLoading || hideNavItems) {
     return (
       <>
         <View style={[styles.container, { backgroundColor }]}>
-          <View style={styles.emptyBelt} />
+          {/* Menu button - Always show on mobile when authenticated */}
+          {isMobile && isAuthenticated && (
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setShowSidebarDrawer(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="menu" size={24} color={colors.white} />
+            </TouchableOpacity>
+          )}
+          {!isMobile && <View style={styles.emptyBelt} />}
           {renderAuthButtons()}
         </View>
         <ConfirmationModal
@@ -221,10 +372,71 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
           title="Delete Account"
           text="Are you sure you want to delete your account? This action cannot be undone."
           submitText="Yes"
-          handleSubmit={() => { }}
+          handleSubmit={handleSoftDelete}
           cancelText="No"
           handleCancel={() => setDeleteAccountModalOpen(false)}
+          isDestructive={true}
         />
+        {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
+        {isMobile && isAuthenticated && (
+          <Modal
+            visible={showSidebarDrawer}
+            transparent={true}
+            animationType="none"
+            onRequestClose={handleDrawerClose}
+          >
+            <View style={styles.drawerContainer}>
+              {/* Overlay */}
+              <Animated.View
+                style={[styles.drawerOverlay, overlayAnimatedStyle]}
+              >
+                <Pressable
+                  style={styles.overlayPressable}
+                  onPress={handleDrawerClose}
+                />
+              </Animated.View>
+
+              {/* Drawer */}
+              <Animated.View
+                style={[
+                  styles.drawer,
+                  drawerAnimatedStyle,
+                  isAdmin ? styles.drawerAdmin : styles.drawerUser,
+                ]}
+              >
+                {/* Close Button */}
+                <View style={styles.drawerHeader}>
+                  <TouchableOpacity
+                    style={styles.drawerCloseButton}
+                    onPress={handleDrawerClose}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="close" size={28} color={colors.black} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Sidebar Content */}
+                {isAdminScreen ? (
+                  <ScrollView
+                    style={styles.drawerContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                  </ScrollView>
+                ) : (
+                  <View style={styles.drawerContent}>
+                    <UserSidebarWeb
+                      isDrawer={true}
+                      onClose={handleDrawerClose}
+                      onLogout={() => setLogOutModalOpen(true)}
+                      onDeleteAccount={() => setDeleteAccountModalOpen(true)}
+                    />
+                  </View>
+                )}
+              </Animated.View>
+            </View>
+          </Modal>
+        )}
       </>
     );
   }
@@ -232,30 +444,44 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
   return (
     <>
       <View style={[styles.container, { backgroundColor }]}>
-        <View style={styles.scrollContainer}>
-          {navItems.map((item, index) => (
-            <View key={index} style={styles.itemWrapper}>
+        {isMobile ? (
+          // Mobile: Show menu button, Categories dropdown and auth buttons
+          <>
+            {/* Menu button - Always show on mobile when authenticated */}
+            {isAuthenticated && (
               <TouchableOpacity
-                style={styles.navItem}
-                onPress={() => handleNavPress(item)}
+                style={styles.menuButton}
+                onPress={() => setShowSidebarDrawer(true)}
                 activeOpacity={0.7}
               >
-                <View style={styles.navItemContent}>
-                  <Text style={styles.navText}>{item.label}</Text>
-                  {item.isDropdown && (
+                <Ionicons name="menu" size={24} color={colors.white} />
+              </TouchableOpacity>
+            )}
+            {categoriesItem && (
+              <View style={styles.mobileCategoriesContainer}>
+                <TouchableOpacity
+                  style={styles.mobileCategoriesButton}
+                  onPress={() => handleNavPress(categoriesItem)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={[styles.navText, styles.mobileNavText]}>{categoriesItem.label}</Text>
                     <Ionicons
-                      name={showDropdown === item.dropdownType ? "chevron-up" : "chevron-down"}
+                      name={showDropdown === categoriesItem.dropdownType ? "chevron-up" : "chevron-down"}
                       size={16}
                       color={colors.white}
                       style={styles.dropdownIcon}
                     />
-                  )}
-                </View>
-              </TouchableOpacity>
-              {item.isDropdown && showDropdown === item.dropdownType && (
-                <View style={styles.dropdownMenu}>
-                  {item.dropdownType === 'categories' ? (
-                    loading ? (
+                  </View>
+                </TouchableOpacity>
+                {showDropdown === categoriesItem.dropdownType && (
+                  <View
+                    style={[
+                      styles.mobileDropdownMenu,
+                      { width: mobileDropdownWidth },
+                    ]}
+                  >
+                    {loading ? (
                       <View style={styles.loadingContainer}>
                         <ActivityIndicator color={colors.primary} />
                       </View>
@@ -276,8 +502,37 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
-                    )
-                  ) : item.dropdownType === 'quicklinks' ? (
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Quick Links dropdown (mobile web, user-side screens only) */}
+            {!isAdminScreen && quickLinksItem && (
+              <View style={styles.mobileQuickLinksContainer}>
+                <TouchableOpacity
+                  style={styles.mobileCategoriesButton}
+                  onPress={() => handleNavPress(quickLinksItem)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={[styles.navText, styles.mobileNavText]}>{quickLinksItem.label}</Text>
+                    <Ionicons
+                      name={showDropdown === quickLinksItem.dropdownType ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color={colors.white}
+                      style={styles.dropdownIcon}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {showDropdown === quickLinksItem.dropdownType && (
+                  <View
+                    style={[
+                      styles.mobileDropdownMenu,
+                      { width: mobileDropdownWidth },
+                    ]}
+                  >
                     <View>
                       {quickLinks.map((link) => (
                         <TouchableOpacity
@@ -290,12 +545,98 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
                         </TouchableOpacity>
                       ))}
                     </View>
-                  ) : null}
-                </View>
-              )}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Inline SearchBar: search globally from nav (go to results, not search page) */}
+            <View style={styles.mobileSearchWrapper}>
+              <SearchBar
+                placeholder="Search..."
+                value={mobileSearchQuery}
+                onChangeText={setMobileSearchQuery}
+                onPress={handleMobileSearchSubmit}
+                onSubmitEditing={handleMobileSearchSubmit}
+                height={32}
+              />
             </View>
-          ))}
-        </View>
+          </>
+        ) : (
+          // Desktop: Show full navigation
+          <View style={styles.scrollContainer}>
+            {navItems.map((item, index) => (
+              <View
+                key={index}
+                style={styles.itemWrapper}
+                onPointerEnter={() => !isMobile && setHoveredNavLabel(item.label)}
+                onPointerLeave={() => !isMobile && setHoveredNavLabel(null)}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.navItem,
+                    !isMobile && hoveredNavLabel === item.label && styles.navItemHovered,
+                  ]}
+                  onPress={() => handleNavPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Text style={styles.navText}>{item.label}</Text>
+                    {item.isDropdown && (
+                      <Ionicons
+                        name={showDropdown === item.dropdownType ? "chevron-up" : "chevron-down"}
+                        size={16}
+                        color={colors.white}
+                        style={styles.dropdownIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                {item.isDropdown && showDropdown === item.dropdownType && (
+                  <View style={styles.dropdownMenu}>
+                    {item.dropdownType === 'categories' ? (
+                      loading ? (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator color={colors.primary} />
+                        </View>
+                      ) : (
+                        <ScrollView
+                          style={styles.dropdownScroll}
+                          nestedScrollEnabled
+                          showsVerticalScrollIndicator
+                        >
+                          {categories.map((cat) => (
+                            <TouchableOpacity
+                              key={String(cat.id ?? cat.name)}
+                              onPress={() => handleCategoryPress(cat)}
+                              style={styles.dropdownItem}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.dropdownText}>{cat.name}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      )
+                    ) : item.dropdownType === 'quicklinks' ? (
+                      <View>
+                        {quickLinks.map((link) => (
+                          <TouchableOpacity
+                            key={link.id}
+                            onPress={() => handleQuickLinkPress(link)}
+                            style={styles.dropdownItem}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.dropdownText}>{link.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
         {renderAuthButtons()}
       </View>
       {showDropdown && (
@@ -320,10 +661,72 @@ const HeaderNavBar: React.FC<HeaderNavBarProps> = ({
         title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
-        handleSubmit={() => { }}
+        handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
+        isDestructive={true}
       />
+
+      {/* Sidebar Drawer (Mobile Only) - Always available when authenticated */}
+      {isMobile && isAuthenticated && (
+        <Modal
+          visible={showSidebarDrawer}
+          transparent={true}
+          animationType="none"
+          onRequestClose={handleDrawerClose}
+        >
+          <View style={styles.drawerContainer}>
+            {/* Overlay */}
+            <Animated.View
+              style={[styles.drawerOverlay, overlayAnimatedStyle]}
+            >
+              <Pressable
+                style={styles.overlayPressable}
+                onPress={handleDrawerClose}
+              />
+            </Animated.View>
+
+            {/* Drawer */}
+            <Animated.View
+              style={[
+                styles.drawer,
+                drawerAnimatedStyle,
+                isAdmin ? styles.drawerAdmin : styles.drawerUser,
+              ]}
+            >
+              {/* Close Button */}
+              <View style={styles.drawerHeader}>
+                <TouchableOpacity
+                  style={styles.drawerCloseButton}
+                  onPress={handleDrawerClose}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="close" size={28} color={colors.black} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Sidebar Content */}
+              {isAdminScreen ? (
+                <ScrollView
+                  style={styles.drawerContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <AdminSidebarWeb isDrawer={true} onClose={handleDrawerClose} />
+                </ScrollView>
+              ) : (
+                <View style={styles.drawerContent}>
+                  <UserSidebarWeb
+                    isDrawer={true}
+                    onClose={handleDrawerClose}
+                    onLogout={() => setLogOutModalOpen(true)}
+                    onDeleteAccount={() => setDeleteAccountModalOpen(true)}
+                  />
+                </View>
+              )}
+            </Animated.View>
+          </View>
+        </Modal>
+      )}
     </>
   );
 };
@@ -332,31 +735,39 @@ export default HeaderNavBar;
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 32,
-    justifyContent: "center",
+    minHeight: 36,
+    justifyContent: "space-between",
     paddingVertical: 0,
     marginTop: 0,
     overflow: "visible",
     zIndex: 9998,
     flexDirection: "row",
     alignItems: "center",
+    width: "100%",
   },
   scrollContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 4,
-    flexWrap: "wrap",
-    flex: 1,
+    paddingBottom: 6,
+    paddingTop: 6,
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0, // Allow flexbox to shrink below content size
   },
   itemWrapper: {
-    marginRight: 20,
+    marginRight: 6,
     position: "relative",
     zIndex: 100,
+    borderRadius: 8,
   },
   navItem: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  navItemHovered: {
+    backgroundColor: "rgba(255, 255, 255, 0.14)",
   },
   navItemContent: {
     flexDirection: "row",
@@ -364,41 +775,45 @@ const styles = StyleSheet.create({
   },
   navText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
   dropdownIcon: {
-    marginLeft: 4,
+    marginLeft: 5,
     marginTop: 4,
   },
   dropdownMenu: {
     position: "absolute",
-    top: 40,
+    top: 44,
     left: 0,
-    width: 200,
+    width: 220,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 12,
     shadowColor: colors.black,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
-    maxHeight: 300,
+    maxHeight: 320,
     zIndex: 9999,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
   },
   dropdownScroll: {
-    maxHeight: 300,
+    maxHeight: 320,
   },
   dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.lightgrey,
   },
   dropdownText: {
     fontSize: 14,
     color: colors.black,
+    fontWeight: "500",
   },
   loadingContainer: {
     paddingVertical: 20,
@@ -415,11 +830,57 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 1,
   },
+  mobileCategoriesContainer: {
+    paddingHorizontal: 4,
+    position: "relative",
+    zIndex: 100,
+    flexShrink: 1,
+    flexGrow: 0,
+  },
+  mobileQuickLinksContainer: {
+    paddingHorizontal: 8,
+    position: "relative",
+    zIndex: 100,
+    flexShrink: 1,
+    flexGrow: 0,
+  },
+  mobileSearchWrapper: {
+    flex: 1,
+    marginLeft: 6,
+    marginRight: 12,
+    maxWidth: 160,
+  },
+  mobileNavText: {
+    fontSize: 13,
+  },
+  mobileCategoriesButton: {
+    paddingVertical: 6,
+  },
+  mobileDropdownMenu: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    maxWidth: 300,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    shadowColor: colors.black,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    maxHeight: 400,
+    zIndex: 9999,
+    overflow: "hidden",
+    marginTop: 4,
+  },
   authButtonsContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingRight: 16,
     gap: 12,
+    flexShrink: 0,
+    flexGrow: 0,
+    marginLeft: "auto", // Push buttons to the right
   },
   authButton: {
     flexDirection: "row",
@@ -432,5 +893,68 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     fontWeight: "600",
+  },
+  menuButton: {
+    padding: 8,
+    marginLeft: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  drawerContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  drawerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 10000,
+  },
+  overlayPressable: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  drawer: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: "80%",
+    maxWidth: 320,
+    backgroundColor: colors.white,
+    zIndex: 10001,
+    shadowColor: colors.black,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 2, height: 0 },
+    elevation: 10,
+  },
+  drawerAdmin: {
+    width: "80%",
+    maxWidth: 320,
+  },
+  drawerUser: {
+    width: "80%",
+    maxWidth: 320,
+  },
+  drawerHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightgrey,
+  },
+  drawerCloseButton: {
+    padding: 4,
+  },
+  drawerContent: {
+    flex: 1,
   },
 });

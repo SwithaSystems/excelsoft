@@ -1,34 +1,46 @@
 import colors from "@/constants/colors";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, Alert } from "react-native";
 import CurrencySymbol from "@/constants/CurrencySymbol";
+import globalSettingsAPI from "@/services/globalSettingsService";
 
 function OrderSummary(props) {
   const cartItems = props.cartItems || [];
+  const [shippingCharge, setShippingCharge] = useState(0);
 
-  const calculateItemSubtotal = (item) => {
-    const basePrice = (item.netPrice || 0) - (item.discount || 0);
-    return basePrice * (item?.quantity || 1);
-  };
+  const VAT_RATE = 0.20; // 20% VAT
 
-  // Calculate totals
-  const calculateItemTotal = (item) => {
-    const basePrice = (item.netPrice || 0) - (item.discount || 0);
-
-    let vatAmount = 0;
-    if (item.isVatApplicable && item.vatRate) {
-      vatAmount = (basePrice * item.vatRate) / 100;
+  // Calculate net price excluding VAT from RRP (netPrice)
+  const calculateNetPriceExVAT = (item) => {
+    if (!item.isVatApplicable) {
+      return item.netPrice || 0;
     }
-
-    return (basePrice + vatAmount) * (item.quantity || 1);
+    // If VAT applicable, netPrice includes VAT, so we extract it
+    return (item.netPrice || 0) / (1 + VAT_RATE);
   };
 
+  // Calculate VAT amount for a single item
   const calculateItemVAT = (item) => {
-    const subtotal = calculateItemSubtotal(item);
-    const vatRate = item.vatRate || 0;
-    return item.isVatApplicable ? (subtotal * vatRate) / 100 : 0;
+    if (!item.isVatApplicable) {
+      return 0;
+    }
+    const netPriceExVAT = calculateNetPriceExVAT(item);
+    const vatAmount = (item.netPrice || 0) - netPriceExVAT;
+    return vatAmount * (item.quantity || 1);
   };
 
+  // Calculate item subtotal (excluding VAT)
+  const calculateItemSubtotal = (item) => {
+    const netPriceExVAT = calculateNetPriceExVAT(item);
+    return netPriceExVAT * (item.quantity || 1);
+  };
+
+  // Calculate item total (this is just netPrice * quantity since netPrice is already RRP)
+  const calculateItemTotal = (item) => {
+    return (item.netPrice || 0) * (item.quantity || 1);
+  };
+
+  // Calculate totals for summary
   const subtotalExVAT = cartItems.reduce(
     (total, item) => total + calculateItemSubtotal(item),
     0
@@ -39,18 +51,29 @@ function OrderSummary(props) {
     0
   );
 
-  const totalDiscount = cartItems.reduce((total, item) => {
-    const baseDiscount = item?.discount || 0;
+  const subtotalIncVAT = cartItems.reduce(
+    (total, item) => total + calculateItemTotal(item),
+    0
+  );
 
-    const discountWithVAT = item.isVatApplicable
-      ? baseDiscount + (baseDiscount * (item.vatRate || 0)) / 100
-      : baseDiscount;
+  const fetchSettings = async () => {
+    try {
+      const response = await globalSettingsAPI.getSettings();
+      // console.log("globalsettings", response.data.shippingCharge);
+      setShippingCharge(response.data.shippingCharge);
+    } catch (error) {
+      console.error("Failed to fetch settings:", error);
+      Alert.alert("Error", "Failed to load settings. Please try again.");
+    }
+  };
 
-    return total + discountWithVAT * item.quantity;
-  }, 0);
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
-  const deliveryCharge = props?.shipping || 0;
-  const totalIncVAT = subtotalExVAT + totalVAT + deliveryCharge;
+  const deliveryCharge = props.mode === "Home Delivery" ? shippingCharge ?? 0 : 0;
+
+  const grandTotal = subtotalIncVAT + deliveryCharge;
 
   return (
     <View style={[styles.orderSummary, props?.containerStyle]}>
@@ -65,8 +88,6 @@ function OrderSummary(props) {
         <Text style={[styles.itemName, styles.headerText]}>Item</Text>
         <Text style={[styles.quantity, styles.headerText]}>Qty</Text>
         <Text style={[styles.price, styles.headerText]}>Price</Text>
-        <Text style={[styles.vatamount, styles.headerText]}>VAT</Text>
-        <Text style={[styles.total, styles.headerText]}>Total</Text>
       </View>
 
       {/* Items */}
@@ -82,26 +103,6 @@ function OrderSummary(props) {
                 <Text style={styles.quantity}>{item.quantity}</Text>
                 <Text style={styles.price}>
                   {CurrencySymbol}
-                  {(item.netPrice - (item.discount || 0)).toFixed(2)}
-                </Text>
-                {item.isVatApplicable ? (
-                  <Text style={styles.vatamount}>
-                    {CurrencySymbol}
-                    {(
-                      (item.vatRate *
-                        (item.netPrice - item.discount) *
-                        item.quantity) /
-                      100
-                    ).toFixed(2)}
-                  </Text>
-                ) : (
-                  <Text style={styles.vatamount}>
-                    {CurrencySymbol}
-                    {0}
-                  </Text>
-                )}
-                <Text style={styles.total}>
-                  {CurrencySymbol}
                   {itemTotal.toFixed(2)}
                 </Text>
               </View>
@@ -111,60 +112,50 @@ function OrderSummary(props) {
       )}
 
       {/* Summary Section */}
+      
       <View style={styles.summarySection}>
-        {/* Subtotal excluding VAT */}
-        <View style={styles.tableRow}>
-          <Text style={styles.summaryLabel}>Total (excl. VAT)</Text>
-          <Text style={styles.quantity}></Text>
-          <Text style={styles.price}></Text>
-          <Text style={styles.summaryValue}>
-            {CurrencySymbol}
-            {subtotalExVAT.toFixed(2)}
-          </Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.summaryLabel}>Total VAT</Text>
-          <Text style={styles.quantity}></Text>
-          <Text style={styles.price}></Text>
-          <Text style={styles.summaryValue}>
-            {CurrencySymbol}
-            {totalVAT.toFixed(2)}
-          </Text>
-        </View>
-        {/* Totals Section with shared border */}
+        {/* VAT */}
+        
+        {totalVAT > 0 && (
+          <View style={styles.tableRow}>
+            <Text style={styles.summaryLabel}>VAT</Text>
+            <Text style={styles.quantity}></Text>
+            <Text style={styles.price}>
+              {CurrencySymbol}
+              {totalVAT.toFixed(2)}
+            </Text>
+          </View>
+        )}
+
+
+        {/* Delivery Charges */}
+        {props.mode === "Home Delivery" && (
+          <View style={styles.tableRow}>
+            <Text style={styles.summaryLabel}>Delivery Charges</Text>
+            <Text style={styles.quantity}></Text>
+            <Text style={styles.price}></Text>
+            <Text style={styles.summaryValue}>
+              {CurrencySymbol}
+              {deliveryCharge.toFixed(2)}
+            </Text>
+          </View>
+        )}
+
+        {/* Grand Total */}
         <View style={styles.totalsContainer}>
           <View style={styles.tableRow}>
             <Text style={[styles.summaryLabel, styles.totalLabel]}>
-              Grand Total (incl. VAT)
+              Grand Total
             </Text>
             <Text style={styles.quantity}></Text>
             <Text style={styles.price}></Text>
             <Text style={[styles.summaryValue, styles.totalValue]}>
               {CurrencySymbol}
-              {totalIncVAT.toFixed(2)}
+              {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
-        {totalDiscount > 0 && (
-          <View style={styles.tableRow}>
-            <Text style={[styles.summaryLabel, styles.discountText]}>
-              Saved on this Order
-            </Text>
-            <Text style={styles.quantity}></Text>
-            <Text style={styles.price}></Text>
-            <Text style={[styles.summaryValue, styles.discountText]}>
-              {CurrencySymbol}
-              {totalDiscount.toFixed(2)}
-            </Text>
-          </View>
-        )}
       </View>
-
-      {/* VAT Notice */}
-      <Text style={styles.vatNotice}>
-        Prices include VAT where applicable • 
-        {/* VAT Reg: GB123456789 */}
-      </Text>
     </View>
   );
 }
@@ -210,19 +201,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itemName: {
-    width: "30%",
+    flex: 1,
     fontSize: 14,
     color: colors.text || "#000",
     paddingRight: 8,
   },
   quantity: {
-    width: "15%",
+    flex: 1,
     textAlign: "center",
     fontSize: 14,
     color: colors.text || "#000",
   },
   price: {
-    width: "15%",
+    flex: 1,
     textAlign: "right",
     fontSize: 14,
     color: colors.text || "#000",
@@ -241,13 +232,13 @@ const styles = StyleSheet.create({
     color: colors.text || "#000",
   },
   summaryLabel: {
-    width: "40%",
+    flex: 1,
     fontSize: 14,
     color: colors.text || "#000",
     paddingRight: 8,
   },
   summaryValue: {
-    width: "25%",
+    flex: 1,
     textAlign: "right",
     fontSize: 14,
     fontWeight: "500",

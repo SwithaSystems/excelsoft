@@ -1,8 +1,20 @@
-// usePaymentHandler.web.ts
+// usePaymentHandler.web.tsx
+// FIXED VERSION with proper Apple Pay configuration
+
 import { Alert } from "react-native";
-import { loadStripe, Stripe, StripeCardElement } from "@stripe/stripe-js";
+import {
+  loadStripe,
+  Stripe,
+  StripeCardElement,
+  PaymentRequest,
+} from "@stripe/stripe-js";
 import axios from "axios";
-import { orderService, PickupMode } from "@/services/orderService";
+import {
+  Order,
+  OrderProduct,
+  orderService,
+  PickupMode,
+} from "@/services/orderService";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,146 +27,276 @@ import {
   DELIVERY_MODE_HOME,
   STORE_NAME,
 } from "../../constants/stringLiterals";
-import { useState, useEffect } from "react";
-
-type Product = {
-  productId: string;
-  name: string;
-  quantity: number;
-  discount: number;
-  netPrice: number;
-  isVatApplicable: boolean;
-  vatRate: number;
-  vatAmount: number;
-};
+import { useEffect, useRef, useState } from "react";
 
 export default function usePaymentHandlerWeb() {
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state: any) => state.cart.items);
+
   const [stripe, setStripe] = useState<Stripe | null>(null);
   const [cardElement, setCardElement] = useState<StripeCardElement | null>(
     null
   );
   const [isStripeReady, setIsStripeReady] = useState(false);
 
-  const cartItems = useSelector((state: any) => state.cart.items);
-  const dispatch = useDispatch();
+  // Payment Request (Apple Pay / Google Pay) states
+  const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(
+    null
+  );
+  const [canMakePayment, setCanMakePayment] = useState(false);
+  const [isApplePaySupported, setIsApplePaySupported] = useState(false);
+  const [isGooglePaySupported, setIsGooglePaySupported] = useState(false);
+
+  // Refs for wallet payment: single handler reads these so we don't add duplicate listeners
+  const stripeRef = useRef<Stripe | null>(null);
+  const walletPaymentDataRef = useRef<{
+    paymentIntent: { client_secret: string };
+  } | null>(null);
+  const walletParamsRef = useRef<any>(null);
+  const walletTotalRef = useRef<number | null>(null);
+  const createOrderRef = useRef<
+    ((params: any, totalAmount: number) => Promise<any>) | null
+  >(null);
+
+  const [shippingCharge, setShippingCharge] = useState<number>(0);
   const [MOV, setMOV] = useState<number | null>(null);
+  const [currentMOV_Checkout, setCurrentMOV_Checkout] = useState<number | null>(
+    null
+  );
 
-  const products = cartItems.map((item: any) => {
-    const netPrice = item.netPrice || 0;
-    const discount = item.discount || 0;
+  const VAT_RATE = 0.2; // 20% VAT
+
+  /* -------------------- FETCH GLOBAL SETTINGS -------------------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await axios.get(`${API_BASE_URL}/global-settings`);
+        setShippingCharge(resp?.data?.shippingCharge ?? 0);
+        setMOV(resp?.data?.minimumCheckoutOrderValue ?? null);
+        setCurrentMOV_Checkout(resp?.data?.minimumDeliveryOrderValue ?? null);
+      } catch {
+        setShippingCharge(0);
+        setMOV(null);
+        setCurrentMOV_Checkout(null);
+      }
+    })();
+  }, [API_BASE_URL]);
+
+  /* -------------------- MAP CART → ORDER PRODUCTS -------------------- */
+  const products: OrderProduct[] = cartItems.map((item: any) => {
     const quantity = item.quantity || 1;
-    const vatRate = item.vatRate || 0;
+    const netPrice = item.netPrice || 0; // This is RRP (includes VAT if applicable)
+    const isVatApplicable = !!item.isVatApplicable;
 
-    const discountedPrice = netPrice - discount;
-    const vatAmount = item.isVatApplicable
-      ? (discountedPrice * quantity * vatRate) / 100
-      : 0;
-    const netPriceIncVat = discountedPrice * quantity + vatAmount;
+    // Calculate net price excluding VAT
+    const netPriceExVAT = isVatApplicable
+      ? netPrice / (1 + VAT_RATE)
+      : netPrice;
+
+    // Calculate VAT amount per unit
+    const vatPerUnit = isVatApplicable ? netPrice - netPriceExVAT : 0;
+
+    // Total VAT for all quantities
+    const vatAmount = vatPerUnit * quantity;
+
+    // Total price including VAT (which is just netPrice * quantity since netPrice is RRP)
+    const netPriceIncVat = netPrice * quantity;
     const grossPrice = netPriceIncVat;
 
     return {
-      productId: parseInt(item.id),
+      productId: String(item.id),
       name: item.name,
-      quantity: quantity,
-      netPrice: netPrice,
-      discount: discount,
-      isvatApplicable: item.isVatApplicable,
-      vatRate: vatRate,
-      vatAmount: vatAmount,
-      netPriceIncVat: netPriceIncVat,
-      grossPrice: grossPrice,
+      quantity,
+      netPrice, // RRP (VAT-inclusive)
+      netPriceExVAT, // Net price without VAT
+      isVatApplicable,
+      vatRate: item.vatRate || 20,
+      vatAmount,
+      netPriceIncVat,
+      grossPrice,
+      selectedColor: item.selectedColor,
     };
   });
 
-  async function getMinimumOrderValue(): Promise<number | null> {
-    try {
-      const resp = await axios.get(
-        `${API_BASE_URL}/ui-constants/minimumOrderValue`
-      );
-      const raw = resp?.data;
+  /* -------------------- PRICE CALCULATION -------------------- */
+  const calculateSubtotal = (items: OrderProduct[]) => {
+    // Subtotal excluding VAT
+    const subtotalExVAT = items.reduce((sum, item) => {
+      const netExVAT = item.isVatApplicable
+        ? (item.netPrice / (1 + VAT_RATE)) * item.quantity
+        : item.netPrice * item.quantity;
+      return sum + netExVAT;
+    }, 0);
 
-      if (typeof raw === "number") return Number(raw);
-      if (raw && typeof raw === "object") {
-        if (typeof raw.minimumOrderValue === "number")
-          return Number(raw.minimumOrderValue);
-        if (typeof raw.value === "number") return Number(raw.value);
-      }
+    // Total VAT
+    const totalVAT = items.reduce((sum, item) => sum + item.vatAmount, 0);
 
-      console.warn("Unrecognised MOV shape:", raw);
-      return null;
-    } catch (err) {
-      console.error("Failed to fetch MOV", err);
-      return null;
-    }
-  }
+    // Subtotal including VAT (sum of all RRP * quantity)
+    const subtotalIncVAT = items.reduce(
+      (sum, item) => sum + item.netPrice * item.quantity,
+      0
+    );
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const mov = await getMinimumOrderValue();
-      if (!mounted) return;
-      if (mov !== null) setMOV(mov);
-      else {
-        // keep null so handlePayment will re-fetch and show error
-        console.warn("MOV not available on mount");
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return subtotalIncVAT;
+  };
 
-  // Initialize Stripe on mount
+  const getFinalAmount = (items: OrderProduct[], mode: string) => {
+    const subtotal = calculateSubtotal(items);
+    return mode === DELIVERY_MODE_HOME ? subtotal + shippingCharge : subtotal;
+  };
+
+  /* -------------------- STRIPE INITIALIZATION -------------------- */
   useEffect(() => {
     let mounted = true;
     let card: StripeCardElement | null = null;
 
     const initStripe = async () => {
       try {
-        // console.log("Fetching Stripe config...");
-        const configResponse = await axios.get(
+        const resp = await axios.get(
           `${API_BASE_URL}/stripe-config/client_abc`
         );
 
-        if (!configResponse.data?.stripePublishableKey) {
-          console.error("No publishable key in response:", configResponse.data);
-          Alert.alert("Error", "Failed to load payment system configuration");
-          return;
+        const stripeInstance = await loadStripe(resp.data.stripePublishableKey);
+        if (!stripeInstance || !mounted) return;
+
+        // Help debug "Failed to tokenize payment method with payment gateway" (Google Pay error 8):
+        // ensure stripePublishableKey is correct and matches the Stripe account used by the backend
+        const key = resp.data.stripePublishableKey;
+        if (key) {
+          const masked = key.slice(0, 12) + "…" + key.slice(-4);
+          console.log(" Stripe loaded for wallets (Apple/Google Pay). Key:", masked);
+        } else {
+          console.warn(" Stripe publishable key missing – Google/Apple Pay tokenization may fail (error 8).");
         }
 
-        // console.log(
-        //   "Initializing Stripe with key:",
-        //   configResponse.data.stripePublishableKey.substring(0, 20) + "..."
-        // );
-        const stripeInstance = await loadStripe(
-          configResponse.data.stripePublishableKey
-        );
-
-        if (!stripeInstance) {
-          console.error("Failed to initialize Stripe");
-          Alert.alert("Error", "Failed to initialize payment system");
-          return;
-        }
-
-        if (!mounted) return;
         setStripe(stripeInstance);
-        // console.log("Stripe instance created successfully");
+        stripeRef.current = stripeInstance;
 
-        // Wait for DOM to be ready and mount card element
+        console.log(" Initializing Apple Pay / Google Pay...");
+
+        //  FIXED: Initialize Payment Request for Apple Pay / Google Pay
+        const pr = stripeInstance.paymentRequest({
+          country: "GB", // Your country code
+          currency: CURRENCY_CODE.toLowerCase(), // Must be lowercase (e.g., "gbp")
+          total: {
+            label: STORE_NAME || "Order Total",
+            amount: 0, // Will be updated dynamically (in pence/cents)
+          },
+          requestPayerName: true,
+          requestPayerEmail: true,
+          requestShipping: false, // Set to true if you need shipping address from Apple Pay
+          disableWallets: [], // Don't disable any wallets
+        });
+
+        // Check if browser supports Apple Pay or Google Pay
+        const result = await pr.canMakePayment();
+        console.log(" Wallet payment check result:", result);
+
+        if (result && mounted) {
+          setPaymentRequest(pr);
+          setCanMakePayment(true);
+
+          // Detect which wallet is available
+          if (result.applePay) {
+            console.log(" Apple Pay is available");
+            setIsApplePaySupported(true);
+          }
+          if (result.googlePay) {
+            console.log(" Google Pay is available");
+            setIsGooglePaySupported(true);
+          }
+
+          // Register paymentmethod handler ONCE so we don't accumulate listeners on each click
+          pr.on("paymentmethod", async (ev) => {
+            console.log(" Processing wallet payment...");
+
+            const paymentData = walletPaymentDataRef.current;
+            const params = walletParamsRef.current;
+            const totalAmount = walletTotalRef.current;
+            const createOrderFn = createOrderRef.current;
+            const stripeObj = stripeRef.current;
+
+            if (
+              !paymentData?.paymentIntent?.client_secret ||
+              !params ||
+              totalAmount == null ||
+              !createOrderFn ||
+              !stripeObj
+            ) {
+              console.error(" Missing payment data");
+              ev.complete("fail");
+              Alert.alert(
+                "Error",
+                "Payment session expired. Please try again."
+              );
+              return;
+            }
+
+            try {
+              console.log(" Confirming payment...");
+
+              const { error: confirmError, paymentIntent } =
+                await stripeObj.confirmCardPayment(
+                  paymentData.paymentIntent.client_secret,
+                  {
+                    payment_method: ev.paymentMethod.id,
+                  },
+                  { handleActions: false }
+                );
+
+              if (confirmError) {
+                console.error(" Payment confirmation failed:", confirmError, {
+                  code: (confirmError as any)?.code,
+                  decline_code: (confirmError as any)?.decline_code,
+                });
+                ev.complete("fail");
+                Alert.alert("Payment Failed", confirmError.message);
+                return;
+              }
+
+              if (paymentIntent?.status === "requires_action") {
+                console.log(" Payment requires additional action...");
+                const { error: actionError } =
+                  await stripeObj.confirmCardPayment(
+                    paymentData.paymentIntent.client_secret
+                  );
+
+                if (actionError) {
+                  console.error(" Action failed:", actionError);
+                  ev.complete("fail");
+                  Alert.alert("Payment Failed", actionError.message);
+                  return;
+                }
+              }
+
+              console.log(" Payment successful");
+              ev.complete("success");
+
+              await createOrderFn(params, totalAmount);
+            } catch (error) {
+              console.error(" Wallet payment error:", error, {
+                message: (error as any)?.message,
+                code: (error as any)?.code,
+                decline_code: (error as any)?.decline_code,
+              });
+              ev.complete("fail");
+              Alert.alert("Error", "Payment processing failed");
+            }
+          });
+        } else {
+          console.log(" No wallet payment methods available");
+        }
+
+        // Mount card element
         const mountCard = () => {
-          const cardContainer = document.getElementById("card-element");
-          // console.log("Looking for card-element container...", !!cardContainer);
-
-          if (!cardContainer) {
-            console.warn("Card element container not found, retrying...");
+          const container = document.getElementById("card-element");
+          if (!container) {
             setTimeout(mountCard, 100);
             return;
           }
 
-          // console.log("Card container found, creating elements...");
-
-          // Create card element
           const elements = stripeInstance.elements();
           card = elements.create("card", {
             style: {
@@ -162,7 +304,6 @@ export default function usePaymentHandlerWeb() {
                 fontSize: "16px",
                 color: "#32325d",
                 fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                fontSmoothing: "antialiased",
                 "::placeholder": {
                   color: "#aab7c4",
                 },
@@ -172,350 +313,189 @@ export default function usePaymentHandlerWeb() {
                 iconColor: "#fa755a",
               },
             },
-            hidePostalCode: false,
-            disableLink: true,
           });
+          container.innerHTML = "";
+          card.mount("#card-element");
 
-          // console.log("Mounting card element...");
-
-          // Clear any existing content and mount new card element
-          const container = document.getElementById("card-element");
-          if (container) {
-            container.innerHTML = ""; // Clear any existing content
-            card.mount("#card-element");
-
-            // Force focus on the card element after a short delay
-            setTimeout(() => {
-              const cardFields = container.querySelector("input");
-              if (cardFields) {
-                cardFields.focus();
-              }
-            }, 500);
-          }
-
-          // Listen for ready event
-          const onReady = () => {
-            // console.log("✓ Card element is ready and interactive!");
+          card.on("ready", () => {
+            console.log(" Card element ready");
             if (mounted) {
               setCardElement(card);
               setIsStripeReady(true);
-              // Remove the ready listener after it's called
-              // Add a null check before using card
-              if (card) {
-                const onReady = () => {
-                  // console.log("✓ Card element is ready and interactive!");
-                  if (mounted) {
-                    setCardElement(card);
-                    setIsStripeReady(true);
-                    // Remove the ready listener after it's called
-                    card?.off("ready", onReady);
-                  }
-                };
-
-                card.on("ready", onReady);
-              }
             }
-          };
+          });
 
-          card.on("ready", onReady);
-
-          // Listen for changes
           card.on("change", (event) => {
-            // console.log(
-            //   "Card element changed:",
-            //   event.complete ? "complete" : "incomplete"
-            // );
-            const displayError = document.getElementById("card-errors");
-            if (event.error && displayError) {
-              displayError.textContent = event.error.message;
-            } else if (displayError) {
-              displayError.textContent = "";
+            if (event.error) {
+              console.log("Card validation error:", event.error.message);
             }
-          });
-
-          // Add focus/blur handlers for better UX
-          card.on("focus", () => {
-            // console.log("Card element focused");
-            const container = document.getElementById("card-element");
-            if (container) {
-              container.style.border = "1px solid #2684FF";
-              container.style.borderRadius = "4px";
-              container.style.padding = "10px";
-            }
-          });
-
-          card.on("blur", () => {
-            // console.log("Card element blurred");
           });
         };
 
-        // Start trying to mount after a short delay
         setTimeout(mountCard, 300);
       } catch (error) {
-        console.error("Failed to initialize Stripe:", error);
-        Alert.alert(
-          "Error",
-          "Failed to initialize payment system. Please refresh the page and try again."
-        );
+        console.error(" Stripe initialization error:", error);
+        Alert.alert("Error", "Failed to initialize payment system");
       }
     };
 
-    // Add a small delay before initializing to ensure the component is fully mounted
-    const initTimeout = setTimeout(initStripe, 100);
+    initStripe();
 
-    // Cleanup
     return () => {
       mounted = false;
-      if (card) {
-        try {
-          // console.log("Cleaning up card element...");
-          card.unmount();
-        } catch (e) {
-          console.warn("Error during card cleanup:", e);
-        }
-      }
+      stripeRef.current = null;
+      walletPaymentDataRef.current = null;
+      walletParamsRef.current = null;
+      walletTotalRef.current = null;
+      card?.unmount();
       setStripe(null);
       setCardElement(null);
       setIsStripeReady(false);
+      setPaymentRequest(null);
+      setCanMakePayment(false);
     };
   }, [API_BASE_URL]);
 
-  const calculateSubtotal = (cartItems: Product[]) =>
-    cartItems.reduce((total, item) => {
-      const netPrice = item.netPrice || 0;
-      const discount = item.discount || 0;
-      const quantity = item.quantity || 1;
-      const vatRate = item.vatRate || 0;
-
-      const discountedPrice = netPrice - discount;
-      const vatAmount = item.isVatApplicable
-        ? (discountedPrice * quantity * vatRate) / 100
-        : 0;
-
-      return total + discountedPrice * quantity + vatAmount;
-    }, 0);
-
-  const fetchPaymentIntent = async (amount: number, clientId: string) => {
+  /* -------------------- PAYMENT INTENT -------------------- */
+  const fetchPaymentIntent = async (amount: number) => {
     try {
-      // console.log("Creating payment intent for amount:", amount);
-      const response = await axios.post(
+      const resp = await axios.post(
         `${API_BASE_URL}/payments/create-payment-intent`,
         {
-          amount: Math.round(amount * 100), // Convert to cents
+          amount: amount, // cents
           currency: CURRENCY_CODE,
-          clientId: clientId,
+          clientId: CLIENT_ID,
         }
       );
-      // console.log("Payment Intent Backend response:", response.data);
-      return {
-        clientSecret: response.data.paymentIntent.client_secret,
-        ephemeralKey: response.data.ephemeralKey,
-        customer: response.data.customer,
-      };
+      return resp.data;
     } catch (error) {
       console.error("Payment intent error:", error);
-      Alert.alert("Error", "Failed to initialize payment. Please try again.");
+      Alert.alert("Error", "Failed to initialize payment");
       return null;
     }
   };
 
-  const handlePayment = async (cartItems: Product[], params: any) => {
-    // console.log("=== STARTING PAYMENT PROCESS (WEB) ===");
-    // console.log("Order details:", params);
-    // console.log("Cart items:", cartItems);
-    // console.log("Stripe ready status:", {
-    //   isStripeReady,
-    //   stripe: !!stripe,
-    //   cardElement: !!cardElement,
-    // });
-
-    // Validate Stripe is ready with retry logic
-    if (!isStripeReady || !stripe || !cardElement) {
-      // Attempt to reinitialize the card element if not ready
-      console.warn(
-        "Payment system not fully initialized, attempting recovery..."
-      );
-
-      // Force re-mount of the card element
-      const cardContainer = document.getElementById("card-element");
-      if (cardContainer) {
-        cardContainer.innerHTML = "";
-        // Trigger a re-render of the parent component to reinitialize the card element
-        setStripe(null);
-        setCardElement(null);
-        setIsStripeReady(false);
-
-        // Small delay to allow state to update
-        setTimeout(() => {
-          setStripe(stripe);
-          // The useEffect will handle reinitialization
-        }, 100);
-      }
-
-      Alert.alert(
-        "Payment System Loading",
-        "The payment system is still initializing. Please wait a moment and try again. If the issue persists, please refresh the page."
-      );
-      return;
-    }
-
-    // console.log("✓ Stripe validation passed");
-
-    const subtotal = calculateSubtotal(cartItems);
-    const shippingCharges = params.shippingCharges || 0;
-    const discounts = params.discounts || [];
-
-    // console.log("Subtotal:", subtotal);
-
-    // Check Minimum Order Value (MOV)
-    // const MOV = 15; // Minimum Order Value
-    let currentMOV = MOV;
-    if (currentMOV == null) {
-      currentMOV = await getMinimumOrderValue();
-      if (currentMOV === null) {
-        Alert.alert(
-          "Error",
-          "Unable to fetch minimum order value. Please try again."
-        );
-        return;
-      }
-    }
-    if (subtotal < currentMOV) {
-      console.error("Order value below minimum order value");
-      Alert.alert(
-        "Minimum Order Not Met",
-        `Your order value ($${subtotal.toFixed(
-          2
-        )}) is less than the minimum order value of $${currentMOV}. Please add more items to your cart.`,
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
-    // Fetch payment intent
-    const paymentData = await fetchPaymentIntent(subtotal, CLIENT_ID);
-    if (!paymentData) {
-      console.error("Failed to fetch payment intent");
-      return;
-    }
-
-    const { clientSecret } = paymentData;
-    // console.log("Got client secret, confirming payment...");
-
+  /* -------------------- CREATE ORDER HELPER -------------------- */
+  const createOrder = async (params: any, totalAmount: number) => {
     try {
-      // Confirm card payment
-      // console.log("Confirming card payment...");
-      const { error: paymentError, paymentIntent } =
-        await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: params.billingAddress?.name || "",
-              address: {
-                city: params.billingAddress?.city || "",
-                line1: params.billingAddress?.line1 || "",
-                postal_code: params.billingAddress?.postalCode || "",
-                state: params.billingAddress?.state || "",
-              },
-            },
-          },
-        });
+      const orderDetails: Partial<Order> = {
+        products,
+        shippingCharges:
+          params.selectedMode === DELIVERY_MODE_HOME ? shippingCharge : 0,
+        tax: 0,
+        totalAmount,
+        paymentMethod: "credit_card",
+        pickupMode: params.selectedMode as PickupMode,
+        deliveryDate: formatDateForBackend(params.deliveryDate),
+        deliveryTime: params.deliveryTime,
+        billingAddress: params.billingAddress,
+        shippingAddress: params.shippingAddress,
+      };
 
-      // console.log("Payment confirmation result:", {
-      //   error: paymentError,
-      //   intentStatus: paymentIntent?.status,
-      // });
+      const response = await orderService.createOrder(orderDetails);
 
-      if (paymentError) {
-        console.error("Payment error:", paymentError);
-        Alert.alert(
-          "Payment Failed",
-          paymentError.message || "An error occurred during payment"
-        );
-        return;
-      }
+      dispatch(clearCart());
 
-      if (paymentIntent && paymentIntent.status === "succeeded") {
-        // console.log("=== PAYMENT SUCCESSFUL ===");
-        Alert.alert("Success", "Payment completed successfully!");
+      redirectToPage(containers.orderSuccessfulScreen, {
+        orderData: JSON.stringify(response),
+      });
+      await orderService.notifyOrderPlaced(response);
+      await NotificationService.scheduleLocalNotification(
+        "Your Order is Placed",
+        `Your order number is #ORD-${response.orderNumber}`,
+        { orderNumber: response.orderNumber }
+      );
 
-        // Create order
-        const orderDetails: any = {
-          products: products,
-          shippingCharges: shippingCharges,
-          discounts: discounts,
-          totalAmount: subtotal,
-          paymentMethod: "credit_card",
-          pickupMode: (params.selectedMode || "Delivery") as PickupMode,
-          deliveryDate: formatDateForBackend(params.deliveryDate) ?? "N/A",
-          deliveryTime: params.deliveryTime,
-          billingAddress: {
-            name: params.billingAddress?.name ?? "N/A",
-            line1: params.billingAddress?.line1 ?? "N/A",
-            line2: params.billingAddress?.line2 ?? "",
-            city: params.billingAddress?.city ?? "N/A",
-            state: params.billingAddress?.state ?? "N/A",
-            postalCode: params.billingAddress?.postalCode ?? "N/A",
-          },
-          shippingAddress: {
-            name: params.shippingAddress?.name ?? "N/A",
-            line1: params.shippingAddress?.line1 ?? "N/A",
-            line2: params.shippingAddress?.line2 ?? "",
-            city: params.shippingAddress?.city ?? "N/A",
-            state: params.shippingAddress?.state ?? "N/A",
-            postalCode: params.shippingAddress?.postalCode ?? "N/A",
-          },
-        };
-
-        if (
-          params.selectedMode !== DELIVERY_MODE_HOME &&
-          params.pickupdetails?.date
-        ) {
-          const formattedDate = formatDateForBackend(params.pickupdetails.date);
-          orderDetails.pickupDetails = {
-            date: formattedDate ?? "N/A",
-            time: params.pickupdetails?.time ?? "N/A",
-            firstName: params.pickupdetails?.firstName ?? "N/A",
-            lastName: params.pickupdetails?.lastName ?? "N/A",
-            phone: params.pickupdetails?.phone ?? "N/A",
-            email: params.pickupdetails?.email ?? "N/A",
-            vehicleType: params.pickupdetails?.vehicleType,
-            vehicleNumber: params.pickupdetails?.vehicleNumber,
-            additionalDetails: params.pickupdetails.additionalDetails,
-          };
-        }
-
-        try {
-          // console.log("Creating order...");
-          const response = await orderService.createOrder(orderDetails);
-          // console.log("Order created successfully:", response);
-
-          dispatch(clearCart());
-
-          redirectToPage(containers.orderSuccessfulScreen, {
-            orderData: JSON.stringify(response),
-          });
-
-          if (NotificationService.scheduleLocalNotification) {
-            await NotificationService.scheduleLocalNotification(
-              "Your Order is Placed",
-              `Your order number is #ORD-${response?.orderNumber}`,
-              { orderNumber: response?.orderNumber, type: "delivery_scheduled" }
-            );
-          }
-        } catch (error) {
-          console.error("=== ORDER CREATION FAILED ===", error);
-          Alert.alert(
-            "Error",
-            "Payment successful but failed to create order. Please contact support."
-          );
-        }
-      }
+      return response;
     } catch (error) {
-      console.error("Payment processing error:", error);
-      Alert.alert("Error", "An unexpected error occurred during payment");
+      console.error(" Order creation error:", error);
+      throw error;
     }
   };
 
-  return { handlePayment, stripe, cardElement, isStripeReady };
+  createOrderRef.current = createOrder;
+
+  /* -------------------- CARD PAYMENT -------------------- */
+  const handlePayment = async (items: any[], params: any) => {
+    if (!stripe || !cardElement || !isStripeReady) {
+      Alert.alert("Payment System Loading", "Please wait a moment for the payment system to finish loading, then try again.");
+      return;
+    }
+
+    const totalAmount = getFinalAmount(products, params.selectedMode);
+
+    // Check appropriate MOV based on delivery mode
+    const applicableMOV =
+      params.selectedMode === DELIVERY_MODE_HOME
+        ? currentMOV_Checkout !== null
+          ? currentMOV_Checkout
+          : MOV
+        : MOV;
+
+    if (applicableMOV !== null && totalAmount < applicableMOV) {
+      const movLabel =
+        params.selectedMode === DELIVERY_MODE_HOME
+          ? "minimum checkout order value"
+          : "minimum order value";
+      Alert.alert(
+        "Minimum Order Not Met",
+        `Your order value (£${totalAmount.toFixed(
+          2
+        )}) is less than the ${movLabel} of £${applicableMOV}.`
+      );
+      return;
+    }
+
+    const paymentData = await fetchPaymentIntent(totalAmount);
+    if (!paymentData) return;
+
+    console.log(" Confirming card payment...");
+
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      paymentData.paymentIntent.client_secret,
+      {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: params.billingAddress?.name || "",
+          },
+        },
+      }
+    );
+
+    if (error || paymentIntent?.status !== "succeeded") {
+      console.error(" Card payment failed:", error);
+      Alert.alert("Payment Failed", error?.message);
+      return;
+    }
+
+    console.log(" Card payment successful");
+
+    /* -------------------- CREATE ORDER -------------------- */
+    try {
+      await createOrder(params, totalAmount);
+    } catch {
+      Alert.alert("Order Could Not Be Placed", "Your payment was processed but the order could not be created. Please contact support.");
+    }
+  };
+
+  /* -------------------- WALLET PAYMENT (Apple Pay / Google Pay) -------------------- */
+  const handlePlatformPayPayment = async () => {
+    Alert.alert(
+      "Digital Wallet Not Available",
+      "Apple Pay and Google Pay are available only in the mobile app."
+    );
+  };
+
+  return {
+    handlePayment,
+    handlePlatformPayPayment,
+    stripe,
+    cardElement,
+    isStripeReady,
+    isApplePaySupported,
+    isGooglePaySupported,
+    canMakePayment,
+    paymentRequest,
+  };
 }

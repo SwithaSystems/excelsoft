@@ -1,6 +1,13 @@
 import { CUSTOMER_SUPPORT_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import React from "react";
-import { View, Text, Linking, TouchableOpacity, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  Linking,
+  TouchableOpacity,
+  Platform,
+  ScrollView,
+} from "react-native";
 import styles from "./CustomerSupportStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -11,93 +18,131 @@ import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+
+const SUPPORT_PHONE = "+447594897670";
+const SUPPORT_EMAIL = "mayur@weekesretail.co.uk";
 
 const customerSupportScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const { isMobile: isMobileWeb } = useWebMediaQuery();
+  const isMobileWebView = isWeb && isMobileWeb;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const handlePhonePress = () => {
+    Linking.openURL(`tel:${SUPPORT_PHONE}`);
+  };
+
+  const handleEmailPress = () => {
+    if (Platform.OS === "web") {
+      window.location.href = `mailto:${SUPPORT_EMAIL}`;
+    } else {
+      Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+    }
+  };
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={CUSTOMER_SUPPORT_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
-  const handlePhonePress = () => {
-    Linking.openURL("tel:+15551234567"); // Replace with your actual phone number
-  };
+  const contentContainerStyle = [
+    globalStyles.pt_0,
+    styles.container,
+    isWeb && styles.containerWeb,
+    isMobileWebView && styles.containerMobileWeb,
+    isWeb && !isMobileWebView && styles.contentWidthWeb,
+  ];
 
-  const handleEmailPress = () => {
-    Linking.openURL("mailto:excelsoft@gmail.com"); // Replace with your actual email address
-  };
+  const Wrapper = isWeb ? ScrollView : View;
+  const wrapperProps = isWeb
+    ? { style: { flex: 1 }, contentContainerStyle: { flexGrow: 1 }, showsVerticalScrollIndicator: false }
+    : {};
+
   return (
     <LayoutComponent
       hasFooter
       hasHeader
-      scrollable={!isTabOrDesktop}
+      scrollable={!isWeb}
+      hasSidebar={isWeb}
+      userSidebar={true}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
     >
-      <View
-        style={[
-          globalStyles.pt_0,
-          isTabOrDesktop && styles.contentWidthWeb,
-        ]}
-      >
-        <View>
-          <Text style={styles.subtitle}>Please contact us at</Text>
+      <Wrapper {...wrapperProps}>
+        <View style={contentContainerStyle}>
+          <View style={styles.heroSection}>
+            <Text style={styles.heroTitle}>We're here to help</Text>
+            <Text style={styles.heroSubtitle}>
+              Get in touch with our team for orders, product questions, or
+              feedback. We aim to respond as quickly as we can.
+            </Text>
+          </View>
 
-          {/*<TouchableOpacity
-              style={styles.contactOption}
+          <Text style={styles.sectionLabel}>Contact options</Text>
+
+          <View
+            style={[
+              styles.cardsRow,
+              isWeb && !isMobileWebView && styles.cardsRowWeb,
+            ]}
+          >
+            <TouchableOpacity
+              style={[styles.card, isWeb && !isMobileWebView && styles.cardWeb]}
               onPress={handlePhonePress}
+              activeOpacity={0.7}
             >
-              <View style={styles.textContainer}>
-                <View style={{ flexDirection: "row" }}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons
-                      name="call-outline"
-                      size={24}
-                      color={colors.black}
-                    />
-                  </View>
-                  <Text style={styles.optionTitle}>Call Us</Text>
+              <View style={styles.cardInner}>
+                <View style={[styles.iconWrapper, styles.iconWrapperCall]}>
+                  <Ionicons
+                    name="call-outline"
+                    size={26}
+                    color={colors.primary}
+                  />
                 </View>
+                <Text style={styles.optionTitle}>Call us</Text>
                 <Text style={styles.optionDescription}>
-                  Speak with our team
+                  Speak with our support team
                 </Text>
-                <Text style={styles.optionDescription}>+1 (555) 123-4567</Text>
-                <View style={styles.availability}>
-                  <Text>
+                <Text style={styles.optionValue}>+44 7594 897670</Text>
+                <View style={styles.availabilityRow}>
                   <Ionicons
                     name="time-outline"
-                    size={24}
-                    color={colors.black}
-                    style={{ marginRight: 8 }}
+                    size={18}
+                    color={colors.secondaryText}
                   />
-                  Sun-Sat
-                  </Text>
+                  <Text style={styles.availabilityText}>Sun – Sat</Text>
                 </View>
               </View>
-            </TouchableOpacity>*/}
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.contactOption}
-            onPress={handleEmailPress}
-          >
-            <View style={styles.textContainer}>
-              <View style={{ flexDirection: "row" }}>
-                <View style={styles.iconContainer}>
-                  <Ionicons name="mail-outline" size={24} color="black" />
+            <TouchableOpacity
+              style={[styles.card, isWeb && !isMobileWebView && styles.cardWeb]}
+              onPress={handleEmailPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardInner}>
+                <View style={[styles.iconWrapper, styles.iconWrapperEmail]}>
+                  <Ionicons
+                    name="mail-outline"
+                    size={26}
+                    color={colors.infoText}
+                  />
                 </View>
-                <Text style={styles.optionTitle}>Mail Us</Text>
+                <Text style={styles.optionTitle}>Email us</Text>
+                <Text style={styles.optionDescription}>
+                  Write to us and we'll get back to you
+                </Text>
+                <Text style={[styles.optionValue, { color: colors.infoText }]}>
+                  {SUPPORT_EMAIL}
+                </Text>
               </View>
-              <Text style={styles.optionDescription}>Write to us here...</Text>
-              <Text style={styles.optionDescription}>excelsoft@gmail.com</Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </Wrapper>
     </LayoutComponent>
   );
 };

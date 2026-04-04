@@ -5,10 +5,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
   Image,
   useWindowDimensions,
   Platform,
+  Alert,
 } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
@@ -29,6 +29,8 @@ import containers from "@/containers";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import SearchBar from "@/app/components/searchBar";
 import Pagination from "./componentsWeb/PaginationWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface Category {
   _id: any;
@@ -43,6 +45,7 @@ const MAX_IMAGES = 5;
 const ITEMS_PER_PAGE = 10;
 
 const AdminCategories = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryImages, setCategoryImages] = useState<any[]>([]);
@@ -70,9 +73,12 @@ const AdminCategories = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const { width } = useWindowDimensions();
+  // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   // Get params to detect refresh
   const params = useLocalSearchParams();
@@ -209,7 +215,7 @@ const AdminCategories = () => {
     // console.log("Editing category:", category);
     
     // On desktop/tablet, redirect to AdminAddCategoriesWeb page
-    if (isTabOrDesktop) {
+    if (isWeb) {
       redirectToPage(containers.AdminAddCategoriesWebScreen, {
         editCategory: JSON.stringify(category),
       });
@@ -226,7 +232,7 @@ const AdminCategories = () => {
       setIsEditMode(true);
       setEditingCategoryId(category._id);
     }
-  }, [isTabOrDesktop]);
+  }, [isWeb]);
 
   const handleDeleteCategory = useCallback((categoryId: any) => {
     setCategoryToDelete(categoryId);
@@ -421,7 +427,7 @@ const AdminCategories = () => {
   const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
   
   // Get paginated categories for web/tablet, show all for mobile
-  const paginatedCategories = isTabOrDesktop
+  const paginatedCategories = isWeb
     ? filteredCategories.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -438,14 +444,14 @@ const AdminCategories = () => {
     return parentCategory ? parentCategory.name : "No Parent";
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_CATEGORIES_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="categories" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="categories" />;
 
   return (
     <LayoutComponent
@@ -453,25 +459,35 @@ const AdminCategories = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
-      scrollable={!isTabOrDesktop}
+      hasSidebar={isWeb}
+      scrollable={isWeb ? true : true}
       hideNavItems={true}
     >
-      {isTabOrDesktop ? (
-        <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-            <View style={styles.listSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
-                
+      {isWeb ? (
+        <View style={styles.listSection}>
+              <View style={[
+                    styles.sectionHeader,
+                    isMobileWeb && styles.headerRowMobileWeb,
+                  ]}>
+                <Text style={[styles.sectionTitle, { fontSize: isDesktopWeb ? 35 : 24 }]}>Categories</Text>
+
                 {/* Desktop/Tablet: Show button to redirect to add category page */}
                 <TouchableOpacity
-                  style={styles.addButton}
+                  style={[
+                    styles.addButton,
+                    isMobileWeb && styles.addButtonMobileWeb,
+                  ]}
                   onPress={() => {
                     redirectToPage(containers.AdminAddCategoriesWebScreen);
                   }}
                 >
-                  <Text style={styles.addButtonText}>+ Add New Category</Text>
+                  <Text style={[
+                    styles.addButtonText,
+                    isMobileWeb && { width: "100%" },
+                    ]}
+                  >
+                      + Add New Category
+                  </Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.listContainer}>
@@ -539,11 +555,9 @@ const AdminCategories = () => {
                   )}
                 </View>
               </View>
-            </View>
-          </ScrollView>
           
-          {/* Pagination for web/tablet only - outside ScrollView */}
-          {isTabOrDesktop && totalPages > 1 && (
+          {/* Pagination for web/tablet only */}
+          {isDesktopWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -555,10 +569,10 @@ const AdminCategories = () => {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {!isTabOrDesktop && (
+          {!isWeb && (
             <View style={styles.formContainer}>
               <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>
+                <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>
                   {isEditMode ? "Edit Category" : "Add New Category"}
                 </Text>
                 {isEditMode && (
@@ -645,7 +659,7 @@ const AdminCategories = () => {
 
           <View style={styles.listSection}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { fontSize: isTabOrDesktop ? 35 : 20 }]}>Categories</Text>
+              <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
             </View>
             <ScrollView style={styles.listContainer}>
               <View>
@@ -685,10 +699,16 @@ const AdminCategories = () => {
                       {editingCategoryId === categoryItem.id && (
                         <Text style={styles.editingLabel}>Editing</Text>
                       )}
-                      <TouchableOpacity onPress={() => handleEditCategory(categoryItem)}>
+                      <TouchableOpacity
+                        onPress={() => handleEditCategory(categoryItem)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="create-outline" size={20} color={colors.primary} />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteCategory(categoryItem._id)}>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteCategory(categoryItem._id)}
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      >
                         <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
                       </TouchableOpacity>
                     </View>
@@ -738,6 +758,7 @@ const AdminCategories = () => {
           setShowDeleteConfirmModal(false);
           setCategoryToDelete(null);
         }}
+        isDestructive={true}
       />
 
       {/* Cancel Edit Modal */}
@@ -776,6 +797,7 @@ const AdminCategories = () => {
         submitText="OK"
         handleSubmit={() => setShowPermissionModal(false)}
       />
+      {confirmationModal}
     </LayoutComponent>
   );
 };
@@ -789,6 +811,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+  },
+   headerRowMobileWeb: {
+    flexDirection: "column",
+    gap: 12,
+  },
+  addButtonMobileWeb: {
+    width: "100%",
+    minWidth: 0,
+    alignSelf: "stretch",
   },
   sectionTitle: {
     // fontSize is set dynamically in the component

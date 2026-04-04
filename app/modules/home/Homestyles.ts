@@ -20,25 +20,40 @@ export default StyleSheet.create({
     alignSelf: "flex-end",
   },
   categoriesContainer: {
-    paddingVertical: 16,
+    // paddingVertical: 2,
+    // paddingLeft: 5,
   },
   categoryItem: {
+    width: 70,             
     alignItems: "center",
-    marginHorizontal: 8,
+  },
+  categoryImageWrapper: {
+    width: 45,
+    height: 45,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.white,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   categoryImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    width: 36,
+    height: 36,
+    resizeMode: "contain",
   },
+
   categoryText: {
-    marginTop: 4,
+    marginTop: 8,
     fontSize: 12,
+    fontWeight: "600",
     textAlign: "center",
-    maxWidth: 80,
-    //flexWrap:'wrap',
+    color: colors.black,
   },
   banner: {
     height: 150,
@@ -116,12 +131,9 @@ export default StyleSheet.create({
     color: colors.primary,
     marginRight: 6,
   },
-
   mrpStriked: {
     fontSize: 14,
     color: colors.darkGray,
     textDecorationLine: "line-through",
   },
-
-
 });

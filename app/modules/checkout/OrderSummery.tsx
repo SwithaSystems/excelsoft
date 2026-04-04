@@ -21,7 +21,6 @@ import {
   FlatList,
   Animated,
   Platform,
-  useWindowDimensions,
 } from "react-native";
 import styles from "./OrderSummeryStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -34,9 +33,9 @@ import Button from "@/app/components/commonComponents/Button";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { useDispatch, useSelector } from "react-redux";
-import { Alert } from "react-native";
 import { showAlert } from "@/utilities/alertHelper";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import axios from "axios";
 import { removeFromCart } from "@/store/slices/cartSlice";
 import { addToSavedItems } from "@/store/slices/savedItemsSlice";
@@ -54,48 +53,43 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import { StripeCardInput } from "@/app/components/StripeCardInput";
-import usePaymentHandlerWeb from "@/app/components/usePaymentHandlerWeb";
-import * as All from "@/app/components/usePaymentHandlerWeb";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
 import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
-// type OrderSummeryScreenParams = {
-//   orderId: string;
-//   address?: string;
-//   pickupAddress?: string;
-//   selectedDate?: string;
-//   selectedSlot?: string;
-//   selectedMode?: string;
-//   firstName?: string;
-//   lastName?: string;
-//   phone?: string;
-//   email?: string;
-//   additionalDetails?: string;
-// };
+import CurrencySymbol from "@/constants/CurrencySymbol";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
+
+// Conditionally import PlatformPayButton only on mobile (not web)
+let PlatformPayButton: any = null;
+let PlatformPay: any = null;
+
+if (Platform.OS !== "web") {
+  try {
+    const stripeRN = require("@stripe/stripe-react-native");
+    PlatformPayButton = stripeRN.PlatformPayButton;
+    PlatformPay = stripeRN.PlatformPay;
+  } catch (error) {
+    console.warn("PlatformPayButton not available:", error);
+  }
+}
 
 type shippingAddressDTo = {
   name: string;
   line1: string;
   line2?: string;
   city: string;
-  state: string;
   postalCode: string;
   addressType: string[];
   phone: string;
 };
 
 const orderSummeryScreen = () => {
+  const { showAlert: showConfirmationAlert, confirmationModal } = useConfirmationAlert();
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
-  // const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
-  // const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  // const cartItems = useSelector((state: any) => [...state.cart.items]);
   const cartItemsBefore = useSelector((state: any) => state.cart.items);
-  // Safe cart items selection with proper typing
-  // const cartItemsFromStore = useSelector((state: RootState) => {
-  //   return Array.isArray(state?.cart?.items) ? state.cart.items : [];
-  // });
   const cartItems = useMemo(() => {
     try {
       return cartItemsBefore.filter(
@@ -107,6 +101,23 @@ const orderSummeryScreen = () => {
       return [];
     }
   }, [cartItemsBefore]);
+  const hasAgeRestrictedItems = useMemo(
+    () =>
+      cartItems.some((item: any) => {
+        const directFlag =
+          item?.isAgeRestricted === true ||
+          item?.isAgeRestricted === "true" ||
+          item?.ageRestricted === true ||
+          item?.ageRestricted === "true";
+        const nestedFlag =
+          item?.product?.isAgeRestricted === true ||
+          item?.product?.isAgeRestricted === "true" ||
+          item?.product?.ageRestricted === true ||
+          item?.product?.ageRestricted === "true";
+        return directFlag || nestedFlag;
+      }),
+    [cartItems]
+  );
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
@@ -121,53 +132,69 @@ const orderSummeryScreen = () => {
   const rotateAnimation = useRef(new Animated.Value(0)).current;
   const isWeb = Platform.OS === "web";
 
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   // console.log("All module:", All);
   // console.log("usePaymentHandlerWeb type:", typeof usePaymentHandlerWeb);
 
-  const { handlePayment } = usePaymentHandler();
+  const paymentHandler = usePaymentHandler();
+  const {
+    handlePayment,
+    handlePlatformPayPayment,
+    isApplePaySupported = false,
+    isGooglePaySupported = false,
+  } = paymentHandler || {};
   const [total, settotal] = useState(0);
   const [currentMOV, setCurrentMOV] = useState<number | null>(null);
+  const [currentMOV_Chekcout, setCurrentMOV_Checkout] = useState<number | null>(
+    null
+  );
   const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
   // Calculate total the same way as OrderSummary component (totalIncVAT)
-  const calculateOrderTotal = useCallback((items: any[]) => {
-    const calculateItemSubtotal = (item: any) => {
-      const basePrice = (item.netPrice || 0) - (item.discount || 0);
-      return basePrice * (item?.quantity || 1);
-    };
+  const calculateOrderTotal = useCallback(
+    (items: any[]) => {
+      const calculateItemSubtotal = (item: any) => {
+        const basePrice = item.netPrice || 0; /*- (item.discount || 0)*/
+        const total = basePrice * (item?.quantity || 1);
+        return total
+      };
 
-    const calculateItemVAT = (item: any) => {
-      const subtotal = calculateItemSubtotal(item);
-      const vatRate = item.vatRate || 0;
-      return item.isVatApplicable ? (subtotal * vatRate) / 100 : 0;
-    };
+      const calculateItemVAT = (item: any) => {
+        const subtotal = calculateItemSubtotal(item);
+        const vatRate = item.vatRate || 0;
+        return item.isVatApplicable ? (subtotal * vatRate) / 100 : 0;
+      };
 
-    const subtotalExVAT = items.reduce(
-      (total, item) => total + calculateItemSubtotal(item),
-      0
-    );
+      const subtotalExVAT = items.reduce(
+        (total, item) => total + calculateItemSubtotal(item),
+        0
+      );
 
-    const totalVAT = items.reduce(
-      (total, item) => total + calculateItemVAT(item),
-      0
-    );
+      const totalVAT = items.reduce(
+        (total, item) => total + calculateItemVAT(item),
+        0
+      );
 
-    const deliveryCharge = params?.shipping || 0;
-    return subtotalExVAT + totalVAT + deliveryCharge;
-  }, [params?.shipping]);
+      const deliveryCharge = params?.shipping || 0;
+      return subtotalExVAT  + deliveryCharge;
+    },
+    [params?.shipping]
+  );
 
   // Fetch minimum order value dynamically
   const getMinimumOrderValue = useCallback(async (): Promise<number | null> => {
     try {
       const resp = await axios.get(
-        `${API_BASE_URL}/ui-constants/minimumOrderValue`
+        `${API_BASE_URL}/global-settings/minimumCheckoutOrderValue`
       );
       const raw = resp?.data;
 
       if (typeof raw === "number") return Number(raw);
       if (raw && typeof raw === "object") {
-        if (typeof raw.minimumOrderValue === "number")
-          return Number(raw.minimumOrderValue);
+        if (typeof raw.minimumCheckoutOrderValue === "number")
+          return Number(raw.minimumCheckoutOrderValue);
         if (typeof raw.value === "number") return Number(raw.value);
       }
 
@@ -178,6 +205,45 @@ const orderSummeryScreen = () => {
       return null;
     }
   }, [API_BASE_URL]);
+
+  const getminimumDeliveryOrderValue = async (): Promise<number | null> => {
+    try {
+      const resp = await axios.get(
+        `${API_BASE_URL}/global-settings/minimumDeliveryOrderValue`
+      );
+      const raw = resp?.data;
+      const mov_check =
+        typeof raw === "number"
+          ? raw
+          : typeof raw === "object" &&
+            raw !== null &&
+            typeof raw.minimumCheckoutOrderValue === "number"
+          ? raw.minimumDeliveryOrderValue
+          : null;
+
+      return mov_check === null ? null : Number(mov_check);
+    } catch (err) {
+      console.error("Failed to fetch MOV_CHECK", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let isActive = true;
+    (async () => {
+      const mov_check = await getminimumDeliveryOrderValue();
+      if (!isActive) return;
+      if (mov_check !== null) {
+        setCurrentMOV_Checkout(mov_check);
+      } else {
+        // Fallback to static MOV if API fails
+        setCurrentMOV_Checkout(mov_check);
+      }
+    })();
+    return () => {
+      isActive = false;
+    };
+  }, [getminimumDeliveryOrderValue]);
 
   useEffect(() => {
     let isActive = true;
@@ -264,7 +330,6 @@ const orderSummeryScreen = () => {
         line1: String(pickupAddress.line1 || pickupAddress.address || ""),
         line2: String(pickupAddress.line2 || ""),
         city: String(pickupAddress.city || ""),
-        state: String(pickupAddress.state || ""),
         postalCode: String(pickupAddress.postalCode || ""),
         phone: String(pickupAddress.phone || ""),
         addressType: Array.isArray(pickupAddress.addressType)
@@ -373,6 +438,12 @@ const orderSummeryScreen = () => {
     inputRange: [0, 1],
     outputRange: ["0deg", "180deg"],
   });
+  useEffect(() => {
+    // console.log('Platform:', Platform.OS);
+    // console.log('Apple Pay Supported:', isApplePaySupported);
+    // console.log('Google Pay Supported:', isGooglePaySupported);
+    // console.log('PlatformPayButton available:', !!PlatformPayButton);
+  }, [isApplePaySupported, isGooglePaySupported]);
 
   // Fetch addresses with proper error handling
   useEffect(() => {
@@ -457,7 +528,6 @@ const orderSummeryScreen = () => {
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
-        state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
       };
 
@@ -485,7 +555,6 @@ const orderSummeryScreen = () => {
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
-        state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
         addressType: shippingAddress.addressType || [],
         phone: shippingAddress.phone,
@@ -529,7 +598,7 @@ const orderSummeryScreen = () => {
         });
       } catch (error) {
         console.error("Error handling edit:", error);
-        Alert.alert("Error", "Failed to edit address. Please try again.");
+        showConfirmationAlert("Error", "Failed to edit address. Please try again.");
       }
     },
     [setSelectedBillingAddress]
@@ -553,7 +622,7 @@ const orderSummeryScreen = () => {
       });
     } catch (error) {
       console.error("Error navigating to add address:", error);
-      Alert.alert("Error", "Failed to open add address screen.");
+      showConfirmationAlert("Error", "Failed to open add address screen.");
     }
   }, [setSelectedBillingAddress]);
 
@@ -574,13 +643,13 @@ const orderSummeryScreen = () => {
             setSelectedBillingAddress(null);
           }
 
-          Alert.alert("Success", "Billing address deleted successfully");
+          showConfirmationAlert("Success", "Billing address deleted successfully");
         } else {
-          Alert.alert("Error", "Failed to delete billing address");
+          showConfirmationAlert("Error", "Failed to delete billing address");
         }
       } catch (error) {
         console.error("Failed to delete billing address:", error);
-        Alert.alert("Error", "Failed to delete billing address");
+        showConfirmationAlert("Error", "Failed to delete billing address");
       }
     },
     [selectedId, setSelectedBillingAddress]
@@ -716,25 +785,145 @@ Contact Number: ${pickupAddress.phone || ""}`;
     }
   }, [pickupAddress, selectedMode]);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // Helper function to get payment parameters
+  const getPaymentParams = useCallback(() => {
+    return {
+      shippingAddress: shippingAddress,
+      billingAddress: selectedBillingAddress,
+      pickupdetails: pickupDetails,
+      deliveryDate: pickupDetails?.date,
+      deliveryTime: pickupDetails?.time,
+      selectedSlot: Array.isArray(selectedMode)
+        ? selectedMode[0]
+        : selectedMode,
+      selectedMode: Array.isArray(selectedMode)
+        ? selectedMode[0]
+        : selectedMode,
+    };
+  }, [shippingAddress, selectedBillingAddress, pickupDetails, selectedMode]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  // Wrapper function to validate MOV before executing payment
+  const executePayment = useCallback(
+    async (paymentFunction: () => Promise<void>) => {
+      try {
+        // Calculate total the same way as OrderSummary component
+        const currentTotal = calculateOrderTotal(cartItems);
+
+        // UPDATED: Use minimumDeliveryOrderValue for home delivery, regular MOV for others
+        const applicableMOV =
+          selectedMode === DELIVERY_MODE_HOME
+            ? currentMOV_Chekcout !== null
+              ? currentMOV_Chekcout
+              : MOV
+            : currentMOV !== null
+            ? currentMOV
+            : MOV;
+
+        const movLabel =
+          selectedMode === DELIVERY_MODE_HOME
+            ? "minimum checkout order value"
+            : "minimum order value";
+
+        if (currentTotal < applicableMOV) {
+          showAlert(
+            "Minimum  Order Not Met",
+            `Your order value (${CurrencySymbol}${currentTotal.toFixed(
+              2
+            )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
+          );
+          return;
+        }
+
+        await paymentFunction();
+      } catch (error) {
+        console.error("Payment handler error:", error);
+        showAlert("Error", "Failed to process payment. Please try again.");
+      }
+    },
+    [
+      cartItems,
+      currentMOV,
+      currentMOV_Chekcout,
+      selectedMode,
+      calculateOrderTotal,
+      MOV,
+    ]
+  );
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={ORDER_SUMMARY_SCREEN_TITLE} />
   );
 
+  // Add this helper function to calculate if MOV is met
+  const checkMinimumOrderValue = useCallback(() => {
+    const currentTotal = calculateOrderTotal(cartItems);
+    const applicableMOV =
+      selectedMode === DELIVERY_MODE_HOME
+        ? currentMOV_Chekcout !== null
+          ? currentMOV_Chekcout
+          : MOV
+        : currentMOV !== null
+        ? currentMOV
+        : MOV;
+
+    return {
+      isMet: currentTotal >= applicableMOV,
+      currentTotal,
+      requiredMOV: applicableMOV,
+      difference: applicableMOV - currentTotal,
+      movType: selectedMode === DELIVERY_MODE_HOME ? "checkout" : "order",
+    };
+  }, [
+    cartItems,
+    selectedMode,
+    currentMOV,
+    currentMOV_Chekcout,
+    calculateOrderTotal,
+    MOV,
+  ]);
+
+  // Component for MOV Warning Message
+  const MOVWarningMessage = () => {
+    const movStatus = checkMinimumOrderValue();
+
+    if (movStatus.isMet) return null;
+
+    return (
+      <View style={styles.movWarningContainer}>
+        <Ionicons
+          name="warning"
+          size={20}
+          color="#f39c12"
+          style={{ marginRight: 8 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.movWarningTitle}>
+            Minimum {movStatus.movType === "checkout" ? "Checkout " : ""}Order
+            Value Not Met
+          </Text>
+          <Text style={styles.movWarningText}>
+            Your order total is {CurrencySymbol}{movStatus.currentTotal.toFixed(2)}. Please add
+            ${movStatus.difference.toFixed(2)} more to reach the minimum
+            {movStatus.movType === "checkout" ? " checkout" : ""} order value of
+            ${movStatus.requiredMOV.toFixed(2)}.
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
       scrollable={false}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         // WEB LAYOUT
         <View style={styles.webContainer}>
           <ScrollView
@@ -745,9 +934,36 @@ Contact Number: ${pickupAddress.phone || ""}`;
           >
             <Text style={styles.webPageTitle}>Order Details</Text>
 
-            <View style={styles.webContentWrapper}>
+            <View
+              style={[
+                styles.webContentWrapper,
+                isMobileWeb && styles.webContentWrapperMobile,
+              ]}
+            >
               {/* Left Section - Cart Items */}
-              <View style={styles.webLeftSection}>
+              <View
+                style={[
+                  styles.webLeftSection,
+                  isMobileWeb && styles.webLeftSectionMobile,
+                ]}
+              >
+                {hasAgeRestrictedItems && (
+                  <AgeRestrictionNote
+                    containerStyle={[
+                      styles.noteContainer,
+                      !isMobileWeb && styles.noteContainerWebDesktop,
+                      isMobileWeb && styles.noteContainerWebMobile,
+                    ]}
+                    titleStyle={[
+                      styles.noteTitle,
+                      isMobileWeb && styles.noteTitleWebMobile,
+                    ]}
+                    messageStyle={[
+                      styles.noteDescription,
+                      isMobileWeb && styles.noteDescriptionWebMobile,
+                    ]}
+                  />
+                )}
                 {cartItems.map((eachCartItem: any) => (
                   <CartItem
                     handleDelete={handleDelete}
@@ -759,7 +975,12 @@ Contact Number: ${pickupAddress.phone || ""}`;
               </View>
 
               {/* Right Section - Order Summary */}
-              <View style={styles.webRightSection}>
+              <View
+                style={[
+                  styles.webRightSection,
+                  isMobileWeb && styles.webRightSectionMobile,
+                ]}
+              >
                 {/* Address Section */}
                 <View style={styles.webSectionCard}>
                   <Text style={styles.webSectionTitle}>Address</Text>
@@ -815,36 +1036,77 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       {/* Currently Selected Billing Address */}
                       {selectedBillingAddress && (
                         <View style={styles.webAddressBox}>
-                          <Text style={styles.webAddressText}>
-                            {`${selectedBillingAddress.name || "Unknown"}, ${
-                              selectedBillingAddress.line1 || ""
-                            }${
-                              selectedBillingAddress.line2
-                                ? `, ${selectedBillingAddress.line2}`
-                                : ""
-                            }, ${
-                              selectedBillingAddress.city || "Unknown City"
-                            }, ${selectedBillingAddress.state || ""} ${
-                              selectedBillingAddress.postalCode || ""
-                            }`}
+                          <View style={styles.webSelectedAddressHeader}>
+                            <Text style={styles.webSelectedAddressLabel}>
+                              Selected billing address
+                            </Text>
+                            {selectedBillingAddress.addressType?.[0] && (
+                              <View style={styles.webAddressTypeBadge}>
+                                <Text style={styles.webAddressTypeBadgeText}>
+                                  {selectedBillingAddress.addressType[0]}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.webSelectedAddressName}>
+                            {selectedBillingAddress.name || "Unknown"}
                           </Text>
+                          <Text style={styles.webAddressText}>
+                            {selectedBillingAddress.line1 || ""}
+                            {selectedBillingAddress.line2
+                              ? `, ${selectedBillingAddress.line2}`
+                              : ""}
+                          </Text>
+                          <Text style={styles.webAddressText}>
+                            {[
+                              selectedBillingAddress.city || "Unknown City",
+                              selectedBillingAddress.postalCode || "",
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </Text>
+                          {!!selectedBillingAddress.phone && (
+                            <Text style={styles.webAddressMetaText}>
+                              Phone: {selectedBillingAddress.phone}
+                            </Text>
+                          )}
                         </View>
                       )}
 
                       {/* Accordion Toggle */}
                       <TouchableOpacity
-                        style={styles.webAccordionToggle}
+                        style={[
+                          styles.webAccordionToggle,
+                          accordionOpen && styles.webAccordionToggleOpen,
+                        ]}
                         onPress={toggleAccordion}
                       >
-                        <Text style={styles.webChangeSlotLink}>
-                          {accordionOpen ? "Hide" : "Change"} billing address
-                        </Text>
+                        <View style={styles.webAccordionToggleLeft}>
+                          <Ionicons
+                            name={
+                              accordionOpen
+                                ? "remove-circle-outline"
+                                : "swap-horizontal-outline"
+                            }
+                            size={18}
+                            color={colors.primary}
+                            style={styles.webAccordionLeadingIcon}
+                          />
+                          <Text style={styles.webAccordionToggleText}>
+                            {accordionOpen
+                              ? "Hide saved billing addresses"
+                              : "Change billing address"}
+                          </Text>
+                        </View>
                         <Animated.View
-                          style={{ transform: [{ rotate: spin }] }}
+                          style={[
+                            styles.webAccordionIconWrap,
+                            { transform: [{ rotate: spin }] },
+                          ]}
                         >
                           <Ionicons
                             name="chevron-down-circle"
-                            size={20}
+                            size={22}
                             color={colors.primary}
                           />
                         </Animated.View>
@@ -853,6 +1115,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       {/* Accordion Content - Address List */}
                       {accordionOpen && (
                         <View style={styles.webAccordionContent}>
+                          <Text style={styles.webAccordionHelperText}>
+                            Select one of your saved billing addresses below.
+                          </Text>
                           {addressData.length > 0 ? (
                             <View>
                               {addressData.map((item) => (
@@ -882,7 +1147,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                           <Button
                             onPress={handleAddBillingAddress}
                             title="Add Billing Address"
-                            style={{ marginTop: 16 }}
+                            style={styles.webAddBillingButton}
                           />
                         </View>
                       )}
@@ -898,136 +1163,17 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     </View>
                   )}
                 </View>
-                {/* Substitutions Section */}
-                {/* <View style={styles.webSectionCard}>
-                  <Text style={styles.webSectionTitle}>Substitutions</Text>
-                  <View style={styles.webCheckboxRow}>
-                    <CheckBox
-                      checked={substitutionSelected}
-                      onPress={() =>
-                        setSubstitutionSelected(!substitutionSelected)
-                      }
-                      checkedColor={colors.primary}
-                      uncheckedColor={colors.primary}
-                      containerStyle={styles.webCheckboxContainer}
-                    />
-                    <Text style={styles.webCheckboxLabel}>
-                      Choose Substitutions for my orders.
-                    </Text>
-                  </View>
-                  <Text style={styles.webSubText}>
-                    If the product you picked is not available a similar product
-                    or brand will be picked.
-                  </Text>
-                </View> */}
-
-                {/* Order Details Section */}
-                {/* <View style={styles.webSectionCard}>
-                  <Text style={styles.webSectionTitle}>Order Details</Text> */}
-
-                {/* Table Header */}
-                {/* <View style={styles.webTableHeader}>
-                    <Text style={[styles.webTableCell, { flex: 2 }]}>
-                      Item Name
-                    </Text>
-                    <Text
-                      style={[
-                        styles.webTableCell,
-                        { flex: 1, textAlign: "center" },
-                      ]}
-                    >
-                      Total Items
-                    </Text>
-                    <Text
-                      style={[
-                        styles.webTableCell,
-                        { flex: 1, textAlign: "right" },
-                      ]}
-                    >
-                      Price
-                    </Text>
-                  </View> */}
-
-                {/* Table Rows */}
-                {/* {cartItems.map((item: any) => (
-                    <View key={item.id} style={styles.webTableRow}>
-                      <Text style={[styles.webTableCell, { flex: 2 }]}>
-                        {item.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.webTableCell,
-                          { flex: 1, textAlign: "center" },
-                        ]}
-                      >
-                        {String(item.quantity).padStart(2, "0")}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.webTableCell,
-                          { flex: 1, textAlign: "right" },
-                        ]}
-                      >
-                        {item.discount}$
-                      </Text>
-                    </View>
-                  ))} */}
-
-                {/* Summary Rows */}
-                {/* <View style={styles.webSummaryRow}>
-                    <Text style={styles.webSummaryLabel}>Total Price</Text>
-                    <Text style={styles.webSummaryValue}>
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + item.discount * item.quantity,
-                        0
-                      )}
-                      $
-                    </Text>
-                  </View>
-                  <View style={styles.webSummaryRow}>
-                    <Text style={styles.webSummaryLabel}>Discount</Text>
-                    <Text style={styles.webSummaryValue}>
-                      -
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + (item.netPrice - item.discount) * item.quantity,
-                        0
-                      )}
-                      $
-                    </Text>
-                  </View>
-                  <View style={styles.webSummaryRow}>
-                    <Text
-                      style={[
-                        styles.webSummaryLabel,
-                        { color: colors.primary },
-                      ]}
-                    >
-                      Shipping
-                    </Text>
-                    <Text style={styles.webSummaryValue}>3$</Text>
-                  </View>
-                  <View style={[styles.webSummaryRow, styles.webSubtotalRow]}>
-                    <Text style={styles.webSubtotalLabel}>SubTotal</Text>
-                    <Text style={styles.webSubtotalValue}>
-                      {cartItems.reduce(
-                        (sum: number, item: any) =>
-                          sum + item.discount * item.quantity,
-                        0
-                      ) + 3}
-                      $
-                    </Text>
-                  </View> */}
-                {/* </View>  */}
 
                 {/* Order Summary */}
                 <OrderSummary
                   cartItems={cartItems}
                   containerStyle={styles.compactOrderSummary}
                   sectionHeadingStyle={styles.compactOrderSummaryHeading}
+                  mode={selectedMode}
                 />
+                <MOVWarningMessage />
                 {/* Place Order Button */}
+
                 {isWeb && <StripeCardInput />}
 
                 <Button
@@ -1035,14 +1181,26 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   disabled={!isPaymentEnabled}
                   onPress={async () => {
                     try {
-                      // Get current MOV (use fetched value or fallback to static)
-                      const mov = currentMOV !== null ? currentMOV : MOV;
-                      
-                      // Check if total is less than MOV
-                      if (total < mov) {
+                      // UPDATED: Use appropriate MOV based on delivery mode
+                      const applicableMOV =
+                        selectedMode === DELIVERY_MODE_HOME
+                          ? currentMOV_Chekcout !== null
+                            ? currentMOV_Chekcout
+                            : MOV
+                          : currentMOV !== null
+                          ? currentMOV
+                          : MOV;
+                      const movLabel =
+                        selectedMode === DELIVERY_MODE_HOME
+                          ? "minimum checkout order value"
+                          : "minimum order value";
+                      // Check if total is less than applicable MOV
+                      if (total < applicableMOV) {
                         showAlert(
                           "Minimum Order Not Met",
-                          `Your order value (£${total.toFixed(2)}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
+                          `Your order value (${CurrencySymbol}${total.toFixed(
+                            2
+                          )}) is less than the ${movLabel} of ${CurrencySymbol}${applicableMOV}. Please add more items to your cart.`
                         );
                         return;
                       }
@@ -1069,7 +1227,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                     }
                   }}
                   style={
-                    isTabOrDesktop
+                    isWeb
                       ? [
                           styles.webPlaceOrderButton,
                           !isPaymentEnabled && {
@@ -1244,6 +1402,13 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
               <View style={[styles.section, globalStyles.mb_0]}>
                 <Text style={styles.sectionHeading}>Order Details</Text>
+                {hasAgeRestrictedItems && (
+                  <AgeRestrictionNote
+                    containerStyle={[styles.noteContainer, styles.noteContainerMobileSection]}
+                    titleStyle={styles.noteTitle}
+                    messageStyle={styles.noteDescription}
+                  />
+                )}
                 <View style={[globalStyles.pl_3]}>
                   {cartItems.map((eachCartItem: any) => {
                     return (
@@ -1261,60 +1426,99 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   sectionHeadingStyle={styles.sectionHeading}
                   hideHeading={true}
                   containerStyle={styles.orderSummaryContainer}
+                  mode={selectedMode}
+                  deliveryCharges={params?.shipping || 0}
                 />
               </View>
             </View>
-            <Text style={styles.noteText}>
-              *please select a billing address before proceeding to payment
-            </Text>
-            {isWeb && (
-              <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-                <StripeCardInput />
-              </View>
-            )}
+            {!selectedBillingAddress &&
+ !(selectedMode === DELIVERY_MODE_HOME && useSameAddress) && (
+  <Text style={styles.noteText}>
+    *please select a billing address before proceeding to payment
+  </Text>
+)}
+
+            {/* Mobile Payment Buttons Section */}
             <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-              <Button
-                title="Proceed for Payment"
-                disabled={!isPaymentEnabled}
-                onPress={async () => {
-                  try {
-                    // Calculate total the same way as OrderSummary component
-                    const currentTotal = calculateOrderTotal(cartItems);
-                    
-                    // Get current MOV (use fetched value or fallback to static)
-                    const mov = currentMOV !== null ? currentMOV : MOV;
-
-                    if (currentTotal < mov) {
-                      showAlert(
-                        "Minimum Order Not Met",
-                        `Your order value (£${currentTotal.toFixed(
-                          2
-                        )}) is less than the minimum order value of £${mov}. Please add more items to your cart.`
-                      );
-                      return;
+              {/* Apple Pay Button - Native Stripe Component (iOS only) */}
+              {!isWeb &&
+                PlatformPayButton &&
+                Platform.OS === "ios" &&
+                isApplePaySupported && (
+                  <PlatformPayButton
+                    onPress={() =>
+                      executePayment(() =>
+                        handlePlatformPayPayment(cartItems, getPaymentParams())
+                      )
                     }
+                    type={PlatformPay.ButtonType.Order}
+                    appearance={PlatformPay.ButtonStyle.Black}
+                    borderRadius={8}
+                    disabled={!isPaymentEnabled}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      marginBottom: 12,
+                    }}
+                  />
+                )}
 
-                    handlePayment(cartItems, {
-                      shippingAddress: shippingAddress,
-                      billingAddress: selectedBillingAddress,
-                      pickupdetails: pickupDetails,
-                      deliveryDate: pickupDetails?.date,
-                      deliveryTime: pickupDetails?.time,
-                      selectedSlot: Array.isArray(selectedMode)
-                        ? selectedMode[0]
-                        : selectedMode,
-                      selectedMode: Array.isArray(selectedMode)
-                        ? selectedMode[0]
-                        : selectedMode,
-                    });
-                  } catch (error) {
-                    console.error("Payment handler error:", error);
-                    showAlert(
-                      "Error",
-                      "Failed to process payment. Please try again."
-                    );
-                  }
-                }}
+              {/* Google Pay Button - Native Stripe Component (Android only) */}
+              {!isWeb &&
+                PlatformPayButton &&
+                Platform.OS === "android" &&
+                isGooglePaySupported && (
+                  <PlatformPayButton
+                    onPress={() =>
+                      executePayment(() =>
+                        handlePlatformPayPayment(cartItems, getPaymentParams())
+                      )
+                    }
+                    type={PlatformPay.ButtonType.Order}
+                    appearance={PlatformPay.ButtonStyle.Black}
+                    borderRadius={8}
+                    disabled={!isPaymentEnabled}
+                    style={{
+                      width: "100%",
+                      height: 50,
+                      marginBottom: 12,
+                    }}
+                  />
+                )}
+
+              {/* Divider - Only show if platform pay is available and not web */}
+              {!isWeb &&
+                PlatformPayButton &&
+                ((Platform.OS === "ios" && isApplePaySupported) ||
+                  (Platform.OS === "android" && isGooglePaySupported)) && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginVertical: 16,
+                    }}
+                  >
+                    <View
+                      style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }}
+                    />
+                    <Text style={{ marginHorizontal: 16, color: "#666" }}>
+                      or
+                    </Text>
+                    <View
+                      style={{ flex: 1, height: 1, backgroundColor: "#e0e0e0" }}
+                    />
+                  </View>
+                )}
+
+              {/* Regular Card Payment Button */}
+              <Button
+                title="Pay with Card"
+                disabled={!isPaymentEnabled}
+                onPress={() =>
+                  executePayment(() =>
+                    handlePayment(cartItems, getPaymentParams())
+                  )
+                }
                 style={isPaymentEnabled ? styles.activeBtn : styles.disabledBtn}
                 textStyle={styles.buttonText}
               />
@@ -1332,6 +1536,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
         cancelText="Save for Later"
         handleCancel={cancelDelete}
       />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

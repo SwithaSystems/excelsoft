@@ -35,13 +35,21 @@ import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import styles from "./ProductDetailStyles";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import ProductImageCarousel from "@/app/components/commonComponents/ProductImageCarousal";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionBadge from "@/app/components/commonComponents/AgeRestrictionBadge";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
+import {
+  AGE_RESTRICTION_PRODUCT_NOTE_MESSAGE,
+  hasAgeRestrictionProductNote,
+  stripAgeRestrictionProductNotes,
+} from "@/utilities/ageRestriction";
 
 const ProductDetailScreen = () => {
   const { productId } = useLocalSearchParams();
@@ -51,25 +59,60 @@ const ProductDetailScreen = () => {
   const [isProductLoading, setIsProductLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [toast, setToast] = useState<{ text1: String; text2?: string } | null>(
+  const [toast, setToast] = useState<{ text1: string; text2?: string } | null>(
     null
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   // Track image load errors
-  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>(
-    {}
-  );
+  const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
-  // Add ref to track initial load
-  const isInitialLoad = useRef(true);
-
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
+
+  const isMobileWeb = isWeb && isMobile;
+  const isTabletWeb = isWeb && isTablet;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
+
+  const webScale =
+    isTabletWeb ? 0.8 :
+      isMobileWeb ? 0.75 :
+        1;
+
+  const s = (value: number) => value * webScale;
 
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const isAgeRestricted =
+    product?.isAgeRestricted === true ||
+    product?.isAgeRestricted === "true" ||
+    product?.ageRestricted === true ||
+    product?.ageRestricted === "true";
+  const descriptionText = stripAgeRestrictionProductNotes(
+    product?.description || ""
+  );
+
 
   const isItemSaved = (itemId: any) => {
     return savedItems.some((savedItem: any) => savedItem.id === itemId);
@@ -87,17 +130,19 @@ const ProductDetailScreen = () => {
 
   // Helper function to check if image is valid
   const isValidImage = (imageUrl: string | undefined) => {
-    return (
-      imageUrl &&
+    return imageUrl &&
       imageUrl.trim() !== "" &&
-      !imageUrl.includes("Placeholder.png")
-    );
+      !imageUrl.includes("Placeholder.png");
   };
 
   // Handler for image load errors
   const handleImageError = (index: number) => {
-    setImageErrors((prev) => ({ ...prev, [index]: true }));
+    setImageErrors(prev => ({ ...prev, [index]: true }));
   };
+  const savedItemsRef = useRef(savedItems);
+  useEffect(() => {
+    savedItemsRef.current = savedItems;
+  }, [savedItems]);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -110,9 +155,7 @@ const ProductDetailScreen = () => {
       if (!fetchedProduct) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
-          const savedItem = savedItems.find(
-            (item: any) => item.id === Number(productId)
-          );
+          const savedItem = savedItemsRef.current.find((item: any) => item.id === Number(productId));
           if (savedItem) {
             dispatch(removeFromSavedItems(savedItem.id));
           }
@@ -131,7 +174,7 @@ const ProductDetailScreen = () => {
       if (error?.response?.status === 404) {
         setErrorMessage("Product not found");
         if (from === "savedItemScreen") {
-          const savedItem = savedItems.find(
+          const savedItem = savedItemsRef.current.find(
             (item: any) => item.id === Number(productId)
           );
           if (savedItem) {
@@ -145,16 +188,15 @@ const ProductDetailScreen = () => {
       }
     } finally {
       setIsProductLoading(false);
-      isInitialLoad.current = false;
     }
-  }, [productId, from, dispatch]);
+  }, [productId, setIsProductLoading, from, dispatch]);
 
   useFocusEffect(
     useCallback(() => {
-      if (productId && isInitialLoad.current) {
+      if (productId) {
         fetchProduct();
       }
-    }, [productId, fetchProduct])
+    }, [fetchProduct, productId])
   );
 
   if (isProductLoading) {
@@ -199,13 +241,17 @@ const ProductDetailScreen = () => {
     }, 3000);
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={PRODUCT_DETAIL_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? (
+    <FooterWeb />
+  ) : (
+    <Footer />
+  );
 
   return (
     <LayoutComponent
@@ -215,98 +261,138 @@ const ProductDetailScreen = () => {
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
     >
-      {isTabOrDesktop ? (
+      {isWeb ? (
         <View style={styles.webContainer}>
-          <ScrollView style={{ flex: 1 }}>
-            <View style={styles.webContentWrapper}>
+          <View>
+            <View style={[
+              styles.webContentWrapper,
+              isMobileWeb && { flexDirection: 'column' },
+              {
+                // paddingHorizontal: s(40),
+                paddingVertical: s(16),
+                gap: s(16),
+              },
+              !isMobileWeb && {
+                paddingVertical: s(40),
+                gap: s(40),
+              },
+            ]}>
               {/* Left Section - Images */}
-              <View style={styles.webLeftSection}>
+              <View style={[
+                styles.webLeftSection,
+                isMobileWeb && {
+                  width: '100%',
+                  flex: undefined,
+                  alignItems: "center",
+                },
+              ]}>
                 {/* Main Image */}
-                <View style={styles.webMainImageContainer}>
+                <View style={[styles.webMainImageContainer,
+                isMobileWeb && {
+                  height: 350
+                }
+                ]}>
                   {product?.image?.[selectedImageIndex] &&
-                  isValidImage(product.image[selectedImageIndex]) &&
-                  !imageErrors[selectedImageIndex] ? (
+                    isValidImage(product.image[selectedImageIndex]) &&
+                    !imageErrors[selectedImageIndex] ? (
                     <Image
                       source={{ uri: product.image[selectedImageIndex] }}
-                      style={styles.webMainImage}
-                      onError={() => handleImageError(selectedImageIndex)}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <View
                       style={[
                         styles.webMainImage,
-                        {
-                          backgroundColor: "#f0f0f0",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        },
+                        isMobileWeb && { height: 350 }
                       ]}
-                    >
-                      <Text style={{ color: "#999", fontSize: 16 }}>
-                        No Image Available
-                      </Text>
+                      onError={() => handleImageError(selectedImageIndex)}
+                      resizeMode={isMobileWeb ? 'cover' : 'contain'}
+                    />
+                  ) : (
+                    <View style={[styles.webMainImage, {
+                      backgroundColor: '#f0f0f0',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }]}>
+                      <Text style={{ color: '#999', fontSize: 16 }}>No Image Available</Text>
                     </View>
                   )}
                 </View>
 
-                {/* Thumbnails */}
-                <View style={styles.webThumbnailContainer}>
-                  {product?.image?.map((imageUrl: string, index: number) => {
-                    // Skip placeholder images but keep the index intact
-                    if (!isValidImage(imageUrl)) {
-                      return null;
-                    }
+                {/* Thumbnails - show on desktop/tablet web only */}
+                {!isMobileWeb && (
+                  <View style={styles.webThumbnailContainer}>
+                    {product?.image
+                      ?.map((imageUrl: string, index: number) => {
+                        // Skip placeholder images but keep the index intact
+                        if (!isValidImage(imageUrl)) {
+                          return null;
+                        }
 
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => setSelectedImageIndex(index)}
-                        style={[
-                          styles.webThumbnail,
-                          selectedImageIndex === index &&
-                            styles.webThumbnailActive,
-                        ]}
-                      >
-                        {!imageErrors[index] ? (
-                          <Image
-                            source={{ uri: imageUrl }}
-                            style={styles.webThumbnailImage}
-                            onError={() => handleImageError(index)}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => setSelectedImageIndex(index)}
                             style={[
-                              styles.webThumbnailImage,
-                              {
-                                backgroundColor: "#f0f0f0",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              },
+                              styles.webThumbnail,
+                              selectedImageIndex === index &&
+                              styles.webThumbnailActive,
                             ]}
                           >
-                            <Text style={{ color: "#999", fontSize: 10 }}>
-                              N/A
-                            </Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+                            {!imageErrors[index] ? (
+                              <Image
+                                source={{ uri: imageUrl }}
+                                style={styles.webThumbnailImage}
+                                onError={() => handleImageError(index)}
+                                resizeMode="cover"
+                              />
+                            ) : (
+                              <View
+                                style={[
+                                  styles.webThumbnailImage,
+                                  {
+                                    backgroundColor: "#f0f0f0",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                  },
+                                ]}
+                              >
+                                <Text style={{ color: "#999", fontSize: 10 }}>
+                                  N/A
+                                </Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                  </View>
+                )}
               </View>
 
+
               {/* Right Section - Product Details */}
-              <View style={styles.webRightSection}>
+              <View style={[
+                styles.webRightSection,
+                isMobileWeb && {
+                  width: '100%',
+                  // marginTop: s(16),
+                },
+              ]}>
                 <View style={styles.webProductHeader}>
-                  <Text style={styles.webProductTitle}>{product.name}</Text>
+                  <Text
+                    style={[
+                      styles.webProductTitle,
+                      {
+                        fontSize: s(28),
+                      },
+                    ]}>
+                    {product.name}
+                  </Text>
                   <TouchableOpacity
                     onPress={(e) => handleHeartPress(e, product)}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   >
                     <Ionicons
                       name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                      size={24}
+                      size={
+                        s(24)
+                      }
                       color={
                         isItemSaved(product.id)
                           ? colors.primaryRed
@@ -316,9 +402,13 @@ const ProductDetailScreen = () => {
                   </TouchableOpacity>
                 </View>
 
+                {isAgeRestricted && (
+                  <AgeRestrictionBadge containerStyle={{ marginTop: 6, marginBottom: 10 }} />
+                )}
+
                 {product.reviews.length > 0 && (
                   <View style={styles.webRatingContainer}>
-                    <Text style={styles.webRatingText}>{product.rating}</Text>
+                    <Text style={styles.webRatingText}>{Number(product.rating).toFixed(1)}</Text>
                     <Text style={styles.webStarIcon}> ★ </Text>
                     <Text style={styles.webReviewsText}>
                       ({product?.reviews?.length || 0})
@@ -329,7 +419,7 @@ const ProductDetailScreen = () => {
                 {/* Price */}
                 <View style={styles.webPriceContainer}>
                   <DisplayPrice
-                    discount={product.discount}
+                    // discount={product.discount}
                     netPrice={product.netPrice}
                   />
                 </View>
@@ -347,7 +437,7 @@ const ProductDetailScreen = () => {
                             styles.webColorOption,
                             { backgroundColor: color.colorCode },
                             selectedColor?._id === color._id &&
-                              styles.webColorOptionActive,
+                            styles.webColorOptionActive,
                           ]}
                         />
                       ))}
@@ -406,21 +496,20 @@ const ProductDetailScreen = () => {
                           _id: product && product._id ? product._id : "",
                           id: product.id,
                           name: product.name,
-                          discount: product.discount,
+                          // discount: product.discount,
                           quantity: quantity,
                           image: product.image,
                           netPrice: product.netPrice,
                           isVatApplicable: product.isVatApplicable,
                           vatRate: product.vatRate,
                           vatAmount: product.vatAmount,
+                          isAgeRestricted,
                         })
                       );
                       Toast.show({
                         type: "customToast",
                         text1: "Product added successfully!",
-                        text2: `${product.name} - ${CurrencySymbol}${(
-                          product.netPrice - product.discount
-                        ).toFixed(2)}`,
+                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice /* - product.discount*/).toFixed(2)}`,
                         visibilityTime: 1000,
                         autoHide: true,
                         onPress: () => {
@@ -435,7 +524,14 @@ const ProductDetailScreen = () => {
                 {/* Product Information */}
                 <View style={styles.webProductInfo}>
                   <Text style={styles.webInfoTitle}>Product Information</Text>
-                  <Text style={styles.webInfoText}>{product.description}</Text>
+                  <Text style={styles.webInfoText}>{descriptionText}</Text>
+                  {isAgeRestricted && (
+                    <AgeRestrictionNote
+                      title="Note"
+                      message={AGE_RESTRICTION_PRODUCT_NOTE_MESSAGE}
+                      containerStyle={{ marginTop: 18 }}
+                    />
+                  )}
                 </View>
               </View>
             </View>
@@ -443,7 +539,7 @@ const ProductDetailScreen = () => {
             {/* Reviews Section - Full Width */}
             <View style={styles.webReviewsSection}>
               <View style={styles.webReviewsHeader}>
-                <Text style={styles.webReviewsTitle}>
+                <Text style={[styles.webReviewsTitle, { fontSize: s(24) }]}>
                   What do Customers say?
                 </Text>
                 <TouchableOpacity
@@ -483,7 +579,8 @@ const ProductDetailScreen = () => {
                 </TouchableOpacity>
               )}
             </View>
-          </ScrollView>
+            {/* </ScrollView> */}
+          </View>
         </View>
       ) : (
         <View style={styles.container}>
@@ -500,16 +597,12 @@ const ProductDetailScreen = () => {
               <View style={styles.exclusiveDetails}>
                 <View style={globalStyles.savedContainer}>
                   <Text style={styles.productTitle}>{product.name}</Text>
-                  <TouchableOpacity
-                    onPress={(e) => handleHeartPress(e, product)}
-                  >
+                  <TouchableOpacity onPress={(e) => handleHeartPress(e, product)}>
                     <Ionicons
                       name={isItemSaved(product.id) ? "heart" : "heart-outline"}
-                      size={20}
+                      size={30}
                       color={
-                        isItemSaved(product.id)
-                          ? colors.primaryRed
-                          : colors.black
+                        isItemSaved(product.id) ? colors.primaryRed : colors.black
                       }
                     />
                   </TouchableOpacity>
@@ -526,14 +619,25 @@ const ProductDetailScreen = () => {
 
                 <View style={styles.priceContainer}>
                   <DisplayPrice
-                    discount={product.discount}
+                    // discount={product.discount}
                     netPrice={product.netPrice}
                   />
                 </View>
+
+                {isAgeRestricted && (
+                  <AgeRestrictionBadge containerStyle={{ marginTop: 8, marginBottom: 14 }} />
+                )}
               </View>
 
               <Text style={styles.infoTitle}>Product Information</Text>
-              <Text style={styles.infoText}>{product.description}</Text>
+              <Text style={styles.infoText}>{descriptionText}</Text>
+              {isAgeRestricted && (
+                <AgeRestrictionNote
+                  title="Note"
+                  message={AGE_RESTRICTION_PRODUCT_NOTE_MESSAGE}
+                  containerStyle={{ marginTop: 16 }}
+                />
+              )}
 
               {product.productColors && product.productColors?.length > 0 && (
                 <>
@@ -548,7 +652,7 @@ const ProductDetailScreen = () => {
                             styles.colorOption,
                             { backgroundColor: color.colorCode },
                             selectedColor?._id === color._id &&
-                              styles.selectedColorOption,
+                            styles.selectedColorOption,
                           ]}
                         />
                       ))}
@@ -610,21 +714,20 @@ const ProductDetailScreen = () => {
                           _id: product && product._id ? product._id : "",
                           id: product.id,
                           name: product.name,
-                          discount: product.discount,
+                          // discount: product.discount,
                           quantity: quantity,
                           image: product.image,
                           netPrice: product.netPrice,
                           isVatApplicable: product.isVatApplicable,
                           vatRate: product.vatRate,
                           vatAmount: product.vatAmount,
+                          isAgeRestricted,
                         })
                       );
                       Toast.show({
                         type: "customToast",
                         text1: "Product added successfully!",
-                        text2: `${product.name} - ${CurrencySymbol}${(
-                          product.netPrice - product.discount
-                        ).toFixed(2)}`,
+                        text2: `${product.name} - ${CurrencySymbol}${(product.netPrice /* - product.discount*/).toFixed(2)}`,
                         visibilityTime: 1000,
                         autoHide: true,
                         onPress: () => {
@@ -668,7 +771,7 @@ const ProductDetailScreen = () => {
                       productId: productId,
                       totalReviews: JSON.stringify(product.reviews),
                       productRating:
-                        JSON.stringify(product.rating) || product.rating,
+                        JSON.stringify(Number(product.rating).toFixed(1)) || Number(product.rating).toFixed(1),
                     })
                   }
                 >
@@ -679,6 +782,18 @@ const ProductDetailScreen = () => {
           </ScrollView>
         </View>
       )}
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </LayoutComponent>
   );
 };

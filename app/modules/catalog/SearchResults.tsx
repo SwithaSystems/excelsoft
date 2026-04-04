@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -33,17 +34,23 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import CategoryBadges from "./Components/CategoryBadges";
 import colors from "@/constants/colors";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
+import { moveToCart } from "@/store/slices/savedItemsSlice";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const SearchResultsScreen = () => {
   const { fromSearch, query, category, categoryId, selectedSubCategories } =
     useLocalSearchParams();
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
-  // Device breakpoints
-  const isTabOrDesktop = width >= 768;
-  const isDesktop = width >= 1024;
-  const isTablet = width >= 768 && width < 1024;
+  // IMPORTANT: On web, always use the actual viewport width.
+  // Forcing a minimum (e.g. 1200) makes cards too wide on mobile browsers (causing a single column).
+  const width = windowWidth;
+
+  const isWeb = Platform.OS === "web";
 
   // Ref to track component mount status
   const isMountedRef = useRef(true);
@@ -73,6 +80,12 @@ const SearchResultsScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<string>("default");
   const [isSortDropdownVisible, setIsSortDropdownVisible] = useState(false);
+   const dispatch = useDispatch();
+
+   const handleMoveToCart = (item: any) => {
+       dispatch(addToCart(item));
+       dispatch(moveToCart(item.id));
+     };
   
   const sortOptions = [
     { label: "Relevance", value: "default" },
@@ -401,7 +414,7 @@ const SearchResultsScreen = () => {
   // Render product item
   const renderItem = useCallback(
     ({ item, index }: { item: Product; index: number }) => {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web layout: no special left/right styling needed
         return (
           <View style={styles.productItemWeb}>
@@ -410,7 +423,7 @@ const SearchResultsScreen = () => {
               id={item.id}
               name={item.name}
               description={item.description}
-              discount={item.discount}
+              // discount={item.discount}
               netPrice={item.netPrice}
               image={item.image?.[0] || ""}
               productColors={item.productColors}
@@ -419,10 +432,12 @@ const SearchResultsScreen = () => {
               noOfreviews={item.noOfreviews}
               reviews={item.reviews}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={false}
               vatRate={0}
               vatAmount={0}
+              onAddToCart={() =>handleMoveToCart({...item, quantity: 1})}
             />
           </View>
         );
@@ -441,7 +456,7 @@ const SearchResultsScreen = () => {
               id={item.id}
               name={item.name}
               description={item.description}
-              discount={item.discount}
+              // discount={item.discount}
               netPrice={item.netPrice}
               image={item.image?.[0] || ""}
               productColors={item.productColors}
@@ -450,16 +465,18 @@ const SearchResultsScreen = () => {
               noOfreviews={item.noOfreviews}
               reviews={item.reviews}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={false}
               vatRate={0}
               vatAmount={0}
+              onAddToCart={()=>handleMoveToCart({...item,quantity : 1})}
             />
           </View>
         );
       }
     },
-    [isTabOrDesktop]
+    [isWeb]
   );
 
   // Render category badges component
@@ -513,37 +530,39 @@ const SearchResultsScreen = () => {
     }
 
     if (displayProducts.length > 0) {
-      // Determine number of columns based on screen size
-      const numColumns = isDesktop ? 5 : isTablet ? 4 : 2;
+      const numColumns = isWeb ? 5 : 2;
 
-      if (isTabOrDesktop) {
-        // Web: Calculate card width based on number of columns and gap
-        // PageLayoutWeb applies paddingHorizontal to content, so we need to account for that
-        const numColumns = isDesktop ? 5 : 4;
+      if (isWeb) {
+        const numColumns = isMobile ? 2 : isTablet ? 3 : 5;
         const gap = 16;
-        // PageLayoutWeb content padding: desktop: 64px per side, tablet: 32px per side
-        const sidePadding = isDesktop ? 64 : 32;
-        // Account for content padding from PageLayoutWeb (applied to ContentWrapper)
-        // The content area is already padded, but we calculate based on full width
-        // and subtract padding to get available content width
-        const availableWidth = width - (sidePadding * 2);
+        // PageLayoutWeb uses these paddings when contentPadding is enabled
+        const horizontalPadding = isDesktop ? 64 : isTablet ? 32 : isMobile ? 10 : 16;
+        const availableWidth = Math.max(0, width - (horizontalPadding * 2));
         const totalGapWidth = gap * (numColumns - 1);
-        const cardWidth = Math.max(160, Math.floor((availableWidth - totalGapWidth) / numColumns));
+        const calculatedCardWidth =
+          numColumns > 0 ? (availableWidth - totalGapWidth) / numColumns : availableWidth;
+        const minCardWidth = isMobile ? 160 : 180;
+        const cardWidth = Math.max(minCardWidth, calculatedCardWidth);
         
-        // Web: Use View with flexWrap for better control
         return (
           <View style={styles.productsGridWeb}>
             {displayProducts.map((item, index) => (
               <View
                 key={item?.id ? `product-${item.id}` : `item-${index}`}
-                style={[styles.productItemWeb, { width: cardWidth, maxWidth: cardWidth, flexShrink: 0, flexGrow: 0 }]}
+                style={[
+                  styles.productItemWeb,
+                  {
+                    width: Math.floor(cardWidth),
+                    maxWidth: Math.floor(cardWidth),
+                  }
+                ]}
               >
                 <ProductCard
                   _id={item._id}
                   id={item.id}
                   name={item.name}
                   description={item.description}
-                  discount={item.discount}
+                  // discount={item.discount}
                   netPrice={item.netPrice}
                   image={item.image?.[0] || ""}
                   productColors={item.productColors}
@@ -552,10 +571,12 @@ const SearchResultsScreen = () => {
                   noOfreviews={item.noOfreviews}
                   reviews={item.reviews}
                   noOfReviews={0}
+                  isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
                   isReturnable={false}
                   isVatApplicable={false}
                   vatRate={0}
                   vatAmount={0}
+                  onAddToCart={() => handleMoveToCart({ ...item, quantity: 1 })}
                 />
               </View>
             ))}
@@ -612,7 +633,7 @@ const SearchResultsScreen = () => {
     if (error) return null;
 
     if (!isFromSearch && searchQuery) {
-      if (isTabOrDesktop) {
+      if (isWeb) {
         // Web: Title and filter/sort buttons on same line
         return (
           <View style={styles.resultsHeaderContainerWeb}>
@@ -621,22 +642,22 @@ const SearchResultsScreen = () => {
             </Text>
             <View style={styles.filterSortContainerWeb}>
               <TouchableOpacity
-                style={styles.filterButtonWeb}
+                style={styles.iconButtonWeb}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 onPress={() => {
                   redirectToPage(containers.filterScreen, {
                     categoryId: parsedCategoryId || 0,
                   });
                 }}
               >
-                <Feather name="filter" size={18} color={colors.black} />
-                <Text style={styles.filterButtonTextWeb}>Filter</Text>
+                <Ionicons name="funnel-outline" size={24} color={colors.black} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.sortButtonWeb}
+                style={[styles.iconButtonWeb, styles.iconButtonWebSpacing]}
                 onPress={() => setIsSortDropdownVisible(true)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Ionicons name="swap-vertical" size={18} color={colors.black} />
-                <Text style={styles.sortButtonTextWeb}>Sort</Text>
+                <Ionicons name="swap-vertical" size={24} color={colors.black} />
               </TouchableOpacity>
             </View>
           </View>
@@ -651,7 +672,7 @@ const SearchResultsScreen = () => {
       }
     }
 
-    if (isFromSearch && !isTabOrDesktop) {
+    if (isFromSearch && !isWeb) {
       return renderCategoryBadges();
     }
 
@@ -659,19 +680,19 @@ const SearchResultsScreen = () => {
   };
 
   // Choose layout component based on screen size
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={headerTitle} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
   );
 
-  if (isTabOrDesktop) {
+  if (isWeb) {
     return (
       <LayoutComponent
         hasFooter
@@ -683,7 +704,7 @@ const SearchResultsScreen = () => {
         <View style={styles.webContainer}>
           {renderResultsInfo()}
           {/* Sort Dropdown Modal - Only for web */}
-          {isTabOrDesktop && (
+          {isWeb && (
             <Modal
               visible={isSortDropdownVisible}
               transparent={true}

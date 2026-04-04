@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   Pressable,
-  useWindowDimensions,
   StyleSheet,
   ActivityIndicator,
   FlatList,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { Href, useRouter } from "expo-router";
+import { clearNavigationStack, redirectToPage } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import colors from "@/constants/colors";
 import SearchBar from "../searchBar";
@@ -19,8 +20,17 @@ import { useRoleContext } from "@/context/RoleContext";
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import {
+  requestNotificationPermission,
+  registerWebPush,
+  isWebPushSupported,
+} from "@/utilities/registerWebPush";
+import { NotificationService } from "@/services/notificationService";
+import { DeviceEventEmitter } from "react-native";
 
 
 // Storage key for recent searches
@@ -32,16 +42,17 @@ interface BrandHeaderWebProps {
 }
 
 export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeaderWebProps) {
-  const { isAdmin, isValidUser, username } = useRoleContext();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
+  const router = useRouter();
+  const { isAdmin, isValidUser, username, loading: authLoading } = useRoleContext();
+  const { isMobile, isTablet, isDesktop, isTabletOrLarger } = useWebMediaQuery();
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartItemCount = cartItems.reduce(
     (total: any, item: any) => total + item.quantity,
     0
   );
+
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,6 +72,34 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
   useEffect(() => {
     loadRecentSearches();
   }, []);
+
+  const fetchUnreadNotificationCount = useCallback(async () => {
+    const count = await NotificationService.getUnreadCount();
+    setUnreadNotificationCount((prev) => {
+      if (Platform.OS === "web" && count === 0 && prev > 0) {
+        setTimeout(() => {
+          NotificationService.getUnreadCount().then((retryCount) => {
+            setUnreadNotificationCount(retryCount);
+          });
+        }, 400);
+        return prev;
+      }
+      return count;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isValidUser) {
+      fetchUnreadNotificationCount();
+    } else {
+      setUnreadNotificationCount(0);
+    }
+    const sub = DeviceEventEmitter.addListener("notificationUpdate", () => {
+      if (isValidUser) fetchUnreadNotificationCount();
+      else setUnreadNotificationCount(0);
+    });
+    return () => sub.remove();
+  }, [fetchUnreadNotificationCount, isValidUser]);
 
   // Load recent searches from SecureStore
   const loadRecentSearches = async () => {
@@ -146,12 +185,12 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       }
     };
 
-    if ((isTablet || isDesktop) && debouncedQuery && debouncedQuery.length >= 2) {
+    if (isTabletOrLarger && debouncedQuery && debouncedQuery.length >= 2) {
       fetchSuggestions();
     } else {
       setSuggestions([]);
     }
-  }, [debouncedQuery, isTablet, isDesktop]);
+  }, [debouncedQuery, isTabletOrLarger]);
 
   // Show suggestions dropdown when there are results, recent searches, or loading
   useEffect(() => {
@@ -371,30 +410,42 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
     );
   };
 
+  // Block rendering until auth is resolved
+  if (authLoading) {
+    return null;
+  }
+
   return (
     <View
       style={[
         styles.container,
         {
-          paddingHorizontal: isDesktop ? 40 : isTablet ? 24 : 16,
-          paddingVertical: isDesktop ? 8 : 10,
+          paddingHorizontal: isDesktop ? 48 : isTablet ? 24 : 12,
+          paddingVertical: isDesktop ? 12 : isTablet ? 8 : 6,
         },
       ]}
     >
       {/* LEFT SECTION - Logo and Search */}
       <View style={styles.leftSection}>
-        <Image
-          source={require("@/assets/RecreatedLogo_2.png")}
-          style={[
-            styles.logo,
-            {
-              width: isDesktop ? 140 : isTablet ? 110 : 100,
-              height: isDesktop ? 60 : 36,
-            },
-          ]}
-        />
+        <Pressable
+          onPress={() => {
+            clearNavigationStack(containers.homeScreen);
+          }}
+          style={Platform.OS === "web" ? { cursor: "pointer" } : undefined}
+        >
+          <Image
+            source={require("@/assets/RecreatedLogo_2.png")}
+            style={[
+              styles.logo,
+              {
+                width: isDesktop ? 152 : isTablet ? 110 : 100,
+                height: isDesktop ? 44 : 36,
+              },
+            ]}
+          />
+        </Pressable>
         
-        {(isTablet || isDesktop) && (
+        {isTabletOrLarger && (
           <View 
             ref={searchBarRef}
             style={styles.searchContainer}
@@ -407,6 +458,8 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
               onPress={handleSearch}
               onFocus={handleSearchFocus}
               onBlur={handleSearchBlur}
+              widthPercent={isDesktop ? 100 : undefined}
+              height={isDesktop ? 48 : undefined}
               onLayout={(event) => {
                 const { width } = event.nativeEvent.layout;
                 // Measure the actual rendered SearchBar width
@@ -477,31 +530,33 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
       </View>
 
       {/* RIGHT SECTION */}
-      <View style={styles.rightSection}>
+      <View style={[styles.rightSection, isMobile && styles.rightSectionMobile]}>
 
         {/* Profile/Sign In */}
         <TouchableOpacity
-          style={styles.profileButton}
+          style={[styles.profileButton, isMobile && styles.profileButtonMobile]}
           onPress={handleProfileClick}
         >
           <Text style={styles.greetingText}>
-            {isValidUser ? `Hello, ${username || "User"}` : "Sign In"}
+            {isValidUser
+              ? `Hello, ${(username || "User").length > 12 ? (username || "User").slice(0, 12) + "..." : username || "User"}`
+              : "Sign In"}
           </Text>
           <Ionicons
             name="person-circle-outline"
-            size={24}
+            size={22}
             color={colors.primary}
           />
         </TouchableOpacity>
 
         {isAdmin && (
           <TouchableOpacity
-            style={styles.adminButton}
+            style={[styles.adminButton, isMobile && styles.adminButtonMobile]}
             onPress={() => {
               if (hideUserGreeting) {
-                redirectToPage(containers.homeScreen);
+                clearNavigationStack(containers.homeScreen);
               } else {
-                redirectToPage(containers.AdminDashboardScreen);
+                clearNavigationStack(containers.AdminDashboardScreen);
               }
             }}
           >
@@ -513,11 +568,11 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
         {!hideUserGreeting && (
           <TouchableOpacity
-            style={styles.iconButton}
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile]}
             onPress={() => redirectToPage(containers.cartScreen)}
           >
             <View style={styles.iconContainer}>
-              <Ionicons name="cart-outline" size={24} color={colors.primary} />
+              <Ionicons name="cart-outline" size={22} color={colors.primary} />
               {cartItemCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -530,12 +585,47 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
         )}
 
         {!hideUserGreeting && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => redirectToPage(containers.userNotificationsScreen)}
+          <Pressable
+            style={[styles.iconButton, isMobile && styles.iconButtonMobile, Platform.OS === "web" && { cursor: "pointer" }]}
+            onPress={() => {
+              const pathname = "/" + containers.userNotificationsScreen;
+              if (typeof console !== "undefined") console.log("[Notifications] Bell clicked, navigating to", pathname);
+              try {
+                router.push(pathname as Href);
+              } catch (e) {
+                console.error("[Notifications] router.push failed:", e);
+                redirectToPage(containers.userNotificationsScreen);
+              }
+              if (Platform.OS === "web" && isWebPushSupported() && isValidUser) {
+                (async () => {
+                  try {
+                    const alreadyRegistered = await AsyncStorage.getItem("web_push_registered");
+                    if (alreadyRegistered !== "true") {
+                      const permission = await requestNotificationPermission();
+                      if (permission === "granted") {
+                        const ok = await registerWebPush(() => SecureStore.getItemAsync("token"));
+                        if (ok) await AsyncStorage.setItem("web_push_registered", "true");
+                        if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
+                      }
+                    }
+                  } catch (e) {
+                    console.warn("[Notifications] Web push background error:", e);
+                  }
+                })();
+              }
+            }}
           >
-            <Ionicons name="notifications" size={24} color={colors.primary} />
-          </TouchableOpacity>
+            <View style={styles.iconContainer} pointerEvents="none">
+              <Ionicons name="notifications" size={22} color={colors.primary} />
+              {isValidUser && unreadNotificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
         )}
       </View>
     </View>
@@ -554,6 +644,13 @@ const styles = StyleSheet.create({
     position: "relative",
     zIndex: 10001,
     overflow: "visible",
+    ...(Platform.OS === "web" && {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 3,
+      elevation: 2,
+    }),
   },
   logo: {
     resizeMode: "contain",
@@ -561,37 +658,58 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
+    flexShrink: 0,
+  },
+  rightSectionMobile: {
+    gap: 6,
+  },
+  profileButtonMobile: {
+    marginLeft: 6,
+    paddingHorizontal: 2,
+  },
+  adminButtonMobile: {
+    marginLeft: 0,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  iconButtonMobile: {
+    marginLeft: 0,
+    padding: 4,
   },
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    minWidth: 0,
+    gap: Platform.OS === "web" ? 24 : 0,
   },
   searchContainer: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 0 : 16,
     flex: 1,
-    justifyContent: 'center',
-    alignSelf: 'center',
-    position: 'relative',
-    zIndex: 10001, 
+    maxWidth: Platform.OS === "web" ? 640 : undefined,
+    minWidth: Platform.OS === "web" ? 380 : 0,
+    justifyContent: "center",
+    alignSelf: "center",
+    position: "relative",
+    zIndex: 10001,
   },
   suggestionsDropdown: {
     position: 'absolute',
     top: '100%',
     left: 0,
-    marginTop: 4,
+    marginTop: 6,
     backgroundColor: colors.white,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.lightgrey,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
     maxHeight: 300,
     zIndex: 10002,
     overflow: 'hidden',
@@ -668,8 +786,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginLeft: 14,
-    padding: 6,
+    marginLeft: Platform.OS === "web" ? 20 : 14,
+    padding: Platform.OS === "web" ? 8 : 6,
   },
   iconContainer: {
     position: "relative",
@@ -692,11 +810,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   adminButton: {
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   adminText: {
     color: colors.white,
@@ -706,11 +824,16 @@ const styles = StyleSheet.create({
   profileButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 16,
+    marginLeft: Platform.OS === "web" ? 20 : 16,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   greetingText: {
     marginRight: 8,
     color: colors.primary,
-    fontWeight: "500",
+    fontWeight: "600",
+    fontSize: Platform.OS === "web" ? 13 : undefined,
+    maxWidth: 160,
+    overflow: "hidden",
   },
 });

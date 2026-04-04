@@ -2,13 +2,9 @@ import { StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
-  orderSummaryContainer: {
-    // marginTop: 0,
-    // paddingHorizontal: 0,
-  },
+  orderSummaryContainer: {},
   subheading: {
     fontWeight: "bold",
-    //paddingRight: 12,
   },
   checkBoxContainer: {
     padding: 0,
@@ -36,10 +32,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addressTextBox: {
-    // height: 150,
-    // borderWidth: 1,
-    // borderColor: colors.black,
-    //padding: 10,
     borderRadius: 10,
     textAlignVertical: "top",
   },
@@ -49,7 +41,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: colors.white,
     borderRadius: 8,
-    // marginVertical: 8,
+    marginVertical: 8,
     marginRight: 12,
     width: "100%",
   },
@@ -83,19 +75,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingLeft: 16,
     marginTop: 10,
-    // marginBottom: 10,
   },
   setAddressText: {
-    // fontSize: 16,
-    // fontWeight: 'normal',
     marginRight: 10,
   },
   accordianIcon: {
     marginLeft: "auto",
   },
-  accordian: {
-    //marginLeft:'auto'
-  },
+  accordian: {},
   accordionContent: {
     marginTop: 10,
     paddingLeft: 10,
@@ -142,12 +129,35 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 40,
   },
+  webLeftSectionMobile: {
+    width: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+  },
+
+  webRightSectionMobile: {
+    width: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+  },
+
+  webContentWrapperMobile: {
+    flexDirection: "column",
+    gap: 16,
+    paddingHorizontal: 16,
+    maxWidth: "100%",
+    alignItems: "stretch",
+  },
   webLeftSection: {
-    flex: 0.6,
+    flex: 0.5,
+    minWidth: 0,
     gap: 16,
   },
   webRightSection: {
-    flex: 0.4,
+    flex: 0.5,
+    minWidth: 0,
     gap: 8,
   },
   webSectionCard: {
@@ -165,13 +175,50 @@ const styles = StyleSheet.create({
   webAddressBox: {
     borderWidth: 1,
     borderColor: colors.lightgrey,
-    borderRadius: 4,
-    padding: 12,
+    borderRadius: 12,
+    padding: 16,
+    backgroundColor: colors.offWhite,
   },
   webAddressText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.black,
-    lineHeight: 20,
+    lineHeight: 22,
+  },
+  webSelectedAddressHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  webSelectedAddressLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.slateGrey,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  webAddressTypeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: colors.secondary,
+  },
+  webAddressTypeBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.primary,
+    textTransform: "capitalize",
+  },
+  webSelectedAddressName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 6,
+  },
+  webAddressMetaText: {
+    fontSize: 13,
+    color: colors.slateGrey,
+    marginTop: 6,
   },
   webSlotText: {
     fontSize: 14,
@@ -260,20 +307,51 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    // backgroundColor: colors.lightgrey,
-    borderRadius: 8,
+    borderRadius: 12,
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    backgroundColor: colors.offWhite,
+  },
+  webAccordionToggleOpen: {
+    borderColor: colors.primary,
+    backgroundColor: colors.secondary,
+  },
+  webAccordionToggleLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    minWidth: 0,
+  },
+  webAccordionLeadingIcon: {
+    marginRight: 10,
+  },
+  webAccordionToggleText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  webAccordionIconWrap: {
+    marginLeft: 12,
   },
 
   webAccordionContent: {
     marginTop: 16,
     padding: 16,
-    backgroundColor: colors.lightgrey,
-    borderRadius: 8,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
     maxHeight: 400,
     overflow: "scroll",
+  },
+  webAccordionHelperText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.slateGrey,
+    marginBottom: 14,
   },
 
   webNoAddressContainer: {
@@ -291,11 +369,57 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 0,
   },
+  webAddBillingButton: {
+    marginTop: 16,
+  },
   compactOrderSummaryHeading: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 12,
     color: colors.black,
+  },
+  noteContainer: {
+    backgroundColor: colors.ageRestrictionBg,
+    borderColor: colors.ageRestrictionBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+    width: "100%",
+    alignSelf: "stretch",
+  },
+  noteContainerWebDesktop: {
+    marginBottom: 16,
+  },
+  noteContainerWebMobile: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    marginBottom: 12,
+  },
+  noteContainerMobileSection: {
+    marginHorizontal: 12,
+    marginTop: 2,
+  },
+  noteTitle: {
+    color: colors.ageRestrictionText,
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  noteTitleWebMobile: {
+    fontSize: 14,
+    marginBottom: 3,
+  },
+  noteDescription: {
+    color: colors.ageRestrictionText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  noteDescriptionWebMobile: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   noteText: {
     fontSize: 12,
@@ -303,6 +427,90 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     marginTop: 8,
   },
+  // Payment Button Styles
+  paymentButtonsContainer: {
+    marginTop: 16,
+    gap: 12,
+  },
+  platformPayButton: {
+    backgroundColor: "#000",
+    paddingVertical: 14,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  applePayButton: {
+    backgroundColor: "#000",
+  },
+  googlePayButton: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#dadce0",
+  },
+  platformPayButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  googlePayButtonText: {
+    color: "#3c4043",
+  },
+  paymentDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e0e0e0",
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: "#666",
+    fontSize: 14,
+  },
+  movWarningContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff3cd',
+    borderLeftWidth: 4,
+    borderLeftColor: '#f39c12',
+    padding: 12,
+    marginVertical: 16,
+    borderRadius: 8,
+  },
+   movWarningTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 4,
+  },
+  movWarningText: {
+    fontSize: 13,
+    color: '#856404',
+    lineHeight: 18,
+  }, webMovWarning: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+applePayText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+googlePayText: {
+  color: '#3c4043',
+  fontSize: 16,
+  fontWeight: '600',
+},
+divider: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginVertical: 16,
+},
 });
 
 export default styles;

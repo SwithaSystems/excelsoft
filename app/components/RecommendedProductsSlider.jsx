@@ -45,14 +45,16 @@ function RecommendedProductsSlider(props) {
                   {item.title}
                 </Text>
                 <View style={styles.ratingContainer}>
-                  <Text style={styles.ratingText}>{item.rating} ★ </Text>
+                 <Text style={styles.ratingText}>
+  {Number(item.rating).toFixed(1)} ★
+</Text>
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>
               </View>
               {props.showAddToCart && (
                 <View style={styles.priceButtonContainer}>
                   <DisplayPrice
-                    discount={item.discount}
+                    // discount={item.discount}
                     netPrice={item.netPrice}
                   />
                   <View style={styles.button}>
@@ -95,7 +97,8 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   productsList: {
-    // padding: 10,
+    paddingLeft: 0,
+    paddingRight: 16,
   },
   reviewsText: {
     fontSize: 14,

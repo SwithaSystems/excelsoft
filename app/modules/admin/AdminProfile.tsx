@@ -1,22 +1,17 @@
-import { USER_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import { globalStyles } from "@/assets/styles/globalStyles";
+import { ADMIN_PROFILE_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import Header from "../../components/Header";
-import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons";
 import colors from "../../../constants/colors";
-import { router } from "expo-router";
-import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import React, { useState, useEffect, useRef } from "react";
 import containers from "@/containers";
 import * as Notifications from "expo-notifications";
 import { NotificationService } from "../../../services/notificationService";
-import { useAuth } from "@/context/AuthContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import { PageLayout } from "@/app/components/commonComponents/pageLayoutProps";
-import Footer from "@/app/components/Footer";
-import { Image, Text, TouchableOpacity, View, StyleSheet, useWindowDimensions } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
 import styles from "./AdminProfileStyle";
 import AdminFooter from "@/app/components/AdminFooter";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -48,42 +43,69 @@ const AdminProfile = () => {
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const userData_redux = useSelector((state: RootState) => state.user.user);
+  const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
+  
 
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const isMobile = !isWeb;
+   const fetchUser = async () => {
+      try {
+        const user = await UserAPI.getUserById(
+          userData_redux?._id ? userData_redux?._id : userData_redux?.id
+        );
+        if (user) {
+          setIsSuperAdmin(user?.data?.isSuperAdmin);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+  
+    React.useEffect(() => {
+      fetchUser();
+    }, []);
 
-  const settingsMenu = {
-    // "Edit Profile": containers.editProfileScreen,
+  // Define base settings menu
+  const baseSettingsMenu = {
     "Notification Settings": containers.adminNotificationSettingsScreen,
     "Store Information": containers.AdminStoreInformationScreen,
-    "Promotion Management": containers.customerSupportScreen,
     "Global settings": containers.AdminGlobalSettingsScreen,
+    "Promotion Management": containers.AdminPromotionScreen,
+    "Scan & Deliver": containers.AdminOrderQRScanScreen,
+    "Upload Bulk Data": containers.fileUploadAddProductCategoryScreen,
   };
 
+  // Conditionally add User Admin Access if isSuperAdmin is true
+  const settingsMenu = {
+    ...baseSettingsMenu,
+    ...(isSuperAdmin && { "User Admin Access": containers.adminAccessControlScreen }),
+  };
   // Responsive components
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb hideUserGreeting={true} /> : (
+  const HeaderComponent = isWeb ? <BrandHeaderWeb hideUserGreeting={true} /> : (
     <Header
-      headerText={USER_PROFILE_SCREEN_TITLE}
-      needResetNavigation={true}
+      headerText={ADMIN_PROFILE_SCREEN_TITLE}
+      needResetNavigation={false}
     />
   );
   
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter />;
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="menu" />;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  // console.log("userData_redux in userProfilescreen", userData_redux);
   
   useEffect(() => {
     const fetchUser = async () => {
-      if (!userData_redux?.id) return;
+      if (!userData_redux?.id) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
         const response = await UserAPI.getUserById(
           userData_redux?._id ? userData_redux?._id : userData_redux?.id
         );
-        // console.log("response in userProfilescreen", response?.data);
         if (response?.data) {
           setUser(response.data);
         } else {
@@ -91,13 +113,13 @@ const AdminProfile = () => {
         }
       } catch (err) {
         console.error("User fetch failed", err);
+      } finally {
+        setProfileLoading(false);
       }
     };
 
     fetchUser();
   }, [userData_redux]);
-
-  // console.log("user details fetched", user);
   
   useEffect(() => {
     const getToken = async () => {
@@ -106,33 +128,47 @@ const AdminProfile = () => {
           await NotificationService.registerForPushNotificationsAsync(
             user.id.toString()
           );
-        // console.log("Expo Push Token:", token);
         setExpoPushToken(token ?? null);
       }
     };
     getToken();
 
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        // console.log("Notification received:", notification);
-      });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        // console.log("User interacted with notification:", response);
-      });
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        try {
+          notificationListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing notification listener:", error);
+        }
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        try {
+          responseListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing response listener:", error);
+        }
       }
     };
   }, [user]);
+
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        headerComponent={HeaderComponent}
+        hasFooter
+        footerComponent={FooterComponent}
+        hasSidebar={isWeb}
+        scrollable
+        hideNavItems={true}
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
 
   return (
     <LayoutComponent
@@ -140,41 +176,19 @@ const AdminProfile = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >
       <View style={[
         responsiveStyles.container,
-        isTabOrDesktop && responsiveStyles.containerWeb
+        isWeb && responsiveStyles.containerWeb
       ]}>
         <View style={[
           responsiveStyles.profileCard,
-          isTabOrDesktop && responsiveStyles.profileCardWeb
+          isWeb && responsiveStyles.profileCardWeb
         ]}>
-          <Text style={[
-            isMobile ? styles.greeting : responsiveStyles.greetingWeb
-          ]}>
-            {user?.firstName ? `Hello, ${user.firstName}` : "Hello, User"}
-          </Text>
-          
-          <Image
-            source={
-              user?.profileImageUrl
-                ? { uri: user?.profileImageUrl }
-                : require("@/assets/default_user_profile.png")
-            }
-            style={[
-              isMobile ? globalStyles.profileImage : responsiveStyles.profileImageWeb
-            ]}
-          />
-          
-          <Text style={[
-            isMobile ? styles.userName : responsiveStyles.userNameWeb
-          ]}>
-            {user?.firstName || ""} {user?.lastName || ""}
-          </Text>
-        </View>
+        </View> 
 
         <View style={[
           isMobile ? styles.settingsContainer : responsiveStyles.settingsContainerWeb
@@ -183,8 +197,7 @@ const AdminProfile = () => {
             <TouchableOpacity
               key={index}
               style={[
-                isMobile ? styles.settingOption : responsiveStyles.settingOptionWeb,
-                index === Object.keys(settingsMenu).length - 1 && { borderBottomWidth: 0 }
+                isMobile ? styles.settingOption : responsiveStyles.settingOptionWeb
               ]}
               onPress={() => {
                 redirectToPage(
@@ -199,7 +212,7 @@ const AdminProfile = () => {
               </Text>
               <Ionicons
                 name="chevron-forward"
-                size={isTabOrDesktop ? 22 : 18}
+                size={isWeb ? 22 : 18}
                 color={colors.placeholdergrey}
               />
             </TouchableOpacity>

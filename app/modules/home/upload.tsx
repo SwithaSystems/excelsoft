@@ -11,11 +11,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  Alert,
   Platform,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import axios from "axios";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -39,6 +39,7 @@ interface UploadData {
   fileData?: any;
 }
 const ProductImportScreen: React.FC = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<any>(null);
@@ -62,7 +63,7 @@ const ProductImportScreen: React.FC = () => {
       // Extract file from assets array (NEW API)
       const pickedFile = res.assets?.[0];
       if (!pickedFile) {
-        Alert.alert("Error", "No file selected");
+        showAlert("Error", "No file selected");
         return;
       }
 
@@ -74,7 +75,7 @@ const ProductImportScreen: React.FC = () => {
       // Alert.alert("File Selected", `${res.name} ready to upload`);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Failed to pick PDF");
+      showAlert("Error", "Failed to pick PDF");
     }
   };
 
@@ -137,7 +138,7 @@ const ProductImportScreen: React.FC = () => {
       setResult(response.data);
 
       if (response.data.success) {
-        Alert.alert(
+        showAlert(
           "Success ",
           `Total: ${response.data.statistics.totalProducts}\n` +
             `Inserted: ${response.data.statistics.inserted}\n` +
@@ -145,11 +146,11 @@ const ProductImportScreen: React.FC = () => {
             `Failed: ${response.data.statistics.failed}`
         );
       } else {
-        Alert.alert("Import Failed", response.data.message);
+        showAlert("Import Failed", response.data.message);
       }
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Upload Error", error.message || "Unknown error");
+      showAlert("Upload Error", error.message || "Unknown error");
 
       setResult({
         success: false,
@@ -242,6 +243,7 @@ const ProductImportScreen: React.FC = () => {
             </View>
           </View>
         )}
+        {confirmationModal}
       </View>
     </ScrollView>
   );

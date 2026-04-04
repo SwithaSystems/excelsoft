@@ -2,6 +2,7 @@ import colors from "@/constants/colors";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import QRCode from "react-qr-code";
+import { Ionicons } from "@expo/vector-icons";
 
 const QRCodeDisplay = (props) => {
   const qrValue = "5555";
@@ -25,7 +26,15 @@ const QRCodeDisplay = (props) => {
             </Text>
           )}
           {props.noteText && (
-            <Text style={styles.noteText}>{props.noteText}</Text>
+            <View style={styles.noteBox}>
+              <Ionicons
+                name="information-circle"
+                size={24}
+                color={colors.primary}
+                style={styles.noteIcon}
+              />
+              <Text style={styles.noteText}>{props.noteText}</Text>
+            </View>
           )}
         </View>
       ) : (
@@ -44,9 +53,24 @@ const styles = StyleSheet.create({
   },
   noteText: {
     fontWeight: 500,
-    fontSize: 14,
-    color: colors.error,
-    marginBottom: 16,
+    fontSize: 12,
+    color: colors.black,
+    // marginBottom: 16,
+  },
+   noteBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    marginHorizontal: 16,
+  },
+
+  noteIcon: {
+    marginRight: 6,
+    marginTop: 2,
   },
 });
 

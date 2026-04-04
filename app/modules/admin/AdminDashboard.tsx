@@ -28,6 +28,7 @@ import BrandHeader from "@/app/components/BrandHeader";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const AdminDashboard = () => {
   const { refresh } = useLocalSearchParams();
@@ -37,9 +38,8 @@ const AdminDashboard = () => {
   const userData = useSelector((state: any) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
   const fetchUser = async () => {
     try {
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
     []
   );
 
-  const getStatusBadgeStyle = useCallback((status: String) => {
+  const getStatusBadgeStyle = useCallback((status: string) => {
     switch (status) {
       case "Order Placed":
         return globalStyles.orderPlacedBadge;
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
           <View
             style={[
               styles.eachOrderItem,
-              isTabOrDesktop && {
+              isWeb && {
                 backgroundColor: "white",
                 borderRadius: 12,
                 borderWidth: 1,
@@ -286,16 +286,18 @@ const AdminDashboard = () => {
                           }`}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      redirectToPage(containers.deliveryTrackingScreen, {
-                        from: "admin",
-                        orderId: item._id,
-                      });
-                    }}
-                  >
-                    <Text style={styles.trackOrderText}>Track Order</Text>
-                  </TouchableOpacity>
+                  {!isWeb && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        redirectToPage(containers.deliveryTrackingScreen, {
+                          from: "admin",
+                          orderId: item._id,
+                        });
+                      }}
+                    >
+                      <Text style={styles.trackOrderText}>Track Order</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
@@ -319,7 +321,7 @@ const AdminDashboard = () => {
                       : item.status === "Returned"
                       ? styles.returned
                       : styles.defaultStatus,
-                    isTabOrDesktop && {
+                    isWeb && {
                       paddingHorizontal: 10,
                       paddingVertical: 4,
                       borderRadius: 12,
@@ -339,24 +341,11 @@ const AdminDashboard = () => {
 
   const ListHeaderComponent = () => (
     <View style={[globalStyles.pt_0]}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>Dashboard</Text>
-        {!isTabOrDesktop && (
-          <Text
-            style={styles.linkText}
-            onPress={() => {
-              redirectToPage(containers.fileUploadAddProductCategoryScreen);
-            }}
-          >
-            Upload Data
-          </Text>
-        )}
-      </View>
-
       <View
         style={[
           styles.metricsContainer,
-          isTabOrDesktop && {
+          // Only apply row layout on desktop/tablet web, not mobile web browser
+          isWeb && (isTablet || isDesktop) && {
             flexDirection: "row",
             justifyContent: "space-between",
             flexWrap: "wrap",
@@ -367,7 +356,8 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -378,22 +368,14 @@ const AdminDashboard = () => {
             <Text style={styles.metricValue}>
               {dashboardMetrics.totalOrders}
             </Text>
-            {/* <View style={styles.salesRaiseSection}>
-              <Ionicons
-                name="trending-up-outline"
-                size={24}
-                color={colors.primary}
-                style={{ paddingRight: 8 }}
-              />
-              <Text style={styles.metricChange}>+12.5%</Text> 
-            </View> */}
           </View>
         </View>
 
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -410,7 +392,8 @@ const AdminDashboard = () => {
         <View
           style={[
             styles.metricBox,
-            isTabOrDesktop && { width: "32%", minHeight: 65 },
+            // Only apply width constraint on desktop/tablet web, not mobile web browser
+            isWeb && (isTablet || isDesktop) && { width: "32%", minHeight: 65 },
           ]}
         >
           <View style={styles.metricIconContainer}>
@@ -422,35 +405,8 @@ const AdminDashboard = () => {
               {CurrencySymbol}
               {dashboardMetrics.todayRevenue.toFixed(2)}
             </Text>
-            {/* <View style={styles.salesRaiseSection}>
-              <Ionicons
-                name="trending-up-outline"
-                size={24}
-                color={colors.primary}
-                style={{ paddingRight: 8 }}
-              />
-               <Text style={styles.metricChange}>+14.5%</Text> 
-            </View> */}
           </View>
         </View>
-        {isSuperAdmin && (
-          <View
-            style={[
-              styles.metricBox,
-              isTabOrDesktop && { width: "32%", minHeight: 65 },
-            ]}
-          >
-            <View style={styles.metricIconContainer}>
-              <TouchableOpacity
-                onPress={() => {
-                  redirectToPage(containers.adminAccessControlScreen);
-                }}
-              >
-                <Text style={styles.metricTitle}>User Admin Access</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
       </View>
 
       <View style={styles.ordersHeader}>
@@ -462,14 +418,14 @@ const AdminDashboard = () => {
     </View>
   );
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <BrandHeader hideUserGreeting={true} />
   );
 
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <AdminFooter activeTab="home" />
@@ -480,7 +436,7 @@ const AdminDashboard = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       scrollable
       hideNavItems={true}
     >
@@ -609,6 +565,10 @@ const AdminDashboard = () => {
         ListHeaderComponent={ListHeaderComponent}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
+       contentContainerStyle={{
+          paddingTop: isWeb ? 24 : 12, 
+          paddingBottom: 24,
+        }}
         maxToRenderPerBatch={5}
         windowSize={10}
         initialNumToRender={3}

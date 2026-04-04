@@ -13,7 +13,7 @@ import {
 } from "../../../../store/slices/savedForLaterSlice";
 import { removeFromCart } from "../../../../store/slices/cartSlice";
 import { updateQuantity } from "../../../../store/slices/cartSlice";
-import { showErrorAlert } from "../../../../utilities/showErrorAlert";
+import ConfirmationModal from "../../../components/commonComponents/ConfirmationModal";
 import {
   ITEM_OUT_OF_STOCK,
   QUANTITY_NOT_AVAILABLE,
@@ -22,11 +22,25 @@ import {
 function CartItem(props) {
   const item = props.cartItem;
   const dispatch = useDispatch();
+  const [errorModalState, setErrorModalState] = React.useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   // const cartItems = useSelector((state) => [...state.cart.items]);
   const cartItems = useSelector((state) => state.cart.items);
   const savedForLaterItems = useSelector(
     (state) => state.savedForLaterItems.items
   );
+  const showErrorAlert = ({ title, message, buttonLabel = "OK" }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
   // console.log("props", props);
 
   const getImageSource = () => {
@@ -146,8 +160,17 @@ function CartItem(props) {
           </View>
           {props?.hideActions ? (
             <>
-              <View style={[globalStyles.pl_3, { justifyContent: "center" }]}>
-                <Text style={globalStyles.h6}>
+              <View
+                style={[
+                  globalStyles.pl_3,
+                  styles.readOnlyContent,
+                ]}
+              >
+                <Text
+                  style={[globalStyles.h6, styles.readOnlyItemName]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
                   {getItemName()}
                   {props.showStockStatus && (
                     <Text style={styles.stockStatus}>
@@ -158,7 +181,7 @@ function CartItem(props) {
                 <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
                 <Text style={globalStyles.h6}>
                   <DisplayPrice
-                    discount={item.discount}
+                    // discount={item.discount}
                     netPrice={item.netPrice}
                   />
                 </Text>
@@ -166,7 +189,9 @@ function CartItem(props) {
             </>
           ) : (
             <View style={styles.itemDetails}>
-              <DisplayPrice discount={item.discount} netPrice={item.netPrice} />
+              <DisplayPrice 
+              // discount={item.discount}
+               netPrice={item.netPrice} />
               <Text style={styles.itemName}>
                 {getItemName()}
                 {props.showStockStatus && (
@@ -245,6 +270,18 @@ function CartItem(props) {
           )}
         </View>
       </View>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
     </>
   );
 }
@@ -269,6 +306,17 @@ const styles = StyleSheet.create({
   cartItemImageContainer: {
     justifyContent: "center",
     height: 136,
+  },
+  readOnlyContent: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: "center",
+    paddingRight: 12,
+  },
+  readOnlyItemName: {
+    flexShrink: 1,
+    fontSize: 14,
+    lineHeight: 20,
   },
   itemImage: {
     width: 140,

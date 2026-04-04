@@ -11,6 +11,7 @@ import {
   Platform,
   StatusBar,
   Linking,
+  ScrollView,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -35,6 +36,13 @@ import Button from "@/app/components/commonComponents/Button";
 import CarouselWeb from "@/app/components/commonComponentsWeb/carousal";
 import { promotionService } from "@/services/promotionService";
 import globalSettingsAPI from "@/services/globalSettingsService";
+import { recommendationService, RecommendedProduct } from "@/services/recommendationService";
+import ProductCard from "@/app/components/ProductCard";
+import { useAuth } from "@/context/AuthContext";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { ProductsAPI, Product } from "@/services/productService";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/store/slices/cartSlice";
 
 interface Promotion {
   imageURL: string;
@@ -44,52 +52,57 @@ interface Promotion {
   description?: string;
 }
 
-// const TEST_PROMOTIONS: Promotion[] = [
-//   {
-//     id: 1,
-//     image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
-//     link: "https://example.com/promo1",
-//     title: "Summer Sale",
-//     description: "Get 50% off on all items",
-//   },
-//   {
-//     id: 2,
-//     image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800",
-//     link: "https://example.com/promo2",
-//     title: "New Arrivals",
-//     description: "Check out our latest collection",
-//   },
-//   {
-//     id: 3,
-//     image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800",
-//     link: "https://example.com/promo3",
-//     title: "Special Offer",
-//     description: "Limited time only - Buy 2 Get 1 Free",
-//   },
-// ];
+type HomeRecommendedProduct = RecommendedProduct & {
+  isAgeRestricted?: boolean | "true" | "false";
+};
 
 const HomePage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [promotionsLoading, setPromotionsLoading] = useState(false);
+  const [promotionsLoading, setPromotionsLoading] = useState(true);
   const [carousalEnabled, setCarousalEnabled] = useState(false);
+  const [globalSettingsLoaded, setGlobalSettingsLoaded] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [recommendedProducts, setRecommendedProducts] = useState<HomeRecommendedProduct[]>([]);
+  const [recommendedProductsLoading, setRecommendedProductsLoading] = useState(true);
+  const [recommendedProductsError, setRecommendedProductsError] = useState<string | null>(null);
+  const [recommendationType, setRecommendationType] = useState<"recommended" | "hot_selling">("hot_selling");
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-
+  const dispatch = useDispatch();
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
-  const isTabOrDesktop = width >= 768;
 
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <BrandHeader />;
-  const FooterComponent = isTabOrDesktop ? (
+  // Split categories for two-row layout: first half in row 1, second half in row 2
+  // Items fill Row 1 left to right, then continue in Row 2
+  const categoriesPerRow = useMemo(() => {
+    if (categories.length === 0) return 0;
+    // Split roughly in half, with preference for row 1 if odd number
+    return Math.ceil(categories.length / 2);
+  }, [categories.length]);
+  const { isWeb, isMobile, isTablet, isDesktop } = useWebMediaQuery();
+
+  const isTabOrDesktop = isWeb && (isTablet || isDesktop);
+  const isMobileWeb = isWeb && isMobile;
+  const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <BrandHeader />;
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="home" />
   );
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
-  const carouselWidth = isTabOrDesktop ? width - 64 : width - 32;
-
+  // For web, use wider carousel that accounts for PageLayoutWeb padding
+  // PageLayoutWeb uses dynamic padding (max 80px per side), so we subtract more for web
+  // This ensures the carousel is properly sized for desktop layout
+  const carouselWidth = isWeb
+    ? (isDesktop
+      ? width - 128  // Desktop: PageLayoutWeb padding (64*2)
+      : isTablet
+        ? width - 64  // Tablet: PageLayoutWeb padding (32*2)
+        : width - 32  // Mobile: PageLayoutWeb padding (16*2) + carouselSection padding (16*2) = 64
+    )
+    : width - 32;
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
@@ -98,6 +111,8 @@ const HomePage = () => {
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
       setCarousalEnabled(true);
+    } finally {
+      setGlobalSettingsLoaded(true);
     }
   };
 
@@ -149,109 +164,72 @@ const HomePage = () => {
 
   const handleBannerPress = useMemo(
     () => async (item: any, index: number) => {
-      // console.log("item", item);
-      // item is from carouselData, which has: id, image, link, title, description, isInternalLink
-      if (item.isInternalLink && item.link) {
+      // PRIORITY 1: Category-based promotion
+      // If promotion.category exists → redirect to category page (like HeaderNavBarWeb)
+      if (item.category !== undefined && item.category !== null && item.category !== "") {
         try {
-          // Parse the link format: "offers/electronics-sale" or just "offers"
-          const linkParts = item.link
-            .split("/")
-            .filter((part: string) => part.trim() !== "");
-          const parentCategoryName = linkParts[0] || item.title || "Offers";
-          const subCategoryName = linkParts[1] || null;
+          // Parse category ID (can be string "28", number 28, or populated object)
+          const categoryIdToFind =
+            typeof item.category === "object"
+              ? item.category.id
+              : typeof item.category === "string"
+                ? parseInt(item.category, 10)
+                : item.category;
 
-          // console.log("Carousel link parsed:", { parentCategoryName, subCategoryName, originalLink: item.link });
-
-          // Fetch all categories to find the parent category by name
-          const allCategories = await categoryService.getAllCategories();
-          const parentCategory = allCategories.find((cat) =>
-            categoryNamesMatch(cat.name, parentCategoryName)
-          );
-
-          if (!parentCategory) {
-            console.error(`Parent category "${parentCategoryName}" not found`);
-            // Fallback: redirect with the link as categoryId (original behavior)
-            redirectToPage(containers.searchResultsScreen, {
-              fromSearch: true,
-              category: parentCategoryName,
-              categoryId: item.link,
-            });
+          // Skip if not a valid number
+          if (isNaN(categoryIdToFind)) {
             return;
           }
 
-          // console.log("Found parent category:", parentCategory.name, "ID:", parentCategory.id);
+          // Fetch all categories and find by numeric id
+          const allCategories = await categoryService.getAllCategories();
+          const foundCategory = allCategories.find((cat) => cat.id === categoryIdToFind);
 
-          // If there's a subcategory, find it
-          if (subCategoryName) {
-            const subCategories = await categoryService.getAllSubCategories(
-              parentCategory.id
-            );
-
-            // console.log("Available subcategories:", subCategories.map(s => s.name));
-
-            const subCategory = subCategories.find((subCat) =>
-              categoryNamesMatch(subCat.name, subCategoryName)
-            );
-
-            if (subCategory) {
-              // Navigate directly to the subcategory as the main category
-              redirectToPage(containers.searchResultsScreen, {
-                fromSearch: true,
-                category: subCategory.name,
-                categoryId: subCategory.id,
-              });
-              // // console.log(
-              //   `Navigating to category: ${parentCategory.name}, subcategory: ${subCategory.name}`
-              // );
-            } else {
-              // Subcategory not found, navigate to parent category only
-              console.warn(
-                `Subcategory "${subCategoryName}" not found under "${parentCategoryName}"`
-              );
-              redirectToPage(containers.searchResultsScreen, {
-                fromSearch: true,
-                category: parentCategory.name,
-                categoryId: parentCategory.id,
-              });
-            }
-          } else {
-            // No subcategory, navigate to parent category only
+          if (foundCategory) {
+            // Redirect EXACTLY like HeaderNavBarWeb.handleCategoryPress
             redirectToPage(containers.searchResultsScreen, {
               fromSearch: true,
-              category: parentCategory.name,
-              categoryId: parentCategory.id,
+              category: foundCategory.name,
+              categoryId: foundCategory.id,
             });
+            return; // Exit after successful redirect
           }
         } catch (error) {
-          console.error("Error processing carousel link:", error);
-          // Fallback: redirect with the link as categoryId (original behavior)
-          redirectToPage(containers.searchResultsScreen, {
-            fromSearch: true,
-            category: item.title || "Offers",
-            categoryId: item.link,
-          });
-        }
-      } else if (item.link) {
-        // console.log("Opening external link:", item.link);
-        if (Platform.OS === "web") {
-          window.open(item.link, "_blank");
-        } else {
-          // For mobile, use Linking API
-          Linking.openURL(item.link);
+          // Silent fail - continue to next priority
         }
       }
+
+      // PRIORITY 2: Product-based promotion
+      // If no category but has products → redirect to promotion products page
+      if (Array.isArray(item.products) && item.products.length > 0) {
+        try {
+          redirectToPage(containers.promotionProductsScreen, {
+            title: item.title || "Special Offers",
+            products: JSON.stringify(item.products),
+          });
+          return; // Exit after successful redirect
+        } catch (error) {
+          // Silent fail
+        }
+      }
+
+      // PRIORITY 3: Fallback
+      // If neither category nor products exist → do nothing
+      // link field is preserved for future CMS usage but not used for navigation
     },
     []
   );
   const carouselData = useMemo(() => {
-    return promotions.map((promo, index) => ({
+    return promotions.map((promo: any, index) => ({
       id: index + 1,
       image: promo.imageURL,
       link: promo.link,
       title: promo.title,
       description: "", // Add if you have description in your schema
-      isInternalLink: promo.isInternalLink, // Preserve the internal link flag
-      onPress: handleBannerPress, // Add the handler to each item
+      isInternalLink: promo.isInternalLink, // Metadata only
+      category: promo.category, // For category-based navigation
+      products: promo.products, // For product-based navigation (offers)
+      onPress: handleBannerPress,
     }));
   }, [promotions, handleBannerPress]);
 
@@ -301,13 +279,21 @@ const HomePage = () => {
     fetchCategories();
   }, []);
 
+  // Check if all initial data is loaded
+  useEffect(() => {
+    if (!loading && !promotionsLoading && globalSettingsLoaded) {
+      setIsInitialLoading(false);
+    }
+  }, [loading, promotionsLoading, globalSettingsLoaded]);
+
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
         setPromotionsLoading(true);
         const data = await promotionService.getAllPromotions();
-        setPromotions(data);
-        // console.log("Fetched promotions:", data);
+        // Filter to only show live promotions (isLive: true)
+        const livePromotions = data.filter((promo: any) => promo.isLive === true);
+        setPromotions(livePromotions);
       } catch (error) {
         console.error("Error fetching promotions:", error);
         // Optionally set empty array or show error message
@@ -319,6 +305,110 @@ const HomePage = () => {
     fetchPromotions();
   }, []);
 
+  // Fetch recommended products (wait for auth to be determined first)
+  useEffect(() => {
+    // Wait for authentication state to be determined before fetching
+    if (isAuthLoading) {
+      return; // Don't fetch while auth is still loading
+    }
+
+    const fetchRecommendedProducts = async () => {
+      try {
+        setRecommendedProductsLoading(true);
+        setRecommendedProductsError(null);
+        // console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
+        const response = await recommendationService.getRecommendedProducts(10);
+        // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
+        if (response && response.products && response.products.length > 0) {
+          const productsNeedingAgeLookup = response.products.filter(
+            (item) =>
+              typeof item?.ageRestricted !== "boolean" &&
+              Number.isFinite(Number(item?.id))
+          );
+
+          let resolvedAgeMap: Record<number, boolean> = {};
+          if (productsNeedingAgeLookup.length > 0) {
+            const lookupResults = await Promise.allSettled(
+              productsNeedingAgeLookup.map((item) =>
+                ProductsAPI.getProductBYID(Number(item.id))
+              )
+            );
+
+            lookupResults.forEach((result) => {
+              if (result.status === "fulfilled") {
+                const product: Product = result.value;
+                const productId = Number(product?.id);
+                if (Number.isFinite(productId)) {
+                  resolvedAgeMap[productId] =
+                    product?.isAgeRestricted === true ||
+                    product?.ageRestricted === true;
+                }
+              }
+            });
+          }
+
+          const normalizedProducts = response.products.map((item) => {
+            const productId = Number(item.id);
+            const hasDirectFlag =
+              typeof item?.isAgeRestricted === "boolean" ||
+              typeof item?.ageRestricted === "boolean";
+            const resolvedFlag =
+              Number.isFinite(productId) && productId in resolvedAgeMap
+                ? resolvedAgeMap[productId]
+                : undefined;
+
+            return {
+              ...item,
+              isAgeRestricted: hasDirectFlag
+                ? item.isAgeRestricted ?? item.ageRestricted
+                : resolvedFlag ?? item.isAgeRestricted ?? item.ageRestricted,
+            };
+          });
+          setRecommendedProducts(normalizedProducts);
+          setRecommendationType(response.type);
+        } else {
+          setRecommendedProducts([]);
+          setRecommendationType("hot_selling");
+        }
+      } catch (error: any) {
+        console.error("[Home] Error fetching recommended products:", error);
+        const errorMessage = error?.response?.data?.message || error?.message || "Failed to load recommendations";
+        console.error("[Home] Error details:", {
+          message: errorMessage,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+        setRecommendedProductsError(errorMessage);
+        setRecommendedProducts([]);
+        setRecommendationType("hot_selling");
+      } finally {
+        setRecommendedProductsLoading(false);
+      }
+    };
+    fetchRecommendedProducts();
+  }, [isAuthenticated, isAuthLoading]);
+  const handleAddToCart = (item: any) => {
+    dispatch(addToCart({
+      id: item.id,
+      name: item.title,
+      netPrice: item.netPrice,
+      image: item.imageUrl,
+      quantity: 1,
+      isAgeRestricted: item.isAgeRestricted ?? item.ageRestricted ?? false,
+      isVatApplicable: item.isVatApplicable || false,
+      vatRate: item.vatRate || 0,
+      vatAmount: item.vatAmount || 0,
+    }));
+  };
+  // Show full-screen loader until all required data is loaded
+  if (isInitialLoading) {
+    return (
+      <View style={styles.fullScreenLoader}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <LayoutComponent
       hasHeader
@@ -327,50 +417,79 @@ const HomePage = () => {
       footerComponent={FooterComponent}
       scrollable
     >
-      <View style={styles.container}>
-        <Header />
+      <View style={[
+        styles.container,
+        !isWeb && styles.containerMobile,
+        isWeb && styles.containerWeb
+      ]}>
+        {!isWeb && <Header />}
 
-        {isMobile && (
+        {!isWeb && (
           <View style={styles.categoriesContainer}>
             {loading ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : (
-              <FlatList
-                data={categories}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item: any) => item.id}
-                renderItem={({ item }) => (
-                  <CategoryItem_Home
-                    name={item.name}
-                    imageUrl={item.images?.[0] || ""}
-                    onPress={() =>
-                      item.name === "All"
-                        ? redirectToPage(containers.categoriesScreen, {
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                        : redirectToPage(containers.searchResultsScreen, {
-                            fromSearch: true,
-                            category: item.name,
-                            categoryId: item.id,
-                          })
-                    }
-                  />
-                )}
-              />
+              <View style={styles.categoriesViewport}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.categoriesScrollContent}
+                >
+                  <View style={styles.categoriesRowsContainer}>
+                    <View style={styles.categoryRow}>
+                      {categories.slice(0, categoriesPerRow).map((item) => (
+                        <CategoryItem_Home
+                          key={item.id}
+                          name={item.name}
+                          imageUrl={item.images?.[0] || ""}
+                          onPress={() =>
+                            item.name === "All"
+                              ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                              : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                          }
+                        />
+                      ))}
+                    </View>
+                    <View style={styles.categoryRow}>
+                      {categories.slice(categoriesPerRow).map((item) => (
+                        <CategoryItem_Home
+                          key={item.id}
+                          name={item.name}
+                          imageUrl={item.images?.[0] || ""}
+                          onPress={() =>
+                            item.name === "All"
+                              ? redirectToPage(containers.categoriesScreen, {
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                              : redirectToPage(containers.searchResultsScreen, {
+                                fromSearch: true,
+                                category: item.name,
+                                categoryId: item.id,
+                              })
+                          }
+                        />
+                      ))}
+                    </View>
+                  </View>
+                </ScrollView>
+              </View>
             )}
           </View>
         )}
-        {/* <Button
-          title="Go to Upload Page"
-          onPress={() => redirectToPage(containers.uploadScreen)}
-        /> */}
         {carousalEnabled && (
           <View
             style={[
               styles.carouselSection,
-              isTabOrDesktop && { marginTop: 32 },
+              isTabOrDesktop && styles.carouselSectionDesktop,
+              isMobileWeb && styles.carouselSectionMobile,
             ]}
           >
             {promotionsLoading ? (
@@ -388,8 +507,74 @@ const HomePage = () => {
                 showArrows={true}
                 showIndicators={true}
                 width={carouselWidth}
-                height={isTabOrDesktop ? 420 : 230}
+                height={isDesktop ? 420 : isTablet ? 350 : 230}
                 borderRadius={12}
+              />
+            ) : null}
+          </View>
+        )}
+
+        {/* Recommended / Hot Selling Products Section */}
+        {!isAuthLoading && (recommendedProductsLoading || recommendedProducts.length > 0 || recommendedProductsError) && (
+          <View style={[
+            styles.recommendedSection,
+            isTabOrDesktop && styles.recommendedSectionDesktop,
+            isMobileWeb && styles.recommendedSectionMobile,
+          ]}>
+            <Text style={[
+              styles.sectionTitle,
+              isTabOrDesktop && styles.sectionTitleDesktop,
+            ]}>
+              {recommendationType === "recommended" ? "Recommended for You" : "Hot Selling Products"}
+            </Text>
+            {recommendedProductsLoading ? (
+              <View style={styles.recommendedLoader}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            ) : recommendedProductsError ? (
+              <View style={styles.recommendedLoader}>
+                <Text style={styles.errorText}>
+                  {recommendedProductsError}
+                </Text>
+              </View>
+            ) : recommendedProducts.length > 0 ? (
+              <FlatList
+                horizontal
+                data={recommendedProducts}
+                keyExtractor={(item) => item.id.toString()}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.recommendedList}
+                renderItem={({ item }) => {
+                  const finalPrice = item.price || 0;
+
+                  // To hide discount percentage, set discount to 0
+                  // If there's an actual discount, we could show it, but user wants to hide it
+                  // So we'll set discount to 0 and use netPrice as the final price
+                  const productCardProps = {
+                    id: item.id.toString(),
+                    name: item.name,
+                    rating: item.rating,
+                    noOfreviews: item.reviews || 0,
+                    noOfReviews: item.reviews || 0, // Alias for type compatibility
+                    reviews: [], // Empty array for type compatibility (reviews is an array of review objects)
+                    isReturnable: false, // Default value
+                    discount: 0, // Set to 0 to hide discount percentage
+                    netPrice: finalPrice, // Use final price as netPrice (no discount shown)
+                    image: item.imageUrl || require("@/assets/Placeholder.png"),
+                    categoryId: [],
+                    description: "",
+                    isAgeRestricted: item.isAgeRestricted ?? item.ageRestricted ?? false,
+                    isVatApplicable: false,
+                    vatRate: 0,
+                    vatAmount: 0,
+                    ageBadgeVariant: "compact" as const,
+                  } as any; // Type assertion to handle ProductCard prop compatibility
+                  return (
+                    <View style={styles.recommendedCardWrapper}>
+                      <ProductCard {...productCardProps} />
+                    </View>
+                  );
+                }}
               />
             ) : null}
           </View>
@@ -405,9 +590,35 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginVertical: 8,
   },
+  fullScreenLoader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.white,
+  },
+  containerWeb: {
+    marginVertical: 0,
+  },
+  containerMobile: {
+    flex: 0, // Remove flex: 1 to allow scrolling in ScrollView - content determines height
+    flexGrow: 1, // Allow content to grow but don't force full height
+  },
   carouselSection: {
     marginVertical: 16,
     paddingHorizontal: 16,
+    width: "100%",
+    alignItems: "center",
+  },
+  carouselSectionMobile: {
+    paddingHorizontal: 16,
+    marginTop: 4,
+    marginBottom: 12,
+    width: "100%",
+  },
+  carouselSectionDesktop: {
+    marginTop: 40,
+    marginBottom: 48,
+    paddingHorizontal: 0,
   },
   carouselLoader: {
     height: 230,
@@ -418,6 +629,73 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
   },
+  recommendedSection: {
+    marginVertical: 16,
+    // paddingHorizontal: 16,
+    width: "100%",
+  },
+  recommendedSectionMobile: {
+    // paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    width: "100%",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: colors.black,
+    letterSpacing: 0.3,
+  },
+  sectionTitleDesktop: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 20,
+  },
+  recommendedList: {
+    paddingRight: 4,
+  },
+  recommendedCardWrapper: {
+    width: 160,
+    marginHorizontal: 10,
+  },
+  recommendedSectionDesktop: {
+    marginTop: 40,
+    marginBottom: 48,
+    paddingHorizontal: 0,
+  },
+  recommendedLoader: {
+    height: 280,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: colors.secondaryText,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  recommendedTitleMobile: {
+    fontSize: 18,
+    marginLeft: 0,
+  },
+  categoriesViewport: {
+    width: "100%",
+    alignSelf: "flex-start",
+  },
+  categoriesScrollContent: {
+    // paddingHorizontal: 8,
+    // paddingLeft: 0,
+    // paddingRight: 16, 
+  },
+  categoriesRowsContainer: {
+    flexDirection: "column",
+  },
+  categoryRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+
+
 });
 
 export default HomePage;

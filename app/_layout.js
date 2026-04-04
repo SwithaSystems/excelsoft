@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+// app/_layout.js
+
+import React, { useEffect, useState, useRef } from "react";
 import { Stack } from "expo-router";
 import { Provider } from "react-redux";
 import { store, persistor } from "../store/store";
@@ -15,61 +17,227 @@ import Toast from "react-native-toast-message";
 import CustomToastAlert from "../app/components/commonComponents/CustomToastAlert";
 import BiometricAuth from "../app/components/Biometriauth";
 import * as SecureStore from "expo-secure-store";
+import * as Notifications from "expo-notifications";
 import axios from "axios";
+import { handleNotificationNavigation } from "@/services/navigationService";
+import { DeviceEventEmitter, AppState, Platform } from "react-native";
+import WebPullToRefresh, { webPullToRefresh } from "../app/components/commonComponentsWeb/webPullToRefresh";
+
+// Only configure notification handler on mobile platforms
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 // Notifications setup
 function NotificationsHandler() {
+  const { user } = useAuth();
+  const notificationListener = useRef();
+  const responseListener = useRef();
+  const appState = useRef(AppState.currentState);
+
+  // Web only: listen for push payloads from the service worker so the in-app list updates
   useEffect(() => {
+    if (Platform.OS !== "web" || typeof navigator === "undefined" || !navigator.serviceWorker) return;
+    const hasController = !!navigator.serviceWorker.controller;
+    console.log("[Layout] Web: PUSH_PAYLOAD listener added. Controller:", hasController);
+    if (!hasController) {
+      navigator.serviceWorker.addEventListener("controllerchange", function onCtrl() {
+        console.log("[Layout] Web: SW now controlling page; ready to receive push.");
+        navigator.serviceWorker.removeEventListener("controllerchange", onCtrl);
+      }, { once: true });
+    }
+    const onMessage = async (event) => {
+      if (event.data?.type !== "PUSH_PAYLOAD") return;
+      console.log("[Layout] PUSH_PAYLOAD received from service worker", event.data.payload);
+      const { title, body, data } = event.data.payload || {};
+      const notificationItem = {
+        id: "web-push-" + Date.now(),
+        title: title || "Notification",
+        body: body || "",
+        data: data || {},
+        timestamp: Date.now(),
+        isRead: false,
+        type: (data && data.type) || "general",
+      };
+      try {
+        await NotificationService.saveNotification(notificationItem);
+        if (DeviceEventEmitter && DeviceEventEmitter.emit) {
+          DeviceEventEmitter.emit("notificationUpdate");
+        }
+        console.log("[Layout] Notification saved and notificationUpdate emitted");
+      } catch (err) {
+        console.error("[Layout] Failed to save notification:", err);
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    // Skip Expo notification listeners on web (web uses service worker + message above)
+    if (Platform.OS === "web") return;
+
     const initializeNotifications = async () => {
-      const user = await authService.getCurrentUser();
-      if (user?.id) {
+      const currentUser = await authService.getCurrentUser();
+      if (currentUser?.id) {
         await NotificationService.registerForPushNotificationsAsync(
-          user.id.toString()
+          currentUser.id.toString()
         );
 
-        const subscription = await NotificationService.subscribeToNotifications(
-          (notification) => {
-            // console.log("Notification received:", notification);
+        // Handle notification received
+        notificationListener.current =
+          Notifications.addNotificationReceivedListener(
+            async (notification) => {
+              // console.log("📱 Notification received:", notification);
+
+              const notificationItem = {
+                id: notification.request.identifier,
+                title: notification.request.content.title || "Notification",
+                body: notification.request.content.body || "",
+                data: notification.request.content.data,
+                timestamp: Date.now(),
+                isRead: false,
+                type:
+                  (notification.request.content.data &&
+                    notification.request.content.data.type) ||
+                  "general",
+              };
+
+              await NotificationService.saveNotification(notificationItem);
+              DeviceEventEmitter.emit("notificationUpdate");
+
+              if (appState.current === "active") {
+                Toast.show({
+                  type: "customToast",
+                  text1: notification.request.content.title,
+                  text2: notification.request.content.body,
+                  visibilityTime: 4000,
+                  autoHide: true,
+                  topOffset: 50,
+                  onPress: async () => {
+                    await NotificationService.markAsRead(notificationItem.id);
+                    DeviceEventEmitter.emit("notificationUpdate");
+                    handleNotificationNavigation(
+                      notification.request.content.data
+                    );
+                  },
+                });
+              }
+            }
+          );
+
+        // Handle notification tap
+        responseListener.current =
+          Notifications.addNotificationResponseReceivedListener(
+            async (response) => {
+              // console.log("👆 User tapped notification:", response);
+
+              const notification = response.notification;
+              const data = notification.request.content.data;
+
+              const notificationItem = {
+                id: notification.request.identifier,
+                title: notification.request.content.title || "Notification",
+                body: notification.request.content.body || "",
+                data: data,
+                timestamp: Date.now(),
+                isRead: true,
+                type: (data && data.type) || "general",
+              };
+
+              await NotificationService.saveNotification(notificationItem);
+              DeviceEventEmitter.emit("notificationUpdate");
+
+              setTimeout(() => {
+                handleNotificationNavigation(data);
+              }, 500);
+            }
+          );
+
+        // Check if app was opened from a notification
+        const initialNotification =
+          await Notifications.getLastNotificationResponseAsync();
+        if (initialNotification) {
+          // console.log("🚀 App opened from notification:", initialNotification);
+          const data = initialNotification.notification.request.content.data;
+
+          setTimeout(() => {
+            handleNotificationNavigation(data);
+          }, 1500);
+        }
+
+        // Track app state changes
+        const subscription = AppState.addEventListener(
+          "change",
+          (nextAppState) => {
+            appState.current = nextAppState;
+            // console.log("App state changed to:", nextAppState);
           }
         );
 
-        const responseSubscription =
-          await NotificationService.handleNotificationResponse((response) => {
-            const data = response.notification.request.content.data;
-            // console.log("User interacted with notification:", data);
-          });
-
         return () => {
-          subscription.remove();
-          responseSubscription.remove();
+          if (notificationListener.current) {
+            try {
+              notificationListener.current.remove();
+            } catch (error) {
+              console.warn("Error removing notification listener:", error);
+            }
+          }
+          if (responseListener.current) {
+            try {
+              responseListener.current.remove();
+            } catch (error) {
+              console.warn("Error removing response listener:", error);
+            }
+          }
+          subscription?.remove();
         };
       }
     };
 
     initializeNotifications();
-  }, []);
+  }, [user]);
 
   return null;
 }
 
-// Biometric Wrapper
+// Biometric Wrapper: only show biometric when app is reopened after kill (cold start with existing session).
+// Run the check ONLY once after initial auth load; do not re-run when user changes (e.g. after login).
 function BiometricAuthWrapper({ children }) {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isBiometricAuthenticated, setIsBiometricAuthenticated] =
     useState(false);
   const [isCheckingBiometric, setIsCheckingBiometric] = useState(true);
   const { user } = useAuth();
+  const hasRunInitialCheck = useRef(false);
 
   useEffect(() => {
+    if (hasRunInitialCheck.current) return;
+    hasRunInitialCheck.current = true;
     checkBiometricSettings();
-  }, [user]);
+  }, []);
 
   const checkBiometricSettings = async () => {
     try {
+      // Skip biometrics on web
+      if (Platform.OS === "web") {
+        setIsBiometricEnabled(false);
+        setIsBiometricAuthenticated(true);
+        setIsCheckingBiometric(false);
+        return;
+      }
+
       const biometricEnabled = await SecureStore.getItemAsync(
         "biometric_enabled"
       );
 
+      // Use current user from context (at mount this is the restored session or null; we do not re-run after login)
       if (user && biometricEnabled === "true") {
         setIsBiometricEnabled(true);
         setIsBiometricAuthenticated(false);
@@ -118,8 +286,10 @@ function BiometricAuthWrapper({ children }) {
 // Main layout content
 function LayoutContent() {
   const { isLoading } = useAppContext();
+  const { isLoading: authLoading } = useAuth();
 
-  if (isLoading) {
+  // Wait for initial auth check so BiometricAuthWrapper sees restored session (or null) — not post-login user
+  if (isLoading || authLoading) {
     return <SplashScreen />;
   }
 
@@ -138,18 +308,15 @@ export default function Layout() {
   useEffect(() => {
     const fetchStripeConfig = async () => {
       try {
-        // console.log("Fetching Stripe config from:", `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`);
         const res = await axios.get(
           `${process.env.EXPO_PUBLIC_API_URL}/stripe-config/${clientId}`
         );
-        // console.log("Stripe config response:", res.data);
-        
-        if (!res.data?.stripePublishableKey) {
+
+        if (!res.data || !res.data.stripePublishableKey) {
           console.error("No publishable key in response:", res.data);
-          return; // Exit if no key is found
+          return;
         }
-        
-        // console.log("Setting Stripe publishable key");
+
         setStripePublishableKey(res.data.stripePublishableKey);
       } catch (error) {
         console.error("Failed to fetch Stripe config", error);
@@ -159,19 +326,15 @@ export default function Layout() {
     fetchStripeConfig();
   }, []);
 
-  // Don't render anything until we have a valid Stripe key
   if (!stripePublishableKey) {
-    // console.log('Waiting for Stripe publishable key...');
     return <SplashScreen />;
   }
 
-  // console.log('Initializing Stripe with key:', stripePublishableKey.substring(0, 20) + '...');
-
   return (
-    <StripeProvider 
+    <StripeProvider
       publishableKey={stripePublishableKey}
-      urlScheme="yourapp" // required for 3D Secure and bank redirects
-      merchantIdentifier="merchant.com.yourapp" // required for Apple Pay
+      urlScheme="excelsoft"
+      merchantIdentifier="merchant.com.excelsoft.app"
     >
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
@@ -179,7 +342,9 @@ export default function Layout() {
             <AuthProvider>
               <RoleProvider>
                 <NotificationsHandler />
-                <LayoutContent />
+                <WebPullToRefresh>
+                  <LayoutContent />
+                </WebPullToRefresh>
                 <Toast
                   config={{
                     customToast: ({ text1, text2, onPress }) => (

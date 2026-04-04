@@ -144,7 +144,11 @@ const Footer = ({ navigation, activeTab = "" }: any) => {
 };
 
 const FooterButton = ({ icon, label, isActive, onPress, badge }: any) => (
-  <TouchableOpacity style={styles.footerTab} onPress={onPress}>
+  <TouchableOpacity 
+    style={styles.footerTab} 
+    onPress={onPress}
+    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+  >
     <View style={styles.iconContainer}>
       <Ionicons
         name={icon}

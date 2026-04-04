@@ -6,7 +6,7 @@ import {
   ScrollView,
   Dimensions,
   ActivityIndicator,
-  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { CheckBox } from "react-native-elements";
 import colors from "../../../constants/colors";
@@ -42,8 +42,7 @@ const Filter = () => {
   const itemWidth = (Dimensions.get("window").width - 30) / 2 - 8;
 
   // Responsive design: detect if device is tablet or desktop
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   useEffect(() => {
     const fetchSubCategories = async () => {
@@ -96,19 +95,19 @@ const Filter = () => {
   const isApplyFiltersEnabled = categories.length > 0 && Object.values(selectedCategories).some((checked) => checked);
 
   // Choose layout component based on screen size
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={FILTER_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
   );
 
-  if (isTabOrDesktop) {
+  if (isWeb) {
     return (
       <LayoutComponent
         hasFooter

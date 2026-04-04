@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  useWindowDimensions,
   Image,
   Animated,
   Easing,
+  ScrollView,
 } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserAPI } from "@/services/userService";
 import containers from "@/containers";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 interface NavItem {
   id: string;
@@ -31,9 +32,17 @@ interface QuickLinkItem {
   route: string;
 }
 
+interface UserSidebarWebProps {
+  isDrawer?: boolean;
+  onClose?: () => void;
+  onLogout?: () => void;
+  onDeleteAccount?: () => void;
+}
+
 const navItems: NavItem[] = [
   { id: "profile", label: "Profile Settings", icon: "person", route: containers.editProfileScreen },
   { id: "address", label: "Saved Address", icon: "location", route: containers.savedAddressScreen },
+  { id: "contact", label: "Contact Information", icon: "call", route: containers.editContactInformationWebScreen },
   { id: "password", label: "Change Password", icon: "lock-closed", route: containers.changePasswordScreen },
   { id: "notification", label: "Notification", icon: "notifications", route: containers.notificationsScreen },
   // { id: "cards", label: "Saved Cards", icon: "card", route: "/saved-cards" },
@@ -46,17 +55,19 @@ const navItems: NavItem[] = [
 //   // { id: "payments", label: "Payments", icon: "credit-card", route: "/payments" },
 // ];
 
-export const UserSidebarWeb: React.FC = () => {
+export const UserSidebarWeb: React.FC<UserSidebarWebProps> = ({
+  isDrawer = false,
+  onClose,
+  onLogout,
+  onDeleteAccount,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
+  const { isWeb } = useWebMediaQuery();
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
   const [user, setUser] = useState<any>(null);
   // const [showQuickLinks, setShowQuickLinks] = useState(false);
-
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
 
   const dropdownAnim = useState(new Animated.Value(0))[0];
 
@@ -97,6 +108,10 @@ export const UserSidebarWeb: React.FC = () => {
   const handleNavigation = (route: string, params?: any) => {
     if (params) router.push({ pathname: route as any, params });
     else router.push(route as any);
+    // Close drawer if it's open
+    if (isDrawer && onClose) {
+      onClose();
+    }
   };
 
   // const handleQuickLinkPress = (item: QuickLinkItem) => {
@@ -113,58 +128,143 @@ export const UserSidebarWeb: React.FC = () => {
   const isActive = (route: string) =>
     pathname === route || pathname?.startsWith(route);
 
-  if (!isTablet && !isDesktop) return null;
+  if (!isWeb) return null;
+
+  // Don't render on mobile browser unless it's in drawer mode
+  const { isMobile } = useWebMediaQuery();
+  if (!isDrawer && isMobile) {
+    return null;
+  }
 
   return (
-    <View style={[styles.container]}>
-      {/* Profile */}
-      <View style={styles.profileSection}>
-        <Image
-          source={
-            user?.profileImageUrl
-              ? { uri: user.profileImageUrl }
-              : require("@/assets/default_user_profile.png")
-          }
-          style={styles.profileImage}
-        />
-        <Text style={styles.userName} numberOfLines={1}>
-          {user?.firstName && user?.lastName
-            ? `${user.firstName} ${user.lastName}`
-            : user?.firstName || "User"}
-        </Text>
-      </View>
+    <View style={[styles.container, isDrawer && styles.containerDrawer]}>
+      {/* Profile (desktop only) */}
+      {!isDrawer && (
+        <View style={styles.profileSection}>
+          <Image
+            source={
+              user?.profileImageUrl
+                ? { uri: user.profileImageUrl }
+                : require("@/assets/default_user_profile.png")
+            }
+            style={styles.profileImage}
+          />
+          <Text style={styles.userName} numberOfLines={1}>
+            {user?.firstName && user?.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : user?.firstName || "User"}
+          </Text>
+        </View>
+      )}
 
-      {/* Navigation */}
-      <View style={styles.navList}>
-        {navItems.map((item) => {
-          const active = isActive(item.route);
-          return (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.navItem, active && styles.navItemActive]}
-              onPress={() => handleNavigation(item.route)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.navItemContent}>
-                <Ionicons
-                  name={item.icon}
-                  size={22}
-                  color={active ? colors.white : colors.darkGray}
-                />
-                <Text
-                  style={[
-                    styles.navLabel,
-                    active && styles.navLabelActive,
-                  ]}
-                  numberOfLines={1}
+      {isDrawer ? (
+        <>
+          {/* Drawer: scrollable nav list fills space, bottom section pinned */}
+          <ScrollView
+            style={styles.drawerScroll}
+            contentContainerStyle={styles.drawerScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.navListDrawer}>
+              {navItems.map((item) => {
+                const active = isActive(item.route);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.navItem, active && styles.navItemActive]}
+                    onPress={() => handleNavigation(item.route)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.navItemContent}>
+                      <Ionicons
+                        name={item.icon}
+                        size={22}
+                        color={active ? colors.white : colors.darkGray}
+                      />
+                      <Text
+                        style={[
+                          styles.navLabel,
+                          active && styles.navLabelActive,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+          <View style={styles.drawerBottomSection}>
+            <View style={styles.divider} />
+            <View style={styles.drawerBottomActions}>
+              {onLogout && (
+                <TouchableOpacity
+                  style={styles.drawerBottomButton}
+                  onPress={() => {
+                    onLogout();
+                    onClose?.();
+                  }}
+                  activeOpacity={0.7}
                 >
-                  {item.label}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                  <Ionicons name="log-out-outline" size={20} color={colors.darkGray} />
+                  <Text style={styles.drawerBottomButtonText}>Log Out</Text>
+                </TouchableOpacity>
+              )}
+              {onDeleteAccount && (
+                <TouchableOpacity
+                  style={styles.drawerBottomButton}
+                  onPress={() => {
+                    onDeleteAccount();
+                    onClose?.();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="trash-outline" size={20} color={colors.primaryRed} />
+                  <Text style={[styles.drawerBottomButtonText, styles.drawerBottomButtonTextDanger]}>
+                    Delete Account
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </>
+      ) : (
+        <>
+          {/* Desktop: single column, nav list then (no bottom section) */}
+          <View style={styles.navList}>
+            {navItems.map((item) => {
+              const active = isActive(item.route);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.navItem, active && styles.navItemActive]}
+                  onPress={() => handleNavigation(item.route)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.navItemContent}>
+                    <Ionicons
+                      name={item.icon}
+                      size={22}
+                      color={active ? colors.white : colors.darkGray}
+                    />
+                    <Text
+                      style={[
+                        styles.navLabel,
+                        active && styles.navLabelActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      )}
 
       {/* Quick Links Section */}
       {/* <View style={styles.quickLinksContainer}>
@@ -236,6 +336,10 @@ const styles = StyleSheet.create({
     borderRightColor: colors.lightgrey,
     overflow: "visible",
   },
+  containerDrawer: {
+    borderRightWidth: 0,
+    paddingTop: 0,
+  },
 
   profileSection: {
     alignItems: "center",
@@ -262,6 +366,18 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     gap: 8,
     flex: 1,
+  },
+  drawerScroll: {
+    flex: 1,
+  },
+  drawerScrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  navListDrawer: {
+    gap: 8,
   },
   navItem: {
     flexDirection: "row",
@@ -297,6 +413,28 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.lightgrey,
     marginBottom: 12,
+  },
+
+  drawerBottomSection: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  drawerBottomActions: {
+    gap: 0,
+  },
+  drawerBottomButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+  },
+  drawerBottomButtonText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: colors.darkGray,
+  },
+  drawerBottomButtonTextDanger: {
+    color: colors.primaryRed,
   },
 
   // quickLinksWrapper: {

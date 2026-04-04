@@ -46,6 +46,17 @@ export const authService = {
     }
   },
 
+  async recover(payload: {
+    userData: { phone: string; email: string; password: string };
+  }) {
+    try {
+      const response = await jsonAxios.post("/auth/recover", payload);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   /**
    * Logs out the current user by removing tokens and user info from AsyncStorage.
    * Redirects to the sign-in screen.

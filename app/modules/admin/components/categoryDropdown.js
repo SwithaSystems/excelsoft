@@ -12,13 +12,26 @@ const CategoryDropdown = ({
   const [isVisible, setIsVisible] = useState(false);
 
   const handleSelect = (category) => {
-    // console.log("Parent category", category);
-    setSelectedCategory(category.id);
+    // Handle "All Categories" option (when id and _id are both null/undefined)
+    if ((!category.id && !category._id) || category.id === null || category._id === null) {
+      setSelectedCategory("");
+      setIsVisible(false);
+      return;
+    }
+    // Support both id and _id
+    const categoryId = category.id || category._id;
+    setSelectedCategory(categoryId);
     setIsVisible(false);
   };
 
   const getSelectedCategoryName = () => {
-    const selected = categories.find((cat) => cat.id === selectedCategory);
+    if (!selectedCategory || selectedCategory === "") {
+      return placeholder;
+    }
+    // Support both id and _id
+    const selected = categories.find(
+      (cat) => (cat.id || cat._id) == selectedCategory
+    );
     return selected ? selected.name : placeholder;
   };
 
@@ -52,8 +65,12 @@ const CategoryDropdown = ({
         >
           <View style={styles.modalContent}>
             <FlatList
-              data={categories}
-              keyExtractor={(item) => item.id.toString()}
+              data={[{ name: placeholder, id: null, _id: null }, ...categories]}
+              keyExtractor={(item, index) => 
+                item.id ? item.id.toString() : 
+                item._id ? item._id.toString() : 
+                `all-categories-${index}`
+              }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.option}

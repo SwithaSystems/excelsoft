@@ -1,7 +1,13 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
+  pageHeading: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.black,
+    marginBottom: 20,
+  },
   heading: {
     fontSize: 18,
     marginBottom: 16,
@@ -52,6 +58,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 36,
   },
+  reviewHeadingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  addReviewLink: {
+    textDecorationLine: "underline",
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: "500",
+  },
   noReviewContainerHeading: {
     //fontWeight: 500,
     fontSize: 26,
@@ -82,6 +102,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     // paddingTop: 8,
     color: colors.primary,
+  },
+
+  // Web-specific styles
+  webContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  webContentWrapper: {
+    maxWidth: 1200,
+    alignSelf: "center",
+    width: "100%",
+    paddingVertical: Platform.OS === "web" ? 24 : 0,
+    paddingHorizontal: 0,
+  },
+  webSectionContent: {
+    paddingHorizontal: 0,
+  },
+  webReviewsHeader: {
+    marginBottom: 8,
+  },
+  webOverAllRatingContainer: {
+    marginBottom: 24,
+  },
+  webStarsContainer: {
+    marginBottom: 0,
+  },
+  webEmptyStateContainer: {
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
+  webReviewsContainer: {
+    marginTop: 8,
+  },
+  webAddReviewContainer: {
+    paddingHorizontal: 0,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  webAddReviewBtn: {
+    borderRadius: 50,
   },
   // reviewsHeader:{
   //     flexDirection:"row",

@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import {  Pressable } from "react-native";
 
 interface SearchBarProps {
   placeholder: string;
@@ -37,6 +39,7 @@ const Touchable = ({ onPress, children, style }: any) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          outline: "none",
           ...style,
         }}
       >
@@ -64,10 +67,16 @@ const SearchBar = ({
   height,
 }: SearchBarProps) => {
   const { width } = useWindowDimensions();
-
-  const isMobile = width < 768;
-  const defaultBarWidth = isMobile ? "100%" : width < 1280 ? "60%" : "40%";
-  const barWidth = isMobile
+  const { isWeb, isMobile, isLargeDesktop } = useWebMediaQuery();
+  
+  // For web, use media query-based breakpoints; for native, use width-based fallback
+  const isMobileWidth = isWeb ? isMobile : width < 768;
+  const defaultBarWidth = isMobileWidth 
+    ? "100%" 
+    : isWeb && isLargeDesktop 
+    ? "55%" 
+    : "70%";
+  const barWidth = isMobileWidth
     ? "100%"
     : typeof widthPercent === "number"
     ? `${Math.min(100, Math.max(0, widthPercent))}%`
@@ -77,55 +86,102 @@ const SearchBar = ({
     styles.searchContainer,
     { 
       width: barWidth as `${number}%`, 
-      alignSelf: (isMobile ? "center" : "flex-start") as "center" | "flex-start",
-      height: typeof height === "number" ? height : isMobile ? 52 : 40,
-      minWidth:0,
+      alignSelf: (isMobileWidth ? "center" : "flex-start") as "center" | "flex-start",
+      height: typeof height === "number" ? height : isMobileWidth ? 52 : 48,
+      minWidth: 0,
+      // On mobile web: prevent any focus box/outline on the container when input is focused
+      ...(isWeb && isMobileWidth ? { outlineStyle: "none", outlineWidth: 0 } as any : {}),
+      ...(!isMobileWidth && isWeb ? {
+        borderWidth: 1,
+        borderColor: colors.placeholdergrey,
+        borderRadius: 22,
+        paddingHorizontal: 14,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      } : {}),
     },
   ];
 
   const inputStyle = [
     styles.searchInput,
     { 
-      fontSize: isMobile ? 14 : 16, 
-      paddingVertical: isMobile ? 8 : 6,
-      minWidth:0,
-      // Only on desktop/tablet: remove default web outline to avoid half-box
-      ...(isMobile
-        ? {}
-        : ({ outlineWidth: 0, outlineColor: 'transparent', borderWidth: 0 } as any)),
+      fontSize: isMobileWidth ? 14 : 15, 
+      paddingVertical: isMobileWidth ? 8 : 10,
+      minWidth: 0,
+      // Remove default web focus outline/box on all web (avoids black box on mobile web when focused)
+      ...(isWeb
+        ? ({
+            outlineStyle: "none",
+            outlineWidth: 0,
+            outlineColor: "transparent",
+            boxShadow: "none",
+            borderWidth: 0,
+          } as any)
+        : {}),
     },
   ];
+
+  const showClear = value && value.length > 0;
 
   return (
     <View 
       style={containerStyle} 
       // onLayout is only used for tablet/desktop (width >= 768px) to measure width for dropdown suggestions
       // On mobile (width < 768px), onLayout is ignored even if provided to ensure mobile functionality is unaffected
-      onLayout={!isMobile && onLayout ? onLayout : undefined}
+      onLayout={!isMobileWidth && onLayout ? onLayout : undefined}
     >
       <TextInput
-        style={inputStyle}
-        placeholder={placeholder}
-        placeholderTextColor={colors.placeholdergrey}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        value={value}
-        onChangeText={onChangeText}
-        onSubmitEditing={onSubmitEditing}
-        onKeyPress={(e) => {
-          if (e.nativeEvent.key === "Enter") onSubmitEditing();
-        }}
-      />
-      <Touchable onPress={onPress} style={styles.iconWrapper}>
-        <Ionicons
+          style={inputStyle}
+          placeholder={placeholder}
+          placeholderTextColor={colors.placeholdergrey}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          value={value}
+          onChangeText={onChangeText}
+          onSubmitEditing={onSubmitEditing}
+          onKeyPress={(e) => {
+            if (e.nativeEvent.key === "Enter") onSubmitEditing();
+          }}
+        />
+
+        {showClear ? (
+          <Pressable
+            onPress={() => onChangeText("")}
+            hitSlop={12}
+            style={styles.clearIconWrapper}
+          >
+            <Ionicons
+              name="close-circle"
+              size={isMobileWidth ? 18 : 22}
+              color={colors.slateGrey}
+            />
+          </Pressable>
+        ) : (
+          <Touchable 
+            onPress={onPress}   
+            style={styles.iconWrapper}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons
+              name="search"
+              size={isMobileWidth ? 18 : 24}
+              color={colors.primary}
+            />
+          </Touchable>
+        )}
+
+        {/* <Ionicons
           name="search"
-          size={isMobile ? 18 : 22}
+          size={isMobileWidth ? 18 : 24}
           color={colors.primary}
         />
-      </Touchable>
+      </Touchable> */}
     </View>
   );
-};
+}; 
 
 export default SearchBar;
 
@@ -133,7 +189,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    // justifyContent: "center",
     backgroundColor: colors.white,
     borderColor: colors.primary,
     borderWidth: 0.5,
@@ -157,5 +212,14 @@ iconWrapper: {
   alignItems: "center",
   flexShrink: 0,
   flexGrow: 0,
-}
+},
+clearIconWrapper: {
+  paddingLeft: 10,
+  paddingRight: 6,
+  minWidth: 40,
+  alignSelf: "stretch",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
 });

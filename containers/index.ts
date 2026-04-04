@@ -19,6 +19,8 @@ const routes = {
   categoriesScreen: "modules/catalog/Categories",
   filterScreen: "modules/catalog/Filter",
   offersScreen: "modules/catalog/Offers",
+  promotionProductsScreen: "modules/catalog/PromotionProducts",
+
 
   // Splash and Welcome
   splashScreen: "modules/auth/SplashScreen",
@@ -65,6 +67,7 @@ const routes = {
   userProfileScreen: "modules/profile/UserProfile",
   editProfileScreen: "modules/profile/EditProfile",
   editAccountInformationScreen: "modules/profile/EditAccountInformation",
+  editContactInformationWebScreen: "modules/profile/EditContactInformationWeb",
   changePasswordScreen: "modules/profile/ChangePassword",
   addAddressScreen: "modules/profile/AddAddress",
   editAddressScreen: "modules/profile/EditAddress",
@@ -106,6 +109,8 @@ const routes = {
     "modules/admin/FileUploadAddProductCategory",
   AdminGlobalSettingsScreen: "modules/admin/AdminGlobalSettings",
   AdminProfileScreen: "modules/admin/AdminProfile",
+  AdminPromotionScreen: "modules/admin/AdminPromotion",
+  EditPromotionScreen: "modules/admin/EditPromotion",
 
   // Category
   catagoryScreenScreen: "modules/catalog/Categories",

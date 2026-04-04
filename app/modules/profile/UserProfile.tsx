@@ -3,7 +3,7 @@ import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import { Image, Text, TouchableOpacity, View, useWindowDimensions, Platform, ActivityIndicator } from "react-native";
 import colors from "../../../constants/colors";
 import styles from "./UserProfileStyles";
 import { router } from "expo-router";
@@ -28,7 +28,7 @@ import {
   ACCOUNT_DELETED,
   ACCOUNT_DELETION_ERROR,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -42,8 +42,8 @@ Notifications.setNotificationHandler({
 
 const UserProfileScreen = () => {
   const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
-  const isDesktop = width >= 1024; // Common breakpoint for desktop
+  const isWeb = Platform.OS === "web";
+  const isDesktop = isWeb && width >= 1024; // Common breakpoint for desktop
   const { logout } = useAuth();
   const [logOutModalOpen, setLogOutModalOpen] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
@@ -61,10 +61,34 @@ const UserProfileScreen = () => {
     lastName: string;
     profileImageUrl: string;
   } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
   const userData_redux = useSelector((state: RootState) => state.user.user);
 
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
+
   const settingsMenu = {
-    "Contact Information": containers.editAccountInformationScreen,
+    "Contact Information": isWeb ? containers.editContactInformationWebScreen : containers.editAccountInformationScreen,
     "Change Password": containers.changePasswordScreen,
     "Notification Settings": containers.notificationsScreen,
     "Customer Support": containers.customerSupportScreen,
@@ -93,7 +117,10 @@ const UserProfileScreen = () => {
   // console.log("userData_redux in userProfilescreen", userData_redux);
   useEffect(() => {
     const fetchUser = async () => {
-      if (!userData_redux?.id) return;
+      if (!userData_redux?.id) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
         const response = await UserAPI.getUserById(
@@ -107,6 +134,8 @@ const UserProfileScreen = () => {
         }
       } catch (err) {
         console.error("User fetch failed", err);
+      } finally {
+        setProfileLoading(false);
       }
     };
 
@@ -139,12 +168,18 @@ const UserProfileScreen = () => {
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        try {
+          notificationListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing notification listener:", error);
+        }
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        try {
+          responseListener.current.remove();
+        } catch (error) {
+          console.warn("Error removing response listener:", error);
+        }
       }
     };
   }, [user]);
@@ -159,8 +194,56 @@ const UserProfileScreen = () => {
     }
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const handleSoftDelete = async () => {
+  if (!user?._id) {
+    showErrorAlert({
+      title: "Error",
+      message: "User ID not found. Please try again.",
+    });
+    return;
+  }
+
+  try {
+    setDeleteAccountModalOpen(false); // Close modal first
+    
+    // Show loading state (optional)
+    // You can add a loading state here if needed
+    
+    const response = await UserAPI.softDeleteUser(user?._id);
+    
+    if (response) {
+      // Show success message
+      if (Platform.OS === 'web') {
+        alert(ACCOUNT_DELETED || "Your account has been deleted successfully.");
+      } else {
+        showErrorAlert({
+          title: "Account Deleted",
+          message: ACCOUNT_DELETED || "Your account has been deleted successfully.",
+        });
+      }
+      
+      // Logout and redirect after a short delay
+      setTimeout(async () => {
+        await logout();
+        router.replace("/modules/home/Home");
+      }, 1500);
+    }
+  } catch (error: any) {
+    console.error("Deletion error:", error);
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      ACCOUNT_DELETION_ERROR ||
+      "Failed to delete account. Please try again.";
+    showErrorAlert({
+      title: "Deletion Failed",
+      message,
+    });
+  }
+};
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header
@@ -168,11 +251,27 @@ const UserProfileScreen = () => {
       needResetNavigation={true}
     />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="menu" />
   );
+
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        hasFooter
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent}
+        scrollable
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
 
   return (
     <LayoutComponent
@@ -240,10 +339,10 @@ const UserProfileScreen = () => {
             <FontAwesome name="map-marker" size={32} color={colors.primary} />
             <Text style={styles.actionText}>Saved Address</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          {/* <TouchableOpacity style={styles.actionButton}>
             <FontAwesome name="credit-card" size={32} color={colors.primary} />
             <Text style={styles.actionText}>Payments</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <Text style={styles.settingsTitle}>Settings</Text>
@@ -309,9 +408,22 @@ const UserProfileScreen = () => {
         title="Delete Account"
         text="Are you sure you want to delete your account? This action cannot be undone."
         submitText="Yes"
-        handleSubmit={() => {}}
+        handleSubmit={handleSoftDelete}
         cancelText="No"
         handleCancel={() => setDeleteAccountModalOpen(false)}
+        isDestructive={true}
+      />
+      <ConfirmationModal
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        isModalVisible={errorModalState.isVisible}
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
       />
     </LayoutComponent>
   );

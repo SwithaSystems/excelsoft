@@ -15,7 +15,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
   Image,
   ActivityIndicator,
   Modal,
@@ -32,7 +31,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { ProductsAPI } from "@/services/productService";
 import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import { FIX_VALIDATION_ERRORS } from "../../../constants/customErrorMessages";
 import {
   isValidProductName,
@@ -56,8 +54,12 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import AdminFooter from "@/app/components/AdminFooter";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { parse } from "date-fns";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import { Alert } from "react-native";
 
 const AdminProductUpdation = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const props = useLocalSearchParams();
   const newProduct = props.newProduct;
   const maxId = props.maxId;
@@ -67,7 +69,7 @@ const AdminProductUpdation = () => {
   const [productDescription, setProductDescription] = useState("");
   const [stock, setStock] = useState("");
   const [netPrice, setNetPrice] = useState<any>();
-  const [discount, setDiscountPrice] = useState("");
+  // const [discount, setDiscountPrice] = useState("");
   const [minimumOrderQunatity, setMinimumOrderQuantity] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState("");
@@ -79,16 +81,16 @@ const AdminProductUpdation = () => {
   const [isChecked, setIsChecked] = useState(true);
   const [isAgeRestricted, setIsAgeRestricted] = useState(false);
   const [isVatApplicable, setIsVatApplicable] = useState(false);
-  const [grossPrice, setGrossPrice] = useState<any>("");
+  // const [grossPrice, setGrossPrice] = useState<any>("");
   const [vatRate, setVatRate] = useState("");
   const [vatAmount, setVatAmount] = useState("");
-  const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
+  // const [netPriceIncVAT, setNetPriceIncVAT] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [offerPrice, setOfferPrice] = useState([
     {
       qty: "",
       actualPrice: "",
-      discount: "",
+      // discount: "",
     },
   ]);
 
@@ -100,10 +102,30 @@ const AdminProductUpdation = () => {
   const [selectedColors, setSelectedColors] = useState<any>([]);
   const [showColorModal, setShowColorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   const [errors, setErrors] = useState<
     Partial<{
@@ -112,7 +134,7 @@ const AdminProductUpdation = () => {
       // productDescription: string;
       // stock: string;
       netPrice: string;
-      discount: string;
+      // discount: string;
       category: string;
       // minimumOrderQunatity: string;
       // productImages: string;
@@ -148,22 +170,27 @@ const AdminProductUpdation = () => {
       setProductName(productData.name || "");
       setStock(productData.stock?.toString() || "");
       setNetPrice(productData.netPrice?.toString() || "");
-      setDiscountPrice(productData.discount?.toString() || "");
+      // setDiscountPrice(productData.discount?.toString() || "");
       setCategory(productData.categoryId?.[0]?.toString() || "");
       // setColor(productData.productColors?.[0] || "");
       setMinimumOrderQuantity(
         productData.minimumOrderQuantity?.toString() || ""
       );
-      setIsAgeRestricted(productData.isAgeRestricted || false);
+      const resolvedAgeRestricted =
+        productData.isAgeRestricted ||
+        productData.ageRestricted ||
+        productData.age_restricted ||
+        false;
+      setIsAgeRestricted(resolvedAgeRestricted);
       setIsChecked(productData.isReturnable || false);
       setIsVatApplicable(productData.isVatApplicable || false);
       setVatRate(
         productData.vatRate?.toString() ||
         (productData.isVatApplicable ? "20.00" : " ")
       );
-      setGrossPrice(productData.grossPrice?.toString() || "");
+      // setGrossPrice(productData.grossPrice?.toString() || "");
       setVatAmount(productData.vatAmount?.toString() || "");
-      setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "");
+      // setNetPriceIncVAT(productData.netPriceIncVAT?.toString() || "");
       // Set product images if available
       if (productData.image && Array.isArray(productData.image)) {
         setProductImages(productData.image.map((img: any) => ({ uri: img })));
@@ -191,40 +218,61 @@ const AdminProductUpdation = () => {
 
   useEffect(() => {
     calculatePrices();
-  }, [netPrice, discount, vatRate, isVatApplicable]);
+  }, [netPrice,/* discount,*/ vatRate, isVatApplicable]);
 
-  const calculatePrices = () => {
-    const netPriceNum = parseFloat(netPrice) || 0;
-    const discountNum = parseFloat(discount) || 0;
+const calculatePrices = () => {
+  if (!isVatApplicable) {
+    setVatAmount("");
+    return;
+  }
 
-    if (isVatApplicable) {
-      const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
-      const VATAmount = (netPriceNum - discountNum) * (effectiveVatRate / 100);
-      const netPriceInc_Vat = netPriceNum - discountNum + VATAmount;
+  const netPriceNum = parseFloat(netPrice) || 0;
+  
+  if (netPriceNum === 0) {
+    setVatAmount("");
+    return;
+  }
 
-      setVatAmount(VATAmount.toFixed(2));
-      setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
-      const grossPrice = calculateGrossPrice(netPriceInc_Vat, true);
-      setGrossPrice(grossPrice.toFixed(2));
-    } else {
-      setVatAmount("");
-      setNetPriceIncVAT("");
+  const VAT_RATE = 0.20;
+  // RRP includes VAT, so we need to extract the net price and VAT amount
+  const netPrice_Ex_VAT = netPriceNum / (1 + VAT_RATE);  // Net price without VAT
+  const calculatedVatAmount = netPriceNum - netPrice_Ex_VAT; // VAT amount
+  
+  setVatAmount(calculatedVatAmount.toFixed(2));
+};
 
-      const grossPrice = calculateGrossPrice(netPriceNum - discountNum, false);
-      setGrossPrice(grossPrice.toFixed(2));
-    }
-  };
+  // const calculatePrices = () => {
+  //   const netPriceNum = parseFloat(netPrice) || 0;
+  //   // const discountNum = parseFloat(discount) || 0;
 
-  const calculateGrossPrice = (basePrice: number, hasVAT: boolean) => {
-    let finalPrice = basePrice;
-    return finalPrice;
-  };
+  //   if (isVatApplicable) {
+  //     const effectiveVatRate = vatRate ? parseFloat(vatRate) : 20.0;
+  //     const VATAmount = (netPriceNum /*- discountNum*/) * (effectiveVatRate / 100);
+  //     const netPriceInc_Vat = netPriceNum /*- discountNum */+ VATAmount;
+
+  //     setVatAmount(VATAmount.toFixed(2));
+  //     // setNetPriceIncVAT(netPriceInc_Vat.toFixed(2));
+  //     // const grossPrice = calculateGrossPrice(netPriceInc_Vat, true);
+  //     // setGrossPrice(grossPrice.toFixed(2));
+  //   } else {
+  //     setVatAmount("");
+  //     // setNetPriceIncVAT("");
+
+  //     // const grossPrice = calculateGrossPrice(netPriceNum /*- discountNum*/, false);
+  //     // setGrossPrice(grossPrice.toFixed(2));
+  //   }
+  // };
+
+  // const calculateGrossPrice = (basePrice: number, hasVAT: boolean) => {
+  //   let finalPrice = basePrice;
+  //   return finalPrice;
+  // };
 
   const openImagePickerAsync = useCallback(
     async (type: "camera" | "gallery") => {
       try {
         if (productImages.length >= MAX_IMAGES) {
-          Alert.alert(
+          showAlert(
             "Limit Reached",
             `You can only upload up to ${MAX_IMAGES} images.`
           );
@@ -236,7 +284,7 @@ const AdminProductUpdation = () => {
         if (type === "camera") {
           const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
           if (!cameraPerm.granted) {
-            Alert.alert(
+            showAlert(
               "Permission Required",
               "Permission to access camera is required!"
             );
@@ -253,7 +301,7 @@ const AdminProductUpdation = () => {
           const galleryPerm =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (!galleryPerm.granted) {
-            Alert.alert(
+            showAlert(
               "Permission Required",
               "Permission to access gallery is required!"
             );
@@ -281,7 +329,7 @@ const AdminProductUpdation = () => {
             const updatedImages = [...prev, ...newImages];
 
             if (updatedImages.length > MAX_IMAGES) {
-              Alert.alert(
+              showAlert(
                 "Limit Exceeded",
                 `Only the first ${MAX_IMAGES} images have been added.`
               );
@@ -292,7 +340,7 @@ const AdminProductUpdation = () => {
         }
       } catch (error) {
         console.error("Error picking image:", error);
-        Alert.alert("Error", "Something went wrong while picking the image.");
+        showAlert("Error", "Something went wrong while picking the image.");
       }
     },
     [productImages.length]
@@ -331,7 +379,7 @@ const AdminProductUpdation = () => {
         });
       }
     } else {
-      Alert.alert("Remove Image", "Are you sure you want to remove this image?", [
+      showAlert("Remove Image", "Are you sure you want to remove this image?", [
         {
           text: "Cancel",
           style: "cancel",
@@ -448,19 +496,19 @@ const AdminProductUpdation = () => {
     }
   };
 
-  const handleDiscountPriceChange = (value: string) => {
-    // Allow numeric input with up to 2 decimal places
-    const numericValue = value.replace(/[^0-9.]/g, "");
-    const parts = numericValue.split(".");
-    if (parts.length > 2) return; // Prevent multiple decimal points
-    if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
+  // const handleDiscountPriceChange = (value: string) => {
+  //   // Allow numeric input with up to 2 decimal places
+  //   const numericValue = value.replace(/[^0-9.]/g, "");
+  //   const parts = numericValue.split(".");
+  //   if (parts.length > 2) return; // Prevent multiple decimal points
+  //   if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
 
-    setDiscountPrice(numericValue);
-    // if (errors.discount) {
-    //   const error = isValidDiscountPrice(numericValue, discount);
-    //   setErrors((prev) => ({ ...prev, discount: error || undefined }));
-    // }
-  };
+  //   // setDiscountPrice(numericValue);
+  //   // if (errors.discount) {
+  //   //   const error = isValidDiscountPrice(numericValue, discount);
+  //   //   setErrors((prev) => ({ ...prev, discount: error || undefined }));
+  //   // }
+  // };
 
   const handleMinOrderQuantityChange = (value: string) => {
     // Only allow numeric input
@@ -483,7 +531,9 @@ const AdminProductUpdation = () => {
     setVatRate(numericValue);
   };
 
-  const handleVatAmountChange = (value: string) => { };
+  const handleVatAmountChange = (value: string) => {
+    
+   };
 
   const handleAdd_UpdateProduct = useCallback(async () => {
     // Validate fields before submission
@@ -509,11 +559,12 @@ const AdminProductUpdation = () => {
       formData.append("description", productDescription.trim());
       formData.append("stock", stock);
       formData.append("netPrice", netPrice);
-      formData.append("discount", discount || "0");
+      // formData.append("discount", discount || "0");
       formData.append("categoryId", category);
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+      formData.append("ageRestricted", isAgeRestricted ? "true" : "false");
 
       if (isVatApplicable) {
         formData.append("vatRate", vatRate);
@@ -628,6 +679,8 @@ const AdminProductUpdation = () => {
       if (!response) {
         throw new Error("Failed to update product.");
       }
+
+      // No post-create patch needed now that backend handles age restriction on create.
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating product:", error);
@@ -642,7 +695,7 @@ const AdminProductUpdation = () => {
     productName,
     stock,
     netPrice,
-    discount,
+    // discount,
     category,
     color,
     selectedColors,
@@ -656,7 +709,7 @@ const AdminProductUpdation = () => {
     isVatApplicable,
     vatRate,
     vatAmount,
-    grossPrice,
+    // grossPrice,
     router,
     newProduct,
     productData?._id,
@@ -722,14 +775,14 @@ const AdminProductUpdation = () => {
     return `${selectedColors.length} colors selected`;
   };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
 
   return (
@@ -737,7 +790,7 @@ const AdminProductUpdation = () => {
       hasHeader
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable={isTabOrDesktop ? false : true}
+      scrollable={isWeb ? false : true}
       hideNavItems={true}
     >
 
@@ -874,7 +927,7 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.stock}</Text>
             )} */}
 
-            <Text style={styles.label}>Net Price * ({CurrencySymbol})</Text>
+            <Text style={styles.label}>RRP* ({CurrencySymbol})</Text>
             <CustomTextInput
               setValue={handlePriceChange}
               value={netPrice}
@@ -888,16 +941,16 @@ const AdminProductUpdation = () => {
               <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
             )}
 
-            <Text style={styles.label}>Discount({CurrencySymbol})</Text>
+            {/* <Text style={styles.label}>Discount({CurrencySymbol})</Text>
             <CustomTextInput
-              setValue={handleDiscountPriceChange}
-              value={discount}
+              // setValue={handleDiscountPriceChange}
+              // value={discount}
               onPress={() => { }}
               placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
               keyboardType="decimal-pad"
               // style={errors.discount ? globalStyles.errorInput : undefined}
               maxLength={10}
-            />
+            /> */}
             {/* {errors.discount && (
               <Text style={globalStyles.errorText}>{errors.discount}</Text>
             )} */}
@@ -910,12 +963,12 @@ const AdminProductUpdation = () => {
                   if (!isVatApplicable) {
                     setVatRate("20.00");
                     setVatAmount("");
-                    setNetPriceIncVAT("");
+                    // setNetPriceIncVAT("");
                     // setGrossPrice("");
                   } else {
                     setVatRate("");
                     setVatAmount(" ");
-                    setNetPriceIncVAT("");
+                    // setNetPriceIncVAT("");
                     // setGrossPrice("");
                   }
                 }}
@@ -950,7 +1003,7 @@ const AdminProductUpdation = () => {
                   style={styles.readOnlyInput}
                 />
 
-                <Text style={styles.label}>
+                {/* <Text style={styles.label}>
                   Net Price Including VAT ({CurrencySymbol})
                 </Text>
                 <CustomTextInput
@@ -961,11 +1014,11 @@ const AdminProductUpdation = () => {
                   maxLength={10}
                   editable={false}
                   style={styles.readOnlyInput}
-                />
+                /> */}
               </>
             )}
 
-            <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
+            {/* <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
             <CustomTextInput
               value={grossPrice}
               onPress={() => { }}
@@ -974,7 +1027,7 @@ const AdminProductUpdation = () => {
               maxLength={10}
               editable={false}
               style={styles.readOnlyInput}
-            />
+            /> */}
 
             <Text style={styles.label}>Minimum Order Quantity</Text>
             <CustomTextInput
@@ -1285,6 +1338,19 @@ const AdminProductUpdation = () => {
         }}
         animationType="fade"
       />
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
 
     </LayoutComponent>
   );

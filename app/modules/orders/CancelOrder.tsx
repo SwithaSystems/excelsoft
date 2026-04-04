@@ -25,7 +25,7 @@ const cartItems = [
     id: 1,
     image: require("@/assets/baby-bicycle.png"),
     name: "Duck Toys",
-    discount: "£10.00",
+    // discount: "£10.00",
     netPrice: "£18.00",
     quantity: 5,
   },
@@ -33,7 +33,7 @@ const cartItems = [
     id: 2,
     image: require("@/assets/baby-bicycle.png"),
     name: "Orange Juice",
-    discount: "£3.00",
+    // discount: "£3.00",
     netPrice: "£5.00",
     quantity: 1,
   },
@@ -41,7 +41,7 @@ const cartItems = [
     id: 3,
     image: require("@/assets/baby-bicycle.png"),
     name: "Strawberries",
-    discount: "£12.00",
+    // discount: "£12.00",
     netPrice: "£18.00",
     quantity: 1,
   },
@@ -112,7 +112,7 @@ const cancelOrder = () => {
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
                 <Text style={styles.itemPrice}>
-                  {item.discount}{" "}
+                  {/* {item.discount}{" "} */}
                   <Text style={styles.striked}>{item.netPrice}</Text>
                 </Text>
               </View>

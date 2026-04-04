@@ -173,7 +173,7 @@ const ReturnOrder = () => {
                   <Text style={styles.itemName}>{item.name}</Text>
                   <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
                   <Text style={styles.itemPrice}>
-                    {item.discount}{" "}
+                    {/* {item.discount}{" "} */}
                     <Text style={styles.striked}>{item.netPrice}</Text>
                   </Text>
                 </View>

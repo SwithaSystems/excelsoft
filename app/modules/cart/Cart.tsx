@@ -2,7 +2,7 @@ import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, TextInput, useWindowDimensions } from "react-native";
+import { Dimensions, TextInput, Platform } from "react-native";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
@@ -43,7 +43,7 @@ import { RootState } from "@/store/store";
 import NoContentFound from "@/app/components/NoContentFound";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import {
   SESSION_EXPIRED,
   ITEM_OUT_OF_STOCK,
@@ -51,11 +51,17 @@ import {
 } from "../../../constants/customErrorMessages";
 import { Product, ProductsAPI } from "@/services/productService";
 import styles from "./CartStyles";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { isAgeRestrictedCartItem } from "@/utilities/ageRestriction";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 
 const CartScreen = () => {
   const dispatch = useDispatch();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+
   const cartItems = useSelector((state: RootState) => state.cart?.items || []);
   const savedForLaterItems = useSelector(
     (state: RootState) => state.savedForLaterItems.items
@@ -70,6 +76,34 @@ const CartScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [isLoadingSimilarProducts, setIsLoadingSimilarProducts] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+  const { showAlert, confirmationModal } = useConfirmationAlert();
+  const hasAgeRestrictedItems = cartItems.some((item: any) =>
+    isAgeRestrictedCartItem(item)
+  );
+
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
   // Bulk product validation using single API call
   const validateAndRefreshProducts = async (items: any[]) => {
@@ -255,10 +289,10 @@ const CartScreen = () => {
       }
     };
 
-    if (isTabOrDesktop) {
+    if (isWeb) {
       fetchSimilarProducts();
     }
-  }, [cartItems, isTabOrDesktop]);
+  }, [cartItems, isWeb]);
 
   const handlePlaceOrder = async () => {
     if (isPlacingOrder) return; // Prevent multiple clicks
@@ -312,7 +346,7 @@ const CartScreen = () => {
   };
 
   const handleClearCart = () => {
-    Alert.alert(
+    showAlert(
       "Clear Cart",
       "Are you sure you want to remove all items from your cart?",
       [
@@ -334,19 +368,19 @@ const CartScreen = () => {
   };
 
   // Conditional Header and Footer components
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={CART_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="cart" />
   );
 
   // Conditional Layout component
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   // Your JSX remains the same, just update the Place Order button:
   return (
@@ -357,7 +391,7 @@ const CartScreen = () => {
       footerComponent={FooterComponent}
       scrollable={true}
     >
-      {isTabOrDesktop ? (
+      {isWeb && !isMobileWeb ? (
         // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
         <View style={[globalStyles.container]}>
           <View style={[globalStyles.pt_0]}>
@@ -394,6 +428,13 @@ const CartScreen = () => {
                       <Text style={styles.clearCartText}>Clear Cart</Text>
                     </TouchableOpacity>
                   </View>
+                  {hasAgeRestrictedItems && (
+                    <AgeRestrictionNote
+                      containerStyle={styles.ageWarningContainer}
+                      titleStyle={styles.ageWarningTitle}
+                      messageStyle={styles.ageWarningText}
+                    />
+                  )}
 
                   {/* Cart Items */}
                   {cartItems.map((eachCartItem: any) => (
@@ -456,6 +497,18 @@ const CartScreen = () => {
             cancelText="Save for Later"
             handleCancel={cancelDelete}
           />
+          <ConfirmationModal
+            onClose={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+            isModalVisible={errorModalState.isVisible}
+            title={errorModalState.title}
+            text={errorModalState.message}
+            submitText={errorModalState.buttonLabel}
+            handleSubmit={() =>
+              setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+            }
+          />
         </View>
       ) : (
         // Mobile: Use ScrollView
@@ -487,6 +540,13 @@ const CartScreen = () => {
                 </View>
               ) : (
                 <>
+                  {hasAgeRestrictedItems && (
+                    <AgeRestrictionNote
+                      containerStyle={styles.ageWarningContainer}
+                      titleStyle={styles.ageWarningTitle}
+                      messageStyle={styles.ageWarningText}
+                    />
+                  )}
                   {/* Cart Items */}
                   {cartItems.map((eachCartItem: any) => (
                     <CartItem
@@ -546,10 +606,23 @@ const CartScreen = () => {
               cancelText="Save for Later"
               handleCancel={cancelDelete}
             />
+            <ConfirmationModal
+              onClose={() =>
+                setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+              }
+              isModalVisible={errorModalState.isVisible}
+              title={errorModalState.title}
+              text={errorModalState.message}
+              submitText={errorModalState.buttonLabel}
+              handleSubmit={() =>
+                setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+              }
+            />
           </ScrollView>
         </View>
       )}
 
+      {confirmationModal}
     </LayoutComponent>
   );
 };

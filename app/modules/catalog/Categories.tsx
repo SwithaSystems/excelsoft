@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, Dimensions, useWindowDimensions } from "react-native";
+import { View, FlatList, Dimensions, useWindowDimensions, Platform } from "react-native";
 import Header from "../../components/Header";
 import colors from "../../../constants/colors";
 import CategoryItem from "../../components/CategoryItem";
@@ -13,6 +13,7 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import styles from "./CategoriesStyles";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -22,8 +23,12 @@ const categoriesScreen = () => {
   const { categoryId } = useLocalSearchParams();
 
   // Responsive design: detect if device is tablet or desktop
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const {
+    isWeb,
+    isMobile,
+    isTablet,
+    isDesktopOrLarger,
+  } = useWebMediaQuery();
 
   useEffect(() => {
     // console.log("categoryId", categoryId);
@@ -49,9 +54,21 @@ const categoriesScreen = () => {
     fetchAllCategories();
   }, []);
 
-  const numColumns = isTabOrDesktop ? 4 : 2;
-  // Use flex-basis percentage for responsive layout
-  const itemFlexBasis = isTabOrDesktop ? "23%" : "47%";
+  // const numColumns = isWeb ? 3 : 2;
+  // Use flex-basis percentage for responsive layout (3 columns on web with gap)
+  const numColumns =
+    isWeb
+      ? isMobile
+        ? 2       
+        : 4        
+      : 2;       
+const GAP = 24; // total row gap for web
+const itemFlexBasis =
+  isWeb
+    ? isMobile
+      ? "46%"  
+      : "22%"   
+    : "47%";   
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     return (
@@ -61,8 +78,8 @@ const categoriesScreen = () => {
           {
             flexBasis: itemFlexBasis,
             maxWidth: itemFlexBasis,
-            marginRight: isTabOrDesktop ? 15 : 0,
-            marginBottom: 16,
+            marginBottom: 24,
+            // marginRight: isWeb ? 24 : 0,
           },
         ]}
       >
@@ -81,51 +98,49 @@ const categoriesScreen = () => {
       </View>
     );
   };
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={category?.name} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer navigation={router} />
   );
 
   return (
-    <LayoutComponent
-      scrollable
-      hasHeader
-      hasFooter
-      headerComponent={HeaderComponent}
-      footerComponent={FooterComponent}
-    >
-      <FlatList
-        ListHeaderComponent={
-          <View style={[{ backgroundColor: colors.white }]}>
-            <FlatList
-              data={allCategories}
-              keyExtractor={(item: any) => item.id}
-              renderItem={renderItem}
-              numColumns={numColumns}
-              key={numColumns}
-              columnWrapperStyle={[
-                styles.row,
-                {
-                  justifyContent: isTabOrDesktop ? "flex-start" : "space-between",
-                },
-              ]}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        }
-        data={[]}
-        renderItem={null}
-      />
-    </LayoutComponent>
-  );
+  <LayoutComponent
+    scrollable
+    hasHeader
+    hasFooter
+    headerComponent={HeaderComponent}
+    footerComponent={FooterComponent}
+  >
+    <FlatList
+      data={allCategories}
+      keyExtractor={(item: any) => item.id.toString()}
+      renderItem={renderItem}
+      numColumns={numColumns}
+      key={numColumns}
+      columnWrapperStyle={
+        numColumns > 1
+          ? {
+              justifyContent: "space-between",
+              marginBottom: isMobile ? 12 : 24,
+            }
+          : undefined
+      }
+     contentContainerStyle={[
+        styles.listContainer,
+        !isWeb && { paddingHorizontal: 12 },
+        // isMobile && { marginHorizontal: 10 },
+      ]}
+      showsVerticalScrollIndicator={false}
+    />
+  </LayoutComponent>
+);
 };
 
 export default categoriesScreen;

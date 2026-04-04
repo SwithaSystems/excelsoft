@@ -1,54 +1,106 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { redirectToPage } from "@/utilities/redirectionHelper";
+import containers from "@/containers";
 
 const FooterWeb = () => {
-  const { width } = useWindowDimensions();
-
-  const isTablet = width < 900;
+  const { isMobile, isTablet } = useWebMediaQuery();
 
   return (
-    <View
-      style={[
-        styles.footerContainer,
-        isTablet && styles.footerContainerTablet,
-      ]}
-    >
+    <View style={[
+      styles.footerContainer,
+      isMobile && styles.footerContainerMobile,
+      isTablet && styles.footerContainerTablet,
+    ]}>
       <View style={styles.leftSection}>
-        <Image
-          source={require("@/assets/RecreatedLogo_2.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Middle Section - Links */}
-      <View style={[styles.middleSection, isTablet && styles.middleSectionTablet]}>
-        <TouchableOpacity>
-          <Text style={styles.linkText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.linkText}>About</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.linkText}>Contact</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.linkText}>Support</Text>
+        <TouchableOpacity
+          onPress={() => redirectToPage(containers.homeScreen)}
+          activeOpacity={0.7}
+          style={Platform.OS === "web" ? { cursor: "pointer" } : undefined}
+        >
+          <Image
+            source={require("@/assets/RecreatedLogo_2.png")}
+            style={[
+              styles.logo,
+              isMobile && styles.logoMobile,
+            ]}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
 
-      {/* Right Section - Icons */}
-      <View style={styles.rightSection}>
+      <View style={[
+        styles.middleSection,
+        isMobile && styles.middleSectionMobile,
+        isTablet && styles.middleSectionTablet,
+      ]}>
+        <TouchableOpacity
+          onPress={() => {
+            redirectToPage(containers.homeScreen);
+          }}
+        >
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>About</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            redirectToPage(containers.customerSupportScreen);
+          }}
+        >
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Contact</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Text style={[
+            styles.linkText,
+            isMobile && styles.linkTextMobile,
+          ]}>Support</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={[
+        styles.rightSection,
+        isMobile && styles.rightSectionMobile,
+      ]}>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="logo-instagram" size={22} color={colors.primary} />
+          <Ionicons 
+            name="logo-instagram" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="logo-linkedin" size={22} color={colors.primary} />
+          <Ionicons 
+            name="logo-linkedin" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="mail-outline" size={22} color={colors.primary} />
+          <Ionicons 
+            name="mail-outline" 
+            size={isMobile ? 20 : 22} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -62,14 +114,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 40,
-    paddingVertical: 8,
-    borderTopWidth: 0,
-    borderTopColor: "#ddd",
+    paddingVertical: 12,
+    width: "100%",
+    flexWrap: "wrap",
   },
-  footerContainerTablet: {
+  footerContainerMobile: {
     flexDirection: "column",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+    gap: 16,
+  },
+  footerContainerTablet: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   leftSection: {
     flexDirection: "row",
@@ -78,30 +138,42 @@ const styles = StyleSheet.create({
   logo: {
     width: 80,
     height: 30,
-    marginRight: 10,
   },
-  brandText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.primary,
+  logoMobile: {
+    width: 60,
+    height: 24,
   },
   middleSection: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 20,
+    flex: 1,
   },
-  middleSectionTablet: {
+  middleSectionMobile: {
+    flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
+    gap: 16,
+    width: "100%",
+  },
+  middleSectionTablet: {
+    gap: 16,
   },
   linkText: {
     fontSize: 14,
     color: "#555",
   },
+  linkTextMobile: {
+    fontSize: 12,
+  },
   rightSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 15,
+  },
+  rightSectionMobile: {
+    gap: 12,
   },
   iconButton: {
     padding: 5,

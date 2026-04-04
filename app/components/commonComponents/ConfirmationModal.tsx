@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, StyleSheet, Text, View, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
+import { Modal, StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import colors from "@/constants/colors";
 
 interface ConfirmationModalProps {
@@ -13,6 +13,7 @@ interface ConfirmationModalProps {
   handleCancel?: () => void;
   animationType?: "none" | "slide" | "fade";
   isDestructive?: boolean;
+   disabled?: boolean,
 }
 
 function ConfirmationModal({
@@ -25,10 +26,9 @@ function ConfirmationModal({
   handleSubmit,
   handleCancel,
   animationType = "fade",
-  isDestructive = false, // Default to non-destructive (primary color)
+  isDestructive = false,
+  disabled = false, 
 }: ConfirmationModalProps) {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
 
   return (
@@ -36,17 +36,25 @@ function ConfirmationModal({
       visible={isModalVisible}
       transparent
       animationType={animationType}
-      onRequestClose={onClose}
+      onRequestClose={disabled ? undefined : onClose}
     >
-      <View style={styles.modalContainer}>
-        <View style={[
-          styles.dialogBox,
-          isTabOrDesktop && styles.dialogBoxWeb
-        ]}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.modalContainer, isWeb && styles.modalContainerWeb]}
+        onPress={onClose}
+      >
+        <View
+          style={[
+            styles.dialogBox,
+            isWeb && styles.dialogBoxWeb,
+          ]}
+          // Prevent backdrop taps from reaching the parent TouchableOpacity
+          onStartShouldSetResponder={() => true}
+        >
           {/* Title */}
           {title && <Text style={[
             styles.title,
-            isTabOrDesktop && styles.titleWeb
+            isWeb && styles.titleWeb
           ]}>
             {title}
           </Text>}
@@ -54,17 +62,28 @@ function ConfirmationModal({
           {/* text */}
           {text && <Text style={[
             styles.text,
-            isTabOrDesktop && styles.textWeb
+            isWeb && styles.textWeb
           ]}>{text}</Text>}
           
           {/* Buttons */}
           <View style={[
             styles.buttonRow,
-            isTabOrDesktop && styles.buttonRowWeb
+            isWeb && styles.buttonRowWeb
           ]}>
             {cancelText && (
-              <TouchableOpacity onPress={handleCancel} style={styles.button}>
-                <Text style={styles.cancelText}>{cancelText}</Text>
+              <TouchableOpacity
+                onPress={handleCancel}
+                style={[
+                  styles.button,
+                  isWeb && styles.buttonWeb,
+                  isWeb && styles.cancelButtonWeb,
+                  isWeb && submitText && styles.buttonSpacingWeb,
+                ]}
+              >
+                <Text style={[
+                  styles.cancelText,
+                  isWeb && styles.cancelTextWeb
+                ]}>{cancelText}</Text>
               </TouchableOpacity>
             )}
             
@@ -73,19 +92,19 @@ function ConfirmationModal({
                 onPress={handleSubmit} 
                 style={[
                   styles.button,
-                  isTabOrDesktop && styles.buttonWeb,
-                  isTabOrDesktop && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
+                  isWeb && styles.buttonWeb,
+                  isWeb && (isDestructive ? styles.submitButtonDestructive : styles.submitButtonPrimary)
                 ]}
               >
                 <Text style={[
                   isDestructive ? styles.submitText : styles.submitTextPrimary,
-                  isTabOrDesktop && styles.submitTextWeb
+                  isWeb && styles.submitTextWeb
                 ]}>{submitText}</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 }
@@ -96,6 +115,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalContainerWeb: {
+    zIndex: 100000,
   },
   dialogBox: {
     width: "85%",
@@ -139,11 +161,13 @@ const styles = StyleSheet.create({
   },
   buttonRowWeb: {
     justifyContent: "flex-end",
-    gap: 12,
   },
   button: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  buttonSpacingWeb: {
+    marginRight: 12,
   },
   buttonWeb: {
     paddingHorizontal: 24,
@@ -169,6 +193,10 @@ const styles = StyleSheet.create({
   cancelTextWeb: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  cancelButtonWeb: {
+    backgroundColor: colors.white,
+    borderColor: colors.primary,
   },
   submitText: {
     fontSize: 15,

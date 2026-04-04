@@ -273,6 +273,7 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
     // marginBottom: 16,
     backgroundColor: colors.white,
+    marginTop: 10,
   },
   profileImage: {
     width: 85,
@@ -332,28 +333,28 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 40,
     textAlign: "center",
   },
-  discountSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  discountTextInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.secondary,
-    height: 48,
-    flex: 1,
-    borderRadius: 8,
-    marginTop: 4,
-    justifyContent: "space-between",
-  },
-  discountText: {
-    margin: 8,
-  },
-  discountClearIcon: {
-    marginRight: 8,
-    fontSize: 24,
-    color: colors.primary,
-  },
+  // discountSection: {
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  // },
+  // discountTextInput: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   backgroundColor: colors.secondary,
+  //   height: 48,
+  //   flex: 1,
+  //   borderRadius: 8,
+  //   marginTop: 4,
+  //   justifyContent: "space-between",
+  // },
+  // discountText: {
+  //   margin: 8,
+  // },
+  // discountClearIcon: {
+  //   marginRight: 8,
+  //   fontSize: 24,
+  //   color: colors.primary,
+  // },
   redeemButton: {
     backgroundColor: colors.primary,
     color: colors.white,
@@ -363,7 +364,7 @@ export const globalStyles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   verify: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.primary,
     textDecorationLine: "underline",
     marginLeft: 4,

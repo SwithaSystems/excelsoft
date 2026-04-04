@@ -9,7 +9,7 @@ interface ProductCardProps {
   title: string;
   rating: number;
   reviews: number;
-  discount: number;
+  // discount: number;
   netPrice?: number;
   imageUrl: string;
   saleEndsAt?: string;
@@ -20,7 +20,7 @@ const ProductCard = ({
   title,
   rating,
   reviews,
-  discount,
+  // discount,
   netPrice,
   imageUrl,
   onPress,
@@ -29,7 +29,7 @@ const ProductCard = ({
 
   // console.log('discount:', discount, 'netPrice:', netPrice, 'are they equal?', discount === netPrice);
 
-  const hasDiscount = netPrice && discount !== netPrice;
+  // const hasDiscount = netPrice && discount !== netPrice;
 
   return (
     <TouchableOpacity style={HomeStyles.productCard} onPress={onPress}>
@@ -47,7 +47,7 @@ const ProductCard = ({
             {rating} ({reviews})
           </Text>
         </View>
-        <View style={HomeStyles.discountContainer}>
+        {/* <View style={HomeStyles.discountContainer}>
           <Text style={HomeStyles.discount}>
             {CurrencySymbol}
             {discount}
@@ -58,7 +58,7 @@ const ProductCard = ({
               {netPrice}
             </Text>
           )}
-        </View>
+        </View> */}
       </View>
     </TouchableOpacity>
   );

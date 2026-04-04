@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import colors from "../../constants/colors";
 import Star from "./Star";
@@ -14,26 +14,12 @@ import {
   removeFromSavedItems,
 } from "@/store/slices/savedItemsSlice";
 import { Product } from "@/services/productService";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionBadge from "@/app/components/commonComponents/AgeRestrictionBadge";
 
-// interface ProductCardProps {
-//   id: string;
-//   name: string;
-//   description: string;
-//   discount: number;
-//   netPrice: number;
-//   image: any;
-//   productColors: string[];
-//   category: string;
-//   rating: number;
-//   noOfreviews: number;
-//   reviews: {
-//     id: string;
-//     name: string;
-//     review: string;
-//     rating: number;
-//     text: string;
-//   }[];
-// }
+interface ProductCardProps extends Product {
+  onAddToCart?: () => void;
+}
 
 const ProductCard = ({
   _id,
@@ -43,20 +29,30 @@ const ProductCard = ({
   description,
   rating,
   noOfreviews,
-  discount,
+  // discount,
   netPrice,
   isVatApplicable,
   vatRate,
   vatAmount,
   image,
-}: Product) => {
+  onAddToCart,
+  isAgeRestricted,
+  ageRestricted,
+}: ProductCardProps) => {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
   const isRemoteImage = typeof image === "string";
+
+  const { isTablet, isMobile, isDesktop } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const dispatch = useDispatch();
   const savedItems = useSelector((state: any) => state.savedItems?.items || []);
+  const showAgeRestrictionBadge =
+    isAgeRestricted === true ||
+    isAgeRestricted === "true" ||
+    ageRestricted === true ||
+    ageRestricted === "true";
   const isItemSaved = (itemId: any) => {
     return savedItems.some((savedItem: any) => savedItem.id === itemId);
   };
@@ -75,12 +71,12 @@ const ProductCard = ({
       isVatApplicable,
       vatRate,
       vatAmount,
+      isAgeRestricted,
+      ageRestricted,
       image,
-      discount: 0,
+      // discount: 0,
       quantity: 1,
     };
-
-    // console.log("saved item", currentItem);
 
     if (isItemSaved(id)) {
       dispatch(removeFromSavedItems(id));
@@ -89,25 +85,34 @@ const ProductCard = ({
     }
   };
 
-  const maxTitleLength = isTabOrDesktop ? 20 : 12;
+  const handleAddToCart = (e: any) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart();
+    }
+  };
+
+  const maxTitleLength = isWeb ? 20 : 12;
   let displayName =
     name.length > maxTitleLength
       ? name.substring(0, maxTitleLength - 3) + "..."
       : name;
-  if (!isTabOrDesktop) {
+  if (!isWeb) {
     while (displayName.length < maxTitleLength) displayName += " ";
   }
 
   // Web-specific dimensions - smaller for compact grid layout
-  const imageHeight = isTabOrDesktop ? 150 : 203;
-  const titleFontSize = isTabOrDesktop ? 13 : 18;
-  const ratingFontSize = isTabOrDesktop ? 11 : 16;
-  const priceFontSize = isTabOrDesktop ? 13 : 16;
-  const heartSize = isTabOrDesktop ? 16 : 20;
-  const starSize = isTabOrDesktop ? 12 : 16;
-  const contentPadding = isTabOrDesktop ? 6 : 8;
-  const discountPercentage = discount > 0 ? Math.round((discount / netPrice) * 100) : 0;
-
+  const imageHeight = isWeb ? 150 : 203;
+  const titleFontSize = isWeb ? 13 : 18;
+  const ratingFontSize = isWeb ? 11 : 16;
+  const priceFontSize = isWeb ? 13 : 16;
+  const heartSize =
+    isMobileWeb ? 24 :
+    isTablet ? 30 :
+    isWeb ? 34 : 
+    30;
+  const starSize = isWeb ? 12 : 16;
+  const contentPadding = isWeb ? 6 : 8;
 
   return (
     <TouchableOpacity
@@ -117,13 +122,7 @@ const ProductCard = ({
       }
     >
       {/* Only render image if product has one */}
-      {/* {image ? ( */}
       <View style={[styles.image, { height: imageHeight }]}>
-        {/* <Image
-            source={{ uri: image }}
-            style={styles.image}
-            resizeMode="cover"
-          /> */}
         <Image
           source={
             typeof image === "string" && image !== ""
@@ -136,14 +135,16 @@ const ProductCard = ({
           resizeMode="cover"
         />
       </View>
-      {/* ) : null} */}
 
       <View style={[styles.content, { padding: contentPadding }]}>
         <View style={globalStyles.savedContainer}>
-          <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isTabOrDesktop ? 2 : 1}>
+          <Text style={[styles.title, { fontSize: titleFontSize }]} numberOfLines={isWeb ? 2 : 1}>
             {displayName}
           </Text>
-          <TouchableOpacity onPress={handleHeartPress}>
+          <TouchableOpacity 
+            onPress={handleHeartPress}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
             <Ionicons
               name={isItemSaved(id) ? "heart" : "heart-outline"}
               size={heartSize}
@@ -151,38 +152,47 @@ const ProductCard = ({
             />
           </TouchableOpacity>
         </View>
+
         {noOfreviews > 0 && (
           <View style={styles.ratingContainer}>
-            <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{rating}</Text>
+            <Text style={[styles.rating, { fontSize: ratingFontSize }]}>{Number(rating).toFixed(1)}</Text>
             <Star filled={false} size={starSize} />
             <Text style={[styles.reviews, { fontSize: ratingFontSize }]}>({noOfreviews})</Text>
           </View>
         )}
-        {netPrice > 0 && discountPercentage > 0 && (
+
+        {showAgeRestrictionBadge && (
+          <AgeRestrictionBadge
+            variant={isWeb ? "compact" : "default"}
+            containerStyle={styles.ageBadge}
+          />
+        )}
+
+        {netPrice > 0 && (
           <View style={styles.saleContainer}>
             <View style={styles.saleTimeBox}>
-              {/* <View style={styles.saleTag}>
-                <Text style={styles.saleText}>Sale</Text>
-              </View> */}
-              {/* <Text style={styles.time}>02:48:26</Text> */}
+              {/* Sale/Time content removed as per your code */}
             </View>
-            <Text style={[styles.discount, { fontSize: priceFontSize }]}>
-              {/* {Math.round((discount / netPrice) * 100)}% */}
-              {discountPercentage}%
-            </Text>
           </View>
         )}
 
-        <View style={styles.priceContainer}>
-          <Text style={[styles.discount, { fontSize: priceFontSize }]}>
-            {CurrencySymbol}
-            {(netPrice - discount).toFixed(2)}
-          </Text>
-          {discount > 0 && (
-            <Text style={[styles.netPrice, { fontSize: isTabOrDesktop ? 12 : 14 }]}>
+        <View style={styles.priceAndButtonContainer}>
+          <View style={styles.priceContainer}>
+            <Text style={[styles.priceText, { fontSize: priceFontSize }]}>
               {CurrencySymbol}
-              {Number(netPrice).toFixed(2)}
+              {netPrice.toFixed(2)}
             </Text>
+          </View>
+          
+          {onAddToCart && (
+            <TouchableOpacity
+              style={styles.addToCartButton}
+              onPress={handleAddToCart}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="cart-outline" size={isWeb ? 16 : 20} color={colors.white} />
+              <Text style={styles.addToCartText}>Add</Text>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -226,20 +236,32 @@ const styles = StyleSheet.create({
     margin: 4,
     color: colors.reviewsColor,
   },
+  priceAndButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
   priceContainer: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap",
-    marginTop: 4,
+    flex: 1,
+  },
+  priceText: {
+    fontWeight: "600",
+    color: colors.primary,
   },
   saleContainer: {
     flexDirection: "row",
     marginBottom: 4,
   },
+  ageBadge: {
+    marginTop: 2,
+    marginBottom: 6,
+  },
   saleTimeBox: {
     flexDirection: "row",
     backgroundColor: colors.secondary,
-    //borderRadius: 5,
     alignItems: "center",
   },
   saleText: {
@@ -252,12 +274,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     paddingHorizontal: 6,
     paddingVertical: 4,
-    //borderRadius: 4,
-    marginRight: 6,
-  },
-  discount: {
-    fontWeight: "600",
-    color: colors.primary,
     marginRight: 6,
   },
   netPrice: {
@@ -269,20 +285,26 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 14,
     color: colors.primary,
-    //backgroundColor: colors.secondary,
     borderRadius: 5,
     paddingRight: 6,
     marginTop: 2,
     marginRight: 8,
   },
-  // discount: {
-  //   fontSize: 14,
-  //   color: colors.primary,
-  //   marginLeft: 6,
-  //   backgroundColor: colors.secondary,
-  //   padding: 4,
-  //   borderRadius: 5,
-  // },
+  addToCartButton: {
+    backgroundColor: colors.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    gap: 4,
+  },
+  addToCartText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "600",
+  },
 });
 
 export default ProductCard;

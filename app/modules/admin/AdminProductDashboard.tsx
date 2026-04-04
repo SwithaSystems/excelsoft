@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Alert,
   Platform,
   useWindowDimensions,
   ScrollView,
@@ -32,13 +31,15 @@ import ConfirmationModal from "@/app/components/commonComponents/ConfirmationMod
 import useDebounce from "@/utilities/customHooks/useDebounce";
 import axios from "axios";
 import SearchBar from "@/app/components/searchBar";
-import { showErrorAlert } from "@/utilities/showErrorAlert";
 import { SEARCH_QUERY_REQUIRED_MESSAGE } from "@/constants/customErrorMessages";
 import ModalSelector from "react-native-modal-selector";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
+import WebCategoryDropdown from "./componentsWeb/webCategoryDropdown";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface ApiResponse {
   data: Product[];
@@ -51,6 +52,7 @@ interface Category {
 }
 
 const AdminProductDashboard = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [productsList, setAllProductsList] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -71,14 +73,46 @@ const AdminProductDashboard = () => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
+
+  // Bulk selection state (additive feature only)
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteModalVisible, setBulkDeleteModalVisible] = useState(false);
+
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
+
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
+  
 
   const loadingMoreRef = useRef(false);
   const lastPageLoadedRef = useRef(0);
 
-  const ITEMS_PER_PAGE = isTabOrDesktop ? 10 : 50;
+  const ITEMS_PER_PAGE = isWeb ? 10 : 50;
 
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
 
@@ -91,7 +125,7 @@ const AdminProductDashboard = () => {
       setTotalProducts(response.total);
       setHasMore(response.hasMore);
     } catch (error) {
-      Alert.alert("Error", "Failed to load page data");
+      showAlert("Error", "Failed to load page data");
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +146,9 @@ const AdminProductDashboard = () => {
     getallCategories();
   }, []);
 
-  const category_Products = productsList.filter((product: any) =>
-    selectCategory && selectCategory !== ""
-      ? product.categoryId?.some((catId: any) => String(catId) === String(selectCategory))
-      : true
-  );
-
-  const productsListToShow =
-    selectCategory && selectCategory !== "" ? category_Products : productsList;
+  // When a category is selected, productsList is set from getProductByCategoryID in useEffect.
+  // When no category is selected, productsList comes from getAllProducts (paginated).
+  const productsListToShow = productsList;
 
   // Calculate total pages for pagination - hide pagination when category is selected
   // since filtering is client-side and doesn't use server pagination
@@ -139,13 +168,6 @@ const AdminProductDashboard = () => {
       if (response && response.data) {
         const totalFetched = (page - 1) * ITEMS_PER_PAGE + response.data.length;
         const hasMoreData = totalFetched < response.total;
-
-        // console.log(`Page ${page} response:`, {
-        //   itemsReceived: response.data.length,
-        //   totalRecords: response.total,
-        //   totalFetched,
-        //   hasMore: hasMoreData,
-        // });
 
         return {
           data: response.data,
@@ -167,25 +189,16 @@ const AdminProductDashboard = () => {
 
   useEffect(() => {
     const performSearch = async () => {
-      if (!debouncedQuery || debouncedQuery.length < 2) {
+      if (!debouncedQuery.trim()) {
         setSuggestions([]);
-        if (debouncedQuery.length === 0) {
-          loadInitialData();
-        }
+        loadInitialData();
         return;
       }
 
-      const API_URL = process.env.EXPO_PUBLIC_API_URL;
       try {
-        const response = await axios.get(
-          `${API_URL}/products/suggestions/search?q=${debouncedQuery}`
-        );
-        const results = response.data;
-        const uniqueResults = [...new Set(results)].slice(0, 6);
-        setSuggestions(uniqueResults as string[]);
+        await searchProductsByName(debouncedQuery.trim());
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
-        setSuggestions([]);
+        console.error("Search failed:", error);
       }
     };
 
@@ -231,13 +244,9 @@ const AdminProductDashboard = () => {
       setCurrentPage(1);
       lastPageLoadedRef.current = 1;
 
-      // console.log("Initial data loaded:", {
-      //   
-      // }
-      //);
     } catch (error) {
       console.error("Failed to load initial data:", error);
-      Alert.alert("Error", "Failed to load products");
+      showAlert("Error", "Failed to load products");
       setAllProductsList([]);
       setTotalProducts(0);
       setHasMore(false);
@@ -248,17 +257,10 @@ const AdminProductDashboard = () => {
 
   const loadMoreData = async () => {
     if (loadingMoreRef.current || isLoadingMore || !hasMore || isLoading) {
-      // console.log("Load more blocked:", {
-      //   loadingMoreRef: loadingMoreRef.current,
-      //   isLoadingMore,
-      //   hasMore,
-      //   isLoading,
-      // });
       return;
     }
 
     const nextPage = lastPageLoadedRef.current + 1;
-    // console.log(`Loading more data - page ${nextPage}`);
 
     loadingMoreRef.current = true;
     setIsLoadingMore(true);
@@ -276,9 +278,6 @@ const AdminProductDashboard = () => {
             (item) => !existingIds.has(item._id || item.id)
           );
 
-          // console.log(
-          //   `Adding ${newItems.length} new items (${response.data.length - newItems.length} duplicates filtered)`
-          // );
           return [...prevProducts, ...newItems];
         });
 
@@ -290,7 +289,7 @@ const AdminProductDashboard = () => {
       setHasMore(response.hasMore);
     } catch (error) {
       console.error("Failed to load more data:", error);
-      Alert.alert("Error", "Failed to load more products");
+      showAlert("Error", "Failed to load more products");
     } finally {
       setIsLoadingMore(false);
       loadingMoreRef.current = false;
@@ -306,21 +305,22 @@ const AdminProductDashboard = () => {
     lastPageLoadedRef.current = 0;
 
     try {
-      const response = await fetchData(1);
-
-      setAllProductsList(response.data);
-      setTotalProducts(response.total);
-      setHasMore(response.hasMore);
-      setCurrentPage(1);
-      lastPageLoadedRef.current = 1;
-
-      // console.log("Data refreshed:", {
-      //   itemCount: response.data.length,
-      //   total: response.total,
-      // });
+      if (selectCategory && selectCategory !== "") {
+        const data = await ProductsAPI.getProductByCategoryID(selectCategory);
+        setAllProductsList(data ?? []);
+        setTotalProducts((data ?? []).length);
+        setHasMore(false);
+      } else {
+        const response = await fetchData(1);
+        setAllProductsList(response.data);
+        setTotalProducts(response.total);
+        setHasMore(response.hasMore);
+        setCurrentPage(1);
+        lastPageLoadedRef.current = 1;
+      }
     } catch (error) {
       console.error("Failed to refresh data:", error);
-      Alert.alert("Error", "Failed to refresh products");
+      showAlert("Error", "Failed to refresh products");
     } finally {
       setIsRefreshing(false);
     }
@@ -336,9 +336,40 @@ const AdminProductDashboard = () => {
   }, []);
 
   useEffect(() => {
-    loadInitialData();
     fetchAllCategories();
   }, [fetchAllCategories]);
+
+  // When category selection changes: fetch by category from API (same as user side) or load all products.
+  useEffect(() => {
+    if (!selectCategory || selectCategory === "") {
+      loadInitialData();
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
+    ProductsAPI.getProductByCategoryID(selectCategory)
+      .then((data) => {
+        if (!cancelled) {
+          setAllProductsList(data ?? []);
+          setTotalProducts((data ?? []).length);
+          setHasMore(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("Error fetching products by category:", err);
+          setAllProductsList([]);
+          setTotalProducts(0);
+          setHasMore(false);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectCategory]);
 
   const performDelete = async (item: Product) => {
     try {
@@ -346,14 +377,13 @@ const AdminProductDashboard = () => {
       const result = await ProductsAPI.deleteProduct(item?._id);
       if (result) {
         await onRefresh();
-        if (isWeb || isTabOrDesktop) {
+        if (isWeb) {
           setSuccessModalVisible(true);
         } else {
-          Alert.alert("Success", "Product deleted successfully");
+          showAlert("Success", "Product deleted successfully");
         }
       }
     } catch (error: any) {
-      // console.log("Delete error:", error?.response?.data);
       const errorMessage =
         error?.response?.data?.message ||
         "Something went wrong while deleting the product.";
@@ -361,7 +391,7 @@ const AdminProductDashboard = () => {
       if (isWeb) {
         alert(errorMessage);
       } else {
-        Alert.alert("Error", errorMessage);
+        showAlert("Error", errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -370,13 +400,95 @@ const AdminProductDashboard = () => {
     }
   };
 
+  // Bulk delete handler (additive feature only)
+  const performBulkDelete = async (productIds: string[]) => {
+    try {
+      setIsLoading(true);
+
+      const result = await ProductsAPI.bulkSoftDelete(productIds);
+
+      // Clear selection and refresh
+      setSelectedProductIds(new Set());
+      setIsSelectionMode(false);
+      await onRefresh();
+
+       const successMessage = `${productIds.length} product(s) deleted successfully`;
+
+     if (isWeb) {
+      setSuccessModalVisible(true);
+    } else {
+      showAlert("Success", successMessage);
+    }
+  } catch (error: any) {
+    const apiMessage = error?.response?.data?.message;
+    const errorMessage =
+      typeof apiMessage === "string"
+        ? apiMessage
+        : JSON.stringify(apiMessage || "Something went wrong while deleting products.");
+    
+    if (isWeb) {
+      alert(errorMessage);
+    } else {
+      showAlert("Error", errorMessage);
+    }
+  } finally {
+    setIsLoading(false);
+    setBulkDeleteModalVisible(false);
+  }
+  };
+
+  // Bulk selection handlers (additive feature only)
+  const handleToggleSelection = (productId: string) => {
+    setSelectedProductIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const allIds = new Set<string>();
+    productsListToShow.forEach((p: Product) => {
+      const id = p._id || p.id;
+      if (id) {
+        allIds.add(String(id));
+      }
+    });
+    setSelectedProductIds(allIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedProductIds(new Set());
+  };
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedProductIds);
+    if (ids.length === 0) return;
+    
+    setBulkDeleteModalVisible(true);
+  };
+
+  const handleLongPressProduct = (item: Product) => {
+    if (!isWeb && !isSelectionMode) {
+      setIsSelectionMode(true);
+      const productId = item._id || item.id;
+      if (productId) {
+        setSelectedProductIds(new Set([String(productId)]));
+      }
+    }
+  };
+
   const handleDeleteProduct = useCallback(
     (item: Product) => {
-      if (isWeb || isTabOrDesktop) {
+      if (isWeb) {
         setProductToDelete(item);
         setDeleteModalVisible(true);
       } else {
-        Alert.alert(
+        showAlert(
           "Delete Product",
           "Are you sure you want to delete this product?",
           [
@@ -392,7 +504,7 @@ const AdminProductDashboard = () => {
         );
       }
     },
-    [isWeb, isTabOrDesktop]
+    [isWeb, isWeb]
   );
 
   const getUniqueKey = useCallback((item: Product, index: number) => {
@@ -416,9 +528,19 @@ const AdminProductDashboard = () => {
       };
 
       const badge = item.stock !== undefined ? getStockBadge(item.stock) : null;
+      const productId = String(item._id || item.id);
+      const isSelected = selectedProductIds.has(productId);
 
       return (
-        <View style={[styles.card, { minHeight: 120 }]}>
+        <Pressable
+          onLongPress={() => handleLongPressProduct(item)}
+          style={[
+            styles.card,
+            { minHeight: 120 },
+            viewMode === "grid" && styles.gridCard,
+            isSelectionMode && isSelected && styles.selectedCard,
+          ]}
+        >
           <View
             style={[
               globalStyles.flexRow,
@@ -427,6 +549,20 @@ const AdminProductDashboard = () => {
               { marginTop: 12 },
             ]}
           >
+            {/* Checkbox for selection mode (additive feature only) */}
+            {(isSelectionMode || isWeb) && (
+              <TouchableOpacity
+                onPress={() => handleToggleSelection(productId)}
+                style={styles.checkboxContainer}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={isSelected ? "checkbox" : "checkbox-outline"}
+                  size={24}
+                  color={isSelected ? colors.primary : colors.placeholdergrey}
+                />
+              </TouchableOpacity>
+            )}
             <View>
               {item?.image[0] ? (
                 <Image source={{ uri: item?.image[0] }} style={styles.image} />
@@ -455,28 +591,35 @@ const AdminProductDashboard = () => {
                 >
                   {item.name}
                 </Text>
-                <View style={{ flexDirection: "row", gap: 4 }}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      redirectToPage(containers.AdminProductUpdationScreen, {
-                        item: JSON.stringify(item),
-                      })
-                    }
-                  >
-                    <Ionicons
-                      name="create-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteProduct(item)}>
-                    <Ionicons
-                      name="trash-outline"
-                      size={20}
-                      color={colors.error}
-                    />
-                  </TouchableOpacity>
-                </View>
+                {/* Hide edit/delete buttons in selection mode on mobile */}
+                {(!isSelectionMode || isWeb) && (
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() =>
+                        redirectToPage(containers.AdminProductUpdationScreen, {
+                          item: JSON.stringify(item),
+                        })
+                      }
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      onPress={() => handleDeleteProduct(item)}
+                    >
+                      <Ionicons
+                        name="trash-outline"
+                        size={20}
+                        color={colors.error}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               <Text style={styles.text}>
                 Category:{" "}
@@ -522,10 +665,10 @@ const AdminProductDashboard = () => {
               </View>
             </View>
           </View>
-        </View>
+        </Pressable>
       );
     },
-    [categories, handleDeleteProduct]
+    [categories, handleDeleteProduct, viewMode, isSelectionMode, selectedProductIds, isWeb]
   );
 
   const maxId = productsList.reduce((max: number, product: Product) => {
@@ -535,7 +678,7 @@ const AdminProductDashboard = () => {
   }, 0);
 
   const handleEndReached = useCallback(() => {
-    if (!isTabOrDesktop && !isLoadingMore && hasMore && !isLoading) {
+    if (!isWeb && !isLoadingMore && hasMore && !isLoading) {
       loadMoreData();
     }
   }, [isLoadingMore, hasMore, isLoading]);
@@ -544,7 +687,6 @@ const AdminProductDashboard = () => {
     try {
       setIsLoading(true);
       const response = await ProductsAPI.productsBy_Name_Id(query);
-      // console.log("Search response:", response);
 
       if (response) {
         setAllProductsList(response);
@@ -555,7 +697,7 @@ const AdminProductDashboard = () => {
       }
     } catch (error) {
       console.error("Error searching products:", error);
-      Alert.alert("Error", "Failed to search products");
+      showAlert("Error", "Failed to search products");
       setAllProductsList([]);
       setTotalProducts(0);
       setHasMore(false);
@@ -589,14 +731,14 @@ const AdminProductDashboard = () => {
     }
   }, [searchQuery]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
     <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="products" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
 
   return (
     <LayoutComponent
@@ -604,15 +746,12 @@ const AdminProductDashboard = () => {
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
-      scrollable={false}
+      hasSidebar={isWeb}
+      scrollable={isWeb ? true : false}
       hideNavItems={true}
     >
-      <View style={[
-          // globalStyles.pt_0, 
-          {flex: 1 }
-        ]}>
-        {!isTabOrDesktop && (
+      <View style={[{flex: 1 }]}>
+        {!isWeb && (
           <View>
             <SearchBar
               placeholder="Search by name..."
@@ -627,6 +766,7 @@ const AdminProductDashboard = () => {
         <View
           style={[
             styles.headerRow,
+             isMobileWeb && styles.headerRowMobileWeb,
             {
               justifyContent: "space-between",
               paddingTop: 10,
@@ -636,13 +776,18 @@ const AdminProductDashboard = () => {
             },
           ]}
         >
-          {isTabOrDesktop && (
-            <Text style={{ fontSize: 35, color: colors.black, paddingHorizontal: 0 }}>
+          {isWeb && (
+            <Text style={{ fontSize: isMobileWeb ? 24 : 35, color: colors.black, paddingHorizontal: 0 }}>
               Product List
             </Text>
           )}
           <TouchableOpacity
-            style={[styles.addButton, !isTabOrDesktop && styles.addButtonMobile]}
+            style={[
+              styles.addButton,
+              isWeb && styles.addButtonWebSmall,
+              !isWeb && styles.addButtonMobile,
+              isMobileWeb && { width: "100%" },
+            ]}
             onPress={() => {
               redirectToPage(containers.AdminProductUpdationScreen, {
                 newProduct: true,
@@ -651,25 +796,51 @@ const AdminProductDashboard = () => {
               });
             }}
           >
-            <Text style={styles.addButtonText}>+ Add New Product</Text>
+            <Text style={[styles.addButtonText, isWeb && styles.addButtonTextWebSmall]}>+ Add New Product</Text>
           </TouchableOpacity>
         </View>
 
         <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
           <View style={styles.stickyTopContainer}>
-            <View style={styles.categoryActionRow}>
-              {isTabOrDesktop && (
-                <SearchBar
-                  placeholder="Search by name..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={handleSearch}
-                  onPress={handleSearch}
-                  widthPercent={35}
-                  height={40}
-                />
+            <View style={[
+                styles.categoryActionRow, 
+                 isMobileWeb && styles.categoryActionColumn,
+                ]}>
+              {isWeb && (
+                <View style={styles.searchWithToggle}>
+                  <SearchBar
+                    placeholder="Search by name..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={handleSearch}
+                    onPress={handleSearch}
+                    widthPercent={isMobileWeb ? 100 : 35}
+                    height={40}
+                  />
+
+                  {isDesktopWeb && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        setViewMode(viewMode === "list" ? "grid" : "list")
+                      }
+                      style={styles.viewToggleIcon}
+                    >
+                      <Ionicons
+                        name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
-              <View style={styles.categoryContainer}>
+
+              <View
+                style={[
+                  styles.categoryContainer,
+                  isMobileWeb && { width: "100%" },
+                ]}
+              >
                 <TouchableOpacity
                   onPress={() => setIsCategoryOpen((prev) => !prev)}
                   activeOpacity={0.7}
@@ -698,46 +869,174 @@ const AdminProductDashboard = () => {
                   </View>
                 </TouchableOpacity>
                 {isCategoryOpen && (
-  isTabOrDesktop ? (
-    // ===== WEB: inline dropdown (keep your current UI) =====
-    <View style={styles.dropdownList}>
-      <ScrollView style={styles.dropdownScrollArea}>
-        {renderCategoryItems()}
-      </ScrollView>
-    </View>
-  ) : (
-    // ===== MOBILE: modal dropdown =====
-    Platform.OS !== "web" && (
-      <Modal
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsCategoryOpen(false)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setIsCategoryOpen(false)}
-        >
-          <View style={styles.modalDropdown}>
-            <ScrollView>
-              {renderCategoryItems()}
-            </ScrollView>
-          </View>
-        </Pressable>
-      </Modal>
-    )
-  )
-)}
-
+                  isWeb ? (
+                    // ===== WEB: inline dropdown (keep your current UI) =====
+                    <View style={styles.dropdownList}>
+                      <ScrollView style={styles.dropdownScrollArea}>
+                        {renderCategoryItems()}
+                      </ScrollView>
+                    </View>
+                  ) : (
+                    // ===== MOBILE: modal dropdown =====
+                    Platform.OS !== "web" && (
+                      <Modal
+                        transparent
+                        animationType="fade"
+                        onRequestClose={() => setIsCategoryOpen(false)}
+                      >
+                        <Pressable
+                          style={styles.modalOverlay}
+                          onPress={() => setIsCategoryOpen(false)}
+                        >
+                          <View style={styles.modalDropdown}>
+                            <ScrollView>
+                              {renderCategoryItems()}
+                            </ScrollView>
+                          </View>
+                        </Pressable>
+                      </Modal>
+                    )
+                  )
+                )}
               </View>
             </View>
           </View>
         </View>
 
-        <View style={{ marginTop: 16, flex: 1 }}>
+        {/* Mobile: Selection bar (additive feature only) */}
+        {!isWeb && isSelectionMode && (
+          <View style={styles.selectionBar}>
+            <View style={styles.selectionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.checkboxButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={24}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.selectionBarButton}
+              >
+                <Text style={styles.selectionBarButtonText}>Select All</Text>
+              </TouchableOpacity>
+              {selectedProductIds.size > 0 && (
+                <Text style={styles.selectionBarCount}>
+                  ({selectedProductIds.size} product{selectedProductIds.size !== 1 ? "s" : ""} selected)
+                </Text>
+              )}
+            </View>
+            <View style={styles.selectionBarRight}>
+              <TouchableOpacity
+                onPress={handleBulkDelete}
+                style={[
+                  styles.selectionBarButton,
+                  // styles.deleteButtonContainer,
+                  selectedProductIds.size > 0
+                ]}
+                disabled={selectedProductIds.size === 0}
+              >
+                {/* <Ionicons 
+                  name="trash-outline" 
+                  size={18} 
+                  color={selectedProductIds.size === 0 ? colors.secondaryText : colors.white} 
+                /> */}
+                <Text
+                  style={[
+                    styles.selectionBarButtonText,
+                    selectedProductIds.size === 0 && styles.selectionBarButtonTextDisabled,
+                    selectedProductIds.size > 0 && styles.deleteButtonTextActive,
+                  ]}
+                >
+                  {selectedProductIds.size === 0 ? "Delete" : "Delete Selected"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setIsSelectionMode(false);
+                  setSelectedProductIds(new Set());
+                }}
+                style={styles.selectionBarButton}
+              >
+                <Ionicons name="close" size={20} color={colors.black} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Web: Bulk action bar (additive feature only) */}
+        {isWeb && selectedProductIds.size > 0 && (
+          <View style={styles.bulkActionBar}>
+            <View style={styles.bulkActionBarLeft}>
+              <TouchableOpacity
+                onPress={
+                  selectedProductIds.size === productsListToShow.length
+                    ? handleDeselectAll
+                    : handleSelectAll
+                }
+                style={styles.bulkSelectAllButton}
+              >
+                <Ionicons
+                  name={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? "checkbox"
+                      : "checkbox-outline"
+                  }
+                  size={20}
+                  color={
+                    selectedProductIds.size === productsListToShow.length && productsListToShow.length > 0
+                      ? colors.primary
+                      : colors.placeholdergrey
+                  }
+                />
+                <Text style={styles.bulkSelectAllText}>Select All</Text>
+              </TouchableOpacity>
+              <Text style={styles.bulkActionBarText}>
+                ({selectedProductIds.size} selected)
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleBulkDelete}
+              style={styles.bulkDeleteButton}
+            >
+              <Ionicons name="trash-outline" size={18} color={colors.white} />
+              <Text style={styles.bulkDeleteButtonText}>Delete Selected</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={{ marginTop: 8, flex: 1 }}>
           <FlatList
             data={productsListToShow}
             renderItem={ProductCard}
             keyExtractor={getUniqueKey}
+            key={isWeb ? viewMode : "list"}
+            numColumns={isWeb && viewMode === "grid" ? 3 : 1}
+            columnWrapperStyle={
+              isWeb && viewMode === "grid"
+                ? { gap: 12, alignItems: "stretch", justifyContent: "flex-start" }
+                : undefined
+            }
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             refreshControl={
@@ -811,7 +1110,7 @@ const AdminProductDashboard = () => {
           )}
         </View>
 
-        {isTabOrDesktop && shouldShowPagination && (
+        {isDesktopWeb && shouldShowPagination && (
         <View style={styles.stickyBottomContainer}>
           <Pagination
             currentPage={currentPage}
@@ -844,6 +1143,7 @@ const AdminProductDashboard = () => {
         text="Are you sure you want to delete this product?"
         submitText="Delete"
         cancelText="Cancel"
+        isDestructive={true}
       />
 
       <ConfirmationModal
@@ -855,6 +1155,37 @@ const AdminProductDashboard = () => {
         submitText="OK"
         cancelText=""
       />
+      <ConfirmationModal
+        isModalVisible={bulkDeleteModalVisible}
+        onClose={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleCancel={() => {
+          setBulkDeleteModalVisible(false);
+        }}
+        handleSubmit={() => {
+          const ids = Array.from(selectedProductIds);
+          performBulkDelete(ids);
+        }}
+        title="Delete Products"
+        text={`Are you sure you want to delete ${selectedProductIds.size} product(s)?`}
+        submitText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+      />
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
     </LayoutComponent>
   );
 };

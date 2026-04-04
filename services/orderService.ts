@@ -13,7 +13,7 @@ export interface OrderProduct {
   name: string;
   quantity: number;
   netPrice: number;
-  discount: number;
+  ageRestricted?: boolean;
   isVatApplicable: boolean;
   vatRate: number;
   vatAmount: number;
@@ -52,7 +52,7 @@ export interface Order {
   userId: string;
   products: OrderProduct[];
   shippingCharges: number;
-  discounts: number[];
+  // discounts: number[];
   tax: number;
   totalAmount: number;
   paymentMethod: string;
@@ -125,17 +125,27 @@ export const orderService = {
   },
 
   createOrder: async (orderPayload: Partial<Order>): Promise<Order> => {
-    // console.log("orderPayload", orderPayload);
     try {
       const response = await jsonAxios.post<Order>(
         `${API_BASE_URL}/orders`,
         orderPayload
       );
-      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error create orders:", error);
       throw error;
+    }
+  },
+
+  /** Send "order placed" to both mobile (Expo) and web push. Call after createOrder from web or mobile. */
+  notifyOrderPlaced: async (order: { _id: string; userId: string; orderNumber?: number | string }) => {
+    try {
+      await jsonAxios.post(
+        `${API_BASE_URL}/notifications/orders/${order.userId}/placed`,
+        { orderId: order._id, orderNumber: order.orderNumber }
+      );
+    } catch (e) {
+      console.warn("Order placed notification request failed:", e);
     }
   },
 
@@ -177,6 +187,22 @@ export const orderService = {
       return response.data;
     } catch (error) {
       console.error("Error updating order status:", error);
+      throw error;
+    }
+  },
+
+  getOrderByOrderNumber: async (
+    orderNumber: string | number
+  ): Promise<Order> => {
+    try {
+      console.log("order number",orderNumber);
+      const response = await jsonAxios.get<Order>(
+        `${API_BASE_URL}/orders/getByOrderNumber/${orderNumber}`
+      );
+      console.log("orderdata by orderNumber", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by orderNumber:", error);
       throw error;
     }
   },

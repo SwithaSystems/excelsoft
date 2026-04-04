@@ -52,6 +52,21 @@ export const UserAPI = {
     }
   },
 
+  verifyContact: async (userId: string, body: { type: "email" | "phone" }) => {
+    try {
+      const response = await jsonAxios.put(
+        `/users/verifyContact/${userId}`,
+        body
+      );
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Verify contact error:", error.response?.data || error.message);
+      }
+      throw error;
+    }
+  },
+
   getUserByPhonenumber: async (phoneNumber: any) => {
     // console.log("phoneNumber", phoneNumber);
     const response = await jsonAxios.get(
@@ -68,6 +83,19 @@ export const UserAPI = {
   getUserByEmail: async (email: any) => {
     // console.log("email", email);
     const response = await jsonAxios.get(`/users/getUserByEmail/${email}`);
+    return response;
+  },
+
+  /**
+   * Signup-only status checks (includes soft-deleted accounts).
+   */
+  checkEmailStatus: async (email: string) => {
+    const response = await jsonAxios.get(`/users/check-email/${email}`);
+    return response;
+  },
+
+  checkPhoneStatus: async (phone: string) => {
+    const response = await jsonAxios.get(`/users/check-phone/${phone}`);
     return response;
   },
   // changePassword: async (phoneNumber: any, body: any) => {
@@ -89,14 +117,13 @@ export const UserAPI = {
     return response;
   },
 
-  resetPassword: async (body: { newPassword: string; phoneNumber: string }) => {
-    // console.log("newPassword", body.newPassword, body.phoneNumber);
-    const response = await jsonAxios.post("/users/resetPassword", {
-      newPassword: body.newPassword,
-      phoneNumber: body.phoneNumber,
-    });
-    return response;
-  },
+ resetPassword: async (body: { newPassword: string; phoneNumber?: string; email?: string }) => {
+  const response = await jsonAxios.post("/users/resetPassword", {
+    newPassword: body.newPassword,
+    ...(body.phoneNumber ? { phoneNumber: body.phoneNumber } : { email: body.email }),
+  });
+  return response;
+},
 
   getAllUsers: async () => {
     const response = await jsonAxios.get("/users");
@@ -109,4 +136,10 @@ export const UserAPI = {
     });
     return response;
   },
+
+  softDeleteUser : async(id:any)=>{
+    const response = await jsonAxios.delete(`/users/${id}`);
+    return response;
+  }
+
 };

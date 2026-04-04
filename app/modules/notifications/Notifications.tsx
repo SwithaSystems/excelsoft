@@ -1,7 +1,7 @@
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useState } from "react";
-import { View, Text, Switch, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, Switch, StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
@@ -9,6 +9,7 @@ import styles from "./NotificationsStyles";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 // Define TypeScript interfaces for the settings
 interface NotificationOptions {
@@ -105,38 +106,42 @@ const notificationsScreen: React.FC = () => {
     }
   };
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={NOTIFICATIONS_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
     <LayoutComponent
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       hasHeader
-      scrollable={!isTabOrDesktop}
+      scrollable={true}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View
         style={[
-          // globalStyles.sectionContent,
           globalStyles.pt_0,
-          isTabOrDesktop && webStyles.contentWidth,
+          isWeb && webStyles.contentWidth,
+          isMobileWeb && webStyles.mobileWebContentWidth,
         ]}
       >
+
         <View
           style={
             [
               // globalStyles.mb_2
+               webStyles.sectionCard,
             ]
           }
         >
@@ -163,7 +168,13 @@ const notificationsScreen: React.FC = () => {
                 keyof NotificationOptions
               >
             ).map((optionKey) => (
-              <View style={styles.switchContainer} key={optionKey}>
+              <View
+                style={[
+                  styles.switchContainer,
+                  isWeb && webStyles.mobileWebOptionSpacing,
+                ]}
+                key={optionKey}
+              >
                 <Text style={styles.switchLabel}>
                   {formatOptionLabel(optionKey)}
                 </Text>
@@ -182,9 +193,12 @@ const notificationsScreen: React.FC = () => {
             ))}
         </View>
 
-        {/* Email Notifications */}
+       {/* Email Notifications */}
         <View
-        // style={[globalStyles.mb_2]}
+          style={[
+            isMobileWeb && webStyles.mobileWebEmailSectionSpacing,
+            webStyles.sectionCard,
+          ]}
         >
           <View
             style={[
@@ -209,7 +223,13 @@ const notificationsScreen: React.FC = () => {
                 keyof NotificationOptions
               >
             ).map((optionKey) => (
-              <View style={styles.switchContainer} key={optionKey}>
+              <View
+                style={[
+                  styles.switchContainer,
+                  isWeb && webStyles.mobileWebOptionSpacing,
+                ]}
+                key={optionKey}
+              >
                 <Text style={styles.switchLabel}>
                   {formatOptionLabel(optionKey)}
                 </Text>
@@ -236,7 +256,29 @@ export default notificationsScreen;
 
 const webStyles = StyleSheet.create({
   contentWidth: {
-    width: "70%",
+    width: "60%",
     alignSelf: "center",
   },
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+  mobileWebSwitchContainer: {
+    paddingVertical: 4,
+  },
+  mobileWebEmailSectionSpacing: {
+    // marginTop: 16,
+  },
+  mobileWebOptionSpacing: {
+    marginBottom: 8,
+  },
+  sectionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey, // very subtle
+    marginBottom: 24,
+  },
+
 });

@@ -87,6 +87,45 @@ const styles = StyleSheet.create({
   activeText: {
     color: colors.white,
   },
+  noteContainer: {
+    backgroundColor: colors.ageRestrictionBg,
+    borderColor: colors.ageRestrictionBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+    width: "100%",
+    alignSelf: "stretch",
+  },
+  noteContainerWebDesktop: {
+    marginBottom: 16,
+  },
+  noteContainerWebMobile: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    marginBottom: 12,
+  },
+  noteTitle: {
+    color: colors.ageRestrictionText,
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  noteTitleWebMobile: {
+    fontSize: 14,
+    marginBottom: 3,
+  },
+  noteText: {
+    color: colors.ageRestrictionText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  noteTextWebMobile: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
 });
 
 export default styles;

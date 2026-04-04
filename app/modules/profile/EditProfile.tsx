@@ -10,9 +10,7 @@ import Header from "../../components/Header";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
 import { Feather, FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   TouchableOpacity,
   View,
@@ -22,6 +20,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "react-native";
 import styles from "./EditProfileStyles";
@@ -37,7 +36,6 @@ import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
 import {
   FAILED_TO_UPDATE_DETAILS,
   CAMERA_ACCESS_REQUIRED,
@@ -50,6 +48,10 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useNavigation } from "@react-navigation/native";
+import { color } from "react-native-elements/dist/helpers";
+import React, { useEffect, useState, useRef } from "react";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 interface User {
   id: string;
@@ -62,6 +64,7 @@ interface User {
 }
 
 const editProfileScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -72,6 +75,7 @@ const editProfileScreen = () => {
   const [user, setUser] = useState<any>(null);
   const userData = useSelector((state: RootState) => state.user.user);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const dispatch = useDispatch();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -82,24 +86,54 @@ const editProfileScreen = () => {
   // Confirmation Modal States
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const webImageFileRef = useRef<File | null>(null);
+
+
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={EDIT_PROFILE_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   useEffect(() => {
     const getUser = async () => {
-      if (userData) {
+      if (!userData) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
         const user = await UserAPI.getUserById(
           userData?._id ? userData?._id : userData?.id
         );
@@ -118,6 +152,10 @@ const editProfileScreen = () => {
             setSelectedDate(formatted);
           }
         }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setProfileLoading(false);
       }
     };
     getUser();
@@ -144,6 +182,15 @@ const editProfileScreen = () => {
     setLastName(text);
     if (lastNameError) setLastNameError(null);
   };
+
+  const handleWebImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  webImageFileRef.current = file; 
+  setProfileImage(URL.createObjectURL(file));
+};
+
 
   const openImagePickerAsync = async (type: "camera" | "gallery") => {
     let result;
@@ -196,7 +243,7 @@ const editProfileScreen = () => {
   };
 
   const showImageOptions = () => {
-    Alert.alert("Select Image", "Choose image source", [
+    showAlert("Select Image", "Choose image source", [
       { text: "Take Photo", onPress: () => openImagePickerAsync("camera") },
       { text: "Choose from Gallery", onPress: () => openImagePickerAsync("gallery") },
       { text: "Cancel", style: "cancel" },
@@ -222,17 +269,20 @@ const editProfileScreen = () => {
     if (!isFirstNameValid || !isLastNameValid) return;
 
     const formData = new FormData();
-    if (
-      profileImage &&
-      typeof profileImage === "string" &&
-      (profileImage.startsWith("http") || profileImage.startsWith("file://"))
-    ) {
-      formData.append("image", {
-        uri: profileImage,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      } as any);
-    }
+    if (isWeb && webImageFileRef.current) {
+  formData.append("image", webImageFileRef.current);
+} else if (
+  profileImage &&
+  typeof profileImage === "string" &&
+  profileImage.startsWith("file://")
+) {
+  formData.append("image", {
+    uri: profileImage,
+    name: "profile.jpg",
+    type: "image/jpeg",
+  } as any);
+}
+
 
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
@@ -244,8 +294,17 @@ const editProfileScreen = () => {
       if (response?.data) {
         DeviceEventEmitter.emit("fetchUser");
         await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
-        dispatch(setUserData(response.data.user));
-        setIsSuccessModalVisible(true);
+        dispatch(
+          setUserData({
+            ...response.data.user,
+            profileImageUrl:
+              response.data.user.profileImageUrl ||
+              response.data.user.profileImage ||
+              response.data.user.image ||
+              "",
+          })
+        );
+                setIsSuccessModalVisible(true);
       }
       return response?.data;
     } catch (error) {
@@ -264,6 +323,17 @@ const editProfileScreen = () => {
       redirectToPage(containers.userProfileScreen);
     }
   };
+  const handleFirstNameBlur = () => {
+     if (firstName.trim()) {
+       validateFirstName(firstName);
+     }
+   };
+
+   const handleLastNameBlur = () => {
+     if (lastName.trim()) {
+       validateLastName(lastName);
+     }
+   };
 
   const handleErrorModalClose = () => {
     setIsErrorModalVisible(false);
@@ -288,21 +358,39 @@ const editProfileScreen = () => {
     return new Date(Number(year), Number(month) - 1, Number(day));
   };
 
+  if (profileLoading) {
+    return (
+      <LayoutComponent
+        hasHeader
+        hasFooter={isWeb}
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent || undefined}
+        hasSidebar={isWeb}
+        userSidebar={true}
+      >
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </LayoutComponent>
+    );
+  }
+
   return (
     <LayoutComponent
       scrollable={true}
       hasHeader
-      hasFooter={isTabOrDesktop}
+      hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <KeyBoardWrapper>
         <View
           style={[
             globalStyles.container as ViewStyle,
-            isTabOrDesktop && webStyles.contentWidth,
+            isWeb && webStyles.contentWidth,
+            isMobileWeb && webStyles.mobileWebContentWidth,
           ]}
         >
           <ScrollView>
@@ -315,14 +403,30 @@ const editProfileScreen = () => {
                       ? { uri: profileImage }
                       : require("@/assets/default_user_profile.png")
                   }
-                  style={globalStyles.profileImage}
+                 style={[
+                    globalStyles.profileImage,
+                    isMobileWeb && webStyles.mobileWebProfileImage,
+                  ]}
                 />
-                <TouchableOpacity
-                  style={styles.changePictureButton}
-                  onPress={showImageOptions}
-                >
-                  <Feather name="camera" size={24} color={colors.primary} />
-                </TouchableOpacity>
+               {isWeb ? (
+                  <label style={{ cursor: "pointer" }}>
+                    <Feather name="camera" size={24} color={colors.primary} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={handleWebImagePick}
+                    />
+                  </label>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.changePictureButton}
+                    onPress={showImageOptions}
+                  >
+                    <Feather name="camera" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                )}
+
                 <Text style={styles.changePictureText}>
                   Change Profile Picture
                 </Text>
@@ -349,6 +453,7 @@ const editProfileScreen = () => {
                     onPress={() => {}}
                     setValue={setFirstName}
                     onChangeText={handleFirstNameChange}
+                    onblur={handleFirstNameBlur}
                   />
                   {firstNameError && (
                     <Text style={globalStyles.errorText}>{firstNameError}</Text>
@@ -377,6 +482,7 @@ const editProfileScreen = () => {
                     onPress={() => {}}
                     setValue={setLastName}
                     onChangeText={handleLastNameChange}
+                    onblur={handleLastNameBlur}
                   />
                   {lastNameError && (
                     <Text style={globalStyles.errorText}>{lastNameError}</Text>
@@ -413,14 +519,15 @@ const editProfileScreen = () => {
                         }
                       }}
                       style={{
-                        width: "98%",
-                        height: 40,
-                        borderColor: colors.darkGray,
+                        width: "100%",
+                        height: 48, // ✅ match CustomTextInput container
                         borderWidth: 1,
-                        borderRadius: 8,
-                        padding: 10,
-                        fontSize: 16,
+                        borderColor: colors.placeholdergrey, // ✅ same as CustomTextInput
+                        borderRadius: 6,             // ✅ same radius
+                        padding: 10,                 // ✅ same inner padding
+                        fontSize: 14,                // ✅ same font size
                         backgroundColor: colors.lightgrey,
+                        boxSizing: "border-box",     // ✅ critical for web
                       }}
                     />
                   ) : (
@@ -436,27 +543,44 @@ const editProfileScreen = () => {
                   )}
                 </View>
               </View>
+              {isWeb && (
+                <View
+                style={[
+                  webStyles.inlineButtonRow,
+                  isMobileWeb && webStyles.mobileWebInlineButtonRow,
+                ]}
+              >
+                  <Button
+                    primary={false}
+                    title="Cancel"
+                    onPress={() => redirectToPage(containers.homeScreen)}
+                    style={[
+                      webStyles.cancelButton,
+                      isMobileWeb && webStyles.mobileWebButton,
+                    ]}
+                    textStyle={webStyles.cancelButtonText}
+                  />
+                  <Button
+                    title={loading ? "Saving..." : "Save"}
+                    onPress={handleEditProfile}
+                    style={[
+                      webStyles.saveButton,
+                      loading && { opacity: 0.6 },
+                      isMobileWeb && webStyles.mobileWebButton,
+                    ]}
+                    textStyle={webStyles.saveButtonText}
+                  />
+                </View>
+              )}
+
             </View>
           </ScrollView>
         </View>
 
-        {isTabOrDesktop ? (
-          <View style={webStyles.buttonRow}>
-            <Button
-              primary={false}
-              title="Cancel"
-              onPress={() => redirectToPage(containers.homeScreen)}
-              style={webStyles.buttonHalf}
-            />
-            <Button
-              onPress={handleEditProfile}
-              title="Save"
-              style={webStyles.buttonHalf}
-            />
-          </View>
-        ) : (
+          {!isWeb && (
           <View style={{ marginTop: 16 }}>
-            <Button onPress={handleEditProfile} title="Save" />
+            <Button onPress={handleEditProfile} title={loading ? "Saving..." : "Save"}
+  disabled={loading} />
           </View>
         )}
 
@@ -490,6 +614,19 @@ const editProfileScreen = () => {
           submitText="OK"
           handleSubmit={handleErrorModalClose}
         />
+        <ConfirmationModal
+          isModalVisible={errorModalState.isVisible}
+          onClose={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+          title={errorModalState.title}
+          text={errorModalState.message}
+          submitText={errorModalState.buttonLabel}
+          handleSubmit={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
+        {confirmationModal}
       </KeyBoardWrapper>
     </LayoutComponent>
   );
@@ -502,13 +639,70 @@ const webStyles = StyleSheet.create({
     width: "70%",
     alignSelf: "center",
   },
+
   buttonRow: {
     width: "70%",
     alignSelf: "center",
     flexDirection: "row",
-    columnGap: 16,
+    justifyContent: "flex-end",
+    gap: 16,
+    marginTop: 32,
+    marginBottom: 40,
   },
-  buttonHalf: {
-    flex: 1,
+
+  inlineButtonRow: {
+    marginTop: 24,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 16,
   },
+  mobileWebProfileImage: {
+    width: 90,
+    height: 90,
+  },
+  saveButton: {
+    minWidth: 160,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  cancelButton: {
+    minWidth: 140,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "500",
+  },
+
+  mobileWebContentWidth: {
+    width: "94%",
+    alignSelf: "center",
+  },
+
+  mobileWebInlineButtonRow: {
+    flexDirection: "column",
+    gap: 12,
+  },
+
+  mobileWebButton: {
+    width: "100%",
+    minWidth: undefined,
+  },
+
 });

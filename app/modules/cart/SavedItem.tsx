@@ -7,7 +7,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -56,16 +55,15 @@ const savedItemScreen = () => {
     dispatch(removeFromSavedItems(item.id));
   };
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={SAVED_ITEMS_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? (
+  const FooterComponent = isWeb ? (
     <FooterWeb />
   ) : (
     <Footer activeTab="saved" />
@@ -78,11 +76,11 @@ const savedItemScreen = () => {
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
       scrollable
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View style={globalStyles.container}>
-              {isTabOrDesktop && (
+              {isWeb && (
         <Text
           style={{
             fontSize: 28,

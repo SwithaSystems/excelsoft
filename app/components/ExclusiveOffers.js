@@ -69,7 +69,7 @@ function ExclusiveOffers(props) {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.ratingContainer}>
-                  <Text style={styles.ratingText}>{item.rating}</Text>
+                  <Text style={styles.ratingText}>{Number(item.rating).toFixed(1)}</Text>
                   <Text style={styles.starIcon}> ★ </Text>
                   <Text style={styles.reviewsText}>({item.reviews})</Text>
                 </View>
@@ -80,14 +80,14 @@ function ExclusiveOffers(props) {
                     </View>
                     <Text style={styles.saleTime}>02:48:26</Text>
                   </View>
-                  <View style={styles.discountTag}>
+                  {/* <View style={styles.discountTag}>
                     <Text style={styles.discountText}>{item.discount}</Text>
-                  </View>
+                  </View> */}
                 </View>
                 <View style={styles.priceContainer}>
                   <DisplayPrice
                     netPrice={item.netPrice}
-                    discount={item.discount}
+                    // discount={item.discount}
                   />
                 </View>
               </View>

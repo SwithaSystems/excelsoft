@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, StyleSheet, Platform } from "react-native";
+import { View, ScrollView, StyleSheet, Platform, KeyboardAvoidingView } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -49,21 +49,28 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
       {/* Content - Explicit component rendering */}
       {scrollable ? (
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={[
-            contentPadding && styles.contentPadding,
-            {
-              paddingBottom: footerHeight + 20,
-              flexGrow: 1,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          bounces={Platform.OS === "ios"}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={hasHeader ? 64 : 0}
         >
-          {children}
-        </ScrollView>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={[
+              contentPadding && styles.contentPadding,
+              {
+                // Extra bottom space so the last input stays above the keyboard.
+                paddingBottom: footerHeight + 20,
+                flexGrow: 1,
+              },
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            bounces={Platform.OS === "ios"}
+          >
+            {children}
+          </ScrollView>
+        </KeyboardAvoidingView>
       ) : (
         <View
           style={[

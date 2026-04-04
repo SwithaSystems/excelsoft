@@ -2,19 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  Image,
-  TouchableOpacity,
   TextInput,
-  SafeAreaView,
-  Alert,
-  // Button,
 } from "react-native";
 import styles from "./BillingAddressStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { addressService } from "@/services/addressService";
@@ -35,15 +28,15 @@ import {
   isValidAddressLine1,
   isValidAddressLine2,
   isValidTownCity,
-  isValidState,
   isValidPhoneNumber,
 } from "@/utilities/validations";
 import colors from "@/constants/colors";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const addBillingAddressScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const params = useLocalSearchParams();
   const router = useRouter();
-  // const cartItems = useSelector((state: any) => [...state.cart.items]);
   const cartItems = useSelector((state: any) => state?.cart?.items || []);
   const { setSelectedBillingAddress } = useAppContext();
 
@@ -57,7 +50,6 @@ const addBillingAddressScreen = () => {
   const [towncity, setTownCity] = useState("");
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [state, setState] = useState("");
 
   // Component state
   const [billingAddress, setBillingAddress] = useState({});
@@ -74,7 +66,6 @@ const addBillingAddressScreen = () => {
     line1?: string;
     line2?: string;
     towncity?: string;
-    state?: string;
     phoneNumber?: string;
     general?: string;
   }>({});
@@ -112,7 +103,6 @@ const addBillingAddressScreen = () => {
         const billingAddress = await addressService.getAllAddress();
         if (isActive && isMountedRef.current) {
           setBillingAddress(billingAddress || {});
-          // console.log("billing addresses:", billingAddress);
         }
       } catch (error) {
         console.error("Error fetching billing address:", error);
@@ -133,14 +123,12 @@ const addBillingAddressScreen = () => {
         setLine1(edit_address.line1 || "");
         setLine2(edit_address.line2 || "");
         setTownCity(edit_address.city || "");
-        setState(edit_address.state || "");
         setPostalCode(edit_address.postalCode || "");
-        setPhoneNumber(edit_address.phoneNumber || "");
+        setPhoneNumber(edit_address.phone || edit_address.phoneNumber || "");
         setAddressType(edit_address.addressType || []);
         setIsDefault(edit_address.isDefault || false);
 
         setInitialDataLoaded(true);
-        // console.log("Editing address:", edit_address);
       } catch (error) {
         console.error("Error setting edit address data:", error);
       }
@@ -154,15 +142,8 @@ const addBillingAddressScreen = () => {
     const newErrors = {} as typeof errors;
     if (!address.trim()) newErrors.name = "Address name is required.";
     if (!line1.trim()) newErrors.line1 = "Line 1 is required.";
-    // FIXED: Make line2 optional since it's not always required
-    // if (!line2.trim()) newErrors.line2 = "Line 2 is required.";
     if (!towncity.trim()) newErrors.towncity = "Town/City is required.";
     if (!postalcode.trim()) newErrors.postalcode = "Postal code is required.";
-
-    // // Basic postal code validation
-    // if (postalcode.trim() && !/^\d{5,6}$/.test(postalcode.trim())) {
-    //   newErrors.postalcode = "Postal code must be 5-6 digits.";
-    // }
     try {
       const nameError = isValidName(address);
       if (nameError) newErrors.name = nameError;
@@ -178,9 +159,6 @@ const addBillingAddressScreen = () => {
 
       const townCityError = isValidTownCity(towncity);
       if (townCityError) newErrors.towncity = townCityError;
-
-      const stateError = isValidState(state);
-      if (stateError) newErrors.state = stateError;
 
       const phoneError = isValidPhoneNumber(phoneNumber);
       if (phoneError) newErrors.phoneNumber = phoneError;
@@ -207,15 +185,12 @@ const addBillingAddressScreen = () => {
     }
 
     safeSetState(setIsSubmitting, true);
-    // setIsSubmitting(true);
-
     try {
       const addressData = {
         name: address.trim(),
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: state.trim(),
         postalCode: postalcode.trim(),
         addressType: addressType ?? [],
         isDefault,
@@ -247,7 +222,7 @@ const addBillingAddressScreen = () => {
             setSelectedBillingAddress(savedAddress);
           }
 
-          Alert.alert("Success", "Address updated successfully");
+          showAlert("Success", "Address updated successfully");
         } else {
           throw new Error("Failed to update address");
         }
@@ -274,7 +249,7 @@ const addBillingAddressScreen = () => {
             setSelectedBillingAddress(savedAddress);
           }
 
-          Alert.alert("Success", "Address added successfully");
+          showAlert("Success", "Address added successfully");
         } else {
           throw new Error("Failed to add address");
         }
@@ -304,7 +279,7 @@ const addBillingAddressScreen = () => {
       );
 
       if (isMountedRef.current) {
-        Alert.alert(
+        showAlert(
           "Error",
           `Failed to ${
             isEditMode ? "update" : "add"
@@ -339,9 +314,6 @@ const addBillingAddressScreen = () => {
         break;
       case "towncity":
         setTownCity(value);
-        break;
-      case "state":
-        setState(value);
         break;
       case "phoneNumber":
         setPhoneNumber(value);
@@ -432,21 +404,6 @@ const addBillingAddressScreen = () => {
             {errors.towncity && (
               <Text style={globalStyles.errorText}>{errors.towncity}</Text>
             )}
-
-            <Text style={styles.fieldLabel}>State/Province</Text>
-            <TextInput
-              style={[styles.input, errors.state && globalStyles.errorInput]}
-              value={state}
-              onChangeText={(text) => handleInputChange("state", text)}
-              placeholder="Enter state or province (optional)"
-              maxLength={50}
-              // autoCorrect={false}
-              // autoCapitalize="words"
-            />
-            {errors.state && (
-              <Text style={globalStyles.errorText}>{errors.state}</Text>
-            )}
-
             <Text style={styles.fieldLabel}>Phone Number *</Text>
             <TextInput
               style={[
@@ -495,6 +452,7 @@ const addBillingAddressScreen = () => {
           </View>
         </ScrollView>
       </KeyBoardWrapper>
+      {confirmationModal}
     </PageLayout>
   );
 };

@@ -4,13 +4,15 @@ export interface CartItemInterface {
   _id?: string;
   id: string;
   name: string;
-  discount: number;
+  // discount: number;
   netPrice: number;
   quantity: number;
   isVatApplicable: boolean;
   vatRate: number;
   vatAmount: number;
   image: string | any[];
+  isAgeRestricted?: boolean | "true" | "false";
+  ageRestricted?: boolean | "true" | "false";
 }
 
 interface CartState {

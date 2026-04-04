@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react"; // <-- Added useState import
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Platform,
   useWindowDimensions,
-  ScrollView,
 } from "react-native";
 import styles from "./AdminSeeAllOrdersStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
@@ -28,6 +27,8 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import SearchBar from "@/app/components/searchBar";
+import OrderStatusDropdown from "./componentsWeb/OrderStatusDropdown";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const AdminSeeAllOrders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
@@ -35,13 +36,13 @@ const AdminSeeAllOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
+
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  const statusFilters = ["All Orders", "Cancelled", "Replaced", "Returned"];
 
   const getAllOrders = async () => {
     const allorders = await orderService.getAllOrders();
@@ -83,7 +84,7 @@ const AdminSeeAllOrders = () => {
           <View
             style={[
               styles.eachOrderItem,
-              isTabOrDesktop ? styles.eachOrderItemWeb : null,
+              isWeb ? styles.eachOrderItemWeb : null,
             ]}
           >
             <View
@@ -118,16 +119,18 @@ const AdminSeeAllOrders = () => {
                         : ""}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      redirectToPage(containers.deliveryTrackingScreen, {
-                        from: "admin",
-                        orderId: item._id,
-                      });
-                    }}
-                  >
-                    <Text style={styles.trackOrderText}>Track Order</Text>
-                  </TouchableOpacity>
+                  {!isWeb && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        redirectToPage(containers.deliveryTrackingScreen, {
+                          from: "admin",
+                          orderId: item._id,
+                        });
+                      }}
+                    >
+                      <Text style={styles.trackOrderText}>Track Order</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
@@ -232,10 +235,10 @@ const AdminSeeAllOrders = () => {
   };
 
   // Pagination for desktop/tablet grid
-  const ITEMS_PER_PAGE = isTabOrDesktop ? 12 : 50;
+  const ITEMS_PER_PAGE = isWeb ? 12 : 50;
   const filteredOrders = getFilteredOrders();
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
-  const paginatedData = isTabOrDesktop
+  const paginatedData = isWeb
     ? filteredOrders.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
@@ -247,30 +250,29 @@ const AdminSeeAllOrders = () => {
     setCurrentPage(1);
   }, [debouncedSearchQuery, activeFilter]);
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting = {true}/>
   ) : (
     <Header headerText={ADMIN_SEE_ALL_ORDERS_SCREEN_TITLE} />
   );
 
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="orders" />;
 
 
   return (
-    <LayoutComponent
+   <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
       hasFooter
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
-      scrollable={!isTabOrDesktop}
+      hasSidebar={isWeb}
+      scrollable={true}
       hideNavItems={true}
     >
-      {isTabOrDesktop ? (
-        <View style={{ flex: 1 }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-            <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
+      {isWeb ? (
+        <>
+        <View style={[globalStyles.pt_0, globalStyles.pb_0, { flex: 1, flexDirection: 'column' }]}>
               <View
                 style={[
                   styles.headerRow,
@@ -287,34 +289,30 @@ const AdminSeeAllOrders = () => {
                   See All Orders
                 </Text>
               </View>
-              <View style={{ marginTop: 16, marginBottom: 8 }}>
-                <SearchBar
-                  placeholder="Search orders..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  onSubmitEditing={() => {}}
-                  onPress={() => {}}
-                  widthPercent={35}
-                  height={40}
-                />
-              </View>
-
-              <View style={localStyles.badgeContainer}>
-                {statusFilters.map((status) => (
-                  <TouchableOpacity
-                    key={status}
-                    onPress={() => setActiveFilter(status)}
-                    style={[
-                      localStyles.badge,
-                      {
-                        backgroundColor:
-                          activeFilter === status ? colors.primary : colors.secondary,
-                      },
+              <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
+                <View style={[
+                    localStyles.searchFilterRow,
+                    isMobileWeb && localStyles.searchFilterMobile
+                  ]}>
+                  <SearchBar
+                    placeholder="Search orders..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    onSubmitEditing={() => {}}
+                    onPress={() => {}}
+                    widthPercent={isMobileWeb ? 100 : 40}
+                    height={40}
+                  />
+                  <OrderStatusDropdown
+                    selectedStatus={activeFilter}
+                    onSelectStatus={setActiveFilter}
+                    isMobileWeb={isMobileWeb}
+                    containerStyle={[
+                      localStyles.dropdownContainer,
+                      isMobileWeb && localStyles.dropdownFullWidth
                     ]}
-                  >
-                    <Text style={localStyles.badgeText}>{status}</Text>
-                  </TouchableOpacity>
-                ))}
+                  />
+                </View>
               </View>
 
               <Text style={styles.heading}>
@@ -326,11 +324,14 @@ const AdminSeeAllOrders = () => {
                   data={sortOrdersByTime(paginatedData)}
                   renderItem={renderOrderItem}
                   keyExtractor={(item) => String(item._id)}
-                  numColumns={4}
-                  columnWrapperStyle={{ gap: 16, marginBottom: 16 }}
-                  contentContainerStyle={{ paddingVertical: 8 }}
+                 contentContainerStyle={
+                   isMobileWeb
+                      ? { paddingVertical: 8 }
+                      : styles.ordersGridContent
+                  }
+
                   showsVerticalScrollIndicator={true}
-                  scrollEnabled={false}
+                  scrollEnabled={!isDesktopWeb}
                   ListEmptyComponent={
                     <View style={localStyles.emptyContainer}>
                       <Text style={localStyles.emptyText}>
@@ -341,10 +342,7 @@ const AdminSeeAllOrders = () => {
                 />
               </View>
             </View>
-          </ScrollView>
-          
-          {/* Pagination for web/tablet only - outside ScrollView */}
-          {isTabOrDesktop && totalPages > 1 && (
+          {isDesktopWeb && totalPages > 1 && (
             <View style={styles.stickyBottomContainer}>
               <Pagination
                 currentPage={currentPage}
@@ -353,38 +351,34 @@ const AdminSeeAllOrders = () => {
               />
             </View>
           )}
-        </View>
+        </>
       ) : (
         <View style={[globalStyles.pt_0, globalStyles.pb_0]}>
-          {!isTabOrDesktop && (
-            <View>
-              <SearchBar
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onSubmitEditing={() => {}}
-                onPress={() => {}}
-              />
+          {!isWeb && (
+            <View style={Platform.OS === "web" ? { overflow: "visible", zIndex: 1000 } : {}}>
+              <View
+                style={[
+                  localStyles.searchFilterRow,
+                  // isMobileWeb && { flexDirection: "column", alignItems: "stretch" },
+                  isMobileWeb && localStyles.searchFilterColumn
+                ]}
+              >
+                <SearchBar
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={() => {}}
+                  onPress={() => {}}
+                />
+                <OrderStatusDropdown
+                  selectedStatus={activeFilter}
+                  onSelectStatus={setActiveFilter}
+                  containerStyle={localStyles.dropdownContainer}
+                />
+              </View>
             </View>
           )}
           <>
-            <View style={localStyles.badgeContainer}>
-              {statusFilters.map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setActiveFilter(status)}
-                  style={[
-                    localStyles.badge,
-                    {
-                      backgroundColor:
-                        activeFilter === status ? colors.primary : colors.secondary,
-                    },
-                  ]}
-                >
-                  <Text style={localStyles.badgeText}>{status}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
             <Text style={styles.heading}>
               WELCOME, Let's go through the orders details!
@@ -437,6 +431,17 @@ const localStyles = StyleSheet.create({
     minHeight: Platform.OS === "ios" ? 50 : 44,
   },
 
+  searchFilterColumn: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
+
+  searchFilterMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    width: "100%",
+  },
+
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -453,6 +458,11 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
+  },
+
+  dropdownFullWidth: {
+    width: "100%",
+    alignSelf: "stretch",
   },
 
   statusPill: {
@@ -498,22 +508,20 @@ const localStyles = StyleSheet.create({
     color: colors.black,
   },
 
-  badgeContainer: {
+  searchFilterRow: {
     flexDirection: "row",
-    marginTop: 10,
-    marginBottom: 16,
-    gap: 4,
     flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 8,
+    position: "relative",
+    zIndex: 1000,
   },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  badgeText: {
-    color: colors.black,
-    fontSize: 14,
-    fontWeight: "500",
+  dropdownContainer: {
+    flexShrink: 0,
+    width: "100%",
   },
   emptyContainer: {
     flex: 1,

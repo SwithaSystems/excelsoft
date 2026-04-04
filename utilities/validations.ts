@@ -7,8 +7,38 @@ export const isValidPassword = (password: string): string | null => {
 
 export const isValidEmail = (email: string): boolean => {
   const trimmed = email.trim();
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return trimmed.length > 0 && emailRegex.test(trimmed);
+
+  // Must have exactly one @
+  if ((trimmed.match(/@/g) || []).length !== 1) return false;
+
+  const [localPart, domain] = trimmed.split("@");
+
+  // Local part: no leading/trailing/consecutive dots
+  if (!localPart || /^\.|\.$|\.{2,}/.test(localPart)) return false;
+  if (!/^[a-zA-Z0-9._%+\-]+$/.test(localPart)) return false;
+
+  // Domain: no leading/trailing hyphens or dots, no consecutive dots
+  if (!domain || !/^[a-zA-Z0-9.-]+$/.test(domain)) return false;
+  if (/^[-.]|[-.]$|\.{2,}/.test(domain)) return false;
+
+  const domainParts = domain.split(".");
+  if (domainParts.length < 2) return false;
+
+  // Each domain label must be valid
+  for (const part of domainParts) {
+    if (!part || /^-|-$/.test(part)) return false;
+    if (!/^[a-zA-Z0-9-]+$/.test(part)) return false;
+  }
+
+  // TLD must be 2–6 alpha characters only (com, uk, org, io, co, etc.)
+  const tld = domainParts[domainParts.length - 1];
+  if (!/^[a-zA-Z]{2,6}$/.test(tld)) return false;
+
+  // Second-level domain must be at least 2 characters
+  const sld = domainParts[domainParts.length - 2];
+  if (!sld || sld.length < 2) return false;
+
+  return true;
 };
 
 export const isValidName = (name: string): string | null => {
@@ -124,8 +154,17 @@ export const isValidPhoneNumber = (phone: string): string | null => {
     return null;
   }
 
-  if (digitsOnly.length !== 10) {
-    return "Phone number must contain exactly 10 digits";
+  // FIXED: Accept both 10 digits (without leading 0) and 11 digits (with leading 0)
+  if (digitsOnly.startsWith("0")) {
+    // If starts with 0, must be 11 digits (UK format: 07700900000)
+    if (digitsOnly.length !== 11) {
+      return "Phone number must contain exactly 11 digits (including leading 0)";
+    }
+  } else {
+    // If doesn't start with 0, must be 10 digits (7700900000)
+    if (digitsOnly.length !== 10) {
+      return "Phone number must contain exactly 10 digits";
+    }
   }
 
   return null;

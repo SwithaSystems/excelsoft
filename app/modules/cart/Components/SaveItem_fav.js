@@ -138,7 +138,7 @@ const SaveItemFav = (props) => {
                   <Text style={globalStyles.h6}>Qty: {item.quantity}</Text>
                   <Text style={globalStyles.h6}>
                     <DisplayPrice
-                      discount={item.discount}
+                      // discount={item.discount}
                       netPrice={item.netPrice}
                     />
                   </Text>
@@ -147,7 +147,7 @@ const SaveItemFav = (props) => {
             ) : (
               <View style={styles.itemDetails}>
                 <DisplayPrice
-                  discount={item.discount}
+                  // discount={item.discount}
                   netPrice={item.netPrice}
                 />
                 <Text style={styles.itemName}>

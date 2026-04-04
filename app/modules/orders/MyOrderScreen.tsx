@@ -13,7 +13,7 @@ import { orderService } from "@/services/orderService";
 import { useLocalSearchParams } from "expo-router";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import { format } from "date-fns";
-import { useWindowDimensions } from "react-native";
+import { Platform } from "react-native";
 import { ProductsAPI } from "@/services/productService";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
@@ -23,8 +23,7 @@ const myOrderScreen = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersWithProducts, setOrdersWithProducts] = useState<any[]>([]);
   const params = useLocalSearchParams();
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
 
   const userId = params.userId;
 
@@ -32,12 +31,18 @@ const myOrderScreen = () => {
 
   const fetchOrders = async () => {
     try {
+      // console.log("[MyOrderScreen] Fetching orders for userId:", userId);
+      if (!userId) {
+        console.error("[MyOrderScreen] ERROR: userId is missing!");
+        return;
+      }
       const response = await orderService.getOrdersByUserId(userId as string);
-      // console.log(" all my orders", response);
-      setOrders(response);
+      // console.log("[MyOrderScreen] Orders fetched:", response?.length || 0, "orders");
+      // console.log("[MyOrderScreen] Orders data:", response);
+      setOrders(response || []);
       
       // Fetch product images for web view - optimized with batch fetching
-      if (isTabOrDesktop && response.length > 0) {
+      if (isWeb && response.length > 0) {
         // Collect all unique product IDs from all orders to avoid duplicate fetches
         const allProductIds = new Set<number>();
         response.forEach((order: any) => {
@@ -103,18 +108,32 @@ const myOrderScreen = () => {
 
         setOrdersWithProducts(ordersWithProductImages);
       }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
+    } catch (error: any) {
+      console.error("[MyOrderScreen] Error fetching orders:", error);
+      console.error("[MyOrderScreen] Error details:", {
+        message: error?.message,
+        stack: error?.stack,
+        userId: userId
+      });
+      setOrders([]); // Set empty array on error to prevent undefined state
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    // console.log("[MyOrderScreen] Component mounted, userId:", userId);
+    if (userId) {
+      fetchOrders();
+    } else {
+      console.warn("[MyOrderScreen] WARNING: No userId provided, cannot fetch orders");
+    }
+  }, [userId]);
 
-  const HeaderComponent = isTabOrDesktop ? <BrandHeaderWeb /> : <Header headerText={MY_ORDERS_SCREEN_TITLE} />;
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? <BrandHeaderWeb /> : <Header headerText={MY_ORDERS_SCREEN_TITLE} />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+
+  // Log render state
+  // console.log("[MyOrderScreen] Rendering with orders:", orders.length, "ordersWithProducts:", ordersWithProducts.length, "isWeb:", isWeb);
 
   return (
     <LayoutComponent
@@ -123,7 +142,7 @@ const myOrderScreen = () => {
       scrollable
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      hasSidebar={isTabOrDesktop}
+      hasSidebar={isWeb}
       userSidebar={true}
     >
       <View style={globalStyles.container}>
@@ -131,8 +150,13 @@ const myOrderScreen = () => {
           ListHeaderComponent={
             <>
               <View style={[globalStyles.pt_0]}>
+                {orders.length === 0 && (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, color: '#666' }}>No orders found</Text>
+                  </View>
+                )}
                 <FlatList
-                  data={isTabOrDesktop && ordersWithProducts.length > 0 
+                  data={isWeb && ordersWithProducts.length > 0 
                     ? ordersWithProducts.map((order) => ({
                         orderId: `#ORD-${order.orderNumber}`,
                         date: order.deliveryDate
@@ -166,7 +190,7 @@ const myOrderScreen = () => {
                         fullOrder: order,
                       }))}
                   renderItem={({ item }) => (
-                    <OrderItem item={item} from="myOrders" isTabOrDesktop={isTabOrDesktop} />
+                    <OrderItem item={item} from="myOrders" isTabOrDesktop={isWeb} />
                   )}
                   keyExtractor={(item) => item._id}
                   nestedScrollEnabled={true}

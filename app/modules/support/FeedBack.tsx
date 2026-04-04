@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Image, TextInput, useWindowDimensions } from "react-native";
+import { View, Text, TouchableOpacity, Image, TextInput, Platform } from "react-native";
 import styles from "./FeedBackStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -9,6 +9,7 @@ import ProductStars from "../../components/ProductStars";
 import Button from "@/app/components/commonComponents/Button";
 import * as ImagePicker from "expo-image-picker";
 import ConfirmationModal from "../../components/commonComponents/ConfirmationModal";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import { ProductsAPI } from "@/services/productService";
 import { useLocalSearchParams } from "expo-router";
 import { redirectToPage } from "@/utilities/redirectionHelper";
@@ -22,35 +23,55 @@ import { FEEDBACK_SCREEN2_TITLE } from "../../../constants/stringLiterals";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import * as SecureStore from "expo-secure-store";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+
 
 const MAX_IMAGES = 5;
 
 const feedBackScreen = () => {
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  const isWeb = Platform.OS === "web";
+  const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
+  const isTabletWeb = isWeb && isTablet;
 
-  const { productId, reviewsArrayLength } = useLocalSearchParams();
+  const webScale = isTabletWeb ? 0.9 : isMobileWeb ? 0.85 : 1;
+  const s = (value: number) => value * webScale;
+
+  const params = useLocalSearchParams();
+  const productId = params.productId as string;
+  const reviewsArrayLength = params.reviewsArrayLength as string;
+
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [selectedImages, setSelectedImages] = useState<
-    { uri: string; name: string; type: string }[]
-  >([]);
+  const [selectedImages, setSelectedImages] = useState
+    <{ uri: string; name: string; type: string }[]
+    >([]);
 
   const [showReviewconfirmationModal, setShowReviewconfirmationModal] = useState(false);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const userData_redux = useSelector((state: any) => state.user.user);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showAlert, confirmationModal } = useConfirmationAlert();
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access gallery is required!");
+    if (selectedImages.length >= MAX_IMAGES) {
+      showAlert("Limit Reached", `You can only upload up to ${MAX_IMAGES} images.`);
       return;
     }
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      showAlert("Permission Required", "Permission to access gallery is required!");
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
+
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({
         uri: asset.uri,
@@ -72,30 +93,64 @@ const feedBackScreen = () => {
     if (isSubmitting) return;
 
     if (!rating || reviewText.trim() === "") {
-      alert("Please enter both a rating and review text.");
+      showAlert("Missing Information", "Please enter both a rating and review text.");
       return;
     }
 
     setIsSubmitting(true);
+    const token = await SecureStore.getItemAsync("token");
+    console.log("Token exists:", !!token);
+
     try {
-      const userID = userData_redux._id ? userData_redux._id : userData_redux.id;
+      if (!userData_redux?._id && !userData_redux?.id) {
+        showAlert("Session Error", "User session not found. Please log in again.");
+        return;
+      }
+
+      const userID = userData_redux._id ?? userData_redux.id;
       const user = await UserAPI.getUserById(userID);
       const UserParsed = user.data;
 
       const formData = new FormData();
-      formData.append("id", (Number(reviewsArrayLength) + 1).toString());
       formData.append("rating", rating.toString());
-      formData.append("name", UserParsed?.firstName);
+      formData.append("name", UserParsed?.firstName || "");
       formData.append("review", reviewText);
 
-      selectedImages.forEach((img) => {
-        formData.append("images", {
-          uri: img.uri,
-          name: img.name,
-          type: img.type,
-        } as any);
-      });
+      for (let i = 0; i < selectedImages.length; i++) {
+        const img = selectedImages[i];
 
+        if (Platform.OS === "web") {
+          try {
+            const response = await fetch(img.uri);
+            const blob = await response.blob();
+            formData.append("images", blob, img.name || `image_${i}.jpg`);
+          } catch (error) {
+            console.error("Error converting image to blob:", error);
+          }
+        } else {
+          // FIX: Ensure mime type is always a valid MIME string, not "image"
+          const mimeType = img.type && img.type.includes("/")
+            ? img.type
+            : "image/jpeg";
+
+          // FIX: Ensure name always has a proper extension
+          const fileName = img.name && img.name.includes(".")
+            ? img.name
+            : `image_${Date.now()}_${i}.jpg`;
+
+          const file: any = {
+            uri: Platform.OS === "android" ? img.uri : img.uri.replace("file://", ""),
+            type: mimeType,
+            name: fileName,
+          };
+
+          formData.append("images", file);
+        }
+      }
+
+      console.log("FormData prepared, sending request...");
+
+      // FIX: Pass token explicitly if your ProductsAPI doesn't attach it automatically
       await ProductsAPI.addReview(Number(productId), formData);
 
       setShowReviewconfirmationModal(true);
@@ -103,125 +158,262 @@ const feedBackScreen = () => {
         setShowReviewconfirmationModal(false);
         redirectToPage(containers.productDetailScreen, { productId });
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add review:", error);
-      alert("Something went wrong. Please try again.");
+
+      // Check if it's an Axios error and has a response from the server
+      if (error?.response) {
+        // Typically, APIs might return a 400 or 409 status when a duplicate exists,
+        // or a specific error message in the body
+        const status = error.response.status;
+        const errorMessage = error.response.data?.message?.toLowerCase() || "";
+
+        // Check for common signs of a duplicate review
+        if (status === 400 || status === 409 || status === 500 || errorMessage.includes("already submitted") || errorMessage.includes("duplicate")) {
+          setShowDuplicateModal(true);
+          return;
+        }
+
+        // If it's a different server error, show the server's message or a fallback
+        showAlert("Error", error.response.data?.message || "Something went wrong.");
+      } else {
+        // Fallback for network errors or other unexpected issues
+        showAlert("Error", "Something went wrong.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-    const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
-  const HeaderComponent = isTabOrDesktop ? (
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={FEEDBACK_SCREEN2_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : null;
-
+  const FooterComponent = isWeb ? <FooterWeb /> : null;
 
   return (
-    <LayoutComponent
-      hasHeader
-      hasFooter={isTabOrDesktop}
-      headerComponent={HeaderComponent}
-      footerComponent={FooterComponent || undefined}
-      hasSidebar={isTabOrDesktop}
-      userSidebar={true}
-      scrollable
-    >
-      <KeyBoardWrapper>
-        <ScrollView>
-
-          <View
-            style={{
-              width: isTabOrDesktop ? "60%" : "100%",
-              alignSelf: "center",
-            }}
+    <>
+      <LayoutComponent
+        hasHeader
+        hasFooter={isWeb}
+        headerComponent={HeaderComponent}
+        footerComponent={FooterComponent || undefined}
+        hasSidebar={isWeb}
+        userSidebar={true}
+        scrollable
+      >
+        <KeyBoardWrapper>
+          <ScrollView
+            contentContainerStyle={isMobileWeb ? styles.webScrollContent : undefined}
+            style={isMobileWeb ? styles.webScroll : undefined}
           >
-            <View style={[globalStyles.pt_0]}>
-              <View style={styles.ratingContainer}>
-                <Text style={styles.ratingTitle}>What is your Rating?</Text>
-                <ProductStars
-                  starsContainer={{ justifyContent: "space-between" }}
-                  rating={rating}
-                  needAction={true}
-                  size={60}
-                  onChangeRating={setRating}
-                />
-              </View>
-
-              <View style={styles.reviewInputContainer}>
-                <TextInput
-                  style={[styles.reviewInput, { height: 333 }]}
-                  placeholder="Add Your Review"
-                  multiline
-                  value={reviewText}
-                  onChangeText={setReviewText}
-                  editable={!isSubmitting}
-                />
-              </View>
-
-              <View style={styles.imagePickerContainer}>
-                <Text style={styles.ratingTitle}>Would you like to add some pictures?</Text>
-
-                <TouchableOpacity
-                  style={styles.addImageButton}
-                  onPress={pickImage}
-                  disabled={isSubmitting}
-                >
-                  <Ionicons
-                    name="add"
-                    size={30}
-                    color={
-                      isSubmitting ? colors.placeholdergrey : colors.darkGray
-                    }
-                  />
-                </TouchableOpacity>
-
-                <View style={styles.selectedImagesContainer}>
-                  {selectedImages.map((image, index) => (
-                    <View key={index} style={styles.imgContainer}>
-                      <Image source={{ uri: image.uri }} style={styles.selectedImage} />
-
+            {/* Mobile web: structured layout with heading and full-width form */}
+            {isMobileWeb ? (
+              <View style={[styles.contentWrapper, styles.webContentWrapper]}>
+                <Text style={[styles.pageHeading, { fontSize: s(28), marginBottom: s(24) }]}>
+                  Add Your Review
+                </Text>
+                <View style={[styles.formContainer, styles.webFormMobile]}>
+                  <View style={[globalStyles.pt_0]}>
+                    <View style={[styles.ratingContainer, { marginBottom: s(20) }]}>
+                      <Text style={[styles.ratingTitle, { fontSize: s(18), marginBottom: s(12) }]}>
+                        What is your Rating?
+                      </Text>
+                      <ProductStars
+                        starsContainer={{ justifyContent: "space-between" }}
+                        rating={rating}
+                        needAction={true}
+                        size={s(44)}
+                        onChangeRating={setRating}
+                      />
+                    </View>
+                    <View style={[styles.reviewInputContainer, { marginBottom: s(20) }]}>
+                      <TextInput
+                        style={[
+                          styles.reviewInput,
+                          {
+                            height: 140,
+                            fontSize: s(16),
+                            padding: s(12),
+                            borderRadius: 8,
+                          },
+                        ]}
+                        placeholder="Add Your Review"
+                        multiline
+                        value={reviewText}
+                        onChangeText={setReviewText}
+                        editable={!isSubmitting}
+                      />
+                    </View>
+                    <View style={[styles.imagePickerContainer, { marginBottom: s(20) }]}>
+                      <Text style={[styles.ratingTitle, { fontSize: s(18), marginBottom: s(12) }]}>
+                        Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
+                      </Text>
                       <TouchableOpacity
-                        onPress={() => removeImage(index)}
-                        style={styles.removeImageButton}
-                        disabled={isSubmitting}
+                        style={[styles.addImageButton, styles.webAddImageButton]}
+                        onPress={pickImage}
+                        disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
                       >
                         <Ionicons
-                          name="close"
-                          size={20}
+                          name="add"
+                          size={s(28)}
                           color={
-                            isSubmitting ? colors.placeholdergrey : colors.darkGray
+                            isSubmitting || selectedImages.length >= MAX_IMAGES
+                              ? colors.placeholdergrey
+                              : colors.darkGray
                           }
                         />
                       </TouchableOpacity>
+                      <View style={[styles.selectedImagesContainer, styles.webSelectedImagesContainer]}>
+                        {selectedImages.map((image, index) => (
+                          <View key={index} style={[styles.imgContainer, styles.webImgContainer]}>
+                            <Image source={{ uri: image.uri }} style={[styles.selectedImage, styles.webSelectedImage]} />
+                            <TouchableOpacity
+                              onPress={() => removeImage(index)}
+                              style={styles.removeImageButton}
+                              disabled={isSubmitting}
+                            >
+                              <Ionicons
+                                name="close"
+                                size={s(18)}
+                                color={isSubmitting ? colors.placeholdergrey : colors.darkGray}
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
                     </View>
-                  ))}
+                  </View>
+                  <View style={[styles.submitSection, { marginTop: s(8) }]}>
+                    <Button
+                      title={isSubmitting ? "Submitting..." : "Submit Review"}
+                      onPress={handleAddReview}
+                      disabled={isSubmitting || !rating || reviewText.trim() === ""}
+                      loading={isSubmitting}
+                      style={styles.webSubmitButton}
+                    />
+                  </View>
                 </View>
+                <ConfirmationModal
+                  isModalVisible={showReviewconfirmationModal}
+                  text="Review Added Successfully"
+                  onClose={() => setShowReviewconfirmationModal(false)}
+                />
+                <ConfirmationModal
+                  isModalVisible={showDuplicateModal}
+                  title="Already Submitted"
+                  text="You've already submitted a review."
+                  submitText="OK"
+                  handleSubmit={() => {
+                    setShowDuplicateModal(false);
+                    redirectToPage(containers.productDetailScreen, { productId });
+                  }}
+                  onClose={() => setShowDuplicateModal(false)}
+                />
               </View>
-            </View>
-
-            <View>
-              <Button
-                title={isSubmitting ? "Submitting..." : "Submit Review"}
-                onPress={handleAddReview}
-                disabled={isSubmitting || !rating || reviewText.trim() === ""}
-                loading={isSubmitting}
-              />
-            </View>
-
-            <ConfirmationModal
-              isModalVisible={showReviewconfirmationModal}
-              text="Review Added Successfully"
-              onClose={() => setShowReviewconfirmationModal(false)}
-            />
-          </View>
-
-        </ScrollView>
-      </KeyBoardWrapper>
-    </LayoutComponent>
+            ) : (
+              /* Desktop web + native: original layout unchanged */
+              <View
+                style={{
+                  width: isWeb ? "60%" : "100%",
+                  alignSelf: "center",
+                }}
+              >
+                <View style={[globalStyles.pt_0]}>
+                  <View style={styles.ratingContainer}>
+                    <Text style={styles.ratingTitle}>What is your Rating?</Text>
+                    <ProductStars
+                      starsContainer={{ justifyContent: "space-between" }}
+                      rating={rating}
+                      needAction={true}
+                      size={60}
+                      onChangeRating={setRating}
+                    />
+                  </View>
+                  <View style={styles.reviewInputContainer}>
+                    <TextInput
+                      style={[styles.reviewInput, { height: 333 }]}
+                      placeholder="Add Your Review"
+                      multiline
+                      value={reviewText}
+                      onChangeText={setReviewText}
+                      editable={!isSubmitting}
+                    />
+                  </View>
+                  <View style={styles.imagePickerContainer}>
+                    <Text style={styles.ratingTitle}>
+                      Would you like to add some pictures? ({selectedImages.length}/{MAX_IMAGES})
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.addImageButton}
+                      onPress={pickImage}
+                      disabled={isSubmitting || selectedImages.length >= MAX_IMAGES}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={30}
+                        color={
+                          isSubmitting || selectedImages.length >= MAX_IMAGES
+                            ? colors.placeholdergrey
+                            : colors.darkGray
+                        }
+                      />
+                    </TouchableOpacity>
+                    <View style={styles.selectedImagesContainer}>
+                      {selectedImages.map((image, index) => (
+                        <View key={index} style={styles.imgContainer}>
+                          <Image source={{ uri: image.uri }} style={styles.selectedImage} />
+                          <TouchableOpacity
+                            onPress={() => removeImage(index)}
+                            style={styles.removeImageButton}
+                            disabled={isSubmitting}
+                          >
+                            <Ionicons
+                              name="close"
+                              size={20}
+                              color={
+                                isSubmitting ? colors.placeholdergrey : colors.darkGray
+                              }
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+                <View>
+                  <Button
+                    title={isSubmitting ? "Submitting..." : "Submit Review"}
+                    onPress={handleAddReview}
+                    disabled={isSubmitting || !rating || reviewText.trim() === ""}
+                    loading={isSubmitting}
+                  />
+                </View>
+                <ConfirmationModal
+                  isModalVisible={showReviewconfirmationModal}
+                  text="Review Added Successfully"
+                  onClose={() => setShowReviewconfirmationModal(false)}
+                />
+                <ConfirmationModal
+                  isModalVisible={showDuplicateModal}
+                  title="Already Submitted"
+                  text="You've already submitted a review."
+                  submitText="OK"
+                  handleSubmit={() => {
+                    setShowDuplicateModal(false);
+                    redirectToPage(containers.productDetailScreen, { productId });
+                  }}
+                  onClose={() => setShowDuplicateModal(false)}
+                />
+              </View>
+            )}
+          </ScrollView>
+        </KeyBoardWrapper>
+      </LayoutComponent>
+      {confirmationModal}
+    </>
   );
 };
 

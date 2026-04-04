@@ -8,7 +8,7 @@ export interface Product {
   description: string;
   title?: string;
   stock?: number;
-  discount: number;
+  // discount: number;
   netPrice: number;
   grossPrice?: number;
   netPriceWithVAT?: number;
@@ -23,6 +23,8 @@ export interface Product {
   isReturnable: boolean;
   isVatApplicable: boolean;
   vatRate: number;
+  ageRestricted?: boolean | "true" | "false";
+  isAgeRestricted?: boolean | "true" | "false";
   vatAmount: number;
   reviews: {
     id: string;
@@ -31,6 +33,7 @@ export interface Product {
     rating: number;
     text: string;
   }[];
+  onAddToCart?:()=> void;
 }
 
 export const ProductsAPI = {
@@ -51,11 +54,33 @@ export const ProductsAPI = {
     return response.data;
   },
 
+//soft delete
   deleteProduct: async (id: any): Promise<Product> => {
     // console.log("id", id);
     const response = await jsonAxios.delete(`/products/${id}`);
     return response.data;
   },
+deleteProduct_Permanently: async (id: any): Promise<Product> => {
+    // console.log("id", id);
+    const response = await jsonAxios.delete(`/products/hard/${id}`);
+    return response.data;
+  },
+
+  // For bulk soft delete
+bulkSoftDelete: async (ids: string[]): Promise<any> => {
+  const response = await jsonAxios.delete(`/products/bulk-delete`, {
+    data: { productIds: ids }
+  });
+  return response.data;
+},
+
+// For bulk hard delete
+bulkHardDelete: async (ids: string[]): Promise<any> => {
+  const response = await jsonAxios.delete(`/products/bulk-hard-delete`, {
+    data: { productIds: ids }
+  });
+  return response.data;
+},
 
   getAllProducts: async (
     page = 1,
@@ -67,7 +92,7 @@ export const ProductsAPI = {
     return response.data;
   },
 
-  getProductByCategoryID: async (id: number): Promise<Product[]> => {
+  getProductByCategoryID: async (id: number | string): Promise<Product[]> => {
     // console.log(id);
     const response = await jsonAxios.get(`/products/category/${id}`);
     // console.log("AllProducts", response.data);
@@ -108,10 +133,12 @@ export const ProductsAPI = {
     return response.data;
   },
 
-  addReview: async (productId: Number, review: any): Promise<void> => {
-    // console.log("productId", productId);
-    // console.log("review", review);
-    await jsonAxios.post(`/products/${productId}/reviews`, review);
+  addReview: async (productId: number, review: any): Promise<void> => {
+    console.log("productId", productId);
+    console.log("review", review);
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/products/${productId}/reviews`, review);
+    return response.data;
   },
 
   addProduct_Catagory_Upload_File: async (data: any) => {

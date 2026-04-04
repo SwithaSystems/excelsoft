@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
+  Platform,
   ActivityIndicator,
 } from "react-native";
 import styles from "./PickUpModeStyles";
@@ -28,6 +28,7 @@ import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsW
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const modeConfig: Record<
   string,
@@ -66,24 +67,44 @@ const modeConfig: Record<
   },
 };
 
+const defaultDeliveryModes = {
+  homeDelivery: true,
+  curbsidePickup: true,
+  storePickup: true,
+};
+
 const pickUpModescreen = () => {
   // MOVE ALL HOOKS TO THE TOP - before any conditional returns
-  const { width } = useWindowDimensions();
   const [selected, setSelected] = useState<
     Partial<{ id: string; redirectionScreen: any; params: any }>
   >({});
   const [pickupModes, setPickupModes] = useState<any>([]);
-  const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
+  // const [deliveryModeEnabled, setDeliveryModeEnabled] = useState<boolean>(true);
+  const [deliveryModes, setDeliveryModes] = useState<
+  {
+    homeDelivery: boolean;
+    curbsidePickup: boolean;
+    storePickup: boolean;
+  }
+  >(defaultDeliveryModes);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const isWeb = Platform.OS === "web";
+  
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   const fetchGlobalSettings = async () => {
     try {
       const response = await globalSettingsAPI.getSettings();
-      // console.log("response global settings", response.data);
-      setDeliveryModeEnabled(response.data?.deliveryMode);
+      const fetchedDeliveryModes = response.data?.deliveryModes;
+      setDeliveryModes({
+        ...defaultDeliveryModes,
+        ...(fetchedDeliveryModes ?? {}),
+      });
     } catch (error) {
       console.error("Failed to fetch global settings:", error);
-      setDeliveryModeEnabled(true);
+      setDeliveryModes(defaultDeliveryModes);
     }
   };
 
@@ -106,15 +127,22 @@ const pickUpModescreen = () => {
   const options = pickupModes
     .map((mode: any) => modeConfig[mode.name])
     .filter((option: any) => {
+      if(!option) return false
       if (option?.id === "home") {
-        return deliveryModeEnabled;
+        return deliveryModes.homeDelivery;
+      }
+
+      if (option?.id === "curbside") {
+        return deliveryModes.curbsidePickup;
+      }
+
+      if (option?.id === "store") {
+        return deliveryModes.storePickup;
       }
       return Boolean(option);
     });
 
-  // console.log("Final options:", options);
-
-  const isTabOrDesktop = width >= 768;
+ 
 
   // Now the loading check comes AFTER all hooks
   if (loading) {
@@ -123,7 +151,7 @@ const pickUpModescreen = () => {
         hasHeader
         headerComponent={<Header headerText={PICKUP_MODE_SCREEN_TITLE} />}
         hasFooter={false}
-        scrollable={false}
+        scrollable={isWeb}
       >
         <View style={[globalStyles.pt_0, styles.loadingContainer]}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -133,35 +161,35 @@ const pickUpModescreen = () => {
     );
   }
 
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header headerText={PICKUP_MODE_SCREEN_TITLE} />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
-      scrollable={false}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
+      scrollable={true}
     >
-      {isTabOrDesktop && (
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "300",
-            marginBottom: 20,
-            color: colors.black,
-            textAlign: "center",
-            width: "100%",
-            marginTop: 20,
-          }}
-        >
+      {isWeb && (
+      <Text
+        style={{
+          fontSize: isMobileWeb ? 22 : 28,
+          fontWeight: "300",
+          marginBottom: isMobileWeb ? 12 : 20,
+          color: colors.black,
+          textAlign: "center",
+          width: "100%",
+          marginTop: isMobileWeb ? 8 : 20,
+        }}
+      >
           {PICKUP_MODE_SCREEN_TITLE}
         </Text>
       )}
@@ -169,11 +197,11 @@ const pickUpModescreen = () => {
       <View
         style={[
           globalStyles.pt_0,
-          isTabOrDesktop
+          isWeb
             ? {
-                width: "70%",
+                width: isMobileWeb ? "95%" : "75%",
                 alignSelf: "center",
-                paddingVertical: 20,
+                paddingVertical: isMobileWeb ? 12 : 20,
               }
             : { paddingHorizontal: 0 },
         ]}
@@ -183,6 +211,10 @@ const pickUpModescreen = () => {
             key={option.id}
             style={[
               styles.option,
+              isMobileWeb && {
+                paddingVertical: 12,
+                paddingHorizontal: 12,
+              },
               selected?.id == option.id && styles.selectedOption,
             ]}
             onPress={() => setSelected(option)}

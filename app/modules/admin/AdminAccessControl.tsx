@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Alert,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
@@ -18,8 +17,15 @@ import colors from "../../../constants/colors";
 import { UserAPI } from "@/services/userService";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./AdminAccessControlStyles";
+import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import { Platform } from "react-native";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 
 const AdminAccessControlScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const [accessList, setAccessList] = useState<boolean[]>([]);
   const [searchText, setSearchText] = useState("");
   const [allUsersData, setAllUsersData] = useState([]);
@@ -28,6 +34,11 @@ const AdminAccessControlScreen = () => {
   const [updatingAccess, setUpdatingAccess] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+
+  const isMobileWeb = isWeb && isMobile;
+  const isDesktopWeb = isWeb && !isMobileWeb;
 
   const toggleAccess = async (index: number, userId: string) => {
     try {
@@ -44,7 +55,7 @@ const AdminAccessControlScreen = () => {
       const response = await UserAPI.updateUserAccess(userId, newAccessValue);
       // console.log("response in toggleAccess", response.data);
 
-      Alert.alert(
+      showAlert(
         "Access Updated",
         `User access has been ${
           newAccessValue ? "granted" : "revoked"
@@ -57,7 +68,7 @@ const AdminAccessControlScreen = () => {
       revertedList[index] = !revertedList[index];
       setAccessList(revertedList);
 
-      Alert.alert("Error", "Failed to update user access. Please try again.");
+      showAlert("Error", "Failed to update user access. Please try again.");
     } finally {
       setUpdatingAccess(null);
     }
@@ -81,7 +92,7 @@ const AdminAccessControlScreen = () => {
       setAccessList(simplifiedUsers.map((user: any) => user.isAdmin));
     } catch (error) {
       console.error("Error fetching users:", error);
-      Alert.alert("Error", "Failed to load users. Please try again.");
+      showAlert("Error", "Failed to load users. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -213,7 +224,7 @@ const AdminAccessControlScreen = () => {
     const maxVisiblePages = 5;
 
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -326,32 +337,45 @@ const AdminAccessControlScreen = () => {
     </View>
   );
 
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+
+  const HeaderComponent = isWeb ? (
+    <BrandHeaderWeb hideUserGreeting={true} />
+  ) : (
+    <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
+  );
+
+  // const FooterComponent = isWeb ? <FooterWeb /> : null;
+
   if (loading) {
     return (
-      <PageLayout
-        hasHeader
-        hasFooter={false}
-        scrollable={false}
-        headerComponent={
-          <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
-        }
-      >
+       <LayoutComponent
+          hasHeader
+          headerComponent={HeaderComponent}
+          // hasFooter={isWeb}
+          // footerComponent={FooterComponent}
+          hasSidebar={isDesktopWeb}
+          scrollable={false}
+        >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading users...</Text>
         </View>
-      </PageLayout>
+        {confirmationModal}
+      </LayoutComponent>
     );
   }
 
+  
+
   return (
-    <PageLayout
+    <LayoutComponent
       hasHeader
-      hasFooter={false}
+      headerComponent={HeaderComponent}
+      // hasFooter={isWeb}
+      // footerComponent={FooterComponent}
+      hasSidebar={isDesktopWeb}
       scrollable={false}
-      headerComponent={
-        <Header headerText={ADMIN_ACCESS_CONTROL_SCREEN_TITLE} />
-      }
     >
       <View style={styles.container}>
         {/* Search Bar */}
@@ -401,9 +425,10 @@ const AdminAccessControlScreen = () => {
         </View>
 
         {/* Pagination */}
-        {renderPagination()}
+        {isDesktopWeb && renderPagination()}
       </View>
-    </PageLayout>
+      {confirmationModal}
+    </LayoutComponent>
   );
 };
 

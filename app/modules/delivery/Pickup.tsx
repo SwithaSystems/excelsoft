@@ -7,9 +7,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Alert,
   TextInputProps,
-  useWindowDimensions,
 } from "react-native";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -40,8 +38,8 @@ import {
   PICKUP_TIME_REQUIRED,
   PICKUP_DETAILS_REQUIRED,
 } from "../../../constants/customErrorMessages";
-import { showErrorAlert } from "../../../utilities/showErrorAlert";
-import { format, set } from "date-fns";
+import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { format, parse, set } from "date-fns";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   isValidEmail,
@@ -53,6 +51,9 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -71,9 +72,15 @@ const TIME_PERIOD_OPTIONS = [
 const MIN_PICKUP_MINUTES = 30;
 
 const PickupScreen = () => {
+  const { showAlert, confirmationModal } = useConfirmationAlert();
   const { mode, orderId } = useLocalSearchParams();
   const isStorePickup = mode === DELIVERY_MODE_STORE;
   const isCurbsidePickup = mode === DELIVERY_MODE_CURBSIDE;
+
+  const isWeb = Platform.OS === "web";
+    
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
 
   // Date and time state
   const [date, setDate] = useState("");
@@ -106,12 +113,48 @@ const PickupScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [formErrors, setFormErrors] = useState<string[] | null>([]);
+  const [errorModalState, setErrorModalState] = useState({
+    isVisible: false,
+    title: "",
+    message: "",
+    buttonLabel: "OK",
+  });
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+  const hasAgeRestrictedItems = cartItems.some((item: any) => {
+    const directFlag =
+      item?.isAgeRestricted === true ||
+      item?.isAgeRestricted === "true" ||
+      item?.ageRestricted === true ||
+      item?.ageRestricted === "true";
+    const nestedFlag =
+      item?.product?.isAgeRestricted === true ||
+      item?.product?.isAgeRestricted === "true" ||
+      item?.product?.ageRestricted === true ||
+      item?.product?.ageRestricted === "true";
+    return directFlag || nestedFlag;
+  });
   // console.log("userData in pickupscreen", userData);
 
-  const DEFAULT_PICKUP_HOURS = usePickupTime();
+  const { pickupTime, loading: pickupTimeLoading } = usePickupTime();
+  const showErrorAlert = ({
+    title,
+    message,
+    buttonLabel = "OK",
+  }: {
+    title: string;
+    message: string;
+    buttonLabel?: string;
+  }) => {
+    setErrorModalState({
+      isVisible: true,
+      title,
+      message,
+      buttonLabel,
+    });
+  };
   // console.log("DEFAULT_PICKUP_HOURS", DEFAULT_PICKUP_HOURS.pickupTime);
 
   // Refs for focusing fields
@@ -134,6 +177,7 @@ const PickupScreen = () => {
 
   // Initialize default time values based on new business rules
   useEffect(() => {
+    if (pickupTimeLoading) return;
     const now = new Date();
     const currentHour = now.getHours();
     let targetDate, targetHour, targetMinute;
@@ -144,7 +188,7 @@ const PickupScreen = () => {
       currentHour < STORE_CLOSING_TIMINGS
     ) {
       // Within business hours: add 2 hours
-      const pickupHours = Math.max(Number(DEFAULT_PICKUP_HOURS) || 0, 0.5); // At least 30 minutes
+      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5); // At least 30 minutes
       const twoHoursLater = new Date(
         now.getTime() + pickupHours * 60 * 60 * 1000
       );
@@ -194,7 +238,7 @@ const PickupScreen = () => {
       minutesValue,
       periodValue
     );
-  }, []);
+  }, [pickupTime, pickupTimeLoading]);
 
   const displayDatePicker = () => setPickupDatePickerVisibility(true);
   const hideDatePicker = () => setPickupDatePickerVisibility(false);
@@ -364,7 +408,7 @@ const PickupScreen = () => {
       if (!vehicleType) {
         // For modal selector, we can't focus, but we can scroll to it
         // You might want to show an alert or highlight the field
-        Alert.alert("Required Field", "Please select a vehicle type");
+        showAlert("Required Field", "Please select a vehicle type");
         return;
       }
 
@@ -595,7 +639,7 @@ const PickupScreen = () => {
       });
     } catch (error) {
       console.error("Error processing pickup request:", error);
-      Alert.alert(
+      showAlert(
         "Error",
         "Failed to process pickup request. Please try again later."
       );
@@ -673,10 +717,9 @@ const PickupScreen = () => {
     </View>
   );
 
-  const { width } = useWindowDimensions();
-  const isTabOrDesktop = width >= 768;
+  // const isWeb = Platform.OS === "web";
 
-  const HeaderComponent = isTabOrDesktop ? (
+  const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
     <Header
@@ -685,31 +728,31 @@ const PickupScreen = () => {
       }
     />
   );
-  const FooterComponent = isTabOrDesktop ? <FooterWeb /> : <Footer />;
+  const FooterComponent = isWeb ? <FooterWeb /> : <Footer />;
 
-  const LayoutComponent = isTabOrDesktop ? PageLayoutWeb : PageLayout;
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
 
   return (
     // <SafeAreaView style={globalStyles.safeAreaContainer}>
     <LayoutComponent
       hasHeader
       headerComponent={HeaderComponent}
-      hasFooter={isTabOrDesktop}
-      footerComponent={isTabOrDesktop ? <FooterWeb /> : undefined}
-      scrollable={false}
+      hasFooter={isWeb}
+      footerComponent={isWeb ? <FooterWeb /> : undefined}
+      scrollable={true}
     >
-      {isTabOrDesktop && (
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "300",
-            marginBottom: 20,
-            color: colors.black,
-            textAlign: "center",
-            width: "100%",
-            marginTop: 20,
-          }}
-        >
+     {isWeb && (
+      <Text
+        style={{
+          fontSize: isMobileWeb ? 22 : 28,
+          fontWeight: "300",
+          marginBottom: isMobileWeb ? 12 : 20,
+          color: colors.black,
+          textAlign: "center",
+          width: "100%",
+          marginTop: isMobileWeb ? 8 : 20,
+        }}
+      >
           {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
         </Text>
       )}
@@ -718,16 +761,33 @@ const PickupScreen = () => {
           <View
             style={[
               globalStyles.pt_0,
-              isTabOrDesktop
+              isWeb
                 ? {
-                    width: "70%",
+                    width: isMobileWeb ? "95%" : "70%",
                     alignSelf: "center",
-                    paddingVertical: 20,
+                    paddingVertical: isMobileWeb ? 12 : 20,
                   }
                 : { paddingHorizontal: 0 },
             ]}
           >
             {/* Instructions */}
+            {hasAgeRestrictedItems && (
+              <AgeRestrictionNote
+                containerStyle={[
+                  styles.noteContainer,
+                  isWeb && !isMobileWeb && styles.noteContainerWebDesktop,
+                  isMobileWeb && styles.noteContainerWebMobile,
+                ]}
+                titleStyle={[
+                  styles.noteTitle,
+                  isMobileWeb && styles.noteTitleWebMobile,
+                ]}
+                messageStyle={[
+                  styles.noteText,
+                  isMobileWeb && styles.noteTextWebMobile,
+                ]}
+              />
+            )}
             <Text style={styles.label}>
               {isStorePickup
                 ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
@@ -741,12 +801,23 @@ const PickupScreen = () => {
                 <input
                   type="date"
                   style={globalStyles.webDateInput}
-                  value={date}
+                  value={
+                    date
+                      ? format(
+                          parse(date, DATE_FORMAT_Display, new Date()),
+                          "yyyy-MM-dd"
+                        )
+                      : format(new Date(), "yyyy-MM-dd")
+                  }
                   onChange={(e) => {
-                    setDate(e.target.value);
-                    validateTime(e.target.value, hours, minutes, period);
+                    const isoDate = e.target.value;
+                    const displayDate = isoDate
+                      ? format(new Date(isoDate), DATE_FORMAT_Display)
+                      : "";
+                    setDate(displayDate);
+                    validateTime(displayDate, hours, minutes, period);
                   }}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={format(new Date(), "yyyy-MM-dd")}
                 />
               ) : (
                 <TouchableOpacity
@@ -783,7 +854,13 @@ const PickupScreen = () => {
 
             {/* Time Input */}
             <Text style={styles.inputLabel}>Time: *</Text>
-            <View style={globalStyles.timeContainer}>
+            <View style={[
+                globalStyles.timeContainer,
+                isMobileWeb && {
+                  flexWrap: "wrap",
+                  rowGap: 8,
+                }
+              ]}>
               {/* Hours */}
               <TextInput
                 ref={hoursRef}
@@ -866,7 +943,7 @@ const PickupScreen = () => {
                       borderColor: colors.primary,
                       borderWidth: 1,
                       height: 40,
-                      width: 250,
+                      width: isMobileWeb ? "100%" : 250,
                       borderRadius: 8,
                       justifyContent: "center",
                     }}
@@ -1011,10 +1088,6 @@ const PickupScreen = () => {
               emailRef
             )}
 
-            <Text style={inputStyles.note}>
-              *Please ensure you carry a valid ID Proof
-            </Text>
-
             {/* Submit button */}
             <Button
               title="Confirm"
@@ -1026,6 +1099,19 @@ const PickupScreen = () => {
         </ScrollView>
         {/* </View> */}
       </KeyBoardWrapper>
+      <ConfirmationModal
+        isModalVisible={errorModalState.isVisible}
+        onClose={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+        title={errorModalState.title}
+        text={errorModalState.message}
+        submitText={errorModalState.buttonLabel}
+        handleSubmit={() =>
+          setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+        }
+      />
+      {confirmationModal}
       {/* </SafeAreaView> */}
     </LayoutComponent>
   );
@@ -1043,11 +1129,6 @@ const inputStyles = StyleSheet.create({
   multilineInput: {
     height: 80,
     textAlignVertical: "top",
-  },
-  note: {
-    color: colors.error,
-    fontSize: 14,
-    marginBottom: 16,
   },
   errorText: {
     color: "red",
