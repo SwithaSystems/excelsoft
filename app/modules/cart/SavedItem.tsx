@@ -1,9 +1,8 @@
 import { SAVED_ITEMS_SCREEN_TITLE } from "../../../constants/stringLiterals";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Platform,
@@ -14,28 +13,21 @@ import Footer from "@/app/components/Footer";
 import { useSelector, useDispatch } from "react-redux";
 import {
   removeFromSavedItems,
-  moveToCart,
+  refreshSavedItem,
 } from "../../../store/slices/savedItemsSlice";
-import { addToCart } from "../../../store/slices/cartSlice";
-import { router } from "expo-router";
+import { CartItemInterface } from "../../../store/slices/cartSlice";
 import { selectSavedItems } from "@/store/selectors/savedItemsSelectors";
-import { Image } from "react-native-elements";
-import Button from "@/app/components/commonComponents/Button";
 import colors from "../../../constants/colors";
 import containers from "@/containers";
 import { redirectToPage } from "@/utilities/redirectionHelper";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import ProductCard from "../../components/ProductCard";
 import SaveItemFav from "./Components/SaveItem_fav";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import styles from "./SavedItemStyles";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
+import { ProductsAPI } from "@/services/productService";
 
 const savedItemScreen = () => {
   const dispatch = useDispatch();
@@ -43,15 +35,7 @@ const savedItemScreen = () => {
 
   // console.log("saved Items before", savedItems);
 
-  const handleMoveToCart = (item: any) => {
-    // console.log("item", item);
-    // console.log("hi from handlemoveto cart");
-    dispatch(addToCart(item));
-    dispatch(moveToCart(item.id));
-    // console.log("saved Items", savedItems);
-  };
-
-  const handleDelete = (item: any) => {
+  const handleDelete = (item: CartItemInterface) => {
     dispatch(removeFromSavedItems(item.id));
   };
 
@@ -68,6 +52,40 @@ const savedItemScreen = () => {
   ) : (
     <Footer activeTab="saved" />
   );
+
+  useEffect(() => {
+    const validateAndRefreshSavedItems = async () => {
+      if (savedItems.length === 0) return;
+
+      try {
+        const itemIds = savedItems
+          .map((item: CartItemInterface) => item._id ?? null)
+          .filter((id: string | null) => id !== null);
+
+        if (itemIds.length === 0) return;
+
+        const products = await ProductsAPI.getProductBy_multipleID(itemIds);
+        const productMap = new Map(
+          products.map((product) => [product._id, product])
+        );
+
+        savedItems.forEach((item: CartItemInterface) => {
+          const product = productMap.get(item._id);
+
+          if (!product) {
+            dispatch(removeFromSavedItems(item.id));
+            return;
+          }
+
+          dispatch(refreshSavedItem({ _id: item._id, data: product }));
+        });
+      } catch (error) {
+        console.error("Error validating saved items:", error);
+      }
+    };
+
+    validateAndRefreshSavedItems();
+  }, []);
 
   return (
     <LayoutComponent
@@ -97,7 +115,7 @@ const savedItemScreen = () => {
       )}
         <ScrollView>
           <View style={[globalStyles.pt_0]}>
-            {savedItems.map((item: any) => {
+            {savedItems.map((item: CartItemInterface) => {
               return (
                 <SaveItemFav
                   handleDelete={() => handleDelete(item)}

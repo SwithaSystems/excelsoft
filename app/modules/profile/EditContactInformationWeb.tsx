@@ -60,6 +60,9 @@ const CALLING_CODE_TO_CCA2: Record<string, CountryCode> = {
 
 async function getCountryCodeFromCallingCode(callingCode: string): Promise<CountryCode | null> {
   try {
+    if (CALLING_CODE_TO_CCA2[callingCode]) {
+      return CALLING_CODE_TO_CCA2[callingCode];
+    }
     const countries = await getAllCountries("emoji" as FlagType);
     const country = countries?.find((c: any) => c.callingCode?.[0] === callingCode);
     return country ? (country.cca2 as CountryCode) : null;
@@ -158,7 +161,17 @@ const editContactInformationWebScreen = () => {
             let extractedLocal = number;
             let resolvedCountryCode: CountryCode | null = null;
 
+            if (fullPhone.startsWith("+44")) {
+              extractedCallingCode = "44";
+              extractedLocal = fullPhone.slice(3).trim();
+              resolvedCountryCode = "GB";
+              setCountryCode("GB");
+            }
+
             try {
+              if (resolvedCountryCode) {
+                throw new Error("skip-generic-country-lookup");
+              }
               const countries = await getAllCountries("emoji" as FlagType);
               const foundCountry = countries
                 ?.sort((a: any, b: any) => (b.callingCode[0]?.length ?? 0) - (a.callingCode[0]?.length ?? 0))

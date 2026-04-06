@@ -41,6 +41,10 @@ function NotificationsHandler() {
   const responseListener = useRef();
   const appState = useRef(AppState.currentState);
 
+  useEffect(() => {
+    NotificationService.clearTransientNotificationCache();
+  }, []);
+
   // Web only: listen for push payloads from the service worker so the in-app list updates
   useEffect(() => {
     if (Platform.OS !== "web" || typeof navigator === "undefined" || !navigator.serviceWorker) return;
