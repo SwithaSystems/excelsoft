@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
@@ -76,6 +77,7 @@ const addAddressScreen = () => {
   }>({});
 
   const isWeb = Platform.OS === "web";
+  const insets = useSafeAreaInsets();
   const showErrorAlert = ({
     title,
     message,
@@ -512,14 +514,19 @@ const addAddressScreen = () => {
 
   return (
     <LayoutComponent
-      scrollable={true}
+      scrollable={false}
       hasHeader
       hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
-        <ScrollView>
+        <View style={styles.screenShell}>
+        <ScrollView
+          style={styles.formScroll}
+          contentContainerStyle={styles.formScrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={styles.fieldLabel}>Recipient Name *</Text>
           <TextInput
             style={[styles.input, errors.name && globalStyles.errorInput]}
@@ -617,7 +624,15 @@ const addAddressScreen = () => {
             />
             <Text>Mark as default address</Text>
           </View>
-
+        </ScrollView>
+        <View
+          style={[
+            styles.bottomActionBar,
+            !isWeb && {
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
           <TouchableOpacity
             style={[styles.submitButton, isSubmitting && { opacity: 0.6 }]}
             onPress={handleSubmit}
@@ -629,7 +644,8 @@ const addAddressScreen = () => {
                 : `${isEditMode ? "Update" : "Add"} Address`}
             </Text>
           </TouchableOpacity>
-        </ScrollView>
+        </View>
+        </View>
       </KeyBoardWrapper>
       <ConfirmationModal
         isModalVisible={errorModalState.isVisible}

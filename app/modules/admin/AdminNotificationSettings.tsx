@@ -4,7 +4,6 @@ import { FC, useState } from "react";
 import { View, Text, Switch, StyleSheet, Platform } from "react-native";
 import colors from "../../../constants/colors";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
-import { NOTIFICATIONS_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import styles from "./AdminnotificationSettingsStyles";
 import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
@@ -29,6 +28,7 @@ interface SettingsState {
 }
 
 const AdminNotificationSettings: FC = () => {
+  const screenTitle = "Notification Settings";
   const [settings, setSettings] = useState<SettingsState>({
     pushNotifications: {
       enabled: true,
@@ -98,7 +98,7 @@ const AdminNotificationSettings: FC = () => {
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb />
   ) : (
-    <Header headerText={NOTIFICATIONS_SCREEN_TITLE} />
+    <Header headerText={screenTitle} />
   );
   const FooterComponent = isWeb ? <FooterWeb /> : null;
 
@@ -116,9 +116,10 @@ const AdminNotificationSettings: FC = () => {
           globalStyles.pt_0,
           isWeb && webStyles.contentWidth,
           isMobileWeb && webStyles.mobileWebContentWidth,
+          !isWeb && mobileStyles.contentContainer,
         ]}
       >
-        <View style={webStyles.sectionCard}>
+        <View style={[webStyles.sectionCard, !isWeb && mobileStyles.sectionCard]}>
           <View style={styles.eachNotificationSection}>
             <Text style={styles.sectionTitle}>Push Notifications</Text>
             <Switch
@@ -142,6 +143,8 @@ const AdminNotificationSettings: FC = () => {
                   styles.switchContainer,
                   isWeb && webStyles.mobileWebOptionRow,
                   isWeb && idx === 0 && webStyles.mobileWebOptionRowFirst,
+                  !isWeb && mobileStyles.optionRow,
+                  !isWeb && idx === 0 && mobileStyles.optionRowFirst,
                 ]}
                 key={optionKey}
               >
@@ -163,6 +166,7 @@ const AdminNotificationSettings: FC = () => {
           style={[
             isMobileWeb && webStyles.mobileWebEmailSectionSpacing,
             webStyles.sectionCard,
+            !isWeb && mobileStyles.sectionCard,
           ]}
         >
           <View style={styles.eachNotificationSection}>
@@ -188,6 +192,8 @@ const AdminNotificationSettings: FC = () => {
                   styles.switchContainer,
                   isWeb && webStyles.mobileWebOptionRow,
                   isWeb && idx === 0 && webStyles.mobileWebOptionRowFirst,
+                  !isWeb && mobileStyles.optionRow,
+                  !isWeb && idx === 0 && mobileStyles.optionRowFirst,
                 ]}
                 key={optionKey}
               >
@@ -239,5 +245,32 @@ const webStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.placeholdergrey,
     marginBottom: 24,
+  },
+});
+
+const mobileStyles = StyleSheet.create({
+  contentContainer: {
+    paddingHorizontal: 4,
+  },
+  sectionCard: {
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: 16,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  optionRow: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.05)",
+  },
+  optionRowFirst: {
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.05)",
   },
 });

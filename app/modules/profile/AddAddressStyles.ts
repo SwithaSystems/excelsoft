@@ -2,6 +2,15 @@ import { StyleSheet } from "react-native";
 import colors from "../../../constants/colors";
 
 const styles = StyleSheet.create({
+  screenShell: {
+    flex: 1,
+  },
+  formScroll: {
+    flex: 1,
+  },
+  formScrollContent: {
+    paddingBottom: 24,
+  },
   container: {
     padding: 16,
     backgroundColor: colors.white,
@@ -51,10 +60,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 15,
     borderRadius: 8,
-    marginBottom: 54,
     alignItems: "center",
-    marginTop: 20,
     paddingBottom: 16,
+  },
+  bottomActionBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: colors.white,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.lightgrey,
   },
   buttonText: {
     color: colors.white,

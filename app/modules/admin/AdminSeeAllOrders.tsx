@@ -27,11 +27,9 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Pagination from "./componentsWeb/PaginationWeb";
 import SearchBar from "@/app/components/searchBar";
-import OrderStatusDropdown from "./componentsWeb/OrderStatusDropdown";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const AdminSeeAllOrders = () => {
-  const [activeFilter, setActiveFilter] = useState("All Orders");
   const [allOrders, setAllOrders] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -185,11 +183,6 @@ const AdminSeeAllOrders = () => {
   const getFilteredOrders = () => {
     let filteredORders = allOrders;
 
-    if (activeFilter !== "All Orders") {
-      filteredORders = filteredORders.filter(
-        (order: any) => order.status === activeFilter
-      );
-    }
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase().trim();
       const queryDigits = query.replace(/\D/g, "");
@@ -248,7 +241,7 @@ const AdminSeeAllOrders = () => {
   // Reset to page 1 when search query or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchQuery, activeFilter]);
+  }, [debouncedSearchQuery]);
 
   const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
   const HeaderComponent = isWeb ? (
@@ -303,21 +296,8 @@ const AdminSeeAllOrders = () => {
                     widthPercent={isMobileWeb ? 100 : 40}
                     height={40}
                   />
-                  <OrderStatusDropdown
-                    selectedStatus={activeFilter}
-                    onSelectStatus={setActiveFilter}
-                    isMobileWeb={isMobileWeb}
-                    containerStyle={[
-                      localStyles.dropdownContainer,
-                      isMobileWeb && localStyles.dropdownFullWidth
-                    ]}
-                  />
                 </View>
               </View>
-
-              <Text style={styles.heading}>
-                WELCOME, Let's go through the orders details!
-              </Text>
 
               <View style={[styles.ordersContainer, { paddingLeft: 0, paddingRight: 0 }]}>
                 <FlatList
@@ -334,9 +314,7 @@ const AdminSeeAllOrders = () => {
                   scrollEnabled={!isDesktopWeb}
                   ListEmptyComponent={
                     <View style={localStyles.emptyContainer}>
-                      <Text style={localStyles.emptyText}>
-                        No orders found for "{activeFilter}"
-                      </Text>
+                      <Text style={localStyles.emptyText}>No orders found</Text>
                     </View>
                   }
                 />
@@ -370,20 +348,10 @@ const AdminSeeAllOrders = () => {
                   onSubmitEditing={() => {}}
                   onPress={() => {}}
                 />
-                <OrderStatusDropdown
-                  selectedStatus={activeFilter}
-                  onSelectStatus={setActiveFilter}
-                  containerStyle={localStyles.dropdownContainer}
-                />
               </View>
             </View>
           )}
           <>
-
-            <Text style={styles.heading}>
-              WELCOME, Let's go through the orders details!
-            </Text>
-
             <View style={styles.ordersContainer}>
               <FlatList
                 data={paginatedData}
@@ -391,9 +359,7 @@ const AdminSeeAllOrders = () => {
                 keyExtractor={(item) => String(item._id)}
                 ListEmptyComponent={
                   <View style={localStyles.emptyContainer}>
-                    <Text style={localStyles.emptyText}>
-                      No orders found for "{activeFilter}"
-                    </Text>
+                    <Text style={localStyles.emptyText}>No orders found</Text>
                   </View>
                 }
               />

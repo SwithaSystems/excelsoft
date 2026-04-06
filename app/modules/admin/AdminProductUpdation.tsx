@@ -21,6 +21,7 @@ import {
   Platform,
   useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../../../constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService } from "@/services/categoryService";
@@ -110,6 +111,7 @@ const AdminProductUpdation = () => {
   });
 
   const isWeb = Platform.OS === "web";
+  const insets = useSafeAreaInsets();
   const showErrorAlert = ({
     title,
     message,
@@ -779,7 +781,13 @@ const calculatePrices = () => {
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
-    <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+    <Header
+      headerText={
+        newProduct
+          ? ADMIN_PRODUCT_ADD_SCREEN_TITLE
+          : ADMIN_PRODUCT_UPDATE_SCREEN_TITLE
+      }
+    />
   );
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
@@ -790,7 +798,7 @@ const calculatePrices = () => {
       hasHeader
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable={isWeb ? false : true}
+      scrollable={false}
       hideNavItems={true}
     >
 
@@ -809,9 +817,10 @@ const calculatePrices = () => {
         scrollable={false}
       >*/}
       <KeyBoardWrapper>
+        <View style={styles.screenShell}>
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 80 }}
+          style={styles.formScroll}
+          contentContainerStyle={styles.formScrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -1291,17 +1300,17 @@ const calculatePrices = () => {
 
         <View
           style={[
-            globalStyles.p_3,
-            globalStyles.flexRow,
-            // globalStyles.justifyContentBetween,
-            { justifyContent: "space-between" },
+            styles.actionBar,
+            !isWeb && {
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
           ]}
         >
           <Button
             onPress={handleAdd_UpdateProduct}
             title={newProduct ? "Add" : "Update"}
             disabled={isLoading}
-            style={{ flex: 0.25, marginRight: 50 }}
+            style={styles.primaryActionButton}
 
           />
           <Button
@@ -1309,9 +1318,10 @@ const calculatePrices = () => {
             title="Discard"
             primary={false}
             disabled={isLoading}
-            style={{ flex: 0.25 }}
+            style={styles.secondaryActionButton}
 
           />
+        </View>
         </View>
         {isLoading && (
           <View style={styles.loadingOverlay}>
@@ -1361,6 +1371,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: colors.offWhite,
+  },
+  screenShell: {
+    flex: 1,
+  },
+  formScroll: {
+    flex: 1,
+  },
+  formScrollContent: {
+    paddingBottom: 24,
   },
   header: {
     fontSize: 18,
@@ -1461,6 +1480,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+  },
+  actionBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: colors.white,
+    gap: 12,
+  },
+  primaryActionButton: {
+    flex: 1,
+  },
+  secondaryActionButton: {
+    flex: 1,
   },
   addButton: {
     backgroundColor: colors.secondary,

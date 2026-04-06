@@ -281,10 +281,22 @@ const HomePage = () => {
 
   // Check if all initial data is loaded
   useEffect(() => {
-    if (!loading && !promotionsLoading && globalSettingsLoaded) {
+    if (
+      !loading &&
+      !promotionsLoading &&
+      globalSettingsLoaded &&
+      !isAuthLoading &&
+      !recommendedProductsLoading
+    ) {
       setIsInitialLoading(false);
     }
-  }, [loading, promotionsLoading, globalSettingsLoaded]);
+  }, [
+    loading,
+    promotionsLoading,
+    globalSettingsLoaded,
+    isAuthLoading,
+    recommendedProductsLoading,
+  ]);
 
   useEffect(() => {
     const fetchPromotions = async () => {

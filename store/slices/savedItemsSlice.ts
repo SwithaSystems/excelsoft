@@ -39,6 +39,15 @@ const savedItemsSlice = createSlice({
         item.quantity = quantity;
       }
     },
+    refreshSavedItem: (
+      state,
+      action: PayloadAction<{ _id: string; data: Partial<CartItemInterface> }>
+    ) => {
+      const item = state.items.find((savedItem) => savedItem._id === action.payload._id);
+      if (item) {
+        Object.assign(item, action.payload.data);
+      }
+    },
   },
 });
 
@@ -47,5 +56,6 @@ export const {
   removeFromSavedItems,
   moveToCart,
   updateSavedItemQuantity,
+  refreshSavedItem,
 } = savedItemsSlice.actions;
 export default savedItemsSlice.reducer;

@@ -409,12 +409,14 @@ const AdminDashboard = () => {
         </View>
       </View>
 
-      <View style={styles.ordersHeader}>
-        <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-        <TouchableOpacity onPress={handleSeeAllPress}>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
-      </View>
+      {dashboardMetrics.recentOrders.length > 0 && (
+        <View style={styles.ordersHeader}>
+          <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+          <TouchableOpacity onPress={handleSeeAllPress}>
+            <Text style={styles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 
@@ -535,12 +537,14 @@ const AdminDashboard = () => {
             )}
           </View>
 
-          <View style={styles.ordersHeader}>
-            <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-            <TouchableOpacity onPress={handleSeeAllPress}>
-              <Text style={styles.seeAll}>See All</Text>
-            </TouchableOpacity>
-          </View>
+          {dashboardMetrics.recentOrders.length > 0 && (
+            <View style={styles.ordersHeader}>
+              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+              <TouchableOpacity onPress={handleSeeAllPress}>
+                <Text style={styles.seeAll}>See All</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <FlatList
             data={dashboardMetrics.recentOrders}
