@@ -25,21 +25,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    // marginBottom: 8,
+    marginBottom: 2,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.black,
   },
   switchContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    // paddingVertical: 8,
+    minHeight: 40,
   },
   switchLabel: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.black,
+    flex: 1,
+    paddingRight: 12,
   },
 });
 

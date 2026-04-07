@@ -469,7 +469,9 @@ const AdminCategories = () => {
                     styles.sectionHeader,
                     isMobileWeb && styles.headerRowMobileWeb,
                   ]}>
-                <Text style={[styles.sectionTitle, { fontSize: isDesktopWeb ? 35 : 24 }]}>Categories</Text>
+                <Text style={[styles.sectionTitle, { fontSize: isDesktopWeb ? 35 : 24 }]}>
+                  Categories
+                </Text>
 
                 {/* Desktop/Tablet: Show button to redirect to add category page */}
                 <TouchableOpacity
@@ -659,7 +661,11 @@ const AdminCategories = () => {
 
           <View style={styles.listSection}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>Categories</Text>
+              {categoryList.length > 0 && (
+                <Text style={[styles.sectionTitle, { fontSize: isWeb ? 35 : 20 }]}>
+                  Categories
+                </Text>
+              )}
             </View>
             <ScrollView style={styles.listContainer}>
               <View>
