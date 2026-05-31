@@ -20,7 +20,11 @@ export const UserAPI = {
     try {
       const response = await formDataAxios.put(
         `/users/updateProfile/${id}`,
-        body
+        body,
+        {
+          // Profile image uploads can legitimately take longer on mobile/web.
+          timeout: 120000,
+        }
       );
       return response;
     } catch (error) {

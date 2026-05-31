@@ -275,6 +275,14 @@ const createAxiosInstance = (contentType: "json" | "formdata" = "json") => {
 
       // Handle timeout errors
       if (error.code === "ECONNABORTED") {
+        const requestUrl = (error.config?.url || "").toString();
+        if (requestUrl.includes("/users/updateProfile/")) {
+          return Promise.reject(
+            new Error(
+              "Profile image upload timed out. Please try a smaller image (under 10 MB) or try again on a stable connection."
+            )
+          );
+        }
         return Promise.reject(new Error("Request timeout. Please try again."));
       }
 

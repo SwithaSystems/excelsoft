@@ -258,26 +258,28 @@ const AdminGlobalSettings = () => {
 const renderDeliveryModes = () => {
   if (!settings) return null;
 
-  const modes = settings.deliveryModes;
-
   const toggleMode = async (
     key: keyof GlobalSettingsDto["deliveryModes"]
   ) => {
+    if (!settings) return;
+
     const updatedModes = {
-      ...modes,
-      [key]: !modes[key],
+      ...settings.deliveryModes,
+      [key]: !settings.deliveryModes[key],
     };
 
     setUpdatingKey("deliveryModes");
-
     setSettings((prev) =>
       prev ? { ...prev, deliveryModes: updatedModes } : prev
     );
 
     try {
-      await globalSettingsAPI.updateAllSettings({
+      const response = await globalSettingsAPI.updateAllSettings({
         deliveryModes: updatedModes,
       });
+      if (response?.data) {
+        setSettings(response.data);
+      }
     } catch (error) {
       console.error("Failed to update delivery modes:", error);
       showAlert("Error", "Failed to update delivery modes");
@@ -346,7 +348,7 @@ const renderDeliveryModes = () => {
                   true: colors.primary,
                 }}
                 thumbColor={colors.white}
-                value={Boolean(modes[item.key])}
+                value={Boolean(settings?.deliveryModes?.[item.key])}
                 onValueChange={() => toggleMode(item.key)}
                 disabled={updatingKey !== null}
               />
