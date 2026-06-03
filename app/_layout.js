@@ -127,7 +127,10 @@ function NotificationsHandler() {
                   autoHide: true,
                   topOffset: 50,
                   onPress: async () => {
-                    await NotificationService.markAsRead(notificationItem.id);
+                    await NotificationService.markAsRead(
+                      notificationItem.id,
+                      notificationItem
+                    );
                     DeviceEventEmitter.emit("notificationUpdate");
                     handleNotificationNavigation(
                       notification.request.content.data
@@ -158,6 +161,10 @@ function NotificationsHandler() {
               };
 
               await NotificationService.saveNotification(notificationItem);
+              await NotificationService.markAsRead(
+                notificationItem.id,
+                notificationItem
+              );
               DeviceEventEmitter.emit("notificationUpdate");
 
               setTimeout(() => {
@@ -171,7 +178,24 @@ function NotificationsHandler() {
           await Notifications.getLastNotificationResponseAsync();
         if (initialNotification) {
           // console.log("🚀 App opened from notification:", initialNotification);
+          const notification = initialNotification.notification;
           const data = initialNotification.notification.request.content.data;
+          const notificationItem = {
+            id: notification.request.identifier,
+            title: notification.request.content.title || "Notification",
+            body: notification.request.content.body || "",
+            data,
+            timestamp: Date.now(),
+            isRead: true,
+            type: (data && data.type) || "general",
+          };
+
+          await NotificationService.saveNotification(notificationItem);
+          await NotificationService.markAsRead(
+            notificationItem.id,
+            notificationItem
+          );
+          DeviceEventEmitter.emit("notificationUpdate");
 
           setTimeout(() => {
             handleNotificationNavigation(data);

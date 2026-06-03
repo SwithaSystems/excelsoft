@@ -3,7 +3,7 @@ import {
   MY_ORDERS_SCREEN_TITLE,
 } from "../../../constants/stringLiterals";
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, RefreshControl } from "react-native";
 import styles from "./MyOrderScreenStyles";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
@@ -22,6 +22,7 @@ import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPr
 const myOrderScreen = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersWithProducts, setOrdersWithProducts] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const params = useLocalSearchParams();
   const isWeb = Platform.OS === "web";
 
@@ -116,6 +117,16 @@ const myOrderScreen = () => {
         userId: userId
       });
       setOrders([]); // Set empty array on error to prevent undefined state
+      setOrdersWithProducts([]);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await fetchOrders();
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -139,7 +150,7 @@ const myOrderScreen = () => {
     <LayoutComponent
       hasFooter
       hasHeader
-      scrollable
+      scrollable={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
       hasSidebar={isWeb}
@@ -147,6 +158,9 @@ const myOrderScreen = () => {
     >
       <View style={globalStyles.container}>
         <FlatList
+          refreshControl={!isWeb ? (
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          ) : undefined}
           ListHeaderComponent={
             <>
               <View style={[globalStyles.pt_0]}>

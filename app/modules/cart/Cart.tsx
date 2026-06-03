@@ -2,7 +2,7 @@ import { CART_SCREEN_TITLE } from "../../../constants/stringLiterals";
 import { globalStyles } from "@/assets/styles/globalStyles";
 import Header from "../../components/Header";
 import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, TextInput, Platform } from "react-native";
+import { Dimensions, TextInput, Platform, RefreshControl } from "react-native";
 import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import {
@@ -22,6 +22,7 @@ import {
   CartItemInterface,
   refreshCartItem,
   removeFromCart,
+  setCartItems,
 } from "../../../store/slices/cartSlice";
 import { removeFromSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
 import { addToSavedForLaterItems } from "../../../store/slices/savedForLaterSlice";
@@ -50,6 +51,7 @@ import {
   QUANTITY_NOT_AVAILABLE,
 } from "../../../constants/customErrorMessages";
 import { Product, ProductsAPI } from "@/services/productService";
+import cartSyncService from "@/services/cartSyncService";
 import styles from "./CartStyles";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import { isAgeRestrictedCartItem } from "@/utilities/ageRestriction";
@@ -76,6 +78,7 @@ const CartScreen = () => {
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [isLoadingSimilarProducts, setIsLoadingSimilarProducts] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [errorModalState, setErrorModalState] = useState({
     isVisible: false,
     title: "",
@@ -268,6 +271,30 @@ const CartScreen = () => {
     updateStockAvailability();
   }, [cartItems.length, savedForLaterItems.length]);
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const resp = await cartSyncService.getSyncedCart();
+      const products = (resp?.data?.products || []).map((p: any) => ({
+        _id: p.productId,
+        id: p.productId,
+        name: p.name,
+        quantity: p.quantity || 1,
+        netPrice: p.discountPrice || p.actualPrice || 0,
+        image: p.image || "",
+        isVatApplicable: false,
+        vatRate: 0,
+        vatAmount: 0,
+      }));
+
+      dispatch(setCartItems(products));
+    } catch (error) {
+      console.warn("Failed to refresh cart", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   // Fetch similar products for recommendations
   useEffect(() => {
     const fetchSimilarProducts = async () => {
@@ -389,7 +416,7 @@ const CartScreen = () => {
       hasFooter
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable={true}
+      scrollable={isWeb}
     >
       {isWeb && !isMobileWeb ? (
         // Web/Desktop: No inner ScrollView, PageLayoutWeb handles scrolling
@@ -513,7 +540,11 @@ const CartScreen = () => {
       ) : (
         // Mobile: Use ScrollView
         <View style={[globalStyles.container]}>
-          <ScrollView>
+          <ScrollView
+            refreshControl={!isWeb ? (
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            ) : undefined}
+          >
             <View style={[globalStyles.pt_0]}>
 
               {/* MOBILE CART SECTION */}

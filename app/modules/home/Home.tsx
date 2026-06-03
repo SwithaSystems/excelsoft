@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Image,
   View,
@@ -12,6 +12,7 @@ import {
   StatusBar,
   Linking,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import BrandHeader from "../../components/BrandHeader";
 import { useRouter } from "expo-router";
@@ -68,6 +69,7 @@ const HomePage = () => {
   const [recommendedProductsLoading, setRecommendedProductsLoading] = useState(true);
   const [recommendedProductsError, setRecommendedProductsError] = useState<string | null>(null);
   const [recommendationType, setRecommendationType] = useState<"recommended" | "hot_selling">("hot_selling");
+  const [refreshing, setRefreshing] = useState(false);
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -260,24 +262,26 @@ const HomePage = () => {
   //   </View>
   // );
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await categoryService.getAllCategories();
-        const sortedData = data.sort((a, b) => {
-          if (a.name === "All") return -1;
-          if (b.name === "All") return 1;
-          return a.id - b.id;
-        });
-        setCategories(sortedData);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
+  const fetchCategories = useCallback(async (showLoader = true) => {
+    try {
+      if (showLoader) setLoading(true);
+      const data = await categoryService.getAllCategories();
+      const sortedData = data.sort((a, b) => {
+        if (a.name === "All") return -1;
+        if (b.name === "All") return 1;
+        return a.id - b.id;
+      });
+      setCategories(sortedData);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Check if all initial data is loaded
   useEffect(() => {
@@ -298,107 +302,109 @@ const HomePage = () => {
     recommendedProductsLoading,
   ]);
 
-  useEffect(() => {
-    const fetchPromotions = async () => {
-      try {
-        setPromotionsLoading(true);
-        const data = await promotionService.getAllPromotions();
-        // Filter to only show live promotions (isLive: true)
-        const livePromotions = data.filter((promo: any) => promo.isLive === true);
-        setPromotions(livePromotions);
-      } catch (error) {
-        console.error("Error fetching promotions:", error);
-        // Optionally set empty array or show error message
-        setPromotions([]);
-      } finally {
-        setPromotionsLoading(false);
-      }
-    };
-    fetchPromotions();
+  const fetchPromotions = useCallback(async (showLoader = true) => {
+    try {
+      if (showLoader) setPromotionsLoading(true);
+      const data = await promotionService.getAllPromotions();
+      // Filter to only show live promotions (isLive: true)
+      const livePromotions = data.filter((promo: any) => promo.isLive === true);
+      setPromotions(livePromotions);
+    } catch (error) {
+      console.error("Error fetching promotions:", error);
+      // Optionally set empty array or show error message
+      setPromotions([]);
+    } finally {
+      setPromotionsLoading(false);
+    }
   }, []);
 
-  // Fetch recommended products (wait for auth to be determined first)
   useEffect(() => {
+    fetchPromotions();
+  }, [fetchPromotions]);
+
+  const fetchRecommendedProducts = useCallback(async (showLoader = true) => {
     // Wait for authentication state to be determined before fetching
     if (isAuthLoading) {
       return; // Don't fetch while auth is still loading
     }
 
-    const fetchRecommendedProducts = async () => {
-      try {
-        setRecommendedProductsLoading(true);
-        setRecommendedProductsError(null);
-        // console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
-        const response = await recommendationService.getRecommendedProducts(10);
-        // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
-        if (response && response.products && response.products.length > 0) {
-          const productsNeedingAgeLookup = response.products.filter(
-            (item) =>
-              typeof item?.ageRestricted !== "boolean" &&
-              Number.isFinite(Number(item?.id))
+    try {
+      if (showLoader) setRecommendedProductsLoading(true);
+      setRecommendedProductsError(null);
+      // console.log("[Home] Fetching recommended products, isAuthenticated:", isAuthenticated, "(auth loaded)");
+      const response = await recommendationService.getRecommendedProducts(10);
+      // console.log("[Home] Recommended products received:", response?.products?.length || 0, "products (type:", response?.type || "unknown", ")");
+      if (response && response.products && response.products.length > 0) {
+        const productsNeedingAgeLookup = response.products.filter(
+          (item) =>
+            typeof item?.ageRestricted !== "boolean" &&
+            Number.isFinite(Number(item?.id))
+        );
+
+        let resolvedAgeMap: Record<number, boolean> = {};
+        if (productsNeedingAgeLookup.length > 0) {
+          const lookupResults = await Promise.allSettled(
+            productsNeedingAgeLookup.map((item) =>
+              ProductsAPI.getProductBYID(Number(item.id))
+            )
           );
 
-          let resolvedAgeMap: Record<number, boolean> = {};
-          if (productsNeedingAgeLookup.length > 0) {
-            const lookupResults = await Promise.allSettled(
-              productsNeedingAgeLookup.map((item) =>
-                ProductsAPI.getProductBYID(Number(item.id))
-              )
-            );
-
-            lookupResults.forEach((result) => {
-              if (result.status === "fulfilled") {
-                const product: Product = result.value;
-                const productId = Number(product?.id);
-                if (Number.isFinite(productId)) {
-                  resolvedAgeMap[productId] =
-                    product?.isAgeRestricted === true ||
-                    product?.ageRestricted === true;
-                }
+          lookupResults.forEach((result) => {
+            if (result.status === "fulfilled") {
+              const product: Product = result.value;
+              const productId = Number(product?.id);
+              if (Number.isFinite(productId)) {
+                resolvedAgeMap[productId] =
+                  product?.isAgeRestricted === true ||
+                  product?.ageRestricted === true;
               }
-            });
-          }
-
-          const normalizedProducts = response.products.map((item) => {
-            const productId = Number(item.id);
-            const hasDirectFlag =
-              typeof item?.isAgeRestricted === "boolean" ||
-              typeof item?.ageRestricted === "boolean";
-            const resolvedFlag =
-              Number.isFinite(productId) && productId in resolvedAgeMap
-                ? resolvedAgeMap[productId]
-                : undefined;
-
-            return {
-              ...item,
-              isAgeRestricted: hasDirectFlag
-                ? item.isAgeRestricted ?? item.ageRestricted
-                : resolvedFlag ?? item.isAgeRestricted ?? item.ageRestricted,
-            };
+            }
           });
-          setRecommendedProducts(normalizedProducts);
-          setRecommendationType(response.type);
-        } else {
-          setRecommendedProducts([]);
-          setRecommendationType("hot_selling");
         }
-      } catch (error: any) {
-        console.error("[Home] Error fetching recommended products:", error);
-        const errorMessage = error?.response?.data?.message || error?.message || "Failed to load recommendations";
-        console.error("[Home] Error details:", {
-          message: errorMessage,
-          status: error?.response?.status,
-          data: error?.response?.data,
+
+        const normalizedProducts = response.products.map((item) => {
+          const productId = Number(item.id);
+          const hasDirectFlag =
+            typeof item?.isAgeRestricted === "boolean" ||
+            typeof item?.ageRestricted === "boolean";
+          const resolvedFlag =
+            Number.isFinite(productId) && productId in resolvedAgeMap
+              ? resolvedAgeMap[productId]
+              : undefined;
+
+          return {
+            ...item,
+            isAgeRestricted: hasDirectFlag
+              ? item.isAgeRestricted ?? item.ageRestricted
+              : resolvedFlag ?? item.isAgeRestricted ?? item.ageRestricted,
+          };
         });
-        setRecommendedProductsError(errorMessage);
+        setRecommendedProducts(normalizedProducts);
+        setRecommendationType(response.type);
+      } else {
         setRecommendedProducts([]);
         setRecommendationType("hot_selling");
-      } finally {
-        setRecommendedProductsLoading(false);
       }
-    };
-    fetchRecommendedProducts();
+    } catch (error: any) {
+      console.error("[Home] Error fetching recommended products:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to load recommendations";
+      console.error("[Home] Error details:", {
+        message: errorMessage,
+        status: error?.response?.status,
+        data: error?.response?.data,
+      });
+      setRecommendedProductsError(errorMessage);
+      setRecommendedProducts([]);
+      setRecommendationType("hot_selling");
+    } finally {
+      setRecommendedProductsLoading(false);
+    }
   }, [isAuthenticated, isAuthLoading]);
+
+  // Fetch recommended products (wait for auth to be determined first)
+  useEffect(() => {
+    fetchRecommendedProducts();
+  }, [fetchRecommendedProducts]);
   const handleAddToCart = (item: any) => {
     dispatch(addToCart({
       id: item.id,
@@ -411,6 +417,20 @@ const HomePage = () => {
       vatRate: item.vatRate || 0,
       vatAmount: item.vatAmount || 0,
     }));
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchGlobalSettings(),
+        fetchCategories(false),
+        fetchPromotions(false),
+        fetchRecommendedProducts(false),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
   };
   // Show full-screen loader until all required data is loaded
   if (isInitialLoading) {
@@ -427,8 +447,13 @@ const HomePage = () => {
       hasFooter
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable
+      scrollable={isWeb}
     >
+      <ScrollView
+        refreshControl={!isWeb ? (
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        ) : undefined}
+      >
       <View style={[
         styles.container,
         !isWeb && styles.containerMobile,
@@ -592,6 +617,7 @@ const HomePage = () => {
           </View>
         )}
       </View>
+      </ScrollView>
     </LayoutComponent>
   );
 };

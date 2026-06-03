@@ -75,17 +75,7 @@ export default function BrandHeaderWeb({ hideUserGreeting = false }: BrandHeader
 
   const fetchUnreadNotificationCount = useCallback(async () => {
     const count = await NotificationService.getUnreadCount();
-    setUnreadNotificationCount((prev) => {
-      if (Platform.OS === "web" && count === 0 && prev > 0) {
-        setTimeout(() => {
-          NotificationService.getUnreadCount().then((retryCount) => {
-            setUnreadNotificationCount(retryCount);
-          });
-        }, 400);
-        return prev;
-      }
-      return count;
-    });
+    setUnreadNotificationCount(count);
   }, []);
 
   useEffect(() => {
