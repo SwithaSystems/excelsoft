@@ -308,7 +308,7 @@ export const usePaymentHandler = () => {
         stripeErrorCode: (result.error as any)?.stripeErrorCode,
       });
 
-      // ✅ TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
+      // TRUST STRIPE PAYMENT STATUS, NOT JUST SDK ERROR
       if (
         result.paymentIntent?.status === "Succeeded"
       ) {

@@ -142,8 +142,6 @@ const pickUpModescreen = () => {
       return Boolean(option);
     });
 
- 
-
   // Now the loading check comes AFTER all hooks
   if (loading) {
     return (

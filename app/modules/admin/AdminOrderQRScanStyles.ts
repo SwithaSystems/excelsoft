@@ -18,6 +18,14 @@ export default StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 32,
   },
+  contentContainerMobileWeb: {
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
   card: {
     width: "100%",
   },
@@ -34,8 +42,10 @@ export default StyleSheet.create({
     elevation: 3,
   },
   cardMobileWeb: {
+    width: "100%",
     maxWidth: "100%",
-    padding: 18,
+    padding: 20,
+    borderRadius: 18,
   },
   headerRow: {
     flexDirection: "row",
@@ -43,6 +53,9 @@ export default StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
     marginBottom: 18,
+  },
+  headerRowMobileWeb: {
+    marginBottom: 16,
   },
   headerTextWrap: {
     flex: 1,
@@ -63,10 +76,18 @@ export default StyleSheet.create({
     color: colors.black,
     marginBottom: 6,
   },
+  titleMobileWeb: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
   subtitle: {
     fontSize: 13,
     color: colors.slateGrey,
     lineHeight: 18,
+  },
+  subtitleMobileWeb: {
+    fontSize: 15,
+    lineHeight: 22,
   },
   scanFrame: {
     borderWidth: 1,
@@ -78,6 +99,10 @@ export default StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.secondary,
   },
+  scanFrameMobileWeb: {
+    paddingVertical: 22,
+    paddingHorizontal: 14,
+  },
   scanIconCircle: {
     width: 96,
     height: 96,
@@ -88,6 +113,11 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.lightgrey,
     marginBottom: 10,
+  },
+  scanIconCircleMobileWeb: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
   },
   scanHint: {
     fontSize: 13,
@@ -117,6 +147,9 @@ export default StyleSheet.create({
     marginTop: 2,
     // paddingHorizontal: 16,
   },
+  inputSectionMobileWeb: {
+    marginTop: 6,
+  },
   inputLabel: {
     fontSize: 14,
     color: colors.black,
@@ -130,9 +163,170 @@ export default StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
   },
+  verifyButtonMobileWeb: {
+    marginTop: 18,
+    borderRadius: 14,
+  },
   buttonText: {
     color: colors.white,
     fontWeight: "600",
     fontSize: 16,
+  },
+  scannerModalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(4, 4, 4, 0.72)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  scannerBackdropTouchable: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  scannerModalCard: {
+    width: "100%",
+    maxWidth: 520,
+    backgroundColor: colors.black,
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.12)",
+    shadowColor: colors.pureBlack,
+    shadowOpacity: 0.32,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
+  },
+  scannerModalCardMobileWeb: {
+    padding: 14,
+    borderRadius: 24,
+  },
+  scannerHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 16,
+  },
+  scannerHeaderTextWrap: {
+    flex: 1,
+  },
+  scannerTitle: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  scannerSubtitle: {
+    color: "rgba(255, 255, 255, 0.78)",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  scannerCloseButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.14)",
+  },
+  cameraViewport: {
+    width: "100%",
+    height: 420,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: colors.pureBlack,
+    position: "relative",
+  },
+  cameraViewportMobileWeb: {
+    height: 360,
+    borderRadius: 20,
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.32)",
+    padding: 20,
+  },
+  scanWindow: {
+    width: "100%",
+    maxWidth: 280,
+    aspectRatio: 1,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.28)",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  scanWindowMobileWeb: {
+    maxWidth: 240,
+    borderRadius: 22,
+  },
+  scanCorner: {
+    position: "absolute",
+    width: 34,
+    height: 34,
+    borderColor: colors.secondary,
+  },
+  scanCornerTopLeft: {
+    top: 14,
+    left: 14,
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    borderTopLeftRadius: 14,
+  },
+  scanCornerTopRight: {
+    top: 14,
+    right: 14,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+    borderTopRightRadius: 14,
+  },
+  scanCornerBottomLeft: {
+    bottom: 14,
+    left: 14,
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+    borderBottomLeftRadius: 14,
+  },
+  scanCornerBottomRight: {
+    bottom: 14,
+    right: 14,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+    borderBottomRightRadius: 14,
+  },
+  scanIndicatorRow: {
+    alignItems: "center",
+    gap: 10,
+  },
+  scanIndicatorIcon: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scanIndicatorText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  scannerFooter: {
+    marginTop: 16,
+    paddingHorizontal: 6,
+  },
+  scannerFooterText: {
+    color: "rgba(255, 255, 255, 0.76)",
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: "center",
   },
 });
