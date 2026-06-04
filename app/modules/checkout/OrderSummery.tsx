@@ -56,6 +56,7 @@ import { StripeCardInput } from "@/app/components/StripeCardInput";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 
 // Conditionally import PlatformPayButton only on mobile (not web)
 let PlatformPayButton: any = null;
@@ -70,26 +71,12 @@ if (Platform.OS !== "web") {
     console.warn("PlatformPayButton not available:", error);
   }
 }
-// type OrderSummeryScreenParams = {
-//   orderId: string;
-//   address?: string;
-//   pickupAddress?: string;
-//   selectedDate?: string;
-//   selectedSlot?: string;
-//   selectedMode?: string;
-//   firstName?: string;
-//   lastName?: string;
-//   phone?: string;
-//   email?: string;
-//   additionalDetails?: string;
-// };
 
 type shippingAddressDTo = {
   name: string;
   line1: string;
   line2?: string;
   city: string;
-  state: string;
   postalCode: string;
   addressType: string[];
   phone: string;
@@ -101,14 +88,7 @@ const orderSummeryScreen = () => {
   const isMountedRef = useRef(true);
   const [addressData, setAddressData] = useState<Address[]>([]);
   const params = useLocalSearchParams<any>();
-  // const [aselectedBillingAddress, asetSelectedBillingAddress] = useState<any>();
-  // const [substitutionSelected, setSubstitutionSelected] = useState(false);
-  // const cartItems = useSelector((state: any) => [...state.cart.items]);
   const cartItemsBefore = useSelector((state: any) => state.cart.items);
-  // Safe cart items selection with proper typing
-  // const cartItemsFromStore = useSelector((state: RootState) => {
-  //   return Array.isArray(state?.cart?.items) ? state.cart.items : [];
-  // });
   const cartItems = useMemo(() => {
     try {
       return cartItemsBefore.filter(
@@ -120,6 +100,23 @@ const orderSummeryScreen = () => {
       return [];
     }
   }, [cartItemsBefore]);
+  const hasAgeRestrictedItems = useMemo(
+    () =>
+      cartItems.some((item: any) => {
+        const directFlag =
+          item?.isAgeRestricted === true ||
+          item?.isAgeRestricted === "true" ||
+          item?.ageRestricted === true ||
+          item?.ageRestricted === "true";
+        const nestedFlag =
+          item?.product?.isAgeRestricted === true ||
+          item?.product?.isAgeRestricted === "true" ||
+          item?.product?.ageRestricted === true ||
+          item?.product?.ageRestricted === "true";
+        return directFlag || nestedFlag;
+      }),
+    [cartItems]
+  );
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string } | null>(null);
@@ -332,7 +329,6 @@ const orderSummeryScreen = () => {
         line1: String(pickupAddress.line1 || pickupAddress.address || ""),
         line2: String(pickupAddress.line2 || ""),
         city: String(pickupAddress.city || ""),
-        state: String(pickupAddress.state || ""),
         postalCode: String(pickupAddress.postalCode || ""),
         phone: String(pickupAddress.phone || ""),
         addressType: Array.isArray(pickupAddress.addressType)
@@ -531,7 +527,6 @@ const orderSummeryScreen = () => {
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
-        state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
       };
 
@@ -559,7 +554,6 @@ const orderSummeryScreen = () => {
         line1: shippingAddress.line1,
         line2: shippingAddress.line2 || "",
         city: shippingAddress.city,
-        state: shippingAddress.state,
         postalCode: shippingAddress.postalCode,
         addressType: shippingAddress.addressType || [],
         phone: shippingAddress.phone,
@@ -952,6 +946,23 @@ Contact Number: ${pickupAddress.phone || ""}`;
                   isMobileWeb && styles.webLeftSectionMobile,
                 ]}
               >
+                {hasAgeRestrictedItems && (
+                  <AgeRestrictionNote
+                    containerStyle={[
+                      styles.noteContainer,
+                      !isMobileWeb && styles.noteContainerWebDesktop,
+                      isMobileWeb && styles.noteContainerWebMobile,
+                    ]}
+                    titleStyle={[
+                      styles.noteTitle,
+                      isMobileWeb && styles.noteTitleWebMobile,
+                    ]}
+                    messageStyle={[
+                      styles.noteDescription,
+                      isMobileWeb && styles.noteDescriptionWebMobile,
+                    ]}
+                  />
+                )}
                 {cartItems.map((eachCartItem: any) => (
                   <CartItem
                     handleDelete={handleDelete}
@@ -1024,36 +1035,77 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       {/* Currently Selected Billing Address */}
                       {selectedBillingAddress && (
                         <View style={styles.webAddressBox}>
-                          <Text style={styles.webAddressText}>
-                            {`${selectedBillingAddress.name || "Unknown"}, ${
-                              selectedBillingAddress.line1 || ""
-                            }${
-                              selectedBillingAddress.line2
-                                ? `, ${selectedBillingAddress.line2}`
-                                : ""
-                            }, ${
-                              selectedBillingAddress.city || "Unknown City"
-                            }, ${selectedBillingAddress.state || ""} ${
-                              selectedBillingAddress.postalCode || ""
-                            }`}
+                          <View style={styles.webSelectedAddressHeader}>
+                            <Text style={styles.webSelectedAddressLabel}>
+                              Selected billing address
+                            </Text>
+                            {selectedBillingAddress.addressType?.[0] && (
+                              <View style={styles.webAddressTypeBadge}>
+                                <Text style={styles.webAddressTypeBadgeText}>
+                                  {selectedBillingAddress.addressType[0]}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.webSelectedAddressName}>
+                            {selectedBillingAddress.name || "Unknown"}
                           </Text>
+                          <Text style={styles.webAddressText}>
+                            {selectedBillingAddress.line1 || ""}
+                            {selectedBillingAddress.line2
+                              ? `, ${selectedBillingAddress.line2}`
+                              : ""}
+                          </Text>
+                          <Text style={styles.webAddressText}>
+                            {[
+                              selectedBillingAddress.city || "Unknown City",
+                              selectedBillingAddress.postalCode || "",
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </Text>
+                          {!!selectedBillingAddress.phone && (
+                            <Text style={styles.webAddressMetaText}>
+                              Phone: {selectedBillingAddress.phone}
+                            </Text>
+                          )}
                         </View>
                       )}
 
                       {/* Accordion Toggle */}
                       <TouchableOpacity
-                        style={styles.webAccordionToggle}
+                        style={[
+                          styles.webAccordionToggle,
+                          accordionOpen && styles.webAccordionToggleOpen,
+                        ]}
                         onPress={toggleAccordion}
                       >
-                        <Text style={styles.webChangeSlotLink}>
-                          {accordionOpen ? "Hide" : "Change"} billing address
-                        </Text>
+                        <View style={styles.webAccordionToggleLeft}>
+                          <Ionicons
+                            name={
+                              accordionOpen
+                                ? "remove-circle-outline"
+                                : "swap-horizontal-outline"
+                            }
+                            size={18}
+                            color={colors.primary}
+                            style={styles.webAccordionLeadingIcon}
+                          />
+                          <Text style={styles.webAccordionToggleText}>
+                            {accordionOpen
+                              ? "Hide saved billing addresses"
+                              : "Change billing address"}
+                          </Text>
+                        </View>
                         <Animated.View
-                          style={{ transform: [{ rotate: spin }] }}
+                          style={[
+                            styles.webAccordionIconWrap,
+                            { transform: [{ rotate: spin }] },
+                          ]}
                         >
                           <Ionicons
                             name="chevron-down-circle"
-                            size={20}
+                            size={22}
                             color={colors.primary}
                           />
                         </Animated.View>
@@ -1062,6 +1114,9 @@ Contact Number: ${pickupAddress.phone || ""}`;
                       {/* Accordion Content - Address List */}
                       {accordionOpen && (
                         <View style={styles.webAccordionContent}>
+                          <Text style={styles.webAccordionHelperText}>
+                            Select one of your saved billing addresses below.
+                          </Text>
                           {addressData.length > 0 ? (
                             <View>
                               {addressData.map((item) => (
@@ -1091,7 +1146,7 @@ Contact Number: ${pickupAddress.phone || ""}`;
                           <Button
                             onPress={handleAddBillingAddress}
                             title="Add Billing Address"
-                            style={{ marginTop: 16 }}
+                            style={styles.webAddBillingButton}
                           />
                         </View>
                       )}
@@ -1346,6 +1401,13 @@ Contact Number: ${pickupAddress.phone || ""}`;
 
               <View style={[styles.section, globalStyles.mb_0]}>
                 <Text style={styles.sectionHeading}>Order Details</Text>
+                {hasAgeRestrictedItems && (
+                  <AgeRestrictionNote
+                    containerStyle={[styles.noteContainer, styles.noteContainerMobileSection]}
+                    titleStyle={styles.noteTitle}
+                    messageStyle={styles.noteDescription}
+                  />
+                )}
                 <View style={[globalStyles.pl_3]}>
                   {cartItems.map((eachCartItem: any) => {
                     return (

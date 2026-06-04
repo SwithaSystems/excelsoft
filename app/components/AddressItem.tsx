@@ -44,7 +44,6 @@ const AddressItem = ({
           <Text>{item.line1}</Text>
           <Text>{item.line2}</Text>
           <Text>{item.city}</Text>
-          {item.state && <Text>{item.state}</Text>}
           <Text>{item.postalCode}</Text>
           <Text>Phone No: {item.phone}</Text>
           {/* <Text>Address Type: {item.addressType}</Text> */}

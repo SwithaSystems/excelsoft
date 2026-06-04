@@ -11,6 +11,8 @@ export interface CartItemInterface {
   vatRate: number;
   vatAmount: number;
   image: string | any[];
+  isAgeRestricted?: boolean | "true" | "false";
+  ageRestricted?: boolean | "true" | "false";
 }
 
 interface CartState {

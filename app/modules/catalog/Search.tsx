@@ -344,15 +344,15 @@ const SearchScreen = () => {
     const mainContent = (
       <>
         {/* Recent Searches */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Searches</Text>
-          {recentSearches.length > 0 && (
+        {recentSearches.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Recent Searches</Text>
             <TouchableOpacity onPress={clearAllRecentSearches}>
               <Text style={styles.clearAllText}>Clear All</Text>
             </TouchableOpacity>
-          )}
-          {renderRecentSearches()}
-        </View>
+            {renderRecentSearches()}
+          </View>
+        )}
         {/* Trending Searches */}
         {/* {renderTrendingSearches()} */}
 

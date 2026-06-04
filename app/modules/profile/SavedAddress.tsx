@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import styles from "./SavedAddressStyles";
 import Button from "@/app/components/commonComponents/Button";
-import { redirectToPage } from "@/utilities/redirectionHelper";
+import { clearNavigationStack } from "@/utilities/redirectionHelper";
 import containers from "@/containers";
 import { Address, addressService } from "@/services/addressService";
 import { useAppContext } from "@/context/AppContext";
@@ -72,7 +72,7 @@ const savedAddressScreen = () => {
 
   const handleEdit = (item: Address) => {
     // setSelectedAddress(item);
-    redirectToPage(containers.addAddressScreen, {
+    clearNavigationStack(containers.addAddressScreen, {
       edit_address: JSON.stringify(item),
     });
   };
@@ -117,7 +117,7 @@ const savedAddressScreen = () => {
                   <Button
                     title="Add New Address"
                     onPress={() => {
-                      redirectToPage(containers.addAddressScreen);
+                      clearNavigationStack(containers.addAddressScreen);
                     }}
                   />
                 </View>
@@ -163,7 +163,7 @@ const savedAddressScreen = () => {
                 <Button
                   title="Add New Address"
                   onPress={() => {
-                    redirectToPage(containers.addAddressScreen);
+                    clearNavigationStack(containers.addAddressScreen);
                   }}
                 />
               </View>

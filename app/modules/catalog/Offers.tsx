@@ -60,6 +60,7 @@ const offersScreen = () => {
           noOfreviews={item.noOfreviews}
           reviews={item.reviews}
           noOfReviews={0}
+          isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
           isReturnable={false}
           isVatApplicable={false}
           vatRate={0}

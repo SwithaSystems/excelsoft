@@ -51,8 +51,10 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
 // Vehicle type options for dropdown
 const VEHICLE_TYPE_OPTIONS = [
   { key: 1, label: "Car", value: "Car" },
@@ -71,6 +73,9 @@ const TIME_PERIOD_OPTIONS = [
 const MIN_PICKUP_MINUTES = 30;
 
 const PickupScreen = () => {
+  const { settings: storeSettings } = useStoreSettings();
+  const openingHour = Number((storeSettings?.storeOpeningTime || "07:00").split(":")[0]);
+  const closingHour = Number((storeSettings?.storeClosingTime || "17:00").split(":")[0]);
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const { mode, orderId } = useLocalSearchParams();
   const isStorePickup = mode === DELIVERY_MODE_STORE;
@@ -121,9 +126,23 @@ const PickupScreen = () => {
 
   // Redux state
   const userData = useSelector((state: RootState) => state.user.user);
+  const cartItems = useSelector((state: RootState) => state.cart?.items || []);
+  const hasAgeRestrictedItems = cartItems.some((item: any) => {
+    const directFlag =
+      item?.isAgeRestricted === true ||
+      item?.isAgeRestricted === "true" ||
+      item?.ageRestricted === true ||
+      item?.ageRestricted === "true";
+    const nestedFlag =
+      item?.product?.isAgeRestricted === true ||
+      item?.product?.isAgeRestricted === "true" ||
+      item?.product?.ageRestricted === true ||
+      item?.product?.ageRestricted === "true";
+    return directFlag || nestedFlag;
+  });
   // console.log("userData in pickupscreen", userData);
 
-  const DEFAULT_PICKUP_HOURS = usePickupTime();
+  const { pickupTime, loading: pickupTimeLoading } = usePickupTime();
   const showErrorAlert = ({
     title,
     message,
@@ -162,39 +181,44 @@ const PickupScreen = () => {
 
   // Initialize default time values based on new business rules
   useEffect(() => {
+    if (pickupTimeLoading) return;
     const now = new Date();
     const currentHour = now.getHours();
     let targetDate, targetHour, targetMinute;
 
     // Check if current time is between 7AM (7) and 5PM (17)
     if (
-      currentHour >= STORE_OPENING_TIMINGS &&
-      currentHour < STORE_CLOSING_TIMINGS
+      currentHour >= openingHour &&
+      currentHour < closingHour
     ) {
       // Within business hours: add 2 hours
-      const pickupHours = Math.max(Number(DEFAULT_PICKUP_HOURS) || 0, 0.5); // At least 30 minutes
+      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5); // At least 30 minutes
       const twoHoursLater = new Date(
         now.getTime() + pickupHours * 60 * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < STORE_OPENING_TIMINGS) {
+    } else if (currentHour < openingHour) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(openingHour, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = STORE_OPENING_TIMINGS;
+      targetHour = openingHour;
       targetMinute = 0;
     } else {
-      // Outside business hours: push to next day 10AM
+      // Outside business hours: push to next day opening + lead time
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(10, 0, 0, 0); // Set to 10:00:00.000
+      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5);
+      const leadMinutes = Math.round(pickupHours * 60);
+      const nextSlotHour = openingHour + Math.floor(leadMinutes / 60);
+      const nextSlotMinute = leadMinutes % 60;
+      tomorrow.setHours(nextSlotHour, nextSlotMinute, 0, 0);
       targetDate = tomorrow;
-      targetHour = 10;
-      targetMinute = 0;
+      targetHour = nextSlotHour;
+      targetMinute = nextSlotMinute;
     }
     // Format the date for state
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
@@ -222,7 +246,7 @@ const PickupScreen = () => {
       minutesValue,
       periodValue
     );
-  }, []);
+  }, [pickupTime, pickupTimeLoading, openingHour, closingHour]);
 
   const displayDatePicker = () => setPickupDatePickerVisibility(true);
   const hideDatePicker = () => setPickupDatePickerVisibility(false);
@@ -755,6 +779,23 @@ const PickupScreen = () => {
             ]}
           >
             {/* Instructions */}
+            {hasAgeRestrictedItems && (
+              <AgeRestrictionNote
+                containerStyle={[
+                  styles.noteContainer,
+                  isWeb && !isMobileWeb && styles.noteContainerWebDesktop,
+                  isMobileWeb && styles.noteContainerWebMobile,
+                ]}
+                titleStyle={[
+                  styles.noteTitle,
+                  isMobileWeb && styles.noteTitleWebMobile,
+                ]}
+                messageStyle={[
+                  styles.noteText,
+                  isMobileWeb && styles.noteTextWebMobile,
+                ]}
+              />
+            )}
             <Text style={styles.label}>
               {isStorePickup
                 ? "Do you like to store pick up? Let us know the date and time that suits you for Store pickup."
@@ -1055,10 +1096,6 @@ const PickupScreen = () => {
               emailRef
             )}
 
-            <Text style={inputStyles.note}>
-              *Please ensure you carry a valid ID Proof
-            </Text>
-
             {/* Submit button */}
             <Button
               title="Confirm"
@@ -1100,11 +1137,6 @@ const inputStyles = StyleSheet.create({
   multilineInput: {
     height: 80,
     textAlignVertical: "top",
-  },
-  note: {
-    color: colors.error,
-    fontSize: 14,
-    marginBottom: 16,
   },
   errorText: {
     color: "red",

@@ -779,7 +779,7 @@ const AdminOrderDetail = () => {
 
             <Text
               style={[
-                styles.mobileSectionLabel,
+                styles.mobileSectionTitle,
               ]}
             >
               {orderDetails?.pickupMode === DELIVERY_MODE_HOME

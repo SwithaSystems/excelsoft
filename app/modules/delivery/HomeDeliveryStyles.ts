@@ -21,9 +21,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 16,
-    // paddingTop: 16,
-    // flexDirection: "row",
-    // justifyContent: "space-between",
   },
   required: {
     color: colors.error,
@@ -70,6 +67,61 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: colors.white,
+  },
+  noteContainer: {
+    backgroundColor: colors.ageRestrictionBg,
+    borderColor: colors.ageRestrictionBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+    width: "100%",
+    alignSelf: "stretch",
+  },
+  noteContainerWebDesktop: {
+    marginBottom: 16,
+  },
+  noteContainerWebMobile: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    marginBottom: 12,
+  },
+  noteTitle: {
+    color: colors.ageRestrictionText,
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  noteTitleWebMobile: {
+    fontSize: 14,
+    marginBottom: 3,
+  },
+  noteText: {
+    color: colors.ageRestrictionText,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  noteTextWebMobile: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  addressSectionBlock: {
+    marginBottom: 8,
+  },
+  addressSectionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 6,
+  },
+  defaultBadge: {
+    alignSelf: "flex-start",
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: "600",
+    marginBottom: 6,
   },
 });
 

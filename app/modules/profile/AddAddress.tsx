@@ -7,10 +7,11 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styles from "./AddAddressStyles";
 import { CheckBox } from "react-native-elements";
 import Header from "../../components/Header";
-import { addressService } from "@/services/addressService";
+import { addressService, Address } from "@/services/addressService";
 import {
   clearNavigationStack,
   redirectToPage,
@@ -41,7 +42,6 @@ const addAddressScreen = () => {
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
   const [towncity, setTownCity] = useState("");
-  const [state, setState] = useState("");
   const [postalcode, setPostalCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [addressType, setAddressType] = useState([]);
@@ -72,12 +72,12 @@ const addAddressScreen = () => {
     line1?: string;
     line2?: string;
     towncity?: string;
-    state?: string;
     phoneNumber?: string;
     general?: string;
   }>({});
 
   const isWeb = Platform.OS === "web";
+  const insets = useSafeAreaInsets();
   const showErrorAlert = ({
     title,
     message,
@@ -121,7 +121,6 @@ const addAddressScreen = () => {
         setLine1(selectedAddress.line1 || "");
         setLine2(selectedAddress.line2 || "");
         setTownCity(selectedAddress.city || "");
-        setState(selectedAddress.state || "");
         setPostalCode(selectedAddress.postalCode || "");
         setPhoneNumber(selectedAddress.phone || "");
         setAddressType(selectedAddress.addressType || []);
@@ -341,9 +340,6 @@ const addAddressScreen = () => {
     const towncityError = validateTownCity(towncity);
     if (towncityError) newErrors.towncity = towncityError;
 
-    const stateError = validateState(state);
-    if (stateError) newErrors.state = stateError;
-
     const phoneNumberError = validatePhoneNumber(phoneNumber);
     if (phoneNumberError) newErrors.phoneNumber = phoneNumberError;
 
@@ -382,12 +378,6 @@ const addAddressScreen = () => {
     setErrors((prev) => ({ ...prev, towncity: error || undefined }));
   };
 
-  const handleStateChange = (text: string) => {
-    setState(text);
-    const error = validateState(text);
-    setErrors((prev) => ({ ...prev, state: error || undefined }));
-  };
-
   const handlePhoneNumberChange = (text: string) => {
     setPhoneNumber(text);
     const error = validatePhoneNumber(text);
@@ -411,12 +401,11 @@ const addAddressScreen = () => {
         });
         return;
       }
-      const addressData = {
+      const addressData: Omit<Address, "_id"> = {
         name: name.trim(),
         line1: line1.trim(),
         line2: line2.trim(),
         city: towncity.trim(),
-        state: state.trim(),
         postalCode: postalcode.trim(),
         phone: phoneNumber.trim(),
         isDefault,
@@ -424,6 +413,32 @@ const addAddressScreen = () => {
       };
 
       let response;
+
+      // Enforce single default address on frontend side:
+      // when current submit is marked default, unset default on all other addresses.
+      if (isDefault) {
+        try {
+          const existingAddresses = await addressService.getAllAddress();
+          const updates = existingAddresses
+            .filter(
+              (addr) =>
+                (addr.isDefault === true || (addr as any).isDefault === "true") &&
+                (!isEditMode || String(addr._id) !== String(addressId))
+            )
+            .map((addr) =>
+              addressService.updateAddress(addr._id, {
+                ...addr,
+                isDefault: false,
+              })
+            );
+
+          if (updates.length > 0) {
+            await Promise.all(updates);
+          }
+        } catch (enforceError) {
+          console.error("Failed to enforce single default address:", enforceError);
+        }
+      }
 
       if (isEditMode) {
         response = await addressService.updateAddress(addressId, {
@@ -499,126 +514,178 @@ const addAddressScreen = () => {
 
   return (
     <LayoutComponent
-      scrollable={true}
+      scrollable={false}
       hasHeader
       hasFooter={isWeb}
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent || undefined}
     >
       <KeyBoardWrapper>
-        <ScrollView>
-          <Text style={styles.fieldLabel}>Recipient Name *</Text>
-          <TextInput
-            style={[styles.input, errors.name && globalStyles.errorInput]}
-            value={name}
-            onChangeText={handleNameChange}
-            placeholder="Enter full name (e.g., John Smith)"
-            maxLength={50}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.name && (
-            <Text style={globalStyles.errorText}>{errors.name}</Text>
-          )}
+        <View style={styles.screenShell}>
+        <ScrollView
+          style={styles.formScroll}
+          contentContainerStyle={styles.formScrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.formPage}>
+            <View style={styles.heroCard}>
+              <View style={styles.heroIconWrap}>
+                <Text style={styles.heroIconText}>+</Text>
+              </View>
+              <View style={styles.heroTextWrap}>
+                <Text style={styles.heroTitle}>
+                  {isEditMode ? "Update this delivery address" : "Add a delivery address"}
+                </Text>
+                <Text style={styles.heroSubtitle}>
+                  Save a clean, complete address so checkout and delivery stay fast and accurate.
+                </Text>
+              </View>
+            </View>
 
-          <Text style={styles.fieldLabel}>Postcode *</Text>
-          <TextInput
-            style={[styles.input, errors.postalcode && globalStyles.errorInput]}
-            value={postalcode}
-            onChangeText={handlePostalCodeChange}
-            keyboardType="default"
-            placeholder="Enter postcode (e.g., SW1A 1AA, 10001)"
-            maxLength={10}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-          {errors.postalcode && (
-            <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
-          )}
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Recipient</Text>
+              <Text style={styles.sectionTitle}>Contact Details</Text>
 
-          <Text style={styles.fieldLabel}>Address Line 1 *</Text>
-          <TextInput
-            style={[styles.input, errors.line1 && globalStyles.errorInput]}
-            value={line1}
-            onChangeText={handleLine1Change}
-            placeholder="House number and street name (e.g., 123 Main Street)"
-            maxLength={100}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.line1 && (
-            <Text style={globalStyles.errorText}>{errors.line1}</Text>
-          )}
+              <Text style={styles.fieldLabel}>Recipient Name *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.name && globalStyles.errorInput,
+                ]}
+                value={name}
+                onChangeText={handleNameChange}
+                placeholder="Enter full name (e.g., John Smith)"
+                maxLength={50}
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
+              {errors.name && (
+                <Text style={globalStyles.errorText}>{errors.name}</Text>
+              )}
 
-          <Text style={styles.fieldLabel}>Address Line 2</Text>
-          <TextInput
-            style={[styles.input, errors.line2 && globalStyles.errorInput]}
-            value={line2}
-            onChangeText={handleLine2Change}
-            placeholder="Apartment, suite, unit (optional)"
-            maxLength={100}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.line2 && (
-            <Text style={globalStyles.errorText}>{errors.line2}</Text>
-          )}
+              <Text style={styles.fieldLabel}>Phone Number *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.phoneNumber && globalStyles.errorInput,
+                ]}
+                value={phoneNumber}
+                onChangeText={handlePhoneNumberChange}
+                keyboardType="phone-pad"
+                placeholder="Enter phone number (e.g., +1 234 567 8900)"
+                maxLength={18}
+                autoCorrect={false}
+              />
+              {errors.phoneNumber && (
+                <Text style={globalStyles.errorText}>{errors.phoneNumber}</Text>
+              )}
+            </View>
 
-          <Text style={styles.fieldLabel}>Town/City *</Text>
-          <TextInput
-            style={[styles.input, errors.towncity && globalStyles.errorInput]}
-            value={towncity}
-            onChangeText={handleTownCityChange}
-            placeholder="Enter town or city (e.g., London, New York)"
-            maxLength={50}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.towncity && (
-            <Text style={globalStyles.errorText}>{errors.towncity}</Text>
-          )}
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Location</Text>
+              <Text style={styles.sectionTitle}>Address Details</Text>
 
-          <Text style={styles.fieldLabel}>State/Province</Text>
-          <TextInput
-            style={[styles.input, errors.state && globalStyles.errorInput]}
-            value={state}
-            onChangeText={handleStateChange}
-            placeholder="Enter state or province (optional)"
-            maxLength={50}
-            autoCorrect={false}
-            autoCapitalize="words"
-          />
-          {errors.state && (
-            <Text style={globalStyles.errorText}>{errors.state}</Text>
-          )}
+              <Text style={styles.fieldLabel}>Postcode *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.postalcode && globalStyles.errorInput,
+                ]}
+                value={postalcode}
+                onChangeText={handlePostalCodeChange}
+                keyboardType="default"
+                placeholder="Enter postcode (e.g., SW1A 1AA, 10001)"
+                maxLength={10}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              {errors.postalcode && (
+                <Text style={globalStyles.errorText}>{errors.postalcode}</Text>
+              )}
 
-          <Text style={styles.fieldLabel}>Phone Number *</Text>
-          <TextInput
-            style={[
-              styles.input,
-              errors.phoneNumber && globalStyles.errorInput,
-            ]}
-            value={phoneNumber}
-            onChangeText={handlePhoneNumberChange}
-            keyboardType="phone-pad"
-            placeholder="Enter phone number (e.g., +1 234 567 8900)"
-            maxLength={18}
-            autoCorrect={false}
-          />
-          {errors.phoneNumber && (
-            <Text style={globalStyles.errorText}>{errors.phoneNumber}</Text>
-          )}
+              <Text style={styles.fieldLabel}>Address Line 1 *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.line1 && globalStyles.errorInput,
+                ]}
+                value={line1}
+                onChangeText={handleLine1Change}
+                placeholder="House number and street name (e.g., 123 Main Street)"
+                maxLength={100}
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
+              {errors.line1 && (
+                <Text style={globalStyles.errorText}>{errors.line1}</Text>
+              )}
 
-          <View style={styles.checkBox}>
-            <CheckBox
-              checked={isDefault}
-              onPress={() => setIsDefault(!isDefault)}
-              checkedColor = {colors.primary}
-              uncheckedColor= {colors.secondary}
-            />
-            <Text>Mark as default address</Text>
+              <Text style={styles.fieldLabel}>Address Line 2</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.line2 && globalStyles.errorInput,
+                ]}
+                value={line2}
+                onChangeText={handleLine2Change}
+                placeholder="Apartment, suite, unit (optional)"
+                maxLength={100}
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
+              {errors.line2 && (
+                <Text style={globalStyles.errorText}>{errors.line2}</Text>
+              )}
+
+              <Text style={styles.fieldLabel}>Town/City *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  !isWeb && styles.mobileInput,
+                  errors.towncity && globalStyles.errorInput,
+                ]}
+                value={towncity}
+                onChangeText={handleTownCityChange}
+                placeholder="Enter town or city (e.g., London, New York)"
+                maxLength={50}
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
+              {errors.towncity && (
+                <Text style={globalStyles.errorText}>{errors.towncity}</Text>
+              )}
+            </View>
+
+            <View style={styles.preferenceCard}>
+              <View style={styles.preferenceTextWrap}>
+                <Text style={styles.preferenceTitle}>Default address</Text>
+                <Text style={styles.preferenceSubtitle}>
+                  Use this as your primary saved address for future checkouts.
+                </Text>
+              </View>
+              <CheckBox
+                checked={isDefault}
+                onPress={() => setIsDefault(!isDefault)}
+                checkedColor={colors.primary}
+                uncheckedColor={colors.secondary}
+                containerStyle={styles.checkBoxControl}
+              />
+            </View>
           </View>
-
+        </ScrollView>
+        <View
+          style={[
+            styles.bottomActionBar,
+            !isWeb && {
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
           <TouchableOpacity
             style={[styles.submitButton, isSubmitting && { opacity: 0.6 }]}
             onPress={handleSubmit}
@@ -630,7 +697,8 @@ const addAddressScreen = () => {
                 : `${isEditMode ? "Update" : "Add"} Address`}
             </Text>
           </TouchableOpacity>
-        </ScrollView>
+        </View>
+        </View>
       </KeyBoardWrapper>
       <ConfirmationModal
         isModalVisible={errorModalState.isVisible}

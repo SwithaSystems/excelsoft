@@ -11,6 +11,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "@/constants/colors";
+import { useRoleContext } from "@/context/RoleContext";
 
 interface BiometricAuthProps {
   onAuthSuccess: (token: string) => void;
@@ -25,10 +26,12 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
   // onLogout,
   userName = "User",
 }) => {
+  const { username } = useRoleContext();
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
-  const [biometricType, setBiometricType] = useState("Biometric");
   const [isEnrolled, setIsEnrolled] = useState(false);
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const displayName = (username || userName || "User").trim();
 
   useEffect(() => {
     checkBiometricSupport();
@@ -53,20 +56,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
       const enrolled = await LocalAuthentication.isEnrolledAsync();
       setIsEnrolled(enrolled);
 
-      const types =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
-
-      if (
-        types.includes(
-          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
-        )
-      ) {
-        setBiometricType("Face ID");
-      } else if (
-        types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
-      ) {
-        setBiometricType("Fingerprint");
-      }
+      await LocalAuthentication.supportedAuthenticationTypesAsync();
     } catch (error) {
       console.error("Biometric check error:", error);
     }
@@ -96,9 +86,11 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
       } else {
         onAuthFailure(result.error || "Authentication failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Biometric auth error:", error);
-      onAuthFailure(error.message || "Unknown error");
+      onAuthFailure(
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   };
 
@@ -106,11 +98,6 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 10);
     return `bio_${timestamp}_${random}`;
-  };
-
-  const clearBiometricData = async () => {
-    await SecureStore.deleteItemAsync("biometric_auth_token");
-    Alert.alert("Cleared", "Biometric data removed");
   };
 
   return (
@@ -125,8 +112,7 @@ const BiometricAuth: React.FC<BiometricAuthProps> = ({
               color={colors.primary}
             />
           </View>
-          <Text style={styles.greeting}>Welcome back</Text>
-          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.greeting}>Welcome back, {displayName}</Text>
         </View>
 
         {/* Biometric section */}

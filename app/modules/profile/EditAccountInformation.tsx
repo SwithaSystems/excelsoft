@@ -94,6 +94,11 @@ const EditAccountInformationScreen = () => {
         const fullPhone = user.data.phone || "";
 
           if (fullPhone.startsWith("+")) {
+            if (fullPhone.startsWith("+44")) {
+              setCountryCode("GB");
+              setCallingCode("44");
+              setLocalPhone(fullPhone.slice(3));
+            } else {
 
             const countries = await getAllCountries("emoji" as FlagType);
 
@@ -110,6 +115,7 @@ const EditAccountInformationScreen = () => {
               const extractedLocal = fullPhone.slice(extractedCallingCode.length + 1);
 
               setLocalPhone(extractedLocal);
+            }
             }
           }
         

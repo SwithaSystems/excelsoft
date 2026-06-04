@@ -21,6 +21,7 @@ import {
   Platform,
   useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "../../../constants/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { categoryService } from "@/services/categoryService";
@@ -110,6 +111,7 @@ const AdminProductUpdation = () => {
   });
 
   const isWeb = Platform.OS === "web";
+  const insets = useSafeAreaInsets();
   const showErrorAlert = ({
     title,
     message,
@@ -176,7 +178,12 @@ const AdminProductUpdation = () => {
       setMinimumOrderQuantity(
         productData.minimumOrderQuantity?.toString() || ""
       );
-      setIsAgeRestricted(productData.isAgeRestricted || false);
+      const resolvedAgeRestricted =
+        productData.isAgeRestricted ||
+        productData.ageRestricted ||
+        productData.age_restricted ||
+        false;
+      setIsAgeRestricted(resolvedAgeRestricted);
       setIsChecked(productData.isReturnable || false);
       setIsVatApplicable(productData.isVatApplicable || false);
       setVatRate(
@@ -559,6 +566,7 @@ const calculatePrices = () => {
       formData.append("minimumOrderQuantity", minimumOrderQunatity || "0");
       formData.append("isReturnable", isChecked ? "true" : "false");
       formData.append("isAgeRestricted", isAgeRestricted ? "true" : "false");
+      formData.append("ageRestricted", isAgeRestricted ? "true" : "false");
 
       if (isVatApplicable) {
         formData.append("vatRate", vatRate);
@@ -673,6 +681,8 @@ const calculatePrices = () => {
       if (!response) {
         throw new Error("Failed to update product.");
       }
+
+      // No post-create patch needed now that backend handles age restriction on create.
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error updating product:", error);
@@ -771,7 +781,13 @@ const calculatePrices = () => {
   const HeaderComponent = isWeb ? (
     <BrandHeaderWeb hideUserGreeting={true} />
   ) : (
-    <Header headerText={ADMIN_PRODUCT_DASHBOARD_SCREEN_TITLE} />
+    <Header
+      headerText={
+        newProduct
+          ? ADMIN_PRODUCT_ADD_SCREEN_TITLE
+          : ADMIN_PRODUCT_UPDATE_SCREEN_TITLE
+      }
+    />
   );
 
   const FooterComponent = isWeb ? <FooterWeb /> : <AdminFooter activeTab="products" />;
@@ -782,7 +798,7 @@ const calculatePrices = () => {
       hasHeader
       headerComponent={HeaderComponent}
       footerComponent={FooterComponent}
-      scrollable={isWeb ? false : true}
+      scrollable={false}
       hideNavItems={true}
     >
 
@@ -801,499 +817,487 @@ const calculatePrices = () => {
         scrollable={false}
       >*/}
       <KeyBoardWrapper>
+        <View style={styles.screenShell}>
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 80 }}
+          style={styles.formScroll}
+          contentContainerStyle={styles.formScrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
         >
-          <View
-            style={[
-              // globalStyles.sectionContent,
-              globalStyles.pt_0,
-              globalStyles.mt_n3,
-            ]}
-          >
-            <Text style={styles.label}>Product Name *</Text>
-            <CustomTextInput
-              setValue={handleProductNameChange}
-              value={productName}
-              onPress={() => { }}
-              placeholder="e.g., Premium Wireless Headphones"
-              style={errors.productName ? globalStyles.errorInput : undefined}
-              maxLength={100}
-            />
-            {errors.productName && (
-              <Text style={globalStyles.errorText}>{errors.productName}</Text>
-            )}
-
-            <Text style={styles.label}>Title </Text>
-            <CustomTextInput
-              value={title}
-              setValue={handleTitleChange}
-              onPress={() => { }}
-              placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
-              // style={errors.title ? globalStyles.errorInput : undefined}
-              maxLength={150}
-            />
-            {/* {errors.title && (
-              <Text style={globalStyles.errorText}>{errors.title}</Text>
-            )} */}
-
-            <Text style={styles.label}>Product Description</Text>
-            <TextInput
-              value={productDescription}
-              onChangeText={handleDescriptionChange}
-              placeholder="Describe your product features, specifications, and benefits in detail..."
-              placeholderTextColor={colors.slateGrey}
-              multiline
-              numberOfLines={6}
-              style={[
-                styles.multilinetextbox,
-                { fontSize: 14 },
-                // errors.productDescription ? globalStyles.errorInput : undefined,
-              ]}
-              maxLength={1000}
-            />
-            <Text style={styles.characterCount}>
-              {productDescription.length}/1000 characters
-            </Text>
-            {/* {errors.productDescription && (
-              <Text style={globalStyles.errorText}>
-                {errors.productDescription}
-              </Text>
-            )} */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Category *</Text>
-              <View style={styles.categoryContainer}>
-                <ModalSelector
-                  data={allCategories.map((cat: any) => ({
-                    key: cat.id,
-                    label: cat.name,
-                    value: cat.id,
-                  }))}
-                  initValue="Category"
-                  onChange={(option) => setCategory(option.value)}
-                  optionTextStyle={{ color: colors.primary }}
-                  optionContainerStyle={{ backgroundColor: colors.white }}
-                  cancelStyle={{ backgroundColor: colors.white }}
-                  accessible={true}
-                // accessibilityLabel="Select Category"
-                >
-                  <View style={styles.categorySelector}>
-                    <Text
-                      style={[
-                        styles.categoryText,
-                        { color: category ? colors.black : colors.slateGrey, fontSize: 14 },
-                      ]}
-                    >
-                      {category
-                        ? allCategories.find((c: any) => c.id == category)?.name
-                        : "Select category"}
-                    </Text>
-                    <Ionicons
-                      name="chevron-down-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </View>
-                </ModalSelector>
-                {errors.category && (
-                  <Text style={globalStyles.errorText}>{errors.category}</Text>
-                )}
+          <View style={styles.formPage}>
+            <View style={styles.heroCard}>
+              <View style={styles.heroIconWrap}>
+                <Ionicons
+                  name={newProduct ? "sparkles-outline" : "create-outline"}
+                  size={20}
+                  color={colors.primary}
+                />
               </View>
-            </View>
-            <Text style={styles.label}>Stock </Text>
-            <CustomTextInput
-              setValue={handleStockChange}
-              value={stock}
-              onPress={() => { }}
-              placeholder="e.g., 100"
-              keyboardType="numeric"
-              // style={errors.stock ? globalStyles.errorInput : undefined}
-              maxLength={5}
-            />
-            {/* {errors.stock && (
-              <Text style={globalStyles.errorText}>{errors.stock}</Text>
-            )} */}
-
-            <Text style={styles.label}>RRP* ({CurrencySymbol})</Text>
-            <CustomTextInput
-              setValue={handlePriceChange}
-              value={netPrice}
-              onPress={() => { }}
-              placeholder="e.g., 2999.99"
-              keyboardType="decimal-pad"
-              style={errors.netPrice ? globalStyles.errorInput : undefined}
-              maxLength={10}
-            />
-            {errors.netPrice && (
-              <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
-            )}
-
-            {/* <Text style={styles.label}>Discount({CurrencySymbol})</Text>
-            <CustomTextInput
-              // setValue={handleDiscountPriceChange}
-              // value={discount}
-              onPress={() => { }}
-              placeholder="e.g., 2499.99 (optional - must be less than Net Price)"
-              keyboardType="decimal-pad"
-              // style={errors.discount ? globalStyles.errorInput : undefined}
-              maxLength={10}
-            /> */}
-            {/* {errors.discount && (
-              <Text style={globalStyles.errorText}>{errors.discount}</Text>
-            )} */}
-
-            <View style={styles.checkBox}>
-              <CheckBox
-                checked={isVatApplicable}
-                onPress={() => {
-                  setIsVatApplicable(!isVatApplicable);
-                  if (!isVatApplicable) {
-                    setVatRate("20.00");
-                    setVatAmount("");
-                    // setNetPriceIncVAT("");
-                    // setGrossPrice("");
-                  } else {
-                    setVatRate("");
-                    setVatAmount(" ");
-                    // setNetPriceIncVAT("");
-                    // setGrossPrice("");
-                  }
-                }}
-                checkedColor={colors.primary}
-                uncheckedColor={colors.secondary}
-              />
-              <Text>Is VAT Applicable?</Text>
-            </View>
-
-            {isVatApplicable && (
-              <>
-                <Text style={styles.label}>VAT Rate (%)</Text>
-                <CustomTextInput
-                  setValue={handleVatRateChange}
-                  value={vatRate}
-                  onPress={() => { }}
-                  placeholder="e.g., 5.00"
-                  keyboardType="decimal-pad"
-                  style={errors.vatRate ? globalStyles.errorInput : undefined}
-                  maxLength={6}
-                />
-
-                <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
-                <CustomTextInput
-                  setValue={handleVatAmountChange}
-                  value={vatAmount}
-                  onPress={() => { }}
-                  placeholder="eCalculated Automatically"
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  editable={false}
-                  style={styles.readOnlyInput}
-                />
-
-                {/* <Text style={styles.label}>
-                  Net Price Including VAT ({CurrencySymbol})
+              <View style={styles.heroTextWrap}>
+                <Text style={styles.heroTitle}>
+                  {newProduct ? "Build a product card customers notice" : "Refine this product listing"}
                 </Text>
-                <CustomTextInput
-                  value={netPriceIncVAT}
-                  onPress={() => { }}
-                  placeholder="Calculated automatically"
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  editable={false}
-                  style={styles.readOnlyInput}
-                /> */}
-              </>
-            )}
-
-            {/* <Text style={styles.label}>Gross Price ({CurrencySymbol})</Text>
-            <CustomTextInput
-              value={grossPrice}
-              onPress={() => { }}
-              placeholder="Calculated Automatically"
-              keyboardType="decimal-pad"
-              maxLength={10}
-              editable={false}
-              style={styles.readOnlyInput}
-            /> */}
-
-            <Text style={styles.label}>Minimum Order Quantity</Text>
-            <CustomTextInput
-              setValue={handleMinOrderQuantityChange}
-              value={minimumOrderQunatity}
-              onPress={() => { }}
-              placeholder="e.g., 1 (optional - leave empty for no minimum)"
-              keyboardType="numeric"
-              // style={
-              //   errors.minimumOrderQunatity
-              //     ? globalStyles.errorInput
-              //     : undefined
-              // }
-              maxLength={4}
-            />
-            {/* {errors.minimumOrderQunatity && (
-              <Text style={globalStyles.errorText}>
-                {errors.minimumOrderQunatity}
-              </Text>
-            )} */}
-
-            <View style={styles.checkBox}>
-              <CheckBox
-                checked={isColorsAvailable}
-                onPress={() => {
-                  setIsColorsAvailable(!isColorsAvailable);
-                  if (!isColorsAvailable) {
-                    setSelectedColors([]);
-                  }
-                }}
-                checkedColor={colors.primary}
-                uncheckedColor={colors.secondary}
-              />
-              <Text>Colors Available?</Text>
-            </View>
-            {!newProduct && selectedColors.length > 0 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  marginTop: 10,
-                }}
-              >
-                {selectedColors.map((color: any, index: any) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "#f0f0f0",
-                      borderRadius: 20,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      margin: 4,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: color.hex || color.colorCode,
-                        marginRight: 6,
-                      }}
-                    />
-                    <Text>{color.colorName || color.name}</Text>
-                  </View>
-                ))}
+                <Text style={styles.heroSubtitle}>
+                  Add the essentials first, then polish pricing, availability, and media below.
+                </Text>
               </View>
-            )}
-            {isColorsAvailable && (
-              <>
-                <Text style={styles.label}>Select Color</Text>
+            </View>
+
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Overview</Text>
+              <Text style={styles.sectionTitle}>Product Basics</Text>
+
+              <Text style={styles.label}>Product Name *</Text>
+              <CustomTextInput
+                setValue={handleProductNameChange}
+                value={productName}
+                onPress={() => { }}
+                placeholder="e.g., Premium Wireless Headphones"
+                style={errors.productName ? globalStyles.errorInput : undefined}
+                maxLength={100}
+              />
+              {errors.productName && (
+                <Text style={globalStyles.errorText}>{errors.productName}</Text>
+              )}
+
+              <Text style={styles.label}>Title</Text>
+              <CustomTextInput
+                value={title}
+                setValue={handleTitleChange}
+                onPress={() => { }}
+                placeholder="e.g., High-Quality Bluetooth Headphones with Noise Cancellation"
+                maxLength={150}
+              />
+
+              <Text style={styles.label}>Product Description</Text>
+              <TextInput
+                value={productDescription}
+                onChangeText={handleDescriptionChange}
+                placeholder="Describe your product features, specifications, and benefits in detail..."
+                placeholderTextColor={colors.slateGrey}
+                multiline
+                numberOfLines={6}
+                style={[styles.multilinetextbox, { fontSize: 14 }]}
+                maxLength={1000}
+              />
+              <Text style={styles.characterCount}>
+                {productDescription.length}/1000 characters
+              </Text>
+            </View>
+
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Structure</Text>
+              <Text style={styles.sectionTitle}>Catalog Details</Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Category *</Text>
                 <View style={styles.categoryContainer}>
-                  <TouchableOpacity
-                    style={styles.categorySelector}
-                    onPress={() => setShowColorModal(true)}
+                  <ModalSelector
+                    data={allCategories.map((cat: any) => ({
+                      key: cat.id,
+                      label: cat.name,
+                      value: cat.id,
+                    }))}
+                    initValue="Category"
+                    onChange={(option) => setCategory(option.value)}
+                    optionTextStyle={{ color: colors.primary }}
+                    optionContainerStyle={{ backgroundColor: colors.white }}
+                    cancelStyle={{ backgroundColor: colors.white }}
+                    accessible={true}
                   >
-                    <View style={styles.selectedColorsDisplay}>
-                      {selectedColors.length > 0 && (
-                        <View style={styles.selectedColorCircles}>
-                          {selectedColors
-                            .slice(0, 3)
-                            .map((colorHex: any, index: any) => (
-                              <View
-                                key={index}
-                                style={[
-                                  styles.smallColorCircle,
-                                  {
-                                    backgroundColor:
-                                      colorHex.hex || colorHex.colorCode,
-                                  },
-                                ]}
-                              />
-                            ))}
-                          {selectedColors.length > 3 && (
-                            <View style={styles.moreColorsIndicator}>
-                              <Text style={styles.moreColorsText}>
-                                +{selectedColors.length - 3}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      )}
+                    <View style={styles.categorySelector}>
                       <Text
                         style={[
                           styles.categoryText,
-                          {
-                            color:
-                              selectedColors.length > 0
-                                ? selectedColors.map((c: any) => c.hex)
-                                : colors.slateGrey,
-                          },
+                          { color: category ? colors.black : colors.slateGrey, fontSize: 14 },
                         ]}
                       >
-                        {getSelectedColorsText()}
+                        {category
+                          ? allCategories.find((c: any) => c.id == category)?.name
+                          : "Select category"}
                       </Text>
+                      <Ionicons
+                        name="chevron-down-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
                     </View>
-                    <Ionicons
-                      name="chevron-down-outline"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
+                  </ModalSelector>
+                  {errors.category && (
+                    <Text style={globalStyles.errorText}>{errors.category}</Text>
+                  )}
                 </View>
-                <Modal
-                  visible={showColorModal}
-                  transparent={true}
-                  animationType="slide"
-                  onRequestClose={() => setShowColorModal(false)}
-                >
-                  <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                      <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Select Colors</Text>
-                        <TouchableOpacity
-                          onPress={() => setShowColorModal(false)}
-                          style={styles.closeButton}
-                        >
-                          <Ionicons
-                            name="close"
-                            size={24}
-                            color={colors.black}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <ScrollView style={styles.colorListContainer}>
-                        {predefinedColors.map((color, index) => {
-                          const isSelected = selectedColors.some(
-                            (selectedColor: any) =>
-                              (selectedColor.hex || selectedColor.colorCode) ===
-                              color.hex ||
-                              (selectedColor.name ||
-                                selectedColor.colorName) === color.name
-                          );
+              </View>
 
-                          return (
-                            <TouchableOpacity
-                              key={index}
-                              style={styles.colorOptionRow}
-                              onPress={() =>
-                                handleColorSelection(color.hex, color.name)
-                              }
-                            >
-                              <View style={styles.colorOptionContent}>
-                                <CheckBox
-                                  checked={isSelected}
-                                  onPress={() =>
-                                    handleColorSelection(color.hex, color.name)
-                                  }
-                                  checkedColor={colors.primary}
-                                  uncheckedColor={colors.secondary}
-                                />
+              <Text style={styles.label}>Minimum Order Quantity</Text>
+              <CustomTextInput
+                setValue={handleMinOrderQuantityChange}
+                value={minimumOrderQunatity}
+                onPress={() => { }}
+                placeholder="e.g., 1 (optional - leave empty for no minimum)"
+                keyboardType="numeric"
+                maxLength={4}
+              />
+            </View>
+
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Commercials</Text>
+              <Text style={styles.sectionTitle}>Pricing & Inventory</Text>
+
+              <Text style={styles.label}>Stock</Text>
+              <CustomTextInput
+                setValue={handleStockChange}
+                value={stock}
+                onPress={() => { }}
+                placeholder="e.g., 100"
+                keyboardType="numeric"
+                maxLength={5}
+              />
+
+              <Text style={styles.label}>RRP* ({CurrencySymbol})</Text>
+              <CustomTextInput
+                setValue={handlePriceChange}
+                value={netPrice}
+                onPress={() => { }}
+                placeholder="e.g., 2999.99"
+                keyboardType="decimal-pad"
+                style={errors.netPrice ? globalStyles.errorInput : undefined}
+                maxLength={10}
+              />
+              {errors.netPrice && (
+                <Text style={globalStyles.errorText}>{errors.netPrice}</Text>
+              )}
+
+              <View style={styles.preferenceCard}>
+                <View style={styles.preferenceTextWrap}>
+                  <Text style={styles.preferenceTitle}>VAT</Text>
+                  <Text style={styles.preferenceSubtitle}>
+                    Enable VAT calculation for this product price.
+                  </Text>
+                </View>
+                <CheckBox
+                  checked={isVatApplicable}
+                  onPress={() => {
+                    setIsVatApplicable(!isVatApplicable);
+                    if (!isVatApplicable) {
+                      setVatRate("20.00");
+                      setVatAmount("");
+                    } else {
+                      setVatRate("");
+                      setVatAmount(" ");
+                    }
+                  }}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                  containerStyle={styles.checkBoxControl}
+                />
+              </View>
+
+              {isVatApplicable && (
+                <>
+                  <Text style={styles.label}>VAT Rate (%)</Text>
+                  <CustomTextInput
+                    setValue={handleVatRateChange}
+                    value={vatRate}
+                    onPress={() => { }}
+                    placeholder="e.g., 5.00"
+                    keyboardType="decimal-pad"
+                    style={errors.vatRate ? globalStyles.errorInput : undefined}
+                    maxLength={6}
+                  />
+
+                  <Text style={styles.label}>VAT Amount ({CurrencySymbol})</Text>
+                  <CustomTextInput
+                    setValue={handleVatAmountChange}
+                    value={vatAmount}
+                    onPress={() => { }}
+                    placeholder="Calculated automatically"
+                    keyboardType="decimal-pad"
+                    maxLength={10}
+                    editable={false}
+                    style={styles.readOnlyInput}
+                  />
+                </>
+              )}
+            </View>
+
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionEyebrow}>Attributes</Text>
+              <Text style={styles.sectionTitle}>Availability & Options</Text>
+
+              <View style={styles.preferenceCard}>
+                <View style={styles.preferenceTextWrap}>
+                  <Text style={styles.preferenceTitle}>Color variants</Text>
+                  <Text style={styles.preferenceSubtitle}>
+                    Let customers choose from multiple available colors.
+                  </Text>
+                </View>
+                <CheckBox
+                  checked={isColorsAvailable}
+                  onPress={() => {
+                    setIsColorsAvailable(!isColorsAvailable);
+                    if (!isColorsAvailable) {
+                      setSelectedColors([]);
+                    }
+                  }}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                  containerStyle={styles.checkBoxControl}
+                />
+              </View>
+
+              {!newProduct && selectedColors.length > 0 && (
+                <View style={styles.selectedPillsRow}>
+                  {selectedColors.map((color: any, index: any) => (
+                    <View key={index} style={styles.selectedPill}>
+                      <View
+                        style={[
+                          styles.selectedPillDot,
+                          { backgroundColor: color.hex || color.colorCode },
+                        ]}
+                      />
+                      <Text>{color.colorName || color.name}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {isColorsAvailable && (
+                <>
+                  <Text style={styles.label}>Select Color</Text>
+                  <View style={styles.categoryContainer}>
+                    <TouchableOpacity
+                      style={styles.categorySelector}
+                      onPress={() => setShowColorModal(true)}
+                    >
+                      <View style={styles.selectedColorsDisplay}>
+                        {selectedColors.length > 0 && (
+                          <View style={styles.selectedColorCircles}>
+                            {selectedColors
+                              .slice(0, 3)
+                              .map((colorHex: any, index: any) => (
                                 <View
+                                  key={index}
                                   style={[
-                                    styles.colorCircle,
-                                    { backgroundColor: color.hex },
+                                    styles.smallColorCircle,
+                                    {
+                                      backgroundColor:
+                                        colorHex.hex || colorHex.colorCode,
+                                    },
                                   ]}
                                 />
-                                <Text style={styles.colorNameText}>
-                                  {color.name} ({color.hex})
+                              ))}
+                            {selectedColors.length > 3 && (
+                              <View style={styles.moreColorsIndicator}>
+                                <Text style={styles.moreColorsText}>
+                                  +{selectedColors.length - 3}
                                 </Text>
                               </View>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
+                            )}
+                          </View>
+                        )}
+                        <Text
+                          style={[
+                            styles.categoryText,
+                            {
+                              color:
+                                selectedColors.length > 0
+                                  ? colors.black
+                                  : colors.slateGrey,
+                            },
+                          ]}
+                        >
+                          {getSelectedColorsText()}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-down-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Modal
+                    visible={showColorModal}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setShowColorModal(false)}
+                  >
+                    <View style={styles.modalOverlay}>
+                      <View style={styles.modalContainer}>
+                        <View style={styles.modalHeader}>
+                          <Text style={styles.modalTitle}>Select Colors</Text>
+                          <TouchableOpacity
+                            onPress={() => setShowColorModal(false)}
+                            style={styles.closeButton}
+                          >
+                            <Ionicons
+                              name="close"
+                              size={24}
+                              color={colors.black}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.colorListContainer}>
+                          {predefinedColors.map((color, index) => {
+                            const isSelected = selectedColors.some(
+                              (selectedColor: any) =>
+                                (selectedColor.hex || selectedColor.colorCode) ===
+                                color.hex ||
+                                (selectedColor.name ||
+                                  selectedColor.colorName) === color.name
+                            );
 
-                      <View style={styles.modalFooter}>
-                        <TouchableOpacity
-                          style={styles.clearButton}
-                          onPress={() => setSelectedColors([])}
-                        >
-                          <Text style={styles.clearButtonText}>Clear All</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.doneButton}
-                          onPress={() => setShowColorModal(false)}
-                        >
-                          <Text style={styles.doneButtonText}>Done</Text>
-                        </TouchableOpacity>
+                            return (
+                              <TouchableOpacity
+                                key={index}
+                                style={styles.colorOptionRow}
+                                onPress={() =>
+                                  handleColorSelection(color.hex, color.name)
+                                }
+                              >
+                                <View style={styles.colorOptionContent}>
+                                  <CheckBox
+                                    checked={isSelected}
+                                    onPress={() =>
+                                      handleColorSelection(color.hex, color.name)
+                                    }
+                                    checkedColor={colors.primary}
+                                    uncheckedColor={colors.secondary}
+                                  />
+                                  <View
+                                    style={[
+                                      styles.colorCircle,
+                                      { backgroundColor: color.hex },
+                                    ]}
+                                  />
+                                  <Text style={styles.colorNameText}>
+                                    {color.name} ({color.hex})
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+
+                        <View style={styles.modalFooter}>
+                          <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={() => setSelectedColors([])}
+                          >
+                            <Text style={styles.clearButtonText}>Clear All</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.doneButton}
+                            onPress={() => setShowColorModal(false)}
+                          >
+                            <Text style={styles.doneButtonText}>Done</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                </Modal>
-              </>
-            )}
-          </View>
-          <View style={styles.checkBox}>
-            <CheckBox
-              checked={isChecked}
-              onPress={() => setIsChecked(!isChecked)}
-              checkedColor={colors.primary}
-              uncheckedColor={colors.secondary}
-            />
-            <Text>Returnable?</Text>
-            <CheckBox
-              checked={isAgeRestricted}
-              onPress={() => setIsAgeRestricted(!isAgeRestricted)}
-              checkedColor={colors.primary}
-              uncheckedColor={colors.secondary}
-            />
-            <Text>Age Restricted?</Text>
-          </View>
-          {/* <View style={styles.checkBox}>
-           
-          </View> */}
+                  </Modal>
+                </>
+              )}
 
-          <Text style={[styles.label, globalStyles.mt_4]}>Product Images</Text>
-          <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
-
-          <View style={styles.imageContainer}>
-            {/* Display existing images */}
-            {productImages.map((img: any, index: any) => (
-              <View key={`img-${index}`} style={styles.imageWrapper}>
-                <Image source={{ uri: img.uri }} style={styles.productImage} />
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index)}
-                >
-                  <Ionicons name="close-circle" size={20} color="red" />
-                </TouchableOpacity>
+              <View style={styles.preferenceCard}>
+                <View style={styles.preferenceTextWrap}>
+                  <Text style={styles.preferenceTitle}>Returnable</Text>
+                  <Text style={styles.preferenceSubtitle}>
+                    Allow customers to request a return for this item.
+                  </Text>
+                </View>
+                <CheckBox
+                  checked={isChecked}
+                  onPress={() => setIsChecked(!isChecked)}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                  containerStyle={styles.checkBoxControl}
+                />
               </View>
-            ))}
 
-            {/* Add image placeholders */}
-            {Array.from({
-              length: MAX_IMAGES - productImages.length,
-            }).map((_, index) => (
-              <TouchableOpacity
-                key={`placeholder-${index}`}
-                style={styles.imagePlaceholder}
-                onPress={showImageOptions}
-              >
-                <Text style={styles.plus}>+</Text>
-              </TouchableOpacity>
-            ))}
+              <View style={styles.preferenceCard}>
+                <View style={styles.preferenceTextWrap}>
+                  <Text style={styles.preferenceTitle}>Age restricted</Text>
+                  <Text style={styles.preferenceSubtitle}>
+                    Mark this item if age verification is required.
+                  </Text>
+                </View>
+                <CheckBox
+                  checked={isAgeRestricted}
+                  onPress={() => setIsAgeRestricted(!isAgeRestricted)}
+                  checkedColor={colors.primary}
+                  uncheckedColor={colors.secondary}
+                  containerStyle={styles.checkBoxControl}
+                />
+              </View>
+            </View>
+
+            <View style={styles.sectionCard}>
+              <View style={styles.mediaHeader}>
+                <View>
+                  <Text style={styles.sectionEyebrow}>Media</Text>
+                  <Text style={styles.sectionTitle}>Product Images</Text>
+                </View>
+                <View style={styles.mediaCounter}>
+                  <Text style={styles.mediaCounterText}>
+                    {productImages.length}/{MAX_IMAGES}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.subLabel}>Upload up to {MAX_IMAGES} images</Text>
+
+              <View style={styles.imageContainer}>
+                {productImages.map((img: any, index: any) => (
+                  <View key={`img-${index}`} style={styles.imageWrapper}>
+                    <Image source={{ uri: img.uri }} style={styles.productImage} />
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <Ionicons name="close-circle" size={20} color="red" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+
+                {Array.from({
+                  length: MAX_IMAGES - productImages.length,
+                }).map((_, index) => (
+                  <TouchableOpacity
+                    key={`placeholder-${index}`}
+                    style={styles.imagePlaceholder}
+                    onPress={showImageOptions}
+                  >
+                    <Ionicons name="add" size={24} color={colors.primary} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           </View>
-          {/* </View> */}
         </ScrollView>
 
         <View
           style={[
-            globalStyles.p_3,
-            globalStyles.flexRow,
-            // globalStyles.justifyContentBetween,
-            { justifyContent: "space-between" },
+            styles.actionBar,
+            isWeb && styles.actionBarWeb,
+            !isWeb && styles.actionBarMobile,
+            !isWeb && {
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
           ]}
         >
           <Button
             onPress={handleAdd_UpdateProduct}
             title={newProduct ? "Add" : "Update"}
             disabled={isLoading}
-            style={{ flex: 0.25, marginRight: 50 }}
+            style={[
+              styles.primaryActionButton,
+              isWeb && styles.primaryActionButtonWeb,
+              !isWeb && styles.primaryActionButtonMobile,
+            ]}
+            textStyle={isWeb ? styles.primaryActionButtonTextWeb : undefined}
 
           />
           <Button
@@ -1301,9 +1305,18 @@ const calculatePrices = () => {
             title="Discard"
             primary={false}
             disabled={isLoading}
-            style={{ flex: 0.25 }}
+            style={[
+              styles.secondaryActionButton,
+              isWeb && styles.secondaryActionButtonWeb,
+              !isWeb && styles.secondaryActionButtonMobile,
+            ]}
+            textStyle={[
+              isWeb && styles.secondaryActionButtonTextWeb,
+              !isWeb && styles.secondaryActionButtonTextMobile,
+            ]}
 
           />
+        </View>
         </View>
         {isLoading && (
           <View style={styles.loadingOverlay}>
@@ -1354,15 +1367,88 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: colors.offWhite,
   },
+  screenShell: {
+    flex: 1,
+  },
+  formScroll: {
+    flex: 1,
+  },
+  formScrollContent: {
+    paddingBottom: 28,
+  },
+  formPage: {
+    paddingTop: 8,
+    paddingBottom: 8,
+    gap: 16,
+  },
+  heroCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#F4FBF7",
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#D5ECDD",
+    gap: 12,
+  },
+  heroIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+  },
+  heroTextWrap: {
+    flex: 1,
+  },
+  heroTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.black,
+    marginBottom: 4,
+  },
+  heroSubtitle: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.slateGrey,
+  },
+  sectionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#E4ECE7",
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 1,
+  },
+  sectionEyebrow: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.black,
+    marginBottom: 10,
+  },
   header: {
     fontSize: 18,
     marginBottom: 10,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "bold",
-    marginTop: 14,
-    marginBottom: 4,
+    marginTop: 16,
+    marginBottom: 6,
+    color: colors.slateGrey,
   },
   webContentContainer: {
     paddingTop: 24,
@@ -1383,14 +1469,14 @@ const styles = StyleSheet.create({
   imageContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginVertical: 15,
+    marginTop: 12,
     gap: 10,
   },
   imageWrapper: {
     position: "relative",
-    width: 65,
-    height: 65,
-    borderRadius: 5,
+    width: 72,
+    height: 72,
+    borderRadius: 14,
     overflow: "visible",
   },
   productImage: {
@@ -1399,11 +1485,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   categoryContainer: {
-    backgroundColor: colors.white,
-    borderColor: colors.primary,
+    backgroundColor: "#FCFEFC",
+    borderColor: "#CFE2D7",
     borderWidth: 1,
-    borderRadius: 8,
-    height: 60,
+    borderRadius: 16,
+    height: 58,
     width: "100%",
     justifyContent: "center",
   },
@@ -1413,7 +1499,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: "100%",
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
 
   categoryText: {
@@ -1435,14 +1521,14 @@ const styles = StyleSheet.create({
     shadowRadius: 1.5,
   },
   imagePlaceholder: {
-    width: 65,
-    height: 65,
-    backgroundColor: colors.placeholdergrey,
+    width: 72,
+    height: 72,
+    backgroundColor: "#F6FBF8",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 5,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.darkGray,
+    borderColor: "#B8D7C7",
     borderStyle: "dashed",
   },
   plus: {
@@ -1453,6 +1539,93 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+  },
+  actionBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: colors.white,
+    gap: 12,
+  },
+  actionBarMobile: {
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    backgroundColor: "rgba(255,255,255,0.98)",
+    borderTopWidth: 1,
+    borderTopColor: "#E3ECE7",
+  },
+  actionBarWeb: {
+    justifyContent: "flex-end",
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 1120,
+    paddingHorizontal: 0,
+    paddingTop: 18,
+    paddingBottom: 8,
+    backgroundColor: "transparent",
+    gap: 14,
+  },
+  primaryActionButton: {
+    flex: 1,
+  },
+  primaryActionButtonMobile: {
+    borderRadius: 16,
+    paddingVertical: 14,
+    shadowColor: "#0B7A49",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  primaryActionButtonWeb: {
+    flex: 0,
+    minWidth: 156,
+    paddingHorizontal: 26,
+    paddingVertical: 13,
+    borderRadius: 999,
+    backgroundColor: "#0B7A49",
+    shadowColor: "#0B7A49",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  primaryActionButtonTextWeb: {
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  secondaryActionButton: {
+    flex: 1,
+  },
+  secondaryActionButtonMobile: {
+    borderRadius: 16,
+    paddingVertical: 14,
+    backgroundColor: "#F8FBF9",
+    borderWidth: 1,
+    borderColor: "#CFE2D7",
+  },
+  secondaryActionButtonWeb: {
+    flex: 0,
+    minWidth: 138,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 999,
+    backgroundColor: "#F8FBF9",
+    borderWidth: 1,
+    borderColor: "#CFE2D7",
+  },
+  secondaryActionButtonTextWeb: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#0B7A49",
+    letterSpacing: 0.2,
+  },
+  secondaryActionButtonTextMobile: {
+    fontWeight: "700",
+    color: "#0B7A49",
   },
   addButton: {
     backgroundColor: colors.secondary,
@@ -1477,10 +1650,10 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   readOnlyInput: {
-    backgroundColor: colors.lightgrey,
+    backgroundColor: "#F3F7F5",
     borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 8,
+    borderColor: "#D1DDD6",
+    borderRadius: 16,
     padding: 10,
   },
   inputContainer: {
@@ -1496,11 +1669,11 @@ const styles = StyleSheet.create({
   },
   multilinetextbox: {
     height: 150,
-    backgroundColor: colors.white,
+    backgroundColor: "#FCFEFC",
     borderWidth: 1,
-    borderRadius: 8,
-    borderColor: colors.primary,
-    padding: 10,
+    borderRadius: 16,
+    borderColor: "#CFE2D7",
+    padding: 14,
     textAlignVertical: "top",
     fontSize: 16,
   },
@@ -1515,6 +1688,59 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: -16,
+  },
+  preferenceCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F8FBF9",
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#E1ECE6",
+  },
+  preferenceTextWrap: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  preferenceTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 2,
+  },
+  preferenceSubtitle: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.slateGrey,
+  },
+  checkBoxControl: {
+    margin: 0,
+    padding: 0,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+  },
+  selectedPillsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12,
+  },
+  selectedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F3",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  selectedPillDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
   },
   addImageButton: {
     borderWidth: 1,
@@ -1756,8 +1982,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.darkGray,
     textAlign: "right",
-    marginTop: 4,
-    marginBottom: 8,
+    marginTop: 6,
+  },
+  mediaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mediaCounter: {
+    minWidth: 48,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: colors.secondary,
+    alignItems: "center",
+  },
+  mediaCounterText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary,
   },
 });
 

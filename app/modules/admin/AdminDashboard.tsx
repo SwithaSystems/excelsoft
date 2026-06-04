@@ -38,8 +38,6 @@ const AdminDashboard = () => {
   const userData = useSelector((state: any) => state.user.user);
   const [isSuperAdmin, setIsSuperAdmin] = React.useState<any>(null);
 
-  // const { width } = useWindowDimensions();
-  // const isTabOrDesktop = width >= 768;
   const isWeb = Platform.OS === "web";
   const { isMobile, isTablet, isDesktop } = useWebMediaQuery();
 
@@ -343,20 +341,6 @@ const AdminDashboard = () => {
 
   const ListHeaderComponent = () => (
     <View style={[globalStyles.pt_0]}>
-      {/* <View style={styles.headerContainer}>
-        <Text style={styles.title}>Dashboard</Text>
-        {!isWeb && (
-          <Text
-            style={styles.linkText}
-            onPress={() => {
-              redirectToPage(containers.fileUploadAddProductCategoryScreen);
-            }}
-          >
-            Upload Data
-          </Text>
-        )}
-      </View> */}
-
       <View
         style={[
           styles.metricsContainer,
@@ -384,15 +368,6 @@ const AdminDashboard = () => {
             <Text style={styles.metricValue}>
               {dashboardMetrics.totalOrders}
             </Text>
-            {/* <View style={styles.salesRaiseSection}>
-              <Ionicons
-                name="trending-up-outline"
-                size={24}
-                color={colors.primary}
-                style={{ paddingRight: 8 }}
-              />
-              <Text style={styles.metricChange}>+12.5%</Text> 
-            </View> */}
           </View>
         </View>
 
@@ -430,43 +405,18 @@ const AdminDashboard = () => {
               {CurrencySymbol}
               {dashboardMetrics.todayRevenue.toFixed(2)}
             </Text>
-            {/* <View style={styles.salesRaiseSection}>
-              <Ionicons
-                name="trending-up-outline"
-                size={24}
-                color={colors.primary}
-                style={{ paddingRight: 8 }}
-              />
-               <Text style={styles.metricChange}>+14.5%</Text> 
-            </View> */}
           </View>
         </View>
-        {/* {isSuperAdmin && (
-          <View
-            style={[
-              styles.metricBox,
-              isWeb && { width: "32%", minHeight: 65 },
-            ]}
-          >
-            <View style={styles.metricIconContainer}>
-              <TouchableOpacity
-                onPress={() => {
-                  redirectToPage(containers.adminAccessControlScreen);
-                }}
-              >
-                <Text style={styles.metricTitle}>User Admin Access</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )} */}
       </View>
 
-      <View style={styles.ordersHeader}>
-        <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-        <TouchableOpacity onPress={handleSeeAllPress}>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
-      </View>
+      {dashboardMetrics.recentOrders.length > 0 && (
+        <View style={styles.ordersHeader}>
+          <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+          <TouchableOpacity onPress={handleSeeAllPress}>
+            <Text style={styles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 
@@ -587,12 +537,14 @@ const AdminDashboard = () => {
             )}
           </View>
 
-          <View style={styles.ordersHeader}>
-            <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
-            <TouchableOpacity onPress={handleSeeAllPress}>
-              <Text style={styles.seeAll}>See All</Text>
-            </TouchableOpacity>
-          </View>
+          {dashboardMetrics.recentOrders.length > 0 && (
+            <View style={styles.ordersHeader}>
+              <Text style={styles.recentOrdersTitle}>Recent Orders</Text>
+              <TouchableOpacity onPress={handleSeeAllPress}>
+                <Text style={styles.seeAll}>See All</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <FlatList
             data={dashboardMetrics.recentOrders}

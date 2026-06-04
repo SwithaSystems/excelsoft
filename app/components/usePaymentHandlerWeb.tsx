@@ -480,69 +480,11 @@ export default function usePaymentHandlerWeb() {
   };
 
   /* -------------------- WALLET PAYMENT (Apple Pay / Google Pay) -------------------- */
-  const handlePlatformPayPayment = async (items: any[], params: any) => {
-    if (!stripe || !paymentRequest || !canMakePayment) {
-      console.log(" Wallet payment not available:", {
-        stripe: !!stripe,
-        paymentRequest: !!paymentRequest,
-        canMakePayment,
-      });
-      Alert.alert(
-        "Digital Wallet Not Available",
-        "Apple Pay or Google Pay is not available in this browser or device."
-      );
-      return;
-    }
-
-    const totalAmount = getFinalAmount(products, params.selectedMode);
-
-    // Check appropriate MOV based on delivery mode
-    const applicableMOV =
-      params.selectedMode === DELIVERY_MODE_HOME
-        ? currentMOV_Checkout !== null
-          ? currentMOV_Checkout
-          : MOV
-        : MOV;
-
-    if (applicableMOV !== null && totalAmount < applicableMOV) {
-      const movLabel =
-        params.selectedMode === DELIVERY_MODE_HOME
-          ? "minimum checkout order value"
-          : "minimum order value";
-      Alert.alert(
-        "Minimum Order Not Met",
-        `Your order value (£${totalAmount.toFixed(
-          2
-        )}) is less than the ${movLabel} of £${applicableMOV}.`
-      );
-      return;
-    }
-
-    console.log(" Initiating wallet payment:", {
-      totalAmount: totalAmount.toFixed(2),
-      amountInCents: Math.round(totalAmount * 100),
-    });
-
-    // Update payment request amount
-    paymentRequest.update({
-      total: {
-        label: STORE_NAME || "Order Total",
-        amount: Math.round(totalAmount * 100), // pence/cents
-      },
-    });
-
-    const paymentData = await fetchPaymentIntent(totalAmount);
-    if (!paymentData) return;
-
-    // Store current payment data for the single paymentmethod handler (registered at init)
-    walletPaymentDataRef.current = paymentData;
-    walletParamsRef.current = params;
-    walletTotalRef.current = totalAmount;
-
-    console.log(" Showing wallet payment UI");
-
-    // Show the payment UI (handler already registered once in init)
-    paymentRequest.show();
+  const handlePlatformPayPayment = async () => {
+    Alert.alert(
+      "Digital Wallet Not Available",
+      "Apple Pay and Google Pay are available only in the mobile app."
+    );
   };
 
   return {

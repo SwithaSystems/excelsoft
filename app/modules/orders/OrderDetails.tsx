@@ -466,7 +466,7 @@ const orderDetailsScreen = () => {
                       value: `£${orderDetails.shippingCharges?.toFixed(2)}`,
                     },
                     {
-                      label: "Sub Total",
+                      label: "Total",
                       value: `£${orderDetails.totalAmount?.toFixed(2)}`,
                     },
                   ].map((row) => (
@@ -514,7 +514,6 @@ const orderDetailsScreen = () => {
                             shippingAddress_order.line1,
                             shippingAddress_order.line2,
                             shippingAddress_order.city,
-                            shippingAddress_order.state,
                             shippingAddress_order.postalCode?.toString(),
                           ]
                             .filter(Boolean)

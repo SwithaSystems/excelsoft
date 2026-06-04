@@ -91,6 +91,7 @@ const AdminGlobalSettings = () => {
     shippingCharge: "",
     minimumCheckoutOrderValue: "",
     minimumDeliveryOrderValue: "",
+    timeWindow: "",
   });
 
   useEffect(() => {
@@ -186,6 +187,11 @@ const AdminGlobalSettings = () => {
     const fieldKey = config.key as string;
     const isEditing = editingField === fieldKey;
     const isUpdating = updatingKey === fieldKey;
+    const displayValue =
+      fieldKey === "timeWindow" &&
+      (settings?.[config.key] === null || settings?.[config.key] === undefined)
+        ? "120"
+        : String(settings?.[config.key] ?? "0");
 
     return (
       <View
@@ -203,11 +209,7 @@ const AdminGlobalSettings = () => {
             !isEditing && styles.inputReadOnly,
           ]}
           keyboardType="numeric"
-          value={
-            isEditing
-              ? tempValues[fieldKey]
-              : String(settings?.[config.key] ?? "0")
-          }
+          value={isEditing ? tempValues[fieldKey] : displayValue}
           onChangeText={(value) =>
             setTempValues((prev) => ({ ...prev, [fieldKey]: value }))
           }
@@ -256,26 +258,28 @@ const AdminGlobalSettings = () => {
 const renderDeliveryModes = () => {
   if (!settings) return null;
 
-  const modes = settings.deliveryModes;
-
   const toggleMode = async (
     key: keyof GlobalSettingsDto["deliveryModes"]
   ) => {
+    if (!settings) return;
+
     const updatedModes = {
-      ...modes,
-      [key]: !modes[key],
+      ...settings.deliveryModes,
+      [key]: !settings.deliveryModes[key],
     };
 
     setUpdatingKey("deliveryModes");
-
     setSettings((prev) =>
       prev ? { ...prev, deliveryModes: updatedModes } : prev
     );
 
     try {
-      await globalSettingsAPI.updateAllSettings({
+      const response = await globalSettingsAPI.updateAllSettings({
         deliveryModes: updatedModes,
       });
+      if (response?.data) {
+        setSettings(response.data);
+      }
     } catch (error) {
       console.error("Failed to update delivery modes:", error);
       showAlert("Error", "Failed to update delivery modes");
@@ -344,7 +348,7 @@ const renderDeliveryModes = () => {
                   true: colors.primary,
                 }}
                 thumbColor={colors.white}
-                value={Boolean(modes[item.key])}
+                value={Boolean(settings?.deliveryModes?.[item.key])}
                 onValueChange={() => toggleMode(item.key)}
                 disabled={updatingKey !== null}
               />

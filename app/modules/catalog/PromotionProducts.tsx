@@ -152,6 +152,7 @@ const PromotionProductsScreen = () => {
               noOfreviews={item.noOfreviews || 0}
               reviews={item.reviews || []}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={item.isVatApplicable || false}
               vatRate={item.vatRate || 0}
@@ -182,6 +183,7 @@ const PromotionProductsScreen = () => {
               noOfreviews={item.noOfreviews || 0}
               reviews={item.reviews || []}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={item.isVatApplicable || false}
               vatRate={item.vatRate || 0}
@@ -321,6 +323,7 @@ const PromotionProductsScreen = () => {
                 noOfreviews={item.noOfreviews || 0}
                 reviews={item.reviews || []}
                 noOfReviews={0}
+                isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
                 isReturnable={false}
                 isVatApplicable={item.isVatApplicable || false}
                 vatRate={item.vatRate || 0}

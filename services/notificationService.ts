@@ -42,6 +42,52 @@ const LAST_UNREAD_COUNT_KEY = "@app_notifications_last_unread_count";
 const DELETED_API_IDS_KEY = "@app_notifications_deleted_api_ids";
 
 export class NotificationService {
+  static readonly storageKeys = {
+    notifications: NOTIFICATIONS_STORAGE_KEY,
+    readApiIds: READ_API_IDS_KEY,
+    lastUnreadCount: LAST_UNREAD_COUNT_KEY,
+    deletedApiIds: DELETED_API_IDS_KEY,
+    webPushRegistered: "web_push_registered",
+  };
+
+  static async clearNotificationCache(options?: {
+    includeApiState?: boolean;
+    includeWebPushRegistration?: boolean;
+  }): Promise<void> {
+    const includeApiState = options?.includeApiState ?? true;
+    const includeWebPushRegistration =
+      options?.includeWebPushRegistration ?? true;
+
+    const keysToRemove = [
+      this.storageKeys.notifications,
+      this.storageKeys.lastUnreadCount,
+    ];
+
+    if (includeApiState) {
+      keysToRemove.push(
+        this.storageKeys.readApiIds,
+        this.storageKeys.deletedApiIds
+      );
+    }
+
+    if (includeWebPushRegistration) {
+      keysToRemove.push(this.storageKeys.webPushRegistered);
+    }
+
+    try {
+      await AsyncStorage.multiRemove(keysToRemove);
+    } catch (error) {
+      console.error("Error clearing notification cache:", error);
+    }
+  }
+
+  static async clearTransientNotificationCache(): Promise<void> {
+    await this.clearNotificationCache({
+      includeApiState: false,
+      includeWebPushRegistration: false,
+    });
+  }
+
   /** IDs of API-sourced notifications marked as read (web and mobile). */
   static async getReadApiIds(): Promise<string[]> {
     try {
@@ -63,10 +109,10 @@ export class NotificationService {
   }
 
   /** Extract notifications array from various backend response shapes. */
-  static getNotificationsFromResponse(data: unknown): Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }> {
+  static getNotificationsFromResponse(data: unknown): Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }> {
     if (!data || typeof data !== "object") return [];
     const d = data as Record<string, unknown>;
-    if (Array.isArray(d)) return d as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>;
+    if (Array.isArray(d)) return d as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }>;
     const inner = d.data;
     const arr =
       d.notifications ??
@@ -74,7 +120,7 @@ export class NotificationService {
       (Array.isArray(inner) ? inner : null) ??
       d.list ??
       d.items;
-    return Array.isArray(arr) ? (arr as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>) : [];
+    return Array.isArray(arr) ? (arr as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }>) : [];
   }
 
   /** Deduplicate order notifications: same order can come from local + API. Keep one per order, prefer api- id. */
@@ -103,6 +149,66 @@ export class NotificationService {
     return result.sort((a, b) => b.timestamp - a.timestamp);
   }
 
+  static getReadMarker(notification: {
+    title?: string;
+    body?: string;
+    data?: any;
+  }): string {
+    const data =
+      typeof notification.data === "string"
+        ? notification.data
+        : JSON.stringify(notification.data ?? {});
+    return `sig-${notification.title ?? ""}|${notification.body ?? ""}|${data}`;
+  }
+
+  static async fetchNotificationsFresh(): Promise<NotificationItem[]> {
+    const { data } = await jsonAxios.get(getNotificationsApiUrl());
+    const rawList = this.getNotificationsFromResponse(data);
+
+    if (rawList.length === 0) {
+      await this.clearNotificationCache();
+      return [];
+    }
+
+    const [readApiIds, deletedApiIds] = await Promise.all([
+      this.getReadApiIds(),
+      this.getDeletedApiIds(),
+    ]);
+
+    const validApiIds = new Set(rawList.map((item) => "api-" + item._id));
+    const prunedReadApiIds = readApiIds.filter((id) => validApiIds.has(id));
+    const prunedDeletedApiIds = deletedApiIds.filter((id) => validApiIds.has(id));
+
+    if (prunedReadApiIds.length !== readApiIds.length) {
+      await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(prunedReadApiIds));
+    }
+
+    if (prunedDeletedApiIds.length !== deletedApiIds.length) {
+      await AsyncStorage.setItem(
+        DELETED_API_IDS_KEY,
+        JSON.stringify(prunedDeletedApiIds)
+      );
+    }
+
+    await AsyncStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
+
+    return rawList
+      .filter((n) => n && n._id && !prunedDeletedApiIds.includes("api-" + n._id))
+      .map((n) => ({
+        id: "api-" + n._id,
+        title: n.title ?? "",
+        body: n.body ?? "",
+        data: n.data ?? {},
+        timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
+        isRead:
+          n.isRead === true ||
+          prunedReadApiIds.includes("api-" + n._id) ||
+          prunedReadApiIds.includes(this.getReadMarker(n)),
+        type: (n.data?.type as string) || "general",
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
   // Get all stored notifications
   static async getStoredNotifications(): Promise<NotificationItem[]> {
     try {
@@ -118,7 +224,22 @@ export class NotificationService {
   static async saveNotification(notification: NotificationItem): Promise<void> {
     try {
       const existing = await this.getStoredNotifications();
-      const updated = [notification, ...existing];
+      const existingIndex = existing.findIndex((item) => item.id === notification.id);
+      const updatedNotification =
+        existingIndex >= 0
+          ? {
+              ...existing[existingIndex],
+              ...notification,
+              isRead: existing[existingIndex].isRead || notification.isRead,
+            }
+          : notification;
+      const updated =
+        existingIndex >= 0
+          ? [
+              updatedNotification,
+              ...existing.filter((_, index) => index !== existingIndex),
+            ]
+          : [updatedNotification, ...existing];
       await AsyncStorage.setItem(
         NOTIFICATIONS_STORAGE_KEY,
         JSON.stringify(updated)
@@ -132,17 +253,45 @@ export class NotificationService {
   }
 
   // Mark notification as read
-  static async markAsRead(notificationId: string): Promise<void> {
+  static async markAsRead(
+    notificationId: string,
+    notification?: Partial<NotificationItem>
+  ): Promise<void> {
     try {
       if (notificationId.startsWith("api-")) {
+        await jsonAxios
+          .post(`${getNotificationsApiUrl()}/${notificationId.replace(/^api-/, "")}/read`)
+          .catch(() => {});
         const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
         const ids: string[] = raw ? JSON.parse(raw) : [];
         if (!ids.includes(notificationId)) {
           ids.push(notificationId);
+        }
+        if (notification) {
+          const marker = this.getReadMarker(notification);
+          if (!ids.includes(marker)) {
+            ids.push(marker);
+          }
+        }
+        await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
+        await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
+        return;
+      }
+      if (notification) {
+        await jsonAxios
+          .post(`${getNotificationsApiUrl()}/read-match`, {
+            title: notification.title,
+            body: notification.body,
+          })
+          .catch(() => {});
+        const marker = this.getReadMarker(notification);
+        const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+        const ids: string[] = raw ? JSON.parse(raw) : [];
+        if (!ids.includes(marker)) {
+          ids.push(marker);
           await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
         }
         await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
-        return;
       }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.map((notif) =>
@@ -161,17 +310,20 @@ export class NotificationService {
   static async markAllAsRead(): Promise<void> {
     try {
       try {
-        const { data } = await jsonAxios.get(getNotificationsApiUrl());
-        const rawList = this.getNotificationsFromResponse(data);
-        const apiIds = (rawList ?? []).map((n) => "api-" + n._id);
+        await jsonAxios.post(`${getNotificationsApiUrl()}/read-all`).catch(() => {});
+        const rawList = await this.fetchNotificationsFresh();
+        const apiIds = rawList.map((n) => n.id);
         if (apiIds.length > 0) {
           const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
           const ids: string[] = raw ? JSON.parse(raw) : [];
-          const combined = [...new Set([...ids, ...apiIds])];
+          const markers = rawList.map((n) => this.getReadMarker(n));
+          const combined = [...new Set([...ids, ...apiIds, ...markers])];
           await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(combined));
         }
         await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, "0");
-      } catch (_) {}
+      } catch {
+        // Ignore API mark-all sync failures; local read state still updates.
+      }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.map((notif) => ({
         ...notif,
@@ -188,90 +340,23 @@ export class NotificationService {
 
   // Clear all notifications
   static async clearAllNotifications(): Promise<void> {
-    try {
-      await AsyncStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
-    } catch (error) {
-      console.error("Error clearing notifications:", error);
-    }
+    await this.clearNotificationCache();
   }
 
-  /**
-   * Clear notification storage on logout so the badge does not persist.
-   * Does NOT clear READ_API_IDS_KEY or DELETED_API_IDS_KEY, so "marked as read" and
-   * deleted state persist for the same user after login (API ids are unique per notification).
-   */
+  /** Clear all notification-related storage on logout. */
   static async clearAllForLogout(): Promise<void> {
-    try {
-      await Promise.all([
-        AsyncStorage.removeItem(NOTIFICATIONS_STORAGE_KEY),
-        AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY),
-        AsyncStorage.removeItem("web_push_registered"),
-      ]);
-    } catch (error) {
-      console.error("Error clearing notification data on logout:", error);
-    }
+    await this.clearNotificationCache();
   }
 
   // Get unread count (web and mobile: include API-sourced notifications and read state for api-* ids)
   static async getUnreadCount(): Promise<number> {
     try {
-      const [stored, readApiIdsRaw, deletedApiIds] = await Promise.all([
-        this.getStoredNotifications(),
-        AsyncStorage.getItem(READ_API_IDS_KEY),
-        this.getDeletedApiIds(),
-      ]);
-      const readApiIds: string[] = readApiIdsRaw ? JSON.parse(readApiIdsRaw) : [];
-      // On web, use only API list so count is user-specific (stored is not user-scoped).
-      let list: NotificationItem[] = Platform.OS === "web" ? [] : [...(stored ?? [])];
-      let apiSucceeded = false;
-      try {
-        const { data } = await jsonAxios.get(getNotificationsApiUrl());
-        apiSucceeded = true;
-        const rawList = this.getNotificationsFromResponse(data);
-        const apiList = rawList
-          .filter((n) => !deletedApiIds.includes("api-" + n._id))
-          .map((n) => ({
-            id: "api-" + n._id,
-            title: n.title ?? "",
-            body: n.body ?? "",
-            data: n.data ?? {},
-            timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
-            isRead: false,
-            type: (n.data?.type as string) || "general",
-          }));
-        const seen = new Set(list.map((x) => x.id));
-        for (const n of apiList) {
-          if (!seen.has(n.id)) {
-            seen.add(n.id);
-            list.push(n);
-          }
-        }
-      } catch (_) {}
-      list = this.deduplicateOrderNotifications(list);
-      const unread = list.filter((n) =>
-        n.id.startsWith("api-") ? !readApiIds.includes(n.id) : !n.isRead
-      );
-      const count = unread.length;
-      if (apiSucceeded && count >= 0) {
-        await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, String(count));
-      }
-      if (!apiSucceeded && list.length === 0) {
-        const cached = await AsyncStorage.getItem(LAST_UNREAD_COUNT_KEY);
-        if (cached !== null) {
-          const n = parseInt(cached, 10);
-          if (!Number.isNaN(n) && n >= 0) return n;
-        }
-      }
+      const list = await this.fetchNotificationsFresh();
+      const count = list.filter((n) => !n.isRead).length;
+      await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, String(count));
       return count;
     } catch (error) {
       console.error("Error getting unread count:", error);
-      try {
-        const cached = await AsyncStorage.getItem(LAST_UNREAD_COUNT_KEY);
-        if (cached !== null) {
-          const n = parseInt(cached, 10);
-          if (!Number.isNaN(n) && n >= 0) return n;
-        }
-      } catch (_) {}
       return 0;
     }
   }
@@ -426,7 +511,7 @@ export class NotificationService {
   static async scheduleLocalNotification(
     title: string,
     body: string,
-    data: any = {}
+    data: Record<string, unknown> = {}
   ) {
     if (Platform.OS === "web") {
       // console.log("Local notifications not supported on web");

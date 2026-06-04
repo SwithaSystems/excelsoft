@@ -9,9 +9,13 @@ export function usePickupTime() {
     const fetchPickupTime = async () => {
       try {
         const response = await globalSettingsAPI.getSettings();
-        const timeWindowEnabled = response.data?.timeWindow;
-        // console.log("timeWindowEnabled", timeWindowEnabled);
-        setPickupTime(timeWindowEnabled ? 2 : 0);
+        const timeWindowMinutes = Number(response.data?.timeWindow);
+        if (Number.isFinite(timeWindowMinutes) && timeWindowMinutes > 0) {
+          setPickupTime(timeWindowMinutes / 60);
+        } else {
+          // Default to 120 minutes (2 hours) when no value is set
+          setPickupTime(2);
+        }
       } catch (error) {
         console.error("Failed to fetch pickup time settings:", error);
       } finally {

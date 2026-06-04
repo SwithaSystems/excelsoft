@@ -432,6 +432,7 @@ const SearchResultsScreen = () => {
               noOfreviews={item.noOfreviews}
               reviews={item.reviews}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={false}
               vatRate={0}
@@ -464,6 +465,7 @@ const SearchResultsScreen = () => {
               noOfreviews={item.noOfreviews}
               reviews={item.reviews}
               noOfReviews={0}
+              isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
               isReturnable={false}
               isVatApplicable={false}
               vatRate={0}
@@ -569,6 +571,7 @@ const SearchResultsScreen = () => {
                   noOfreviews={item.noOfreviews}
                   reviews={item.reviews}
                   noOfReviews={0}
+                  isAgeRestricted={item.isAgeRestricted ?? item.ageRestricted}
                   isReturnable={false}
                   isVatApplicable={false}
                   vatRate={0}

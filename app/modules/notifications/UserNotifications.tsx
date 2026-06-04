@@ -11,20 +11,27 @@ import {
   DeviceEventEmitter,
   Platform,
 } from "react-native";
+import Header from "@/app/components/Header";
+import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
+import { PageLayoutWeb } from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
+import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb";
+import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import { useRoleContext } from "@/context/RoleContext";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationService } from "@/services/notificationService";
-import { jsonAxios, API_BASE_URL } from "@/services/axiosConfig";
 import colors from "@/constants/colors";
 import { useFocusEffect } from "@react-navigation/native";
 import { handleNotificationNavigation } from "@/services/navigationService";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
+import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 
 const FOCUS_LOAD_THROTTLE_MS = 1200;
 
 export default function UserNotificationsScreen() {
   const { isValidUser } = useRoleContext();
+  const isWeb = Platform.OS === "web";
+  const { isMobile } = useWebMediaQuery();
+  const isMobileWeb = isWeb && isMobile;
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -37,65 +44,30 @@ export default function UserNotificationsScreen() {
     return () => { if (typeof console !== "undefined") console.log("[UserNotifications] Screen unmounted"); };
   }, []);
 
-  const loadNotifications = useCallback(async (isRetry = false) => {
-    if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start", isRetry ? "(retry)" : "");
+  const loadNotifications = useCallback(async () => {
+    if (typeof console !== "undefined") console.log("[UserNotifications] loadNotifications start");
     setLoadError(null);
-    // On web, use only API list so notifications are strictly user-specific (stored list is not user-scoped).
-    const stored = Platform.OS === "web" ? [] : (await NotificationService.getStoredNotifications() ?? []);
-
-    let list = [...stored];
-
-    // Fetch from backend (GET /web-push/notifications). Use full URL so request hits backend on web (not the dev server).
-    const notificationsUrl = API_BASE_URL ? `${String(API_BASE_URL).replace(/\/$/, "")}/web-push/notifications` : "/web-push/notifications";
     try {
-      const res = await jsonAxios.get(notificationsUrl);
-      const [readApiIds, deletedApiIds] = await Promise.all([
-        NotificationService.getReadApiIds(),
-        NotificationService.getDeletedApiIds(),
-      ]);
-      const rawList = NotificationService.getNotificationsFromResponse(res.data);
-      const apiList = rawList
-        .filter((n) => n && n._id && !deletedApiIds.includes("api-" + n._id))
-        .map((n) => ({
-          id: "api-" + n._id,
-          title: n.title ?? "",
-          body: n.body ?? "",
-          data: n.data ?? {},
-          timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
-          isRead: readApiIds.includes("api-" + n._id),
-          type: (n.data?.type as string) || "general",
-        }));
-      const seen = new Set(list.map((x) => x.id));
-      for (const n of apiList) {
-        if (!seen.has(n.id)) {
-          seen.add(n.id);
-          list.push(n);
-        }
+      const list = await NotificationService.fetchNotificationsFresh();
+      if (typeof console !== "undefined") {
+        console.log("[UserNotifications] loaded", list.length, "notifications");
       }
-      list.sort((a, b) => b.timestamp - a.timestamp);
-    } catch (e: any) {
-      let msg = e?.response?.data?.message ?? e?.message ?? "Failed to load notifications";
+      setNotifications(list);
+    } catch (e: unknown) {
+      const error = e as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      let msg =
+        error?.response?.data?.message ??
+        error?.message ??
+        "Failed to load notifications";
       if (typeof msg === "string" && msg.includes("Cannot GET")) {
         msg = "Notifications API not reached. Set EXPO_PUBLIC_API_URL in .env to your backend URL (e.g. https://your-api.herokuapp.com).";
       }
+      setNotifications([]);
       setLoadError(msg);
       if (typeof console !== "undefined") console.warn("[UserNotifications] API fetch failed:", e);
-    }
-
-    list = NotificationService.deduplicateOrderNotifications(list);
-
-    if (typeof console !== "undefined") console.log("[UserNotifications] loaded", list.length, "notifications");
-    setNotifications(list);
-
-    // On web, if list is still empty but we have a cached unread count, retry once (transient API failure).
-    if (Platform.OS === "web" && list.length === 0 && !isRetry) {
-      try {
-        const cached = await AsyncStorage.getItem("@app_notifications_last_unread_count");
-        if (cached !== null && parseInt(cached, 10) > 0) {
-          if (typeof console !== "undefined") console.log("[UserNotifications] empty list but cached count", cached, "- retrying load");
-          setTimeout(() => loadNotifications(true), 300);
-        }
-      } catch (_) {}
     }
   }, []);
 
@@ -134,7 +106,7 @@ export default function UserNotificationsScreen() {
   const handleNotificationPress = async (notification: any) => {
     // console.log(" Notification pressed:", JSON.stringify(notification, null, 2));
     
-    await NotificationService.markAsRead(notification.id);
+    await NotificationService.markAsRead(notification.id, notification);
     await loadNotifications();
     if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
     
@@ -145,8 +117,8 @@ export default function UserNotificationsScreen() {
     if (typeof notificationData === 'string') {
       try {
         notificationData = JSON.parse(notificationData);
-      } catch (e) {
-        // console.log(" Could not parse notification data as JSON:", e);
+      } catch {
+        // Ignore malformed payload strings and fall back to the raw notification.
       }
     }
     
@@ -263,11 +235,27 @@ export default function UserNotificationsScreen() {
     </TouchableOpacity>
   );
 
-  return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notifications</Text>
+  const LayoutComponent = isWeb ? PageLayoutWeb : PageLayout;
+  const HeaderComponent = isWeb ? (
+    <BrandHeaderWeb />
+  ) : (
+    <Header
+      headerText="Notifications"
+      secondaryBtnText={notifications.length > 0 ? "Mark all read" : undefined}
+      secondaryBtnCallBack={notifications.length > 0 ? handleMarkAllAsRead : undefined}
+    />
+  );
+  const FooterComponent = isWeb ? <FooterWeb /> : undefined;
+
+  const renderWebPageHeader = () => (
+    <View style={[styles.pageHeaderRow, isMobileWeb && styles.pageHeaderRowMobile]}>
+      <View style={styles.pageHeaderSpacer} />
+
+      <View style={[styles.pageHeaderTitleWrap, styles.pageHeaderTitleWrapWeb]}>
+        <Text style={styles.pageHeaderTitle}>Notifications</Text>
+      </View>
+
+      <View style={styles.pageHeaderActionWrap}>
         {notifications.length > 0 && (
           <TouchableOpacity
             onPress={handleMarkAllAsRead}
@@ -277,76 +265,93 @@ export default function UserNotificationsScreen() {
           </TouchableOpacity>
         )}
       </View>
+    </View>
+  );
 
-      {/* Notifications List */}
-      {notifications.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          {isValidUser && loadError ? (
-            <>
-              <View style={styles.emptyIconCircle}>
-                <Ionicons name="cloud-offline-outline" size={48} color="#999" />
-              </View>
-              <Text style={styles.emptyText}>Couldn't load notifications</Text>
-              <Text style={styles.emptySubtext}>{loadError}</Text>
-              <TouchableOpacity
-                style={[styles.markAllButton, { marginTop: 16, paddingVertical: 10, paddingHorizontal: 20, backgroundColor: colors.primary, borderRadius: 8 }]}
-                onPress={() => { setLoadError(null); loadNotifications(); }}
-              >
-                <Text style={[styles.markAllText, { color: "#fff" }]}>Retry</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.emptyIconCircle}>
-                <Ionicons name="notifications-off-outline" size={48} color="#999" />
-              </View>
-              <Text style={styles.emptyText}>No notifications yet</Text>
-              <Text style={styles.emptySubtext}>
-                You'll see notifications here when you receive them
-              </Text>
-              {/* {Platform.OS === "web" && (
+  return (
+    <LayoutComponent
+      hasHeader
+      headerComponent={HeaderComponent}
+      hasFooter={isWeb}
+      footerComponent={FooterComponent}
+      hasSidebar={false}
+      scrollable={false}
+    >
+      <View
+        style={[
+          styles.container,
+          isWeb && styles.webContainer,
+          isMobileWeb && styles.mobileWebContainer,
+        ]}
+      >
+        {isWeb && renderWebPageHeader()}
+
+        <View style={[styles.contentCard, isMobileWeb && styles.contentCardMobileWeb]}>
+          {notifications.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              {isValidUser && loadError ? (
                 <>
-                  <Text style={styles.emptyHint}>
-                    Tap the bell icon in the header and allow notifications to get order updates here and in your browser.
-                  </Text>
-                  <Text style={[styles.emptyHint, { marginTop: 8, fontSize: 13 }]}>
-                    Keep this tab open when you place an order so notifications appear here.
+                  <View style={styles.emptyIconCircle}>
+                    <Ionicons name="cloud-offline-outline" size={48} color="#999" />
+                  </View>
+                  <Text style={styles.emptyText}>Couldn&apos;t load notifications</Text>
+                  <Text style={styles.emptySubtext}>{loadError}</Text>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => {
+                      setLoadError(null);
+                      loadNotifications();
+                    }}
+                  >
+                    <Text style={styles.retryButtonText}>Retry</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={styles.emptyIconCircle}>
+                    <Ionicons name="notifications-off-outline" size={48} color="#999" />
+                  </View>
+                  <Text style={styles.emptyText}>No notifications yet</Text>
+                  <Text style={styles.emptySubtext}>
+                    You&apos;ll see notifications here when you receive them
                   </Text>
                 </>
-              )} */}
-            </>
+              )}
+            </View>
+          ) : (
+            <FlatList
+              data={notifications}
+              renderItem={renderNotification}
+              keyExtractor={(item) => item.id}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+            />
           )}
         </View>
-      ) : (
-        <FlatList
-          data={notifications}
-          renderItem={renderNotification}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-      )}
 
-      <ConfirmationModal
-        isModalVisible={deleteModalVisible}
-        onClose={() => {
-          setDeleteModalVisible(false);
-          setNotificationToDeleteId(null);
-        }}
-        handleCancel={() => {
-          setDeleteModalVisible(false);
-          setNotificationToDeleteId(null);
-        }}
-        handleSubmit={performDeleteNotification}
-        title="Delete Notification"
-        text="Are you sure you want to delete this notification?"
-        submitText="Delete"
-        cancelText="Cancel"
-        isDestructive
-      />
-    </View>
+        <ConfirmationModal
+          isModalVisible={deleteModalVisible}
+          onClose={() => {
+            setDeleteModalVisible(false);
+            setNotificationToDeleteId(null);
+          }}
+          handleCancel={() => {
+            setDeleteModalVisible(false);
+            setNotificationToDeleteId(null);
+          }}
+          handleSubmit={performDeleteNotification}
+          title="Delete Notification"
+          text="Are you sure you want to delete this notification?"
+          submitText="Delete"
+          cancelText="Cancel"
+          isDestructive
+        />
+      </View>
+    </LayoutComponent>
   );
 }
 
@@ -354,19 +359,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    width: "100%",
   },
-  header: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+  webContainer: {
+    width: "60%",
+    alignSelf: "center",
+  },
+  mobileWebContainer: {
+    width: "94%",
+  },
+  pageHeaderRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e8e8e8",
+    marginBottom: 20,
+    paddingTop: 8,
   },
-  headerTitle: {
+  pageHeaderRowMobile: {
+    marginBottom: 16,
+  },
+  pageHeaderSpacer: {
+    minWidth: 72,
+  },
+  pageHeaderTitleWrap: {
+    flex: 1,
+    alignItems: "center",
+  },
+  pageHeaderTitleWrapWeb: {
+    alignItems: "flex-start",
+  },
+  pageHeaderActionWrap: {
+    minWidth: 120,
+    alignItems: "flex-end",
+  },
+  pageHeaderTitle: {
     fontSize: 28,
     fontWeight: "700",
     color: "#000",
@@ -442,6 +467,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     marginLeft: 48,
   },
+  contentCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.placeholdergrey,
+    overflow: "hidden",
+  },
+  contentCardMobileWeb: {
+    borderRadius: 12,
+  },
+  listContent: {
+    paddingBottom: 12,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
@@ -469,12 +508,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
-  emptyHint: {
+  retryButton: {
     marginTop: 16,
-    fontSize: 14,
-    color: colors.primary,
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

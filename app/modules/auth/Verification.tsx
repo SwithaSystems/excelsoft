@@ -348,10 +348,17 @@ const verificationScreen = () => {
             return;
           }
 
+          const normalizedUserData = {
+            ...parsedUserData,
+            email: parsedUserData.email
+              ? parsedUserData.email.trim().toLowerCase()
+              : parsedUserData.email,
+          };
+
           try {
           if (intentValue === "recover") {
               const response = await authService.recover({
-                userData: parsedUserData,
+                userData: normalizedUserData,
               });
 
               if (response?.access_token) {
@@ -383,7 +390,7 @@ const verificationScreen = () => {
               }
             } else {
               const response = await authService.register({
-                userData: parsedUserData,
+                userData: normalizedUserData,
               });
 
               if (response?.access_token) {
@@ -413,7 +420,7 @@ const verificationScreen = () => {
             ) {
               try {
                 const response = await authService.recover({
-                  userData: parsedUserData,
+                  userData: normalizedUserData,
                 });
 
                 if (response?.access_token) {

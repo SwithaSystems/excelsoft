@@ -14,7 +14,7 @@ export interface OrderProduct {
   name: string;
   quantity: number;
   netPrice: number;
-  // discount: number;
+  ageRestricted?: boolean;
   isVatApplicable: boolean;
   vatRate: number;
   vatAmount: number;

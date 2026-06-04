@@ -41,8 +41,8 @@ export const isValidEmail = (email: string): boolean => {
   return true;
 };
 
-export const isValidName = (name: string): string | null => {
-  const trimmed = name.trim();
+export const isValidName = (name?: string): string | null => {
+  const trimmed = (name ?? "").trim();
 
   if (!trimmed) return "Recipient name is required";
   if (trimmed.length < 2) return "Name must be at least 2 characters long";
