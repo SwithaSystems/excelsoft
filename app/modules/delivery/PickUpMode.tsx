@@ -68,9 +68,9 @@ const modeConfig: Record<
 };
 
 const defaultDeliveryModes = {
-  homeDelivery: true,
-  curbsidePickup: true,
-  storePickup: true,
+  homeDelivery: false,
+  curbsidePickup: false,
+  storePickup: false,
 };
 
 const pickUpModescreen = () => {

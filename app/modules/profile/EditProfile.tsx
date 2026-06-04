@@ -320,10 +320,15 @@ const editProfileScreen = () => {
       }
       return response?.data;
     } catch (error) {
-      const serverMessage =
+      const rawMessage =
         (error as any)?.response?.data?.message ||
         (error as any)?.message ||
         FAILED_TO_UPDATE_DETAILS;
+      const normalizedMessage =
+        typeof rawMessage === "string" ? rawMessage.toLowerCase() : "";
+      const serverMessage = normalizedMessage.includes("file size too large")
+        ? "File size is too large. Please upload an image under the supported size (10 MB)."
+        : rawMessage;
       showErrorAlert({
         title: "Update Failed",
         message: typeof serverMessage === "string" ? serverMessage : FAILED_TO_UPDATE_DETAILS,

@@ -106,7 +106,7 @@ export default function UserNotificationsScreen() {
   const handleNotificationPress = async (notification: any) => {
     // console.log(" Notification pressed:", JSON.stringify(notification, null, 2));
     
-    await NotificationService.markAsRead(notification.id);
+    await NotificationService.markAsRead(notification.id, notification);
     await loadNotifications();
     if (DeviceEventEmitter?.emit) DeviceEventEmitter.emit("notificationUpdate");
     
