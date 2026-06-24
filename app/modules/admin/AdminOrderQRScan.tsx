@@ -281,7 +281,7 @@ const AdminOrderQRScan = () => {
           <View style={[styles.inputSection, isMobileWeb && styles.inputSectionMobileWeb]}>
             <Text style={styles.inputLabel}>Enter QR Number</Text>
             <CustomTextInput
-              placeholder="Enter 5-Digit QR Code"
+              placeholder="Enter 4-Digit QR Code"
               value={qrCode}
               setValue={setQrCode}
               onPress={() => {}}

@@ -37,6 +37,7 @@
       },
       "package": "com.excelsoft.app",
       "versionCode": 28,
+      "softwareKeyboardLayoutMode": "pan",
       "newArchEnabled":true,
       "permissions": [
         "NOTIFICATION",

@@ -1,5 +1,44 @@
-import axiosInstance from "./axiosConfig";
 import createAxiosInstance, { jsonAxios } from "./axiosConfig";
+
+export interface ProductImportStatistics {
+  totalExtracted?: number;
+  totalProducts?: number;
+  total?: number;
+  duplicatesInFile?: number;
+  processed?: number;
+  inserted?: number;
+  updated?: number;
+  skipped?: number;
+  failed?: number;
+  imagesUploaded?: number;
+  imagesSkipped?: number;
+}
+
+export interface ProductImportResult {
+  success: boolean;
+  queued?: boolean;
+  jobId?: string;
+  message?: string;
+  statistics?: ProductImportStatistics;
+  succeeded?: unknown[];
+  failed?: unknown[];
+  durationMs?: number;
+  completedAt?: string;
+  runId?: string;
+  error?: string;
+}
+
+export interface ProductImportJobStatus {
+  jobId: string;
+  status: "queued" | "running" | "completed" | "failed";
+  startedAt: string;
+  finishedAt?: string;
+  fileName: string;
+  result?: ProductImportResult;
+  error?: string;
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface Product {
   _id?: string;
@@ -146,5 +185,47 @@ bulkHardDelete: async (ids: string[]): Promise<any> => {
     const formDataAxios = createAxiosInstance("formdata");
     const response = await formDataAxios.post(`/products/upload`, data);
     return response.data;
+  },
+  uploadProductImportPdf: async (data: FormData): Promise<ProductImportResult> => {
+    const formDataAxios = createAxiosInstance("formdata");
+    const response = await formDataAxios.post(`/product-import/upload-pdf`, data, {
+      timeout: 300000,
+    });
+    return response.data;
+  },
+  getProductImportStatus: async (
+    jobId: string
+  ): Promise<ProductImportJobStatus> => {
+    const response = await jsonAxios.get(`/product-import/status/${jobId}`, {
+      timeout: 30000,
+    });
+    return response.data;
+  },
+  waitForProductImportResult: async (
+    jobId: string,
+    options: { intervalMs?: number; timeoutMs?: number } = {}
+  ): Promise<ProductImportResult> => {
+    const intervalMs = options.intervalMs ?? 3000;
+    const timeoutMs = options.timeoutMs ?? 10 * 60 * 1000;
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < timeoutMs) {
+      const status = await ProductsAPI.getProductImportStatus(jobId);
+
+      if (status.status === "completed") {
+        if (!status.result) {
+          throw new Error("Import completed but no report was returned");
+        }
+        return status.result;
+      }
+
+      if (status.status === "failed") {
+        throw new Error(status.error || "Import failed");
+      }
+
+      await wait(intervalMs);
+    }
+
+    throw new Error("Import is still running. Please check again shortly.");
   },
 };

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
-  ScrollView,
   StyleSheet,
   TextInputProps,
 } from "react-native";
@@ -20,7 +19,6 @@ import colors from "../../../constants/colors";
 import { PickupMode } from "@/services/orderService";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
-import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import {
@@ -169,7 +167,6 @@ const PickupScreen = () => {
   const phoneRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const vehicleNumberRef = useRef<TextInput>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   // Store original user data for toggling between collectors
   const [originalUserData, setOriginalUserData] = useState({
@@ -764,20 +761,18 @@ const PickupScreen = () => {
           {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
         </Text>
       )}
-      <KeyBoardWrapper>
-        <ScrollView ref={scrollViewRef}>
-          <View
-            style={[
-              globalStyles.pt_0,
-              isWeb
-                ? {
-                    width: isMobileWeb ? "95%" : "70%",
-                    alignSelf: "center",
-                    paddingVertical: isMobileWeb ? 12 : 20,
-                  }
-                : { paddingHorizontal: 0 },
-            ]}
-          >
+      <View
+        style={[
+          globalStyles.pt_0,
+          isWeb
+            ? {
+                width: isMobileWeb ? "95%" : "70%",
+                alignSelf: "center",
+                paddingVertical: isMobileWeb ? 12 : 20,
+              }
+            : { paddingHorizontal: 0 },
+        ]}
+      >
             {/* Instructions */}
             {hasAgeRestrictedItems && (
               <AgeRestrictionNote
@@ -1103,10 +1098,7 @@ const PickupScreen = () => {
               disabled={isLoading}
               style={isLoading ? inputStyles.disabledButton : {}}
             />
-          </View>
-        </ScrollView>
-        {/* </View> */}
-      </KeyBoardWrapper>
+      </View>
       <ConfirmationModal
         isModalVisible={errorModalState.isVisible}
         onClose={() =>
