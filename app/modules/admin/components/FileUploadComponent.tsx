@@ -12,8 +12,10 @@ import ModalSelector from "react-native-modal-selector";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import styles from "../FileUploadAddProductCategoryStyles";
 import colors from "@/constants/colors";
-import axios from "axios";
-import { ProductsAPI } from "@/services/productService";
+import {
+  ProductsAPI,
+  type ProductImportStatistics,
+} from "@/services/productService";
 import { EntityAPI } from "@/services/entityService";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
@@ -21,8 +23,6 @@ import useConfirmationAlert from "@/app/components/commonComponents/useConfirmat
 interface FileUploadProps {
   onUploadComplete?: (result: any) => void;
 }
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ensureOptionShape = (arr: any[]) =>
   arr.map((it, i) => ({
@@ -49,6 +49,12 @@ const resolveOption = (option: any, dataset: any[]) => {
   const label = option.label ?? option.value ?? option.key ?? String(value);
   return { value: String(value), label: String(label) };
 };
+
+const getTotalProducts = (statistics?: ProductImportStatistics) =>
+  statistics?.totalExtracted ??
+  statistics?.totalProducts ??
+  statistics?.total ??
+  "N/A";
 
 const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadComplete,
@@ -179,22 +185,27 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
       if (vendorSelected || vendorLabelSelected) {
         // VENDOR BRANCH
         try {
-          const url = `${API_URL}/product-import/upload-pdf`;
-          const response = await axios.post(url, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-            timeout: 300000,
-          });
+          const uploadResult = await ProductsAPI.uploadProductImportPdf(formData);
+          const finalResult = uploadResult?.queued && uploadResult.jobId
+            ? await ProductsAPI.waitForProductImportResult(uploadResult.jobId)
+            : uploadResult;
 
-          setResult(
-            response.data ?? { success: false, message: "Empty response" }
-          );
+          setResult(finalResult ?? { success: false, message: "Empty response" });
 
-          if (response.data?.success) {
-            showAlert("Success", "PDF import uploaded successfully");
+          if (finalResult?.success) {
+            const stats = finalResult.statistics ?? {};
+            showAlert(
+              "Success",
+              `PDF import completed\n` +
+                `Total: ${getTotalProducts(stats)}\n` +
+                `Inserted: ${stats.inserted ?? "N/A"}\n` +
+                `Updated: ${stats.updated ?? "N/A"}\n` +
+                `Failed: ${stats.failed ?? "N/A"}`
+            );
           } else {
             showAlert(
               "Upload result",
-              response.data?.message ?? "Completed with warnings"
+              finalResult?.message ?? "Completed with warnings"
             );
           }
 
@@ -204,7 +215,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
           setSelectedVendorLabel("Select Vendor");
           setSelectedFile(null);
 
-          if (onUploadComplete) onUploadComplete(response.data);
+          if (onUploadComplete) onUploadComplete(finalResult);
         } catch (err: any) {
           console.error("=== VENDOR UPLOAD ERROR ===");
           console.error("Error message:", err.message);
@@ -488,7 +499,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
               </Text>
               <Text style={resultStyles.statRow}>
                 Total Products:{" "}
-                {result.statistics?.totalProducts ?? result.statistics?.total ?? "N/A"}
+                {getTotalProducts(result.statistics)}
               </Text>
               <Text style={resultStyles.statRow}>
                 Inserted: {result.statistics?.inserted ?? "N/A"}

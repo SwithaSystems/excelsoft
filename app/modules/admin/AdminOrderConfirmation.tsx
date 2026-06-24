@@ -330,7 +330,9 @@ const AdminOrderConfirmation = () => {
                       key={`${item?._id || item?.productId || item?.name}-${index}`}
                       style={styles.itemCard}
                     >
-                      <Image source={getImageSource(item)} style={styles.itemImage} />
+                      <View style={styles.itemImageFrame}>
+                        <Image source={getImageSource(item)} style={styles.itemImage} />
+                      </View>
                       <View style={styles.itemContent}>
                         <Text style={styles.itemName}>
                           {item?.name || "Unknown Item"}
