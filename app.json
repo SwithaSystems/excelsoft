@@ -2,7 +2,7 @@
   "expo": {
     "name": "Weekes",
     "slug": "excelsoft-app",
-    "version": "1.0.29",
+    "version": "1.0.30",
     "orientation": "portrait",
     "icon": "./assets/ClientLogo.png",
     "scheme": "myapp",
@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.excelsoft.app",
-      "buildNumber": "29",
+      "buildNumber": "30",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "This app uses the camera to allow users to take photos for their profile or uploads.",
@@ -36,7 +36,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.excelsoft.app",
-      "versionCode": 29,
+      "versionCode": 30,
       "softwareKeyboardLayoutMode": "pan",
       "newArchEnabled":true,
       "permissions": [
