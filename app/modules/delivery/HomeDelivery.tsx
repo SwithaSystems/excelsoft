@@ -5,6 +5,8 @@ import {
   STORE_CLOSING_TIMINGS,
   STORE_OPENING_TIMINGS,
 } from "../../../constants/stringLiterals";
+import { usePickupTime } from "../../../hooks/usePickupTime";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   View,
@@ -12,7 +14,6 @@ import {
   TextInput,
   Platform,
   TouchableOpacity,
-  FlatList,
   useWindowDimensions,
 } from "react-native";
 import styles from "./HomeDeliveryStyles";
@@ -30,7 +31,6 @@ import AddressItem from "../../components/AddressItem";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {
@@ -54,9 +54,14 @@ import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestriction
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // Minimum pickup time (30 minutes from now)
-const MIN_PICKUP_MINUTES = 30;
+const DEFAULT_MIN_PICKUP_MINUTES = 30;
 
 const HomeDeliveryScreen = () => {
+  const { pickupTime, loading: pickupTimeLoading } = usePickupTime();
+  const { settings: storeSettings } = useStoreSettings();
+  const openingHour = Number((storeSettings?.storeOpeningTime || "07:00").split(":")[0]);
+  const closingHour = Number((storeSettings?.storeClosingTime || "17:00").split(":")[0]);
+  const effectiveLeadMinutes = Math.max(Math.round((Number(pickupTime) || 0.5) * 60), DEFAULT_MIN_PICKUP_MINUTES);
   const { orderId, mode } = useLocalSearchParams();
   // Date and time state (default to today on web so the date input shows and submits correctly)
   const [date, setDate] = useState(() =>
@@ -149,38 +154,41 @@ const HomeDeliveryScreen = () => {
 
   // Initialize default time values based on new business rules
   useEffect(() => {
+    if (pickupTimeLoading) return;
     const now = new Date();
     const currentHour = now.getHours();
     let targetDate, targetHour, targetMinute;
 
     // Check if current time is between 7AM (7) and 5PM (17)
     if (
-      currentHour >= STORE_OPENING_TIMINGS &&
-      currentHour < STORE_CLOSING_TIMINGS
+      currentHour >= openingHour &&
+      currentHour < closingHour
     ) {
       // Within business hours: add 2 hours
       const twoHoursLater = new Date(
-        now.getTime() + /*DEFAULT_PICKUP_HOURS */ 2 * 60 * 60 * 1000
+        now.getTime() + effectiveLeadMinutes * 60 * 1000
       );
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < STORE_OPENING_TIMINGS) {
+    } else if (currentHour < openingHour) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(openingHour, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = STORE_OPENING_TIMINGS;
+      targetHour = openingHour;
       targetMinute = 0;
     } else {
-      // Outside business hours: push to next day 10AM
+      // Outside business hours: push to next day opening + lead time
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(10, 0, 0, 0); // Set to 10:00:00.000
+      const nextSlotHour = openingHour + Math.floor(effectiveLeadMinutes / 60);
+      const nextSlotMinute = effectiveLeadMinutes % 60;
+      tomorrow.setHours(nextSlotHour, nextSlotMinute, 0, 0);
       targetDate = tomorrow;
-      targetHour = 10;
-      targetMinute = 0;
+      targetHour = nextSlotHour;
+      targetMinute = nextSlotMinute;
     }
 
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
@@ -206,7 +214,7 @@ const HomeDeliveryScreen = () => {
       minutesValue,
       periodValue
     );
-  }, []);
+  }, [pickupTime, pickupTimeLoading, openingHour, closingHour, effectiveLeadMinutes]);
   const selectedAddressIdRef = useRef(selectedAddressId);
 useEffect(() => {
   selectedAddressIdRef.current = selectedAddressId;
@@ -325,11 +333,11 @@ useFocusEffect(
     const now = new Date();
 
     // Calculate minimum time (current time + 30 minutes)
-    const minTime = new Date(now.getTime() + MIN_PICKUP_MINUTES * 60 * 1000);
+    const minTime = new Date(now.getTime() + effectiveLeadMinutes * 60 * 1000);
 
     // Check if selected time is at least 30 minutes in the future
     if (selectedDateTime < minTime) {
-      const message = `Please select a time at least ${MIN_PICKUP_MINUTES} minutes in the future`;
+      const message = `Please select a time at least ${effectiveLeadMinutes} minutes in the future`;
       if (updateErrorState) setError(message);
       return { isValid: false, message };
     }
@@ -574,14 +582,14 @@ useFocusEffect(
 
     // Calculate minimum valid time (current time + 30 minutes)
     const minValidTime = new Date(
-      now.getTime() + MIN_PICKUP_MINUTES * 60 * 1000
+      now.getTime() + effectiveLeadMinutes * 60 * 1000
     );
 
     // Check if selected date/time is at least 30 minutes in the future
     if (selectedDateTime <= minValidTime) {
       return {
         isValid: false,
-        message: `Please select a time at least ${MIN_PICKUP_MINUTES} minutes in the future.`,
+        message: `Please select a time at least ${effectiveLeadMinutes} minutes in the future.`,
       };
     }
 
@@ -660,27 +668,23 @@ useFocusEffect(
                 : { paddingHorizontal: 0 },
             ]}
       >
-        <KeyBoardWrapper>
-          {isWeb && (
-            <Text
-              style={{
-                fontSize: 28,
-                fontWeight: "300",
-                marginBottom: 20,
-                color: colors.black,
-                textAlign: "center",
-                width: "100%",
-                marginTop: 20,
-              }}
-            >
-              {DELIVERY_MODE_HOME}
-            </Text>
-          )}
+        {isWeb && (
+          <Text
+            style={{
+              fontSize: 28,
+              fontWeight: "300",
+              marginBottom: 20,
+              color: colors.black,
+              textAlign: "center",
+              width: "100%",
+              marginTop: 20,
+            }}
+          >
+            {DELIVERY_MODE_HOME}
+          </Text>
+        )}
 
-          <FlatList
-            ListHeaderComponent={
-              <>
-                <View style={[globalStyles.pt_0]}>
+        <View style={[globalStyles.pt_0]}>
                   {hasAgeRestrictedItems && (
                     <AgeRestrictionNote
                       containerStyle={[
@@ -938,38 +942,32 @@ useFocusEffect(
                     onPress={handleSubmit}
                     disabled={isLoading || !isFormValid}
                   />
-                </View>
-                <ConfirmationModal
-                  onClose={() => {
-                    setIsModalVisible(false);
-                  }}
-                  isModalVisible={isModalVisible}
-                  title="Delete Address"
-                  text="Are you sure you want to delete this address?"
-                  submitText="Delete Address"
-                  handleSubmit={confirmDelete}
-                  cancelText="Cancel"
-                  handleCancel={cancelDelete}
-                  isDestructive={true}
-                />
-                <ConfirmationModal
-                  onClose={() =>
-                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
-                  }
-                  isModalVisible={errorModalState.isVisible}
-                  title={errorModalState.title}
-                  text={errorModalState.message}
-                  submitText={errorModalState.buttonLabel}
-                  handleSubmit={() =>
-                    setErrorModalState((prev) => ({ ...prev, isVisible: false }))
-                  }
-                />
-              </>
-            }
-            data={[]}
-            renderItem={null}
-          />
-        </KeyBoardWrapper>
+        </View>
+        <ConfirmationModal
+          onClose={() => {
+            setIsModalVisible(false);
+          }}
+          isModalVisible={isModalVisible}
+          title="Delete Address"
+          text="Are you sure you want to delete this address?"
+          submitText="Delete Address"
+          handleSubmit={confirmDelete}
+          cancelText="Cancel"
+          handleCancel={cancelDelete}
+          isDestructive={true}
+        />
+        <ConfirmationModal
+          onClose={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+          isModalVisible={errorModalState.isVisible}
+          title={errorModalState.title}
+          text={errorModalState.message}
+          submitText={errorModalState.buttonLabel}
+          handleSubmit={() =>
+            setErrorModalState((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
       </View>
     </LayoutComponent>
   );

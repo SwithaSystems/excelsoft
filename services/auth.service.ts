@@ -39,6 +39,9 @@ export const authService = {
     try {
       const response = await jsonAxios.post("/auth/register", payload);
       await SecureStore.setItemAsync("token", response.data.access_token);
+      if (response.data.refresh_token) {
+        await SecureStore.setItemAsync("refreshtoken", response.data.refresh_token);
+      }
       await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
@@ -51,6 +54,15 @@ export const authService = {
   }) {
     try {
       const response = await jsonAxios.post("/auth/recover", payload);
+      if (response.data.access_token) {
+        await SecureStore.setItemAsync("token", response.data.access_token);
+      }
+      if (response.data.refresh_token) {
+        await SecureStore.setItemAsync("refreshtoken", response.data.refresh_token);
+      }
+      if (response.data.user) {
+        await SecureStore.setItemAsync("user", JSON.stringify(response.data.user));
+      }
       return response.data;
     } catch (error) {
       throw error;

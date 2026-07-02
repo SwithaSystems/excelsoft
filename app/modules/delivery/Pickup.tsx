@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
-  ScrollView,
   StyleSheet,
   TextInputProps,
 } from "react-native";
@@ -20,7 +19,6 @@ import colors from "../../../constants/colors";
 import { PickupMode } from "@/services/orderService";
 import { UserAPI } from "@/services/userService";
 import { useSelector } from "react-redux";
-import KeyBoardWrapper from "@/app/components/commonComponents/KeyBoardWrapper";
 import ModalSelector from "react-native-modal-selector";
 import { RootState } from "@/store/store";
 import {
@@ -51,6 +49,7 @@ import BrandHeaderWeb from "@/app/components/commonComponentsWeb/brandHeaderWeb"
 import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import Footer from "@/app/components/Footer";
 import { usePickupTime } from "../../../hooks/usePickupTime";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
 import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
@@ -72,6 +71,9 @@ const TIME_PERIOD_OPTIONS = [
 const MIN_PICKUP_MINUTES = 30;
 
 const PickupScreen = () => {
+  const { settings: storeSettings } = useStoreSettings();
+  const openingHour = Number((storeSettings?.storeOpeningTime || "07:00").split(":")[0]);
+  const closingHour = Number((storeSettings?.storeClosingTime || "17:00").split(":")[0]);
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const { mode, orderId } = useLocalSearchParams();
   const isStorePickup = mode === DELIVERY_MODE_STORE;
@@ -165,7 +167,6 @@ const PickupScreen = () => {
   const phoneRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const vehicleNumberRef = useRef<TextInput>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   // Store original user data for toggling between collectors
   const [originalUserData, setOriginalUserData] = useState({
@@ -184,8 +185,8 @@ const PickupScreen = () => {
 
     // Check if current time is between 7AM (7) and 5PM (17)
     if (
-      currentHour >= STORE_OPENING_TIMINGS &&
-      currentHour < STORE_CLOSING_TIMINGS
+      currentHour >= openingHour &&
+      currentHour < closingHour
     ) {
       // Within business hours: add 2 hours
       const pickupHours = Math.max(Number(pickupTime) || 0, 0.5); // At least 30 minutes
@@ -195,22 +196,26 @@ const PickupScreen = () => {
       targetDate = twoHoursLater;
       targetHour = twoHoursLater.getHours();
       targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < STORE_OPENING_TIMINGS) {
+    } else if (currentHour < openingHour) {
       // Before business hours: push to next day 7AM
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(STORE_OPENING_TIMINGS, 0, 0, 0); // Set to 7:00:00.000
+      tomorrow.setHours(openingHour, 0, 0, 0); // Set to 7:00:00.000
       targetDate = tomorrow;
-      targetHour = STORE_OPENING_TIMINGS;
+      targetHour = openingHour;
       targetMinute = 0;
     } else {
-      // Outside business hours: push to next day 10AM
+      // Outside business hours: push to next day opening + lead time
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(10, 0, 0, 0); // Set to 10:00:00.000
+      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5);
+      const leadMinutes = Math.round(pickupHours * 60);
+      const nextSlotHour = openingHour + Math.floor(leadMinutes / 60);
+      const nextSlotMinute = leadMinutes % 60;
+      tomorrow.setHours(nextSlotHour, nextSlotMinute, 0, 0);
       targetDate = tomorrow;
-      targetHour = 10;
-      targetMinute = 0;
+      targetHour = nextSlotHour;
+      targetMinute = nextSlotMinute;
     }
     // Format the date for state
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
@@ -238,7 +243,7 @@ const PickupScreen = () => {
       minutesValue,
       periodValue
     );
-  }, [pickupTime, pickupTimeLoading]);
+  }, [pickupTime, pickupTimeLoading, openingHour, closingHour]);
 
   const displayDatePicker = () => setPickupDatePickerVisibility(true);
   const hideDatePicker = () => setPickupDatePickerVisibility(false);
@@ -756,20 +761,18 @@ const PickupScreen = () => {
           {isStorePickup ? PickupMode.STORE_PICKUP : PickupMode.CURBSIDE_PICKUP}
         </Text>
       )}
-      <KeyBoardWrapper>
-        <ScrollView ref={scrollViewRef}>
-          <View
-            style={[
-              globalStyles.pt_0,
-              isWeb
-                ? {
-                    width: isMobileWeb ? "95%" : "70%",
-                    alignSelf: "center",
-                    paddingVertical: isMobileWeb ? 12 : 20,
-                  }
-                : { paddingHorizontal: 0 },
-            ]}
-          >
+      <View
+        style={[
+          globalStyles.pt_0,
+          isWeb
+            ? {
+                width: isMobileWeb ? "95%" : "70%",
+                alignSelf: "center",
+                paddingVertical: isMobileWeb ? 12 : 20,
+              }
+            : { paddingHorizontal: 0 },
+        ]}
+      >
             {/* Instructions */}
             {hasAgeRestrictedItems && (
               <AgeRestrictionNote
@@ -1095,10 +1098,7 @@ const PickupScreen = () => {
               disabled={isLoading}
               style={isLoading ? inputStyles.disabledButton : {}}
             />
-          </View>
-        </ScrollView>
-        {/* </View> */}
-      </KeyBoardWrapper>
+      </View>
       <ConfirmationModal
         isModalVisible={errorModalState.isVisible}
         onClose={() =>

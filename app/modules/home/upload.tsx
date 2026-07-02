@@ -14,23 +14,12 @@ import {
   Platform,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import axios from "axios";
 import useConfirmationAlert from "@/app/components/commonComponents/useConfirmationAlert";
+import {
+  ProductsAPI,
+  type ProductImportResult,
+} from "@/services/productService";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
-interface ImportResult {
-  success: boolean;
-  message: string;
-  statistics: {
-    totalProducts: number;
-    inserted: number;
-    updated: number;
-    failed: number;
-  };
-  products?: any[];
-  errors?: string[];
-}
 interface UploadData {
   entityType: string;
   // fileType: string;
@@ -41,9 +30,15 @@ interface UploadData {
 const ProductImportScreen: React.FC = () => {
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ImportResult | null>(null);
+  const [result, setResult] = useState<ProductImportResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [selectedEntity, setSelectedEntity] = useState<string>("");
+
+  const getTotalProducts = (statistics: ProductImportResult["statistics"]) =>
+    statistics?.totalExtracted ??
+    statistics?.totalProducts ??
+    statistics?.total ??
+    "N/A";
 
   // Pick PDF using expo-document-picker
   const pickPDF = async () => {
@@ -117,36 +112,30 @@ const ProductImportScreen: React.FC = () => {
         // For mobile, use the file URI directly
         formData.append("file", {
           uri: uploadData.fileUri,
-          type:
-            selectedFile?.assets?.[0]?.mimeType || "application/octet-stream",
+          type: selectedFile?.mimeType || "application/pdf",
           name: uploadData.fileName,
         } as any);
       }
 
-      const response = await axios.post<ImportResult>(
-        `${API_URL}/product-import/upload-pdf`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 300000,
-        }
-      );
+      const uploadResult = await ProductsAPI.uploadProductImportPdf(formData);
+      const finalResult = uploadResult?.queued && uploadResult.jobId
+        ? await ProductsAPI.waitForProductImportResult(uploadResult.jobId)
+        : uploadResult;
 
       // console.log("Response:", response.data);
-      setResult(response.data);
+      setResult(finalResult);
 
-      if (response.data.success) {
+      if (finalResult.success) {
+        const stats = finalResult.statistics ?? {};
         showAlert(
           "Success ",
-          `Total: ${response.data.statistics.totalProducts}\n` +
-            `Inserted: ${response.data.statistics.inserted}\n` +
-            `Updated: ${response.data.statistics.updated}\n` +
-            `Failed: ${response.data.statistics.failed}`
+          `Total: ${getTotalProducts(stats)}\n` +
+            `Inserted: ${stats.inserted ?? "N/A"}\n` +
+            `Updated: ${stats.updated ?? "N/A"}\n` +
+            `Failed: ${stats.failed ?? "N/A"}`
         );
       } else {
-        showAlert("Import Failed", response.data.message);
+        showAlert("Import Failed", finalResult.message ?? "Import failed");
       }
     } catch (error: any) {
       console.error(error);
@@ -156,7 +145,7 @@ const ProductImportScreen: React.FC = () => {
         success: false,
         message: error.message,
         statistics: {
-          totalProducts: 0,
+          totalExtracted: 0,
           inserted: 0,
           updated: 0,
           failed: 0,
@@ -229,16 +218,16 @@ const ProductImportScreen: React.FC = () => {
               <Text style={styles.statisticsTitle}>Statistics:</Text>
 
               <Text style={styles.statLine}>
-                Total Products: {result.statistics.totalProducts}
+                Total Products: {getTotalProducts(result.statistics)}
               </Text>
               <Text style={styles.statLine}>
-                Inserted: {result.statistics.inserted}
+                Inserted: {result.statistics?.inserted ?? "N/A"}
               </Text>
               <Text style={styles.statLine}>
-                Updated: {result.statistics.updated}
+                Updated: {result.statistics?.updated ?? "N/A"}
               </Text>
               <Text style={styles.statLine}>
-                Failed: {result.statistics.failed}
+                Failed: {result.statistics?.failed ?? "N/A"}
               </Text>
             </View>
           </View>

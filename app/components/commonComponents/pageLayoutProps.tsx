@@ -51,8 +51,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       {scrollable ? (
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={hasHeader ? 64 : 0}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" && hasHeader ? 64 : 0}
         >
           <ScrollView
             style={styles.content}
@@ -66,6 +66,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             bounces={Platform.OS === "ios"}
           >
             {children}

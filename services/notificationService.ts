@@ -109,10 +109,10 @@ export class NotificationService {
   }
 
   /** Extract notifications array from various backend response shapes. */
-  static getNotificationsFromResponse(data: unknown): Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }> {
+  static getNotificationsFromResponse(data: unknown): Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }> {
     if (!data || typeof data !== "object") return [];
     const d = data as Record<string, unknown>;
-    if (Array.isArray(d)) return d as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>;
+    if (Array.isArray(d)) return d as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }>;
     const inner = d.data;
     const arr =
       d.notifications ??
@@ -120,7 +120,7 @@ export class NotificationService {
       (Array.isArray(inner) ? inner : null) ??
       d.list ??
       d.items;
-    return Array.isArray(arr) ? (arr as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; createdAt?: string }>) : [];
+    return Array.isArray(arr) ? (arr as Array<{ _id: string; title?: string; body?: string; data?: Record<string, unknown>; isRead?: boolean; createdAt?: string }>) : [];
   }
 
   /** Deduplicate order notifications: same order can come from local + API. Keep one per order, prefer api- id. */
@@ -147,6 +147,18 @@ export class NotificationService {
       result.push(apiOne ?? group[0]);
     });
     return result.sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  static getReadMarker(notification: {
+    title?: string;
+    body?: string;
+    data?: any;
+  }): string {
+    const data =
+      typeof notification.data === "string"
+        ? notification.data
+        : JSON.stringify(notification.data ?? {});
+    return `sig-${notification.title ?? ""}|${notification.body ?? ""}|${data}`;
   }
 
   static async fetchNotificationsFresh(): Promise<NotificationItem[]> {
@@ -188,7 +200,10 @@ export class NotificationService {
         body: n.body ?? "",
         data: n.data ?? {},
         timestamp: n.createdAt ? new Date(n.createdAt).getTime() : Date.now(),
-        isRead: prunedReadApiIds.includes("api-" + n._id),
+        isRead:
+          n.isRead === true ||
+          prunedReadApiIds.includes("api-" + n._id) ||
+          prunedReadApiIds.includes(this.getReadMarker(n)),
         type: (n.data?.type as string) || "general",
       }))
       .sort((a, b) => b.timestamp - a.timestamp);
@@ -209,7 +224,22 @@ export class NotificationService {
   static async saveNotification(notification: NotificationItem): Promise<void> {
     try {
       const existing = await this.getStoredNotifications();
-      const updated = [notification, ...existing];
+      const existingIndex = existing.findIndex((item) => item.id === notification.id);
+      const updatedNotification =
+        existingIndex >= 0
+          ? {
+              ...existing[existingIndex],
+              ...notification,
+              isRead: existing[existingIndex].isRead || notification.isRead,
+            }
+          : notification;
+      const updated =
+        existingIndex >= 0
+          ? [
+              updatedNotification,
+              ...existing.filter((_, index) => index !== existingIndex),
+            ]
+          : [updatedNotification, ...existing];
       await AsyncStorage.setItem(
         NOTIFICATIONS_STORAGE_KEY,
         JSON.stringify(updated)
@@ -223,17 +253,45 @@ export class NotificationService {
   }
 
   // Mark notification as read
-  static async markAsRead(notificationId: string): Promise<void> {
+  static async markAsRead(
+    notificationId: string,
+    notification?: Partial<NotificationItem>
+  ): Promise<void> {
     try {
       if (notificationId.startsWith("api-")) {
+        await jsonAxios
+          .post(`${getNotificationsApiUrl()}/${notificationId.replace(/^api-/, "")}/read`)
+          .catch(() => {});
         const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
         const ids: string[] = raw ? JSON.parse(raw) : [];
         if (!ids.includes(notificationId)) {
           ids.push(notificationId);
+        }
+        if (notification) {
+          const marker = this.getReadMarker(notification);
+          if (!ids.includes(marker)) {
+            ids.push(marker);
+          }
+        }
+        await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
+        await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
+        return;
+      }
+      if (notification) {
+        await jsonAxios
+          .post(`${getNotificationsApiUrl()}/read-match`, {
+            title: notification.title,
+            body: notification.body,
+          })
+          .catch(() => {});
+        const marker = this.getReadMarker(notification);
+        const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
+        const ids: string[] = raw ? JSON.parse(raw) : [];
+        if (!ids.includes(marker)) {
+          ids.push(marker);
           await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(ids));
         }
         await AsyncStorage.removeItem(LAST_UNREAD_COUNT_KEY);
-        return;
       }
       const notifications = await this.getStoredNotifications();
       const updated = notifications.map((notif) =>
@@ -252,12 +310,14 @@ export class NotificationService {
   static async markAllAsRead(): Promise<void> {
     try {
       try {
+        await jsonAxios.post(`${getNotificationsApiUrl()}/read-all`).catch(() => {});
         const rawList = await this.fetchNotificationsFresh();
         const apiIds = rawList.map((n) => n.id);
         if (apiIds.length > 0) {
           const raw = await AsyncStorage.getItem(READ_API_IDS_KEY);
           const ids: string[] = raw ? JSON.parse(raw) : [];
-          const combined = [...new Set([...ids, ...apiIds])];
+          const markers = rawList.map((n) => this.getReadMarker(n));
+          const combined = [...new Set([...ids, ...apiIds, ...markers])];
           await AsyncStorage.setItem(READ_API_IDS_KEY, JSON.stringify(combined));
         }
         await AsyncStorage.setItem(LAST_UNREAD_COUNT_KEY, "0");

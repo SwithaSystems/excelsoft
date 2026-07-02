@@ -68,9 +68,9 @@ const modeConfig: Record<
 };
 
 const defaultDeliveryModes = {
-  homeDelivery: true,
-  curbsidePickup: true,
-  storePickup: true,
+  homeDelivery: false,
+  curbsidePickup: false,
+  storePickup: false,
 };
 
 const pickUpModescreen = () => {
@@ -141,8 +141,6 @@ const pickUpModescreen = () => {
       }
       return Boolean(option);
     });
-
- 
 
   // Now the loading check comes AFTER all hooks
   if (loading) {

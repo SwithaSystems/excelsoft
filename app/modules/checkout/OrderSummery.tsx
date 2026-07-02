@@ -54,7 +54,6 @@ import FooterWeb from "@/app/components/commonComponentsWeb/footerWeb";
 import PageLayoutWeb from "@/app/components/commonComponentsWeb/pageLayoutPropsWeb";
 import { StripeCardInput } from "@/app/components/StripeCardInput";
 import { usePaymentHandler } from "@/app/components/usePaymentHandlerWrapper";
-import { DebugPaymentTest } from "@/app/components/DebugPaymentTest";
 import CurrencySymbol from "@/constants/CurrencySymbol";
 import { useWebMediaQuery } from "@/hooks/useWebMediaQuery";
 import AgeRestrictionNote from "@/app/components/commonComponents/AgeRestrictionNote";
