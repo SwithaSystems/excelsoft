@@ -1,6 +1,3 @@
-// usePaymentHandler.web.tsx
-// FIXED VERSION with proper Apple Pay configuration
-
 import { Alert } from "react-native";
 import {
   loadStripe,
