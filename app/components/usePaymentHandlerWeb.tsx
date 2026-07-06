@@ -66,7 +66,10 @@ export default function usePaymentHandlerWeb() {
     null
   );
 
-  const VAT_RATE = 0.2; // 20% VAT
+  const DEFAULT_VAT_RATE = 0.2; // 20% VAT fallback when product rate is missing
+
+  const getItemVatRateDecimal = (item: { vatRate?: number | null }) =>
+    item.vatRate != null ? item.vatRate / 100 : DEFAULT_VAT_RATE;
 
   /* -------------------- FETCH GLOBAL SETTINGS -------------------- */
   useEffect(() => {
@@ -91,8 +94,9 @@ export default function usePaymentHandlerWeb() {
     const isVatApplicable = !!item.isVatApplicable;
 
     // Calculate net price excluding VAT
+    const vatRateDecimal = getItemVatRateDecimal(item);
     const netPriceExVAT = isVatApplicable
-      ? netPrice / (1 + VAT_RATE)
+      ? netPrice / (1 + vatRateDecimal)
       : netPrice;
 
     // Calculate VAT amount per unit
@@ -112,7 +116,7 @@ export default function usePaymentHandlerWeb() {
       netPrice, // RRP (VAT-inclusive)
       netPriceExVAT, // Net price without VAT
       isVatApplicable,
-      vatRate: item.vatRate || 20,
+      vatRate: item.vatRate ?? 20,
       vatAmount,
       netPriceIncVat,
       grossPrice,
@@ -125,7 +129,7 @@ export default function usePaymentHandlerWeb() {
     // Subtotal excluding VAT
     const subtotalExVAT = items.reduce((sum, item) => {
       const netExVAT = item.isVatApplicable
-        ? (item.netPrice / (1 + VAT_RATE)) * item.quantity
+        ? (item.netPrice / (1 + getItemVatRateDecimal(item))) * item.quantity
         : item.netPrice * item.quantity;
       return sum + netExVAT;
     }, 0);

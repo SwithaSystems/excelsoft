@@ -1,6 +1,3 @@
-// usePaymentHandler.ts (Mobile version with Apple Pay & Google Pay)
-// FIXED VERSION - with proper Apple Pay configuration
-
 import { Alert } from "react-native";
 import {
   useStripe,
@@ -130,7 +127,7 @@ export const usePaymentHandler = () => {
       netPriceIncVat: netPriceIncVat,
       grossPrice: grossPrice,
       isVatApplicable: item.isVatApplicable,
-      vatRate: item.vatRate || 20,
+      vatRate: item.vatRate ?? 20,
       vatAmount: vatAmount,
     };
   });
