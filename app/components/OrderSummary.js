@@ -8,7 +8,10 @@ function OrderSummary(props) {
   const cartItems = props.cartItems || [];
   const [shippingCharge, setShippingCharge] = useState(0);
 
-  const VAT_RATE = 0.20; // 20% VAT
+  const DEFAULT_VAT_RATE = 0.2; // 20% VAT fallback when product rate is missing
+
+  const getItemVatRateDecimal = (item) =>
+    item.vatRate != null ? item.vatRate / 100 : DEFAULT_VAT_RATE;
 
   // Calculate net price excluding VAT from RRP (netPrice)
   const calculateNetPriceExVAT = (item) => {
@@ -16,7 +19,7 @@ function OrderSummary(props) {
       return item.netPrice || 0;
     }
     // If VAT applicable, netPrice includes VAT, so we extract it
-    return (item.netPrice || 0) / (1 + VAT_RATE);
+    return (item.netPrice || 0) / (1 + getItemVatRateDecimal(item));
   };
 
   // Calculate VAT amount for a single item
