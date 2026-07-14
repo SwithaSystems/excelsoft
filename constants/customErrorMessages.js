@@ -112,6 +112,8 @@ const PICKUP_TIME_REQUIRED =
   "Just need you to pick a pickup time before we carry on.";
 const PICKUP_DETAILS_REQUIRED =
   "Please pop in all the pickup details so we can get things sorted.";
+const PICKUP_TIME_OUTSIDE_STORE_HOURS =
+  "Please select a slot between {{openingHours}} and {{closingHours}}.";
 
 // Search & Navigation
 const SEARCH_SUCCESSFUL =
@@ -192,6 +194,7 @@ export {
   PICKUP_TIME_IN_PAST,
   PICKUP_TIME_REQUIRED,
   PICKUP_DETAILS_REQUIRED,
+  PICKUP_TIME_OUTSIDE_STORE_HOURS,
   ADDRESS_SAVED,
   SEARCH_SUCCESSFUL,
   SEARCH_QUERY_REQUIRED_MESSAGE,

@@ -63,6 +63,7 @@ const AdminProductDashboard = () => {
   const [hasMore, setHasMore] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [allCategories, setAllCategories] = useState<any>([]);
@@ -154,6 +155,11 @@ const AdminProductDashboard = () => {
   // since filtering is client-side and doesn't use server pagination
   const shouldShowPagination = (!selectCategory || selectCategory === "") && totalPages > 1;
 
+  const getPaginatedProducts = (items: Product[], page: number) => {
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    return items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
   const fetchData = async (
     page: number
   ): Promise<{
@@ -236,6 +242,7 @@ const AdminProductDashboard = () => {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
+      setSearchResults([]);
       const response = await fetchData(1);
 
       setAllProductsList(response.data);
@@ -689,7 +696,8 @@ const AdminProductDashboard = () => {
       const response = await ProductsAPI.productsBy_Name_Id(query);
 
       if (response) {
-        setAllProductsList(response);
+        setSearchResults(response);
+        setAllProductsList(isWeb ? getPaginatedProducts(response, 1) : response);
         setTotalProducts(response.length);
         setHasMore(false);
         setCurrentPage(1);
@@ -698,6 +706,7 @@ const AdminProductDashboard = () => {
     } catch (error) {
       console.error("Error searching products:", error);
       showAlert("Error", "Failed to search products");
+      setSearchResults([]);
       setAllProductsList([]);
       setTotalProducts(0);
       setHasMore(false);
@@ -720,8 +729,20 @@ const AdminProductDashboard = () => {
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
+    setSearchResults([]);
     loadInitialData();
   }, []);
+
+  const handlePageChange = (page: number) => {
+    if (searchQuery.trim()) {
+      setAllProductsList(getPaginatedProducts(searchResults, page));
+      setCurrentPage(page);
+      return;
+    }
+
+    setCurrentPage(page);
+    fetchProducts(page);
+  };
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -1115,10 +1136,7 @@ const AdminProductDashboard = () => {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={(page) => {
-              setCurrentPage(page);
-              fetchProducts(page);
-            }}
+            onPageChange={handlePageChange}
           />
         </View>
       )}

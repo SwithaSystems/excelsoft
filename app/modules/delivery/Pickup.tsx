@@ -26,8 +26,6 @@ import {
   // DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_CURBSIDE,
   DELIVERY_MODE_STORE,
-  STORE_CLOSING_TIMINGS,
-  STORE_OPENING_TIMINGS,
 } from "../../../constants/stringLiterals";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { formatToDDMMYYYY } from "../../../utilities/dateTimeFormat";
@@ -35,9 +33,10 @@ import {
   PICKUP_TIME_IN_PAST,
   PICKUP_TIME_REQUIRED,
   PICKUP_DETAILS_REQUIRED,
+  PICKUP_TIME_OUTSIDE_STORE_HOURS,
 } from "../../../constants/customErrorMessages";
 import ConfirmationModal from "@/app/components/commonComponents/ConfirmationModal";
-import { format, parse, set } from "date-fns";
+import { format, parse } from "date-fns";
 import PageLayout from "@/app/components/commonComponents/pageLayoutProps";
 import {
   isValidEmail,
@@ -70,10 +69,25 @@ const TIME_PERIOD_OPTIONS = [
 // Minimum pickup time (30 minutes from now)
 const MIN_PICKUP_MINUTES = 30;
 
+const parseStoreTimeToMinutes = (time: string | undefined, fallback: string) => {
+  const [hours = "0", minutes = "0"] = (time || fallback).split(":");
+  return Number(hours) * 60 + Number(minutes);
+};
+
+const formatStoreTimeLabel = (time: string | undefined, fallback: string) => {
+  const [hours = "0", minutes = "0"] = (time || fallback).split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+};
+
 const PickupScreen = () => {
   const { settings: storeSettings } = useStoreSettings();
-  const openingHour = Number((storeSettings?.storeOpeningTime || "07:00").split(":")[0]);
-  const closingHour = Number((storeSettings?.storeClosingTime || "17:00").split(":")[0]);
+  const storeOpeningTime = storeSettings?.storeOpeningTime || "07:00";
+  const storeClosingTime = storeSettings?.storeClosingTime || "17:00";
+  const openingMinutes = parseStoreTimeToMinutes(storeOpeningTime, "07:00");
+  const closingMinutes = parseStoreTimeToMinutes(storeClosingTime, "17:00");
+  const storeHoursWarning = PICKUP_TIME_OUTSIDE_STORE_HOURS
+    .replace("{{openingHours}}", formatStoreTimeLabel(storeOpeningTime, "07:00"))
+    .replace("{{closingHours}}", formatStoreTimeLabel(storeClosingTime, "17:00"));
   const { showAlert, confirmationModal } = useConfirmationAlert();
   const { mode, orderId } = useLocalSearchParams();
   const isStorePickup = mode === DELIVERY_MODE_STORE;
@@ -180,42 +194,53 @@ const PickupScreen = () => {
   useEffect(() => {
     if (pickupTimeLoading) return;
     const now = new Date();
-    const currentHour = now.getHours();
-    let targetDate, targetHour, targetMinute;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let targetDate = new Date(now);
+    let targetHour = targetDate.getHours();
+    let targetMinute = targetDate.getMinutes();
+    const pickupHours = Math.max(Number(pickupTime) || 0, 0.5);
+    const leadMinutes = Math.max(
+      Math.round(pickupHours * 60),
+      MIN_PICKUP_MINUTES
+    );
 
-    // Check if current time is between 7AM (7) and 5PM (17)
-    if (
-      currentHour >= openingHour &&
-      currentHour < closingHour
-    ) {
-      // Within business hours: add 2 hours
-      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5); // At least 30 minutes
-      const twoHoursLater = new Date(
-        now.getTime() + pickupHours * 60 * 60 * 1000
-      );
-      targetDate = twoHoursLater;
-      targetHour = twoHoursLater.getHours();
-      targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < openingHour) {
-      // Before business hours: push to next day 7AM
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(openingHour, 0, 0, 0); // Set to 7:00:00.000
-      targetDate = tomorrow;
-      targetHour = openingHour;
-      targetMinute = 0;
-    } else {
-      // Outside business hours: push to next day opening + lead time
+    const applyMinutesToTarget = (target: Date, minutesOfDay: number) => {
+      target.setHours(Math.floor(minutesOfDay / 60), minutesOfDay % 60, 0, 0);
+      targetDate = target;
+      targetHour = target.getHours();
+      targetMinute = target.getMinutes();
+    };
+
+    const moveToNextOpeningSlot = () => {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const pickupHours = Math.max(Number(pickupTime) || 0, 0.5);
-      const leadMinutes = Math.round(pickupHours * 60);
-      const nextSlotHour = openingHour + Math.floor(leadMinutes / 60);
-      const nextSlotMinute = leadMinutes % 60;
-      tomorrow.setHours(nextSlotHour, nextSlotMinute, 0, 0);
-      targetDate = tomorrow;
-      targetHour = nextSlotHour;
-      targetMinute = nextSlotMinute;
+      applyMinutesToTarget(tomorrow, openingMinutes + leadMinutes);
+    };
+
+    if (currentMinutes < openingMinutes) {
+      const candidateMinutes = Math.max(openingMinutes, currentMinutes + leadMinutes);
+      if (candidateMinutes < closingMinutes) {
+        const today = new Date(now);
+        applyMinutesToTarget(today, candidateMinutes);
+      } else {
+        moveToNextOpeningSlot();
+      }
+    } else if (currentMinutes < closingMinutes) {
+      const candidate = new Date(now.getTime() + leadMinutes * 60 * 1000);
+      const candidateMinutes = candidate.getHours() * 60 + candidate.getMinutes();
+      const isSameDay =
+        candidate.getFullYear() === now.getFullYear() &&
+        candidate.getMonth() === now.getMonth() &&
+        candidate.getDate() === now.getDate();
+      if (isSameDay && candidateMinutes < closingMinutes) {
+        targetDate = candidate;
+        targetHour = candidate.getHours();
+        targetMinute = candidate.getMinutes();
+      } else {
+        moveToNextOpeningSlot();
+      }
+    } else {
+      moveToNextOpeningSlot();
     }
     // Format the date for state
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
@@ -243,7 +268,7 @@ const PickupScreen = () => {
       minutesValue,
       periodValue
     );
-  }, [pickupTime, pickupTimeLoading, openingHour, closingHour]);
+  }, [pickupTime, pickupTimeLoading, openingMinutes, closingMinutes]);
 
   const displayDatePicker = () => setPickupDatePickerVisibility(true);
   const hideDatePicker = () => setPickupDatePickerVisibility(false);
@@ -315,6 +340,8 @@ const PickupScreen = () => {
     isCurbsidePickup,
     vehicleType,
     vehicleNumber,
+    openingMinutes,
+    closingMinutes,
   ]);
 
   // Load user data from API
@@ -520,8 +547,20 @@ const PickupScreen = () => {
     }
 
     // Create date object for selected date and time
-    const selectedDateTime = new Date(`${selectedDate}T00:00:00`);
+    const selectedDateTime = parse(selectedDate, DATE_FORMAT_Display, new Date());
     selectedDateTime.setHours(hours24, numMinutes, 0);
+
+    const selectedMinutes = hours24 * 60 + numMinutes;
+    if (
+      selectedMinutes < openingMinutes ||
+      selectedMinutes >= closingMinutes
+    ) {
+      if (updateErrorState) setTimeError(storeHoursWarning);
+      return {
+        isValid: false,
+        message: storeHoursWarning,
+      };
+    }
 
     // Get current date and time
     const now = new Date();
@@ -592,7 +631,7 @@ const PickupScreen = () => {
         if (!timeValidation.isValid) {
           showErrorAlert({
             title: "Invalid Time",
-            message: PICKUP_TIME_IN_PAST,
+            message: timeValidation.message || PICKUP_TIME_IN_PAST,
           });
           return;
         }
@@ -1095,7 +1134,7 @@ const PickupScreen = () => {
             <Button
               title="Confirm"
               onPress={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid}
               style={isLoading ? inputStyles.disabledButton : {}}
             />
       </View>
