@@ -2,8 +2,6 @@ import {
   DATE_FORMAT_Display,
   // DEFAULT_PICKUP_HOURS,
   DELIVERY_MODE_HOME,
-  STORE_CLOSING_TIMINGS,
-  STORE_OPENING_TIMINGS,
 } from "../../../constants/stringLiterals";
 import { usePickupTime } from "../../../hooks/usePickupTime";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
@@ -38,6 +36,7 @@ import {
   PICKUP_TIME_REQUIRED,
   PICKUP_TIME_IN_PAST,
   ADDRESS_NOT_SAVED,
+  PICKUP_TIME_OUTSIDE_STORE_HOURS,
 } from "../../../constants/customErrorMessages";
 import { format, parse } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
@@ -56,11 +55,26 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 // Minimum pickup time (30 minutes from now)
 const DEFAULT_MIN_PICKUP_MINUTES = 30;
 
+const parseStoreTimeToMinutes = (time: string | undefined, fallback: string) => {
+  const [hours = "0", minutes = "0"] = (time || fallback).split(":");
+  return Number(hours) * 60 + Number(minutes);
+};
+
+const formatStoreTimeLabel = (time: string | undefined, fallback: string) => {
+  const [hours = "0", minutes = "0"] = (time || fallback).split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+};
+
 const HomeDeliveryScreen = () => {
   const { pickupTime, loading: pickupTimeLoading } = usePickupTime();
   const { settings: storeSettings } = useStoreSettings();
-  const openingHour = Number((storeSettings?.storeOpeningTime || "07:00").split(":")[0]);
-  const closingHour = Number((storeSettings?.storeClosingTime || "17:00").split(":")[0]);
+  const storeOpeningTime = storeSettings?.storeOpeningTime || "07:00";
+  const storeClosingTime = storeSettings?.storeClosingTime || "17:00";
+  const openingMinutes = parseStoreTimeToMinutes(storeOpeningTime, "07:00");
+  const closingMinutes = parseStoreTimeToMinutes(storeClosingTime, "17:00");
+  const storeHoursWarning = PICKUP_TIME_OUTSIDE_STORE_HOURS
+    .replace("{{openingHours}}", formatStoreTimeLabel(storeOpeningTime, "07:00"))
+    .replace("{{closingHours}}", formatStoreTimeLabel(storeClosingTime, "17:00"));
   const effectiveLeadMinutes = Math.max(Math.round((Number(pickupTime) || 0.5) * 60), DEFAULT_MIN_PICKUP_MINUTES);
   const { orderId, mode } = useLocalSearchParams();
   // Date and time state (default to today on web so the date input shows and submits correctly)
@@ -156,39 +170,48 @@ const HomeDeliveryScreen = () => {
   useEffect(() => {
     if (pickupTimeLoading) return;
     const now = new Date();
-    const currentHour = now.getHours();
-    let targetDate, targetHour, targetMinute;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    let targetDate = new Date(now);
+    let targetHour = targetDate.getHours();
+    let targetMinute = targetDate.getMinutes();
 
-    // Check if current time is between 7AM (7) and 5PM (17)
-    if (
-      currentHour >= openingHour &&
-      currentHour < closingHour
-    ) {
-      // Within business hours: add 2 hours
-      const twoHoursLater = new Date(
-        now.getTime() + effectiveLeadMinutes * 60 * 1000
-      );
-      targetDate = twoHoursLater;
-      targetHour = twoHoursLater.getHours();
-      targetMinute = twoHoursLater.getMinutes();
-    } else if (currentHour < openingHour) {
-      // Before business hours: push to next day 7AM
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate());
-      tomorrow.setHours(openingHour, 0, 0, 0); // Set to 7:00:00.000
-      targetDate = tomorrow;
-      targetHour = openingHour;
-      targetMinute = 0;
-    } else {
-      // Outside business hours: push to next day opening + lead time
+    const applyMinutesToTarget = (target: Date, minutesOfDay: number) => {
+      target.setHours(Math.floor(minutesOfDay / 60), minutesOfDay % 60, 0, 0);
+      targetDate = target;
+      targetHour = target.getHours();
+      targetMinute = target.getMinutes();
+    };
+
+    const moveToNextOpeningSlot = () => {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const nextSlotHour = openingHour + Math.floor(effectiveLeadMinutes / 60);
-      const nextSlotMinute = effectiveLeadMinutes % 60;
-      tomorrow.setHours(nextSlotHour, nextSlotMinute, 0, 0);
-      targetDate = tomorrow;
-      targetHour = nextSlotHour;
-      targetMinute = nextSlotMinute;
+      applyMinutesToTarget(tomorrow, openingMinutes + effectiveLeadMinutes);
+    };
+
+    if (currentMinutes < openingMinutes) {
+      const candidateMinutes = Math.max(openingMinutes, currentMinutes + effectiveLeadMinutes);
+      if (candidateMinutes < closingMinutes) {
+        const today = new Date(now);
+        applyMinutesToTarget(today, candidateMinutes);
+      } else {
+        moveToNextOpeningSlot();
+      }
+    } else if (currentMinutes < closingMinutes) {
+      const candidate = new Date(now.getTime() + effectiveLeadMinutes * 60 * 1000);
+      const candidateMinutes = candidate.getHours() * 60 + candidate.getMinutes();
+      const isSameDay =
+        candidate.getFullYear() === now.getFullYear() &&
+        candidate.getMonth() === now.getMonth() &&
+        candidate.getDate() === now.getDate();
+      if (isSameDay && candidateMinutes < closingMinutes) {
+        targetDate = candidate;
+        targetHour = candidate.getHours();
+        targetMinute = candidate.getMinutes();
+      } else {
+        moveToNextOpeningSlot();
+      }
+    } else {
+      moveToNextOpeningSlot();
     }
 
     const formattedDate = format(targetDate, DATE_FORMAT_Display);
@@ -214,7 +237,7 @@ const HomeDeliveryScreen = () => {
       minutesValue,
       periodValue
     );
-  }, [pickupTime, pickupTimeLoading, openingHour, closingHour, effectiveLeadMinutes]);
+  }, [pickupTime, pickupTimeLoading, openingMinutes, closingMinutes, effectiveLeadMinutes]);
   const selectedAddressIdRef = useRef(selectedAddressId);
 useEffect(() => {
   selectedAddressIdRef.current = selectedAddressId;
@@ -326,8 +349,20 @@ useFocusEffect(
     }
 
     // Create date object for selected date and time
-    const selectedDateTime = new Date(`${selectedDate}T00:00:00`);
+    const selectedDateTime = parse(selectedDate, DATE_FORMAT_Display, new Date());
     selectedDateTime.setHours(hours24, numMinutes, 0);
+
+    const selectedMinutes = hours24 * 60 + numMinutes;
+    if (
+      selectedMinutes < openingMinutes ||
+      selectedMinutes >= closingMinutes
+    ) {
+      if (updateErrorState) setError(storeHoursWarning);
+      return {
+        isValid: false,
+        message: storeHoursWarning,
+      };
+    }
 
     // Get current date and time
     const now = new Date();
@@ -349,7 +384,7 @@ useFocusEffect(
   // Check form validity whenever any input changes
   useEffect(() => {
     validateFormFields();
-  }, [hours, minutes, period, date, selectedAddressId, existingAddress]);
+  }, [hours, minutes, period, date, selectedAddressId, existingAddress, openingMinutes, closingMinutes]);
 
   const validateFormFields = () => {
     // First check if time is valid
@@ -555,9 +590,6 @@ useFocusEffect(
       return { isValid: false, message: "Minutes must be between 0 and 59." };
     }
 
-    // Get current date and time
-    const now = new Date();
-
     // Convert 12-hour format to 24-hour format
     let hours24 = numHours;
     if (period === "pm" && numHours !== 12) {
@@ -566,19 +598,23 @@ useFocusEffect(
       hours24 = 0;
     }
 
+    const selectedMinutes = hours24 * 60 + numMinutes;
+    if (
+      selectedMinutes < openingMinutes ||
+      selectedMinutes >= closingMinutes
+    ) {
+      return {
+        isValid: false,
+        message: storeHoursWarning,
+      };
+    }
+
+    // Get current date and time
+    const now = new Date();
+
     // Create a proper date object for the selected date and time
-    const [year, month, day] = selectedDate
-      .split("-")
-      .map((num) => parseInt(num, 10));
-    const selectedDateTime = new Date(
-      year,
-      month - 1,
-      day,
-      hours24,
-      numMinutes,
-      0,
-      0
-    );
+    const selectedDateTime = parse(selectedDate, DATE_FORMAT_Display, new Date());
+    selectedDateTime.setHours(hours24, numMinutes, 0, 0);
 
     // Calculate minimum valid time (current time + 30 minutes)
     const minValidTime = new Date(
